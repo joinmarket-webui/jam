@@ -8,9 +8,6 @@ function App() {
   // const [currWallet,setCurrWallet] = useState({})
   const [walletList,setWalletList] = useState([])
 
-  var wallet_1 = "jm_sig.jmdat";
-  var wallet_2 = "test1.jmdat";
-  var wallet_3 = "sig_3";
 
   const listWallets = async()=>{
     const res = await fetch('/wallet/all');
@@ -99,11 +96,6 @@ function App() {
   return (
     <div className="App">
       <h1>Display Wallet</h1>
-      {/* <ul>
-        <li>{wallet_1}<Button onClick={unlockWallet} name ={wallet_1}>unlock</Button> <Button onClick={lockWallet} name ={wallet_1}>Lock</Button><Button onClick={displayWallet} name ={wallet_1}>Display</Button></li>
-        <li>{wallet_2}<Button onClick={unlockWallet} name ={wallet_2}>unlock</Button> <Button onClick={lockWallet} name ={wallet_2}>Lock</Button><Button onClick={displayWallet} name ={wallet_1}>Display</Button></li>
-        <li>{wallet_3}<Button onClick={unlockWallet} name ={wallet_3}>unlock</Button> <Button onClick={lockWallet} name ={wallet_3}>Lock</Button><Button onClick={displayWallet} name ={wallet_1}>Display</Button></li>
-      </ul> */}
 
       <Wallets walletList = {walletList} onUnlock = {unlockWallet} onLock = {lockWallet} onDisplay = {displayWallet}></Wallets>
      
