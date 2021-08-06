@@ -39,7 +39,7 @@ function App() {
         headers: {
           'Content-type': 'application/json',
         },
-        body: JSON.stringify({"password": "abhishek"}),
+        body: JSON.stringify({"password": "1234"}),
       })
       const data = await res.json();
       console.log(data);
@@ -82,6 +82,11 @@ function App() {
       });
       const data = await res.json();
       console.log(data[0].walletinfo);
+      const wallet_name = name
+      const balance = data[0].walletinfo.total_balance;
+      const mix_depths = data[0].walletinfo.accounts;
+      window.alert("Wallet Name: " + wallet_name + "\n" + "Total balance: " + balance);
+      window.alert(mix_depths[0].account + " " + mix_depths[0].account_balance + "\n" + mix_depths[1].account + " " + mix_depths[1].account_balance + "\n" + mix_depths[2].account + " " + mix_depths[2].account_balance + "\n" + mix_depths[3].account + " " + mix_depths[3].account_balance + "\n" + mix_depths[4].account + " " + mix_depths[4].account_balance);
       
     }
 
