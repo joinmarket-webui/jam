@@ -3,6 +3,8 @@ import { Button } from './components/Button';
 import Wallet from './components/Wallet';
 import {useState,useEffect} from 'react'
 import Wallets from './components/Wallets';
+import Payment from './components/Payment';
+import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
 function App() {
 
   // const [currWallet,setCurrWallet] = useState({})
@@ -44,7 +46,8 @@ function App() {
       const token = data[0].token;
       localStorage.setItem('auth',JSON.stringify({
         login:true,
-        token:token
+        token:token,
+        name:name
       }))
     }
     
@@ -63,7 +66,9 @@ function App() {
       });
       localStorage.setItem('auth',JSON.stringify({
         login:false,
-        token:''
+        token:'',
+        name:''
+
       }))
       const data = await res.json();
       console.log(data);
@@ -92,16 +97,68 @@ function App() {
 
     }
 
+
+    const makePayment = async(name,mixdepth,amountSats,destination)=>{
+      let authData =JSON.parse(localStorage.getItem('auth'));
+      if(authData!=null && authData.login===true){
+        const res = await fetch(`/wallet/${name}/taker/direct-send`,{
+          method:'POST',
+          headers: {
+            'Content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            "mixdepth": mixdepth,
+            "amount_sats": amountSats,
+            "destination": destination
+            }
+            
+            ),
+        })
+        const data = await res.json();
+        console.log(data);
+        
+      }
+      else{
+        alert("please unlock wallet first")
+      }
+    }
+
   
 
   return (
+    <Router>
     <div className="App">
       <h1>Display Wallet</h1>
+      <Link to="/payment">Make payment</Link>
+      <p></p>
+      <Switch>
+          
+        
+      
+      <Route
+          path='/'
+          exact
+          render={(props) => (
+            <>
+             <Wallets walletList = {walletList} onUnlock = {unlockWallet} onLock = {lockWallet} onDisplay = {displayWallet}></Wallets>
+            </>
+          )}
+        />
 
-      <Wallets walletList = {walletList} onUnlock = {unlockWallet} onLock = {lockWallet} onDisplay = {displayWallet}></Wallets>
+
+        <Route path='/payment' exact render={(props) => (
+            <>
+             <Payment onPayment = {makePayment}></Payment>
+            </>
+          )}
+        />
      
+        </Switch>{" "}
       
     </div>
+    </Router>
+    
+    
   );
 }
 
