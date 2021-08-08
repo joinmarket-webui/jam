@@ -28,6 +28,7 @@ function App() {
  
 
   const unlockWallet = async (name)=>{
+    var passphrase = prompt("Enter the passphrase for " + name);
     let authData =JSON.parse(localStorage.getItem('auth'));
     console.log(authData)
     if(authData===null || authData.login===false){
@@ -36,7 +37,7 @@ function App() {
         headers: {
           'Content-type': 'application/json',
         },
-        body: JSON.stringify({"password": "1234"}),
+        body: JSON.stringify({"password": passphrase}),
       })
       const data = await res.json();
       console.log(data);
