@@ -6,6 +6,8 @@ const Wallets = ({walletList,onUnlock,onLock,onDisplay}) => {
     return (
         <>
         <Link to="/payment">Make payment</Link>
+        <p></p>
+        <Link to="/create">Create Wallet</Link>
         {walletList.map((wallet,index)=>{
             return <Wallet key = {index} name={wallet} onUnlock = {onUnlock} onLock = {onLock} onDisplay = {onDisplay}></Wallet>
         })}

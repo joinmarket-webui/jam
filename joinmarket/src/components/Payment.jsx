@@ -23,6 +23,7 @@ const Payment = ({onPayment}) => {
 
     return (
         <div>
+        <h3>Make Payment</h3>
     <form method="POST" onSubmit={onSubmit}>
         <label>
         Receiver address:

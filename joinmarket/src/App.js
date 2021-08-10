@@ -4,6 +4,7 @@ import Wallet from './components/Wallet';
 import {useState,useEffect} from 'react'
 import Wallets from './components/Wallets';
 import Payment from './components/Payment';
+import CreateWallet from './components/CreateWallet';
 import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
 function App() {
 
@@ -132,7 +133,27 @@ function App() {
     }
 
     const createWallet = async(name,password)=>{
-
+      let authData =JSON.parse(localStorage.getItem('auth'));
+      if(authData===null || authData.login===false){
+        try{
+          const res = await fetch(`/wallet/create`,{
+          method:'POST',
+          headers: {
+            'Content-type': 'application/json',
+          },
+          body: JSON.stringify({"password":password,"walletname":name,"wallettype":"sw"}),
+        })
+        alert("Wallet created,please restart the backend")
+        }
+      catch(e){
+        //but what if some other error where wallet not created
+        alert("UNexpected error!PLease try again")
+      }
+      }
+      else{
+        alert(authData.name +" is in use! Please lock it first.")
+      }
+      
     }
 
 
@@ -193,6 +214,13 @@ function App() {
         <Route path='/payment' exact render={(props) => (
             <>
              <Payment onPayment = {makePayment}></Payment>
+            </>
+          )}
+        />
+        
+        <Route path='/create' exact render={(props) => (
+            <>
+             <CreateWallet onCreate={createWallet}></CreateWallet>
             </>
           )}
         />
