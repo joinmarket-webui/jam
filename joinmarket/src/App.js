@@ -30,26 +30,47 @@ function App() {
  
 
   const unlockWallet = async (name)=>{
-    var passphrase = prompt("Enter the passphrase for " + name);
+  
     let authData =JSON.parse(localStorage.getItem('auth'));
     console.log(authData)
-    if(authData===null || authData.login===false){
-      const res = await fetch(`/wallet/${name}/unlock`,{
-        method:'POST',
-        headers: {
-          'Content-type': 'application/json',
-        },
-        body: JSON.stringify({"password": passphrase}),
-      })
-      const data = await res.json();
-      console.log(data);
-      const token = data[0].token;
-      localStorage.setItem('auth',JSON.stringify({
-        login:true,
-        token:token,
-        name:name
-      }))
+    //if unlcoking same wallet
+    if(authData && authData.login===true && authData.name===name){
+      alert(name+" is aldready unlocked")
+      return;
     }
+    //if unlocking other wallet while one unlocked
+    else if(authData && authData.login===true && authData.name!==name){
+      alert(authData.name+" is currently in use,please lock it first");
+      return;
+    }
+
+    else{
+        try{
+            var passphrase = prompt("Enter the passphrase for " + name);
+            const res = await fetch(`/wallet/${name}/unlock`,{
+            method:'POST',
+            headers: {
+              'Content-type': 'application/json',
+            },
+            body: JSON.stringify({"password": passphrase}),
+          })
+            const data = await res.json();
+            console.log(data);
+            const token = data[0].token;
+            localStorage.setItem('auth',JSON.stringify({
+              login:true,
+              token:token,
+              name:name
+            }))
+            alert("Succesfully unlocked!")
+          }
+        catch(e){
+          alert("Something went wrong,please try again!")
+        }
+        
+    }
+  
+    
     
 
 
@@ -57,8 +78,14 @@ function App() {
 
     const lockWallet = async(name)=>{
       let authData =JSON.parse(localStorage.getItem('auth'));
-      let token = "Bearer "+authData.token
-      const res = await fetch(`/wallet/${name}/lock`,{
+      if(authData.login===false || authData.name!==name){
+        alert("Please unlock "+name+" first")
+        return;
+      }
+
+      try{
+        let token = "Bearer "+authData.token
+        const res = await fetch(`/wallet/${name}/lock`,{
         method:"GET",
         headers:{
           'Authorization':token
@@ -72,10 +99,21 @@ function App() {
       }))
       const data = await res.json();
       console.log(data);
+      alert("locked wallet succesfully")
+      }
+      catch(e){
+        alert("Error while locking.")
+      }
+      
     }
 
     const displayWallet = async(name)=>{
+
       let authData =JSON.parse(localStorage.getItem('auth'));
+      if(authData.login===false || authData.name!==name){
+        alert("Please unlock "+name+" first")
+        return;
+      }
       let token = "Bearer "+authData.token
       const res = await fetch(`/wallet/${name}/display`,{
         method:"GET",
@@ -101,21 +139,28 @@ function App() {
     const makePayment = async(name,mixdepth,amountSats,destination)=>{
       let authData =JSON.parse(localStorage.getItem('auth'));
       if(authData!=null && authData.login===true){
-        const res = await fetch(`/wallet/${name}/taker/direct-send`,{
-          method:'POST',
-          headers: {
-            'Content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            "mixdepth": mixdepth,
-            "amount_sats": amountSats,
-            "destination": destination
-            }
-            
-            ),
-        })
-        const data = await res.json();
-        console.log(data);
+        try{
+          const res = await fetch(`/wallet/${name}/taker/direct-send`,{
+            method:'POST',
+            headers: {
+              'Content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              "mixdepth": mixdepth,
+              "amount_sats": amountSats,
+              "destination": destination
+              }
+              
+              ),
+          })
+          const data = await res.json();
+          console.log(data);
+          alert("Payment Succesful!")
+        }
+        catch(e){
+          alert("Error while processing payment!")
+        }
+       
         
       }
       else{
@@ -128,8 +173,7 @@ function App() {
   return (
     <Router>
     <div className="App">
-      <h1>Display Wallet</h1>
-      <Link to="/payment">Make payment</Link>
+      
       <p></p>
       <Switch>
           
