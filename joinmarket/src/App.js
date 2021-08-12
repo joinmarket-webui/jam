@@ -5,6 +5,7 @@ import {useState,useEffect} from 'react'
 import Wallets from './components/Wallets';
 import Payment from './components/Payment';
 import CreateWallet from './components/CreateWallet';
+import Maker from './components/Maker';
 import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
 function App() {
 
@@ -189,6 +190,43 @@ function App() {
       }
     }
 
+    const startMakerService = async(txfee,cjfee_a,cjfee_r,ordertype,minsize)=>{
+      let authData =JSON.parse(localStorage.getItem('auth'));
+    
+      if(!authData|| authData.login===false || authData.name===''){
+        alert("Please unlock a wallet first")
+        return;
+      }
+      let name = authData.name 
+      try{
+        let token = "Bearer "+authData.token
+        const res = await fetch(`/wallet/${name}/maker/start`,{
+        method:"POST",
+        headers:{
+          'Authorization':token
+        },
+        body: JSON.stringify({
+          "txfee":txfee,
+          "cjfee_a":cjfee_a,
+          "cjfee_r":cjfee_r,
+          "ordertype":ordertype,
+          "minsize":minsize
+          }
+          
+          ),
+      });
+      
+      const data = await res.json();
+      console.log(data);
+      alert("Maker service started succesfully")
+      }
+
+      catch(e){
+        alert("Error while starting service!")
+      }
+      
+    }
+
   
 
   return (
@@ -221,6 +259,13 @@ function App() {
         <Route path='/create' exact render={(props) => (
             <>
              <CreateWallet onCreate={createWallet}></CreateWallet>
+            </>
+          )}
+        />
+
+        <Route path='/maker' exact render={(props) => (
+            <>
+             <Maker onStart = {startMakerService}></Maker>
             </>
           )}
         />

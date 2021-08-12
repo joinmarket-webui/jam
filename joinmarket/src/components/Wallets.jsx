@@ -8,6 +8,8 @@ const Wallets = ({walletList,onUnlock,onLock,onDisplay}) => {
         <Link to="/payment">Make payment</Link>
         <p></p>
         <Link to="/create">Create Wallet</Link>
+        <p></p>
+        <Link to="/maker">Maker Service</Link>
         {walletList.map((wallet,index)=>{
             return <Wallet key = {index} name={wallet} onUnlock = {onUnlock} onLock = {onLock} onDisplay = {onDisplay}></Wallet>
         })}
