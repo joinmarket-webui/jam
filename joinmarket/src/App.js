@@ -165,10 +165,12 @@ function App() {
       let authData =JSON.parse(localStorage.getItem('auth'));
       if(authData!=null && authData.login===true){
         try{
+          let token = "Bearer "+authData.token
           const res = await fetch(`/wallet/${name}/taker/direct-send`,{
             method:'POST',
             headers: {
               'Content-type': 'application/json',
+               'Authorization':token
             },
             body: JSON.stringify({
               "mixdepth": mixdepth,
@@ -230,6 +232,35 @@ function App() {
       
     }
 
+    const stopMakerService= async()=>{
+      let authData =JSON.parse(localStorage.getItem('auth'));
+      if(authData===null ||authData.login===false || authData.name===''){
+        alert('Wallet needs to be unlocked')
+        return;
+      }
+      try{
+        let name = authData.name 
+        let token = "Bearer "+authData.token
+        const res = await fetch(`/wallet/${name}/maker/stop`,{
+          method:"GET",
+          headers:{
+            'Authorization':token
+          },
+        })
+        const data = await res.json();
+        console.log(data);
+        alert("Maker service stopped")
+        }
+
+      catch(e){
+        alert("Error while stopping service!")
+      }
+
+        
+
+      
+    }
+
     const generateQR = async()=>{
       <BitcoinQR
       bitcoinAddress="bc1qr3ja0feke2d7zg8jr0sjhr4aw5ppezt7n954u7"
@@ -274,7 +305,7 @@ function App() {
 
         <Route path='/maker' exact render={(props) => (
             <>
-             <Maker onStart = {startMakerService}></Maker>
+             <Maker onStart = {startMakerService} onStop = {stopMakerService}></Maker>
             </>
           )}
         />

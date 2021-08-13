@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState } from 'react'
-const Maker = ({onStart}) => {
+const Maker = ({onStart,onStop}) => {
     
       
 
@@ -10,56 +10,59 @@ const Maker = ({onStart}) => {
     const [orderType,setOrdertype] = useState('')
     const [minsize,setMinsize] = useState('')
 
+    const[makerStarted,setMakerStarted] = useState()
+
+    const [submitVal,setSubmitVal] = useState('Start Maker Service')
+
+    
+
     const onSubmit = (e) => {
         e.preventDefault()
-    
-        if (!txFee || !cjfeeRel || !cjfeeAbs || !orderType || !minsize) {
-          alert('Please add details')
-          return;
-        }
-        onStart(txFee,cjfeeAbs,cjfeeRel,orderType,minsize);
 
         
-        setOrdertype('')
-        setTxFee('')
-        setCjfeerel('')
-        setCjfeeabs('')
-        setMinsize('')
+
+        if(localStorage.getItem('makerStarted')===null || localStorage.getItem('makerStarted')==='false'){
+            console.log('b')
+            if (!cjfeeRel) {
+                alert('Please add details')
+                return;
+            }
+            onStart(0,0,cjfeeRel,'relorder',1000);
+            setCjfeerel('')
+            localStorage.setItem('makerStarted',true) 
+            setSubmitVal('Stop Maker Service')
+
+        }
+        else{
+            console.log('c')
+            onStop();
+            localStorage.setItem('makerStarted',false) 
+            setSubmitVal('Start Maker Service')
+
+        }
+
+        
         
     }
     return (
         <div>
             <h3>Maker Service</h3>
         <form method="POST" onSubmit={onSubmit}>
-        <label>
-        Transaction Fee
-        <input type="text" name="txfee"  value = {txFee}onChange={(e) => setTxFee(e.target.value)}/>
-        </label>
+        
+        
         <p></p>
-        <label>
-        Absolute Coinjoin fee
-        <input type="text" name="cjfee_a" value = {cjfeeAbs} onChange={(e) => setCjfeeabs(e.target.value)} />
-        </label>
-        <p></p>
+        {
+        localStorage.getItem('makerStarted')==='false' || localStorage.getItem('makerStarted')===null?
         <label>
         Relative Coinjoin Fee
         <input type="text" name="cjfee_r" value = {cjfeeRel} onChange={(e) => setCjfeerel(e.target.value)}/>
         </label>
+        :''
+        }
+        
         <p></p>
         
-        Order Type
-        <p></p>
-        Absolute Fee <input type = "radio" name="ordertype" value="absoffer" onChange={(e) => setOrdertype(e.target.value)}/>
-        Relative Fee<input type = "radio" name="ordertype" value="reloffer" onChange={(e) => setOrdertype(e.target.value)}/>
-       
-       
-        <p></p>
-        <label>
-        Minimum size
-        <input type="text" name="minsize" value = {minsize} onChange={(e) => setMinsize(e.target.value)}/>
-        </label>
-        <p></p>
-        <input type="submit" value="Start Maker Service" />
+        <input type="submit" value={localStorage.getItem('makerStarted')==='true'?'Stop Maker Service':'Start Maker Service'} />
 
     </form>
         </div>
