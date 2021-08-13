@@ -1,11 +1,14 @@
 import './App.css';
 import { Button } from './components/Button';
 import Wallet from './components/Wallet';
+import { BitcoinQR } from '@ibunker/bitcoin-react';
+import '@ibunker/bitcoin-react/dist/index.css';
 import {useState,useEffect} from 'react'
 import Wallets from './components/Wallets';
 import Payment from './components/Payment';
 import CreateWallet from './components/CreateWallet';
 import Maker from './components/Maker';
+import Recieve from './components/Recieve';
 import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
 function App() {
 
@@ -227,7 +230,13 @@ function App() {
       
     }
 
-  
+    const generateQR = async()=>{
+      <BitcoinQR
+      bitcoinAddress="bc1qr3ja0feke2d7zg8jr0sjhr4aw5ppezt7n954u7"
+      message="Donate bitcoin to support this project"
+      title="Donate bitcoin"
+      />
+    }
 
   return (
     <Router>
@@ -266,6 +275,12 @@ function App() {
         <Route path='/maker' exact render={(props) => (
             <>
              <Maker onStart = {startMakerService}></Maker>
+            </>
+          )}
+        />
+        <Route path='/recieve' exact render={(props) => (
+            <>
+             <Recieve onStart = {generateQR}></Recieve>
             </>
           )}
         />
