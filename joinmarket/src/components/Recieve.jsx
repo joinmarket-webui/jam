@@ -6,6 +6,7 @@ const Recieve = ({onRecieve}) => {
 
     const [address, setAddress] = useState('')
     const [temp_address, setTempAddress] = useState('')
+    const [amount, setAmount] = useState('')
 
     const onSubmit = (e) => {
         e.preventDefault()
@@ -37,12 +38,12 @@ const Recieve = ({onRecieve}) => {
         Mixdepth
         <input type="text" name="mixdepth" value = {address }onChange={(e) => setAddress(e.target.value)} />
         </label>
-        <p></p>
+        <p></p> */}
         <label>
         Amount
         <input type="text" name="amount_sats" value = {amount} onChange={(e) => setAmount(e.target.value)}/>
         </label>
-        <p></p> */}
+        <p></p>
         <input type="submit" value="Submit" />
 
 
@@ -52,7 +53,7 @@ const Recieve = ({onRecieve}) => {
     <BitcoinQR
     bitcoinAddress={temp_address}
     message = ""
-    amount =""
+    amount ={amount}
     time = ""
     exp = ""
     />):("")}
