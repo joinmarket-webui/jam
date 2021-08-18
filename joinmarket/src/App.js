@@ -9,12 +9,14 @@ import Payment from './components/Payment';
 import CreateWallet from './components/CreateWallet';
 import Maker from './components/Maker';
 import Recieve from './components/Recieve';
-import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
+import DisplayWallet from './components/DisplayWallet'
+import { BrowserRouter as Router, Link, Route ,Switch,Redirect} from 'react-router-dom';
+
 function App() {
 
   // const [currWallet,setCurrWallet] = useState({})
   const [walletList,setWalletList] = useState([])
-
+  
 
   const listWallets = async()=>{
     const res = await fetch('/wallet/all');
@@ -68,7 +70,9 @@ function App() {
               name:name
             }))
             alert("Succesfully unlocked!")
+            
           }
+          
         catch(e){
           alert("Something went wrong,please try again!")
         }
@@ -131,6 +135,16 @@ function App() {
       const wallet_name = name
       const balance = data[0].walletinfo.total_balance;
       const mix_depths = data[0].walletinfo.accounts;
+      const wallet_info={}
+      wallet_info['balance'] = balance;
+      wallet_info[mix_depths[0].account] = mix_depths[0].account_balance
+      wallet_info[mix_depths[1].account] = mix_depths[1].account_balance
+      wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
+      wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
+      wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
+      
+      return wallet_info;
+      
       window.alert("Wallet Name: " + wallet_name + "\n" + "Total balance: " + balance);
       window.alert(mix_depths[0].account + " " + mix_depths[0].account_balance + "\n" + mix_depths[1].account + " " + mix_depths[1].account_balance + "\n" + mix_depths[2].account + " " + mix_depths[2].account_balance + "\n" + mix_depths[3].account + " " + mix_depths[3].account_balance + "\n" + mix_depths[4].account + " " + mix_depths[4].account_balance);
       
@@ -147,7 +161,18 @@ function App() {
           },
           body: JSON.stringify({"password":password,"walletname":name,"wallettype":"sw"}),
         })
-        alert("Wallet created,please restart the backend")
+
+        const data = await res.json();
+
+        alert("Wallet created succesfully")
+        //figure out a safer way to show the seedphrase
+        alert(data[0].seedphrase)
+        const token = data[0].token;
+            localStorage.setItem('auth',JSON.stringify({
+              login:true,
+              token:token,
+              name:name
+            }))
         }
       catch(e){
         //but what if some other error where wallet not created
@@ -255,6 +280,7 @@ function App() {
       catch(e){
         alert("Error while stopping service!")
       }
+      
 
         
 
@@ -312,6 +338,12 @@ function App() {
         <Route path='/recieve' exact render={(props) => (
             <>
              <Recieve onStart = {generateQR}></Recieve>
+            </>
+          )}
+        />
+        <Route path='/display' exact render={(props) => (
+            <>
+             <DisplayWallet onDisplay = {DisplayWallet}></DisplayWallet>
             </>
           )}
         />
