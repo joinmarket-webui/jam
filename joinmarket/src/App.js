@@ -116,6 +116,29 @@ function App() {
       
     }
 
+    const listWalletInfo = async(name)=>{
+      let authData =JSON.parse(localStorage.getItem('auth'));
+      let token = "Bearer "+authData.token
+      const res = await fetch(`/wallet/${name}/display`,{
+        method:"GET",
+        headers:{
+          'Authorization':token
+        }
+      });
+      const data = await res.json();
+      const balance = data[0].walletinfo.total_balance;
+      const mix_depths = data[0].walletinfo.accounts;
+      const wallet_info={}
+      wallet_info['balance'] = balance;
+      wallet_info[mix_depths[0].account] = mix_depths[0].account_balance
+      wallet_info[mix_depths[1].account] = mix_depths[1].account_balance
+      wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
+      wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
+      wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
+      
+      return [wallet_info];
+    }
+
     const displayWallet = async(name)=>{
 
       let authData =JSON.parse(localStorage.getItem('auth'));
@@ -142,7 +165,7 @@ function App() {
       wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
       wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
       wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
-      
+      console.log(wallet_info)
       return wallet_info;
       
       window.alert("Wallet Name: " + wallet_name + "\n" + "Total balance: " + balance);
@@ -343,7 +366,7 @@ function App() {
         />
         <Route path='/display' exact render={(props) => (
             <>
-             <DisplayWallet onDisplay = {DisplayWallet}></DisplayWallet>
+             <DisplayWallet listWalletInfo = {listWalletInfo}></DisplayWallet>
             </>
           )}
         />
