@@ -358,7 +358,7 @@ function App() {
             </>
           )}
         />
-        <Route path='/recieve' exact render={(props) => (
+        <Route path='/receive' exact render={(props) => (
             <>
              <Recieve onStart = {generateQR}></Recieve>
             </>
@@ -366,7 +366,7 @@ function App() {
         />
         <Route path='/display' exact render={(props) => (
             <>
-             <DisplayWallet listWalletInfo = {listWalletInfo}></DisplayWallet>
+             <DisplayWallet listWalletInfo = {listWalletInfo} onSend = {makePayment}></DisplayWallet>
             </>
           )}
         />

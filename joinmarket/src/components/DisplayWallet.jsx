@@ -1,11 +1,12 @@
 import React from 'react'
 import {useState,useEffect} from 'react'
-const DisplayWallet = ({listWalletInfo}) => {
+import DisplayMixdepth from './DisplayMixdepth'
+const DisplayWallet = ({listWalletInfo,onSend}) => {
     const [wallet_info,setWalletInfo] = useState([])
     useEffect(()=>{
-        //   const name = JSON.parse(localStorage.getItem('auth').name)
+          const name = JSON.parse(localStorage.getItem('auth')).name
           const getWalletInfo = async()=>{
-          const wallet_info = await listWalletInfo('test');
+          const wallet_info = await listWalletInfo(name);
           console.log(wallet_info);
           setWalletInfo(wallet_info);
         }
@@ -17,9 +18,9 @@ const DisplayWallet = ({listWalletInfo}) => {
         <div>
             Wallet Details
             <p></p>
-            {wallet_info.map((wallet,index)=>{
-            return wallet[2]
-        })}
+            {wallet_info.map((walletInfo,index)=>{
+                return <DisplayMixdepth key={index} walletInfo = {walletInfo}></DisplayMixdepth>
+            })}
             
             
         </div>
