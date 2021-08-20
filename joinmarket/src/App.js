@@ -8,7 +8,7 @@ import Wallets from './components/Wallets';
 import Payment from './components/Payment';
 import CreateWallet from './components/CreateWallet';
 import Maker from './components/Maker';
-import Recieve from './components/Recieve';
+import Receive from './components/Receive';
 import DisplayWallet from './components/DisplayWallet'
 import { BrowserRouter as Router, Link, Route ,Switch,Redirect} from 'react-router-dom';
 
@@ -368,7 +368,7 @@ function App() {
         />
         <Route path='/receive' exact render={(props) => (
             <>
-             <Recieve onStart = {generateQR}></Recieve>
+             <Receive onStart = {generateQR}></Receive>
             </>
           )}
         />
