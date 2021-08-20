@@ -32,7 +32,7 @@ const Payment = ({onPayment}) => {
         </label>
         <p></p>
         <label>
-        Mixdepth
+        Account
         <input type="text" name="mixdepth" value = {mixdepth} onChange={(e) => setMixdepth(e.target.value)} />
         </label>
         <p></p>
