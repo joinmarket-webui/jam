@@ -348,7 +348,7 @@ function App() {
 
         <Route path='/payment' exact render={(props) => (
             <>
-             <Payment onPayment = {makePayment}></Payment>
+             <Payment onPayment = {makePayment} ></Payment>
             </>
           )}
         />

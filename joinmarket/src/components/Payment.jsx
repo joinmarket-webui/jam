@@ -1,10 +1,11 @@
 import React from 'react'
 import { useState } from 'react'
+import { useLocation } from "react-router-dom"
 const Payment = ({onPayment}) => {
-
+    const location = useLocation()
     const [destination, setDestination] = useState('')
     const [amount, setAmount] = useState('')
-    const [mixdepth, setMixdepth] = useState('')
+    const [mixdepth, setMixdepth] = useState(location.state.account_no)
 
     const onSubmit = (e) => {
         e.preventDefault()
