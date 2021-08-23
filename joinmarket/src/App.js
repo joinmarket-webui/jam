@@ -69,6 +69,7 @@ function App() {
               token:token,
               name:name
             }))
+            
             alert("Succesfully unlocked!")
             
           }
@@ -326,6 +327,26 @@ function App() {
 
     }
 
+    const getTransactions = async()=>{
+      try{
+        let authData =JSON.parse(localStorage.getItem('auth'));
+      
+        if(!authData|| authData.login===false || authData.name===''){
+          return;
+        }
+
+        const res = await fetch('wallet/transactions');
+        const data = await res.json();
+        return data[0].transactions;
+
+
+      }
+      catch(e){
+        
+        return;
+      }
+    }
+
   return (
     <Router>
     <div className="App">
@@ -374,7 +395,7 @@ function App() {
         />
         <Route path='/display' exact render={(props) => (
             <>
-             <DisplayWallet listWalletInfo = {listWalletInfo} onSend = {makePayment}></DisplayWallet>
+             <DisplayWallet listWalletInfo = {listWalletInfo} onSend = {makePayment} listTransactions={getTransactions}></DisplayWallet>
             </>
           )}
         />
