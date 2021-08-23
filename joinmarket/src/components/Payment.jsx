@@ -1,10 +1,11 @@
 import React from 'react'
 import { useState } from 'react'
+import { useLocation } from "react-router-dom"
 const Payment = ({onPayment}) => {
-
+    const location = useLocation()
     const [destination, setDestination] = useState('')
     const [amount, setAmount] = useState('')
-    const [mixdepth, setMixdepth] = useState('')
+    const [mixdepth, setMixdepth] = useState(location.state.account_no)
 
     const onSubmit = (e) => {
         e.preventDefault()
@@ -31,7 +32,7 @@ const Payment = ({onPayment}) => {
         </label>
         <p></p>
         <label>
-        Mixdepth
+        Account
         <input type="text" name="mixdepth" value = {mixdepth} onChange={(e) => setMixdepth(e.target.value)} />
         </label>
         <p></p>

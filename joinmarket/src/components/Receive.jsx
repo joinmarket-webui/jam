@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { BitcoinQR } from '@ibunker/bitcoin-react';
 import '@ibunker/bitcoin-react/dist/index.css';
-const Recieve = ({onRecieve}) => {
+const Receive = ({onReceive}) => {
 
     const [address, setAddress] = useState('')
     const [temp_address, setTempAddress] = useState('')
@@ -27,7 +27,7 @@ const Recieve = ({onRecieve}) => {
 
     return (
         <div>
-        <h3>Recieve funds</h3>
+        <h3>Receive funds</h3>
     <form method="POST" onSubmit={onSubmit}>
         <label>
         Address
@@ -64,4 +64,4 @@ const Recieve = ({onRecieve}) => {
     )
 }
 
-export default Recieve
+export default Receive
