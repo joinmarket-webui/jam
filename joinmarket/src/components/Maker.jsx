@@ -27,7 +27,7 @@ const Maker = ({onStart,onStop}) => {
                 alert('Please add details')
                 return;
             }
-            onStart(0,0,cjfeeRel,'relorder',1000);
+            onStart(0,0,cjfeeRel,'sw0reloffer',1000);
             setCjfeerel('')
             localStorage.setItem('makerStarted',true) 
             setSubmitVal('Stop Maker Service')
