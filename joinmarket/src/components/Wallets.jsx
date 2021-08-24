@@ -5,8 +5,8 @@ const Wallets = ({walletList,onUnlock,onLock,onDisplay}) => {
     
     return (
         <>
-        <Link to="/payment">Make payment</Link>
-        <p></p>
+        
+        
         <Link to="/create">Create Wallet</Link>
         <p></p>
         <Link to="/maker">Maker Service</Link>
