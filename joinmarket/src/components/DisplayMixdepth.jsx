@@ -9,9 +9,9 @@ const DisplayMixdepth = ({walletInfo}) => {
             <p></p>
             Account 0: {walletInfo[0]} 
             
-            <Link to={{pathname:"/payment", state: { account_no: '0' }}}>Send Funds </Link>
+            <span> <Link to={{pathname:"/payment", state: { account_no: '0' }}}>Send Funds </Link> </span>
               
-            <Link to="/receive">Receive Funds</Link>
+            <span><Link to="/receive">Receive Funds</Link></span>
             <p></p>
             <p></p>
             Account 1: {walletInfo[1]}

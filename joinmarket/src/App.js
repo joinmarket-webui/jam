@@ -337,7 +337,7 @@ function App() {
 
         const res = await fetch('wallet/transactions');
         const data = await res.json();
-        return data[0].transactions;
+        return JSON.parse(data[0].transactions);
 
 
       }
