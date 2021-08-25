@@ -14,7 +14,7 @@ const DisplayTransactions = ({transactionID,transaction}) => {
             <br></br>
             <span>Confirmations: {transaction.confirmations}</span>
             <br></br>
-            <span>MIxdepth: {transaction.mixdepth}</span>
+            <span>Mixdepth: {transaction.mixdepth}</span>
             <p></p>
         </div>
     )

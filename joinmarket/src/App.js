@@ -324,6 +324,8 @@ function App() {
       const res = await fetch(`address/new/${mixdepth}`);
       const data = await res.json();
       console.log(data)
+      window.prompt("jeoj")
+      return data
 
     }
 

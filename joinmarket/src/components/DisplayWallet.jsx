@@ -34,7 +34,7 @@ const DisplayWallet = ({listWalletInfo,onSend,listTransactions}) => {
                 return <DisplayMixdepth key={index} walletInfo = {walletInfo}></DisplayMixdepth>
             })}
             <p></p>
-            <Button onClick={()=>{setShowTransactions(!showTransactions)}}>{showTransactions?"Hide Transactions":"Show Transactions"}</Button>
+            <Button onClick={()=>{setShowTransactions(!showTransactions)}}>{showTransactions?"Hide UTXOs":"Show UTXOs"}</Button>
             <p></p>
 
             {

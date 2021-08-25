@@ -1,22 +1,49 @@
 import React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BitcoinQR } from '@ibunker/bitcoin-react';
 import '@ibunker/bitcoin-react/dist/index.css';
-const Receive = ({onReceive}) => {
+import { useLocation } from "react-router-dom"
 
-    const [address, setAddress] = useState('')
+const Receive = ({onReceive}) => {
+    const location = useLocation()
+    const [new_address, setNewAddress] = useState('')
+
+    const getAddress = async(mixdepth)=>{
+        //update request with token if backend updated
+        const res = await fetch(`address/new/${mixdepth}`);
+        const data = await res.json();
+        console.log(data)
+        return (data[0].address);
+  
+    }
+
+    useEffect(()=>{
+
+        const getNewAddress = async(account) => {
+            const temp1 = parseInt(account,10)
+            const temp = await getAddress(temp1)
+            //window.alert(temp1)
+            setNewAddress(temp)
+            return
+        }
+    
+        getNewAddress(location.state.account_no);
+      },[])
+
+    //getNewAddress('0')
+    //const [address, setAddress] = useState('')
     const [temp_address, setTempAddress] = useState('')
     const [amount, setAmount] = useState('')
 
     const onSubmit = (e) => {
         e.preventDefault()
         
-        if (!address) {
+        if (!new_address) {
           alert('Please add the address')
           return
         }
 
-        setTempAddress(address)
+        setTempAddress(new_address)
         //maybe add await here
         // let wallet =JSON.parse(localStorage.getItem('auth')).name;
         // onRecieve(wallet,mixdepth,amount,message)
@@ -31,7 +58,7 @@ const Receive = ({onReceive}) => {
     <form method="POST" onSubmit={onSubmit}>
         <label>
         Address
-        <input type="text" name="address"  value = {address }onChange={(e) => setAddress(e.target.value)}/>
+        <input type="text" name="address"  value = {new_address } style = {{width: "415px"}} readOnly = {true} onChange={(e) => setNewAddress(e.target.value)}/>
         </label>
         <p></p>
         {/* <label>
