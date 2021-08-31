@@ -10,6 +10,9 @@ import CreateWallet from './components/CreateWallet';
 import Maker from './components/Maker';
 import Receive from './components/Receive';
 import DisplayWallet from './components/DisplayWallet'
+import * as rb from 'react-bootstrap';
+import github_logo from './github.svg'
+import twitter_logo from './twitter.svg'
 import { BrowserRouter as Router, Link, Route ,Switch,Redirect} from 'react-router-dom';
 
 function App() {
@@ -342,6 +345,40 @@ function App() {
   return (
     <Router>
     <div className="App">
+
+    <rb.Navbar sticky="top" collapseOnSelect expand="lg" bg="dark" variant="dark">
+    
+  <rb.Container>
+  <rb.Navbar.Brand href='/'>Joinmarket</rb.Navbar.Brand>
+  <rb.Navbar.Toggle aria-controls="responsive-rb.Navbar-rb.Nav" />
+  <rb.Navbar.Collapse id="responsive-rb.Navbar-rb.Nav">
+    <rb.Nav className="me-auto">
+      <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features">Features</rb.Nav.Link>
+      <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#joinmarket-clientserver">About</rb.Nav.Link>
+    </rb.Nav>
+    <rb.Nav>
+    <rb.Navbar.Brand href="https://github.com/JoinMarket-Org/joinmarket-clientserver">
+      <img
+        src={github_logo}
+        width="50"
+        height="50"
+        className="github"
+        alt="github logo"
+      />
+    </rb.Navbar.Brand>
+    <rb.Navbar.Brand href="https://twitter.com/joinmarket">
+      <img
+        src={twitter_logo}
+        width="50"
+        height="50"
+        className="twitter"
+        alt="twitter logo"
+      />
+    </rb.Navbar.Brand>
+    </rb.Nav>
+  </rb.Navbar.Collapse>
+  </rb.Container>
+</rb.Navbar>
       
       <p></p>
       <Switch>
