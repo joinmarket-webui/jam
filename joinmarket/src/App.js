@@ -319,16 +319,6 @@ function App() {
       />
     }
 
-    const getAddress = async(mixdepth)=>{
-      //update request with token if backend updated
-      const res = await fetch(`address/new/${mixdepth}`);
-      const data = await res.json();
-      console.log(data)
-      window.prompt("jeoj")
-      return data
-
-    }
-
     const getTransactions = async()=>{
       try{
         let authData =JSON.parse(localStorage.getItem('auth'));
