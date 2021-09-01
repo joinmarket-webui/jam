@@ -8,14 +8,13 @@ const Wallet = ({name,onUnlock,onLock,onDisplay}) => {
         <div>
             <br></br>
             <rb.Card style={{ width: '18rem' }} className = "wallet_cards">
-  <rb.Card.Body>
-    <rb.Card.Title>{name}</rb.Card.Title>
-    <rb.Button className="btn btn-primary" onClick={()=>onUnlock(name)}>Unlock</rb.Button>{' '}
-    <rb.Button href="/display">Open</rb.Button>{' '}
-    <rb.Button onClick = {()=>onLock(name)}>Lock</rb.Button>
-    
-  </rb.Card.Body>
-</rb.Card>
+              <rb.Card.Body>
+                <rb.Card.Title>{name}</rb.Card.Title>
+                <rb.Button className="btn btn-primary" onClick={()=>onUnlock(name)}>Unlock</rb.Button>{' '}
+                <rb.Button href="/display">Open</rb.Button>{' '}
+                <rb.Button onClick = {()=>onLock(name)}>Lock</rb.Button>
+              </rb.Card.Body>
+            </rb.Card>
             {/* <h3>{name}</h3>
             <Button onClick={()=>onUnlock(name)}>Unlock</Button>
             <Button onClick = {()=>onDisplay(name)}>Display</Button>

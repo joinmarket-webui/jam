@@ -140,7 +140,7 @@ function App() {
       wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
       wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
       
-      return [wallet_info];
+      return [data[0].walletinfo];
     }
 
     const displayWallet = async(name)=>{
@@ -353,6 +353,7 @@ function App() {
   <rb.Navbar.Toggle aria-controls="responsive-rb.Navbar-rb.Nav" />
   <rb.Navbar.Collapse id="responsive-rb.Navbar-rb.Nav">
     <rb.Nav className="me-auto">
+    <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs">Docs</rb.Nav.Link>
       <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features">Features</rb.Nav.Link>
       <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#joinmarket-clientserver">About</rb.Nav.Link>
     </rb.Nav>
