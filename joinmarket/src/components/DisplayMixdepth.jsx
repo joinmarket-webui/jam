@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button } from './Button'
-import './DisplayMixdepth.css'
+import './displayMixdepth.css'
 import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
 import * as rb from 'react-bootstrap'
 
@@ -20,7 +20,7 @@ const DisplayMixdepth = ({walletInfo}) => {
 
         
         <div>
-            Total Balance: {walletInfo.total_balance}
+            Total Balance: {walletInfo.total_balance} BTC
             <p></p>
             <rb.Button href="/maker">Maker Service</rb.Button>
             <p></p>
@@ -30,24 +30,54 @@ const DisplayMixdepth = ({walletInfo}) => {
                     
                     <rb.Accordion>
                         <rb.Accordion.Item eventKey={index}>
-                            <rb.Accordion.Header>Account {accounts[index].account} Balance: {accounts[index].account_balance} {' '}
+                            <rb.Accordion.Header className = "head"> 
                             <div className = "links">
-                            <Link to={{pathname:"/payment", state: { account_no: accounts[index].account }}}>Send Funds </Link>{' '}
-                            <Link to={{pathname:"/receive", state: { account_no: accounts[index].account }}}>Receive Funds</Link>
+
+                            <rb.Container>
+                            <rb.Row>
+                            <rb.Col>
+                            Account {accounts[index].account}
+
+                            </rb.Col>
+                            <rb.Col>
+                            Balance: {accounts[index].account_balance} BTC
+
+                            </rb.Col>
+                            <rb.Col>
+
+                            <Link to={{pathname:"/payment", state: { account_no: accounts[index].account }}} className="btn btn-primary">Send  </Link>{' '}
+                            </rb.Col>
+                            <rb.Col>
+                            <Link to={{pathname:"/receive", state: { account_no: accounts[index].account }}} className="btn btn-primary">Receive </Link>
+                            </rb.Col>
+                            </rb.Row>
+                            </rb.Container>
+                            
+                            
                             </div>
                             </rb.Accordion.Header>
                             <rb.Accordion.Body>
                             <rb.Accordion>
                                 <rb.Accordion.Item eventKey="0">
-                                    <rb.Accordion.Header>External Addresses Balance: {accounts[index].branches[0].balance}</rb.Accordion.Header>
+                                    
+                                    <rb.Accordion.Header>External Addresses Balance: {accounts[index].branches[0].balance} BTC </rb.Accordion.Header>
+                                    <div className = "xpub">
+                                    Extended Pubkey : {accounts[index].branches[0].branch.split("\t").pop()}
+                                    </div>
                                     <rb.Accordion.Body>
                                         {accounts[index].branches[0].entries.map((user, i) => (
                                         <div key={i}>
                                         <rb.Accordion>
                                             <rb.Accordion.Item eventKey="0">
-                                                <rb.Accordion.Header>{accounts[index].branches[0].entries[i].address} {' '} {accounts[index].branches[0].entries[i].labels} </rb.Accordion.Header>
+                                                <div className = "address_label">
+                                                <b>{accounts[index].branches[0].entries[i].labels}</b>
+                                                </div>
+                                               
+                                                <rb.Accordion.Header>{accounts[index].branches[0].entries[i].address} {'   '}  </rb.Accordion.Header>
                                                 <rb.Accordion.Body>
-                                                    path: {accounts[index].branches[0].entries[i].hd_path} amount: {accounts[index].branches[0].entries[i].amount}
+                                                    <div className = "branch-body">
+                                                        amount: {accounts[index].branches[0].entries[i].amount}
+                                                    </div>
                                                 </rb.Accordion.Body>
                                             </rb.Accordion.Item>
                                         </rb.Accordion>
@@ -56,7 +86,7 @@ const DisplayMixdepth = ({walletInfo}) => {
                                     </rb.Accordion.Body>
                                 </rb.Accordion.Item>  
                                 <rb.Accordion.Item eventKey="1">
-                                    <rb.Accordion.Header>Internal Addresses Balance: {accounts[index].branches[1].balance}</rb.Accordion.Header>
+                                    <rb.Accordion.Header>Internal Addresses Balance: {accounts[index].branches[1].balance} BTC</rb.Accordion.Header>
                                         <rb.Accordion.Body>
                                             {accounts[index].branches[1].entries.map((user, j) => (
                                             <div key={j}>
@@ -64,7 +94,9 @@ const DisplayMixdepth = ({walletInfo}) => {
                                                     <rb.Accordion.Item eventKey="0">
                                                         <rb.Accordion.Header>{accounts[index].branches[0].entries[j].address} {' '} {accounts[index].branches[0].entries[j].labels} </rb.Accordion.Header>
                                                         <rb.Accordion.Body>
-                                                            path: {accounts[index].branches[0].entries[j].hd_path} amount: {accounts[index].branches[0].entries[j].amount}
+                                                            <div className = "branch_body">
+                                                                amount: {accounts[index].branches[0].entries[j].amount}
+                                                            </div>
                                                         </rb.Accordion.Body>
                                                     </rb.Accordion.Item>
                                                 </rb.Accordion>
@@ -78,38 +110,6 @@ const DisplayMixdepth = ({walletInfo}) => {
                 </rb.Accordion>
                 </div>
             ))}
-            {/* Account 0: {walletInfo[0]} 
-            
-            <span> <Link to={{pathname:"/payment", state: { account_no: '0' }}}>Send Funds </Link> </span>
-              
-            <span><Link to={{pathname:"/receive", state: { account_no: '0' }}}>Receive Funds</Link></span>
-            <p></p>
-            <p></p>
-            Account 1: {walletInfo[1]}
-            <Link to={{pathname:"/payment", state: { account_no: '1' }}}>Send Funds </Link>
-              
-            <Link to={{pathname:"/receive", state: { account_no: '1' }}}>Receive Funds</Link>
-            <p></p>
-            <p></p>
-            Account 2: {walletInfo[2]}
-            <Link to={{pathname:"/payment", state: { account_no: '2' }}}>Send Funds </Link>
-              
-              <Link to={{pathname:"/receive", state: { account_no: '2' }}}>Receive Funds</Link>
-            <p></p>
-            <p></p>
-            Account 3: {walletInfo[3]}
-            <Link to={{pathname:"/payment", state: { account_no: '3' }}}>Send Funds </Link>
-              
-            <Link to={{pathname:"/receive", state: { account_no: '3' }}}>Receive Funds</Link>
-
-            <p></p>
-            <p></p>
-            Account 4: {walletInfo[4]}
-            <Link to={{pathname:"/payment", state: { account_no: '4' }}}>Send Funds </Link>
-              
-            <Link to={{pathname:"/receive", state: { account_no: '4' }}}>Receive Funds</Link>
-            <p></p>
-            <p></p> */}
         </div>
     )
 }

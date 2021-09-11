@@ -7,6 +7,7 @@ import {useState,useEffect} from 'react'
 import Wallets from './components/Wallets';
 import Payment from './components/Payment';
 import CreateWallet from './components/CreateWallet';
+import Homepage from './components/homepage';
 import Maker from './components/Maker';
 import Receive from './components/Receive';
 import DisplayWallet from './components/DisplayWallet'
@@ -14,7 +15,7 @@ import * as rb from 'react-bootstrap';
 import github_logo from './github.svg'
 import twitter_logo from './twitter.svg'
 import { BrowserRouter as Router, Link, Route ,Switch,Redirect} from 'react-router-dom';
-
+import useInterval from './components/utils'
 function App() {
 
   // const [currWallet,setCurrWallet] = useState({})
@@ -28,20 +29,54 @@ function App() {
     return walletList;
   }
 
+  useInterval(() => {
+    // put your interval code here.
+    const sessionClear = async()=>{
+      
+      try{
+        
+        const res = await fetch('/session',{
+          method:"GET",
+          
+        });
+        const data = await res.json();
+        if(data[0].session===false){
+          console.log("no wallet in backend")
+          sessionStorage.clear();
+          return;
+        }
+        console.log("backend alive and wallet loaded")
+        
+      }
+
+      catch(e){
+        console.log("test")
+        alert("Lost connection to backend! Please restart the backend server.");
+        sessionStorage.clear();
+      }
+      
+    }
+    sessionClear();
+    
+    
+  }, 1000 * 5);
+
   useEffect(()=>{
+    
     const getWallets = async()=>{
       const wallets = await listWallets();
       console.log(wallets);
       setWalletList(wallets);
     }
-
+    
     getWallets();
+    
   },[])
  
 
   const unlockWallet = async (name)=>{
   
-    let authData =JSON.parse(localStorage.getItem('auth'));
+    let authData =JSON.parse(sessionStorage.getItem('auth'));
     console.log(authData)
     //if unlcoking same wallet
     if(authData && authData.login===true && authData.name===name){
@@ -67,7 +102,7 @@ function App() {
             const data = await res.json();
             console.log(data);
             const token = data[0].token;
-            localStorage.setItem('auth',JSON.stringify({
+            sessionStorage.setItem('auth',JSON.stringify({
               login:true,
               token:token,
               name:name
@@ -90,8 +125,8 @@ function App() {
     }
 
     const lockWallet = async(name)=>{
-      let authData =JSON.parse(localStorage.getItem('auth'));
-      if(authData.login===false || authData.name!==name){
+      let authData =JSON.parse(sessionStorage.getItem('auth'));
+      if(!authData || authData.login===false || authData.name!==name){
         alert("Please unlock "+name+" first")
         return;
       }
@@ -104,7 +139,7 @@ function App() {
           'Authorization':token
         }
       });
-      localStorage.setItem('auth',JSON.stringify({
+      sessionStorage.setItem('auth',JSON.stringify({
         login:false,
         token:'',
         name:''
@@ -121,7 +156,7 @@ function App() {
     }
 
     const listWalletInfo = async(name)=>{
-      let authData =JSON.parse(localStorage.getItem('auth'));
+      let authData =JSON.parse(sessionStorage.getItem('auth'));
       let token = "Bearer "+authData.token
       const res = await fetch(`/wallet/${name}/display`,{
         method:"GET",
@@ -145,7 +180,7 @@ function App() {
 
     const displayWallet = async(name)=>{
 
-      let authData =JSON.parse(localStorage.getItem('auth'));
+      let authData =JSON.parse(sessionStorage.getItem('auth'));
       if(authData.login===false || authData.name!==name){
         alert("Please unlock "+name+" first")
         return;
@@ -178,7 +213,7 @@ function App() {
     }
 
     const createWallet = async(name,password)=>{
-      let authData =JSON.parse(localStorage.getItem('auth'));
+      let authData =JSON.parse(sessionStorage.getItem('auth'));
       if(authData===null || authData.login===false){
         try{
           const res = await fetch(`/wallet/create`,{
@@ -195,7 +230,7 @@ function App() {
         //figure out a safer way to show the seedphrase
         alert(data[0].seedphrase)
         const token = data[0].token;
-            localStorage.setItem('auth',JSON.stringify({
+            sessionStorage.setItem('auth',JSON.stringify({
               login:true,
               token:token,
               name:name
@@ -214,7 +249,7 @@ function App() {
 
 
     const makePayment = async(name,mixdepth,amountSats,destination)=>{
-      let authData =JSON.parse(localStorage.getItem('auth'));
+      let authData =JSON.parse(sessionStorage.getItem('auth'));
       if(authData!=null && authData.login===true){
         try{
           let token = "Bearer "+authData.token
@@ -247,8 +282,46 @@ function App() {
       }
     }
 
+    //route for frontend
+
+    const doCoinjoin = async(mixdepth,amount,counterparties,destination)=>{
+      try{
+        console.log("hellooo")
+        let authData = JSON.parse(sessionStorage.getItem('auth'));
+
+        if(!authData|| authData.login===false || authData.name===''){
+          return;
+        }
+
+        let token = "Bearer "+authData.token
+          const res = await fetch(`/wallet/taker/coinjoin`,{
+            method:'POST',
+            headers: {
+              'Content-type': 'application/json',
+               'Authorization':token
+            },
+            body: JSON.stringify({
+              
+              "mixdepth": mixdepth,
+              "amount": amount,
+              "counterparties": counterparties,
+              "destination":destination
+              }
+              
+              ),
+          })
+          const data = await res.json();
+          console.log(data);
+          alert("Coinjoin in Progress!")
+
+      }
+      catch(e){
+        return;
+      }
+    }
+
     const startMakerService = async(txfee,cjfee_a,cjfee_r,ordertype,minsize)=>{
-      let authData =JSON.parse(localStorage.getItem('auth'));
+      let authData =JSON.parse(sessionStorage.getItem('auth'));
     
       if(!authData|| authData.login===false || authData.name===''){
         alert("Please unlock a wallet first")
@@ -285,7 +358,7 @@ function App() {
     }
 
     const stopMakerService= async()=>{
-      let authData =JSON.parse(localStorage.getItem('auth'));
+      let authData =JSON.parse(sessionStorage.getItem('auth'));
       if(authData===null ||authData.login===false || authData.name===''){
         alert('Wallet needs to be unlocked')
         return;
@@ -314,23 +387,22 @@ function App() {
       
     }
 
-    const generateQR = async()=>{
-      <BitcoinQR
-      bitcoinAddress="bc1qr3ja0feke2d7zg8jr0sjhr4aw5ppezt7n954u7"
-      message="Donate bitcoin to support this project"
-      title="Donate bitcoin"
-      />
-    }
+    
 
-    const getTransactions = async()=>{
+    const getUTXOs = async()=>{
       try{
-        let authData =JSON.parse(localStorage.getItem('auth'));
-      
+        let authData =JSON.parse(sessionStorage.getItem('auth'));
+        let token = "Bearer "+authData.token
         if(!authData|| authData.login===false || authData.name===''){
           return;
         }
 
-        const res = await fetch('wallet/transactions');
+        const res = await fetch('wallet/utxos',{
+          method:"GET",
+          headers:{
+            'Authorization':token
+          },
+        });
         const data = await res.json();
         return JSON.parse(data[0].transactions);
 
@@ -342,6 +414,8 @@ function App() {
       }
     }
 
+
+    
   return (
     <Router>
     <div className="App">
@@ -384,10 +458,18 @@ function App() {
       <p></p>
       <Switch>
           
-        
-      
       <Route
           path='/'
+          exact
+          render={(props) => (
+            <>
+             <Homepage></Homepage>
+            </>
+          )}
+        />
+      
+      <Route
+          path='/showWallets'
           exact
           render={(props) => (
             <>
@@ -399,7 +481,7 @@ function App() {
 
         <Route path='/payment' exact render={(props) => (
             <>
-             <Payment onPayment = {makePayment} ></Payment>
+             <Payment onPayment = {makePayment} onCoinjoin = {doCoinjoin}></Payment>
             </>
           )}
         />
@@ -419,13 +501,13 @@ function App() {
         />
         <Route path='/receive' exact render={(props) => (
             <>
-             <Receive onStart = {generateQR}></Receive>
+             <Receive></Receive>
             </>
           )}
         />
         <Route path='/display' exact render={(props) => (
             <>
-             <DisplayWallet listWalletInfo = {listWalletInfo} onSend = {makePayment} listTransactions={getTransactions}></DisplayWallet>
+             <DisplayWallet listWalletInfo = {listWalletInfo} onSend = {makePayment} listUTXOs={getUTXOs}></DisplayWallet>
             </>
           )}
         />

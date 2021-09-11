@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from './Button'
 import {Link} from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import './Wallet.css'
+import './wallet.css'
 const Wallet = ({name,onUnlock,onLock,onDisplay}) => {
     return (
         <div>

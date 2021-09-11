@@ -2,13 +2,13 @@ import React from 'react'
 import {useState,useEffect} from 'react'
 import { Button } from './Button'
 import DisplayMixdepth from './DisplayMixdepth'
-import DisplayTransactions from './DisplayTransactions'
-const DisplayWallet = ({listWalletInfo,onSend,listTransactions}) => {
+import DisplayUTXOs from './DisplayUTXOs'
+const DisplayWallet = ({listWalletInfo,onSend,listUTXOs}) => {
     const [wallet_info,setWalletInfo] = useState([])
-    const [transactionHistory,setTransactionHistory] = useState({})
-    const [showTransactions,setShowTransactions] = useState(false);
+    const [UTXOHistory,setUTXOHistory] = useState({})
+    const [showUTXO,setShowUTXO] = useState(false);
     useEffect(()=>{
-          const name = JSON.parse(localStorage.getItem('auth')).name;
+          const name = JSON.parse(sessionStorage.getItem('auth')).name;
 
           const getWalletInfo = async()=>{
           const wallet_info = await listWalletInfo(name);
@@ -16,14 +16,14 @@ const DisplayWallet = ({listWalletInfo,onSend,listTransactions}) => {
           setWalletInfo(wallet_info);
         }
 
-        const getTransactions = async()=>{
-            const transactions = await listTransactions();
-            setTransactionHistory(transactions)
-            console.log(transactions)
+        const getUTXOs = async()=>{
+            const utxos = await listUTXOs();
+            setUTXOHistory(utxos)
+            console.log(utxos)
         }
     
         getWalletInfo();
-        getTransactions();
+        getUTXOs();
       },[])
     
     return (
@@ -34,15 +34,15 @@ const DisplayWallet = ({listWalletInfo,onSend,listTransactions}) => {
                 return <DisplayMixdepth key={index} walletInfo = {walletInfo}></DisplayMixdepth>
             })}
             <p></p>
-            <Button onClick={()=>{setShowTransactions(!showTransactions)}}>{showTransactions?"Hide UTXOs":"Show UTXOs"}</Button>
+            <Button onClick={()=>{setShowUTXO(!showUTXO)}}>{showUTXO?"Hide UTXOs":"Show UTXOs"}</Button>
             <p></p>
 
             {
-                showTransactions? 
+                showUTXO? 
                 
                     
-                    Object.entries(transactionHistory).map(([key, val])=>
-                    <DisplayTransactions key={key} transactionID={key} transaction={val}> </DisplayTransactions>
+                    Object.entries(UTXOHistory).map(([key, val])=>
+                    <DisplayUTXOs key={key} utxoID={key} utxo={val}> </DisplayUTXOs>
                     // <h5 key={key}> {key}:{val.address}</h5>
                 )
 
