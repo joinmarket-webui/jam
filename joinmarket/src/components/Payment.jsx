@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useLocation } from "react-router-dom"
 import './payment.css'
 import * as rb from 'react-bootstrap'
+
 const Payment = ({onPayment,onCoinjoin}) => {
     const location = useLocation()
     const [destination, setDestination] = useState('')
@@ -52,7 +53,7 @@ const Payment = ({onPayment,onCoinjoin}) => {
     return (
         <div>
 
-<br></br>
+        <br></br>
             <div className = "heading">
             Send Payment
             </div>
@@ -127,48 +128,6 @@ const Payment = ({onPayment,onCoinjoin}) => {
             </rb.Container>
             </rb.Container>
             </form>
-
-            
-        {/* <h3>Make Payment</h3>
-    <form method="POST" onSubmit={onSubmit}>
-        <label>
-        Receiver address:
-        <input type="text" name="destination"  value = {destination }onChange={(e) => setDestination(e.target.value)}/>
-        </label>
-        <p></p>
-        <label>
-        Account
-        <input type="text" name="mixdepth" value = {mixdepth} onChange={(e) => setMixdepth(e.target.value)} readOnly={true}/>
-        </label>
-        <p></p>
-        <label>
-        Amount
-        <input type="text" name="amount_sats" value = {amount} onChange={(e) => setAmount(e.target.value)}/>
-        </label>
-        <p></p>
-        Do you want to do a coinjoin?
-        <p></p>
-        Yes<input type="radio" name="coinjoin" onChange={(e) => setisCoinjoin(true)} />
-        <p></p>
-        No<input type="radio" name="coinjoin"  onChange={(e) => setisCoinjoin(false)}/>
-        <p></p>
-
-
-        {
-            isCoinjoin? 
-            <div>
-                Counterparties
-                <input type="text" name="counterparties" value = {counterparties} onChange={(e)=>setcounterparties(e.target.value)}/>
-            </div>
-             :
-             
-              ""
-        }
-        <p></p>
-
-        <input type="submit" value="Submit" />
-        
-    </form> */}
         </div>
     )
 }

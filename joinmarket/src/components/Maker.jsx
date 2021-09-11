@@ -2,8 +2,6 @@ import React from 'react'
 import { useState } from 'react'
 const Maker = ({onStart,onStop}) => {
     
-      
-
     const [txFee,setTxFee] = useState('')
     const [cjfeeAbs,setCjfeeabs] = useState('')
     const [cjfeeRel,setCjfeerel] = useState('')

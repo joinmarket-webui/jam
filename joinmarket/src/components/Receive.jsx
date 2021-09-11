@@ -40,8 +40,6 @@ const Receive = ({onReceive}) => {
         getNewAddress(location.state.account_no);
       },[])
 
-    //getNewAddress('0')
-    //const [address, setAddress] = useState('')
     const [temp_address, setTempAddress] = useState('')
     const [amount, setAmount] = useState('')
 
@@ -53,19 +51,14 @@ const Receive = ({onReceive}) => {
           return
         }
 
-        setTempAddress(new_address)
-        //maybe add await here
-        // let wallet =JSON.parse(sessionStorage.getItem('auth')).name;
-        // onRecieve(wallet,mixdepth,amount,message)
-    
-        
+        setTempAddress(new_address)       
 
       }
 
     return (
         <div>
 
-<br></br>
+        <br></br>
             <div className = "heading">
             Recieve Funds
             </div>
@@ -98,48 +91,19 @@ const Receive = ({onReceive}) => {
                 </rb.Row>
 
                 {temp_address.length > 0? (
-    <BitcoinQR
-    bitcoinAddress={temp_address}
-    message = ""
-    amount ={amount}
-    time = ""
-    exp = ""
-    />):("")}
+                <BitcoinQR
+                    bitcoinAddress={temp_address}
+                    message = ""
+                    amount ={amount}
+                    time = ""
+                    exp = ""
+                />):("")}
 
             </rb.Container>
             </rb.Container>
 
 
             </form>
-
-            
-
-        {/* <h3>Receive funds</h3>
-    <form method="POST" onSubmit={onSubmit}>
-        <label>
-        Address
-        <input type="text" name="address"  value = {new_address } style = {{width: "415px"}} readOnly = {true} onChange={(e) => setNewAddress(e.target.value)}/>
-        </label>
-        <p></p> */}
-        {/* <label>
-        Mixdepth
-        <input type="text" name="mixdepth" value = {address }onChange={(e) => setAddress(e.target.value)} />
-        </label>
-        <p></p> 
-        {/* <label>
-        Amount
-        <input type="text" name="amount_sats" value = {amount} onChange={(e) => setAmount(e.target.value)}/>
-        </label>
-        <p></p>
-        <input type="submit" value="Submit" />
-
-
-    </form> */}
-
-    
-
-
-
         </div>
     )
 }

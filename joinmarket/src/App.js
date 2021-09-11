@@ -1,7 +1,4 @@
 import './App.css';
-import { Button } from './components/Button';
-import Wallet from './components/Wallet';
-import { BitcoinQR } from '@ibunker/bitcoin-react';
 import '@ibunker/bitcoin-react/dist/index.css';
 import {useState,useEffect} from 'react'
 import Wallets from './components/Wallets';
@@ -14,13 +11,12 @@ import DisplayWallet from './components/DisplayWallet'
 import * as rb from 'react-bootstrap';
 import github_logo from './github.svg'
 import twitter_logo from './twitter.svg'
-import { BrowserRouter as Router, Link, Route ,Switch,Redirect} from 'react-router-dom';
 import useInterval from './components/utils'
+import { BrowserRouter as Router, Route ,Switch} from 'react-router-dom';
+
 function App() {
 
-  // const [currWallet,setCurrWallet] = useState({})
   const [walletList,setWalletList] = useState([])
-  
 
   const listWallets = async()=>{
     const res = await fetch('/wallet/all');
@@ -30,15 +26,13 @@ function App() {
   }
 
   useInterval(() => {
-    // put your interval code here.
     const sessionClear = async()=>{
       
       try{
-        
         const res = await fetch('/session',{
-          method:"GET",
-          
+          method:"GET",          
         });
+
         const data = await res.json();
         if(data[0].session===false){
           console.log("no wallet in backend")
@@ -46,7 +40,6 @@ function App() {
           return;
         }
         console.log("backend alive and wallet loaded")
-        
       }
 
       catch(e){
@@ -54,10 +47,8 @@ function App() {
         alert("Lost connection to backend! Please restart the backend server.");
         sessionStorage.clear();
       }
-      
     }
     sessionClear();
-    
     
   }, 1000 * 5);
 
@@ -78,12 +69,12 @@ function App() {
   
     let authData =JSON.parse(sessionStorage.getItem('auth'));
     console.log(authData)
-    //if unlcoking same wallet
+    //if unlocking same wallet
     if(authData && authData.login===true && authData.name===name){
       alert(name+" is aldready unlocked")
       return;
     }
-    //if unlocking other wallet while one unlocked
+    //if unlocking another wallet while one is already unlocked
     else if(authData && authData.login===true && authData.name!==name){
       alert(authData.name+" is currently in use,please lock it first");
       return;
@@ -117,12 +108,7 @@ function App() {
         }
         
     }
-  
-    
-    
-
-
-    }
+  }
 
     const lockWallet = async(name)=>{
       let authData =JSON.parse(sessionStorage.getItem('auth'));
@@ -206,10 +192,6 @@ function App() {
       wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
       console.log(wallet_info)
       return wallet_info;
-      
-      window.alert("Wallet Name: " + wallet_name + "\n" + "Total balance: " + balance);
-      window.alert(mix_depths[0].account + " " + mix_depths[0].account_balance + "\n" + mix_depths[1].account + " " + mix_depths[1].account_balance + "\n" + mix_depths[2].account + " " + mix_depths[2].account_balance + "\n" + mix_depths[3].account + " " + mix_depths[3].account_balance + "\n" + mix_depths[4].account + " " + mix_depths[4].account_balance);
-      
     }
 
     const createWallet = async(name,password)=>{
@@ -237,8 +219,8 @@ function App() {
             }))
         }
       catch(e){
-        //but what if some other error where wallet not created
-        alert("UNexpected error!PLease try again")
+        //some other error occurs where wallet is not created
+        alert("Unexpected error! PLease try again")
       }
       }
       else{
@@ -379,15 +361,8 @@ function App() {
 
       catch(e){
         alert("Error while stopping service!")
-      }
-      
-
-        
-
-      
+      }      
     }
-
-    
 
     const getUTXOs = async()=>{
       try{
@@ -405,8 +380,6 @@ function App() {
         });
         const data = await res.json();
         return JSON.parse(data[0].transactions);
-
-
       }
       catch(e){
         
@@ -422,38 +395,38 @@ function App() {
 
     <rb.Navbar sticky="top" collapseOnSelect expand="lg" bg="dark" variant="dark">
     
-  <rb.Container>
-  <rb.Navbar.Brand href='/'>Joinmarket</rb.Navbar.Brand>
-  <rb.Navbar.Toggle aria-controls="responsive-rb.Navbar-rb.Nav" />
-  <rb.Navbar.Collapse id="responsive-rb.Navbar-rb.Nav">
-    <rb.Nav className="me-auto">
-    <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs">Docs</rb.Nav.Link>
-      <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features">Features</rb.Nav.Link>
-      <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#joinmarket-clientserver">About</rb.Nav.Link>
-    </rb.Nav>
-    <rb.Nav>
-    <rb.Navbar.Brand href="https://github.com/JoinMarket-Org/joinmarket-clientserver">
-      <img
-        src={github_logo}
-        width="50"
-        height="50"
-        className="github"
-        alt="github logo"
-      />
-    </rb.Navbar.Brand>
-    <rb.Navbar.Brand href="https://twitter.com/joinmarket">
-      <img
-        src={twitter_logo}
-        width="50"
-        height="50"
-        className="twitter"
-        alt="twitter logo"
-      />
-    </rb.Navbar.Brand>
-    </rb.Nav>
-  </rb.Navbar.Collapse>
-  </rb.Container>
-</rb.Navbar>
+    <rb.Container>
+      <rb.Navbar.Brand href='/'>Joinmarket</rb.Navbar.Brand>
+      <rb.Navbar.Toggle aria-controls="responsive-rb.Navbar-rb.Nav" />
+      <rb.Navbar.Collapse id="responsive-rb.Navbar-rb.Nav">
+        <rb.Nav className="me-auto">
+          <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs">Docs</rb.Nav.Link>
+          <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features">Features</rb.Nav.Link>
+          <rb.Nav.Link href="https://github.com/JoinMarket-Org/joinmarket-clientserver#joinmarket-clientserver">About</rb.Nav.Link>
+        </rb.Nav>
+        <rb.Nav>
+          <rb.Navbar.Brand href="https://github.com/JoinMarket-Org/joinmarket-clientserver">
+            <img
+             src={github_logo}
+             width="50"
+             height="50"
+             className="github"
+             alt="github logo"
+            />
+          </rb.Navbar.Brand>
+          <rb.Navbar.Brand href="https://twitter.com/joinmarket">
+            <img
+            src={twitter_logo}
+            width="50"
+            height="50"
+            className="twitter"
+            alt="twitter logo"
+            />
+          </rb.Navbar.Brand>
+        </rb.Nav>
+      </rb.Navbar.Collapse>
+    </rb.Container>
+  </rb.Navbar>
       
       <p></p>
       <Switch>

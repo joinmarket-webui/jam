@@ -4,9 +4,7 @@ const DisplayUTXOs = ({utxoID,utxo}) => {
     return (
         <div>
             <p></p>
-            
             <p></p>
-            {/* <span>Transaction ID:  {transactionID}</span> */}
             <br></br>
             <span>Address: {utxo.address}</span>
             <br></br>

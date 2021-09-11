@@ -15,11 +15,6 @@ const Wallet = ({name,onUnlock,onLock,onDisplay}) => {
                 <rb.Button onClick = {()=>onLock(name)}>Lock</rb.Button>
               </rb.Card.Body>
             </rb.Card>
-            {/* <h3>{name}</h3>
-            <Button onClick={()=>onUnlock(name)}>Unlock</Button>
-            <Button onClick = {()=>onDisplay(name)}>Display</Button>
-            <Link to="/display" className="btn btn-primary">Open</Link>
-            <Button onClick = {()=>onLock(name)}>Lock</Button> */}
         </div>
     )
 }

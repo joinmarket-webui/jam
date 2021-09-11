@@ -15,15 +15,10 @@ const CreateWallet = ({onCreate}) => {
           alert('Please add details')
           return;
         }
-        console.log("okay")
-        //maybe add await here
-        // let wallet =JSON.parse(sessionStorage.getItem('auth')).name;
-        // onPayment(wallet,mixdepth,amount,destination)
+        
         onCreate(wallet,password)
         setWallet('')
         setPassword('')
-        
-
       }
     return (
         

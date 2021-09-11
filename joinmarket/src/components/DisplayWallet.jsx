@@ -3,6 +3,7 @@ import {useState,useEffect} from 'react'
 import { Button } from './Button'
 import DisplayMixdepth from './DisplayMixdepth'
 import DisplayUTXOs from './DisplayUTXOs'
+
 const DisplayWallet = ({listWalletInfo,onSend,listUTXOs}) => {
     const [wallet_info,setWalletInfo] = useState([])
     const [UTXOHistory,setUTXOHistory] = useState({})
@@ -39,18 +40,12 @@ const DisplayWallet = ({listWalletInfo,onSend,listUTXOs}) => {
 
             {
                 showUTXO? 
-                
-                    
                     Object.entries(UTXOHistory).map(([key, val])=>
                     <DisplayUTXOs key={key} utxoID={key} utxo={val}> </DisplayUTXOs>
-                    // <h5 key={key}> {key}:{val.address}</h5>
-                )
+                    )
 
                 : ""
-            }
-            
-           
-            
+            }            
         </div>
     )
 }

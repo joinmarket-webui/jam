@@ -1,5 +1,3 @@
-// utils.js
-
 import React, { useState, useEffect, useRef } from 'react';
 
  const useInterval = (callback, delay) => {

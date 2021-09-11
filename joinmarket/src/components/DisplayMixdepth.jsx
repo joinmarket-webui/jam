@@ -6,19 +6,13 @@ import * as rb from 'react-bootstrap'
 
 const DisplayMixdepth = ({walletInfo}) => {
 
-    console.log(walletInfo)
-    
     const accounts = []
     
     for (const account_info of walletInfo.accounts){
         accounts.push(account_info)
     }
-
-    console.log(accounts)
    
     return (
-
-        
         <div>
             Total Balance: {walletInfo.total_balance} BTC
             <p></p>

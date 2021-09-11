@@ -2,8 +2,6 @@ import React from 'react'
 import * as rb from 'react-bootstrap'
 import './Homepage.css'
 import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
-import {BeautifulQuestions,SunnyMorning,SignalNoise,Thursday} from 'moving-letters'
-
 
 const Homepage = () => {
     
