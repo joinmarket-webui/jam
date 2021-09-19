@@ -1,1 +1,1 @@
-# Joinmarket-SOB
+# Web client for joinmarket
