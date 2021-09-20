@@ -1,5 +1,8 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom';
 import { useState } from 'react'
+import { useGlobal } from 'reactn';
+
 const Maker = ({onStart,onStop}) => {
     
     const [txFee,setTxFee] = useState('')
@@ -8,18 +11,19 @@ const Maker = ({onStart,onStop}) => {
     const [orderType,setOrdertype] = useState('')
     const [minsize,setMinsize] = useState('')
 
-    const[makerStarted,setMakerStarted] = useState()
+
+    const [makerStarted, setmakerStarted]  = useGlobal("makerStarted");
 
     const [submitVal,setSubmitVal] = useState('Start Maker Service')
 
-    
+    const history = useHistory();
 
     const onSubmit = (e) => {
         e.preventDefault()
 
         
 
-        if(localStorage.getItem('makerStarted')===null || localStorage.getItem('makerStarted')==='false'){
+        if(makerStarted === false){
             console.log('b')
             if (!cjfeeRel) {
                 alert('Please add details')
@@ -27,18 +31,18 @@ const Maker = ({onStart,onStop}) => {
             }
             onStart(0,0,cjfeeRel,'sw0reloffer',1000);
             setCjfeerel('')
-            localStorage.setItem('makerStarted',true) 
+            alert("Attempting to start the yield generator. Check the status bar for updates.");
             setSubmitVal('Stop Maker Service')
 
         }
         else{
             console.log('c')
             onStop();
-            localStorage.setItem('makerStarted',false) 
             setSubmitVal('Start Maker Service')
 
         }
-
+        let path = `/display`;
+        history.push(path);
         
         
     }
@@ -50,7 +54,7 @@ const Maker = ({onStart,onStop}) => {
         
         <p></p>
         {
-        localStorage.getItem('makerStarted')==='false' || localStorage.getItem('makerStarted')===null?
+        makerStarted === false ?
         <label>
         Relative Coinjoin Fee
         <input type="text" name="cjfee_r" value = {cjfeeRel} onChange={(e) => setCjfeerel(e.target.value)}/>
@@ -60,7 +64,7 @@ const Maker = ({onStart,onStop}) => {
         
         <p></p>
         
-        <input type="submit" value={localStorage.getItem('makerStarted')==='true'?'Stop Maker Service':'Start Maker Service'} />
+        <input type="submit" value={makerStarted ==='true'?'Stop Maker Service':'Start Maker Service'} />
 
     </form>
         </div>

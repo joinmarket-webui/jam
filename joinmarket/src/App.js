@@ -13,16 +13,32 @@ import github_logo from './github.svg'
 import twitter_logo from './twitter.svg'
 import useInterval from './components/utils'
 import { BrowserRouter as Router, Route ,Switch} from 'react-router-dom';
+import { useGlobal } from 'reactn';
 
 function App() {
 
   const [walletList,setWalletList] = useState([])
+
+  const [makerStarted, setmakerStarted]  = useGlobal("makerStarted");
+  const [walletName, setWalletName] = useGlobal("walletName");
+  const [coinjoinInProcess, setCoinjoinInProcess] = useGlobal("coinjoinInProcess");
+  const [currentStatusMessage, setCurrentStatusMessage] = useGlobal("currentStatusMessage");
 
   const listWallets = async()=>{
     const res = await fetch('/wallet/all');
     const data = await res.json();
     const walletList = data[0].wallets;
     return walletList;
+  }
+  const resetWalletSessionStorage = async()=>{
+    sessionStorage.clear();
+    setWalletName("No wallet loaded");
+    setmakerStarted(false);
+    setCoinjoinInProcess(false);
+  }
+
+  function getCurrentStatusMessage(){
+    return "Wallet: " + walletName + ", Yg started: " + makerStarted + ", Coinjoin in process: " + coinjoinInProcess;
   }
 
   useInterval(() => {
@@ -35,11 +51,29 @@ function App() {
 
         const data = await res.json();
         if(data[0].session===false){
-          console.log("no wallet in backend")
-          sessionStorage.clear();
+          console.log("no wallet in backend");
+          // This status requires us to clear, especially
+          // the auth state, so we just reset everything:
+          resetWalletSessionStorage();
           return;
         }
-        console.log("backend alive and wallet loaded")
+        console.log("backend alive and wallet loaded");
+        console.log("maker status: " + data[0].maker_running);
+        if (data[0].maker_running === true) {
+          setmakerStarted(true);
+        }
+        else {
+          setmakerStarted(false);
+        }
+        setWalletName(data[0].wallet_name);
+
+        if (data[0].coinjoin_in_process === true){
+          setCoinjoinInProcess(true);
+        }
+        else {
+          setCoinjoinInProcess(false);
+        }
+        setCurrentStatusMessage(getCurrentStatusMessage());
       }
 
       catch(e){
@@ -50,7 +84,7 @@ function App() {
     }
     sessionClear();
     
-  }, 1000 * 5);
+  }, 1000);
 
   useEffect(()=>{
     
@@ -71,12 +105,12 @@ function App() {
     console.log(authData)
     //if unlocking same wallet
     if(authData && authData.login===true && authData.name===name){
-      alert(name+" is aldready unlocked")
+      alert(name+" is already unlocked")
       return;
     }
     //if unlocking another wallet while one is already unlocked
     else if(authData && authData.login===true && authData.name!==name){
-      alert(authData.name+" is currently in use,please lock it first");
+      alert(authData.name+" is currently in use, please lock it first");
       return;
     }
 
@@ -330,7 +364,6 @@ function App() {
       
       const data = await res.json();
       console.log(data);
-      alert("Maker service started succesfully")
       }
 
       catch(e){
@@ -388,7 +421,6 @@ function App() {
     }
 
 
-    
   return (
     <Router>
     <div className="App">
@@ -427,7 +459,11 @@ function App() {
       </rb.Navbar.Collapse>
     </rb.Container>
   </rb.Navbar>
-      
+  <rb.Navbar expand="lg">
+  <rb.Container>
+    {getCurrentStatusMessage()}
+  </rb.Container>
+  </rb.Navbar>
       <p></p>
       <Switch>
           
