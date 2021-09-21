@@ -458,12 +458,11 @@ function App() {
         </rb.Nav>
       </rb.Navbar.Collapse>
     </rb.Container>
-  </rb.Navbar>
-  <rb.Navbar expand="lg">
-  <rb.Container>
-    {getCurrentStatusMessage()}
+    <rb.Container>
+    <rb.Navbar.Text>{getCurrentStatusMessage()}</rb.Navbar.Text>
   </rb.Container>
   </rb.Navbar>
+
       <p></p>
       <Switch>
           
