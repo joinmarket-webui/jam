@@ -25,7 +25,7 @@ function App() {
   const [currentStatusMessage, setCurrentStatusMessage] = useGlobal("currentStatusMessage");
 
   const listWallets = async()=>{
-    const res = await fetch('/wallet/all');
+    const res = await fetch('/api/v1/wallet/all');
     const data = await res.json();
     const walletList = data[0].wallets;
     return walletList;
@@ -45,7 +45,7 @@ function App() {
     const sessionClear = async()=>{
       
       try{
-        const res = await fetch('/session',{
+        const res = await fetch('/api/v1/session',{
           method:"GET",          
         });
 
@@ -84,7 +84,7 @@ function App() {
     }
     sessionClear();
     
-  }, 1000);
+  }, 8*1000);
 
   useEffect(()=>{
     
@@ -117,7 +117,7 @@ function App() {
     else{
         try{
             var passphrase = prompt("Enter the passphrase for " + name);
-            const res = await fetch(`/wallet/${name}/unlock`,{
+            const res = await fetch(`/api/v1/wallet/${name}/unlock`,{
             method:'POST',
             headers: {
               'Content-type': 'application/json',
@@ -125,15 +125,12 @@ function App() {
             body: JSON.stringify({"password": passphrase}),
           })
             const data = await res.json();
-            console.log(data);
             const token = data[0].token;
             sessionStorage.setItem('auth',JSON.stringify({
               login:true,
               token:token,
               name:name
             }))
-            
-            alert("Succesfully unlocked!")
             
           }
           
@@ -153,7 +150,7 @@ function App() {
 
       try{
         let token = "Bearer "+authData.token
-        const res = await fetch(`/wallet/${name}/lock`,{
+        const res = await fetch(`/api/v1/wallet/${name}/lock`,{
         method:"GET",
         headers:{
           'Authorization':token
@@ -178,7 +175,7 @@ function App() {
     const listWalletInfo = async(name)=>{
       let authData =JSON.parse(sessionStorage.getItem('auth'));
       let token = "Bearer "+authData.token
-      const res = await fetch(`/wallet/${name}/display`,{
+      const res = await fetch(`/api/v1/wallet/${name}/display`,{
         method:"GET",
         headers:{
           'Authorization':token
@@ -206,7 +203,7 @@ function App() {
         return;
       }
       let token = "Bearer "+authData.token
-      const res = await fetch(`/wallet/${name}/display`,{
+      const res = await fetch(`/api/v1/wallet/${name}/display`,{
         method:"GET",
         headers:{
           'Authorization':token
@@ -232,7 +229,7 @@ function App() {
       let authData =JSON.parse(sessionStorage.getItem('auth'));
       if(authData===null || authData.login===false){
         try{
-          const res = await fetch(`/wallet/create`,{
+          const res = await fetch(`/api/v1/wallet/create`,{
           method:'POST',
           headers: {
             'Content-type': 'application/json',
@@ -269,7 +266,7 @@ function App() {
       if(authData!=null && authData.login===true){
         try{
           let token = "Bearer "+authData.token
-          const res = await fetch(`/wallet/${name}/taker/direct-send`,{
+          const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`,{
             method:'POST',
             headers: {
               'Content-type': 'application/json',
@@ -309,8 +306,9 @@ function App() {
           return;
         }
 
-        let token = "Bearer "+authData.token
-          const res = await fetch(`/wallet/taker/coinjoin`,{
+        let token = "Bearer "+authData.token;
+        let name = authData.name;
+          const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`,{
             method:'POST',
             headers: {
               'Content-type': 'application/json',
@@ -346,7 +344,7 @@ function App() {
       let name = authData.name 
       try{
         let token = "Bearer "+authData.token
-        const res = await fetch(`/wallet/${name}/maker/start`,{
+        const res = await fetch(`/api/v1/wallet/${name}/maker/start`,{
         method:"POST",
         headers:{
           'Authorization':token
@@ -381,7 +379,7 @@ function App() {
       try{
         let name = authData.name 
         let token = "Bearer "+authData.token
-        const res = await fetch(`/wallet/${name}/maker/stop`,{
+        const res = await fetch(`/api/v1/wallet/${name}/maker/stop`,{
           method:"GET",
           headers:{
             'Authorization':token
@@ -404,18 +402,17 @@ function App() {
         if(!authData|| authData.login===false || authData.name===''){
           return;
         }
-
-        const res = await fetch('wallet/utxos',{
+        let name = authData.name;
+        const res = await fetch(`/api/v1/wallet/${name}/utxos`,{
           method:"GET",
           headers:{
             'Authorization':token
           },
         });
         const data = await res.json();
-        return JSON.parse(data[0].transactions);
+        return data[0].utxos;
       }
       catch(e){
-        
         return;
       }
     }

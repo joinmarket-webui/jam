@@ -13,8 +13,9 @@ const Receive = ({onReceive}) => {
     const getAddress = async(mixdepth)=>{
         //update request with token if backend updated
         let authData = JSON.parse(sessionStorage.getItem('auth'));
-        let token = "Bearer "+authData.token
-        const res = await fetch(`address/new/${mixdepth}`,{
+        let token = "Bearer "+authData.token;
+        let name = authData.name;
+        const res = await fetch(`/api/v1/wallet/${name}/address/new/${mixdepth}`,{
             method:'GET',
             headers: {
               'Content-type': 'application/json',
