@@ -22,59 +22,41 @@ function App() {
   const [coinjoinInProcess, setCoinjoinInProcess] = useGlobal("coinjoinInProcess");
   const [, setCurrentStatusMessage] = useGlobal("currentStatusMessage");
 
-  const listWallets = async()=>{
+  const listWallets = async () =>{
     const res = await fetch('/api/v1/wallet/all');
     const data = await res.json();
-    const walletList = data[0].wallets;
+    const walletList = data.wallets;
     return walletList;
   }
-  const resetWalletSessionStorage = async()=>{
+  const resetWalletSessionStorage = async () =>{
     sessionStorage.clear();
     setWalletName("No wallet loaded");
     setmakerStarted(false);
     setCoinjoinInProcess(false);
   }
 
-  function getCurrentStatusMessage(){
-    return "Wallet: " + walletName + ", Yg started: " + makerStarted + ", Coinjoin in process: " + coinjoinInProcess;
-  }
+  const getCurrentStatusMessage = () =>
+    `Wallet: ${walletName}, YG ${makerStarted ? 'started' : 'not running'}, Coinjoin in process: ${coinjoinInProcess}`;
 
   useInterval(() => {
-    const sessionClear = async()=>{
+    const sessionClear = async () =>{
+      try {
+        const res = await fetch('/api/v1/session');
+        const { session, maker_running, wallet_name, coinjoin_in_process } = await res.json();
 
-      try{
-        const res = await fetch('/api/v1/session',{
-          method:"GET",
-        });
-
-        const data = await res.json();
-        if(data[0].session===false){
+        if (session === false) {
           console.log("no wallet in backend");
           // This status requires us to clear, especially
           // the auth state, so we just reset everything:
-          resetWalletSessionStorage();
-          return;
+          return resetWalletSessionStorage();
         }
-        console.log("backend alive and wallet loaded");
-        console.log("maker status: " + data[0].maker_running);
-        if (data[0].maker_running === true) {
-          setmakerStarted(true);
-        }
-        else {
-          setmakerStarted(false);
-        }
-        setWalletName(data[0].wallet_name);
 
-        if (data[0].coinjoin_in_process === true){
-          setCoinjoinInProcess(true);
-        }
-        else {
-          setCoinjoinInProcess(false);
-        }
+        setmakerStarted(maker_running);
+        setWalletName(wallet_name);
+        setCoinjoinInProcess(coinjoin_in_process);
         setCurrentStatusMessage(getCurrentStatusMessage());
-      }
-
-      catch(e){
+      } catch(e) {
+        console.error(e);
         alert("Lost connection to backend! Please restart the backend server.");
         sessionStorage.clear();
       }
@@ -95,45 +77,31 @@ function App() {
   },[])
 
 
-  const unlockWallet = async (name)=>{
+  const unlockWallet = async (name) => {
+    const authData = JSON.parse(sessionStorage.getItem('auth'));
 
-    let authData =JSON.parse(sessionStorage.getItem('auth'));
-    console.log(authData)
-    //if unlocking same wallet
-    if(authData && authData.login===true && authData.name===name){
-      alert(name+" is already unlocked")
-      return;
-    }
-    //if unlocking another wallet while one is already unlocked
-    else if(authData && authData.login===true && authData.name!==name){
-      alert(authData.name+" is currently in use, please lock it first");
-      return;
-    }
-
-    else{
-        try{
-            var passphrase = prompt("Enter the passphrase for " + name);
-            const res = await fetch(`/api/v1/wallet/${name}/unlock`,{
-            method:'POST',
-            headers: {
-              'Content-type': 'application/json',
-            },
-            body: JSON.stringify({"password": passphrase}),
-          })
-            const data = await res.json();
-            const token = data[0].token;
-            sessionStorage.setItem('auth',JSON.stringify({
-              login:true,
-              token:token,
-              name:name
-            }))
-
-          }
-
-        catch(e){
-          alert("Something went wrong,please try again!")
-        }
-
+    if (authData && authData.login) {
+      return alert(authData.name === name
+        // unlocking same wallet
+        ? `${name} is already unlocked`
+        // unlocking another wallet while one is already unlocked
+        : `${authData.name} is currently in use, please lock it first`);
+    } else {
+      try {
+        const password = prompt(`Enter the passphrase for ${name}`);
+        const res = await fetch(`/api/v1/wallet/${name}/unlock`,{
+          method: 'POST',
+          headers: { 'Content-type': 'application/json' },
+          body: JSON.stringify({ password }),
+        })
+        const data = await res.json();
+        console.log(data)
+        const token = data.token;
+        sessionStorage.setItem('auth', JSON.stringify({ login: true, token, name }));
+      } catch (e) {
+        console.error(e);
+        alert('Something went wrong, please try again!');
+      }
     }
   }
 
@@ -165,7 +133,6 @@ function App() {
       catch(e){
         alert("Error while locking.")
       }
-
     }
 
     const listWalletInfo = async(name)=>{
@@ -177,18 +144,17 @@ function App() {
           'Authorization':token
         }
       });
-      const data = await res.json();
-      const balance = data[0].walletinfo.total_balance;
-      const mix_depths = data[0].walletinfo.accounts;
-      const wallet_info={}
-      wallet_info['balance'] = balance;
+      const { walletinfo } = await res.json();
+      const balance = walletinfo.total_balance;
+      const mix_depths = walletinfo.accounts;
+      const wallet_info = { balance }
       wallet_info[mix_depths[0].account] = mix_depths[0].account_balance
       wallet_info[mix_depths[1].account] = mix_depths[1].account_balance
       wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
       wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
       wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
 
-      return [data[0].walletinfo];
+      return [walletinfo];
     }
 
     const displayWallet = async(name)=>{
@@ -205,10 +171,9 @@ function App() {
           'Authorization':token
         }
       });
-      const data = await res.json();
-      console.log(data[0].walletinfo);
-      const balance = data[0].walletinfo.total_balance;
-      const mix_depths = data[0].walletinfo.accounts;
+      const { walletinfo } = await res.json();
+      const balance = walletinfo.total_balance;
+      const mix_depths = walletinfo.accounts;
       const wallet_info={}
       wallet_info['balance'] = balance;
       wallet_info[mix_depths[0].account] = mix_depths[0].account_balance
@@ -221,38 +186,29 @@ function App() {
     }
 
     const createWallet = async(name,password)=>{
-      let authData =JSON.parse(sessionStorage.getItem('auth'));
-      if(authData===null || authData.login===false){
-        try{
+      const authData = JSON.parse(sessionStorage.getItem('auth'));
+      if (!authData || !authData.login) {
+        try {
           const res = await fetch(`/api/v1/wallet/create`,{
-          method:'POST',
-          headers: {
-            'Content-type': 'application/json',
-          },
-          body: JSON.stringify({"password":password,"walletname":name,"wallettype":"sw"}),
-        })
+            method:'POST',
+            headers: { 'Content-type': 'application/json', },
+            body: JSON.stringify({ password, "walletname": name, "wallettype":"sw" }),
+          })
 
-        const data = await res.json();
+          const { seedphrase, token } = await res.json();
+          alert("Wallet created succesfully")
 
-        alert("Wallet created succesfully")
-        //figure out a safer way to show the seedphrase
-        alert(data[0].seedphrase)
-        const token = data[0].token;
-            sessionStorage.setItem('auth',JSON.stringify({
-              login:true,
-              token:token,
-              name:name
-            }))
+          //figure out a safer way to show the seedphrase
+          alert(seedphrase)
+          sessionStorage.setItem('auth', JSON.stringify({ login: true, token, name }))
+        } catch (e) {
+          console.error(e);
+          //some other error occurs where wallet is not created
+          alert('Unexpected error! Please try again')
         }
-      catch(e){
-        //some other error occurs where wallet is not created
-        alert("Unexpected error! PLease try again")
+      } else{
+        alert(`${authData.name} is in use! Please lock it first.`)
       }
-      }
-      else{
-        alert(authData.name +" is in use! Please lock it first.")
-      }
-
     }
 
 
@@ -398,17 +354,13 @@ function App() {
           return;
         }
         let name = authData.name;
-        const res = await fetch(`/api/v1/wallet/${name}/utxos`,{
-          method:"GET",
-          headers:{
-            'Authorization':token
-          },
+        const res = await fetch(`/api/v1/wallet/${name}/utxos`, {
+          headers: { 'Authorization':token }
         });
-        const data = await res.json();
-        return data[0].utxos;
-      }
-      catch(e){
-        return;
+        const { utxos } = await res.json();
+        return utxos;
+      } catch(e){
+        return console.error(e);
       }
     }
 

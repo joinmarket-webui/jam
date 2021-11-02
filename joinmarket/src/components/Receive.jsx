@@ -10,7 +10,7 @@ const Receive = ({onReceive}) => {
     const location = useLocation()
     const [new_address, setNewAddress] = useState('')
 
-    const getAddress = async(mixdepth)=>{
+    const getAddress = async (mixdepth) =>{
         //update request with token if backend updated
         let authData = JSON.parse(sessionStorage.getItem('auth'));
         let token = "Bearer "+authData.token;
@@ -22,10 +22,8 @@ const Receive = ({onReceive}) => {
                'Authorization':token
             },
         });
-        const data = await res.json();
-        console.log(data)
-        return (data[0].address);
-
+        const { address } = await res.json();
+        return address;
     }
 
     useEffect(()=>{
