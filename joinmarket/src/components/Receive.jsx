@@ -59,7 +59,7 @@ const Receive = ({onReceive}) => {
 
         <br></br>
             <div className = "heading">
-            Recieve Funds
+            Receive Funds
             </div>
 
             <form method="POST" onSubmit={onSubmit}>
