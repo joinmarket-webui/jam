@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
- const useInterval = (callback, delay) => {
-
+const useInterval = (callback, delay) => {
   const savedCallback = useRef();
 
   useEffect(() => {

@@ -25,7 +25,7 @@ const Receive = ({onReceive}) => {
         const data = await res.json();
         console.log(data)
         return (data[0].address);
-  
+
     }
 
     useEffect(()=>{
@@ -37,22 +37,22 @@ const Receive = ({onReceive}) => {
             setNewAddress(temp)
             return
         }
-    
+
         getNewAddress(location.state.account_no);
-      },[])
+      }, [location.state.account_no])
 
     const [temp_address, setTempAddress] = useState('')
     const [amount, setAmount] = useState('')
 
     const onSubmit = (e) => {
         e.preventDefault()
-        
+
         if (!new_address) {
           alert('Please add the address')
           return
         }
 
-        setTempAddress(new_address)       
+        setTempAddress(new_address)
 
       }
 
@@ -68,24 +68,24 @@ const Receive = ({onReceive}) => {
             <rb.Container className = "center">
             <rb.Container fluid = "false" className = "form1">
                 <rb.Row>
-                    
+
                     <rb.Col className="label">
                         Address
                     </rb.Col>
                     <rb.Col>
                     <input type="text" name="address"  value = {new_address } style = {{width: "415px"}} readOnly = {true} onChange={(e) => setNewAddress(e.target.value)}/>
                     </rb.Col>
-                    
+
                 </rb.Row>
                 <rb.Row className = "field">
-                    
+
                     <rb.Col className="label">
                     Amount(BTC)
                     </rb.Col>
                     <rb.Col>
                     <input type="text" name="amount_sats" value = {amount} style = {{width: "415px"}} onChange={(e) => setAmount(e.target.value)}/>
                     </rb.Col>
-                    
+
                 </rb.Row>
                 <rb.Row className = "btn-field">
                 <button className="btncr" type="submit" value="Submit" ><span>Get QR Code</span></button>

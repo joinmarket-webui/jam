@@ -16,13 +16,11 @@ import { BrowserRouter as Router, Route ,Switch} from 'react-router-dom';
 import { useGlobal } from 'reactn';
 
 function App() {
-
   const [walletList,setWalletList] = useState([])
-
   const [makerStarted, setmakerStarted]  = useGlobal("makerStarted");
   const [walletName, setWalletName] = useGlobal("walletName");
   const [coinjoinInProcess, setCoinjoinInProcess] = useGlobal("coinjoinInProcess");
-  const [currentStatusMessage, setCurrentStatusMessage] = useGlobal("currentStatusMessage");
+  const [, setCurrentStatusMessage] = useGlobal("currentStatusMessage");
 
   const listWallets = async()=>{
     const res = await fetch('/api/v1/wallet/all');
@@ -43,10 +41,10 @@ function App() {
 
   useInterval(() => {
     const sessionClear = async()=>{
-      
+
       try{
         const res = await fetch('/api/v1/session',{
-          method:"GET",          
+          method:"GET",
         });
 
         const data = await res.json();
@@ -77,30 +75,28 @@ function App() {
       }
 
       catch(e){
-        console.log("test")
         alert("Lost connection to backend! Please restart the backend server.");
         sessionStorage.clear();
       }
     }
     sessionClear();
-    
+
   }, 8*1000);
 
   useEffect(()=>{
-    
+
     const getWallets = async()=>{
       const wallets = await listWallets();
-      console.log(wallets);
       setWalletList(wallets);
     }
-    
+
     getWallets();
-    
+
   },[])
- 
+
 
   const unlockWallet = async (name)=>{
-  
+
     let authData =JSON.parse(sessionStorage.getItem('auth'));
     console.log(authData)
     //if unlocking same wallet
@@ -131,13 +127,13 @@ function App() {
               token:token,
               name:name
             }))
-            
+
           }
-          
+
         catch(e){
           alert("Something went wrong,please try again!")
         }
-        
+
     }
   }
 
@@ -169,7 +165,7 @@ function App() {
       catch(e){
         alert("Error while locking.")
       }
-      
+
     }
 
     const listWalletInfo = async(name)=>{
@@ -191,7 +187,7 @@ function App() {
       wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
       wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
       wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
-      
+
       return [data[0].walletinfo];
     }
 
@@ -211,7 +207,6 @@ function App() {
       });
       const data = await res.json();
       console.log(data[0].walletinfo);
-      const wallet_name = name
       const balance = data[0].walletinfo.total_balance;
       const mix_depths = data[0].walletinfo.accounts;
       const wallet_info={}
@@ -257,7 +252,7 @@ function App() {
       else{
         alert(authData.name +" is in use! Please lock it first.")
       }
-      
+
     }
 
 
@@ -277,7 +272,7 @@ function App() {
               "amount_sats": amountSats,
               "destination": destination
               }
-              
+
               ),
           })
           const data = await res.json();
@@ -287,8 +282,8 @@ function App() {
         catch(e){
           alert("Error while processing payment!")
         }
-       
-        
+
+
       }
       else{
         alert("please unlock wallet first")
@@ -315,13 +310,13 @@ function App() {
                'Authorization':token
             },
             body: JSON.stringify({
-              
+
               "mixdepth": mixdepth,
               "amount": amount,
               "counterparties": counterparties,
               "destination":destination
               }
-              
+
               ),
           })
           const data = await res.json();
@@ -336,12 +331,12 @@ function App() {
 
     const startMakerService = async(txfee,cjfee_a,cjfee_r,ordertype,minsize)=>{
       let authData =JSON.parse(sessionStorage.getItem('auth'));
-    
+
       if(!authData|| authData.login===false || authData.name===''){
         alert("Please unlock a wallet first")
         return;
       }
-      let name = authData.name 
+      let name = authData.name
       try{
         let token = "Bearer "+authData.token
         const res = await fetch(`/api/v1/wallet/${name}/maker/start`,{
@@ -356,10 +351,10 @@ function App() {
           "ordertype":ordertype,
           "minsize":minsize
           }
-          
+
           ),
       });
-      
+
       const data = await res.json();
       console.log(data);
       }
@@ -367,7 +362,7 @@ function App() {
       catch(e){
         alert("Error while starting service!")
       }
-      
+
     }
 
     const stopMakerService= async()=>{
@@ -377,7 +372,7 @@ function App() {
         return;
       }
       try{
-        let name = authData.name 
+        let name = authData.name
         let token = "Bearer "+authData.token
         const res = await fetch(`/api/v1/wallet/${name}/maker/stop`,{
           method:"GET",
@@ -392,7 +387,7 @@ function App() {
 
       catch(e){
         alert("Error while stopping service!")
-      }      
+      }
     }
 
     const getUTXOs = async()=>{
@@ -423,7 +418,7 @@ function App() {
     <div className="App">
 
     <rb.Navbar sticky="top" collapseOnSelect expand="lg" bg="dark" variant="dark">
-    
+
     <rb.Container>
       <rb.Navbar.Brand href='/'>Joinmarket</rb.Navbar.Brand>
       <rb.Navbar.Toggle aria-controls="responsive-rb.Navbar-rb.Nav" />
@@ -462,7 +457,7 @@ function App() {
 
       <p></p>
       <Switch>
-          
+
       <Route
           path='/'
           exact
@@ -472,7 +467,7 @@ function App() {
             </>
           )}
         />
-      
+
       <Route
           path='/showWallets'
           exact
@@ -490,7 +485,7 @@ function App() {
             </>
           )}
         />
-        
+
         <Route path='/create' exact render={(props) => (
             <>
              <CreateWallet onCreate={createWallet}></CreateWallet>
@@ -516,13 +511,13 @@ function App() {
             </>
           )}
         />
-     
+
         </Switch>{" "}
-      
+
     </div>
     </Router>
-    
-    
+
+
   );
 }
 

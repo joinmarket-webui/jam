@@ -4,24 +4,17 @@ import { useState } from 'react'
 import { useGlobal } from 'reactn';
 
 const Maker = ({onStart,onStop}) => {
-    
-    const [txFee,setTxFee] = useState('')
-    const [cjfeeAbs,setCjfeeabs] = useState('')
+
     const [cjfeeRel,setCjfeerel] = useState('')
-    const [orderType,setOrdertype] = useState('')
-    const [minsize,setMinsize] = useState('')
-
-
-    const [makerStarted, setmakerStarted]  = useGlobal("makerStarted");
-
-    const [submitVal,setSubmitVal] = useState('Start Maker Service')
+    const [makerStarted]  = useGlobal("makerStarted");
+    const [setSubmitVal] = useState('Start Maker Service')
 
     const history = useHistory();
 
     const onSubmit = (e) => {
         e.preventDefault()
 
-        
+
 
         if(makerStarted === false){
             console.log('b')
@@ -43,15 +36,15 @@ const Maker = ({onStart,onStop}) => {
         }
         let path = `/display`;
         history.push(path);
-        
-        
+
+
     }
     return (
         <div>
             <h3>Maker Service</h3>
         <form method="POST" onSubmit={onSubmit}>
-        
-        
+
+
         <p></p>
         {
         makerStarted === false ?
@@ -61,9 +54,9 @@ const Maker = ({onStart,onStop}) => {
         </label>
         :''
         }
-        
+
         <p></p>
-        
+
         <input type="submit" value={makerStarted ==='true'?'Stop Maker Service':'Start Maker Service'} />
 
     </form>

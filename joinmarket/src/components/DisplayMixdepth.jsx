@@ -1,17 +1,16 @@
 import React from 'react'
-import { Button } from './Button'
 import './displayMixdepth.css'
-import { BrowserRouter as Router, Link, Route ,Switch} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as rb from 'react-bootstrap'
 
 const DisplayMixdepth = ({walletInfo}) => {
 
     const accounts = []
-    
+
     for (const account_info of walletInfo.accounts){
         accounts.push(account_info)
     }
-   
+
     return (
         <div>
             Total Balance: {walletInfo.total_balance} BTC
@@ -19,12 +18,12 @@ const DisplayMixdepth = ({walletInfo}) => {
             <rb.Button href="/maker">Maker Service</rb.Button>
             <p></p>
             {accounts.map((account, index) => (
-                
+
                 <div key = {index}>
-                    
+
                     <rb.Accordion>
                         <rb.Accordion.Item eventKey={index}>
-                            <rb.Accordion.Header className = "head"> 
+                            <rb.Accordion.Header className = "head">
                             <div className = "links">
 
                             <rb.Container>
@@ -46,14 +45,14 @@ const DisplayMixdepth = ({walletInfo}) => {
                             </rb.Col>
                             </rb.Row>
                             </rb.Container>
-                            
-                            
+
+
                             </div>
                             </rb.Accordion.Header>
                             <rb.Accordion.Body>
                             <rb.Accordion>
                                 <rb.Accordion.Item eventKey="0">
-                                    
+
                                     <rb.Accordion.Header>External Addresses Balance: {accounts[index].branches[0].balance} BTC </rb.Accordion.Header>
                                     <div className = "xpub">
                                     Extended Pubkey : {accounts[index].branches[0].branch.split("\t").pop()}
@@ -66,7 +65,7 @@ const DisplayMixdepth = ({walletInfo}) => {
                                                 <div className = "address_label">
                                                 <b>{accounts[index].branches[0].entries[i].labels}</b>
                                                 </div>
-                                               
+
                                                 <rb.Accordion.Header>{accounts[index].branches[0].entries[i].address} {'   '}  </rb.Accordion.Header>
                                                 <rb.Accordion.Body>
                                                     <div className = "branch-body">
@@ -78,7 +77,7 @@ const DisplayMixdepth = ({walletInfo}) => {
                                         </div>
                                         ))}
                                     </rb.Accordion.Body>
-                                </rb.Accordion.Item>  
+                                </rb.Accordion.Item>
                                 <rb.Accordion.Item eventKey="1">
                                     <rb.Accordion.Header>Internal Addresses Balance: {accounts[index].branches[1].balance} BTC</rb.Accordion.Header>
                                         <rb.Accordion.Body>
