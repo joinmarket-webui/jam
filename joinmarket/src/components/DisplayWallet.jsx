@@ -15,7 +15,7 @@ const DisplayWallet = ({listWalletInfo,onSend,listUTXOs}) => {
     useEffect(()=>{
           const name = JSON.parse(sessionStorage.getItem('auth')).name;
           const token = JSON.parse(sessionStorage.getItem('auth')).token;
-          ws = new WebSocket("wss://127.0.0.1:28283");
+          ws = new WebSocket(`ws://${window.location.hostname}:${window.location.port}`);
             ws.onopen = (event) => {
               console.log("connected to websocket");
               ws.send(token);
@@ -44,11 +44,11 @@ const DisplayWallet = ({listWalletInfo,onSend,listUTXOs}) => {
             setUTXOHistory(utxos)
             console.log(utxos)
         }
-    
+
         getWalletInfo();
         getUTXOs();
       },[])
-    
+
     return (
         <div>
             Wallet Details
@@ -61,13 +61,13 @@ const DisplayWallet = ({listWalletInfo,onSend,listUTXOs}) => {
             <p></p>
 
             {
-                showUTXO? 
+                showUTXO?
                     Object.entries(UTXOHistory).map(([key, val])=>
                     <DisplayUTXOs key={key} utxoID={key} utxo={val}> </DisplayUTXOs>
                     )
 
                 : ""
-            }            
+            }
         </div>
     )
 }
