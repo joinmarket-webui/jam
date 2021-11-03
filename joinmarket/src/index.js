@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { setGlobal } from 'reactn';
+
 // Set an initial global state directly:
 setGlobal({
   currentStatusMessage: "loading",
@@ -14,7 +15,7 @@ setGlobal({
 });
 
 ReactDOM.render(
-  
+
     <App />
   ,
   document.getElementById('root')

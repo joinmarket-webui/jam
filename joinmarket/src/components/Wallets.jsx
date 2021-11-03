@@ -1,15 +1,9 @@
 import React from 'react'
 import Wallet from './Wallet'
-const Wallets = ({walletList,onUnlock,onLock,onDisplay}) => {
-    
-    return (
-        <>
-        <p></p>
-        {walletList.map((wallet,index)=>{
-            return <Wallet key = {index} name={wallet} onUnlock = {onUnlock} onLock = {onLock} onDisplay = {onDisplay}></Wallet>
-        })}
-        </>
-    )
-}
+
+const Wallets = ({ walletList, currentWallet, onUnlock, onLock, onDisplay }) =>
+  walletList.map((wallet, index)=>
+    <Wallet key={index} name={wallet} isCurrent={wallet === currentWallet} onUnlock={onUnlock} onLock={onLock} onDisplay={onDisplay} />
+  )
 
 export default Wallets

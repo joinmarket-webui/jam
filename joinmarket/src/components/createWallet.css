@@ -1,10 +1,10 @@
-.heading{
-  color:rgb(15, 3, 58);
+.heading {
+  color: rgb(15, 3, 58);
   font-size: 40px;
   font-weight: 450;
 }
 
-.form1{
+.form1 {
   margin: 0 auto;
   background-color: rgb(244, 247, 253);
   width: 40%;
@@ -16,24 +16,23 @@
   border-width: 3px;
   border-style: dashed;
   border-color: #e0e3f0;
-  
 }
 
-.center{
+.center {
   padding: 40px;
 }
 
-.label{
+.label {
   text-align: left;
   font-size: 20px;
-  color:rgb(15, 3, 58)
+  color: rgb(15, 3, 58)
 }
 
-.field{
+.field {
   padding-top: 20px;
 }
 
-.field-border{
+.field-border {
   border-radius: 10px;
   border-width: 2px;
   border-style: dashed;
@@ -62,7 +61,7 @@
 }
 
 .btncr span {
-  position: relative; 
+  position: relative;
   z-index: 1;
   color:rgb(15, 3, 58)
 }

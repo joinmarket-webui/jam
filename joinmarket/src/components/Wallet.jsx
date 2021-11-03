@@ -1,20 +1,20 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
 import './wallet.css'
-const Wallet = ({name,onUnlock,onLock,onDisplay}) => {
-    return (
-        <div>
-            <br></br>
-            <rb.Card style={{ width: '18rem' }} className = "wallet_cards">
-              <rb.Card.Body>
-                <rb.Card.Title>{name}</rb.Card.Title>
-                <rb.Button className="btn btn-primary" onClick={()=>onUnlock(name)}>Unlock</rb.Button>{' '}
-                <rb.Button href="/display">Open</rb.Button>{' '}
-                <rb.Button onClick = {()=>onLock(name)}>Lock</rb.Button>
-              </rb.Card.Body>
-            </rb.Card>
-        </div>
-    )
-}
+
+const Wallet = ({ name, isCurrent, onUnlock, onLock }) => (
+  <rb.Card style={{ width: '18rem' }} className="wallet_cards mb-3">
+    <rb.Card.Body>
+      <rb.Card.Title>{name}</rb.Card.Title>
+      { isCurrent
+        ? <>
+          <rb.Button className="btn btn-primary me-2" href="/display">Open</rb.Button>
+          <rb.Button className="btn btn-secondary" onClick={() => onLock(name)}>Lock</rb.Button>
+          </>
+        : <rb.Button className="btn btn-primary" onClick={() => onUnlock(name)}>Unlock</rb.Button>
+      }
+    </rb.Card.Body>
+  </rb.Card>
+)
 
 export default Wallet
