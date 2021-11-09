@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom'
 import { useState } from 'react'
 import { useGlobal } from 'reactn'
 
-const Maker = ({ onStart, onStop }) => {
+export default function Maker({ onStart, onStop }) {
   const [cjfeeRel, setCjfeerel] = useState('')
   const [makerStarted] = useGlobal('makerStarted')
   const [setSubmitVal] = useState('Start Maker Service')
@@ -19,33 +19,28 @@ const Maker = ({ onStart, onStop }) => {
 
       onStart(0, 0, cjfeeRel, 'sw0reloffer', 1000)
       setCjfeerel('')
-      alert("Attempting to start the yield generator. Check the status bar for updates.")
+      alert('Attempting to start the yield generator. Check the status bar for updates.')
+
       setSubmitVal('Stop Maker Service')
     } else {
       onStop()
       setSubmitVal('Start Maker Service')
     }
-    let path = `/display`;
-    history.push(path);
+    history.push('/wallets/current')
   }
 
   return (
-    <div>
-      <h3>Maker Service</h3>
-      <form method="POST" onSubmit={onSubmit}>
-        <p></p>
-        { makerStarted === false
-          ? <label>
-              Relative Coinjoin Fee
-              <input type="text" name="cjfee_r" value={cjfeeRel} onChange={(e) => setCjfeerel(e.target.value)} />
-            </label>
-          : null
-        }
-        <p></p>
-        <input type="submit" value={makerStarted === 'true' ? 'Stop Maker Service' : 'Start Maker Service'} />
-      </form>
-    </div>
+    <form onSubmit={onSubmit}>
+      <h1>Maker Service</h1>
+      { makerStarted === false
+        ? <label>
+            Relative Coinjoin Fee
+            <input type="text" name="cjfee_r" value={cjfeeRel} onChange={(e) => setCjfeerel(e.target.value)} />
+          </label>
+        : null
+      }
+      <p></p>
+      <input type="submit" value={makerStarted === 'true' ? 'Stop Maker Service' : 'Start Maker Service'} />
+    </form>
   )
 }
-
-export default Maker

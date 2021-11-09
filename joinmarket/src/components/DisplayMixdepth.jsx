@@ -1,7 +1,7 @@
 import React from 'react'
-import './displayMixdepth.css'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import './DisplayMixdepth.css'
 
 const DisplayMixdepth = ({ walletInfo }) => {
   const accounts = []

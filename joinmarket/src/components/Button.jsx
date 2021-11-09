@@ -1,5 +1,5 @@
 import React from 'react'
-import './button.css'
+import './Button.css'
 
 export const Button = ({ name, children, type, onClick }) => (
   <button onClick={() => onClick(name)} type={type}>

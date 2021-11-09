@@ -1,29 +1,27 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
-import { BitcoinQR } from '@ibunker/bitcoin-react';
-import '@ibunker/bitcoin-react/dist/index.css';
-import { useLocation } from "react-router-dom";
+import { BitcoinQR } from '@ibunker/bitcoin-react'
+import '@ibunker/bitcoin-react/dist/index.css'
+import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import './receive.css'
+import { getSession } from '../session'
+import './Receive.css'
 
-const Receive = ({ onReceive }) => {
+const Receive = ({ currentWallet, onReceive }) => {
   const location = useLocation()
   const [new_address, setNewAddress] = useState('')
 
   const getAddress = async (mixdepth) => {
-    //update request with token if backend updated
-    let authData = JSON.parse(sessionStorage.getItem('auth'));
-    let token = "Bearer " + authData.token;
-    let name = authData.name;
-    const res = await fetch(`/api/v1/wallet/${name}/address/new/${mixdepth}`, {
+    const { wallet, token } = getSession()
+    const res = await fetch(`/api/v1/wallet/${wallet}/address/new/${mixdepth}`, {
       method: 'GET',
       headers: {
         'Content-type': 'application/json',
-        'Authorization': token
+        'Authorization': `Bearer ${token}`
       },
-    });
-    const { address } = await res.json();
-    return address;
+    })
+    const { address } = await res.json()
+    return address
   }
 
   useEffect(() => {
@@ -34,7 +32,7 @@ const Receive = ({ onReceive }) => {
       return
     }
 
-    getNewAddress(location.state.account_no);
+    getNewAddress(location.state.account_no)
   }, [location.state.account_no])
 
   const [temp_address, setTempAddress] = useState('')
@@ -51,46 +49,38 @@ const Receive = ({ onReceive }) => {
   }
 
   return (
-    <div>
-      <div className="heading">
-        Receive Funds
-      </div>
-      <form method="POST" onSubmit={onSubmit}>
-        <rb.Container className="center">
-          <rb.Container fluid="false" className="form1">
-            <rb.Row>
-              <rb.Col className="label">
-                Address
-              </rb.Col>
-              <rb.Col>
-                <input type="text" name="address" value={new_address} style={{ width: "415px" }} readOnly={true} onChange={(e) => setNewAddress(e.target.value)} />
-              </rb.Col>
-            </rb.Row>
-            <rb.Row className="field">
-              <rb.Col className="label">
-                Amount(BTC)
-              </rb.Col>
-              <rb.Col>
-                <input type="text" name="amount_sats" value={amount} style={{ width: "415px" }} onChange={(e) => setAmount(e.target.value)} />
-              </rb.Col>
-            </rb.Row>
-            <rb.Row className="btn-field">
-              <button className="btncr" type="submit" value="Submit" ><span>Get QR Code</span></button>
-            </rb.Row>
-            {temp_address.length > 0
-              ? <BitcoinQR
-                bitcoinAddress={temp_address}
-                message=""
-                amount={amount}
-                time=""
-                exp=""
-              />
-              : null
-            }
-          </rb.Container>
-        </rb.Container>
-      </form>
-    </div>
+    <form onSubmit={onSubmit}>
+      <h1>Receive Funds</h1>
+      <rb.Row>
+        <rb.Col className="label">
+          Address
+        </rb.Col>
+        <rb.Col>
+          <input type="text" name="address" value={new_address} style={{ width: "415px" }} readOnly={true} onChange={(e) => setNewAddress(e.target.value)} />
+        </rb.Col>
+      </rb.Row>
+      <rb.Row className="field">
+        <rb.Col className="label">
+          Amount(BTC)
+        </rb.Col>
+        <rb.Col>
+          <input type="text" name="amount_sats" value={amount} style={{ width: "415px" }} onChange={(e) => setAmount(e.target.value)} />
+        </rb.Col>
+      </rb.Row>
+      <rb.Row className="btn-field">
+        <button className="btncr" type="submit" value="Submit" ><span>Get QR Code</span></button>
+      </rb.Row>
+      {temp_address.length > 0
+        ? <BitcoinQR
+          bitcoinAddress={temp_address}
+          message=""
+          amount={amount}
+          time=""
+          exp=""
+        />
+        : null
+      }
+    </form>
   )
 }
 
