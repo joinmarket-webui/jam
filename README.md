@@ -97,14 +97,10 @@ In short:
 ```bash
 git clone https://github.com/joinmarket-webui/jm-web-client.git
 cd jm-web-client
-git checkout next
-cd joinmarket
 yarn && yarn start
 ```
 
 You might have to install yarn via `npm install -g yarn`.
-
-Note: The above steps will soon change, as soon as [this PR](https://github.com/JoinMarket-Org/jm-web-client/pull/12) is merged.
 
 In any case, if everything works, you should be greeted with the following screen, assuming you have a wallet set up in JoinMarket:
 
