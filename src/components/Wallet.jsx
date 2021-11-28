@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useGlobal } from 'reactn'
 import * as rb from 'react-bootstrap'
 import { setSession, clearSession } from '../session'
@@ -11,6 +11,7 @@ export default function Wallet({ name, currentWallet, activeWallet, setAlert }) 
   const [validated, setValidated] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
+  const navigate = useNavigate()
 
   const unlockWallet = async (walletName, password) => {
     if (currentWallet) {
@@ -35,6 +36,7 @@ export default function Wallet({ name, currentWallet, activeWallet, setAlert }) 
           const { walletname: name, token } = await res.json()
           setSession(name, token)
           setCurrentWallet({ name, token })
+          navigate('/wallet')
         } else {
           const { message } = await res.json()
           setAlert({ variant: 'danger', message: message.replace('Wallet', walletName) })
@@ -117,7 +119,7 @@ export default function Wallet({ name, currentWallet, activeWallet, setAlert }) 
           {isActive
             ? (hasToken
                 ? <>
-                    <Link className="btn btn-primary me-2" to="/wallets/current">Open</Link>
+                    <Link className="btn btn-primary me-2" to="/wallet">Open</Link>
                     <rb.FormControl type="hidden" name="action" value="lock" />
                     <rb.Button variant="secondary" type="submit" disabled={isLocking}>
                       {isLocking

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useGlobal } from 'reactn'
 
@@ -7,7 +7,7 @@ export default function Maker({ onStart, onStop }) {
   const [cjfeeRel, setCjfeerel] = useState('')
   const [makerStarted] = useGlobal('makerStarted')
   const [setSubmitVal] = useState('Start Maker Service')
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -26,7 +26,7 @@ export default function Maker({ onStart, onStop }) {
       onStop()
       setSubmitVal('Start Maker Service')
     }
-    history.push('/wallets/current')
+    navigate('/wallet')
   }
 
   return (

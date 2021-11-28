@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Route, Switch, Link } from 'react-router-dom'
+import { Route, Routes, Link } from 'react-router-dom'
 import { useGlobal } from 'reactn'
 import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
@@ -13,7 +13,6 @@ import { useInterval } from '../utils'
 import { getSession, clearSession } from '../session'
 
 export default function App() {
-  const [globalAlert, setGlobalAlert] = useGlobal('alert')
   const [makerStarted, setMakerStarted]  = useGlobal('makerStarted')
   const [currentWallet, setCurrentWallet] = useGlobal('currentWallet') // client
   const [activeWallet, setActiveWallet] = useGlobal('activeWallet') // server
@@ -44,7 +43,6 @@ export default function App() {
       setActiveWallet(activeWallet)
       setMakerStarted(maker_running)
       setCoinjoinInProcess(coinjoin_in_process)
-      setGlobalAlert(null)
       if (currentWallet && currentWallet.name !== activeWallet) {
         setCurrentWallet(null)
         clearSession()
@@ -229,13 +227,13 @@ export default function App() {
             <rb.Nav className="text-start">
               {currentWallet &&
                 <>
-                  <Link to="/wallets/current" className="nav-link">Wallet</Link>
+                  <Link to="/wallet" className="nav-link">Wallet</Link>
                   <Link to="/payment" className="nav-link">Payment</Link>
                   <Link to="/receive" className="nav-link">Receive</Link>
                   <Link to="/maker" className="nav-link">Maker</Link>
                 </>}
               {connection === true &&
-                <Link to="/wallets/create" className="nav-link">Create Wallet</Link>}
+                <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
               <Link to="/about" className="nav-link">About</Link>
             </rb.Nav>
           </rb.Navbar.Collapse>
@@ -253,33 +251,19 @@ export default function App() {
       <rb.Container as="main" className="py-4">
         {connection === false &&
           <rb.Alert variant="danger">No connection to backend server.</rb.Alert>}
-        <Switch>
-          <Route path='/' exact render={props => (
-            <Wallets currentWallet={currentWallet} activeWallet={activeWallet} walletList={walletList} onDisplay={displayWallet} />
-          )} />
+        <Routes>
+          <Route path='/' element={<Wallets currentWallet={currentWallet} activeWallet={activeWallet} walletList={walletList} onDisplay={displayWallet} />} />
+          <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} activeWallet={activeWallet} />} />
           {currentWallet &&
             <>
-              <Route path='/wallets/current' exact render={props => (
-                <CurrentWallet currentWallet={currentWallet} activeWallet={activeWallet} onSend={makePayment} listUTXOs={getUTXOs} />
-              )} />
-              <Route path='/wallets/create' exact render={props => (
-                <CreateWallet currentWallet={currentWallet} activeWallet={activeWallet} />
-              )} />
-              <Route path='/payment' exact render={props => (
-                <Payment currentWallet={currentWallet} onPayment={makePayment} onCoinjoin={doCoinjoin} />
-              )} />
-              <Route path='/maker' exact render={props => (
-                <Maker onStart={startMakerService} onStop={stopMakerService} />
-              )} />
-              <Route path='/receive' exact render={props => (
-                <Receive />
-              )} />
+              <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet} activeWallet={activeWallet} onSend={makePayment} listUTXOs={getUTXOs} />} />
+              <Route path='payment' element={<Payment currentWallet={currentWallet} onPayment={makePayment} onCoinjoin={doCoinjoin} />} />
+              <Route path='maker' element={<Maker onStart={startMakerService} onStop={stopMakerService} />} />
+              <Route path='receive' element={<Receive />} />
             </>
           }
-          <Route path='/about' exact render={props => (
-            <About />
-          )} />
-        </Switch>
+          <Route path='about' element={<About />} />
+        </Routes>
       </rb.Container>
     </div>
   )

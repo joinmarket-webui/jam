@@ -8,7 +8,7 @@ const Homepage = () => (
       <rb.Col>
         <rb.ListGroup>
           <rb.ListGroup.Item action to="/wallets" target="_blank">Show Wallets</rb.ListGroup.Item>
-          <rb.ListGroup.Item action to="/wallets/create">Create Wallet</rb.ListGroup.Item>
+          <rb.ListGroup.Item action to="/create-wallet">Create Wallet</rb.ListGroup.Item>
         </rb.ListGroup>
       </rb.Col>
     </rb.Row>
