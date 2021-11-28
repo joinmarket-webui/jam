@@ -133,21 +133,20 @@ export default function Wallet({ name, currentWallet, activeWallet, setAlert }) 
                     Please remove the lock file on the server.
                   </rb.Alert>
               )
-            : (noneActive
-                ? <rb.InputGroup>
-                    <rb.FormControl type="password" placeholder="Password" name="password" disabled={isUnlocking} required />
-                    <rb.FormControl type="hidden" name="action" value="unlock" />
-                    <rb.Button variant="primary" type="submit" disabled={isUnlocking}>
-                      {isUnlocking
-                        ? <>
-                            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                            Unlocking
-                          </>
-                        : 'Unlock'}
-                      </rb.Button>
-                    <rb.Form.Control.Feedback type="invalid">Please set the wallet's password.</rb.Form.Control.Feedback>
-                  </rb.InputGroup>
-                : null)
+            : (noneActive &&
+                <rb.InputGroup>
+                  <rb.FormControl type="password" placeholder="Password" name="password" disabled={isUnlocking} required />
+                  <rb.FormControl type="hidden" name="action" value="unlock" />
+                  <rb.Button variant="primary" type="submit" disabled={isUnlocking}>
+                    {isUnlocking
+                      ? <>
+                          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                          Unlocking
+                        </>
+                      : 'Unlock'}
+                    </rb.Button>
+                  <rb.Form.Control.Feedback type="invalid">Please set the wallet's password.</rb.Form.Control.Feedback>
+                </rb.InputGroup>)
           }
         </rb.Form>
       </rb.Card.Body>

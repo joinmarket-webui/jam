@@ -80,9 +80,7 @@ export default function CreateWallet({ currentWallet, activeWallet }) {
     return canCreate
       ? <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <h1>Create Wallet</h1>
-        {alert
-          ? <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>
-          : null}
+        {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
         <rb.Form.Group className="mb-3" controlId="walletName">
           <rb.Form.Label>Wallet Name</rb.Form.Label>
           <rb.Form.Control name="wallet" style={{ maxWidth: '20em' }} required />

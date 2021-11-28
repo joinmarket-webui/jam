@@ -227,55 +227,55 @@ export default function App() {
           <rb.Navbar.Toggle aria-controls="responsive-rb.Navbar-rb.Nav" className="ms-auto border-0" />
           <rb.Navbar.Collapse id="responsive-rb.Navbar-rb.Nav">
             <rb.Nav className="text-start">
-              {currentWallet
-                ? <>
-                    <Link to="/wallets/current" className="nav-link">Wallet</Link>
-                    <Link to="/payment" className="nav-link">Payment</Link>
-                    <Link to="/receive" className="nav-link">Receive</Link>
-                    <Link to="/maker" className="nav-link">Maker</Link>
-                  </>
-                : null}
-              {connection === true
-                ? <Link to="/wallets/create" className="nav-link">Create Wallet</Link>
-                : null}
+              {currentWallet &&
+                <>
+                  <Link to="/wallets/current" className="nav-link">Wallet</Link>
+                  <Link to="/payment" className="nav-link">Payment</Link>
+                  <Link to="/receive" className="nav-link">Receive</Link>
+                  <Link to="/maker" className="nav-link">Maker</Link>
+                </>}
+              {connection === true &&
+                <Link to="/wallets/create" className="nav-link">Create Wallet</Link>}
               <Link to="/about" className="nav-link">About</Link>
             </rb.Nav>
           </rb.Navbar.Collapse>
           <div className="justify-content-start justify-content-md-end">
             <rb.Nav className="flex-row">
-              <Link to="/" className="nav-link">{walletLoadStatus} ({activeWallet || 'None'} active)</Link> }
+              <Link to="/" className="nav-link">{walletLoadStatus} ({activeWallet || 'None'} active)</Link>
               <rb.Navbar.Text>
-                {connection === true
-                  ? ` · YG ${makerStarted ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`
-                  : null}
+                {connection === true &&
+                  ` · YG ${makerStarted ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`}
               </rb.Navbar.Text>
             </rb.Nav>
           </div>
         </rb.Container>
       </rb.Navbar>
       <rb.Container as="main" className="py-4">
-        {connection === false
-          ? <rb.Alert variant="danger">No connection to backend server.</rb.Alert>
-          : null }
+        {connection === false &&
+          <rb.Alert variant="danger">No connection to backend server.</rb.Alert>}
         <Switch>
           <Route path='/' exact render={props => (
             <Wallets currentWallet={currentWallet} activeWallet={activeWallet} walletList={walletList} onDisplay={displayWallet} />
           )} />
-          <Route path='/wallets/current' exact render={props => (
-            <CurrentWallet currentWallet={currentWallet} activeWallet={activeWallet}  onSend={makePayment} listUTXOs={getUTXOs} />
-          )} />
-          <Route path='/wallets/create' exact render={props => (
-            <CreateWallet currentWallet={currentWallet} activeWallet={activeWallet} />
-          )} />
-          <Route path='/payment' exact render={props => (
-            <Payment currentWallet={currentWallet} onPayment={makePayment} onCoinjoin={doCoinjoin} />
-          )} />
-          <Route path='/maker' exact render={props => (
-            <Maker onStart={startMakerService} onStop={stopMakerService} />
-          )} />
-          <Route path='/receive' exact render={props => (
-            <Receive />
-          )} />
+          {currentWallet &&
+            <>
+              <Route path='/wallets/current' exact render={props => (
+                <CurrentWallet currentWallet={currentWallet} activeWallet={activeWallet} onSend={makePayment} listUTXOs={getUTXOs} />
+              )} />
+              <Route path='/wallets/create' exact render={props => (
+                <CreateWallet currentWallet={currentWallet} activeWallet={activeWallet} />
+              )} />
+              <Route path='/payment' exact render={props => (
+                <Payment currentWallet={currentWallet} onPayment={makePayment} onCoinjoin={doCoinjoin} />
+              )} />
+              <Route path='/maker' exact render={props => (
+                <Maker onStart={startMakerService} onStop={stopMakerService} />
+              )} />
+              <Route path='/receive' exact render={props => (
+                <Receive />
+              )} />
+            </>
+          }
           <Route path='/about' exact render={props => (
             <About />
           )} />

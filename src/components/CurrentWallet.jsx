@@ -1,13 +1,15 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
-import { Button } from './Button'
-import DisplayMixdepth from './DisplayMixdepth'
+import * as rb from 'react-bootstrap'
+import DisplayMixdepths from './DisplayMixdepths'
 import DisplayUTXOs from './DisplayUTXOs'
 
-const CurrentWallet = ({ currentWallet, activeWallet, onSend, listUTXOs }) => {
-  const [wallet_info, setWalletInfo] = useState([])
-  const [UTXOHistory, setUTXOHistory] = useState({})
+export default function CurrentWallet ({ currentWallet, activeWallet, onSend, listUTXOs }) {
+  const [wallet_info, setWalletInfo] = useState(null)
+  const [UTXOHistory, setUTXOHistory] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
+  const [alert, setAlert] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const listWalletInfo = async () => {
     const { name, token } = currentWallet
@@ -16,26 +18,35 @@ const CurrentWallet = ({ currentWallet, activeWallet, onSend, listUTXOs }) => {
       return alert(`Please unlock ${name} first`)
     }
 
+    setAlert(null)
+    setIsLoading(true)
     try {
       const res = await fetch(`/api/v1/wallet/${name}/display`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       })
-      const { walletinfo } = await res.json()
-      const balance = walletinfo.total_balance
-      const mix_depths = walletinfo.accounts
-      const wallet_info = { balance }
-      wallet_info[mix_depths[0].account] = mix_depths[0].account_balance
-      wallet_info[mix_depths[1].account] = mix_depths[1].account_balance
-      wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
-      wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
-      wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
 
-      return [walletinfo]
+      if (res.ok) {
+        const { walletinfo } = await res.json()
+        const balance = walletinfo.total_balance
+        const mix_depths = walletinfo.accounts
+        const wallet_info = { balance }
+        wallet_info[mix_depths[0].account] = mix_depths[0].account_balance
+        wallet_info[mix_depths[1].account] = mix_depths[1].account_balance
+        wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
+        wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
+        wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
+
+        return [walletinfo]
+      } else {
+        const { message } = await res.json()
+        setAlert({ variant: 'danger', message })
+      }
     } catch (e) {
-      console.error(e)
-      alert('Error while loading.')
+      setAlert({ variant: 'danger', message: e.message })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -65,14 +76,12 @@ const CurrentWallet = ({ currentWallet, activeWallet, onSend, listUTXOs }) => {
     }
     const getWalletInfo = async () => {
       const wallet_info = await listWalletInfo()
-      console.log(wallet_info)
       setWalletInfo(wallet_info)
     }
 
     const getUTXOs = async () => {
       const utxos = await listUTXOs()
       setUTXOHistory(utxos)
-      console.log(utxos)
     }
 
     getWalletInfo()
@@ -82,20 +91,17 @@ const CurrentWallet = ({ currentWallet, activeWallet, onSend, listUTXOs }) => {
   return (
     <div>
       <h1>{activeWallet}</h1>
-      {wallet_info?.map((walletInfo, index) => {
-        return <DisplayMixdepth key={index} walletInfo={walletInfo}></DisplayMixdepth>
-      })}
+      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      {isLoading &&
+        <>
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          Loading
+        </>}
+      {wallet_info?.map((walletInfo) => <DisplayMixdepths walletInfo={walletInfo} />)}
       <p></p>
-      <Button onClick={() => { setShowUTXO(!showUTXO) }}>{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</Button>
+      {UTXOHistory && <rb.Button onClick={() => { setShowUTXO(!showUTXO) }}>{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
       <p></p>
-      { showUTXO
-        ? Object.entries(UTXOHistory).map(([key, val]) =>
-            <DisplayUTXOs key={key} utxoID={key} utxo={val}> </DisplayUTXOs>
-          )
-        : null
-      }
+      {UTXOHistory && showUTXO && <DisplayUTXOs utxos={UTXOHistory} />}
     </div>
   )
 }
-
-export default CurrentWallet

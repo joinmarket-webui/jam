@@ -14,9 +14,7 @@ export default function Wallets({ currentWallet, activeWallet, walletList, onDis
   return (
     <>
       <h1>Wallets</h1>
-      {alert
-        ? <Alert {...alert} />
-        : null}
+      {alert && <Alert {...alert} />}
       {walletList.map(wallet =>
         <Wallet key={wallet} name={wallet} currentWallet={currentWallet} activeWallet={activeWallet} setAlert={setAlert} onDisplay={onDisplay} />)}
     </>
