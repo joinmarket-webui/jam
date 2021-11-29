@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "proxy": "https://localhost:28183",
-  "dependencies": {
+  "devDependencies": {
     "@ibunker/bitcoin-react": "^0.1.13-cd",
     "@popperjs/core": "^2.11.0",
     "@testing-library/jest-dom": "^5.15.1",
@@ -19,6 +19,9 @@
     "react-scripts": "4.0.3",
     "reactn": "^2.2.7",
     "web-vitals": "^2.1.2"
+  },
+  "dependencies": {
+    "serve": "13.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
