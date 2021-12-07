@@ -1,13 +1,9 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useGlobal } from 'reactn'
 import * as rb from 'react-bootstrap'
-import { setSession, clearSession } from '../session'
 import { serialize } from '../utils'
 
-export default function Wallet({ name, currentWallet, activeWallet, setAlert }) {
-  const [, setCurrentWallet] = useGlobal('currentWallet')
-  const [, setActiveWallet] = useGlobal('activeWallet')
+export default function Wallet({ name, currentWallet, activeWallet, startWallet, stopWallet, setAlert }) {
   const [validated, setValidated] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
@@ -34,8 +30,7 @@ export default function Wallet({ name, currentWallet, activeWallet, setAlert }) 
         })
         if (res.ok) {
           const { walletname: name, token } = await res.json()
-          setSession(name, token)
-          setCurrentWallet({ name, token })
+          startWallet(name, token)
           navigate('/wallet')
         } else {
           const { message } = await res.json()
@@ -64,9 +59,7 @@ export default function Wallet({ name, currentWallet, activeWallet, setAlert }) 
       })
       if (res.ok) {
         const { walletname, already_locked } = await res.json()
-        clearSession()
-        setActiveWallet(null)
-        setCurrentWallet(null)
+        stopWallet()
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           message: `${walletname} ${already_locked ? 'already locked' : 'locked succesfully'}.`,

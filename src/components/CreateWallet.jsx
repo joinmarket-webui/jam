@@ -1,12 +1,8 @@
 import React, { useState } from 'react'
-import { useGlobal } from 'reactn'
 import * as rb from 'react-bootstrap'
-import { setSession } from '../session'
 import { serialize } from '../utils'
 
-export default function CreateWallet({ currentWallet, activeWallet }) {
-  const [, setCurrentWallet] = useGlobal('currentWallet')
-  const [, setActiveWallet] = useGlobal('activeWallet')
+export default function CreateWallet({ currentWallet, activeWallet, startWallet }) {
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -32,9 +28,7 @@ export default function CreateWallet({ currentWallet, activeWallet }) {
         const { seedphrase, token, walletname: createdWallet } = await res.json()
         setAlert({ variant: 'success', seedphrase, password })
         setCreatedWallet(createdWallet)
-        setActiveWallet(createdWallet)
-        setSession(createdWallet, token)
-        setCurrentWallet({ name: createdWallet, token })
+        startWallet(createdWallet, token)
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Route, Routes, Link } from 'react-router-dom'
 import { useGlobal } from 'reactn'
 import * as rb from 'react-bootstrap'
@@ -10,7 +10,7 @@ import Maker from './Maker'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
 import { useInterval } from '../utils'
-import { getSession, clearSession } from '../session'
+import { getSession, setSession, clearSession } from '../session'
 
 export default function App() {
   const [makerStarted, setMakerStarted]  = useGlobal('makerStarted')
@@ -20,10 +20,63 @@ export default function App() {
   const [walletLoadStatus, setWalletLoadStatus] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const [walletList, setWalletList] = useState([])
+  const websocket = useRef(null)
+
+  const startWallet = (name, token) => {
+    setSession(name, token)
+    setActiveWallet(name)
+    setCurrentWallet({ name, token })
+
+    const { protocol, host } = window.location
+    const scheme = protocol === 'https:' ? 'wss' : 'ws'
+    websocket.current = new WebSocket(`${scheme}://${host}/ws/`)
+
+    websocket.current.onopen = () => {
+      console.debug('websocket connection openend')
+      websocket.current.send(token)
+    }
+
+    websocket.current.onerror = error => {
+      console.error('websocket error', error)
+    }
+
+    websocket.current.onmessage = event => {
+      // For now we only have one message type, namely the transaction notification:
+      // For now, note that since the `getUtxos` function is called on every render of
+      // the display page, we don't need to somehow use this data other than as some
+      // kind of popup/status bar notifier.
+      // In future it might be possible to use the detailed transaction deserialization
+      // passed in this notification, for something.
+      const wsdata = JSON.parse(event.data)
+      console.debug('websocket sent', wsdata)
+    }
+
+    const wsCurrent = websocket.current
+    return () => {
+      wsCurrent.close()
+    }
+  }
+
+  const stopWallet = () => {
+    clearSession()
+    setActiveWallet(null)
+    setCurrentWallet(null)
+
+    if (websocket) {
+      websocket.current.onclose = () => {
+        console.debug('websocket connection closed')
+      }
+      websocket.current.close()
+    }
+  }
 
   useEffect(() => {
-    setCurrentWallet(getSession())
-  }, [setCurrentWallet])
+    const session = getSession()
+    if (session) {
+      startWallet(session.name, session.token)
+    }
+  }, [])
+
 
   const resetState = async () => {
     setWalletList([])
@@ -252,8 +305,8 @@ export default function App() {
         {connection === false &&
           <rb.Alert variant="danger">No connection to backend server.</rb.Alert>}
         <Routes>
-          <Route path='/' element={<Wallets currentWallet={currentWallet} activeWallet={activeWallet} walletList={walletList} onDisplay={displayWallet} />} />
-          <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} activeWallet={activeWallet} />} />
+          <Route path='/' element={<Wallets currentWallet={currentWallet} activeWallet={activeWallet} startWallet={startWallet} stopWallet={stopWallet} walletList={walletList} onDisplay={displayWallet} />} />
+          <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} activeWallet={activeWallet} startWallet={startWallet} />} />
           {currentWallet &&
             <>
               <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet} activeWallet={activeWallet} onSend={makePayment} listUTXOs={getUTXOs} />} />

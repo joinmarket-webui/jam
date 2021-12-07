@@ -25,7 +25,7 @@ export default function DisplayAccounts({ accounts }) {
               <rb.Accordion.Item eventKey="0">
                 <rb.Accordion.Header>External Addresses Balance: {accounts[index].branches[0].balance} BTC </rb.Accordion.Header>
                 <rb.Accordion.Body>
-                  <p class="text-break">
+                  <p className="text-break">
                     Extended Pubkey : {accounts[index].branches[0].branch.split("\t").pop()}
                   </p>
                   {accounts[index].branches[0].entries.map((user, i) => (

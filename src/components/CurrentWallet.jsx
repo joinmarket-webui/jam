@@ -43,22 +43,6 @@ export default function CurrentWallet ({ currentWallet, activeWallet, onSend, li
       return setAlert({ variant: 'warning', message: `Please unlock ${name} first` })
     }
 
-    const ws = new WebSocket(`ws://${window.location.hostname}:${window.location.port}`)
-    ws.onopen = event => {
-      console.log('connected to websocket')
-      ws.send(token)
-    }
-    ws.onmessage = event => {
-      // For now we only have one message type, namely the transaction notification:
-      // For now, note that since the `getUtxos` function is called on every render of
-      // the display page, we don't need to somehow use this data other than as some
-      // kind of popup/status bar notifier.
-      // In future it might be possible to use the detailed transaction deserialization
-      // passed in this notification, for something.
-      const wsdata = JSON.parse(event.data)
-      console.log(`Websocket sent: ${wsdata.txid}`)
-    }
-
     const getWalletInfo = async () => {
       const walletInfo = await listWalletInfo()
       setWalletInfo(walletInfo)

@@ -21,9 +21,9 @@ const DisplayUTXOs = ({ utxos }) => (
           Mixdepth {mixdepth}
         </rb.Accordion.Header>
         <rb.Accordion.Body>
-          <ul class="list-group list-group-flush">
+          <ul className="list-group list-group-flush">
             {utxos.map(utxo => (
-              <li class="list-group-item">
+              <li className="list-group-item">
                 <span>Address: {utxo.address}</span>
                 <br></br>
                 <span>Sats:  {utxo.value}</span>
