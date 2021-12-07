@@ -15,7 +15,6 @@ import { getSession, setSession, clearSession } from '../session'
 export default function App() {
   const [makerStarted, setMakerStarted]  = useGlobal('makerStarted')
   const [currentWallet, setCurrentWallet] = useGlobal('currentWallet') // client
-  const [activeWallet, setActiveWallet] = useGlobal('activeWallet') // server
   const [connection, setConnection] = useState()
   const [walletLoadStatus, setWalletLoadStatus] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
@@ -24,7 +23,6 @@ export default function App() {
 
   const startWallet = (name, token) => {
     setSession(name, token)
-    setActiveWallet(name)
     setCurrentWallet({ name, token })
 
     const { protocol, host } = window.location
@@ -59,7 +57,6 @@ export default function App() {
 
   const stopWallet = () => {
     clearSession()
-    setActiveWallet(null)
     setCurrentWallet(null)
 
     if (websocket) {
@@ -80,7 +77,6 @@ export default function App() {
 
   const resetState = async () => {
     setWalletList([])
-    setActiveWallet(null)
     setCurrentWallet(null)
     setMakerStarted(null)
     setCoinjoinInProcess(null)
@@ -93,10 +89,9 @@ export default function App() {
       const activeWallet = wallet_name !== 'None' ? wallet_name : null
 
       setConnection(true)
-      setActiveWallet(activeWallet)
       setMakerStarted(maker_running)
       setCoinjoinInProcess(coinjoin_in_process)
-      if (currentWallet && currentWallet.name !== activeWallet) {
+      if (activeWallet && currentWallet && currentWallet.name !== activeWallet) {
         setCurrentWallet(null)
         clearSession()
       }
@@ -114,7 +109,9 @@ export default function App() {
       setWalletLoadStatus(wallets.length === 0
         ? 'No wallets'
         : `${wallets.length} wallet${wallets.length === 1 ? '' : 's'}`)
-      wallets.sort((a, b) => b === activeWallet)
+      if (currentWallet) {
+        wallets.sort((a, b) => b === currentWallet.name)
+      }
       setWalletList(wallets)
     } catch (e) {
       setConnection(false)
@@ -123,7 +120,7 @@ export default function App() {
     }
   }
 
-  useEffect(() => { refreshWallets() }, [activeWallet])
+  useEffect(() => { refreshWallets() }, [currentWallet])
 
   const displayWallet = async (walletName) => {
     const { name, token } = currentWallet
@@ -292,7 +289,7 @@ export default function App() {
           </rb.Navbar.Collapse>
           <div className="justify-content-start justify-content-md-end">
             <rb.Nav className="flex-row">
-              <Link to="/" className="nav-link">{walletLoadStatus} ({activeWallet || 'None'} active)</Link>
+              <Link to="/" className="nav-link">{walletLoadStatus} ({(currentWallet && currentWallet.name) || 'None'} active)</Link>
               <rb.Navbar.Text>
                 {connection === true &&
                   ` · YG ${makerStarted ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`}
@@ -305,11 +302,11 @@ export default function App() {
         {connection === false &&
           <rb.Alert variant="danger">No connection to backend server.</rb.Alert>}
         <Routes>
-          <Route path='/' element={<Wallets currentWallet={currentWallet} activeWallet={activeWallet} startWallet={startWallet} stopWallet={stopWallet} walletList={walletList} onDisplay={displayWallet} />} />
-          <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} activeWallet={activeWallet} startWallet={startWallet} />} />
+          <Route path='/' element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} walletList={walletList} onDisplay={displayWallet} />} />
+          <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />} />
           {currentWallet &&
             <>
-              <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet} activeWallet={activeWallet} onSend={makePayment} listUTXOs={getUTXOs} />} />
+              <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet} onSend={makePayment} listUTXOs={getUTXOs} />} />
               <Route path='payment' element={<Payment currentWallet={currentWallet} onPayment={makePayment} onCoinjoin={doCoinjoin} />} />
               <Route path='maker' element={<Maker onStart={startMakerService} onStop={stopMakerService} />} />
               <Route path='receive' element={<Receive />} />

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize } from '../utils'
 
-export default function Wallet({ name, currentWallet, activeWallet, startWallet, stopWallet, setAlert }) {
+export default function Wallet({ name, currentWallet, startWallet, stopWallet, setAlert }) {
   const [validated, setValidated] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
@@ -100,9 +100,9 @@ export default function Wallet({ name, currentWallet, activeWallet, startWallet,
     }
   }
 
-  const isActive = activeWallet === name
+  const isActive = currentWallet && currentWallet.name === name
   const hasToken = currentWallet?.token
-  const noneActive = !activeWallet
+  const noneActive = !currentWallet
 
   return (
     <rb.Card style={{ maxWidth: '24em' }} className="mt-3">

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { serialize } from '../utils'
 
-export default function CreateWallet({ currentWallet, activeWallet, startWallet }) {
+export default function CreateWallet({ currentWallet, startWallet }) {
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -53,8 +53,8 @@ export default function CreateWallet({ currentWallet, activeWallet, startWallet 
     }
   }
 
-  const isCreated = activeWallet && activeWallet === createdWallet
-  const canCreate = !activeWallet && !isCreated
+  const isCreated = currentWallet && currentWallet.name === createdWallet
+  const canCreate = !currentWallet && !isCreated
 
   if (isCreated && alert?.seedphrase) {
     return (
@@ -94,6 +94,6 @@ export default function CreateWallet({ currentWallet, activeWallet, startWallet 
             : 'Create'}
         </rb.Button>
       </rb.Form>
-      : <rb.Alert variant="warning">Currently {activeWallet} is active. You need to lock it first.</rb.Alert>
+      : <rb.Alert variant="warning">Currently {currentWallet.name} is active. You need to lock it first.</rb.Alert>
   }
 }

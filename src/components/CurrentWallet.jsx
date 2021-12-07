@@ -4,7 +4,7 @@ import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayUTXOs from './DisplayUTXOs'
 
-export default function CurrentWallet ({ currentWallet, activeWallet, onSend, listUTXOs }) {
+export default function CurrentWallet ({ currentWallet, onSend, listUTXOs }) {
   const [walletInfo, setWalletInfo] = useState(null)
   const [UTXOHistory, setUTXOHistory] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
@@ -59,7 +59,7 @@ export default function CurrentWallet ({ currentWallet, activeWallet, onSend, li
 
   return (
     <div>
-      <h1>{activeWallet}</h1>
+      <h1>{currentWallet.name}</h1>
       {walletInfo && <p>Total Balance: {walletInfo?.total_balance} BTC</p>}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading &&
