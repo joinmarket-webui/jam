@@ -1,0 +1,156 @@
+version: "3"
+
+services:
+
+  bitcoind:
+    container_name: jm_regtest_bitcoind
+    restart: unless-stopped
+    image: btcpayserver/bitcoin:22.0-1
+    environment:
+      HIDDENSERVICE_NAME: BTC-P2P,BTC-RPC
+      BTC-P2P_HIDDENSERVICE_VIRTUAL_PORT: 8333
+      BTC-P2P_HIDDENSERVICE_PORT: 39388
+      BTC-RPC_HIDDENSERVICE_VIRTUAL_PORT: 8332
+      BTC-RPC_HIDDENSERVICE_PORT: 43782
+      BITCOIN_NETWORK: ${NBITCOIN_NETWORK:-regtest}
+      BITCOIN_WALLETDIR: "/walletdata"
+      BITCOIN_EXTRA_ARGS: |
+        rpcport=43782
+        rpcbind=0.0.0.0
+        rpcallowip=0.0.0.0/0
+        port=39388
+        whitelist=0.0.0.0/0
+        maxmempool=500
+        debug=1
+        logips=1
+        networkactive=1
+        dnsseed=0
+        uacomment=tbkdevbitcoindregtest
+        printpriority=1
+        logtimemicros=1
+        zmqpubrawblock=tcp://0.0.0.0:28332
+        zmqpubrawtx=tcp://0.0.0.0:28333
+        zmqpubhashblock=tcp://0.0.0.0:28334
+        # tor
+        dns=1
+        onion=tor:9050
+        torcontrol=tor:9051
+        # do not automatically create tor hidden service
+        listenonion=0
+        # rpcauth (user=regtest; password=regtest)
+        rpcauth=regtest:20b58677979ad9d3cf4b78b1d6e85e44$$2ec3e1e1c00c7c58d7aff1d4bf96e4a984ea1af5d676d862fd0faa857a1d4d7c
+        # rpcauth (user=joinmarket; password=joinmarket)
+        rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
+        # rpcauth (user=nbxplorer; password=nbxplorer)
+        rpcauth=nbxplorer:8953867752ed07ca27bc0b1d7a10fa99$$e46553870d4a2c59753bfe453797be070ab4dbd5fdfc2fecdb7862ea0ae6b127
+    expose:
+      - "43782" # RPC
+      - "39388" # P2P
+      - "28332" # ZMQ
+      - "28333" # ZMQ
+      - "28334" # ZMQ
+    volumes:
+      - "bitcoin_datadir:/data"
+      - "bitcoin_wallet_datadir:/walletdata"
+      - "tor_datadir:/home/tor/.tor"
+    depends_on:
+      - tor
+
+  nbxplorer:
+    container_name: jm_regtest_nbxplorer
+    restart: unless-stopped
+    image: nicolasdorier/nbxplorer:2.2.18
+    environment:
+      NBXPLORER_NOAUTH: 1
+      NBXPLORER_CHAINS: "btc"
+      NBXPLORER_BTCRPCURL: http://bitcoind:43782/
+      NBXPLORER_BTCRPCUSER: nbxplorer
+      NBXPLORER_BTCRPCPASSWORD: nbxplorer
+      NBXPLORER_BTCNODEENDPOINT: bitcoind:39388
+      NBXPLORER_NETWORK: ${NBITCOIN_NETWORK:-regtest}
+      NBXPLORER_BIND: 0.0.0.0:32838
+      NBXPLORER_TRIMEVENTS: 10000
+      NBXPLORER_SIGNALFILESDIR: /datadir
+    expose:
+      - "32838"
+    volumes:
+      - "nbxplorer_datadir:/datadir"
+      - "bitcoin_datadir:/root/.bitcoin"
+    depends_on:
+      - bitcoind
+      - tor
+
+  miniircd:
+    container_name: jm_regtest_miniircd
+    restart: unless-stopped
+    image: daxxog/miniircd:latest
+    expose:
+      - 6667
+
+  joinmarket:
+    container_name: jm_regtest_joinmarket
+    build:
+      context: ./dockerfile-deps/joinmarket
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      READY_FILE: /root/.nbxplorer/btc_fully_synched
+      ENSURE_WALLET: 1
+      jm_gaplimit: 2000
+      #jm_network: ${NBITCOIN_NETWORK:-regtest}
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_rpc_user: joinmarket
+      jm_rpc_password: joinmarket
+      jm_tor_control_host: tor
+      jm_tor_control_port: 9051
+      jm_onion_socks5_host: tor
+      jm_onion_socks5_port: 9050
+      jm_socks5_host: tor
+      jm_socks5_port: 9050
+    expose:
+      - 8080 # payjoin server
+      - 62601 # obwatch
+      - 27183 # joinmarketd
+      - 28183 # jmwalletd
+    ports:
+      - "62601:62601"
+      - "28183:28183"
+    volumes:
+      - "joinmarket_datadir:/root/.joinmarket"
+      - "nbxplorer_datadir:/root/.nbxplorer"
+      - "tor_datadir:/home/tor/.tor"
+    depends_on:
+      - bitcoind
+      - miniircd
+      - nbxplorer
+      - tor
+
+  tor:
+    container_name: jm_regtest_tor
+    restart: unless-stopped
+    image: btcpayserver/tor:0.4.6.5
+    environment:
+      TOR_PASSWORD: changeme
+      TOR_ADDITIONAL_CONFIG: /usr/local/etc/tor/torrc-2
+      TOR_EXTRA_ARGS: |
+        CookieAuthentication 1
+    expose:
+      - "9050"  # SOCKS
+      - "9051"  # Tor Control
+    volumes:
+      - "tor_datadir:/home/tor/.tor"
+      - "tor_torrcdir:/usr/local/etc/tor"
+      - "tor_servicesdir:/var/lib/tor/hidden_services"
+
+
+volumes:
+  bitcoin_datadir:
+  bitcoin_wallet_datadir:
+  nbxplorer_datadir:
+  joinmarket_datadir:
+  tor_datadir:
+  tor_torrcdir:
+  tor_servicesdir:

@@ -37,11 +37,16 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-## RaspiBlitz Setup
+## Setup
 
 While this prototype will hopefully be available as a packaged version soon, here is how you can set it up and play around with it yourself.
 
-### Prerequisite: RaspiBlitz with JoinMarket
+### Docker (regtest)
+See the [docker regtest setup readme](docker/regtest/readme.md).
+
+### RaspiBlitz Setup
+
+#### Prerequisite: RaspiBlitz with JoinMarket
 
 1. Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](https://github.com/rootzoll/raspiblitz):
 
@@ -52,7 +57,7 @@ For this, you will need JoinMarket [version 0.9.3](https://github.com/JoinMarket
 If needed you can upgrade JoinMarket to the latest commit via the JoininBox menu on your RaspiBlitz: Type `jm` in the command line and select ```UPDATE > ADVANCED > JMCOMMIT```.
 This will install the latest development version from JoinMarket's master branch.
 
-### Prerequisite: JoinMarket API Service
+#### Prerequisite: JoinMarket API Service
 
 2. As the joinmarket user on your RaspiBlitz, generate a self-signed certificate for the JoinMarket API Service as described [here](https://linuxize.com/post/creating-a-self-signed-ssl-certificate/), and put the certificate and the key in the `~/.joinmarket/ssl/` directory.
 
