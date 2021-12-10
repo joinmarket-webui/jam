@@ -267,35 +267,41 @@ export default function App() {
     }
   }
 
+  const nav = (
+    <rb.Nav className="text-start">
+      {currentWallet &&
+        <>
+          <Link to="/wallet" className="nav-link">Wallet</Link>
+          <Link to="/payment" className="nav-link">Payment</Link>
+          <Link to="/receive" className="nav-link">Receive</Link>
+          <Link to="/maker" className="nav-link">Maker</Link>
+        </>}
+      {connection === true &&
+        <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
+      <Link to="/about" className="nav-link">About</Link>
+    </rb.Nav>)
+
   return (
     <div className="App">
-      <rb.Navbar as="header" sticky="top" expand="md" bg="dark" variant="dark" collapseOnSelect>
+      <rb.Navbar as="header" sticky="top" expand="lg" bg="dark" variant="dark" collapseOnSelect>
         <rb.Container>
           <Link to="/" className="navbar-brand">JoinMarket</Link>
-          <rb.Navbar.Toggle aria-controls="responsive-rb.Navbar-rb.Nav" className="ms-auto border-0" />
-          <rb.Navbar.Collapse id="responsive-rb.Navbar-rb.Nav">
-            <rb.Nav className="text-start">
-              {currentWallet &&
-                <>
-                  <Link to="/wallet" className="nav-link">Wallet</Link>
-                  <Link to="/payment" className="nav-link">Payment</Link>
-                  <Link to="/receive" className="nav-link">Receive</Link>
-                  <Link to="/maker" className="nav-link">Maker</Link>
-                </>}
+          <rb.Navbar.Toggle aria-controls="navbarOffcanvas" className="ms-auto border-0 order-sm-1" />
+          <rb.Navbar className="d-none d-lg-flex">
+            {nav}
+          </rb.Navbar>
+          <rb.Navbar.Offcanvas id="navbarOffcanvas">
+            <rb.Offcanvas.Body>
+              {nav}
+            </rb.Offcanvas.Body>
+          </rb.Navbar.Offcanvas>
+          <rb.Nav className="ms-sm-auto d-block order-sm-0">
+            <Link to="/" className="nav-link d-inline-block">{walletLoadStatus} ({(currentWallet && currentWallet.name) || 'None'} active)</Link>
+            <rb.Navbar.Text>
               {connection === true &&
-                <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
-              <Link to="/about" className="nav-link">About</Link>
-            </rb.Nav>
-          </rb.Navbar.Collapse>
-          <div className="justify-content-start justify-content-md-end">
-            <rb.Nav className="flex-row">
-              <Link to="/" className="nav-link">{walletLoadStatus} ({(currentWallet && currentWallet.name) || 'None'} active)</Link>
-              <rb.Navbar.Text>
-                {connection === true &&
-                  ` · YG ${makerStarted ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`}
-              </rb.Navbar.Text>
-            </rb.Nav>
-          </div>
+                ` · YG ${makerStarted ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`}
+            </rb.Navbar.Text>
+          </rb.Nav>
         </rb.Container>
       </rb.Navbar>
       <rb.Container as="main" className="py-4">
