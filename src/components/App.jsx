@@ -14,7 +14,7 @@ import { getSession, setSession, clearSession } from '../session'
 
 export default function App() {
   const [makerStarted, setMakerStarted]  = useGlobal('makerStarted')
-  const [currentWallet, setCurrentWallet] = useGlobal('currentWallet') // client
+  const [currentWallet, setCurrentWallet] = useState('currentWallet')
   const [connection, setConnection] = useState()
   const [walletLoadStatus, setWalletLoadStatus] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
@@ -67,14 +67,6 @@ export default function App() {
     }
   }
 
-  useEffect(() => {
-    const session = getSession()
-    if (session) {
-      startWallet(session.name, session.token)
-    }
-  }, [])
-
-
   const resetState = async () => {
     setWalletList([])
     setCurrentWallet(null)
@@ -91,7 +83,7 @@ export default function App() {
       setConnection(true)
       setMakerStarted(maker_running)
       setCoinjoinInProcess(coinjoin_in_process)
-      if (activeWallet && currentWallet && currentWallet.name !== activeWallet) {
+      if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
         setCurrentWallet(null)
         clearSession()
       }
@@ -101,171 +93,35 @@ export default function App() {
     }
   }, 10000, true)
 
-  const refreshWallets = async () => {
-    try {
-      setWalletLoadStatus('Fetching wallets')
-      const res = await fetch('/api/v1/wallet/all')
-      const { wallets = [] } = await res.json()
-      setWalletLoadStatus(wallets.length === 0
-        ? 'No wallets'
-        : `${wallets.length} wallet${wallets.length === 1 ? '' : 's'}`)
-      if (currentWallet) {
-        wallets.sort((a, b) => b === currentWallet.name)
-      }
-      setWalletList(wallets)
-    } catch (e) {
-      setConnection(false)
-      setWalletLoadStatus('No connection')
-      setWalletList([])
+  useEffect(() => {
+    const session = getSession()
+    if (session) {
+      startWallet(session.name, session.token)
     }
-  }
+  }, [])
 
-  useEffect(() => { refreshWallets() }, [currentWallet])
-
-  const displayWallet = async (walletName) => {
-    const { name, token } = currentWallet
-    if (!token) {
-      return alert(`Please unlock ${walletName} first`)
-    }
-
-    const res = await fetch(`/api/v1/wallet/${name}/display`, {
-      headers:{
-        'Authorization': `Bearer ${token}`
-      }
-    })
-
-    const { walletinfo } = await res.json()
-    const balance = walletinfo.total_balance
-    const mix_depths = walletinfo.accounts
-    const wallet_info={}
-    wallet_info['balance'] = balance
-    wallet_info[mix_depths[0].account] = mix_depths[0].account_balance
-    wallet_info[mix_depths[1].account] = mix_depths[1].account_balance
-    wallet_info[mix_depths[2].account] = mix_depths[2].account_balance
-    wallet_info[mix_depths[3].account] = mix_depths[3].account_balance
-    wallet_info[mix_depths[4].account] = mix_depths[4].account_balance
-    console.log(wallet_info)
-    return wallet_info
-  }
-
-  const makePayment = async (_name, mixdepth, amount_sats, destination) => {
-    const { name, token } = currentWallet
-    if (token) {
+  useEffect(() => {
+    const refreshWallets = async () => {
       try {
-        const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, {
-          method:'POST',
-          headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            mixdepth,
-            amount_sats,
-            destination
-          }),
-        })
-        const data = await res.json()
-        console.log(data)
-        alert('Payment Succesful!')
-      } catch(e) {
-        alert('Error while processing payment!')
-      }
-    } else {
-      alert('please unlock wallet first')
-    }
-  }
-
-  //route for frontend
-  const doCoinjoin = async (mixdepth, amount, counterparties, destination) => {
-    const { name, token } = currentWallet
-    if (!token) return
-
-    try {
-      const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`, {
-        method:'POST',
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          mixdepth,
-          amount,
-          counterparties,
-          destination
-        }),
-      })
-      const data = await res.json()
-      console.log(data)
-      alert('Coinjoin in Progress!')
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  const startMakerService = async (txfee, cjfee_a, cjfee_r, ordertype, minsize) => {
-    const { name, token } = currentWallet
-    if (!token) return alert('Please unlock a wallet first')
-
-    try {
-      const res = await fetch(`/api/v1/wallet/${name}/maker/start`, {
-        method: 'POST',
-        headers:{
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          txfee,
-          cjfee_a,
-          cjfee_r,
-          ordertype,
-          minsize
-        })
-      })
-
-      const data = await res.json()
-      console.log(data)
-    } catch (e) {
-      console.error(e)
-      alert('Error while starting service!')
-    }
-  }
-
-  const stopMakerService = async () => {
-    const { name, token } = currentWallet
-    if (!token) {
-      return alert('Wallet needs to be unlocked')
-    }
-
-    try {
-      const res = await fetch(`/api/v1/wallet/${name}/maker/stop`, {
-        headers:{
-          'Authorization': `Bearer ${token}`
-        },
-      })
-      const data = await res.json()
-      console.log(data)
-      alert('Maker service stopped')
-    } catch (e) {
-      console.error(e)
-      alert('Error while stopping service!')
-    }
-  }
-
-  const getUTXOs = async () => {
-    const { name, token } = currentWallet
-    if (!token) return
-
-    try {
-      const res = await fetch(`/api/v1/wallet/${name}/utxos`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+        setWalletLoadStatus('Fetching wallets')
+        const res = await fetch('/api/v1/wallet/all')
+        const { wallets = [] } = await res.json()
+        setWalletLoadStatus(wallets.length === 0
+          ? 'No wallets'
+          : `${wallets.length} wallet${wallets.length === 1 ? '' : 's'}`)
+        if (currentWallet) {
+          wallets.sort((a, b) => b === currentWallet.name)
         }
-      })
-      const { utxos } = await res.json()
-      return utxos
-    } catch (e) {
-      console.error(e)
+        setWalletList(wallets)
+      } catch (e) {
+        setConnection(false)
+        setWalletLoadStatus('No connection')
+        setWalletList([])
+      }
     }
-  }
+
+    refreshWallets()
+  }, [currentWallet])
 
   const nav = (
     <rb.Nav className="text-start">
@@ -308,14 +164,14 @@ export default function App() {
         {connection === false &&
           <rb.Alert variant="danger">No connection to backend server.</rb.Alert>}
         <Routes>
-          <Route path='/' element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} walletList={walletList} onDisplay={displayWallet} />} />
+          <Route path='/' element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} walletList={walletList} />} />
           <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />} />
           {currentWallet &&
             <>
-              <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet} onSend={makePayment} listUTXOs={getUTXOs} />} />
-              <Route path='payment' element={<Payment currentWallet={currentWallet} onPayment={makePayment} onCoinjoin={doCoinjoin} />} />
-              <Route path='maker' element={<Maker onStart={startMakerService} onStop={stopMakerService} />} />
-              <Route path='receive' element={<Receive />} />
+              <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet}/>} />
+              <Route path='payment' element={<Payment currentWallet={currentWallet}/>} />
+              <Route path='maker' element={<Maker currentWallet={currentWallet} />} />
+              <Route path='receive' element={<Receive currentWallet={currentWallet} />} />
             </>
           }
           <Route path='about' element={<About />} />

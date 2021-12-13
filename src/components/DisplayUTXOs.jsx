@@ -8,7 +8,6 @@ const byMixdepth = utxos => {
     res[mixdepth].push(utxo)
     return res
   }, {})
-  console.log(ret)
   return ret
 }
 
@@ -18,21 +17,23 @@ const DisplayUTXOs = ({ utxos }) => (
     {Object.entries(byMixdepth(utxos)).map(([mixdepth, utxos]) => (
       <rb.Accordion.Item key={mixdepth} eventKey={mixdepth}>
         <rb.Accordion.Header className="head">
-          Mixdepth {mixdepth}
+          <h5 className="mb-0">Account {mixdepth}</h5>
         </rb.Accordion.Header>
         <rb.Accordion.Body>
-          <ul className="list-group list-group-flush">
+          <rb.ListGroup variant="flush">
             {utxos.map(utxo => (
-              <li className="list-group-item">
-                <span>Address: {utxo.address}</span>
-                <br></br>
-                <span>Sats:  {utxo.value}</span>
-                <br></br>
-                <span>{utxo.confirmations} Confirmations</span>
-                <pre>{JSON.stringify(utxo, null, 2)}</pre>
-              </li>
+              <rb.ListGroup.Item key={utxo.utxo}>
+                <p>
+                  Address: {utxo.address}
+                  {' '}
+                  {utxo.frozen && <span className="badge bg-info">frozen</span>}
+                </p>
+                {utxo.label && <p>Label: {utxo.label}</p>}
+                <p>Sats: {utxo.value}</p>
+                <p className="mb-0">{utxo.confirmations} Confirmations</p>
+              </rb.ListGroup.Item>
             ))}
-          </ul>
+          </rb.ListGroup>
         </rb.Accordion.Body>
       </rb.Accordion.Item>
     ))}

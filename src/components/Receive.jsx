@@ -4,83 +4,95 @@ import { BitcoinQR } from '@ibunker/bitcoin-react'
 import '@ibunker/bitcoin-react/dist/index.css'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { getSession } from '../session'
-import './Receive.css'
 
-const Receive = ({ currentWallet, onReceive }) => {
+const ACCOUNTS = [0,1,2,3,4]
+
+const Receive = ({ currentWallet }) => {
   const location = useLocation()
-  const [new_address, setNewAddress] = useState('')
-
-  const getAddress = async (mixdepth) => {
-    const { wallet, token } = getSession()
-    const res = await fetch(`/api/v1/wallet/${wallet}/address/new/${mixdepth}`, {
-      method: 'GET',
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    })
-    const { address } = await res.json()
-    return address
-  }
+  const [validated, setValidated] = useState(false)
+  const [alert, setAlert] = useState(null)
+  const [isFetching, setIsFetching] = useState(false)
+  const [address, setAddress] = useState(null)
+  const [amount, setAmount] = useState(0)
+  const [account, setAccount] = useState(location.state?.account || 0)
+  const [addressCount, setAddressCount] = useState(0)
 
   useEffect(() => {
-    const getNewAddress = async (account) => {
-      const temp1 = parseInt(account, 10)
-      const temp = await getAddress(temp1)
-      setNewAddress(temp)
-      return
+    const fetchAddress = async accountNr => {
+      const { name, token } = currentWallet
+      setAlert(null)
+      setIsFetching(true)
+      try {
+        const res = await fetch(`/api/v1/wallet/${name}/address/new/${accountNr}`, {
+          method: 'GET',
+          headers: {
+            'Content-type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        })
+        if (res.ok) {
+          const { address } = await res.json()
+          setAddress(address)
+        } else {
+          const { message } = await res.json()
+          setAlert({ variant: 'danger', message })
+        }
+      } catch (e) {
+        setAlert({ variant: 'danger', message: e.message })
+      } finally {
+        setIsFetching(false)
+      }
     }
 
-    getNewAddress(location.state.account_no)
-  }, [location.state.account_no])
+    if (ACCOUNTS.includes(account)) fetchAddress(account)
+  }, [account, currentWallet, addressCount])
 
-  const [temp_address, setTempAddress] = useState('')
-  const [amount, setAmount] = useState('')
-
-  const onSubmit = (e) => {
+  const onSubmit = e => {
     e.preventDefault()
 
-    if (!new_address) {
-      return alert('Please add the address')
-    }
+    const form = e.currentTarget
+    const isValid = form.checkValidity()
+    setValidated(true)
 
-    setTempAddress(new_address)
+    if (isValid) {
+      setAddressCount(addressCount + 1)
+    }
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
       <h1>Receive Funds</h1>
-      <rb.Row>
-        <rb.Col className="label">
-          Address
-        </rb.Col>
-        <rb.Col>
-          <input type="text" name="address" value={new_address} style={{ width: "415px" }} readOnly={true} onChange={(e) => setNewAddress(e.target.value)} />
-        </rb.Col>
-      </rb.Row>
-      <rb.Row className="field">
-        <rb.Col className="label">
-          Amount(BTC)
-        </rb.Col>
-        <rb.Col>
-          <input type="text" name="amount_sats" value={amount} style={{ width: "415px" }} onChange={(e) => setAmount(e.target.value)} />
-        </rb.Col>
-      </rb.Row>
-      <rb.Row className="btn-field">
-        <button className="btncr" type="submit" value="Submit" ><span>Get QR Code</span></button>
-      </rb.Row>
-      {temp_address.length > 0
-        ? <BitcoinQR
-          bitcoinAddress={temp_address}
-          message=""
+      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      <rb.Form.Group className="mb-3" controlId="account">
+        <rb.Form.Label>Account</rb.Form.Label>
+        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} required />
+        <rb.Form.Control.Feedback type="invalid">Please provide an account between {ACCOUNTS[0]} and {ACCOUNTS[4  ]}.</rb.Form.Control.Feedback>
+      </rb.Form.Group>
+      <rb.Form.Group className="mb-3" controlId="address">
+        <rb.Form.Label>Address</rb.Form.Label>
+        <rb.Form.Control name="address" value={address} readOnly={true} required />
+        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
+      </rb.Form.Group>
+      <rb.Form.Group className="mb-3" controlId="amountSats">
+        <rb.Form.Label>Amount in Sats</rb.Form.Label>
+        <rb.Form.Control name="amount" type="number" value={amount} min={0} onChange={e => setAmount(e.target.value)} />
+        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
+      </rb.Form.Group>
+      <rb.Button variant="primary" type="submit" disabled={isFetching}>
+        {isFetching
+          ? <>
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+            Getting new address
+          </>
+          : 'Get new address'}
+      </rb.Button>
+      {address && (
+        <BitcoinQR
+          bitcoinAddress={address}
           amount={amount}
-          time=""
-          exp=""
         />
-        : null
-      }
-    </form>
+      )}
+    </rb.Form>
   )
 }
 

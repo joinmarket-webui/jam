@@ -2,100 +2,136 @@ import React from 'react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { getSession } from '../session'
-import './Payment.css'
+import { serialize } from '../utils'
 
-export default function Payment({ currentWallet, onPayment, onCoinjoin }) {
+export default function Payment({ currentWallet }) {
   const location = useLocation()
-  const [destination, setDestination] = useState('')
-  const [amount, setAmount] = useState('')
-  const [mixdepth, setMixdepth] = useState(location.state?.account_no)
-  const [counterparties, setcounterparties] = useState('')
-  const [isCoinjoin, setisCoinjoin] = useState(false)
+  const [validated, setValidated] = useState(false)
+  const [alert, setAlert] = useState(null)
+  const [isSending, setIsSending] = useState(false)
+  const [isCoinjoin, setIsCoinjoin] = useState(false)
 
-  const onSubmit = (e) => {
+  const sendPayment = async (_name, mixdepth, amount_sats, destination) => {
+    const { name, token } = currentWallet
+    setAlert(null)
+    setIsSending(true)
+    try {
+      const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          mixdepth,
+          amount_sats,
+          destination
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        console.log(data)
+        setAlert({ variant: 'success', message: 'Payment successful' })
+      } else {
+        const { message } = await res.json()
+        setAlert({ variant: 'danger', message })
+      }
+    } catch (e) {
+      setAlert({ variant: 'danger', message: e.message })
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const startCoinjoin = async (mixdepth, amount, counterparties, destination) => {
+    const { name, token } = currentWallet
+    setAlert(null)
+    setIsSending(true)
+    try {
+      const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          mixdepth,
+          amount,
+          counterparties,
+          destination
+        }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        console.log(data)
+        setAlert({ variant: 'success', message: 'Coinjoin started' })
+      } else {
+        const { message } = await res.json()
+        setAlert({ variant: 'danger', message })
+      }
+    } catch (e) {
+      setAlert({ variant: 'danger', message: e.message })
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (!amount || !mixdepth || !destination) {
-      return alert('Please add details')
-    }
+    const form = e.currentTarget
+    const isValid = form.checkValidity()
+    setValidated(true)
 
-    //maybe add await here
-    if (!isCoinjoin) { //if normal payment
-      onPayment(currentWallet, mixdepth, amount, destination)
-    } else { //coinjoin
-      if (!counterparties) {
-        return alert('Please set counterparties to a non zero number')
+    if (isValid) {
+      const { mixdepth, amount, counterparties, coinjoin, destination } = serialize(form)
+      if (!coinjoin) {
+        await sendPayment(currentWallet, mixdepth, amount, destination)
       } else {
-        onCoinjoin(mixdepth, amount, counterparties, destination)
-        alert('Coinjoin in progress')
+        await startCoinjoin(mixdepth, amount, counterparties, destination)
       }
-    }
 
-    setcounterparties('')
-    setMixdepth('')
-    setAmount('')
-    setDestination('')
-    setisCoinjoin(false)
+      form.reset()
+    }
   }
 
   return (
-
-    <form onSubmit={onSubmit}>
+    <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
       <h1>Send Payment</h1>
-      <rb.Row>
-        <rb.Col className="label">
-          Receiver address:
-        </rb.Col>
-        <rb.Col>
-          <input type="text" name="destination" value={destination} onChange={(e) => setDestination(e.target.value)} />
-        </rb.Col>
-      </rb.Row>
-      <rb.Row className="field">
-        <rb.Col className="label">
-          Account
-        </rb.Col>
-        <rb.Col>
-          <input type="text" name="mixdepth" value={mixdepth} onChange={(e) => setMixdepth(e.target.value)} readOnly={true} />
-        </rb.Col>
-      </rb.Row>
-      <rb.Row className="field">
-        <rb.Col className="label">
-          Amount(SATS)
-        </rb.Col>
-        <rb.Col>
-          <input type="text" name="amount_sats" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        </rb.Col>
-      </rb.Row>
-
-      <p></p>
-      <br></br>
-      <div className="coinjoin">
-        Do you want to do a coinjoin?
-        <p></p>
-        Yes<input type="radio" name="coinjoin" onChange={(e) => setisCoinjoin(true)} />
-        <p></p>
-        No<input type="radio" name="coinjoin" onChange={(e) => setisCoinjoin(false)} />
-        <p></p>
-      </div>
-
-      {isCoinjoin
-        ? <div>
-          <rb.Row className="field">
-            <rb.Col className="label">
-              Counterparties
-            </rb.Col>
-            <rb.Col>
-              <input type="text" name="counterparties" value={counterparties} onChange={(e) => setcounterparties(e.target.value)} />
-            </rb.Col>
-          </rb.Row>
-        </div>
-        : null
-      }
-
-      <rb.Row className="btn-field">
-        <button className="btncr" type="submit" value="Submit" ><span>Submit</span></button>
-      </rb.Row>
-    </form>
+      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      <rb.Form.Group className="mb-3" controlId="destination">
+        <rb.Form.Label>Receiver Address</rb.Form.Label>
+        <rb.Form.Control name="destination" required />
+        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
+      </rb.Form.Group>
+      <rb.Form.Group className="mb-3" controlId="mixdepth">
+        <rb.Form.Label>Account</rb.Form.Label>
+        <rb.Form.Control name="mixdepth" required value={location.state?.account} />
+        <rb.Form.Control.Feedback type="invalid">Please provide an account.</rb.Form.Control.Feedback>
+      </rb.Form.Group>
+      <rb.Form.Group className="mb-3" controlId="amount">
+        <rb.Form.Label>Amount in Sats</rb.Form.Label>
+        <rb.Form.Control name="amount" type="number" min={0} />
+        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
+      </rb.Form.Group>
+      <rb.Form.Group className="mb-3" controlId="isCoinjoin">
+        <rb.Form.Check label="As coinjoin" value={true} onChange={(e) => setIsCoinjoin(e.target.checked)} />
+      </rb.Form.Group>
+      {isCoinjoin === true &&
+        <rb.Form.Group className="mb-3" controlId="counterparties">
+          <rb.Form.Label>Counterparties</rb.Form.Label>
+          <rb.Form.Control name="counterparties" required />
+          <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
+        </rb.Form.Group>}
+      <rb.Button variant="primary" type="submit" disabled={isSending}>
+        {isSending
+          ? <>
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+            Sending
+          </>
+          : 'Send'}
+      </rb.Button>
+    </rb.Form>
   )
 }

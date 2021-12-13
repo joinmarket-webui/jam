@@ -4,14 +4,15 @@ import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayUTXOs from './DisplayUTXOs'
 
-export default function CurrentWallet ({ currentWallet, onSend, listUTXOs }) {
+export default function CurrentWallet ({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
-  const [UTXOHistory, setUTXOHistory] = useState(null)
+  const [utxos, setUtxos] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isSending, setIsSending] = useState(false)
 
-  const listWalletInfo = async () => {
+  const fetchWalletInfo = async () => {
     const { name, token } = currentWallet
 
     setAlert(null)
@@ -37,25 +38,36 @@ export default function CurrentWallet ({ currentWallet, onSend, listUTXOs }) {
     }
   }
 
-  useEffect(() => {
+  const fetchUTXOs = async () => {
     const { name, token } = currentWallet
-    if (!token) {
-      return setAlert({ variant: 'warning', message: `Please unlock ${name} first` })
-    }
 
+    try {
+      const res = await fetch(`/api/v1/wallet/${name}/utxos`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      const { utxos } = await res.json()
+      return utxos
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  useEffect(() => {
     const getWalletInfo = async () => {
-      const walletInfo = await listWalletInfo()
+      const walletInfo = await fetchWalletInfo()
       setWalletInfo(walletInfo)
     }
 
     const getUTXOs = async () => {
-      const utxos = await listUTXOs()
-      setUTXOHistory(utxos)
+      const utxos = await fetchUTXOs()
+      setUtxos(utxos)
     }
 
     getWalletInfo()
     getUTXOs()
-  }, [])
+  }, [currentWallet])
 
   return (
     <div>
@@ -68,10 +80,8 @@ export default function CurrentWallet ({ currentWallet, onSend, listUTXOs }) {
           Loading
         </>}
       {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} />}
-      <p></p>
-      {UTXOHistory && <rb.Button onClick={() => { setShowUTXO(!showUTXO) }}>{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
-      <p></p>
-      {UTXOHistory && showUTXO && <DisplayUTXOs utxos={UTXOHistory} />}
+      {utxos && <rb.Button onClick={() => { setShowUTXO(!showUTXO) }} className="my-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
+      {utxos && showUTXO && <DisplayUTXOs utxos={utxos} className="mt-3"  />}
     </div>
   )
 }
