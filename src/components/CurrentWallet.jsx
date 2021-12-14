@@ -12,61 +12,46 @@ export default function CurrentWallet ({ currentWallet }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSending, setIsSending] = useState(false)
 
-  const fetchWalletInfo = async () => {
+  useEffect(() => {
+    const abortCtrl = new AbortController()
     const { name, token } = currentWallet
+    const opts = {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      signal: abortCtrl.signal
+    }
 
     setAlert(null)
     setIsLoading(true)
-    try {
-      const res = await fetch(`/api/v1/wallet/${name}/display`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+    fetch(`/api/v1/wallet/${name}/display`, opts)
+      .then(res => res.ok ? res.json() : Promise.reject(res))
+      .then(data => setWalletInfo(data.walletinfo))
+      .catch(err => setAlert({ variant: 'danger', message: err.message }))
+      .finally(() => setIsLoading(false))
 
-      if (res.ok) {
-        const data = await res.json()
-        return data.walletinfo
-      } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
-      }
-    } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const fetchUTXOs = async () => {
-    const { name, token } = currentWallet
-
-    try {
-      const res = await fetch(`/api/v1/wallet/${name}/utxos`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      const { utxos } = await res.json()
-      return utxos
-    } catch (e) {
-      console.error(e)
-    }
-  }
+    return () => abortCtrl.abort()
+  }, [currentWallet])
 
   useEffect(() => {
-    const getWalletInfo = async () => {
-      const walletInfo = await fetchWalletInfo()
-      setWalletInfo(walletInfo)
+    const abortCtrl = new AbortController()
+    const { name, token } = currentWallet
+    const opts = {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      signal: abortCtrl.signal
     }
 
-    const getUTXOs = async () => {
-      const utxos = await fetchUTXOs()
-      setUtxos(utxos)
-    }
+    setAlert(null)
+    setIsLoading(true)
+    fetch(`/api/v1/wallet/${name}/utxos`, opts)
+      .then(res => res.ok ? res.json() : Promise.reject(res))
+      .then(data => setUtxos(data.utxos))
+      .catch(err => setAlert({ variant: 'danger', message: err.message }))
+      .finally(() => setIsLoading(false))
 
-    getWalletInfo()
-    getUTXOs()
+    return () => abortCtrl.abort()
   }, [currentWallet])
 
   return (
