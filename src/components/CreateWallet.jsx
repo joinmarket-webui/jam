@@ -16,7 +16,6 @@ export default function CreateWallet({ currentWallet, startWallet }) {
       const wallettype = 'sw-fb'
       const res = await fetch(`/api/v1/wallet/create`, {
         method: 'POST',
-        headers: { 'Content-type': 'application/json', },
         body: JSON.stringify({
           password,
           walletname,
@@ -87,10 +86,10 @@ export default function CreateWallet({ currentWallet, startWallet }) {
         </rb.Form.Group>
         <rb.Button variant="primary" type="submit" disabled={isCreating}>
           {isCreating
-            ? <>
+            ? <div>
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               Creating
-            </>
+            </div>
             : 'Create'}
         </rb.Button>
       </rb.Form>

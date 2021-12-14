@@ -13,21 +13,20 @@ export default function Payment({ currentWallet }) {
 
   const sendPayment = async (_name, mixdepth, amount_sats, destination) => {
     const { name, token } = currentWallet
+    const opts = {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        mixdepth,
+        amount_sats,
+        destination
+      })
+    }
+
     setAlert(null)
     setIsSending(true)
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          mixdepth,
-          amount_sats,
-          destination
-        }),
-      })
+      const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, opts)
       if (res.ok) {
         const data = await res.json()
         console.log(data)
@@ -45,22 +44,21 @@ export default function Payment({ currentWallet }) {
 
   const startCoinjoin = async (mixdepth, amount, counterparties, destination) => {
     const { name, token } = currentWallet
+    const opts = {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        mixdepth,
+        amount,
+        counterparties,
+        destination
+      }),
+    }
+
     setAlert(null)
     setIsSending(true)
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`, {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          mixdepth,
-          amount,
-          counterparties,
-          destination
-        }),
-      })
+      const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`, opts)
 
       if (res.ok) {
         const data = await res.json()
@@ -102,34 +100,34 @@ export default function Payment({ currentWallet }) {
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <rb.Form.Group className="mb-3" controlId="destination">
         <rb.Form.Label>Receiver Address</rb.Form.Label>
-        <rb.Form.Control name="destination" required />
+        <rb.Form.Control name="destination" defaultValue="" required />
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="mixdepth">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Control name="mixdepth" required value={location.state?.account} />
+        <rb.Form.Control name="mixdepth" required defaultValue={location.state?.account} />
         <rb.Form.Control.Feedback type="invalid">Please provide an account.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control name="amount" type="number" min={0} />
+        <rb.Form.Control name="amount" type="number" min={0} defaultValue={0} required />
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
-        <rb.Form.Check label="As coinjoin" value={true} onChange={(e) => setIsCoinjoin(e.target.checked)} />
+        <rb.Form.Check type="switch" label="As coinjoin" value={true} onChange={(e) => setIsCoinjoin(e.target.checked)} />
       </rb.Form.Group>
       {isCoinjoin === true &&
         <rb.Form.Group className="mb-3" controlId="counterparties">
           <rb.Form.Label>Counterparties</rb.Form.Label>
-          <rb.Form.Control name="counterparties" required />
+          <rb.Form.Control name="counterparties" defaultValue="" required />
           <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
         </rb.Form.Group>}
       <rb.Button variant="primary" type="submit" disabled={isSending}>
         {isSending
-          ? <>
+          ? <div>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             Sending
-          </>
+          </div>
           : 'Send'}
       </rb.Button>
     </rb.Form>

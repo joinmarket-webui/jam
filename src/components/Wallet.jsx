@@ -23,11 +23,11 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       setAlert(null)
       setIsUnlocking(true)
       try {
-        const res = await fetch(`/api/v1/wallet/${walletName}/unlock`, {
+        const opts = {
           method: 'POST',
-          headers: { 'Content-type': 'application/json' },
           body: JSON.stringify({ password }),
-        })
+        }
+        const res = await fetch(`/api/v1/wallet/${walletName}/unlock`, opts)
         if (res.ok) {
           const { walletname: name, token } = await res.json()
           startWallet(name, token)
@@ -50,13 +50,14 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     }
 
     try {
+      const { name, token } = currentWallet
+      const opts = {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+
       setAlert(null)
       setIsLocking(true)
-      const res = await fetch(`/api/v1/wallet/${currentWallet.name}/lock`, {
-        headers: {
-          'Authorization': `Bearer ${currentWallet.token}`
-        }
-      })
+      const res = await fetch(`/api/v1/wallet/${name}/lock`, opts)
       if (res.ok) {
         const { walletname, already_locked } = await res.json()
         stopWallet()

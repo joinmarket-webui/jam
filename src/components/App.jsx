@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { Route, Routes, Link } from 'react-router-dom'
-import { useGlobal } from 'reactn'
 import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
 import Payment from './Payment'
@@ -9,16 +8,13 @@ import About from './About'
 import Maker from './Maker'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
-import { useInterval } from '../utils'
 import { getSession, setSession, clearSession } from '../session'
 
 export default function App() {
-  const [makerStarted, setMakerStarted]  = useGlobal('makerStarted')
-  const [currentWallet, setCurrentWallet] = useState('currentWallet')
-  const [connection, setConnection] = useState()
-  const [walletLoadStatus, setWalletLoadStatus] = useState()
+  const [currentWallet, setCurrentWallet] = useState()
+  const [makerRunning, setMakerRunning] = useState()
+  const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
-  const [walletList, setWalletList] = useState([])
   const websocket = useRef(null)
 
   const startWallet = (name, token) => {
@@ -67,31 +63,46 @@ export default function App() {
     }
   }
 
-  const resetState = async () => {
-    setWalletList([])
-    setCurrentWallet(null)
-    setMakerStarted(null)
-    setCoinjoinInProcess(null)
-  }
+  useEffect(() => {
+    const abortCtrl = new AbortController()
 
-  useInterval(async () => {
-    try {
-      const res = await fetch('/api/v1/session')
-      const { maker_running, coinjoin_in_process, wallet_name } = await res.json()
-      const activeWallet = wallet_name !== 'None' ? wallet_name : null
-
-      setConnection(true)
-      setMakerStarted(maker_running)
-      setCoinjoinInProcess(coinjoin_in_process)
-      if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
-        setCurrentWallet(null)
-        clearSession()
-      }
-    } catch (e) {
-      setConnection(false)
-      resetState()
+    const resetState = () => {
+      setCurrentWallet(null)
+      setMakerRunning(null)
+      setCoinjoinInProcess(null)
     }
-  }, 10000, true)
+
+    const refreshSession = () => {
+      const opts = { signal: abortCtrl.signal }
+
+      fetch('/api/v1/session', opts)
+        .then(res => res.ok ? res.json() : Promise.reject(new Error(res.statusText)))
+        .then(data => {
+          const { maker_running, coinjoin_in_process, wallet_name } = data
+          const activeWallet = wallet_name !== 'None' ? wallet_name : null
+
+          setConnectionError(null)
+          setMakerRunning(maker_running)
+          setCoinjoinInProcess(coinjoin_in_process)
+          if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
+            setCurrentWallet(null)
+            clearSession()
+          }
+        })
+        .catch(err => {
+          if (!abortCtrl.signal.aborted) {
+            setConnectionError(err.message)
+            resetState()
+          }
+        })
+    }
+    refreshSession()
+    const interval = setInterval(refreshSession, 10000)
+    return () => {
+      abortCtrl.abort()
+      clearInterval(interval)
+    }
+  }, [currentWallet])
 
   useEffect(() => {
     const session = getSession()
@@ -99,29 +110,6 @@ export default function App() {
       startWallet(session.name, session.token)
     }
   }, [])
-
-  useEffect(() => {
-    const refreshWallets = async () => {
-      try {
-        setWalletLoadStatus('Fetching wallets')
-        const res = await fetch('/api/v1/wallet/all')
-        const { wallets = [] } = await res.json()
-        setWalletLoadStatus(wallets.length === 0
-          ? 'No wallets'
-          : `${wallets.length} wallet${wallets.length === 1 ? '' : 's'}`)
-        if (currentWallet) {
-          wallets.sort((a, b) => b === currentWallet.name)
-        }
-        setWalletList(wallets)
-      } catch (e) {
-        setConnection(false)
-        setWalletLoadStatus('No connection')
-        setWalletList([])
-      }
-    }
-
-    refreshWallets()
-  }, [currentWallet])
 
   const nav = (
     <rb.Nav className="text-start">
@@ -132,7 +120,7 @@ export default function App() {
           <Link to="/receive" className="nav-link">Receive</Link>
           <Link to="/maker" className="nav-link">Maker</Link>
         </>}
-      {connection === true &&
+      {!connectionError &&
         <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
       <Link to="/about" className="nav-link">About</Link>
     </rb.Nav>)
@@ -152,25 +140,25 @@ export default function App() {
             </rb.Offcanvas.Body>
           </rb.Navbar.Offcanvas>
           <rb.Nav className="ms-sm-auto d-block order-sm-0">
-            <Link to="/" className="nav-link d-inline-block">{walletLoadStatus} ({(currentWallet && currentWallet.name) || 'None'} active)</Link>
+            <Link to="/" className="nav-link d-inline-block">{(currentWallet && currentWallet.name) || 'No active wallet'}</Link>
             <rb.Navbar.Text>
-              {connection === true &&
-                ` · YG ${makerStarted ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`}
+              {!connectionError &&
+                ` · YG ${makerRunning ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`}
             </rb.Navbar.Text>
           </rb.Nav>
         </rb.Container>
       </rb.Navbar>
       <rb.Container as="main" className="py-4">
-        {connection === false &&
-          <rb.Alert variant="danger">No connection to backend server.</rb.Alert>}
+        {connectionError &&
+          <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>}
         <Routes>
-          <Route path='/' element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} walletList={walletList} />} />
+          <Route path='/' element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet}/>} />
           <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />} />
           {currentWallet &&
             <>
               <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet}/>} />
               <Route path='payment' element={<Payment currentWallet={currentWallet}/>} />
-              <Route path='maker' element={<Maker currentWallet={currentWallet} />} />
+              <Route path='maker' element={<Maker currentWallet={currentWallet} makerRunning={makerRunning} />} />
               <Route path='receive' element={<Receive currentWallet={currentWallet} />} />
             </>
           }
