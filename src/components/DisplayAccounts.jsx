@@ -1,66 +1,64 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import { titleize } from '../utils'
 
 export default function DisplayAccounts({ accounts }) {
+  console.log(Object.values(accounts))
   return (
     <rb.Accordion>
-      {accounts.map((account, index) => (
-        <rb.Accordion.Item key={index} eventKey={index}>
+      {Object.values(accounts).map(({ account, account_balance: balance, branches }) => (
+        <rb.Accordion.Item key={account} eventKey={account}>
           <rb.Accordion.Header>
-            <h5 className="mb-0">Account {accounts[index].account}</h5>
-            <div className="ms-auto">{accounts[index].account_balance} BTC</div>
+            <rb.Row className="w-100">
+              <rb.Col>
+                <h5 className="mb-0">Account {account}</h5>
+              </rb.Col>
+              <rb.Col className="d-flex align-items-center justify-content-end pe-5">
+                {balance} BTC
+              </rb.Col>
+            </rb.Row>
           </rb.Accordion.Header>
-          <rb.Accordion.Body>
-            <Link to="/payment" state={{ account: accounts[index].account } } className="btn btn-primary">Send</Link>{' '}
-            <Link to="/receive" state={{ account: accounts[index].account } } className="btn btn-primary">Receive</Link>
-            <rb.Accordion className="mt-3">
-              <rb.Accordion.Item eventKey="0">
-                <rb.Accordion.Header>External Addresses Balance: {accounts[index].branches[0].balance} BTC</rb.Accordion.Header>
-                <rb.Accordion.Body>
-                  <code className="text-break">
-                    {accounts[index].branches[0].branch.split("\t").pop()}
-                  </code>
-                  <rb.ListGroup variant="flush" className="mt-3">
-                    {accounts[index].branches[0].entries.map((user, j) => (
-                      <rb.ListGroup.Item key={j}>
-                        <rb.Row>
-                          <rb.Col>{accounts[index].branches[0].entries[j].address}</rb.Col>
-                          <rb.Col>{accounts[index].branches[0].entries[j].amount} BTC</rb.Col>
-                        </rb.Row>
-                        {accounts[index].branches[0].entries[j].labels && (
-                          <rb.Row>
-                            <rb.Col>{accounts[index].branches[0].entries[j].labels}</rb.Col>
-                          </rb.Row>
-                        )}
-                      </rb.ListGroup.Item>
-                    ))}
-                  </rb.ListGroup>
-                </rb.Accordion.Body>
-              </rb.Accordion.Item>
-              <rb.Accordion.Item eventKey="1">
-                <rb.Accordion.Header>Internal Addresses Balance: {accounts[index].branches[1].balance} BTC</rb.Accordion.Header>
-                <rb.Accordion.Body>
-                  {accounts[index].branches[1].entries.length > 0 ? (
-                    <rb.ListGroup variant="flush">
-                      {accounts[index].branches[1].entries.map((user, j) => (
-                        <rb.ListGroup.Item key={j}>
-                          <rb.Row>
-                            <rb.Col>{accounts[index].branches[1].entries[j].address}</rb.Col>
-                            <rb.Col>{accounts[index].branches[1].entries[j].amount} BTC</rb.Col>
-                          </rb.Row>
-                          {accounts[index].branches[1].entries[j].labels && (
-                            <rb.Row>
-                              <rb.Col>{accounts[index].branches[1].entries[j].labels}</rb.Col>
-                            </rb.Row>
-                          )}
-                        </rb.ListGroup.Item>
-                      ))}
-                    </rb.ListGroup>
-                  ) : 'No balance'}
-                </rb.Accordion.Body>
-              </rb.Accordion.Item>
-            </rb.Accordion>
+          <rb.Accordion.Body className="pe-5">
+            <Link to="/payment" state={{ account } } className="btn btn-primary">Send</Link>{' '}
+            <Link to="/receive" state={{ account } } className="btn btn-primary">Receive</Link>
+            {branches.map(({ balance, branch, entries }) => {
+              const [type, derivation, xpub] = branch.split('\t')
+              return (
+                <>
+                  <rb.Row className="w-100 mt-4">
+                    <rb.Col>
+                      <h6>{titleize(type)}</h6>
+                    </rb.Col>
+                    <rb.Col className="d-flex align-items-center justify-content-end">
+                      {balance} BTC
+                    </rb.Col>
+                  </rb.Row>
+                  <rb.Row className="w-100">
+                    <rb.Col xs="auto">
+                      <code>{derivation}</code>
+                    </rb.Col>
+                    <rb.Col className="d-flex align-items-center justify-content-end">
+                      <code className="text-break">{xpub}</code>
+                    </rb.Col>
+                  </rb.Row>
+                  {entries.map(({ address, amount, hd_path: hdPath, labels }) => (
+                    <rb.Row className="w-100 mt-3">
+                      <rb.Col xs="auto">
+                        <code>{hdPath}</code>
+                      </rb.Col>
+                      <rb.Col>
+                        {address}
+                        {' '}
+                        {labels && <span className="badge bg-info">{labels}</span>}
+                      </rb.Col>
+                      <rb.Col className="d-flex align-items-center justify-content-end">
+                        {amount} BTC
+                      </rb.Col>
+                    </rb.Row>))}
+                </>
+              )
+            })}
           </rb.Accordion.Body>
         </rb.Accordion.Item>
       ))}

@@ -107,7 +107,7 @@ export default function App() {
   useEffect(() => {
     const session = getSession()
     if (session) {
-      startWallet(session.name, session.token)
+      return startWallet(session.name, session.token)
     }
   }, [])
 
