@@ -84,7 +84,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
           <rb.Form.Control name="password" type="password" style={{ maxWidth: '20em' }} required />
           <rb.Form.Control.Feedback type="invalid">Please set a passphrase.</rb.Form.Control.Feedback>
         </rb.Form.Group>
-        <rb.Button variant="primary" type="submit" disabled={isCreating}>
+        <rb.Button variant="dark" type="submit" disabled={isCreating}>
           {isCreating
             ? <div>
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />

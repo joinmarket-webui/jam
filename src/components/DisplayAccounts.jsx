@@ -20,8 +20,8 @@ export default function DisplayAccounts({ accounts }) {
             </rb.Row>
           </rb.Accordion.Header>
           <rb.Accordion.Body className="pe-5">
-            <Link to="/payment" state={{ account } } className="btn btn-primary">Send</Link>{' '}
-            <Link to="/receive" state={{ account } } className="btn btn-primary">Receive</Link>
+            <Link to="/payment" state={{ account } } className="btn btn-outline-dark">Send</Link>{' '}
+            <Link to="/receive" state={{ account }} className="btn btn-outline-dark">Receive</Link>
             {branches.map(({ balance, branch, entries }) => {
               const [type, derivation, xpub] = branch.split('\t')
               return (

@@ -122,7 +122,7 @@ export default function Payment({ currentWallet }) {
           <rb.Form.Control name="counterparties" defaultValue="" required />
           <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
         </rb.Form.Group>}
-      <rb.Button variant="primary" type="submit" disabled={isSending}>
+      <rb.Button variant="dark" type="submit" disabled={isSending}>
         {isSending
           ? <div>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />

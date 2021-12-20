@@ -113,9 +113,9 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           {isActive
             ? (hasToken
                 ? <>
-                    <Link className="btn btn-primary me-2" to="/wallet">Open</Link>
+                    <Link className="btn btn-dark me-2" to="/wallet">Open</Link>
                     <rb.FormControl type="hidden" name="action" value="lock" />
-                    <rb.Button variant="secondary" type="submit" disabled={isLocking}>
+                    <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
                       {isLocking
                       ? <>
                           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
@@ -130,17 +130,17 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                   </rb.Alert>
               )
             : (noneActive &&
-                <rb.InputGroup>
+                <rb.InputGroup hasValidation={true}>
                   <rb.FormControl type="password" placeholder="Password" name="password" disabled={isUnlocking} required />
                   <rb.FormControl type="hidden" name="action" value="unlock" />
-                  <rb.Button variant="primary" type="submit" disabled={isUnlocking}>
+                  <rb.Button variant="dark" type="submit" disabled={isUnlocking}>
                     {isUnlocking
                       ? <>
                           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
                           Unlocking
                         </>
                       : 'Unlock'}
-                    </rb.Button>
+                  </rb.Button>
                   <rb.Form.Control.Feedback type="invalid">Please set the wallet's password.</rb.Form.Control.Feedback>
                 </rb.InputGroup>)
           }

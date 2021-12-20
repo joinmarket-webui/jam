@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Alert from './Alert'
 import Wallet from './Wallet'
@@ -45,8 +46,10 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading wallets
         </div>}
-      {walletList && walletList.map(wallet =>
+      {walletList?.map(wallet =>
         <Wallet key={wallet} name={wallet} currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} setAlert={setAlert} />)}
+
+      <Link to="/create-wallet" className={`btn mt-4 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}>Create Wallet</Link>
     </>
   )
 }

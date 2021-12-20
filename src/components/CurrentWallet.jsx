@@ -64,7 +64,7 @@ export default function CurrentWallet ({ currentWallet }) {
           Loading
         </div>}
       {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} />}
-      {utxos && <rb.Button onClick={() => { setShowUTXO(!showUTXO) }} className="my-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
+      {utxos && <rb.Button variant="outline-dark" onClick={() => { setShowUTXO(!showUTXO) }} className="my-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
       {utxos && showUTXO && <DisplayUTXOs utxos={utxos} className="mt-3" />}
     </div>
   )

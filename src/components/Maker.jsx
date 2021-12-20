@@ -97,7 +97,7 @@ export default function Maker({ currentWallet, makerRunning }) {
           <rb.Form.Control name="cjfeeRel" required />
           <rb.Form.Control.Feedback type="invalid">Please provide an account.</rb.Form.Control.Feedback>
         </rb.Form.Group>}
-      <rb.Button variant="primary" type="submit" disabled={isSending}>
+      <rb.Button variant="dark" type="submit" disabled={isSending}>
         {isSending
           ? <>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />

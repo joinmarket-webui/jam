@@ -4,7 +4,6 @@ import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
 import Payment from './Payment'
 import CreateWallet from './CreateWallet'
-import About from './About'
 import Maker from './Maker'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
@@ -113,23 +112,29 @@ export default function App() {
 
   const nav = (
     <rb.Nav className="text-start">
-      {currentWallet &&
-        <>
-          <Link to="/wallet" className="nav-link">Wallet</Link>
-          <Link to="/payment" className="nav-link">Payment</Link>
-          <Link to="/receive" className="nav-link">Receive</Link>
-          <Link to="/maker" className="nav-link">Maker</Link>
-        </>}
-      {!connectionError &&
-        <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
-      <Link to="/about" className="nav-link">About</Link>
+      {currentWallet
+        ? <>
+            <Link to="/payment" className="nav-link">Send</Link>
+            <Link to="/receive" className="nav-link">Receive</Link>
+            <Link to="/maker" className="nav-link">Earn</Link>
+          </>
+        : <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
     </rb.Nav>)
 
   return (
-    <div className="App">
-      <rb.Navbar as="header" sticky="top" expand="lg" bg="dark" variant="dark" collapseOnSelect>
+    <>
+      <rb.Navbar as="header" sticky="top" expand="lg" bg="white" variant="light" collapseOnSelect className="border-bottom">
         <rb.Container>
-          <Link to="/" className="navbar-brand">JoinMarket</Link>
+          <Link to="/" className="navbar-brand d-inline-flex align-items-center pt-1">
+            <img
+              src="/logo.svg"
+              width="30"
+              height="30"
+              className="d-inline-block align-top"
+              alt="JoinMarket"
+            />
+            <span className="ms-2">JoinMarket</span>
+          </Link>
           <rb.Navbar.Toggle aria-controls="navbarOffcanvas" className="ms-auto border-0 order-sm-1" />
           <rb.Navbar className="d-none d-lg-flex">
             {nav}
@@ -139,13 +144,11 @@ export default function App() {
               {nav}
             </rb.Offcanvas.Body>
           </rb.Navbar.Offcanvas>
-          <rb.Nav className="ms-sm-auto d-block order-sm-0">
-            <Link to="/" className="nav-link d-inline-block">{(currentWallet && currentWallet.name) || 'No active wallet'}</Link>
-            <rb.Navbar.Text>
-              {!connectionError &&
-                ` · YG ${makerRunning ? 'on' : 'off'}${coinjoinInProcess ? ', Coinjoining' : ''}`}
-            </rb.Navbar.Text>
-          </rb.Nav>
+          {currentWallet && (
+            <rb.Nav className="ms-sm-auto ms-lg-0 d-block order-sm-0">
+              <Link to="/wallet" className="nav-link d-inline-block">{currentWallet.name}</Link>
+              {!connectionError && <rb.Navbar.Text> · YG {makerRunning ? 'on' : 'off'}{coinjoinInProcess ? ', Coinjoining' : ''}</rb.Navbar.Text>}
+            </rb.Nav>)}
         </rb.Container>
       </rb.Navbar>
       <rb.Container as="main" className="py-4">
@@ -162,9 +165,24 @@ export default function App() {
               <Route path='receive' element={<Receive currentWallet={currentWallet} />} />
             </>
           }
-          <Route path='about' element={<About />} />
         </Routes>
       </rb.Container>
-    </div>
+      <rb.Nav as="footer" className="border-top py-2">
+        <rb.Container className="d-flex justify-content-center">
+          <rb.Nav.Item>
+            <a href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs" target="_blank" rel="noreferrer" className="nav-link text-secondary">Docs</a>
+          </rb.Nav.Item>
+          <rb.Nav.Item>
+            <a href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features" target="_blank" rel="noreferrer" className="nav-link text-secondary">Features</a>
+          </rb.Nav.Item>
+          <rb.Nav.Item>
+            <a href="https://github.com/JoinMarket-Org/joinmarket-clientserver" target="_blank" rel="noreferrer" className="nav-link text-secondary">GitHub</a>
+          </rb.Nav.Item>
+          <rb.Nav.Item>
+            <a href="https://twitter.com/joinmarket" target="_blank" rel="noreferrer" className="nav-link text-secondary">Twitter</a>
+          </rb.Nav.Item>
+        </rb.Container>
+      </rb.Nav>
+    </>
   )
 }
