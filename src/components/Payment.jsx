@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { serialize } from '../utils'
+import { serialize, ACCOUNTS } from '../utils'
 
 export default function Payment({ currentWallet }) {
   const location = useLocation()
@@ -10,14 +10,15 @@ export default function Payment({ currentWallet }) {
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
+  const [account, setAccount] = useState(location.state?.account || 0)
 
-  const sendPayment = async (_name, mixdepth, amount_sats, destination) => {
+  const sendPayment = async (_name, account, amount_sats, destination) => {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
-        mixdepth,
+        mixdepth: account,
         amount_sats,
         destination
       })
@@ -42,13 +43,13 @@ export default function Payment({ currentWallet }) {
     }
   }
 
-  const startCoinjoin = async (mixdepth, amount, counterparties, destination) => {
+  const startCoinjoin = async (account, amount, counterparties, destination) => {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
-        mixdepth,
+        mixdepth: account,
         amount,
         counterparties,
         destination
@@ -83,11 +84,11 @@ export default function Payment({ currentWallet }) {
     setValidated(true)
 
     if (isValid) {
-      const { mixdepth, amount, counterparties, coinjoin, destination } = serialize(form)
+      const { account, amount, counterparties, coinjoin, destination } = serialize(form)
       if (!coinjoin) {
-        await sendPayment(currentWallet, mixdepth, amount, destination)
+        await sendPayment(currentWallet, account, amount, destination)
       } else {
-        await startCoinjoin(mixdepth, amount, counterparties, destination)
+        await startCoinjoin(account, amount, counterparties, destination)
       }
 
       form.reset()
@@ -100,17 +101,17 @@ export default function Payment({ currentWallet }) {
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <rb.Form.Group className="mb-3" controlId="destination">
         <rb.Form.Label>Receiver Address</rb.Form.Label>
-        <rb.Form.Control name="destination" defaultValue="" required />
+        <rb.Form.Control name="destination" defaultValue="" required style={{ maxWidth: '50ch' }} />
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
-      <rb.Form.Group className="mb-3" controlId="mixdepth">
+      <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Control name="mixdepth" required defaultValue={location.state?.account} />
-        <rb.Form.Control.Feedback type="invalid">Please provide an account.</rb.Form.Control.Feedback>
+        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ width: '7ch' }} required />
+        <rb.Form.Control.Feedback type="invalid">Please provide an account between {ACCOUNTS[0]} and {ACCOUNTS[4]}.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control name="amount" type="number" min={0} defaultValue={0} required />
+        <rb.Form.Control name="amount" type="number" min={0} defaultValue={0} required style={{ maxWidth: '15ch' }}/>
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
@@ -118,8 +119,8 @@ export default function Payment({ currentWallet }) {
       </rb.Form.Group>
       {isCoinjoin === true &&
         <rb.Form.Group className="mb-3" controlId="counterparties">
-          <rb.Form.Label>Counterparties</rb.Form.Label>
-          <rb.Form.Control name="counterparties" defaultValue="" required />
+          <rb.Form.Label>Number of counterparties</rb.Form.Label>
+          <rb.Form.Control name="counterparties" type="number" min={0} defaultValue={3} style={{ width: '10ch' }} required />
           <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
         </rb.Form.Group>}
       <rb.Button variant="dark" type="submit" disabled={isSending}>

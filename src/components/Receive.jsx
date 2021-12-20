@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react'
 import { BitcoinQR } from '@ibunker/bitcoin-react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-
-const ACCOUNTS = [0, 1, 2, 3, 4]
+import { ACCOUNTS } from '../utils'
 
 const Receive = ({ currentWallet }) => {
   const location = useLocation()
@@ -70,17 +69,17 @@ const Receive = ({ currentWallet }) => {
       )}
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} required />
-        <rb.Form.Control.Feedback type="invalid">Please provide an account between {ACCOUNTS[0]} and {ACCOUNTS[4  ]}.</rb.Form.Control.Feedback>
+        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ width: '7ch' }} required />
+        <rb.Form.Control.Feedback type="invalid">Please provide an account between {ACCOUNTS[0]} and {ACCOUNTS[4]}.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amountSats">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control name="amount" type="number" value={amount} min={0} onChange={e => setAmount(e.target.value)} />
+        <rb.Form.Control name="amount" type="number" value={amount} min={0} onChange={e => setAmount(e.target.value)} style={{ width: '21ch' }} />
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="address">
         <rb.Form.Label>Address</rb.Form.Label>
-        <rb.Form.Control name="address" value={address} readOnly={true} required />
+        <rb.Form.Control name="address" value={address} readOnly={true} required style={{ maxWidth: '50ch' }} />
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Button variant="dark" type="submit" disabled={isLoading}>

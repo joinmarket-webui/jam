@@ -94,7 +94,7 @@ export default function Maker({ currentWallet, makerRunning }) {
       {makerRunning === false &&
         <rb.Form.Group className="mb-3" controlId="cjfeeRel">
           <rb.Form.Label>Relative Coinjoin Fee</rb.Form.Label>
-          <rb.Form.Control name="cjfeeRel" required />
+          <rb.Form.Control type="number" name="cjfeeRel" required step={0.0001} defaultValue={0.003} min={0} max={0.1} style={{ width: '15ch' }}/>
           <rb.Form.Control.Feedback type="invalid">Please provide an account.</rb.Form.Control.Feedback>
         </rb.Form.Group>}
       <rb.Button variant="dark" type="submit" disabled={isSending}>
