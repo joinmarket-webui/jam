@@ -4,7 +4,6 @@ import * as rb from 'react-bootstrap'
 import { titleize } from '../utils'
 
 export default function DisplayAccounts({ accounts }) {
-  console.log(Object.values(accounts))
   return (
     <rb.Accordion>
       {Object.values(accounts).map(({ account, account_balance: balance, branches }) => (
@@ -25,7 +24,7 @@ export default function DisplayAccounts({ accounts }) {
             {branches.map(({ balance, branch, entries }) => {
               const [type, derivation, xpub] = branch.split('\t')
               return (
-                <>
+                <article key={derivation}>
                   <rb.Row className="w-100 mt-4">
                     <rb.Col>
                       <h6>{titleize(type)}</h6>
@@ -43,7 +42,7 @@ export default function DisplayAccounts({ accounts }) {
                     </rb.Col>
                   </rb.Row>
                   {entries.map(({ address, amount, hd_path: hdPath, labels }) => (
-                    <rb.Row className="w-100 mt-3">
+                    <rb.Row key={address} className="w-100 mt-3">
                       <rb.Col xs="auto">
                         <code>{hdPath}</code>
                       </rb.Col>
@@ -56,7 +55,7 @@ export default function DisplayAccounts({ accounts }) {
                         {amount} BTC
                       </rb.Col>
                     </rb.Row>))}
-                </>
+                </article>
               )
             })}
           </rb.Accordion.Body>
