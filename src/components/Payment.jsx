@@ -12,26 +12,28 @@ export default function Payment({ currentWallet }) {
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [account, setAccount] = useState(location.state?.account || 0)
 
-  const sendPayment = async (_name, account, amount_sats, destination) => {
+  const sendPayment = async (account, destination, amount_sats) => {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
         mixdepth: account,
-        amount_sats,
-        destination
+        destination,
+        amount_sats
       })
     }
 
     setAlert(null)
     setIsSending(true)
+    let success = false
     try {
       const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, opts)
       if (res.ok) {
-        const data = await res.json()
-        console.log(data)
-        setAlert({ variant: 'success', message: 'Payment successful' })
+        const { txinfo: { outputs } } = await res.json()
+        const output = outputs.find(o => o.address === destination)
+        setAlert({ variant: 'success', message: `Payment successful: Sent ${output.value_sats} sats to ${output.address}.` })
+        success = true
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
@@ -41,30 +43,33 @@ export default function Payment({ currentWallet }) {
     } finally {
       setIsSending(false)
     }
+
+    return success
   }
 
-  const startCoinjoin = async (account, amount, counterparties, destination) => {
+  const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
         mixdepth: account,
-        amount,
-        counterparties,
-        destination
+        destination,
+        amount_sats,
+        counterparties
       }),
     }
 
     setAlert(null)
     setIsSending(true)
+    let success = false
     try {
       const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`, opts)
-
       if (res.ok) {
         const data = await res.json()
         console.log(data)
         setAlert({ variant: 'success', message: 'Coinjoin started' })
+        success = true
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
@@ -74,9 +79,11 @@ export default function Payment({ currentWallet }) {
     } finally {
       setIsSending(false)
     }
+
+    return success
   }
 
-  const onSubmit = async (e) => {
+  const onSubmit = async e => {
     e.preventDefault()
 
     const form = e.currentTarget
@@ -84,14 +91,16 @@ export default function Payment({ currentWallet }) {
     setValidated(true)
 
     if (isValid) {
-      const { account, amount, counterparties, coinjoin, destination } = serialize(form)
-      if (!coinjoin) {
-        await sendPayment(currentWallet, account, amount, destination)
-      } else {
-        await startCoinjoin(account, amount, counterparties, destination)
-      }
+      const { account, amount, counterparties, destination } = serialize(form)
+      const success = isCoinjoin
+        ? await startCoinjoin(account, destination, amount, counterparties)
+        : await sendPayment(account, destination, amount)
 
-      form.reset()
+      if (success) {
+        form.reset()
+        setIsCoinjoin(false)
+        setValidated(false)
+      }
     }
   }
 
@@ -106,7 +115,7 @@ export default function Payment({ currentWallet }) {
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ width: '7ch' }} required />
+        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ width: '15ch' }} required />
         <rb.Form.Control.Feedback type="invalid">Please provide an account between {ACCOUNTS[0]} and {ACCOUNTS[4]}.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
