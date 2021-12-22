@@ -1,10 +1,14 @@
-# Web client for joinmarket
+# JoinMarket Web UI
 
-There is a Web UI prototype, written in React, which has some initial functionality. The prototype builts upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself. The screenshots below are from commit [ba26cf637076444c7fadc82f6538eee5bd3b796a](https://github.com/joinmarket-webui/jm-web-client/commit/ba26cf637076444c7fadc82f6538eee5bd3b796a).
+For now this repository is supposed to be a central place to collect resources related to the JoinMarket Web UI project.
+We'll see what collaboration tools suit use as we go forward.
+Suggestions and feedback welcome!
 
+- 🔗 Join our [Telegram group](https://t.me/JoinMarketWebUI).
+- 👉 Check out the [Wiki](https://github.com/joinmarket-webui/joinmarket-webui/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
+
+This project builts upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself.
 GitHub repository: [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client)
-
-![Wallet Screen (prototype)](https://i.imgur.com/fXu8zqf.png)
 
 ## Local development
 
@@ -39,9 +43,10 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 ## Setup
 
-While this prototype will hopefully be available as a packaged version soon, here is how you can set it up and play around with it yourself.
+Here is how you can set it up and play around with it yourself.
 
 ### Docker (regtest)
+
 See the [docker regtest setup readme](docker/regtest/readme.md).
 
 ### RaspiBlitz Setup
@@ -50,9 +55,9 @@ See the [docker regtest setup readme](docker/regtest/readme.md).
 
 1. Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](https://github.com/rootzoll/raspiblitz):
 
-You can install it via the RaspiBlitz Services menu: ```Services > j [BTC JoinMarket+JoininBox menu]```
+You can install it via the RaspiBlitz Services menu: `Services > j [BTC JoinMarket+JoininBox menu]`
 
-This prototype makes use of the JoinMarket [RPC API](https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/996).
+This app makes use of the JoinMarket [RPC API](https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/996).
 For this, you will need JoinMarket [version 0.9.3](https://github.com/JoinMarket-Org/joinmarket-clientserver/releases/tag/v0.9.3) or higher.
 If needed you can upgrade JoinMarket to the latest commit via the JoininBox menu on your RaspiBlitz: Type `jm` in the command line and select ```UPDATE > ADVANCED > JMCOMMIT```.
 This will install the latest development version from JoinMarket's master branch.
@@ -100,16 +105,12 @@ Host raspiblitz
   LocalForward 28183 localhost:28183
 ```
 
-### Download and Install the Prototype
+### Download and install the app
 
 In short:
 
 ```bash
-git clone https://github.com/joinmarket-webui/jm-web-client.git
-cd jm-web-client
+git clone https://github.com/joinmarket-webui/joinmarket-webui.git
+cd joinmarket-webui
 npm install && npm start
 ```
-
-In any case, if everything works, you should be greeted with the following screen, assuming you have a wallet set up in JoinMarket:
-
-![Unlock Wallet (prototype)](https://i.imgur.com/drrHaLH.png)
