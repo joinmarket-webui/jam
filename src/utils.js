@@ -17,3 +17,5 @@ export const titleize = string =>
     .split(/\W+/gi)
     .map(w => upcaseFirstChar(w))
     .join(' ')
+
+export const walletDisplayName = name => name.replace('.jmdat', '')

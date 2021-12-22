@@ -8,6 +8,7 @@ import Maker from './Maker'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
 import { getSession, setSession, clearSession } from '../session'
+import { walletDisplayName } from '../utils'
 
 export default function App() {
   const [currentWallet, setCurrentWallet] = useState()
@@ -146,7 +147,7 @@ export default function App() {
           </rb.Navbar.Offcanvas>
           {currentWallet && (
             <rb.Nav className="ms-sm-auto ms-lg-0 d-block order-sm-0">
-              <Link to="/wallet" className="nav-link d-inline-block">{currentWallet.name}</Link>
+              <Link to="/wallet" className="nav-link d-inline-block">{walletDisplayName(currentWallet.name)}</Link>
               {!connectionError && <rb.Navbar.Text> · YG {makerRunning ? 'on' : 'off'}{coinjoinInProcess ? ', Coinjoining' : ''}</rb.Navbar.Text>}
             </rb.Nav>)}
         </rb.Container>

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayUTXOs from './DisplayUTXOs'
+import { walletDisplayName } from '../utils'
 
 export default function CurrentWallet ({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
@@ -55,7 +56,7 @@ export default function CurrentWallet ({ currentWallet }) {
 
   return (
     <div>
-      <h1>{currentWallet.name}</h1>
+      <h1>{walletDisplayName(currentWallet.name)}</h1>
       {walletInfo && <p>Total Balance: {walletInfo?.total_balance} BTC</p>}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading &&

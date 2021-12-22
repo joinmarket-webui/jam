@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { serialize } from '../utils'
+import { serialize, walletDisplayName } from '../utils'
 
 export default function CreateWallet({ currentWallet, startWallet }) {
   const [validated, setValidated] = useState(false)
@@ -93,6 +93,6 @@ export default function CreateWallet({ currentWallet, startWallet }) {
             : 'Create'}
         </rb.Button>
       </rb.Form>
-      : <rb.Alert variant="warning">Currently {currentWallet.name} is active. You need to lock it first.</rb.Alert>
+      : <rb.Alert variant="warning">Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.</rb.Alert>
   }
 }

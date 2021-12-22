@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { serialize } from '../utils'
+import { serialize, walletDisplayName } from '../utils'
 
 export default function Wallet({ name, currentWallet, startWallet, stopWallet, setAlert }) {
   const [validated, setValidated] = useState(false)
@@ -15,9 +15,9 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
         variant: 'warning',
         message: currentWallet.name === walletName
           // unlocking same wallet
-          ? `${walletName} is already unlocked.`
+          ? `${walletDisplayName(walletName)} is already unlocked.`
           // unlocking another wallet while one is already unlocked
-          : `${currentWallet.name} is currently in use, please lock it first.`
+          : `${walletDisplayName(currentWallet.name)} is currently in use, please lock it first.`
       })
     } else {
       setAlert(null)
@@ -44,9 +44,9 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     }
   }
 
-  const lockWallet = async (name) => {
+  const lockWallet = async name => {
     if (currentWallet && currentWallet.name !== name) {
-      setAlert({ variant: 'warning', message: `${name} is not unlocked.` })
+      setAlert({ variant: 'warning', message: `${walletDisplayName(name)} is not unlocked.` })
     }
 
     try {
@@ -63,7 +63,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
         stopWallet()
         setAlert({
           variant: already_locked ? 'warning' : 'success',
-          message: `${walletname} ${already_locked ? 'already locked' : 'locked succesfully'}.`,
+          message: `${walletDisplayName(walletname)} ${already_locked ? 'already locked' : 'locked succesfully'}.`,
           dismissible: true
         })
       } else {
@@ -109,7 +109,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     <rb.Card style={{ maxWidth: '24em' }} className="mt-3">
       <rb.Card.Body>
         <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-          <rb.Card.Title className={!isActive && !noneActive && "mb-0"}>{name}</rb.Card.Title>
+          <rb.Card.Title className={!isActive && !noneActive && "mb-0"}>{walletDisplayName(name)}</rb.Card.Title>
           {isActive
             ? (hasToken
                 ? <>

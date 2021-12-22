@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Alert from './Alert'
 import Wallet from './Wallet'
+import { walletDisplayName } from '../utils'
 
 export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState(currentWallet?.name && {
     variant: 'info',
-    message: `There can be only one active wallet. If you want to open another wallet, please lock ${currentWallet.name} first.`,
+    message: `There can be only one active wallet. If you want to open another wallet, please lock ${walletDisplayName(currentWallet.name)} first.`,
     dismissible: true
   })
 
