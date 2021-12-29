@@ -111,15 +111,15 @@ export default function App() {
     }
   }, [])
 
-  const nav = (
+  const nav = connectionError ? null : (
     <rb.Nav className="text-start">
-      {currentWallet
-        ? <>
-            <Link to="/payment" className="nav-link">Send</Link>
-            <Link to="/receive" className="nav-link">Receive</Link>
-            <Link to="/maker" className="nav-link">Earn</Link>
-          </>
-        : <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
+      {currentWallet &&
+        <>
+          <Link to="/payment" className="nav-link">Send</Link>
+          <Link to="/receive" className="nav-link">Receive</Link>
+          <Link to="/maker" className="nav-link">Earn</Link>
+        </>}
+      <Link to="/create-wallet" className="nav-link">Create Wallet</Link>
     </rb.Nav>)
 
   return (
@@ -136,37 +136,42 @@ export default function App() {
             />
             <span className="ms-2">JoinMarket</span>
           </Link>
-          <rb.Navbar.Toggle aria-controls="navbarOffcanvas" className="ms-auto border-0 order-sm-1" />
-          <rb.Navbar className="d-none d-lg-flex">
-            {nav}
-          </rb.Navbar>
-          <rb.Navbar.Offcanvas id="navbarOffcanvas">
-            <rb.Offcanvas.Body>
-              {nav}
-            </rb.Offcanvas.Body>
-          </rb.Navbar.Offcanvas>
-          {currentWallet && (
-            <rb.Nav className="ms-sm-auto ms-lg-0 d-block order-sm-0">
-              <Link to="/wallet" className="nav-link d-inline-block">{walletDisplayName(currentWallet.name)}</Link>
-              {!connectionError && <rb.Navbar.Text> · YG {makerRunning ? 'on' : 'off'}{coinjoinInProcess ? ', Coinjoining' : ''}</rb.Navbar.Text>}
-            </rb.Nav>)}
+          {connectionError
+            ? <rb.Navbar>
+                <rb.Navbar.Text>No Connection</rb.Navbar.Text>
+              </rb.Navbar>
+            : <>
+                <rb.Navbar.Toggle aria-controls="navbarOffcanvas" className="ms-auto border-0 order-sm-1" />
+                <rb.Navbar className="d-none d-lg-flex">
+                  {nav}
+                </rb.Navbar>
+                <rb.Navbar.Offcanvas id="navbarOffcanvas">
+                  <rb.Offcanvas.Body>
+                    {nav}
+                  </rb.Offcanvas.Body>
+                </rb.Navbar.Offcanvas>
+                {currentWallet && (
+                  <rb.Nav className="ms-sm-auto ms-lg-0 d-block order-sm-0">
+                    <Link to="/wallet" className="nav-link d-inline-block">{walletDisplayName(currentWallet.name)}</Link>
+                    {!connectionError && <rb.Navbar.Text> · YG {makerRunning ? 'on' : 'off'}{coinjoinInProcess ? ', Coinjoining' : ''}</rb.Navbar.Text>}
+                  </rb.Nav>)}
+              </>}
         </rb.Container>
       </rb.Navbar>
       <rb.Container as="main" className="py-4">
-        {connectionError &&
-          <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>}
-        <Routes>
-          <Route path='/' element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet}/>} />
-          <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />} />
-          {currentWallet &&
-            <>
-              <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet}/>} />
-              <Route path='payment' element={<Payment currentWallet={currentWallet}/>} />
-              <Route path='maker' element={<Maker currentWallet={currentWallet} makerRunning={makerRunning} />} />
-              <Route path='receive' element={<Receive currentWallet={currentWallet} />} />
-            </>
-          }
-        </Routes>
+        {connectionError
+          ? <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
+          : <Routes>
+              <Route path='/' element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />} />
+              <Route path='create-wallet' element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />} />
+              {currentWallet &&
+                <>
+                  <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet} />} />
+                  <Route path='payment' element={<Payment currentWallet={currentWallet} />} />
+                  <Route path='maker' element={<Maker currentWallet={currentWallet} makerRunning={makerRunning} />} />
+                  <Route path='receive' element={<Receive currentWallet={currentWallet} />} />
+                </>}
+            </Routes>}
       </rb.Container>
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container className="d-flex justify-content-center">
