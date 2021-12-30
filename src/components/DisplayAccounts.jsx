@@ -1,11 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { titleize } from '../utils'
+import { titleize, valueToUnit } from '../utils'
 
-export default function DisplayAccounts({ accounts }) {
+export default function DisplayAccounts({ accounts, ...props }) {
   return (
-    <rb.Accordion>
+    <rb.Accordion {...props}>
       {Object.values(accounts).map(({ account, account_balance: balance, branches }) => (
         <rb.Accordion.Item key={account} eventKey={account}>
           <rb.Accordion.Header>
@@ -14,7 +14,7 @@ export default function DisplayAccounts({ accounts }) {
                 <h5 className="mb-0">Account {account}</h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-                {balance} BTC
+                {valueToUnit(balance, 'BTC')}
               </rb.Col>
             </rb.Row>
           </rb.Accordion.Header>
@@ -30,7 +30,7 @@ export default function DisplayAccounts({ accounts }) {
                       <h6>{titleize(type)}</h6>
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center justify-content-end">
-                      {balance} BTC
+                      {valueToUnit(balance, 'BTC')}
                     </rb.Col>
                   </rb.Row>
                   <rb.Row className="w-100">
@@ -52,7 +52,7 @@ export default function DisplayAccounts({ accounts }) {
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
-                        {amount} BTC
+                        {valueToUnit(amount, 'BTC')}
                       </rb.Col>
                     </rb.Row>))}
                 </article>

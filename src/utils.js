@@ -19,3 +19,23 @@ export const titleize = string =>
     .join(' ')
 
 export const walletDisplayName = name => name.replace('.jmdat', '')
+
+export const displayDate = string => (new Date(string)).toLocaleString()
+
+export const btcToSats = value => parseFloat(value) * 100000000
+
+export const satsToBtc = value => parseInt(value) / 100000000
+
+const BTC = 'BTC'
+const SATS = 'SATS'
+
+export const valueToUnit = (value, unit) => {
+  const isSats = value === parseInt(value)
+  const isBTC = !isSats && typeof(value) === 'string' && value.indexOf('.') > -1
+
+  if (isBTC && unit === BTC) return `${value} ${BTC}`
+  if (isBTC && unit === SATS) return `${btcToSats(value)} ${SATS}`
+  if (isSats && unit === SATS) return `${value} ${SATS}`
+  if (isSats && unit === BTC) return `${satsToBtc(value)} ${BTC}`
+  return `${value} ${unit}`
+}
