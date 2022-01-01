@@ -10,7 +10,7 @@ export default function Payment({ currentWallet }) {
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
-  const [account, setAccount] = useState(location.state?.account || 0)
+  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name, token } = currentWallet
@@ -18,7 +18,7 @@ export default function Payment({ currentWallet }) {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
-        mixdepth: account,
+        mixdepth: String(account),
         destination,
         amount_sats
       })
@@ -53,7 +53,7 @@ export default function Payment({ currentWallet }) {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
-        mixdepth: account,
+        mixdepth: String(account),
         destination,
         amount_sats,
         counterparties
@@ -91,7 +91,7 @@ export default function Payment({ currentWallet }) {
     setValidated(true)
 
     if (isValid) {
-      const { account, amount, counterparties, destination } = serialize(form)
+      const { amount, counterparties, destination } = serialize(form)
       const success = isCoinjoin
         ? await startCoinjoin(account, destination, amount, counterparties)
         : await sendPayment(account, destination, amount)
@@ -115,13 +115,14 @@ export default function Payment({ currentWallet }) {
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ width: '15ch' }} required />
-        <rb.Form.Control.Feedback type="invalid">Please provide an account between {ACCOUNTS[0]} and {ACCOUNTS[4]}.</rb.Form.Control.Feedback>
+        <rb.Form.Select defaultValue={account} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ maxWidth: '21ch' }} required>
+          {ACCOUNTS.map(val => <option key={val} value={val}>Account {val}</option>)}
+        </rb.Form.Select>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control name="amount" type="number" min={0} defaultValue={0} required style={{ maxWidth: '15ch' }}/>
-        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
+        <rb.Form.Control name="amount" type="number" min={1} defaultValue={0} required style={{ maxWidth: '21ch' }}/>
+        <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
         <rb.Form.Check type="switch" label="As coinjoin" value={true} onChange={(e) => setIsCoinjoin(e.target.checked)} />

@@ -12,7 +12,7 @@ const Receive = ({ currentWallet }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState(0)
-  const [account, setAccount] = useState(location.state?.account || 0)
+  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
   const [addressCount, setAddressCount] = useState(0)
 
   useEffect(() => {
@@ -37,7 +37,10 @@ const Receive = ({ currentWallet }) => {
         .finally(() => setIsLoading(false))
 
     }
-    if (ACCOUNTS.includes(account)) fetchAddress(account)
+    
+    if (ACCOUNTS.includes(account)) {
+      fetchAddress(account)
+    }
 
     return () => abortCtrl.abort()
   }, [account, currentWallet, addressCount])
@@ -69,13 +72,14 @@ const Receive = ({ currentWallet }) => {
       )}
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Control name="account" type="number" value={account} min={ACCOUNTS[0]} max={ACCOUNTS[4]} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ width: '10ch' }} required />
-        <rb.Form.Control.Feedback type="invalid">Please provide an account between {ACCOUNTS[0]} and {ACCOUNTS[4]}.</rb.Form.Control.Feedback>
+        <rb.Form.Select defaultValue={account} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ maxWidth: '21ch' }} required>
+          {ACCOUNTS.map(val => <option key={val} value={val}>Account {val}</option>)}
+        </rb.Form.Select>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amountSats">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
         <rb.Form.Control name="amount" type="number" value={amount} min={0} onChange={e => setAmount(e.target.value)} style={{ width: '21ch' }} />
-        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
+        <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="address">
         <rb.Form.Label>Address</rb.Form.Label>
