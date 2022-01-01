@@ -12,7 +12,7 @@ const Receive = ({ currentWallet }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState(0)
-  const [account, setAccount] = useState(location.state?.account || 0)
+  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
   const [addressCount, setAddressCount] = useState(0)
 
   useEffect(() => {
