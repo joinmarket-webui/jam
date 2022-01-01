@@ -72,7 +72,7 @@ const Receive = ({ currentWallet }) => {
       )}
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Select defaultValue={account} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ maxWidth: '15ch' }} required>
+        <rb.Form.Select defaultValue={account} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ maxWidth: '21ch' }} required>
           {ACCOUNTS.map(val => <option key={val} value={val}>Account {val}</option>)}
         </rb.Form.Select>
       </rb.Form.Group>

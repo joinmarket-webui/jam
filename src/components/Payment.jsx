@@ -115,13 +115,13 @@ export default function Payment({ currentWallet }) {
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Select defaultValue={account} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ maxWidth: '15ch' }} required>
+        <rb.Form.Select defaultValue={account} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ maxWidth: '21ch' }} required>
           {ACCOUNTS.map(val => <option key={val} value={val}>Account {val}</option>)}
         </rb.Form.Select>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control name="amount" type="number" min={1} defaultValue={0} required style={{ maxWidth: '15ch' }}/>
+        <rb.Form.Control name="amount" type="number" min={1} defaultValue={0} required style={{ maxWidth: '21ch' }}/>
         <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
