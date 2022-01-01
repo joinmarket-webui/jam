@@ -120,8 +120,8 @@ export default function Payment({ currentWallet }) {
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control name="amount" type="number" min={0} defaultValue={0} required style={{ maxWidth: '15ch' }}/>
-        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
+        <rb.Form.Control name="amount" type="number" min={1} defaultValue={0} required style={{ maxWidth: '15ch' }}/>
+        <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
         <rb.Form.Check type="switch" label="As coinjoin" value={true} onChange={(e) => setIsCoinjoin(e.target.checked)} />
