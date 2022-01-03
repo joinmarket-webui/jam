@@ -3,10 +3,43 @@ import { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { serialize } from '../utils'
 
+const OFFERTYPE_REL = 'sw0reloffer'
+const OFFERTYPE_ABS = 'sw0absoffer'
+
 export default function Maker({ currentWallet, makerRunning }) {
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
+  const [offertype, setOffertype] = useState(window.localStorage.getItem('jm-offertype') || OFFERTYPE_REL)
+  const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.0003)
+  const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
+  const [feeContrib, setFeeContrib] = useState(parseInt(window.localStorage.getItem('jm-feeContrib'), 10) || 0)
+  const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100000)
+
+  const setAndPersistOffertype = value => {
+    setOffertype(value)
+    window.localStorage.setItem('jm-offertype', value)
+  }
+
+  const setAndPersistFeeRel = value => {
+    setFeeRel(value)
+    window.localStorage.setItem('jm-feeRel', value)
+  }
+
+  const setAndPersistFeeAbs = value => {
+    setFeeAbs(value)
+    window.localStorage.setItem('jm-feeAbs', value)
+  }
+
+  const setAndPersistFeeContrib = value => {
+    setFeeContrib(value)
+    window.localStorage.setItem('jm-feeContrib', value)
+  }
+
+  const setAndPersistMinsize = value => {
+    setMinsize(value)
+    window.localStorage.setItem('jm-minsize', value)
+  }
 
   const startMakerService = async (txfee, cjfee_a, cjfee_r, ordertype, minsize) => {
     const { name, token } = currentWallet
@@ -79,24 +112,46 @@ export default function Maker({ currentWallet, makerRunning }) {
 
     if (isValid) {
       if (makerRunning === false) {
-        const { cjfeeRel } = serialize(form)
-        await startMakerService(0, 0, cjfeeRel, 'sw0reloffer', 1000)
+        await startMakerService(feeContrib, feeAbs, feeRel, offertype, minsize)
       } else {
         await stopMakerService()
       }
     }
   }
 
+  const isRelOffer = offertype === OFFERTYPE_REL
+
   return (
     <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
       <h1>Maker Service</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {makerRunning === false &&
-        <rb.Form.Group className="mb-3" controlId="cjfeeRel">
-          <rb.Form.Label>Relative Coinjoin Fee</rb.Form.Label>
-          <rb.Form.Control type="number" name="cjfeeRel" required step={0.0001} defaultValue={0.003} min={0} max={0.1} style={{ width: '10ch' }}/>
-          <rb.Form.Control.Feedback type="invalid">Please provide an account.</rb.Form.Control.Feedback>
-        </rb.Form.Group>}
+        <>
+          <rb.Form.Group className="mb-3" controlId="offertype">
+            <rb.Form.Check type="switch" label="Relative offer" checked={isRelOffer} onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)} />
+          </rb.Form.Group>
+          {isRelOffer
+            ? <rb.Form.Group className="mb-3" controlId="feeRel">
+                <rb.Form.Label>Relative Fee (percent)</rb.Form.Label>
+                <rb.Form.Control type="number" name="feeRel" required step={0.0001} value={feeRel} min={0} max={0.1} style={{ width: '12ch' }} onChange={(e) => setAndPersistFeeRel(e.target.value)} />
+                <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
+              </rb.Form.Group>
+            : <rb.Form.Group className="mb-3" controlId="feeAbs">
+                <rb.Form.Label>Absolute Fee in SATS</rb.Form.Label>
+                <rb.Form.Control type="number" name="feeAbs" required step={1} value={feeAbs} min={0} style={{ width: '12ch' }} onChange={(e) => setAndPersistFeeAbs(e.target.value)} />
+                <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
+              </rb.Form.Group>}
+          <rb.Form.Group className="mb-3" controlId="feeContrib">
+            <rb.Form.Label>Transaction Fee Contribution in SATS</rb.Form.Label>
+            <rb.Form.Control type="number" name="feeContrib" required step={1} value={feeContrib} min={0} style={{ width: '12ch' }} onChange={(e) => setAndPersistFeeContrib(e.target.value)} />
+            <rb.Form.Control.Feedback type="invalid">Please provide a value.</rb.Form.Control.Feedback>
+          </rb.Form.Group>
+          <rb.Form.Group className="mb-3" controlId="minsize">
+            <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
+            <rb.Form.Control type="number" name="minsize" required step={1000} value={minsize} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistMinsize(e.target.value)} />
+            <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
+          </rb.Form.Group>
+        </>}
       <rb.Button variant="dark" type="submit" disabled={isSending}>
         {isSending
           ? <>
