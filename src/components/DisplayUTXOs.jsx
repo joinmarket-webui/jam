@@ -2,7 +2,7 @@ import React from 'react'
 import * as rb from 'react-bootstrap'
 import { displayDate, valueToUnit } from '../utils'
 
-export default function DisplayUTXOs({ utxos , ...props}) {
+export default function DisplayUTXOs({ utxos, unit, ...props}) {
   return (
     <rb.ListGroup variant="flush" {...props}>
       {utxos.map(utxo => (
@@ -12,7 +12,7 @@ export default function DisplayUTXOs({ utxos , ...props}) {
               {utxo.address}
             </rb.Col>
             <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-              {valueToUnit(utxo.value, 'BTC')}
+              {valueToUnit(utxo.value, unit)}
             </rb.Col>
           </rb.Row>
           <rb.Row className="w-100 mt-1">

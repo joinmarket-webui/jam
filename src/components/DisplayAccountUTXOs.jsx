@@ -12,16 +12,16 @@ const byAccount = utxos => {
   return ret
 }
 
-export default function DisplayAccountUTXOs({ utxos }) {
+export default function DisplayAccountUTXOs({ utxos, unit, ...props }) {
   return (
-    <rb.Accordion>
+    <rb.Accordion {...props}>
       {Object.entries(byAccount(utxos)).map(([account, utxos]) => (
         <rb.Accordion.Item key={account} eventKey={account}>
           <rb.Accordion.Header className="head">
             <h5 className="mb-0">Account {account}</h5>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
-            <DisplayUTXOs utxos={utxos} />
+            <DisplayUTXOs utxos={utxos} unit={unit} />
           </rb.Accordion.Body>
         </rb.Accordion.Item>
       ))}
