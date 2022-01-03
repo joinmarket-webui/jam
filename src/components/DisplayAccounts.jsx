@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { titleize, valueToUnit } from '../utils'
 
-export default function DisplayAccounts({ accounts, ...props }) {
+export default function DisplayAccounts({ accounts, unit, ...props }) {
   return (
     <rb.Accordion {...props}>
       {Object.values(accounts).map(({ account, account_balance: balance, branches }) => (
@@ -14,7 +14,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                 <h5 className="mb-0">Account {account}</h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-                {valueToUnit(balance, 'BTC')}
+                {valueToUnit(balance, unit)}
               </rb.Col>
             </rb.Row>
           </rb.Accordion.Header>
@@ -30,14 +30,14 @@ export default function DisplayAccounts({ accounts, ...props }) {
                       <h6>{titleize(type)}</h6>
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center justify-content-end">
-                      {valueToUnit(balance, 'BTC')}
+                      {valueToUnit(balance, unit)}
                     </rb.Col>
                   </rb.Row>
                   <rb.Row className="w-100">
                     <rb.Col xs="auto">
                       <code>{derivation}</code>
                     </rb.Col>
-                    <rb.Col className="d-flex align-items-center justify-content-end">
+                    <rb.Col className="d-flex align-items-center">
                       <code className="text-break">{xpub}</code>
                     </rb.Col>
                   </rb.Row>
@@ -52,7 +52,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
-                        {valueToUnit(amount, 'BTC')}
+                        {valueToUnit(amount, unit)}
                       </rb.Col>
                     </rb.Row>))}
                 </article>

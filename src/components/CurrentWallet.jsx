@@ -3,16 +3,22 @@ import { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
-import { displayDate, valueToUnit, walletDisplayName } from '../utils'
+import { valueToUnit, walletDisplayName, BTC, SATS } from '../utils'
 import DisplayUTXOs from './DisplayUTXOs'
 
 export default function CurrentWallet ({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
+  const [unit, setUnit] = useState(window.localStorage.getItem('unit') || BTC)
   const [utxos, setUtxos] = useState(null)
   const [fidelityBonds, setFidelityBonds] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+
+  const setValueUnit = unit => {
+    setUnit(unit)
+    window.localStorage.setItem('unit', unit)
+  }
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -63,21 +69,25 @@ export default function CurrentWallet ({ currentWallet }) {
   return (
     <div>
       <h1>{walletDisplayName(currentWallet.name)}</h1>
-      {walletInfo && walletInfo?.total_balance && <p>Total Balance: {valueToUnit(walletInfo.total_balance, 'BTC')}</p>}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading &&
-        <div>
+        <div className="mb-3">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading
         </div>}
+      {walletInfo && walletInfo?.total_balance &&
+        <>
+          <p>Total Balance: {valueToUnit(walletInfo.total_balance, unit)}</p>
+          <rb.Form.Check type="switch" label="Display amounts in sats" checked={unit === SATS} onChange={(e) => setValueUnit(e.target.checked ? SATS : BTC)} />
+        </>}
       {fidelityBonds?.length && (
         <div className="my-4 pe-3">
           <h5>Fidelity Bonds</h5>
-          <DisplayUTXOs utxos={fidelityBonds} className="pe-2" />
+          <DisplayUTXOs utxos={fidelityBonds} unit={unit} className="pe-2" />
         </div>)}
-      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} />}
+      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} />}
       {utxos && <rb.Button variant="outline-dark" onClick={() => { setShowUTXO(!showUTXO) }} className="my-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
-      {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} className="mt-3" />}
+      {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} unit={unit} className="mt-3" />}
     </div>
   )
 }
