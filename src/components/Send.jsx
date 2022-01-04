@@ -2,7 +2,7 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { serialize, ACCOUNTS, btcToSats, valueToUnit, SATS } from '../utils'
+import { serialize, ACCOUNTS, valueToUnit, SATS } from '../utils'
 
 export default function Payment({ currentWallet }) {
   const location = useLocation()
@@ -11,9 +11,9 @@ export default function Payment({ currentWallet }) {
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
-  const [isLoading, setIsLoading] = useState(false)
   const [amount, setAmount] = useState(0)
-  const [availableAmountsInSats, setAvailableAmountsInSats] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [accountBalancesInSats, setAccountBalancesInSats] = useState([])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -23,11 +23,31 @@ export default function Payment({ currentWallet }) {
       signal: abortCtrl.signal
     }
 
-    setAlert(null)
+    setAccountBalancesInSats([])
     setIsLoading(true)
-    fetch(`/api/v1/wallet/${name}/display`, opts)
+    fetch(`/api/v1/wallet/${name}/utxos`, opts)
       .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.')))
-      .then(data => setAvailableAmountsInSats(data.walletinfo.accounts.map(it => btcToSats(it.account_balance))))
+      .then(data => {
+        const balances = ACCOUNTS.map(accountIndex => {
+          const accountUtxos = data.utxos.filter(it => it.mixdepth === accountIndex)
+
+          const availableBalance = accountUtxos.map(it => it.value)
+            .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
+
+          const spendableBalance = accountUtxos.filter(it => !it.frozen)
+            .map(it => it.value)
+            .reduce((previousValue, currentValue) => previousValue + currentValue, 0)
+
+          return {
+            available: availableBalance,
+            spendable: spendableBalance,
+            showUseMax: spendableBalance > 0 && spendableBalance === availableBalance,
+            showAvailable: spendableBalance < availableBalance
+          }
+        })
+        
+        setAccountBalancesInSats(balances)
+      })
       .catch(err => setAlert({ variant: 'danger', message: err.message }))
       .finally(() => setIsLoading(false))
 
@@ -36,7 +56,7 @@ export default function Payment({ currentWallet }) {
 
   const useMax = () => {
     return () => {
-      const maxAmountInSats = availableAmountsInSats[account] || 0;
+      const maxAmountInSats = accountBalancesInSats[account]?.available || 0;
       setAmount(maxAmountInSats)
     }
   }
@@ -125,7 +145,7 @@ export default function Payment({ currentWallet }) {
       // joinmarket will send the entire amount if zero is used as amount
       // (using zero manually via input field is forbidden by form validation rules)
       // if the max amount is used without this conversion, jm cannot add tx fees and the tx will fail.
-      const amountOrMax = availableAmountsInSats[account] > 0 && amount === availableAmountsInSats[account] ? 0 : amount
+      const amountOrMax = amount === accountBalancesInSats[account]?.available ? 0 : amount
 
       const success = isCoinjoin
         ? await startCoinjoin(account, destination, amountOrMax, counterparties)
@@ -164,9 +184,15 @@ export default function Payment({ currentWallet }) {
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading available amount
         </div>}
-      <div className={availableAmountsInSats[account] >= 0 ? 'mb-3 small' : 'd-none'}>
-        <span>{valueToUnit(availableAmountsInSats[account], SATS)} available. </span>
-        <rb.Button variant="outline-dark" size="sm" onClick={useMax()} className={availableAmountsInSats[account] > 0 ? undefined : 'd-none'}>Use max</rb.Button>
+      <div className={accountBalancesInSats[account]?.available >= 0 ? 'mb-3 small' : 'd-none'}>
+        <span>
+          <span>{valueToUnit(accountBalancesInSats[account]?.spendable, SATS)} spendable</span>
+          <span className={accountBalancesInSats[account]?.showAvailable ? undefined : 'd-none'}>
+           {' '}({valueToUnit(accountBalancesInSats[account]?.available, SATS)} available)
+          </span>
+          {' '}
+        </span>
+        <rb.Button variant="outline-dark" size="sm" onClick={useMax()} className={accountBalancesInSats[account]?.showUseMax ? undefined : 'd-none'}>Use max</rb.Button>
       </div>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
         <rb.Form.Check type="switch" label="As coinjoin" value={true} onChange={(e) => setIsCoinjoin(e.target.checked)} />
