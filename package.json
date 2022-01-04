@@ -21,7 +21,7 @@
     "moving-letters": "^1.0.1",
     "nth-check": ">=2.0.1",
     "react": "^17.0.2",
-    "react-bootstrap": "^2.0.4",
+    "react-bootstrap": "^2.1.0",
     "react-dom": "^17.0.2",
     "react-router-bootstrap": "^0.26.0",
     "react-router-dom": "^6.2.1",
