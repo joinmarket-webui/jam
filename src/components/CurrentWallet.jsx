@@ -15,6 +15,18 @@ export default function CurrentWallet ({ currentWallet }) {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  let loadingCounter = 0;
+
+  const startLoading = () => {
+    loadingCounter++;
+    setIsLoading(loadingCounter > 0)
+  }
+
+  const stopLoading = () => {
+    loadingCounter--;
+    setIsLoading(loadingCounter > 0)
+  }
+
   const setAndPersistUnit = unit => {
     setUnit(unit)
     window.localStorage.setItem('jm-unit', unit)
@@ -29,12 +41,12 @@ export default function CurrentWallet ({ currentWallet }) {
     }
 
     setAlert(null)
-    setIsLoading(true)
+    startLoading()
     fetch(`/api/v1/wallet/${name}/display`, opts)
       .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.')))
       .then(data => setWalletInfo(data.walletinfo))
       .catch(err => setAlert({ variant: 'danger', message: err.message }))
-      .finally(() => setIsLoading(false))
+      .finally(() => stopLoading())
 
     return () => abortCtrl.abort()
   }, [currentWallet])
@@ -52,7 +64,7 @@ export default function CurrentWallet ({ currentWallet }) {
     }
 
     setAlert(null)
-    setIsLoading(true)
+    startLoading()
     fetch(`/api/v1/wallet/${name}/utxos`, opts)
       .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.')))
       .then(data => setData(data.utxos))
@@ -61,7 +73,7 @@ export default function CurrentWallet ({ currentWallet }) {
           setAlert({ variant: 'danger', message: err.message })
         }
       })
-      .finally(() => setIsLoading(false))
+      .finally(() => stopLoading())
 
     return () => abortCtrl.abort()
   }, [currentWallet])
