@@ -78,15 +78,15 @@ export default function CurrentWallet ({ currentWallet }) {
       {walletInfo && walletInfo?.total_balance &&
         <>
           <p>Total Balance: {valueToUnit(walletInfo.total_balance, unit)}</p>
-          <rb.Form.Check type="switch" label="Display amounts in SATS" checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} />
+          <p><rb.Form.Check type="switch" label="Display amounts in SATS" checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} /></p>
         </>}
+      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} className="mb-4" />}
       {fidelityBonds?.length && (
-        <div className="my-4 pe-3">
+        <div className="mt-5 mb-3 pe-3">
           <h5>Fidelity Bonds</h5>
           <DisplayUTXOs utxos={fidelityBonds} unit={unit} className="pe-2" />
         </div>)}
-      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} />}
-      {utxos && <rb.Button variant="outline-dark" onClick={() => { setShowUTXO(!showUTXO) }} className="my-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
+      {utxos && <rb.Button variant="outline-dark" onClick={() => { setShowUTXO(!showUTXO) }} className="mb-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
       {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} unit={unit} className="mt-3" />}
     </div>
   )

@@ -35,7 +35,7 @@ export default function DisplayAccounts({ accounts, unit, ...props }) {
                   </rb.Row>
                   <rb.Row className="w-100">
                     <rb.Col xs="auto">
-                      <code>{derivation}</code>
+                      <code className="text-break">{derivation}</code>
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center">
                       <code className="text-break">{xpub}</code>
@@ -44,10 +44,10 @@ export default function DisplayAccounts({ accounts, unit, ...props }) {
                   {entries.map(({ address, amount, hd_path: hdPath, labels }) => (
                     <rb.Row key={address} className="w-100 mt-3">
                       <rb.Col xs="auto">
-                        <code>{hdPath}</code>
+                        <code className="text-break">{hdPath}</code>
                       </rb.Col>
                       <rb.Col>
-                        {address}
+                        <code className="text-break">{address}</code>
                         {' '}
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>

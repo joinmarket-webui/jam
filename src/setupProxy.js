@@ -10,6 +10,7 @@ module.exports = app => {
   app.use('/ws/', createProxyMiddleware({
     target: 'wss://localhost:28183',
     changeOrigin: true,
+    secure: false,
     ws: true
   }))
 }

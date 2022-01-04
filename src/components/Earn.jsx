@@ -1,15 +1,15 @@
 import React from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { serialize } from '../utils'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-export default function Maker({ currentWallet, makerRunning }) {
+export default function Earn({ currentWallet, makerRunning }) {
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
+  const [isWaiting, setIsWaiting] = useState(false)
   const [offertype, setOffertype] = useState(window.localStorage.getItem('jm-offertype') || OFFERTYPE_REL)
   const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.0003)
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
@@ -57,14 +57,15 @@ export default function Maker({ currentWallet, makerRunning }) {
 
     setAlert(null)
     setIsSending(true)
+    setIsWaiting(false)
     try {
       const res = await fetch(`/api/v1/wallet/${name}/maker/start`, opts)
 
       if (res.ok) {
-        // FIXME: Right now there is no response data to check if maker is running
-        // const data = await res.json()
-        // console.log(data)
-        // setAlert({ variant: 'success', message: 'Maker started.' })
+        // FIXME: Right now there is no response data to check if maker got started
+        // https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1120
+        setAlert({ variant: 'success', message: 'The service is starting.' })
+        setIsWaiting(true)
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
@@ -76,6 +77,11 @@ export default function Maker({ currentWallet, makerRunning }) {
     }
   }
 
+  useEffect(() => {
+    setIsWaiting(false)
+    setAlert(null)
+  }, [makerRunning]);
+
   const stopMakerService = async () => {
     const { name, token } = currentWallet
     const opts = {
@@ -84,14 +90,15 @@ export default function Maker({ currentWallet, makerRunning }) {
 
     setAlert(null)
     setIsSending(true)
+    setIsWaiting(false)
     try {
       const res = await fetch(`/api/v1/wallet/${name}/maker/stop`, opts)
 
       if (res.ok) {
         // FIXME: Right now there is no response data to check if maker got stopped
-        // const data = await res.json()
-        // console.log(data)
-        // setAlert({ variant: 'success', message: 'Maker stopped.' })
+        // https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1120
+        setAlert({ variant: 'success', message: 'The service is stopping.' })
+        setIsWaiting(true)
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
@@ -123,9 +130,10 @@ export default function Maker({ currentWallet, makerRunning }) {
 
   return (
     <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-      <h1>Maker Service</h1>
+      <h1>Earn</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {makerRunning === false &&
+      <p>Service {makerRunning ? 'running' : 'not running'}.</p>
+      {!makerRunning && !isWaiting &&
         <>
           <rb.Form.Group className="mb-3" controlId="offertype">
             <rb.Form.Check type="switch" label="Relative offer" checked={isRelOffer} onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)} />
@@ -133,17 +141,17 @@ export default function Maker({ currentWallet, makerRunning }) {
           {isRelOffer
             ? <rb.Form.Group className="mb-3" controlId="feeRel">
                 <rb.Form.Label>Relative Fee (percent)</rb.Form.Label>
-                <rb.Form.Control type="number" name="feeRel" required step={0.0001} value={feeRel} min={0} max={0.1} style={{ width: '12ch' }} onChange={(e) => setAndPersistFeeRel(e.target.value)} />
+                <rb.Form.Control type="number" name="feeRel" required step={0.0001} value={feeRel} min={0} max={0.1} style={{ width: '16ch' }} onChange={(e) => setAndPersistFeeRel(e.target.value)} />
                 <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
               </rb.Form.Group>
             : <rb.Form.Group className="mb-3" controlId="feeAbs">
                 <rb.Form.Label>Absolute Fee in SATS</rb.Form.Label>
-                <rb.Form.Control type="number" name="feeAbs" required step={1} value={feeAbs} min={0} style={{ width: '12ch' }} onChange={(e) => setAndPersistFeeAbs(e.target.value)} />
+                <rb.Form.Control type="number" name="feeAbs" required step={1} value={feeAbs} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistFeeAbs(e.target.value)} />
                 <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
               </rb.Form.Group>}
           <rb.Form.Group className="mb-3" controlId="feeContrib">
             <rb.Form.Label>Transaction Fee Contribution in SATS</rb.Form.Label>
-            <rb.Form.Control type="number" name="feeContrib" required step={1} value={feeContrib} min={0} style={{ width: '12ch' }} onChange={(e) => setAndPersistFeeContrib(e.target.value)} />
+            <rb.Form.Control type="number" name="feeContrib" required step={1} value={feeContrib} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistFeeContrib(e.target.value)} />
             <rb.Form.Control.Feedback type="invalid">Please provide a value.</rb.Form.Control.Feedback>
           </rb.Form.Group>
           <rb.Form.Group className="mb-3" controlId="minsize">

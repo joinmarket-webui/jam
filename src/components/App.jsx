@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Route, Routes, Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
-import Payment from './Payment'
 import CreateWallet from './CreateWallet'
-import Maker from './Maker'
+import Send from './Send'
+import Earn from './Earn'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
 import { getSession, setSession, clearSession } from '../session'
@@ -113,13 +113,12 @@ export default function App() {
 
   const nav = connectionError ? null : (
     <rb.Nav className="text-start">
-      {currentWallet &&
-        <>
-          <Link to="/payment" className="nav-link">Send</Link>
-          <Link to="/receive" className="nav-link">Receive</Link>
-          <Link to="/maker" className="nav-link">Earn</Link>
-        </>}
-      <Link to="/create-wallet" className="nav-link">Create Wallet</Link>
+      {currentWallet
+        ? <>
+            <Link to="/payment" className="nav-link">Send</Link>
+            <Link to="/receive" className="nav-link">Receive</Link>
+          </>
+        : <Link to="/create-wallet" className="nav-link">Create Wallet</Link>}
     </rb.Nav>)
 
   return (
@@ -153,7 +152,22 @@ export default function App() {
                 {currentWallet && (
                   <rb.Nav className="ms-sm-auto ms-lg-0 d-block order-sm-0">
                     <Link to="/wallet" className="nav-link d-inline-block">{walletDisplayName(currentWallet.name)}</Link>
-                    {!connectionError && <rb.Navbar.Text> · YG {makerRunning ? 'on' : 'off'}{coinjoinInProcess ? ', Coinjoining' : ''}</rb.Navbar.Text>}
+                    <rb.Navbar.Text> · </rb.Navbar.Text>
+                    <Link to="/earn" className="nav-link d-inline-flex align-items-center">
+                      Earn
+                      <svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" fill="currentColor" className="ms-2" viewBox="0 0 16 16">{makerRunning
+                        ? <path d="M5 3a5 5 0 0 0 0 10h6a5 5 0 0 0 0-10H5zm6 9a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
+                        : <path d="M11 4a4 4 0 0 1 0 8H8a4.992 4.992 0 0 0 2-4 4.992 4.992 0 0 0-2-4h3zm-6 8a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM0 8a5 5 0 0 0 5 5h6a5 5 0 0 0 0-10H5a5 5 0 0 0-5 5z" />}
+                      </svg>
+                    </Link>
+                    {coinjoinInProcess &&
+                      <rb.Navbar.Text> ·
+                        Joining
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5rem" height="1.5rem" fill="currentColor" className="ms-2" viewBox="0 0 16 16">
+                          <path d="M8 9.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+                          <path d="M9.5 2c-.9 0-1.75.216-2.501.6A5 5 0 0 1 13 7.5a6.5 6.5 0 1 1-13 0 .5.5 0 0 1 1 0 5.5 5.5 0 0 0 8.001 4.9A5 5 0 0 1 3 7.5a6.5 6.5 0 0 1 13 0 .5.5 0 0 1-1 0A5.5 5.5 0 0 0 9.5 2zM8 3.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+                        </svg>
+                      </rb.Navbar.Text>}
                   </rb.Nav>)}
               </>}
         </rb.Container>
@@ -167,8 +181,8 @@ export default function App() {
               {currentWallet &&
                 <>
                   <Route path='wallet' element={<CurrentWallet currentWallet={currentWallet} />} />
-                  <Route path='payment' element={<Payment currentWallet={currentWallet} />} />
-                  <Route path='maker' element={<Maker currentWallet={currentWallet} makerRunning={makerRunning} />} />
+                  <Route path='payment' element={<Send currentWallet={currentWallet} />} />
+                  <Route path='earn' element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} coinjoinInProcess={coinjoinInProcess} />} />
                   <Route path='receive' element={<Receive currentWallet={currentWallet} />} />
                 </>}
             </Routes>}
