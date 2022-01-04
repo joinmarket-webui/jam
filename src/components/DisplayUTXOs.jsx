@@ -11,7 +11,7 @@ export default function DisplayUTXOs({ utxos, unit, ...props}) {
             <rb.Col>
               <code className="text-break">{utxo.address}</code>
             </rb.Col>
-            <rb.Col className="d-flex align-items-center justify-content-end pe-5 text-break">
+            <rb.Col className="d-flex align-items-center justify-content-end pe-5">
               {valueToUnit(utxo.value, unit)}
             </rb.Col>
           </rb.Row>

@@ -81,7 +81,7 @@ export default function CurrentWallet ({ currentWallet }) {
           <p><rb.Form.Check type="switch" label="Display amounts in SATS" checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} /></p>
         </>}
       {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} className="mb-4" />}
-      {fidelityBonds?.length && (
+      {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
           <h5>Fidelity Bonds</h5>
           <DisplayUTXOs utxos={fidelityBonds} unit={unit} className="pe-2" />
