@@ -80,7 +80,7 @@ export default function CurrentWallet ({ currentWallet }) {
           <p>Total Balance: {valueToUnit(walletInfo.total_balance, unit)}</p>
           <rb.Form.Check type="switch" label="Display amounts in sats" checked={unit === SATS} onChange={(e) => setValueUnit(e.target.checked ? SATS : BTC)} />
         </>}
-      {fidelityBonds?.length && (
+      {!!fidelityBonds?.length && (
         <div className="my-4 pe-3">
           <h5>Fidelity Bonds</h5>
           <DisplayUTXOs utxos={fidelityBonds} unit={unit} className="pe-2" />
