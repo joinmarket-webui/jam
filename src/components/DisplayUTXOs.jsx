@@ -9,7 +9,7 @@ export default function DisplayUTXOs({ utxos, unit, ...props}) {
         <rb.ListGroup.Item key={utxo.utxo} className="px-0">
           <rb.Row className="w-100">
             <rb.Col>
-              {utxo.address}
+              <code className="text-break">{utxo.address}</code>
             </rb.Col>
             <rb.Col className="d-flex align-items-center justify-content-end pe-5">
               {valueToUnit(utxo.value, unit)}
