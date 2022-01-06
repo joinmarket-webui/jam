@@ -78,7 +78,7 @@ export default function CurrentWallet ({ currentWallet }) {
       {walletInfo && walletInfo?.total_balance &&
         <>
           <p>Total Balance: {valueToUnit(walletInfo.total_balance, unit)}</p>
-          <p><rb.Form.Check type="switch" label="Display amounts in SATS" checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} /></p>
+          <rb.Form.Check type="switch" label="Display amounts in SATS" checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} />
         </>}
       {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} className="mb-4" />}
       {!!fidelityBonds?.length && (
