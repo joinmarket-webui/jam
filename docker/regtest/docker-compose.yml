@@ -21,11 +21,11 @@ services:
         port=39388
         whitelist=0.0.0.0/0
         maxmempool=500
-        debug=1
-        logips=1
+        debug=rpc
+        logips=0
         networkactive=1
         dnsseed=0
-        uacomment=tbkdevbitcoindregtest
+        uacomment=jmdevbitcoindregtest
         printpriority=1
         logtimemicros=1
         zmqpubrawblock=tcp://0.0.0.0:28332
@@ -97,7 +97,12 @@ services:
       READY_FILE: /root/.nbxplorer/btc_fully_synched
       ENSURE_WALLET: 1
       jm_gaplimit: 2000
-      #jm_network: ${NBITCOIN_NETWORK:-regtest}
+      jm_rpc_wallet_file: jm_primary
+      jm_max_cj_fee_abs: 42000000 # 0.42 btc
+      jm_max_cj_fee_rel: 0.1337 # 13.37%
+      jm_minimum_makers: 1
+      jm_taker_utxo_age: 1
+      jm_taker_utxo_retries: 10
       jm_blockchain_source: regtest
       jm_network: testnet
       jm_rpc_host: bitcoind
