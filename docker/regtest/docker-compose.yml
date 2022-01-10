@@ -80,10 +80,10 @@ services:
       - bitcoind
       - tor
 
-  miniircd:
-    container_name: jm_regtest_miniircd
+  irc:
+    container_name: jm_regtest_irc
     restart: unless-stopped
-    image: daxxog/miniircd:latest
+    image: ergochat/ergo:latest
     expose:
       - 6667
 
@@ -129,7 +129,7 @@ services:
       - "tor_datadir:/home/tor/.tor"
     depends_on:
       - bitcoind
-      - miniircd
+      - irc
       - nbxplorer
       - tor
 
