@@ -25,10 +25,31 @@ docker-compose down -v
 
 ## Helper scripts
 
-A helper script is included to make recurring tasks and interaction with the containers easier.
-Currently the only functionality is funding a joinmarket regtest wallet.
+Some helper scripts are included to make recurring tasks and interaction with the containers easier.
+
+### `mine-block.sh`
+Mine one or more blocks to an optionally given address.
+
+```shell script
+[user@home regtest]$ ./mine-block.sh
+```
+
+Usage: mine-block.sh [# of blocks] [address]
+
+Mine 42 blocks to address 
+```shell script
+# mine a single block
+[user@home regtest]$ ./mine-block.sh
+
+# mine 21 blocks
+[user@home regtest]$ ./mine-block.sh 21
+
+# mine 42 blocks to given address
+[user@home regtest]$ ./mine-block.sh 42 bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx
+```
 
 ### `regtest-control.sh`
+Funding and/or creating a joinmarket regtest wallet.
 
 ```shell script
 [user@home regtest]$ ./regtest-control.sh --help
