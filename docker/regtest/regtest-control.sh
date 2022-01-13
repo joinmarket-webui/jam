@@ -18,8 +18,9 @@ Available options:
     -v, --verbose        Print script debug info
     -w, --wallet-name    Wallet name (default: funded.jmdat)
     -p, --password       Wallet password (default: test)
-    -m, --mixdepth       mixdepth used (0 - 4) (default: 0)
-    -b, --blocks         amount of blocks (default: 1)
+    -m, --mixdepth       Mixdepth used (0 - 4) (default: 0)
+    -b, --blocks         Amount of blocks (default: 1)
+    -c, --container      Target container (default: jm_regtest_joinmarket)
 
 Examples:
     # Mine 42 blocks to wallet 'funded.jmdat' in mixdepth 0
@@ -27,6 +28,9 @@ Examples:
 
     # Mine 5 blocks to wallet 'satoshi.jmdat' with password 'correctbatteryhorsestaple' in mixdepth 3
     $(basename "${BASH_SOURCE[0]}") --wallet-name satoshi.jmdat --mixdepth 3 --blocks 5 --password correctbatteryhorsestaple
+
+    # Mine one block to wallet 'funded.jmdat' of container 'jm_regtest_joinmarket2'
+    $(basename "${BASH_SOURCE[0]}") --container jm_regtest_joinmarket2
 
 EOF
   exit
@@ -73,6 +77,7 @@ parse_params() {
   wallet_name='funded.jmdat'
   mixdepth='0'
   blocks='1'
+  container='jm_regtest_joinmarket'
   base_url='https://localhost:28183'
 
   while :; do
@@ -94,6 +99,10 @@ parse_params() {
       ;;
     -b | --blocks)
       blocks="${2-}"
+      shift
+      ;;
+    -c | --container)
+      container="${2-}"
       shift
       ;;
     -?*) die "Unknown option: $1" ;;
@@ -118,6 +127,13 @@ parse_params() {
   [ -z "${blocks//[\-0-9]}" ] || die "Invalid parameter: 'blocks' must be an integer"
   [ "$blocks" -ge 1 ] || die "Invalid parameter: 'blocks' must be a positve integer"
 
+  [ "$container" == "jm_regtest_joinmarket" ] || 
+  [ "$container" == "jm_regtest_joinmarket2" ] || 
+  die "Invalid parameter: 'container' must be a known container name"
+
+  [ "$container" == "jm_regtest_joinmarket" ] && base_url='https://localhost:28183'
+  [ "$container" == "jm_regtest_joinmarket2" ] && base_url='https://localhost:29183'
+
   return 0
 }
 
@@ -134,7 +150,7 @@ docker_container_running() {
 msg "Trying to fund wallet $wallet_name.."
 
 [ -z $(docker_container_running "jm_regtest_bitcoind") ] && die "Please make sure bitcoin container 'jm_regtest_bitcoind' is running."
-[ -z $(docker_container_running "jm_regtest_joinmarket") ] && die "Please make sure joinmarket container 'jm_regtest_joinmarket' is running."
+[ -z $(docker_container_running "$container") ] && die "Please make sure joinmarket container '$container' is running."
 
 # --------------------------
 # Verify no open session
