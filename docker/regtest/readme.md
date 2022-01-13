@@ -1,6 +1,8 @@
 
 # Docker setup for running joinmarket in regtest mode
 
+This setup will help you set up a regtest environment quickly. 
+It starts two Joinmarket container, hence not only API calls but also actual Coinjoin transactions can be tested.
 
 ## Run
 Go to the docker directory (`cd docker/regtest`) and execute:
@@ -14,6 +16,11 @@ docker-compose up
 ## Stop
 ```shell
 docker-compose down
+```
+
+If you want to start from scratch, pass the `-v` param:
+```shell
+docker-compose down -v
 ```
 
 ## Helper scripts

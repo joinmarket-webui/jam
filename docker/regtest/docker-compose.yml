@@ -41,6 +41,8 @@ services:
         rpcauth=regtest:20b58677979ad9d3cf4b78b1d6e85e44$$2ec3e1e1c00c7c58d7aff1d4bf96e4a984ea1af5d676d862fd0faa857a1d4d7c
         # rpcauth (user=joinmarket; password=joinmarket)
         rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
+        # rpcauth (user=joinmarket2; password=joinmarket2)
+        rpcauth=joinmarket2:521bf9f4468529d49c0a41f9c9f8fdbf$$63ae94a73d2aa45e7ee756945d9b1e469f9873ce026b815d676a748f777e0b8d
         # rpcauth (user=nbxplorer; password=nbxplorer)
         rpcauth=nbxplorer:8953867752ed07ca27bc0b1d7a10fa99$$e46553870d4a2c59753bfe453797be070ab4dbd5fdfc2fecdb7862ea0ae6b127
     expose:
@@ -133,6 +135,51 @@ services:
       - nbxplorer
       - tor
 
+  joinmarket2:
+    container_name: jm_regtest_joinmarket2
+    build:
+      context: ./dockerfile-deps/joinmarket
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      READY_FILE: /root/.nbxplorer/btc_fully_synched
+      ENSURE_WALLET: 1
+      jm_gaplimit: 2000
+      jm_rpc_wallet_file: jm_secondary
+      jm_max_cj_fee_abs: 42000000 # 0.42 btc
+      jm_max_cj_fee_rel: 0.1337 # 13.37%
+      jm_minimum_makers: 1
+      jm_taker_utxo_age: 1
+      jm_taker_utxo_retries: 10
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_rpc_user: joinmarket2
+      jm_rpc_password: joinmarket2
+      jm_tor_control_host: tor
+      jm_tor_control_port: 9051
+      jm_onion_socks5_host: tor
+      jm_onion_socks5_port: 9050
+      jm_socks5_host: tor
+      jm_socks5_port: 9050
+    expose:
+      - 8080 # payjoin server
+      - 62601 # obwatch
+      - 27183 # joinmarketd
+      - 28183 # jmwalletd
+    ports:
+      - "29183:28183"
+    volumes:
+      - "joinmarket2_datadir:/root/.joinmarket"
+      - "nbxplorer_datadir:/root/.nbxplorer"
+      - "tor_datadir:/home/tor/.tor"
+    depends_on:
+      - bitcoind
+      - irc
+      - nbxplorer
+      - tor
+
   tor:
     container_name: jm_regtest_tor
     restart: unless-stopped
@@ -156,6 +203,7 @@ volumes:
   bitcoin_wallet_datadir:
   nbxplorer_datadir:
   joinmarket_datadir:
+  joinmarket2_datadir:
   tor_datadir:
   tor_torrcdir:
   tor_servicesdir:

@@ -128,7 +128,7 @@ parse_params "$@"
 
 docker_container_running() {
   [ -z "${1-}" ] && die "docker_container_running: Missing required parameter: name"
-  echo $(docker ps --filter "name=${1-}" --filter status=running -q)
+  echo $(docker ps --filter "name=^/${1-}$" --filter status=running -q)
 }
 
 msg "Trying to fund wallet $wallet_name.."
