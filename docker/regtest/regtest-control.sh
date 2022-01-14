@@ -20,6 +20,7 @@ Available options:
     -p, --password       Wallet password (default: test)
     -m, --mixdepth       Mixdepth used (0 - 4) (default: 0)
     -b, --blocks         Amount of blocks (default: 1)
+    -um, --unmatured     Disable block reward maturity (coins will not be spendable immediately)
     -c, --container      Target container (default: jm_regtest_joinmarket)
 
 Examples:
@@ -29,8 +30,8 @@ Examples:
     # Mine 5 blocks to wallet 'satoshi.jmdat' with password 'correctbatteryhorsestaple' in mixdepth 3
     $(basename "${BASH_SOURCE[0]}") --wallet-name satoshi.jmdat --mixdepth 3 --blocks 5 --password correctbatteryhorsestaple
 
-    # Mine one block to wallet 'funded.jmdat' of container 'jm_regtest_joinmarket2'
-    $(basename "${BASH_SOURCE[0]}") --container jm_regtest_joinmarket2
+    # Mine one block (unmatured) to wallet 'funded.jmdat' of container 'jm_regtest_joinmarket2'
+    $(basename "${BASH_SOURCE[0]}") --container jm_regtest_joinmarket2 --unmatured
 
 EOF
   exit
@@ -57,6 +58,10 @@ msg_success() {
   msg "${GREEN}${1-}${NOFORMAT}"
 }
 
+msg_warn() {
+  msg "${ORANGE}${1-}${NOFORMAT}"
+}
+
 msg_error() {
   msg "${RED}${1-}${NOFORMAT}"
 }
@@ -77,6 +82,7 @@ parse_params() {
   wallet_name='funded.jmdat'
   mixdepth='0'
   blocks='1'
+  unmatured=false
   container='jm_regtest_joinmarket'
   base_url='https://localhost:28183'
 
@@ -101,6 +107,7 @@ parse_params() {
       blocks="${2-}"
       shift
       ;;
+    -um | --unmatured) unmatured=true ;;
     -c | --container)
       container="${2-}"
       shift
@@ -215,7 +222,7 @@ if [ "$target_wallet_exists" = "1" ]; then
     unlock_result=$(curl "$base_url/api/v1/wallet/$wallet_name/unlock" --silent --show-error --insecure --data $unlock_request_payload | jq ".")
 
     unlock_result_error_msg=$(jq -r '. | select(.message != null) | .message' <<< "$unlock_result")
-    if [ "$unlock_result_error_msg" != "" ]; then 
+    if [ "$unlock_result_error_msg" != "" ]; then
         die "$unlock_result_error_msg"
     fi
 
@@ -246,7 +253,7 @@ else
     create_result=$(curl "$base_url/api/v1/wallet/create" --silent --show-error --insecure --data $create_request_payload | jq ".")
 
     create_result_error_msg=$(jq -r '. | select(.message != null) | .message' <<< "$create_result")
-    if [ "$create_result_error_msg" != "" ]; then 
+    if [ "$create_result_error_msg" != "" ]; then
         die "$create_result_error_msg"
     fi
 
@@ -276,10 +283,10 @@ address_result=$(curl "$base_url/api/v1/wallet/$wallet_name/address/new/$mixdept
 
 address=$(jq -r '.address' <<< "$address_result")
 
-if [ "$address" = "null" ]; then 
+if [ "$address" = "null" ]; then
     # just print an error message -> wallet must be locked before we can exit
     msg_error "No address found - aborting."
-else 
+else
     msg_success "Successfully fetched new funding address $address"
 fi
 
@@ -309,11 +316,16 @@ msg_success "Successfully locked wallet $wallet_name."
 # --------------------------
 # Mine the actual blocks
 # --------------------------
-# generate new blocks with rewards in wallet
+# generate new blocks with rewards to wallet
 msg "Generating $blocks blocks with rewards to $address"
 . "$script_dir/mine-block.sh" $blocks $address &>/dev/null
 
-# make the generated coinbase spendable (not mining the new coinbases to an address controlled by the wallet on purpose!)
-. "$script_dir/mine-block.sh" 100 &>/dev/null
+if [ "$unmatured" = true ]; then
+  msg_warn "Block rewards are not yet matured and will not be immediately spendable"
+else
+    msg "Generating another 100 blocks to make block rewards spendable.."
+    # make the generated coinbase spendable (not mining the new coinbases to an address controlled by the wallet on purpose!)
+    . "$script_dir/mine-block.sh" 100 &>/dev/null
+fi
 
 msg_success "Successfully generated $blocks blocks with rewards to $address"
