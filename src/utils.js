@@ -28,7 +28,11 @@ export const btcToSats = value => Math.round(parseFloat(value) * 100000000)
 
 export const satsToBtc = value => parseInt(value, 10) / 100000000
 
-export const valueToUnit = (value, unit) => {
+export const valueToUnit = (value, unit, redactValue = false) => {
+  if (redactValue) {
+    return `*** ${unit}`
+  }
+
   const isSats = value === parseInt(value)
   const isBTC = !isSats && typeof(value) === 'string' && value.indexOf('.') > -1
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { titleize, valueToUnit } from '../utils'
 
-export default function DisplayAccounts({ accounts, unit, ...props }) {
+export default function DisplayAccounts({ accounts, unit, redactBalances, ...props }) {
   return (
     <rb.Accordion {...props}>
       {Object.values(accounts).map(({ account, account_balance: balance, branches }) => (
@@ -14,7 +14,7 @@ export default function DisplayAccounts({ accounts, unit, ...props }) {
                 <h5 className="mb-0">Account {account}</h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-                {valueToUnit(balance, unit)}
+                {valueToUnit(balance, unit, redactBalances)}
               </rb.Col>
             </rb.Row>
           </rb.Accordion.Header>
@@ -30,7 +30,7 @@ export default function DisplayAccounts({ accounts, unit, ...props }) {
                       <h6>{titleize(type)}</h6>
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center justify-content-end">
-                      {valueToUnit(balance, unit)}
+                      {valueToUnit(balance, unit, redactBalances)}
                     </rb.Col>
                   </rb.Row>
                   <rb.Row className="w-100">
@@ -52,7 +52,7 @@ export default function DisplayAccounts({ accounts, unit, ...props }) {
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
-                        {valueToUnit(amount, unit)}
+                        {valueToUnit(amount, unit, redactBalances)}
                       </rb.Col>
                     </rb.Row>))}
                 </article>
