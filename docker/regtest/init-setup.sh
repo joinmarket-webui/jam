@@ -45,33 +45,19 @@ maker_running=$(jq -r '.maker_running' <<< "$session_result")
 if [ "$maker_running" != false ]; then
   msg_success "Maker is already running"
 else
-    # --------------------------
-    # Unlock wallet
-    # --------------------------
-    msg "Unlocking wallet $wallet_name.."
-
-    unlock_request_payload="{\"password\":\"$wallet_password\"}"
-
-    unlock_result=$(curl "$base_url/api/v1/wallet/$wallet_name/unlock" --silent --show-error --insecure --data $unlock_request_payload | jq ".")
-
-    unlock_result_error_msg=$(jq -r '. | select(.message != null) | .message' <<< "$unlock_result")
-    if [ "$unlock_result_error_msg" != "" ]; then 
-        die "$unlock_result_error_msg"
-    fi
+    unlock_result=$(unlock_wallet "$base_url" "$wallet_name" "$wallet_password")
 
     auth_token=$(jq -r '.token' <<< "$unlock_result")
-
-    msg_success "Successfully unlocked wallet $wallet_name."
-    ## Unlocking wallet - end
 
     auth_header="Authorization: Bearer $auth_token"
 
     # --------------------------
     # Start maker
     # --------------------------
-    ## API: /api/v1/wallet/$wallet_name/maker/start
+    ## API: POST /api/v1/wallet/$wallet_name/maker/start
     ## 
-    ## Response: 200 OK
+    ## Response: 
+    ## 200 OK
     ## {}
     msg "Starting maker service for wallet $wallet_name"  
     start_maker_request_payload="{\"txfee\":0,\"cjfee_a\":250,\"cjfee_r\":0.0003,\"ordertype\":\"sw0absoffer\",\"minsize\":\"10000\"}"
@@ -88,10 +74,7 @@ else
     # Lock wallet
     # --------------------------
     msg "Locking wallet $wallet_name"
-    lock_result=$(curl "$base_url/api/v1/wallet/$wallet_name/lock" --silent --show-error --insecure -H "$auth_header" | jq ".")
-
-    locked_wallet_name=$(jq -r '.walletname' <<< "$lock_result")
-    [ "$locked_wallet_name" != "$wallet_name" ] && die "Problem while locking wallet $wallet_name"
+    lock_result=$(lock_wallet "$base_url" "$auth_header" "$wallet_name")
 
     msg_success "Successfully locked wallet $wallet_name."
 fi

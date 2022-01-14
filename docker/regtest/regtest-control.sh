@@ -5,6 +5,8 @@ trap cleanup SIGINT SIGTERM ERR EXIT
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
+. "$script_dir/common.sh"
+
 usage() {
   cat <<EOF
 Usage: regtest-control.sh [-h] [-v] [-w wallet_name] [-p password] [-m mixdepth] [-b blocks]
@@ -40,40 +42,6 @@ EOF
 cleanup() {
   trap - SIGINT SIGTERM ERR EXIT
   # script cleanup here
-}
-
-setup_colors() {
-  if [[ -t 2 ]] && [[ -z "${NO_COLOR-}" ]] && [[ "${TERM-}" != "dumb" ]]; then
-    NOFORMAT='\033[0m' RED='\033[0;31m' GREEN='\033[0;32m' ORANGE='\033[0;33m' BLUE='\033[0;34m' PURPLE='\033[0;35m' CYAN='\033[0;36m' YELLOW='\033[1;33m'
-  else
-    NOFORMAT='' RED='' GREEN='' ORANGE='' BLUE='' PURPLE='' CYAN='' YELLOW=''
-  fi
-}
-
-msg() {
-  echo >&2 -e "${1-}"
-}
-
-msg_success() {
-  msg "${GREEN}${1-}${NOFORMAT}"
-}
-
-msg_warn() {
-  msg "${ORANGE}${1-}${NOFORMAT}"
-}
-
-msg_error() {
-  msg "${RED}${1-}${NOFORMAT}"
-}
-
-msg_highlight() {
-  msg "${YELLOW}${1-}${NOFORMAT}"
-}
-
-die() {
-  local code=${2-1} # default exit status 1
-  msg_error "${1-}"
-  exit "$code"
 }
 
 parse_params() {
@@ -149,55 +117,18 @@ parse_params "$@"
 
 # ----------------------------------------
 
-docker_container_running() {
-  [ -z "${1-}" ] && die "docker_container_running: Missing required parameter: name"
-  echo $(docker ps --filter "name=^/${1-}$" --filter status=running -q)
-}
-
 msg "Trying to fund wallet $wallet_name.."
 
-[ -z $(docker_container_running "jm_regtest_bitcoind") ] && die "Please make sure bitcoin container 'jm_regtest_bitcoind' is running."
-[ -z $(docker_container_running "$container") ] && die "Please make sure joinmarket container '$container' is running."
+[ -z $(is_docker_container_running "jm_regtest_bitcoind") ] && die "Please make sure bitcoin container 'jm_regtest_bitcoind' is running."
+[ -z $(is_docker_container_running "$container") ] && die "Please make sure joinmarket container '$container' is running."
+
+
+verify_no_open_session_or_throw "$base_url"
 
 # --------------------------
-# Verify no open session
+# Fetch available wallets
 # --------------------------
-## API: /api/v1/session
-## 
-## Response:
-## { 
-##    "session": false, 
-##    "maker_running": false, 
-##    "coinjoin_in_process": false, 
-##    "wallet_name": "None"
-## }
-##
-
-# param "--insecure": Is needed because a self-signed certificate is used in joinmarket regtest container
-# param "--silent": Don't show progress meter or error messages (errors are reactivated with "--show-error").
-# param "--show-error": When used with -s, --silent, it makes curl show an error message if it fails.
-if session_result=$(curl "$base_url/api/v1/session" --silent --show-error --insecure | jq "."); then
-  msg_success "Successfully established connection to jmwalletd"
-else rc=$?
-  die "Could not connect to joinmarket. Please make sure jmwalletd is running inside container."
-fi
-
-[ $(jq -r '.session' <<< "$session_result") != "false" ] && die "Please make sure no session is active."
-[ $(jq -r '.wallet_name' <<< "$session_result") != "None" ] && die "Please make sure no wallet is active."
-
-
-# --------------------------
-# Fetch all wallets
-# --------------------------
-## API: /api/v1/wallet/all
-## 
-## Response:
-## {
-##    "wallets": ["funded.jmdat", "test0.jmdat", "test1.jmdat", "test2.jmdat"]
-## }
-##
-wallet_all_result=$(curl "$base_url/api/v1/wallet/all" --silent --show-error --insecure | jq ".")
-available_wallets=$(jq -r '.wallets' <<< "$wallet_all_result")
+available_wallets=$(fetch_available_wallets "$base_url")
 
 msg "Available wallets: $available_wallets"
 
@@ -210,21 +141,7 @@ if [ "$target_wallet_exists" = "1" ]; then
     # --------------------------
     msg "Wallet $wallet_name already exists - unlocking.."
 
-    ## API: /api/v1/wallet/$wallet_name/unlock
-    ## 
-    ## Response:
-    ## {
-    ##    "walletname": "funded.jmdat", 
-    ##    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
-    ## }
-    unlock_request_payload="{\"password\":\"$wallet_password\"}"
-
-    unlock_result=$(curl "$base_url/api/v1/wallet/$wallet_name/unlock" --silent --show-error --insecure --data $unlock_request_payload | jq ".")
-
-    unlock_result_error_msg=$(jq -r '. | select(.message != null) | .message' <<< "$unlock_result")
-    if [ "$unlock_result_error_msg" != "" ]; then
-        die "$unlock_result_error_msg"
-    fi
+    unlock_result=$(unlock_wallet "$base_url" "$wallet_name" "$wallet_password")
 
     auth_token=$(jq -r '.token' <<< "$unlock_result")
 
@@ -235,27 +152,7 @@ else
     # --------------------------
     msg "Wallet $wallet_name does not exist - creating.."
 
-    ## API: /api/v1/wallet/create
-    ## 
-    ## Response:
-    ## {
-    ##    "walletname": "funded.jmdat", 
-    ##    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...", 
-    ##    "seedphrase": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
-    ## }
-    ## or (if wallet already exists):
-    ## {
-    ##  "message": "Wallet file cannot be overwritten."
-    ## }
-    ##
-    create_request_payload="{\"password\":\"$wallet_password\",\"walletname\":\"$wallet_name\",\"wallettype\":\"sw-fb\"}"
-
-    create_result=$(curl "$base_url/api/v1/wallet/create" --silent --show-error --insecure --data $create_request_payload | jq ".")
-
-    create_result_error_msg=$(jq -r '. | select(.message != null) | .message' <<< "$create_result")
-    if [ "$create_result_error_msg" != "" ]; then
-        die "$create_result_error_msg"
-    fi
+    create_result=$(create_wallet "$base_url" "$wallet_name" "$wallet_password")
 
     seedphrase=$(jq -r '.seedphrase' <<< "$create_result")
     auth_token=$(jq -r '.token' <<< "$create_result")
@@ -272,16 +169,9 @@ auth_header="Authorization: Bearer $auth_token"
 # --------------------------
 # Fetch new address
 # --------------------------
-## API: /api/v1/wallet/$wallet_name/address/new/$mixdepth
-## 
-## Response:
-## {
-##  "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
-## }
-msg "Fetching new funding address from wallet $wallet_name in mixdepth $mixdepth"  
-address_result=$(curl "$base_url/api/v1/wallet/$wallet_name/address/new/$mixdepth" --silent --show-error --insecure -H "$auth_header" | jq ".")
+msg "Fetching new funding address from wallet $wallet_name in mixdepth $mixdepth"
 
-address=$(jq -r '.address' <<< "$address_result")
+address=$(fetch_new_address "$base_url" "$auth_header" "$wallet_name" "$mixdepth")
 
 if [ "$address" = "null" ]; then
     # just print an error message -> wallet must be locked before we can exit
@@ -294,18 +184,9 @@ fi
 # --------------------------
 # Lock wallet
 # --------------------------
-## API: /api/v1/wallet/$wallet_name/lock
-## 
-## Response:
-## {
-##  "walletname": "funded.jmdat",
-##  "already_locked": false
-## }
 msg "Locking wallet $wallet_name"
-lock_result=$(curl "$base_url/api/v1/wallet/$wallet_name/lock" --silent --show-error --insecure -H "$auth_header" | jq ".")
 
-locked_wallet_name=$(jq -r '.walletname' <<< "$lock_result")
-[ "$locked_wallet_name" != "$wallet_name" ] && die "Problem while locking wallet $wallet_name"
+lock_result=$(lock_wallet "$base_url" "$auth_header" "$wallet_name")
 
 msg_success "Successfully locked wallet $wallet_name."
 
