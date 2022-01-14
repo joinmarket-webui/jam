@@ -13,5 +13,6 @@ ADDRESS=${2:-bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx} # default to a "rando
 
 [ -z "${BLOCKS//[\-0-9]}" ] || die "Invalid parameter: 'blocks' must be an integer"
 [ "$BLOCKS" -ge 1 ] || die "Invalid parameter: 'blocks' must be a positve integer"
+[ -z "${ADDRESS-}" ] && die "Missing required parameter: 'address'"
 
-docker exec -t jm_regtest_bitcoind bitcoin-cli -regtest -rpcport=43782 -datadir=/data generatetoaddress $BLOCKS $ADDRESS
+docker exec -t jm_regtest_bitcoind bitcoin-cli -datadir=/data generatetoaddress $BLOCKS $ADDRESS

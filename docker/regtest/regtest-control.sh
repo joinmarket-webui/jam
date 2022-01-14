@@ -311,9 +311,9 @@ msg_success "Successfully locked wallet $wallet_name."
 # --------------------------
 # generate new blocks with rewards in wallet
 msg "Generating $blocks blocks with rewards to $address"
-btcd_generatetoaddress_result=$(docker exec -t jm_regtest_bitcoind bitcoin-cli --datadir=/data generatetoaddress $blocks $address)
+. "$script_dir/mine-block.sh" $blocks $address &>/dev/null
 
 # make the generated coinbase spendable (not mining the new coinbases to an address controlled by the wallet on purpose!)
-btcd_generate_result=$(docker exec -t jm_regtest_bitcoind bitcoin-cli --datadir=/data -generate 100)
+. "$script_dir/mine-block.sh" 100 &>/dev/null
 
 msg_success "Successfully generated $blocks blocks with rewards to $address"
