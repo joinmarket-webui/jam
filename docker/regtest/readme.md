@@ -2,7 +2,7 @@
 # Docker setup for running joinmarket in regtest mode
 
 This setup will help you set up a regtest environment quickly. 
-It starts two Joinmarket container, hence not only API calls but also actual Coinjoin transactions can be tested.
+It starts two JoinMarket container, hence not only API calls but also actual CoinJoin transactions can be tested.
 
 ## Run
 Go to the docker directory (`cd docker/regtest`) and execute:
@@ -27,6 +27,24 @@ docker-compose down -v
 
 Some helper scripts are included to make recurring tasks and interaction with the containers easier.
 
+### `init-setup.sh`
+This script helps in providing both JoinMarket containers a wallet with spendable coins and starting the Maker Service in the secondary container.
+Its main goal is to make CoinJoin transactions possible in the regtest environment.
+It should be run immediately after the Docker setup is successfully started so you can start developing right away.
+
+```shell script
+# fund wallets and start maker service in secondary container
+[user@home regtest]$ ./init-setup.sh
+```
+```
+[...]
+Attempt to start maker for wallet funded.jmdat in secondary container ..
+[...]
+Starting maker service for wallet funded.jmdat
+Successfully started maker for wallet funded.jmdat in secondary container.
+[...]
+```
+
 ### `mine-block.sh`
 Mine one or more blocks to an optionally given address.
 
@@ -36,7 +54,6 @@ Mine one or more blocks to an optionally given address.
 
 Usage: mine-block.sh [# of blocks] [address]
 
-Mine 42 blocks to address 
 ```shell script
 # mine a single block
 [user@home regtest]$ ./mine-block.sh
@@ -46,6 +63,13 @@ Mine 42 blocks to address
 
 # mine 42 blocks to given address
 [user@home regtest]$ ./mine-block.sh 42 bcrt1qrnz0thqslhxu86th069r9j6y7ldkgs2tzgf5wx
+```
+
+This also comes in handy if you want to periodically mine blocks:
+[void@x1 regtest]$ 
+```shell script
+# mine a block every 5 seconds
+[user@home regtest]$ watch -n 5 ./mine-block.sh
 ```
 
 ### `regtest-control.sh`
