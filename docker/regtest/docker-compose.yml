@@ -85,9 +85,11 @@ services:
   irc:
     container_name: jm_regtest_irc
     restart: unless-stopped
-    image: ergochat/ergo:latest
+    image: ghcr.io/ergochat/ergo:stable
     expose:
       - 6667
+    volumes:
+      - "irc_datadir:/ircd"
 
   joinmarket:
     container_name: jm_regtest_joinmarket
@@ -105,6 +107,7 @@ services:
       jm_minimum_makers: 1
       jm_taker_utxo_age: 1
       jm_taker_utxo_retries: 10
+      jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
       jm_rpc_host: bitcoind
@@ -151,6 +154,7 @@ services:
       jm_minimum_makers: 1
       jm_taker_utxo_age: 1
       jm_taker_utxo_retries: 10
+      jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
       jm_rpc_host: bitcoind
@@ -204,6 +208,7 @@ volumes:
   nbxplorer_datadir:
   joinmarket_datadir:
   joinmarket2_datadir:
+  irc_datadir:
   tor_datadir:
   tor_torrcdir:
   tor_servicesdir:
