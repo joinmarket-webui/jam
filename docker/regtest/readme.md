@@ -23,6 +23,11 @@ If you want to start from scratch, pass the `-v` param:
 docker-compose down -v
 ```
 
+## Debug logs
+```shell
+docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log
+```
+
 ## Helper scripts
 
 Some helper scripts are included to make recurring tasks and interaction with the containers easier.
