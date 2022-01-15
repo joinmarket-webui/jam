@@ -16,10 +16,10 @@ set -Eeuo pipefail
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 # fund wallet in primary joinmarket container
-. "$script_dir/regtest-control.sh" --container jm_regtest_joinmarket --unmatured --blocks 3
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --unmatured --blocks 3
 
 # fund wallet in secondary joinmarket container
-. "$script_dir/regtest-control.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 3
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 3
 
 # make block rewards spendable
 . "$script_dir/mine-block.sh" 110 &>/dev/null

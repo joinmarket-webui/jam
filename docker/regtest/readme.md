@@ -77,26 +77,12 @@ This also comes in handy if you want to periodically mine blocks:
 [user@home regtest]$ watch -n 5 ./mine-block.sh
 ```
 
-### `regtest-control.sh`
+### `fund-wallet.sh`
 Funding and/or creating a joinmarket regtest wallet.
 
+See the help page for examples and more usage information:
 ```shell script
-[user@home regtest]$ ./regtest-control.sh --help
-```
-```
-Usage: regtest-control.sh [-h] [-v] [-w wallet_name] [-p password] [-m mixdepth] [-b blocks]
-
-A helper script to fund your joinmarket regtest wallet.
-Executed without parameters, it will mine a single block to wallet 'funded.jmdat' in mixdepth 0.
-If the given wallet does not exist, it will be created.
-
-Available options:
-    -h, --help           Print this help and exit
-    -v, --verbose        Print script debug info
-    -w, --wallet-name    Wallet name (default: funded.jmdat)
-    -p, --password       Wallet password (default: test)
-    -m, --mixdepth       mixdepth used (0 - 4) (default: 0)
-    -b, --blocks         amount of blocks (default: 1)
+[user@home regtest]$ ./fund-wallet.sh --help
 ```
 
 #### Funding regtest wallet
@@ -104,7 +90,7 @@ Executed without parameters the script will create one _spendable_ coinbase outp
 If the wallet does not exist, it will be created. See the following output:
 
 ```shell script
-[user@home regtest]$ ./regtest-control.sh
+[user@home regtest]$ ./fund-wallet.sh
 ```
 ```
 Trying to fund wallet funded.jmdat..
@@ -117,7 +103,7 @@ Control various parameters by passing options to the script.
 
 e.g. "Mine 5 blocks to wallet `satoshi.jmdat` with password `correctbatteryhorsestaple` in mixdepth 3"
 ```shell script
-[user@home regtest]$ ./regtest-control.sh --blocks 5 --wallet-name satoshi.jmdat --password correctbatteryhorsestaple --mixdepth 3
+[user@home regtest]$ ./fund-walletsh --blocks 5 --wallet-name satoshi.jmdat --password correctbatteryhorsestaple --mixdepth 3
 ```
 ```
 Trying to fund wallet satoshi.jmdat..

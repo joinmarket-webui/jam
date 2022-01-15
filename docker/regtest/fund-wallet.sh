@@ -9,7 +9,7 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 usage() {
   cat <<EOF
-Usage: regtest-control.sh [-h] [-v] [-w wallet_name] [-p password] [-m mixdepth] [-b blocks]
+Usage: fund-wallet.sh [-h] [-v] [-w wallet_name] [-p password] [-m mixdepth] [-b blocks]
 
 A helper script to fund your joinmarket regtest wallet.
 Executed without parameters, it will mine a single block to wallet 'funded.jmdat' in mixdepth 0.
