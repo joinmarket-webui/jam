@@ -94,7 +94,7 @@ services:
   joinmarket:
     container_name: jm_regtest_joinmarket
     build:
-      context: ./dockerfile-deps/joinmarket
+      context: ./dockerfile-deps/joinmarket/latest
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
@@ -141,7 +141,7 @@ services:
   joinmarket2:
     container_name: jm_regtest_joinmarket2
     build:
-      context: ./dockerfile-deps/joinmarket
+      context: ./dockerfile-deps/joinmarket/latest
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:

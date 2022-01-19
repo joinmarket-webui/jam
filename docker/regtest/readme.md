@@ -7,25 +7,30 @@ It starts two JoinMarket container, hence not only API calls but also actual Coi
 ## Run
 Go to the docker directory (`cd docker/regtest`) and execute:
 
-```shell
+```shell script
 docker-compose up
 ```
 
 (run `docker-compose down -v` before to start with a fresh setup)
 
 ## Stop
-```shell
+```shell script
 docker-compose down
 ```
 
 If you want to start from scratch, pass the `-v` param:
-```shell
+```shell script
 docker-compose down -v
 ```
 
 ## Debug logs
-```shell
+```shell script
 docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log
+```
+
+## Display running JoinMarket version
+```shell script
+docker exec -t jm_regtest_joinmarket git log --oneline -1
 ```
 
 ## Helper scripts
@@ -103,7 +108,7 @@ Control various parameters by passing options to the script.
 
 e.g. "Mine 5 blocks to wallet `satoshi.jmdat` with password `correctbatteryhorsestaple` in mixdepth 3"
 ```shell script
-[user@home regtest]$ ./fund-walletsh --blocks 5 --wallet-name satoshi.jmdat --password correctbatteryhorsestaple --mixdepth 3
+[user@home regtest]$ ./fund-wallet.sh --blocks 5 --wallet-name satoshi.jmdat --password correctbatteryhorsestaple --mixdepth 3
 ```
 ```
 Trying to fund wallet satoshi.jmdat..
@@ -128,4 +133,16 @@ Now you should see joinmarket coming up and see something like the following out
 ```log
 joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: jmwalletd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: ob-watcher entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+```
+
+2. Update docker image to current `joinmarket-clientserver/master` branch
+
+It is sometimes necessary to use an up-to-date version of the joinmarket server application.
+In order to incorporate the current contents of the master branch, simply rebuild the joinmarket images from scratch.
+
+```shell script
+# remove existing images
+docker image rm regtest_joinmarket:latest regtest_joinmarket2:latest
+# rebuilding the imags with contents of current master branch
+docker-compose build
 ```
