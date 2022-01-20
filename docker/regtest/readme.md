@@ -4,34 +4,55 @@
 This setup will help you set up a regtest environment quickly. 
 It starts two JoinMarket container, hence not only API calls but also actual CoinJoin transactions can be tested.
 
-## Run
+
+## Commands
+### Run
 Go to the docker directory (`cd docker/regtest`) and execute:
 
 ```shell script
 docker-compose up
 ```
 
-(run `docker-compose down -v` before to start with a fresh setup)
-
-## Stop
+### Stop
 ```shell script
 docker-compose down
 ```
 
-If you want to start from scratch, pass the `-v` param:
+If you want to start from scratch, pass the `--volumes` param:
 ```shell script
-docker-compose down -v
+docker-compose down --volumes
 ```
 
-## Debug logs
+
+## Images
+The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is directly taken from [BTCPay Server](https://github.com/btcpayserver/dockerfile-deps/tree/master/JoinMarket) with as little adaptations as possible. It will fetch the latest commit from the [`master` branch of the joinmarket-clientserver repo](https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master).
+
+As an example and as reference on how to build and test against specific versions, 
+see the adaptions needed to use BTCPay Servers image as base image in [`v0.9.3/Dockerfile`](dockerfile-deps/joinmarket/v0.9.3/Dockerfile).
+This is useful if you want to perform regression tests.
+
+### Rebuild
+In order to incorporate the current contents of the master branch, simply rebuild the joinmarket images from scratch.
+
+```shell script
+# remove existing images
+docker image rm regtest_joinmarket:latest regtest_joinmarket2:latest
+# rebuilding the imags with contents of current master branch
+docker-compose build
+```
+
+
+## Debugging
+### Debug logs
 ```shell script
 docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log
 ```
 
-## Display running JoinMarket version
+### Display running JoinMarket version
 ```shell script
 docker exec -t jm_regtest_joinmarket git log --oneline -1
 ```
+
 
 ## Helper scripts
 
@@ -124,6 +145,7 @@ Generating 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339dk4cme074lq3
 Successfully generated 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339dk4cme074lq3
 ```
 
+
 # Troubleshooting
 1. Joinmarket won't start in initial run
 
@@ -135,14 +157,9 @@ joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: jmwalletd entered RUNNING 
 joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: ob-watcher entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 ```
 
-2. Update docker image to current `joinmarket-clientserver/master` branch
 
-It is sometimes necessary to use an up-to-date version of the joinmarket server application.
-In order to incorporate the current contents of the master branch, simply rebuild the joinmarket images from scratch.
-
-```shell script
-# remove existing images
-docker image rm regtest_joinmarket:latest regtest_joinmarket2:latest
-# rebuilding the imags with contents of current master branch
-docker-compose build
-```
+# Resources
+- JoinMarket Server (GitHub): https://github.com/JoinMarket-Org/joinmarket-clientserver
+- JoinMarket Server Testing Docs: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/TESTING.md
+- BTCPay Server JoinMarket Docker Setup (GitHub): https://github.com/btcpayserver/dockerfile-deps/tree/master/JoinMarket
+- BTCPay Server JoinMarket Image (DockerHub)): https://hub.docker.com/r/btcpayserver/joinmarket

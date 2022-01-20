@@ -21,10 +21,11 @@ ENV ENV_FILE "${DATADIR}/.env"
 
 COPY default.cfg "${CONFIG}"
 
-RUN . jmvenv/bin/activate && cd /src/scripts && \
+RUN . jmvenv/bin/activate && \
+    cd /src/scripts && \
     pip install matplotlib && \
-    (python wallet-tool.py generate || true) \
-    && cp "${CONFIG}" "${DEFAULT_CONFIG}"
+    (python wallet-tool.py generate || true) && \
+    cp "${CONFIG}" "${DEFAULT_CONFIG}"
 WORKDIR /src/scripts
 COPY docker-entrypoint.sh .
 COPY *.sh ./
@@ -33,12 +34,18 @@ COPY supervisor-conf/*.conf /etc/supervisor/conf.d/
 ENV PATH /src/scripts:$PATH
 
 # generate ssl certificates for jmwalletd
-RUN mkdir -p "${DATADIR}/ssl/" && cd "${DATADIR}/ssl/" && \
+RUN mkdir -p "${DATADIR}/ssl/" && \
+    cd "${DATADIR}/ssl/" && \
     openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem \
     -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=example.com"
 
-EXPOSE 62601 8080
-# joinmarket daemon on port 27183; jmwalletd on port 28183
-EXPOSE 27183 28183
+# payjoin server
+EXPOSE 8080
+# obwatch
+EXPOSE 62601 
+# joinmarketd daemon
+EXPOSE 27183
+# jmwallet daemon
+EXPOSE 28183
 
 ENTRYPOINT  [ "tini", "-g", "--", "./docker-entrypoint.sh" ]

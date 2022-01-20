@@ -28,6 +28,3 @@ if [[ "$1" == "unlockwallet" ]]; then
 else
     exec "$@"
 fi
-
-
-
