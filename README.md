@@ -155,5 +155,3 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 ### JoinMarket Development Environment
 
 For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](docker/regtest/readme.md).
-
-
