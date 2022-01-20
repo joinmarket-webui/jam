@@ -28,7 +28,7 @@ export const btcToSats = value => Math.round(parseFloat(value) * 100000000)
 
 export const satsToBtc = value => parseInt(value, 10) / 100000000
 
-export const valueToUnit = (value, unit, showValue = true) => {
+export const valueToUnit = (value, unit, showValue = false) => {
   if (!showValue) {
     return `*** ${unit}`
   }
