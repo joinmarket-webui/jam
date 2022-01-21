@@ -1,72 +1,75 @@
-# JoinMarket Web UI
+<div align="center">
+  <img src="readme-header.svg" width="80%" alt="JoinMarket Web UI" />
+</div>
 
-For now this repository is supposed to be a central place to collect resources related to the JoinMarket Web UI project.
-We'll see what collaboration tools suit use as we go forward.
-Suggestions and feedback welcome!
+<h1 align="center" style="font-weight: bold !important">JoinMarket Web UI</h1>
 
-- 🔗 Join our [Telegram group](https://t.me/JoinMarketWebUI).
-- 👉 Check out the [Wiki](https://github.com/joinmarket-webui/joinmarket-webui/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
+<p align="center">
+  Top-notch privacy for your bitcoin. <br>
+  <strong>⚠️ This is still work in progress. Use with caution. ⚠️</strong>
+</p>
 
-This project builts upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself.
-GitHub repository: [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client)
+<h3 align="center">
+  <a href="#-integrations">Integrations</a>
+  <span> · </span>
+  <a href="#-features">Features</a>
+  <span> · </span>
+  <a href="#-installation">Installation</a>
+  <span> · </span>
+  <a href="#-development">Development</a>
+</h3>
 
-## Local development
+---
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) with a focus on user-friendliness.
+The UI aims to provide sensible defaults and be easy to use for beginners while still providing the features advanced users expect.
 
-## Available Scripts
+- 💬 Join our [Telegram group](https://t.me/JoinMarketWebUI).
+- 📚 Check out the [Wiki](https://github.com/joinmarket-webui/joinmarket-webui/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
 
-In the project directory, you can run:
+This project builds upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself: [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client).
 
-### `npm start`
+## 📦 Integrations
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+We're aiming to make the JoinMarket Web UI available for different node systems.
+If your node of choice is missing, feel free to integrate it and let us know so we can add it here.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- [**RaspiBlitz**](https://github.com/rootzoll/raspiblitz): A beta version of the JoinMarket Web UI will be [available in RaspiBlitz v1.7.2](https://github.com/rootzoll/raspiblitz/pull/2747). We're aiming for a production ready version to be available with [RaspiBlitz v1.8.0](https://github.com/rootzoll/raspiblitz/pull/2747#issuecomment-1013866678).
+- [**Umbrel**](https://getumbrel.com/): Umbrel integration is work in progress.
 
-### `npm test`
+## ✨ Features
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- [x] Spending from the wallet without Coinjoin
+- [x] Simple CoinJoins
+- [x] Running the yield generator
+- [ ] TBD
 
-### `npm run build`
+## 👩‍🔧 Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+These instructions assume you want to run the web UI locally and connect it to a JoinMarket instance on your RaspiBlitz.
+See [Development](#-development)</a> for setting up a regtest development environment.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 🚨 Prerequisite: JoinMarket on RaspiBlitz
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+To run the web UI locally you need to connect it to a running JoinMarket instance.
 
-## Setup
+#### 1. JoininBox
 
-Here is how you can set it up and play around with it yourself.
+Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](https://github.com/rootzoll/raspiblitz):
 
-### Docker (regtest)
+```
+Services > j [BTC JoinMarket+JoininBox menu]
+```
 
-See the [docker regtest setup readme](docker/regtest/readme.md).
+### 🚨 Prerequisite: JoinMarket API Service
 
-### RaspiBlitz Setup
+This app makes use of the JoinMarket RPC API. For this, you will need JoinMarket version 0.9.3 or higher. If needed you can upgrade JoinMarket to the latest commit via the JoininBox menu on your RaspiBlitz: Type `jm` in the command line and select `UPDATE > ADVANCED > JMCOMMIT`. This will install the latest development version from JoinMarket's master branch.
 
-#### Prerequisite: RaspiBlitz with JoinMarket
+#### 2. SSL Certificate
 
-1. Install [JoininBox](https://github.com/openoms/joininbox) on your [RaspiBlitz](https://github.com/rootzoll/raspiblitz):
+As the joinmarket user on your RaspiBlitz, generate a self-signed certificate for the JoinMarket API Service as described [here](https://linuxize.com/post/creating-a-self-signed-ssl-certificate/), and put the certificate and the key in the `~/.joinmarket/ssl/` directory.
 
-You can install it via the RaspiBlitz Services menu: `Services > j [BTC JoinMarket+JoininBox menu]`
-
-This app makes use of the JoinMarket [RPC API](https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/996).
-For this, you will need JoinMarket [version 0.9.3](https://github.com/JoinMarket-Org/joinmarket-clientserver/releases/tag/v0.9.3) or higher.
-If needed you can upgrade JoinMarket to the latest commit via the JoininBox menu on your RaspiBlitz: Type `jm` in the command line and select ```UPDATE > ADVANCED > JMCOMMIT```.
-This will install the latest development version from JoinMarket's master branch.
-
-#### Prerequisite: JoinMarket API Service
-
-2. As the joinmarket user on your RaspiBlitz, generate a self-signed certificate for the JoinMarket API Service as described [here](https://linuxize.com/post/creating-a-self-signed-ssl-certificate/), and put the certificate and the key in the `~/.joinmarket/ssl/` directory.
-
-Hint: To login as the JoinMarket user, you can ssh into your RaspiBlitz, type `jm`, and exit the JoininBox menu.
+_Hint:_ To login as the JoinMarket user, you can ssh into your RaspiBlitz, type `jm`, and exit the JoininBox menu.
 
 Create the SSL directory:
 
@@ -80,9 +83,11 @@ Generate the certificate and associated key:
 openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ~/.joinmarket/ssl/cert.pem -keyout ~/.joinmarket/ssl/key.pem
 ```
 
-Hint: You don't have to enter anything meaningful, you can just hit the return key a couple of times.
+_Hint:_ You don't have to enter anything meaningful, you can just hit the return key a couple of times.
 
-3. Start the JoinMarket API service:
+#### 3. API Service
+
+Start the JoinMarket API service:
 
 ```bash
 (jmvenv) joinmarket@raspberrypi:~/joinmarket-clientserver/scripts $ python jmwalletd.py
@@ -95,7 +100,9 @@ You should see the following:
 2021-11-18 18:16:57,661 [INFO]  Joinmarket daemon listening on port 27183
 ```
 
-4. Create an ssh tunnel for the API service. As the `joinmarket` user, add the following lines to your `~/.ssh/config` file:
+#### 4. SSH Tunnel
+
+Create an SSH tunnel for the API service. On the machine where you want to run the web UI, add the following lines to your `~/.ssh/config` file:
 
 ```conf
 Host raspiblitz
@@ -105,7 +112,7 @@ Host raspiblitz
   LocalForward 28183 localhost:28183
 ```
 
-### Download and install the app
+### 💻 Download and Install the Web UI
 
 In short:
 
@@ -114,3 +121,37 @@ git clone https://github.com/joinmarket-webui/joinmarket-webui.git
 cd joinmarket-webui
 npm install && npm start
 ```
+
+## 👨‍💻 Development
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+### Available Scripts
+
+In the project directory, you can run:
+
+#### `npm start`
+
+Runs the app in the development mode.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+The page will reload if you make edits.
+You will also see any lint errors in the console.
+
+#### `npm test`
+
+Launches the test runner in the interactive watch mode.
+
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+#### `npm run build`
+
+Builds the app for production to the `build` folder.
+It correctly bundles React in production mode and optimizes the build for the best performance.
+The build is minified and the filenames include the hashes.
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### JoinMarket Development Environment
+
+For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](docker/regtest/readme.md).
