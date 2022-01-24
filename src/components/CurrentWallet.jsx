@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
@@ -10,24 +10,23 @@ export default function CurrentWallet ({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
   const [showBalances, setShowBalances] = useState(window.localStorage.getItem('jm-showBalances') === 'true')
   const [unit, setUnit] = useState(window.localStorage.getItem('jm-unit') || BTC)
-  const [utxos, setUtxos] = useState(null)
   const [fidelityBonds, setFidelityBonds] = useState(null)
+  const [utxos, setUtxos] = useState(null)
+  const [loadingCounter, setLoadingCounter] = useState(0)
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  let loadingCounter = 0;
-
-  const startLoading = () => {
-    loadingCounter++;
+  const startLoading = useCallback(() => {
+    setLoadingCounter(loadingCounter + 1);
     setIsLoading(loadingCounter > 0)
-  }
+  }, [loadingCounter])
 
-  const stopLoading = () => {
-    loadingCounter--;
+  const stopLoading = useCallback(() => {
+    setLoadingCounter(loadingCounter - 1);
     setIsLoading(loadingCounter > 0)
-  }
-  
+  }, [loadingCounter])
+
   const setAndPersistShowBalances = showBalances => {
     setShowBalances(showBalances)
     window.localStorage.setItem('jm-showBalances', showBalances)
@@ -55,7 +54,7 @@ export default function CurrentWallet ({ currentWallet }) {
       .finally(() => stopLoading())
 
     return () => abortCtrl.abort()
-  }, [currentWallet])
+  }, [currentWallet, startLoading, stopLoading])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -82,7 +81,7 @@ export default function CurrentWallet ({ currentWallet }) {
       .finally(() => stopLoading())
 
     return () => abortCtrl.abort()
-  }, [currentWallet])
+  }, [currentWallet, startLoading, stopLoading])
 
   return (
     <div>
