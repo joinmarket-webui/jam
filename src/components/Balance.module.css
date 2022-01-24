@@ -1,0 +1,12 @@
+.balance {
+  font-family: Inter;
+  font-weight: 400;
+  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+
+  display: inline-flex;
+  align-items: center;
+}
+
+.balance svg {
+  color: gray;
+}

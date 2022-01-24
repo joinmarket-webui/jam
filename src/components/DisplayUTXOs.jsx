@@ -1,6 +1,7 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
-import { displayDate, valueToUnit } from '../utils'
+import { displayDate } from '../utils'
+import Balance from './Balance'
 
 export default function DisplayUTXOs({ utxos, unit, showBalances, ...props}) {
   return (
@@ -12,7 +13,7 @@ export default function DisplayUTXOs({ utxos, unit, showBalances, ...props}) {
               <code className="text-break">{utxo.address}</code>
             </rb.Col>
             <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-              {valueToUnit(utxo.value, unit, showBalances)}
+                <Balance value={utxo.value} unit={unit} showBalance={showBalances} />
             </rb.Col>
           </rb.Row>
           <rb.Row className="w-100 mt-1">
