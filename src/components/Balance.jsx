@@ -25,10 +25,10 @@ export default function Balance({ value, unit, showBalance = false }) {
   const isSats = value === parseInt(value)
   const isBTC = !isSats && typeof(value) === 'string' && value.indexOf('.') > -1
 
-  if (isBTC && unitMode === BTC) return (<span className={styles.balance}>{value} {BTC}</span>)
+  if (isBTC && unitMode === BTC) return (<span className={styles.balance}>{BTC}{value}</span>)
   if (isBTC && unitMode === SATS) return (<span className={styles.balance}>{btcToSats(value)} {SATS}</span>)
   if (isSats && unitMode === SATS) return (<span className={styles.balance}>{value} {SATS} </span>)
-  if (isSats && unitMode === BTC) return (<span className={styles.balance}>{satsToBtc(value)} {BTC}</span>)
+  if (isSats && unitMode === BTC) return (<span className={styles.balance}>{BTC}{satsToBtc(value)}</span>)
 
   return (
     <span className={styles.balance}>{value} {unit}</span>
