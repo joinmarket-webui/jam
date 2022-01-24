@@ -144,7 +144,9 @@ export default function App() {
       >
         <rb.Container>
           <Link to="/" className="navbar-brand d-inline-flex align-items-center pt-1">
-            <img src="/logo.svg" width="30" height="30" className="d-inline-block align-top" alt="JoinMarket" />
+            <svg role="img" width="30" height="30" className="icon icon-logo d-inline-block align-top">
+              <use href={`${process.env.PUBLIC_URL}/sprite.svg#logo`}></use>
+            </svg>
             <span className="ms-2">JoinMarket</span>
           </Link>
           {connectionError ? (
