@@ -12,11 +12,20 @@ import { getSession, setSession, clearSession } from '../session'
 import { walletDisplayName } from '../utils'
 
 export default function App() {
+  const [theme, setTheme] = useState(window.localStorage.getItem(window.JM.THEME_STORE_ATTR))
   const [currentWallet, setCurrentWallet] = useState()
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const websocket = useRef(null)
+
+  const setAndPersistTheme = mode => {
+    if (window.JM.THEMES.includes(mode)) {
+      setTheme(mode)
+      window.localStorage.setItem(window.JM.THEME_STORE_ATTR, mode)
+      document.documentElement.setAttribute(window.JM.THEME_ROOT_ATTR, mode)
+    }
+  }
 
   const startWallet = (name, token) => {
     setSession(name, token)
@@ -137,8 +146,7 @@ export default function App() {
         as="header"
         sticky="top"
         expand="lg"
-        bg="white"
-        variant="light"
+        variant={theme}
         collapseOnSelect
         className="border-bottom"
       >
@@ -297,6 +305,9 @@ export default function App() {
             >
               Twitter
             </a>
+          </rb.Nav.Item>
+          <rb.Nav.Item>
+            <a href="https://twitter.com/joinmarket" className="nav-link text-secondary" onClick={(e) => { e.preventDefault(); setAndPersistTheme(theme === window.JM.THEMES[0] ? window.JM.THEMES[1] : window.JM.THEMES[0]) }}>{theme === window.JM.THEMES[0] ? 'Dark' : 'Light'} theme</a>
           </rb.Nav.Item>
         </rb.Container>
       </rb.Nav>

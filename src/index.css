@@ -219,3 +219,16 @@ main {
 .qr-container h5 {
   display: none;
 }
+
+/* Theme overrides */
+:root[data-theme="dark"] {
+  --bs-body-color-rgb: 0,0,0;
+  --bs-body-bg-rgb: 33,37,41;
+  --bs-body-color: var(--bs-white);
+  --bs-body-bg: var(--bs-gray-900);
+}
+
+:root[data-theme="dark"] .border-top,
+:root[data-theme="dark"] .border-bottom {
+  border-color: var(--bs-gray-dark) !important;
+}

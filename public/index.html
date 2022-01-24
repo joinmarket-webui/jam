@@ -11,6 +11,14 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="theme-color" content="#ffffff">
     <title>JoinMarket</title>
+    <script>
+      window.JM = { THEMES: ['light', 'dark'], THEME_STORE_ATTR: 'jm-theme', THEME_ROOT_ATTR: 'data-theme' }
+      const systemColorMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? JM.THEMES[1] : JM.THEMES[0];
+      const userColorMode = window.localStorage.getItem(JM.THEME_STORE_ATTR);
+      const initialColorMode = JM.THEMES.includes(userColorMode) ? userColorMode : systemColorMode;
+      window.localStorage.setItem(JM.THEME_STORE_ATTR, initialColorMode)
+      document.documentElement.setAttribute(JM.THEME_ROOT_ATTR, initialColorMode)
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
