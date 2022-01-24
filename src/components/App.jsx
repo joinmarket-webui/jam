@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Route, Routes, Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import Sprite from './Sprite'
 import Wallets from './Wallets'
 import CreateWallet from './CreateWallet'
 import Send from './Send'
@@ -152,9 +153,7 @@ export default function App() {
       >
         <rb.Container>
           <Link to="/" className="navbar-brand d-inline-flex align-items-center pt-1">
-            <svg role="img" width="30" height="30" className="icon icon-logo d-inline-block align-top">
-              <use href={`${process.env.PUBLIC_URL}/sprite.svg#logo`}></use>
-            </svg>
+            <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
             <span className="ms-2">JoinMarket</span>
           </Link>
           {connectionError ? (
