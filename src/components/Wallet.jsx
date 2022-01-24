@@ -113,7 +113,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           {isActive
             ? (hasToken
                 ? <>
-                    <Link className="btn btn-dark me-2" to="/wallet">Open</Link>
+                    <Link className="btn btn-dark me-2" to="/wallet">Display</Link>
                     <rb.FormControl type="hidden" name="action" value="lock" />
                     <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
                       {isLocking

@@ -13,7 +13,6 @@ export default function Earn({ currentWallet, makerRunning }) {
   const [offertype, setOffertype] = useState(window.localStorage.getItem('jm-offertype') || OFFERTYPE_REL)
   const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.0003)
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
-  const [feeContrib, setFeeContrib] = useState(parseInt(window.localStorage.getItem('jm-feeContrib'), 10) || 0)
   const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100000)
 
   const setAndPersistOffertype = value => {
@@ -31,23 +30,18 @@ export default function Earn({ currentWallet, makerRunning }) {
     window.localStorage.setItem('jm-feeAbs', value)
   }
 
-  const setAndPersistFeeContrib = value => {
-    setFeeContrib(value)
-    window.localStorage.setItem('jm-feeContrib', value)
-  }
-
   const setAndPersistMinsize = value => {
     setMinsize(value)
     window.localStorage.setItem('jm-minsize', value)
   }
 
-  const startMakerService = async (txfee, cjfee_a, cjfee_r, ordertype, minsize) => {
+  const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
-        txfee,
+        txfee: 0,
         cjfee_a,
         cjfee_r,
         ordertype,
@@ -119,7 +113,7 @@ export default function Earn({ currentWallet, makerRunning }) {
 
     if (isValid) {
       if (makerRunning === false) {
-        await startMakerService(feeContrib, feeAbs, feeRel, offertype, minsize)
+        await startMakerService(feeAbs, feeRel, offertype, minsize)
       } else {
         await stopMakerService()
       }
@@ -149,11 +143,6 @@ export default function Earn({ currentWallet, makerRunning }) {
                 <rb.Form.Control type="number" name="feeAbs" required step={1} value={feeAbs} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistFeeAbs(e.target.value)} />
                 <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
               </rb.Form.Group>}
-          <rb.Form.Group className="mb-3" controlId="feeContrib">
-            <rb.Form.Label>Transaction Fee Contribution in SATS</rb.Form.Label>
-            <rb.Form.Control type="number" name="feeContrib" required step={1} value={feeContrib} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistFeeContrib(e.target.value)} />
-            <rb.Form.Control.Feedback type="invalid">Please provide a value.</rb.Form.Control.Feedback>
-          </rb.Form.Group>
           <rb.Form.Group className="mb-3" controlId="minsize">
             <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
             <rb.Form.Control type="number" name="minsize" required step={1000} value={minsize} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistMinsize(e.target.value)} />

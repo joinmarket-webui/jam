@@ -8,6 +8,7 @@ import DisplayUTXOs from './DisplayUTXOs'
 
 export default function CurrentWallet ({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
+  const [showBalances, setShowBalances] = useState(window.localStorage.getItem('jm-showBalances') === 'true')
   const [unit, setUnit] = useState(window.localStorage.getItem('jm-unit') || BTC)
   const [utxos, setUtxos] = useState(null)
   const [fidelityBonds, setFidelityBonds] = useState(null)
@@ -25,6 +26,11 @@ export default function CurrentWallet ({ currentWallet }) {
   const stopLoading = () => {
     loadingCounter--;
     setIsLoading(loadingCounter > 0)
+  }
+  
+  const setAndPersistShowBalances = showBalances => {
+    setShowBalances(showBalances)
+    window.localStorage.setItem('jm-showBalances', showBalances)
   }
 
   const setAndPersistUnit = unit => {
@@ -89,17 +95,18 @@ export default function CurrentWallet ({ currentWallet }) {
         </div>}
       {walletInfo && walletInfo?.total_balance &&
         <>
-          <p>Total Balance: {valueToUnit(walletInfo.total_balance, unit)}</p>
-          <p><rb.Form.Check type="switch" label="Display amounts in SATS" checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} /></p>
+          <p>Total Balance: {valueToUnit(walletInfo.total_balance, unit, showBalances)}</p>
+          <rb.Form.Check type="switch" label="Show Balances" checked={showBalances} onChange={(e) => setAndPersistShowBalances(e.target.checked)} />
+          <rb.Form.Check type="switch" label="Display amounts in SATS" checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} className="mb-4" />
         </>}
-      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} className="mb-4" />}
+      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} showBalances={showBalances} className="mb-4" />}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
           <h5>Fidelity Bonds</h5>
-          <DisplayUTXOs utxos={fidelityBonds} unit={unit} className="pe-2" />
+          <DisplayUTXOs utxos={fidelityBonds} unit={unit} showBalances={showBalances} className="pe-2" />
         </div>)}
       {utxos && <rb.Button variant="outline-dark" onClick={() => { setShowUTXO(!showUTXO) }} className="mb-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
-      {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} unit={unit} className="mt-3" />}
+      {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} unit={unit} showBalances={showBalances} className="mt-3" />}
     </div>
   )
 }

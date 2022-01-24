@@ -80,9 +80,9 @@ export default function CreateWallet({ currentWallet, startWallet }) {
           <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Form.Group className="mb-3" controlId="password">
-          <rb.Form.Label>Passphrase</rb.Form.Label>
+          <rb.Form.Label>Password</rb.Form.Label>
           <rb.Form.Control name="password" type="password" style={{ maxWidth: '20em' }} required />
-          <rb.Form.Control.Feedback type="invalid">Please set a passphrase.</rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback type="invalid">Please set a password.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Button variant="dark" type="submit" disabled={isCreating}>
           {isCreating
