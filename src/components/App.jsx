@@ -306,7 +306,7 @@ export default function App() {
             </a>
           </rb.Nav.Item>
           <rb.Nav.Item>
-            <a href="https://twitter.com/joinmarket" className="nav-link text-secondary" onClick={(e) => { e.preventDefault(); setAndPersistTheme(theme === window.JM.THEMES[0] ? window.JM.THEMES[1] : window.JM.THEMES[0]) }}>{theme === window.JM.THEMES[0] ? 'Dark' : 'Light'} theme</a>
+            <a href="#" className="nav-link text-secondary" onClick={(e) => { e.preventDefault(); setAndPersistTheme(theme === window.JM.THEMES[0] ? window.JM.THEMES[1] : window.JM.THEMES[0]) }}>{theme === window.JM.THEMES[0] ? 'Dark' : 'Light'} theme</a>
           </rb.Nav.Item>
         </rb.Container>
       </rb.Nav>
