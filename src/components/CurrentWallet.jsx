@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
@@ -10,8 +10,8 @@ export default function CurrentWallet ({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
   const [showBalances, setShowBalances] = useState(window.localStorage.getItem('jm-showBalances') === 'true')
   const [unit, setUnit] = useState(window.localStorage.getItem('jm-unit') || BTC)
-  const [utxos, setUtxos] = useState(null)
   const [fidelityBonds, setFidelityBonds] = useState(null)
+  const [utxos, setUtxos] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -34,39 +34,29 @@ export default function CurrentWallet ({ currentWallet }) {
       signal: abortCtrl.signal
     }
 
-    setAlert(null)
-    setIsLoading(true)
-    fetch(`/api/v1/wallet/${name}/display`, opts)
-      .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.')))
-      .then(data => setWalletInfo(data.walletinfo))
-      .catch(err => setAlert({ variant: 'danger', message: err.message }))
-      .finally(() => setIsLoading(false))
-
-    return () => abortCtrl.abort()
-  }, [currentWallet])
-
-  useEffect(() => {
-    const abortCtrl = new AbortController()
-    const { name, token } = currentWallet
-    const opts = {
-      headers: { 'Authorization': `Bearer ${token}` },
-      signal: abortCtrl.signal
-    }
-    const setData = utxos => {
+    const setUtxoData = utxos => {
       setUtxos(utxos)
       setFidelityBonds(utxos.filter(utxo => utxo.locktime))
     }
 
     setAlert(null)
     setIsLoading(true)
-    fetch(`/api/v1/wallet/${name}/utxos`, opts)
-      .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.')))
-      .then(data => setData(data.utxos))
+
+    const loadingWallet = fetch(`/api/v1/wallet/${name}/display`, opts)
+      .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.')))
+      .then(data => setWalletInfo(data.walletinfo))
       .catch(err => {
-        if (!abortCtrl.signal.aborted) {
-          setAlert({ variant: 'danger', message: err.message })
-        }
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
+
+    const loadingUtxos = fetch(`/api/v1/wallet/${name}/utxos`, opts)
+      .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.')))
+      .then(data => setUtxoData(data.utxos))
+      .catch(err => {
+          !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
+
+    Promise.all([loadingWallet, loadingUtxos])
       .finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
