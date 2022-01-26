@@ -21,6 +21,7 @@
     "http-proxy-middleware": "^2.0.1",
     "moving-letters": "^1.0.1",
     "nth-check": ">=2.0.1",
+    "prettier": "^2.5.1",
     "react": "^17.0.2",
     "react-bootstrap": "^2.1.1",
     "react-dom": "^17.0.2",
