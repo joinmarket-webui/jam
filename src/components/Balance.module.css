@@ -2,6 +2,10 @@
   font-family: Inter;
   font-weight: 400;
   font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
 
   display: inline-flex;
   align-items: center;
@@ -9,4 +13,15 @@
 
 .balance svg {
   color: gray;
+}
+
+.satoshi-symbol {
+  font-family: "Satoshi Symbol";
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'kern' on;
+  -moz-font-feature-settings: 'kern' on;
+  -ms-font-feature-settings: 'kern' on;
+  -webkit-font-feature-settings: 'kern' on;
+  -o-font-feature-settings: 'kern' on;
 }

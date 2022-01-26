@@ -1,6 +1,6 @@
 export const ACCOUNTS = [0, 1, 2, 3, 4]
-export const BTC = '\u20BF'
-export const SATS = 'sats'
+export const BTC = 'BTC'
+export const SATS = 'SATS'
 
 export const serialize = form =>
   Object.fromEntries(new FormData(form).entries())
