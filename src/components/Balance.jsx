@@ -47,11 +47,12 @@ export default function Balance({ value, unit, showBalance = false }) {
   const btcSymbol = <span className={styles['bitcoin-symbol']}>{'\u20BF'}</span>
   const satSymbol = <span className={styles['satoshi-symbol']}>S</span>
 
-  const balanceJSX = (symbolJSX, formattedValue) => {
+  const balanceJSX = (symbolJSX, formattedValue, isPrefix=true) => {
     return (
       <span className={styles['balance-wrapper']}>
-        {symbolJSX}
+        {isPrefix ? symbolJSX : ""}
         <span className={styles['balance']}>{formattedValue}</span>
+        {!isPrefix ? symbolJSX : ""}
       </span>
     )
   }
@@ -59,10 +60,10 @@ export default function Balance({ value, unit, showBalance = false }) {
   if (isBTC && unitMode === UNIT_MODE_BTC)
     return balanceJSX(btcSymbol, btcFormatter.format(value))
   if (isSats && unitMode === UNIT_MODE_SATS)
-    return balanceJSX(satSymbol, satFormatter.format(value))
+    return balanceJSX(satSymbol, satFormatter.format(value), false)
 
   if (isBTC && unitMode === UNIT_MODE_SATS)
-    return balanceJSX(satSymbol, satFormatter.format(btcToSats(value)))
+    return balanceJSX(satSymbol, satFormatter.format(btcToSats(value)), false)
   if (isSats && unitMode === UNIT_MODE_BTC)
     return balanceJSX(btcSymbol, btcFormatter.format(satsToBtc(value)))
 
