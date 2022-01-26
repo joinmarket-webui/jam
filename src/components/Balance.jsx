@@ -8,8 +8,10 @@ const UNIT_MODE_SATS = 1
 const UNIT_MODE_HIDDEN = 2
 
 const getUnitMode = (unit, showBalance) => {
-  if (!showBalance) return UNIT_MODE_HIDDEN
-  return unit === SATS ? UNIT_MODE_SATS : UNIT_MODE_BTC
+  if (showBalance && unit === SATS) return UNIT_MODE_SATS
+  if (showBalance && unit === BTC) return UNIT_MODE_BTC
+
+  return UNIT_MODE_HIDDEN
 }
 
 export default function Balance({ value, unit, showBalance = false }) {
@@ -29,6 +31,16 @@ export default function Balance({ value, unit, showBalance = false }) {
     )
   }
 
+  const btcFormatter = new Intl.NumberFormat('en-US', {
+    minimumIntegerDigits: 1,
+    minimumFractionDigits: 8
+  })
+
+  const satFormatter = new Intl.NumberFormat('en-US', {
+    minimumIntegerDigits: 1,
+    minimumFractionDigits: 0
+  })
+
   const isSats = value === parseInt(value)
   const isBTC = !isSats && typeof(value) === 'string' && value.indexOf('.') > -1
 
@@ -36,14 +48,15 @@ export default function Balance({ value, unit, showBalance = false }) {
   const satSymbol = <span className={styles['satoshi-symbol']}>S</span>
 
   if (isBTC && unitMode === UNIT_MODE_BTC)
-    return <span className={styles.balance}>{btcSymbol}{value}</span>
-  if (isBTC && unitMode === UNIT_MODE_SATS)
-    return <span>{satSymbol}<span className={styles.balance}>{btcToSats(value)}</span></span>
+    return <span className={styles.balance}>{btcSymbol}{btcFormatter.format(value)}</span>
   if (isSats && unitMode === UNIT_MODE_SATS)
-    return <span>{satSymbol}<span className={styles.balance}>{value}</span></span>
-  if (isSats && unitMode === UNIT_MODE_BTC)
-    return <span className={styles.balance}>{btcSymbol}{satsToBtc(value)}</span>
+    return <span>{satSymbol}<span className={styles.balance}>{satFormatter.format(value)}</span></span>
 
-  // Something unexpected happened. Simply render the props.
+  if (isBTC && unitMode === UNIT_MODE_SATS)
+    return <span>{satSymbol}<span className={styles.balance}>{satFormatter.format(btcToSats(value))}</span></span>
+  if (isSats && unitMode === UNIT_MODE_BTC)
+    return <span className={styles.balance}>{btcSymbol}{btcFormatter.format(satsToBtc(value))}</span>
+
+  // Something unexpected happened. Simply render what was passed in the props.
   return <span className={styles.balance}>{value} {unit}</span>
 }
