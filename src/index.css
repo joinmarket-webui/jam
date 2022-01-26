@@ -178,6 +178,12 @@ Usage:
   src: url('./fonts/Inter-italic.var.woff2?v=3.19') format('woff2');
 }
 
+/* https://satsymbol.com/ */
+@font-face {
+  font-family: 'Satoshi Symbol';
+  src: url("./fonts/SatoshiSymbol.otf") format('opentype');
+}
+
 :root {
   --bs-font-sans-serif: 'Inter', sans-serif;
 }
