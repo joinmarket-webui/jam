@@ -44,18 +44,27 @@ export default function Balance({ value, unit, showBalance = false }) {
   const isSats = value === parseInt(value)
   const isBTC = !isSats && typeof(value) === 'string' && value.indexOf('.') > -1
 
-  const btcSymbol = '\u20BF'
+  const btcSymbol = <span className={styles['bitcoin-symbol']}>{'\u20BF'}</span>
   const satSymbol = <span className={styles['satoshi-symbol']}>S</span>
 
+  const balanceJSX = (symbolJSX, formattedValue) => {
+    return (
+      <span className={styles['balance-wrapper']}>
+        {symbolJSX}
+        <span className={styles['balance']}>{formattedValue}</span>
+      </span>
+    )
+  }
+
   if (isBTC && unitMode === UNIT_MODE_BTC)
-    return <span className={styles.balance}>{btcSymbol}{btcFormatter.format(value)}</span>
+    return balanceJSX(btcSymbol, btcFormatter.format(value))
   if (isSats && unitMode === UNIT_MODE_SATS)
-    return <span>{satSymbol}<span className={styles.balance}>{satFormatter.format(value)}</span></span>
+    return balanceJSX(satSymbol, satFormatter.format(value))
 
   if (isBTC && unitMode === UNIT_MODE_SATS)
-    return <span>{satSymbol}<span className={styles.balance}>{satFormatter.format(btcToSats(value))}</span></span>
+    return balanceJSX(satSymbol, satFormatter.format(btcToSats(value)))
   if (isSats && unitMode === UNIT_MODE_BTC)
-    return <span className={styles.balance}>{btcSymbol}{btcFormatter.format(satsToBtc(value))}</span>
+    return balanceJSX(btcSymbol, btcFormatter.format(satsToBtc(value)))
 
   // Something unexpected happened. Simply render what was passed in the props.
   return <span className={styles.balance}>{value} {unit}</span>

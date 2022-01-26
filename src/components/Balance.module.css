@@ -1,3 +1,8 @@
+.balance-wrapper {
+  display: inline-flex;
+  align-items: baseline;
+}
+
 .balance {
   font-family: Inter;
   font-weight: 400;
@@ -6,13 +11,15 @@
   -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-
-  display: inline-flex;
-  align-items: center;
 }
 
 .balance svg {
   color: gray;
+}
+
+.bitcoin-symbol {
+  font-family: Inter;
+  font-weight: 400;
 }
 
 .satoshi-symbol {
@@ -24,4 +31,8 @@
   -ms-font-feature-settings: 'kern' on;
   -webkit-font-feature-settings: 'kern' on;
   -o-font-feature-settings: 'kern' on;
+
+  /* There seems to be some unneeded extra padding on the bottom of the sat
+  symbol which this margin is supposed to cancel out. */
+  margin-bottom: -0.1em;
 }
