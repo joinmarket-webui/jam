@@ -13,29 +13,17 @@ export default function DisplayUTXOs({ utxos, unit, showBalances, ...props }) {
               <code className="text-break">{utxo.address}</code>
             </rb.Col>
             <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-              <Balance
-                value={utxo.value}
-                unit={unit}
-                showBalance={showBalances}
-              />
+              <Balance value={utxo.value} unit={unit} showBalance={showBalances} />
             </rb.Col>
           </rb.Row>
           <rb.Row className="w-100 mt-1">
             <rb.Col>
-              {utxo.locktime && (
-                <span className="me-2">
-                  Locked until {displayDate(utxo.locktime)}
-                </span>
-              )}
-              {utxo.label && (
-                <span className="me-2 badge bg-light">{utxo.label}</span>
-              )}
+              {utxo.locktime && <span className="me-2">Locked until {displayDate(utxo.locktime)}</span>}
+              {utxo.label && <span className="me-2 badge bg-light">{utxo.label}</span>}
               {utxo.frozen && <span className="badge bg-info">frozen</span>}
             </rb.Col>
             <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-              <small className="text-secondary">
-                {utxo.confirmations} Confirmations
-              </small>
+              <small className="text-secondary">{utxo.confirmations} Confirmations</small>
             </rb.Col>
           </rb.Row>
         </rb.ListGroup.Item>

@@ -76,9 +76,7 @@ export default function App() {
       const opts = { signal: abortCtrl.signal };
 
       fetch("/api/v1/session", opts)
-        .then((res) =>
-          res.ok ? res.json() : Promise.reject(new Error(res.statusText))
-        )
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
           const { maker_running, coinjoin_in_process, wallet_name } = data;
           const activeWallet = wallet_name !== "None" ? wallet_name : null;
@@ -86,10 +84,7 @@ export default function App() {
           setConnectionError(null);
           setMakerRunning(maker_running);
           setCoinjoinInProcess(coinjoin_in_process);
-          if (
-            currentWallet &&
-            (!activeWallet || currentWallet.name !== activeWallet)
-          ) {
+          if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
             setCurrentWallet(null);
             clearSession();
           }
@@ -147,17 +142,8 @@ export default function App() {
         className="border-bottom"
       >
         <rb.Container>
-          <Link
-            to="/"
-            className="navbar-brand d-inline-flex align-items-center pt-1"
-          >
-            <img
-              src="/logo.svg"
-              width="30"
-              height="30"
-              className="d-inline-block align-top"
-              alt="JoinMarket"
-            />
+          <Link to="/" className="navbar-brand d-inline-flex align-items-center pt-1">
+            <img src="/logo.svg" width="30" height="30" className="d-inline-block align-top" alt="JoinMarket" />
             <span className="ms-2">JoinMarket</span>
           </Link>
           {connectionError ? (
@@ -166,10 +152,7 @@ export default function App() {
             </rb.Navbar>
           ) : (
             <>
-              <rb.Navbar.Toggle
-                aria-controls="navbarOffcanvas"
-                className="ms-auto border-0 order-sm-1"
-              />
+              <rb.Navbar.Toggle aria-controls="navbarOffcanvas" className="ms-auto border-0 order-sm-1" />
               <rb.Navbar className="d-none d-lg-flex">{nav}</rb.Navbar>
               <rb.Navbar.Offcanvas id="navbarOffcanvas">
                 <rb.Offcanvas.Body>{nav}</rb.Offcanvas.Body>
@@ -180,10 +163,7 @@ export default function App() {
                     {walletDisplayName(currentWallet.name)}
                   </Link>
                   <rb.Navbar.Text> · </rb.Navbar.Text>
-                  <Link
-                    to="/earn"
-                    className="nav-link d-inline-flex align-items-center"
-                  >
+                  <Link to="/earn" className="nav-link d-inline-flex align-items-center">
                     Earn
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -225,40 +205,21 @@ export default function App() {
       </rb.Navbar>
       <rb.Container as="main" className="py-4">
         {connectionError ? (
-          <rb.Alert variant="danger">
-            No connection to backend: {connectionError}.
-          </rb.Alert>
+          <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
         ) : (
           <Routes>
             <Route
               path="/"
-              element={
-                <Wallets
-                  currentWallet={currentWallet}
-                  startWallet={startWallet}
-                  stopWallet={stopWallet}
-                />
-              }
+              element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
             />
             <Route
               path="create-wallet"
-              element={
-                <CreateWallet
-                  currentWallet={currentWallet}
-                  startWallet={startWallet}
-                />
-              }
+              element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
             />
             {currentWallet && (
               <>
-                <Route
-                  path="wallet"
-                  element={<CurrentWallet currentWallet={currentWallet} />}
-                />
-                <Route
-                  path="payment"
-                  element={<Send currentWallet={currentWallet} />}
-                />
+                <Route path="wallet" element={<CurrentWallet currentWallet={currentWallet} />} />
+                <Route path="payment" element={<Send currentWallet={currentWallet} />} />
                 <Route
                   path="earn"
                   element={
@@ -269,10 +230,7 @@ export default function App() {
                     />
                   }
                 />
-                <Route
-                  path="receive"
-                  element={<Receive currentWallet={currentWallet} />}
-                />
+                <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
               </>
             )}
           </Routes>

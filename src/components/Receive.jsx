@@ -12,9 +12,7 @@ const Receive = ({ currentWallet }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [address, setAddress] = useState("");
   const [amount, setAmount] = useState(0);
-  const [account, setAccount] = useState(
-    parseInt(location.state?.account, 10) || 0
-  );
+  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0);
   const [addressCount, setAddressCount] = useState(0);
 
   useEffect(() => {
@@ -29,13 +27,7 @@ const Receive = ({ currentWallet }) => {
       setAlert(null);
       setIsLoading(true);
       fetch(`/api/v1/wallet/${name}/address/new/${accountNr}`, opts)
-        .then((res) =>
-          res.ok
-            ? res.json()
-            : Promise.reject(
-                new Error(res.message || "Loading new address failed.")
-              )
-        )
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || "Loading new address failed."))))
         .then((data) => setAddress(data.address))
         .catch((err) => {
           if (!abortCtrl.signal.aborted) {
@@ -98,34 +90,17 @@ const Receive = ({ currentWallet }) => {
           onChange={(e) => setAmount(e.target.value)}
           style={{ width: "21ch" }}
         />
-        <rb.Form.Control.Feedback type="invalid">
-          Please provide a valid amount.
-        </rb.Form.Control.Feedback>
+        <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="address">
         <rb.Form.Label>Address</rb.Form.Label>
-        <rb.Form.Control
-          name="address"
-          value={address}
-          readOnly={true}
-          required
-          style={{ maxWidth: "50ch" }}
-        />
-        <rb.Form.Control.Feedback type="invalid">
-          Please provide a receiving address.
-        </rb.Form.Control.Feedback>
+        <rb.Form.Control name="address" value={address} readOnly={true} required style={{ maxWidth: "50ch" }} />
+        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Button variant="dark" type="submit" disabled={isLoading}>
         {isLoading ? (
           <div>
-            <rb.Spinner
-              as="span"
-              animation="border"
-              size="sm"
-              role="status"
-              aria-hidden="true"
-              className="me-2"
-            />
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             Getting new address
           </div>
         ) : (

@@ -10,9 +10,7 @@ export default function Payment({ currentWallet }) {
   const [alert, setAlert] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isCoinjoin, setIsCoinjoin] = useState(false);
-  const [account, setAccount] = useState(
-    parseInt(location.state?.account, 10) || 0
-  );
+  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0);
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name, token } = currentWallet;
@@ -54,12 +52,7 @@ export default function Payment({ currentWallet }) {
     return success;
   };
 
-  const startCoinjoin = async (
-    account,
-    destination,
-    amount_sats,
-    counterparties
-  ) => {
+  const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
     const { name, token } = currentWallet;
     const opts = {
       method: "POST",
@@ -122,15 +115,8 @@ export default function Payment({ currentWallet }) {
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <rb.Form.Group className="mb-3" controlId="destination">
         <rb.Form.Label>Receiver Address</rb.Form.Label>
-        <rb.Form.Control
-          name="destination"
-          defaultValue=""
-          required
-          style={{ maxWidth: "50ch" }}
-        />
-        <rb.Form.Control.Feedback type="invalid">
-          Please provide a receiving address.
-        </rb.Form.Control.Feedback>
+        <rb.Form.Control name="destination" defaultValue="" required style={{ maxWidth: "50ch" }} />
+        <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
@@ -149,17 +135,8 @@ export default function Payment({ currentWallet }) {
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control
-          name="amount"
-          type="number"
-          min={1}
-          defaultValue={0}
-          required
-          style={{ maxWidth: "21ch" }}
-        />
-        <rb.Form.Control.Feedback type="invalid">
-          Please provide a valid amount.
-        </rb.Form.Control.Feedback>
+        <rb.Form.Control name="amount" type="number" min={1} defaultValue={0} required style={{ maxWidth: "21ch" }} />
+        <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
         <rb.Form.Check
@@ -180,22 +157,13 @@ export default function Payment({ currentWallet }) {
             style={{ width: "10ch" }}
             required
           />
-          <rb.Form.Control.Feedback type="invalid">
-            Please set the counterparties.
-          </rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
         </rb.Form.Group>
       )}
       <rb.Button variant="dark" type="submit" disabled={isSending}>
         {isSending ? (
           <div>
-            <rb.Spinner
-              as="span"
-              animation="border"
-              size="sm"
-              role="status"
-              aria-hidden="true"
-              className="me-2"
-            />
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             Sending
           </div>
         ) : (

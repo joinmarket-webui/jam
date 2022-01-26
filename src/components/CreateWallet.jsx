@@ -24,11 +24,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
       });
 
       if (res.ok) {
-        const {
-          seedphrase,
-          token,
-          walletname: createdWallet,
-        } = await res.json();
+        const { seedphrase, token, walletname: createdWallet } = await res.json();
         setAlert({ variant: "success", seedphrase, password });
         setCreatedWallet(createdWallet);
         startWallet(createdWallet, token);
@@ -77,8 +73,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
           <span>
             Please write down your seed phrase and password!
             <br />
-            Without this information you will not be able to access and recover
-            your wallet!
+            Without this information you will not be able to access and recover your wallet!
           </span>
         </p>
         <p>
@@ -96,38 +91,18 @@ export default function CreateWallet({ currentWallet, startWallet }) {
         {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
         <rb.Form.Group className="mb-3" controlId="walletName">
           <rb.Form.Label>Wallet Name</rb.Form.Label>
-          <rb.Form.Control
-            name="wallet"
-            style={{ maxWidth: "20em" }}
-            required
-          />
-          <rb.Form.Control.Feedback type="invalid">
-            Please set a wallet name.
-          </rb.Form.Control.Feedback>
+          <rb.Form.Control name="wallet" style={{ maxWidth: "20em" }} required />
+          <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Form.Group className="mb-3" controlId="password">
           <rb.Form.Label>Password</rb.Form.Label>
-          <rb.Form.Control
-            name="password"
-            type="password"
-            style={{ maxWidth: "20em" }}
-            required
-          />
-          <rb.Form.Control.Feedback type="invalid">
-            Please set a password.
-          </rb.Form.Control.Feedback>
+          <rb.Form.Control name="password" type="password" style={{ maxWidth: "20em" }} required />
+          <rb.Form.Control.Feedback type="invalid">Please set a password.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Button variant="dark" type="submit" disabled={isCreating}>
           {isCreating ? (
             <div>
-              <rb.Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-                className="me-2"
-              />
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               Creating
             </div>
           ) : (
@@ -137,8 +112,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
       </rb.Form>
     ) : (
       <rb.Alert variant="warning">
-        Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is
-        active. You need to lock it first.
+        Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.
       </rb.Alert>
     );
   }

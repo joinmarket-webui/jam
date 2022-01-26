@@ -9,12 +9,8 @@ import Balance from "./Balance";
 
 export default function CurrentWallet({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null);
-  const [showBalances, setShowBalances] = useState(
-    window.localStorage.getItem("jm-showBalances") === "true"
-  );
-  const [unit, setUnit] = useState(
-    window.localStorage.getItem("jm-unit") || BTC
-  );
+  const [showBalances, setShowBalances] = useState(window.localStorage.getItem("jm-showBalances") === "true");
+  const [unit, setUnit] = useState(window.localStorage.getItem("jm-unit") || BTC);
   const [fidelityBonds, setFidelityBonds] = useState(null);
   const [utxos, setUtxos] = useState(null);
   const [showUTXO, setShowUTXO] = useState(false);
@@ -48,32 +44,20 @@ export default function CurrentWallet({ currentWallet }) {
     setIsLoading(true);
 
     const loadingWallet = fetch(`/api/v1/wallet/${name}/display`, opts)
-      .then((res) =>
-        res.ok
-          ? res.json()
-          : Promise.reject(new Error(res.message || "Loading wallet failed."))
-      )
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || "Loading wallet failed."))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
-        !abortCtrl.signal.aborted &&
-          setAlert({ variant: "danger", message: err.message });
+        !abortCtrl.signal.aborted && setAlert({ variant: "danger", message: err.message });
       });
 
     const loadingUtxos = fetch(`/api/v1/wallet/${name}/utxos`, opts)
-      .then((res) =>
-        res.ok
-          ? res.json()
-          : Promise.reject(new Error(res.message || "Loading UTXOs failed."))
-      )
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || "Loading UTXOs failed."))))
       .then((data) => setUtxoData(data.utxos))
       .catch((err) => {
-        !abortCtrl.signal.aborted &&
-          setAlert({ variant: "danger", message: err.message });
+        !abortCtrl.signal.aborted && setAlert({ variant: "danger", message: err.message });
       });
 
-    Promise.all([loadingWallet, loadingUtxos]).finally(() =>
-      setIsLoading(false)
-    );
+    Promise.all([loadingWallet, loadingUtxos]).finally(() => setIsLoading(false));
 
     return () => abortCtrl.abort();
   }, [currentWallet]);
@@ -84,26 +68,14 @@ export default function CurrentWallet({ currentWallet }) {
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading && (
         <div className="mb-3">
-          <rb.Spinner
-            as="span"
-            animation="border"
-            size="sm"
-            role="status"
-            aria-hidden="true"
-            className="me-2"
-          />
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading
         </div>
       )}
       {walletInfo && walletInfo?.total_balance && (
         <>
           <p>
-            Total balance:{" "}
-            <Balance
-              value={walletInfo.total_balance}
-              unit={unit}
-              showBalance={showBalances}
-            />
+            Total balance: <Balance value={walletInfo.total_balance} unit={unit} showBalance={showBalances} />
           </p>
           <rb.Form.Check
             type="switch"
@@ -121,22 +93,12 @@ export default function CurrentWallet({ currentWallet }) {
         </>
       )}
       {walletInfo && (
-        <DisplayAccounts
-          accounts={walletInfo.accounts}
-          unit={unit}
-          showBalances={showBalances}
-          className="mb-4"
-        />
+        <DisplayAccounts accounts={walletInfo.accounts} unit={unit} showBalances={showBalances} className="mb-4" />
       )}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
           <h5>Fidelity Bonds</h5>
-          <DisplayUTXOs
-            utxos={fidelityBonds}
-            unit={unit}
-            showBalances={showBalances}
-            className="pe-2"
-          />
+          <DisplayUTXOs utxos={fidelityBonds} unit={unit} showBalances={showBalances} className="pe-2" />
         </div>
       )}
       {utxos && (
@@ -151,12 +113,7 @@ export default function CurrentWallet({ currentWallet }) {
         </rb.Button>
       )}
       {utxos && showUTXO && (
-        <DisplayAccountUTXOs
-          utxos={utxos}
-          unit={unit}
-          showBalances={showBalances}
-          className="mt-3"
-        />
+        <DisplayAccountUTXOs utxos={utxos} unit={unit} showBalances={showBalances} className="mt-3" />
       )}
     </div>
   );

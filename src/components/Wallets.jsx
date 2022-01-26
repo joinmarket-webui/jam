@@ -24,11 +24,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
     setIsLoading(true);
     fetch("/api/v1/wallet/all", opts)
-      .then((res) =>
-        res.ok
-          ? res.json()
-          : Promise.reject(new Error(res.message || "Loading wallets failed."))
-      )
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || "Loading wallets failed."))))
       .then((data) => {
         const { wallets = [] } = data;
         if (currentWallet) {
@@ -38,8 +34,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         if (wallets.length === 0) {
           setAlert({
             variant: "info",
-            message:
-              "It looks like you do not have a wallet, yet. Please create one first.",
+            message: "It looks like you do not have a wallet, yet. Please create one first.",
             dismissible: true,
           });
         }
@@ -60,14 +55,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       {alert && <Alert {...alert} />}
       {isLoading && (
         <div>
-          <rb.Spinner
-            as="span"
-            animation="border"
-            size="sm"
-            role="status"
-            aria-hidden="true"
-            className="me-2"
-          />
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading wallets
         </div>
       )}
@@ -82,12 +70,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         />
       ))}
 
-      <Link
-        to="/create-wallet"
-        className={`btn mt-3 ${
-          walletList?.length === 0 ? "btn-dark" : "btn-outline-dark"
-        }`}
-      >
+      <Link to="/create-wallet" className={`btn mt-3 ${walletList?.length === 0 ? "btn-dark" : "btn-outline-dark"}`}>
         Create Wallet
       </Link>
     </>

@@ -10,18 +10,10 @@ export default function Earn({ currentWallet, makerRunning }) {
   const [alert, setAlert] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
-  const [offertype, setOffertype] = useState(
-    window.localStorage.getItem("jm-offertype") || OFFERTYPE_REL
-  );
-  const [feeRel, setFeeRel] = useState(
-    parseFloat(window.localStorage.getItem("jm-feeRel")) || 0.0003
-  );
-  const [feeAbs, setFeeAbs] = useState(
-    parseInt(window.localStorage.getItem("jm-feeAbs"), 10) || 250
-  );
-  const [minsize, setMinsize] = useState(
-    parseInt(window.localStorage.getItem("jm-minsize"), 10) || 100000
-  );
+  const [offertype, setOffertype] = useState(window.localStorage.getItem("jm-offertype") || OFFERTYPE_REL);
+  const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem("jm-feeRel")) || 0.0003);
+  const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem("jm-feeAbs"), 10) || 250);
+  const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem("jm-minsize"), 10) || 100000);
 
   const setAndPersistOffertype = (value) => {
     setOffertype(value);
@@ -142,11 +134,7 @@ export default function Earn({ currentWallet, makerRunning }) {
               type="switch"
               label="Relative offer"
               checked={isRelOffer}
-              onChange={(e) =>
-                setAndPersistOffertype(
-                  e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS
-                )
-              }
+              onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)}
             />
           </rb.Form.Group>
           {isRelOffer ? (
@@ -163,9 +151,7 @@ export default function Earn({ currentWallet, makerRunning }) {
                 style={{ width: "16ch" }}
                 onChange={(e) => setAndPersistFeeRel(e.target.value)}
               />
-              <rb.Form.Control.Feedback type="invalid">
-                Please provide a relative fee.
-              </rb.Form.Control.Feedback>
+              <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
             </rb.Form.Group>
           ) : (
             <rb.Form.Group className="mb-3" controlId="feeAbs">
@@ -180,9 +166,7 @@ export default function Earn({ currentWallet, makerRunning }) {
                 style={{ width: "16ch" }}
                 onChange={(e) => setAndPersistFeeAbs(e.target.value)}
               />
-              <rb.Form.Control.Feedback type="invalid">
-                Please provide an absolute fee.
-              </rb.Form.Control.Feedback>
+              <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
             </rb.Form.Group>
           )}
           <rb.Form.Group className="mb-3" controlId="minsize">
@@ -197,23 +181,14 @@ export default function Earn({ currentWallet, makerRunning }) {
               style={{ width: "16ch" }}
               onChange={(e) => setAndPersistMinsize(e.target.value)}
             />
-            <rb.Form.Control.Feedback type="invalid">
-              Please provide a minimum amount.
-            </rb.Form.Control.Feedback>
+            <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
           </rb.Form.Group>
         </>
       )}
       <rb.Button variant="dark" type="submit" disabled={isSending}>
         {isSending ? (
           <>
-            <rb.Spinner
-              as="span"
-              animation="border"
-              size="sm"
-              role="status"
-              aria-hidden="true"
-              className="me-2"
-            />
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             {makerRunning === true ? "Stopping" : "Starting"}
           </>
         ) : makerRunning === true ? (
