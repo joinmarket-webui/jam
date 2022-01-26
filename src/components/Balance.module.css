@@ -6,11 +6,11 @@
 .balance {
   font-family: Inter;
   font-weight: 400;
-  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  font-feature-settings: "tnum" on, "lnum" on, "zero" on, "case" on;
+  -moz-font-feature-settings: "tnum" on, "lnum" on, "zero" on, "case" on;
+  -ms-font-feature-settings: "tnum" on, "lnum" on, "zero" on, "case" on;
+  -webkit-font-feature-settings: "tnum" on, "lnum" on, "zero" on, "case" on;
+  -o-font-feature-settings: "tnum" on, "lnum" on, "zero" on, "case" on;
 }
 
 .balance svg {
@@ -26,11 +26,11 @@
   font-family: "Satoshi Symbol";
   font-weight: 400;
   text-rendering: optimizeLegibility;
-  font-feature-settings: 'kern' on;
-  -moz-font-feature-settings: 'kern' on;
-  -ms-font-feature-settings: 'kern' on;
-  -webkit-font-feature-settings: 'kern' on;
-  -o-font-feature-settings: 'kern' on;
+  font-feature-settings: "kern" on;
+  -moz-font-feature-settings: "kern" on;
+  -ms-font-feature-settings: "kern" on;
+  -webkit-font-feature-settings: "kern" on;
+  -o-font-feature-settings: "kern" on;
 
   padding-left: 0.2em;
 
