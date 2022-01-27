@@ -1,53 +1,53 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import * as rb from "react-bootstrap";
-import Alert from "./Alert";
-import Wallet from "./Wallet";
-import { walletDisplayName } from "../utils";
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import * as rb from 'react-bootstrap'
+import Alert from './Alert'
+import Wallet from './Wallet'
+import { walletDisplayName } from '../utils'
 
 export default function Wallets({ currentWallet, startWallet, stopWallet }) {
-  const [walletList, setWalletList] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [walletList, setWalletList] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState(
     currentWallet?.name && {
-      variant: "info",
+      variant: 'info',
       message: `There can be only one active wallet. If you want to open another wallet, please lock ${walletDisplayName(
         currentWallet.name
       )} first.`,
       dismissible: true,
     }
-  );
+  )
 
   useEffect(() => {
-    const abortCtrl = new AbortController();
-    const opts = { signal: abortCtrl.signal };
+    const abortCtrl = new AbortController()
+    const opts = { signal: abortCtrl.signal }
 
-    setIsLoading(true);
-    fetch("/api/v1/wallet/all", opts)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || "Loading wallets failed."))))
+    setIsLoading(true)
+    fetch('/api/v1/wallet/all', opts)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallets failed.'))))
       .then((data) => {
-        const { wallets = [] } = data;
+        const { wallets = [] } = data
         if (currentWallet) {
-          wallets.sort((a, b) => b === currentWallet.name);
+          wallets.sort((a, b) => b === currentWallet.name)
         }
-        setWalletList(wallets);
+        setWalletList(wallets)
         if (wallets.length === 0) {
           setAlert({
-            variant: "info",
-            message: "It looks like you do not have a wallet, yet. Please create one first.",
+            variant: 'info',
+            message: 'It looks like you do not have a wallet, yet. Please create one first.',
             dismissible: true,
-          });
+          })
         }
       })
       .catch((err) => {
         if (!abortCtrl.signal.aborted) {
-          setAlert({ variant: "danger", message: err.message });
+          setAlert({ variant: 'danger', message: err.message })
         }
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => setIsLoading(false))
 
-    return () => abortCtrl.abort();
-  }, [currentWallet]);
+    return () => abortCtrl.abort()
+  }, [currentWallet])
 
   return (
     <>
@@ -70,9 +70,9 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         />
       ))}
 
-      <Link to="/create-wallet" className={`btn mt-3 ${walletList?.length === 0 ? "btn-dark" : "btn-outline-dark"}`}>
+      <Link to="/create-wallet" className={`btn mt-3 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}>
         Create Wallet
       </Link>
     </>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-import React from "react";
-import * as rb from "react-bootstrap";
-import { displayDate } from "../utils";
-import Balance from "./Balance";
+import React from 'react'
+import * as rb from 'react-bootstrap'
+import { displayDate } from '../utils'
+import Balance from './Balance'
 
 export default function DisplayUTXOs({ utxos, unit, showBalances, ...props }) {
   return (
@@ -29,5 +29,5 @@ export default function DisplayUTXOs({ utxos, unit, showBalances, ...props }) {
         </rb.ListGroup.Item>
       ))}
     </rb.ListGroup>
-  );
+  )
 }

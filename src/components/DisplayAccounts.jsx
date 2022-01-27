@@ -1,8 +1,8 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import * as rb from "react-bootstrap";
-import { titleize } from "../utils";
-import Balance from "./Balance";
+import React from 'react'
+import { Link } from 'react-router-dom'
+import * as rb from 'react-bootstrap'
+import { titleize } from '../utils'
+import Balance from './Balance'
 
 export default function DisplayAccounts({ accounts, unit, showBalances, ...props }) {
   return (
@@ -22,12 +22,12 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
           <rb.Accordion.Body className="pe-5">
             <Link to="/payment" state={{ account }} className="btn btn-outline-dark">
               Send
-            </Link>{" "}
+            </Link>{' '}
             <Link to="/receive" state={{ account }} className="btn btn-outline-dark">
               Receive
             </Link>
             {branches.map(({ balance, branch, entries }) => {
-              const [type, derivation, xpub] = branch.split("\t");
+              const [type, derivation, xpub] = branch.split('\t')
               return (
                 <article key={derivation}>
                   <rb.Row className="w-100 mt-4">
@@ -52,7 +52,7 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
                         <code className="text-break">{hdPath}</code>
                       </rb.Col>
                       <rb.Col>
-                        <code className="text-break">{address}</code>{" "}
+                        <code className="text-break">{address}</code>{' '}
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
@@ -61,11 +61,11 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
                     </rb.Row>
                   ))}
                 </article>
-              );
+              )
             })}
           </rb.Accordion.Body>
         </rb.Accordion.Item>
       ))}
     </rb.Accordion>
-  );
+  )
 }

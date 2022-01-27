@@ -1,66 +1,66 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import * as rb from "react-bootstrap";
-import DisplayAccounts from "./DisplayAccounts";
-import DisplayAccountUTXOs from "./DisplayAccountUTXOs";
-import { walletDisplayName, BTC, SATS } from "../utils";
-import DisplayUTXOs from "./DisplayUTXOs";
-import Balance from "./Balance";
+import React from 'react'
+import { useState, useEffect } from 'react'
+import * as rb from 'react-bootstrap'
+import DisplayAccounts from './DisplayAccounts'
+import DisplayAccountUTXOs from './DisplayAccountUTXOs'
+import { walletDisplayName, BTC, SATS } from '../utils'
+import DisplayUTXOs from './DisplayUTXOs'
+import Balance from './Balance'
 
 export default function CurrentWallet({ currentWallet }) {
-  const [walletInfo, setWalletInfo] = useState(null);
-  const [showBalances, setShowBalances] = useState(window.localStorage.getItem("jm-showBalances") === "true");
-  const [unit, setUnit] = useState(window.localStorage.getItem("jm-unit") || BTC);
-  const [fidelityBonds, setFidelityBonds] = useState(null);
-  const [utxos, setUtxos] = useState(null);
-  const [showUTXO, setShowUTXO] = useState(false);
-  const [alert, setAlert] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [walletInfo, setWalletInfo] = useState(null)
+  const [showBalances, setShowBalances] = useState(window.localStorage.getItem('jm-showBalances') === 'true')
+  const [unit, setUnit] = useState(window.localStorage.getItem('jm-unit') || BTC)
+  const [fidelityBonds, setFidelityBonds] = useState(null)
+  const [utxos, setUtxos] = useState(null)
+  const [showUTXO, setShowUTXO] = useState(false)
+  const [alert, setAlert] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const setAndPersistShowBalances = (showBalances) => {
-    setShowBalances(showBalances);
-    window.localStorage.setItem("jm-showBalances", showBalances);
-  };
+    setShowBalances(showBalances)
+    window.localStorage.setItem('jm-showBalances', showBalances)
+  }
 
   const setAndPersistUnit = (unit) => {
-    setUnit(unit);
-    window.localStorage.setItem("jm-unit", unit);
-  };
+    setUnit(unit)
+    window.localStorage.setItem('jm-unit', unit)
+  }
 
   useEffect(() => {
-    const abortCtrl = new AbortController();
-    const { name, token } = currentWallet;
+    const abortCtrl = new AbortController()
+    const { name, token } = currentWallet
     const opts = {
       headers: { Authorization: `Bearer ${token}` },
       signal: abortCtrl.signal,
-    };
+    }
 
     const setUtxoData = (utxos) => {
-      setUtxos(utxos);
-      setFidelityBonds(utxos.filter((utxo) => utxo.locktime));
-    };
+      setUtxos(utxos)
+      setFidelityBonds(utxos.filter((utxo) => utxo.locktime))
+    }
 
-    setAlert(null);
-    setIsLoading(true);
+    setAlert(null)
+    setIsLoading(true)
 
     const loadingWallet = fetch(`/api/v1/wallet/${name}/display`, opts)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || "Loading wallet failed."))))
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: "danger", message: err.message });
-      });
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
 
     const loadingUtxos = fetch(`/api/v1/wallet/${name}/utxos`, opts)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || "Loading UTXOs failed."))))
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.'))))
       .then((data) => setUtxoData(data.utxos))
       .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: "danger", message: err.message });
-      });
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
 
-    Promise.all([loadingWallet, loadingUtxos]).finally(() => setIsLoading(false));
+    Promise.all([loadingWallet, loadingUtxos]).finally(() => setIsLoading(false))
 
-    return () => abortCtrl.abort();
-  }, [currentWallet]);
+    return () => abortCtrl.abort()
+  }, [currentWallet])
 
   return (
     <div>
@@ -105,16 +105,16 @@ export default function CurrentWallet({ currentWallet }) {
         <rb.Button
           variant="outline-dark"
           onClick={() => {
-            setShowUTXO(!showUTXO);
+            setShowUTXO(!showUTXO)
           }}
           className="mb-3"
         >
-          {showUTXO ? "Hide UTXOs" : "Show UTXOs"}
+          {showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}
         </rb.Button>
       )}
       {utxos && showUTXO && (
         <DisplayAccountUTXOs utxos={utxos} unit={unit} showBalances={showBalances} className="mt-3" />
       )}
     </div>
-  );
+  )
 }

@@ -1,59 +1,59 @@
-import React, { useState } from "react";
-import * as rb from "react-bootstrap";
-import { serialize, walletDisplayName } from "../utils";
+import React, { useState } from 'react'
+import * as rb from 'react-bootstrap'
+import { serialize, walletDisplayName } from '../utils'
 
 export default function CreateWallet({ currentWallet, startWallet }) {
-  const [validated, setValidated] = useState(false);
-  const [alert, setAlert] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [createdWallet, setCreatedWallet] = useState(null);
+  const [validated, setValidated] = useState(false)
+  const [alert, setAlert] = useState(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [createdWallet, setCreatedWallet] = useState(null)
 
   const createWallet = async (name, password) => {
-    const walletname = name.endsWith(".jmdat") ? name : `${name}.jmdat`;
-    setAlert(null);
-    setIsCreating(true);
+    const walletname = name.endsWith('.jmdat') ? name : `${name}.jmdat`
+    setAlert(null)
+    setIsCreating(true)
     try {
-      const wallettype = "sw-fb";
+      const wallettype = 'sw-fb'
       const res = await fetch(`/api/v1/wallet/create`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({
           password,
           walletname,
           wallettype,
         }),
-      });
+      })
 
       if (res.ok) {
-        const { seedphrase, token, walletname: createdWallet } = await res.json();
-        setAlert({ variant: "success", seedphrase, password });
-        setCreatedWallet(createdWallet);
-        startWallet(createdWallet, token);
+        const { seedphrase, token, walletname: createdWallet } = await res.json()
+        setAlert({ variant: 'success', seedphrase, password })
+        setCreatedWallet(createdWallet)
+        startWallet(createdWallet, token)
       } else {
-        const { message } = await res.json();
-        setAlert({ variant: "danger", message });
+        const { message } = await res.json()
+        setAlert({ variant: 'danger', message })
       }
     } catch (e) {
-      setAlert({ variant: "danger", message: e.message });
+      setAlert({ variant: 'danger', message: e.message })
     } finally {
-      setIsCreating(false);
+      setIsCreating(false)
     }
-  };
+  }
 
   const onSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const form = e.currentTarget;
-    const isValid = form.checkValidity();
-    setValidated(true);
+    const form = e.currentTarget
+    const isValid = form.checkValidity()
+    setValidated(true)
 
     if (isValid) {
-      const { wallet, password } = serialize(form);
-      createWallet(wallet, password);
+      const { wallet, password } = serialize(form)
+      createWallet(wallet, password)
     }
-  };
+  }
 
-  const isCreated = currentWallet && currentWallet.name === createdWallet;
-  const canCreate = !currentWallet && !isCreated;
+  const isCreated = currentWallet && currentWallet.name === createdWallet
+  const canCreate = !currentWallet && !isCreated
 
   if (isCreated && alert?.seedphrase) {
     return (
@@ -83,7 +83,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
           Password: <strong>{alert.password}</strong>
         </p>
       </rb.Alert>
-    );
+    )
   } else {
     return canCreate ? (
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
@@ -91,12 +91,12 @@ export default function CreateWallet({ currentWallet, startWallet }) {
         {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
         <rb.Form.Group className="mb-3" controlId="walletName">
           <rb.Form.Label>Wallet Name</rb.Form.Label>
-          <rb.Form.Control name="wallet" style={{ maxWidth: "20em" }} required />
+          <rb.Form.Control name="wallet" style={{ maxWidth: '20em' }} required />
           <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Form.Group className="mb-3" controlId="password">
           <rb.Form.Label>Password</rb.Form.Label>
-          <rb.Form.Control name="password" type="password" style={{ maxWidth: "20em" }} required />
+          <rb.Form.Control name="password" type="password" style={{ maxWidth: '20em' }} required />
           <rb.Form.Control.Feedback type="invalid">Please set a password.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Button variant="dark" type="submit" disabled={isCreating}>
@@ -106,7 +106,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
               Creating
             </div>
           ) : (
-            "Create"
+            'Create'
           )}
         </rb.Button>
       </rb.Form>
@@ -114,6 +114,6 @@ export default function CreateWallet({ currentWallet, startWallet }) {
       <rb.Alert variant="warning">
         Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.
       </rb.Alert>
-    );
+    )
   }
 }

@@ -1,16 +1,16 @@
-import React from "react";
-import * as rb from "react-bootstrap";
-import DisplayUTXOs from "./DisplayUTXOs";
+import React from 'react'
+import * as rb from 'react-bootstrap'
+import DisplayUTXOs from './DisplayUTXOs'
 
 const byAccount = (utxos) => {
   const ret = utxos.reduce((res, utxo) => {
-    const { mixdepth } = utxo;
-    res[mixdepth] = res[mixdepth] || [];
-    res[mixdepth].push(utxo);
-    return res;
-  }, {});
-  return ret;
-};
+    const { mixdepth } = utxo
+    res[mixdepth] = res[mixdepth] || []
+    res[mixdepth].push(utxo)
+    return res
+  }, {})
+  return ret
+}
 
 export default function DisplayAccountUTXOs({ utxos, unit, showBalances, ...props }) {
   return (
@@ -26,5 +26,5 @@ export default function DisplayAccountUTXOs({ utxos, unit, showBalances, ...prop
         </rb.Accordion.Item>
       ))}
     </rb.Accordion>
-  );
+  )
 }

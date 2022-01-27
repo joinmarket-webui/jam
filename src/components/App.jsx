@@ -1,38 +1,38 @@
-import { useState, useEffect, useRef } from "react";
-import { Route, Routes, Link } from "react-router-dom";
-import * as rb from "react-bootstrap";
-import Wallets from "./Wallets";
-import CreateWallet from "./CreateWallet";
-import Send from "./Send";
-import Earn from "./Earn";
-import Receive from "./Receive";
-import CurrentWallet from "./CurrentWallet";
-import { getSession, setSession, clearSession } from "../session";
-import { walletDisplayName } from "../utils";
+import { useState, useEffect, useRef } from 'react'
+import { Route, Routes, Link } from 'react-router-dom'
+import * as rb from 'react-bootstrap'
+import Wallets from './Wallets'
+import CreateWallet from './CreateWallet'
+import Send from './Send'
+import Earn from './Earn'
+import Receive from './Receive'
+import CurrentWallet from './CurrentWallet'
+import { getSession, setSession, clearSession } from '../session'
+import { walletDisplayName } from '../utils'
 
 export default function App() {
-  const [currentWallet, setCurrentWallet] = useState();
-  const [makerRunning, setMakerRunning] = useState();
-  const [connectionError, setConnectionError] = useState();
-  const [coinjoinInProcess, setCoinjoinInProcess] = useState();
-  const websocket = useRef(null);
+  const [currentWallet, setCurrentWallet] = useState()
+  const [makerRunning, setMakerRunning] = useState()
+  const [connectionError, setConnectionError] = useState()
+  const [coinjoinInProcess, setCoinjoinInProcess] = useState()
+  const websocket = useRef(null)
 
   const startWallet = (name, token) => {
-    setSession(name, token);
-    setCurrentWallet({ name, token });
+    setSession(name, token)
+    setCurrentWallet({ name, token })
 
-    const { protocol, host } = window.location;
-    const scheme = protocol === "https:" ? "wss" : "ws";
-    websocket.current = new WebSocket(`${scheme}://${host}/ws/`);
+    const { protocol, host } = window.location
+    const scheme = protocol === 'https:' ? 'wss' : 'ws'
+    websocket.current = new WebSocket(`${scheme}://${host}/ws/`)
 
     websocket.current.onopen = () => {
-      console.debug("websocket connection openend");
-      websocket.current.send(token);
-    };
+      console.debug('websocket connection openend')
+      websocket.current.send(token)
+    }
 
     websocket.current.onerror = (error) => {
-      console.error("websocket error", error);
-    };
+      console.error('websocket error', error)
+    }
 
     websocket.current.onmessage = (event) => {
       // For now we only have one message type, namely the transaction notification:
@@ -41,75 +41,75 @@ export default function App() {
       // kind of popup/status bar notifier.
       // In future it might be possible to use the detailed transaction deserialization
       // passed in this notification, for something.
-      const wsdata = JSON.parse(event.data);
-      console.debug("websocket sent", wsdata);
-    };
+      const wsdata = JSON.parse(event.data)
+      console.debug('websocket sent', wsdata)
+    }
 
-    const wsCurrent = websocket.current;
+    const wsCurrent = websocket.current
     return () => {
-      wsCurrent.close();
-    };
-  };
+      wsCurrent.close()
+    }
+  }
 
   const stopWallet = () => {
-    clearSession();
-    setCurrentWallet(null);
+    clearSession()
+    setCurrentWallet(null)
 
     if (websocket) {
       websocket.current.onclose = () => {
-        console.debug("websocket connection closed");
-      };
-      websocket.current.close();
+        console.debug('websocket connection closed')
+      }
+      websocket.current.close()
     }
-  };
+  }
 
   useEffect(() => {
-    const abortCtrl = new AbortController();
+    const abortCtrl = new AbortController()
 
     const resetState = () => {
-      setCurrentWallet(null);
-      setMakerRunning(null);
-      setCoinjoinInProcess(null);
-    };
+      setCurrentWallet(null)
+      setMakerRunning(null)
+      setCoinjoinInProcess(null)
+    }
 
     const refreshSession = () => {
-      const opts = { signal: abortCtrl.signal };
+      const opts = { signal: abortCtrl.signal }
 
-      fetch("/api/v1/session", opts)
+      fetch('/api/v1/session', opts)
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
-          const { maker_running, coinjoin_in_process, wallet_name } = data;
-          const activeWallet = wallet_name !== "None" ? wallet_name : null;
+          const { maker_running, coinjoin_in_process, wallet_name } = data
+          const activeWallet = wallet_name !== 'None' ? wallet_name : null
 
-          setConnectionError(null);
-          setMakerRunning(maker_running);
-          setCoinjoinInProcess(coinjoin_in_process);
+          setConnectionError(null)
+          setMakerRunning(maker_running)
+          setCoinjoinInProcess(coinjoin_in_process)
           if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
-            setCurrentWallet(null);
-            clearSession();
+            setCurrentWallet(null)
+            clearSession()
           }
         })
         .catch((err) => {
           if (!abortCtrl.signal.aborted) {
-            setConnectionError(err.message);
-            resetState();
+            setConnectionError(err.message)
+            resetState()
           }
-        });
-    };
-    refreshSession();
-    const interval = setInterval(refreshSession, 10000);
+        })
+    }
+    refreshSession()
+    const interval = setInterval(refreshSession, 10000)
     return () => {
-      abortCtrl.abort();
-      clearInterval(interval);
-    };
-  }, [currentWallet]);
+      abortCtrl.abort()
+      clearInterval(interval)
+    }
+  }, [currentWallet])
 
   useEffect(() => {
-    const session = getSession();
+    const session = getSession()
     if (session) {
-      return startWallet(session.name, session.token);
+      return startWallet(session.name, session.token)
     }
-  }, []);
+  }, [])
 
   const nav = connectionError ? null : (
     <rb.Nav className="text-start">
@@ -128,7 +128,7 @@ export default function App() {
         </Link>
       )}
     </rb.Nav>
-  );
+  )
 
   return (
     <>
@@ -182,7 +182,7 @@ export default function App() {
                   </Link>
                   {coinjoinInProcess && (
                     <rb.Navbar.Text>
-                      {" "}
+                      {' '}
                       · Joining
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -281,5 +281,5 @@ export default function App() {
         </rb.Container>
       </rb.Nav>
     </>
-  );
+  )
 }

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Alert as BsAlert } from "react-bootstrap";
+import React, { useState } from 'react'
+import { Alert as BsAlert } from 'react-bootstrap'
 
 export default function Alert({ variant, dismissible, message, ...props }) {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(true)
 
   return (
     <BsAlert
@@ -15,5 +15,5 @@ export default function Alert({ variant, dismissible, message, ...props }) {
     >
       {message}
     </BsAlert>
-  );
+  )
 }
