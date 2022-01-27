@@ -3,29 +3,19 @@ import { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
-import { walletDisplayName, BTC, SATS } from '../utils'
+import { walletDisplayName } from '../utils'
 import DisplayUTXOs from './DisplayUTXOs'
 import Balance from './Balance'
+import { useSettings } from '../context/SettingsContext'
 
 export default function CurrentWallet({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
-  const [showBalances, setShowBalances] = useState(window.localStorage.getItem('jm-showBalances') === 'true')
-  const [unit, setUnit] = useState(window.localStorage.getItem('jm-unit') || BTC)
   const [fidelityBonds, setFidelityBonds] = useState(null)
   const [utxos, setUtxos] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-
-  const setAndPersistShowBalances = (showBalances) => {
-    setShowBalances(showBalances)
-    window.localStorage.setItem('jm-showBalances', showBalances)
-  }
-
-  const setAndPersistUnit = (unit) => {
-    setUnit(unit)
-    window.localStorage.setItem('jm-unit', unit)
-  }
+  const settings = useSettings()
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -73,32 +63,16 @@ export default function CurrentWallet({ currentWallet }) {
         </div>
       )}
       {walletInfo && walletInfo?.total_balance && (
-        <>
-          <p>
-            Total balance: <Balance value={walletInfo.total_balance} unit={unit} showBalance={showBalances} />
-          </p>
-          <rb.Form.Check
-            type="switch"
-            label="Show balances"
-            checked={showBalances}
-            onChange={(e) => setAndPersistShowBalances(e.target.checked)}
-          />
-          <rb.Form.Check
-            type="switch"
-            label={`Display amounts in ${SATS}`}
-            checked={unit === SATS}
-            onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)}
-            className="mb-4"
-          />
-        </>
+        <p>
+          Total balance:{' '}
+          <Balance value={walletInfo.total_balance} unit={settings.unit} showBalance={settings.showBalance} />
+        </p>
       )}
-      {walletInfo && (
-        <DisplayAccounts accounts={walletInfo.accounts} unit={unit} showBalances={showBalances} className="mb-4" />
-      )}
+      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
           <h5>Fidelity Bonds</h5>
-          <DisplayUTXOs utxos={fidelityBonds} unit={unit} showBalances={showBalances} className="pe-2" />
+          <DisplayUTXOs utxos={fidelityBonds} className="pe-2" />
         </div>
       )}
       {utxos && (
@@ -112,9 +86,7 @@ export default function CurrentWallet({ currentWallet }) {
           {showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}
         </rb.Button>
       )}
-      {utxos && showUTXO && (
-        <DisplayAccountUTXOs utxos={utxos} unit={unit} showBalances={showBalances} className="mt-3" />
-      )}
+      {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} className="mt-3" />}
     </div>
   )
 }
