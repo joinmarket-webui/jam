@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
@@ -7,7 +7,7 @@ import { walletDisplayName, BTC, SATS } from '../utils'
 import DisplayUTXOs from './DisplayUTXOs'
 import Balance from './Balance'
 
-export default function CurrentWallet ({ currentWallet }) {
+export default function CurrentWallet({ currentWallet }) {
   const [walletInfo, setWalletInfo] = useState(null)
   const [showBalances, setShowBalances] = useState(window.localStorage.getItem('jm-showBalances') === 'true')
   const [unit, setUnit] = useState(window.localStorage.getItem('jm-unit') || BTC)
@@ -17,12 +17,12 @@ export default function CurrentWallet ({ currentWallet }) {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const setAndPersistShowBalances = showBalances => {
+  const setAndPersistShowBalances = (showBalances) => {
     setShowBalances(showBalances)
     window.localStorage.setItem('jm-showBalances', showBalances)
   }
 
-  const setAndPersistUnit = unit => {
+  const setAndPersistUnit = (unit) => {
     setUnit(unit)
     window.localStorage.setItem('jm-unit', unit)
   }
@@ -31,34 +31,33 @@ export default function CurrentWallet ({ currentWallet }) {
     const abortCtrl = new AbortController()
     const { name, token } = currentWallet
     const opts = {
-      headers: { 'Authorization': `Bearer ${token}` },
-      signal: abortCtrl.signal
+      headers: { Authorization: `Bearer ${token}` },
+      signal: abortCtrl.signal,
     }
 
-    const setUtxoData = utxos => {
+    const setUtxoData = (utxos) => {
       setUtxos(utxos)
-      setFidelityBonds(utxos.filter(utxo => utxo.locktime))
+      setFidelityBonds(utxos.filter((utxo) => utxo.locktime))
     }
 
     setAlert(null)
     setIsLoading(true)
 
     const loadingWallet = fetch(`/api/v1/wallet/${name}/display`, opts)
-      .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.')))
-      .then(data => setWalletInfo(data.walletinfo))
-      .catch(err => {
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
+      .then((data) => setWalletInfo(data.walletinfo))
+      .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
     const loadingUtxos = fetch(`/api/v1/wallet/${name}/utxos`, opts)
-      .then(res => res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.')))
-      .then(data => setUtxoData(data.utxos))
-      .catch(err => {
-          !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.'))))
+      .then((data) => setUtxoData(data.utxos))
+      .catch((err) => {
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingWallet, loadingUtxos])
-      .finally(() => setIsLoading(false))
+    Promise.all([loadingWallet, loadingUtxos]).finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [currentWallet])
@@ -67,25 +66,55 @@ export default function CurrentWallet ({ currentWallet }) {
     <div>
       <h1>{walletDisplayName(currentWallet.name)}</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {isLoading &&
+      {isLoading && (
         <div className="mb-3">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading
-        </div>}
-      {walletInfo && walletInfo?.total_balance &&
+        </div>
+      )}
+      {walletInfo && walletInfo?.total_balance && (
         <>
-          <p>Total balance: <Balance value={walletInfo.total_balance} unit={unit} showBalance={showBalances} /></p>
-          <rb.Form.Check type="switch" label="Show balances" checked={showBalances} onChange={(e) => setAndPersistShowBalances(e.target.checked)} />
-          <rb.Form.Check type="switch" label={`Display amounts in ${SATS}`} checked={unit === SATS} onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)} className="mb-4" />
-        </>}
-      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} unit={unit} showBalances={showBalances} className="mb-4" />}
+          <p>
+            Total balance: <Balance value={walletInfo.total_balance} unit={unit} showBalance={showBalances} />
+          </p>
+          <rb.Form.Check
+            type="switch"
+            label="Show balances"
+            checked={showBalances}
+            onChange={(e) => setAndPersistShowBalances(e.target.checked)}
+          />
+          <rb.Form.Check
+            type="switch"
+            label={`Display amounts in ${SATS}`}
+            checked={unit === SATS}
+            onChange={(e) => setAndPersistUnit(e.target.checked ? SATS : BTC)}
+            className="mb-4"
+          />
+        </>
+      )}
+      {walletInfo && (
+        <DisplayAccounts accounts={walletInfo.accounts} unit={unit} showBalances={showBalances} className="mb-4" />
+      )}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
           <h5>Fidelity Bonds</h5>
           <DisplayUTXOs utxos={fidelityBonds} unit={unit} showBalances={showBalances} className="pe-2" />
-        </div>)}
-      {utxos && <rb.Button variant="outline-dark" onClick={() => { setShowUTXO(!showUTXO) }} className="mb-3">{showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}</rb.Button>}
-      {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} unit={unit} showBalances={showBalances} className="mt-3" />}
+        </div>
+      )}
+      {utxos && (
+        <rb.Button
+          variant="outline-dark"
+          onClick={() => {
+            setShowUTXO(!showUTXO)
+          }}
+          className="mb-3"
+        >
+          {showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}
+        </rb.Button>
+      )}
+      {utxos && showUTXO && (
+        <DisplayAccountUTXOs utxos={utxos} unit={unit} showBalances={showBalances} className="mt-3" />
+      )}
     </div>
   )
 }

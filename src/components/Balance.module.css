@@ -23,7 +23,7 @@
 }
 
 .satoshi-symbol {
-  font-family: "Satoshi Symbol";
+  font-family: 'Satoshi Symbol';
   font-weight: 400;
   text-rendering: optimizeLegibility;
   font-feature-settings: 'kern' on;

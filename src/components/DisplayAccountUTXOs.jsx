@@ -2,7 +2,7 @@ import React from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayUTXOs from './DisplayUTXOs'
 
-const byAccount = utxos => {
+const byAccount = (utxos) => {
   const ret = utxos.reduce((res, utxo) => {
     const { mixdepth } = utxo
     res[mixdepth] = res[mixdepth] || []

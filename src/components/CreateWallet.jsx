@@ -19,7 +19,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
         body: JSON.stringify({
           password,
           walletname,
-          wallettype
+          wallettype,
         }),
       })
 
@@ -39,7 +39,7 @@ export default function CreateWallet({ currentWallet, startWallet }) {
     }
   }
 
-  const onSubmit = e => {
+  const onSubmit = (e) => {
     e.preventDefault()
 
     const form = e.currentTarget
@@ -60,18 +60,33 @@ export default function CreateWallet({ currentWallet, startWallet }) {
       <rb.Alert variant="success">
         <rb.Alert.Heading>Wallet created succesfully!</rb.Alert.Heading>
         <p className="d-flex align-items-center my-3">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" className="me-3" viewBox="0 0 16 16">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            fill="currentColor"
+            className="me-3"
+            viewBox="0 0 16 16"
+          >
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
           </svg>
-          <span>Please write down your seed phrase and password!<br />Without this information you will not be able to access and recover your wallet!</span>
+          <span>
+            Please write down your seed phrase and password!
+            <br />
+            Without this information you will not be able to access and recover your wallet!
+          </span>
         </p>
-        <p>Seed phrase: <strong>{alert.seedphrase}</strong></p>
-        <p className="mb-0">Password: <strong>{alert.password}</strong></p>
+        <p>
+          Seed phrase: <strong>{alert.seedphrase}</strong>
+        </p>
+        <p className="mb-0">
+          Password: <strong>{alert.password}</strong>
+        </p>
       </rb.Alert>
     )
   } else {
-    return canCreate
-      ? <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+    return canCreate ? (
+      <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <h1>Create Wallet</h1>
         {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
         <rb.Form.Group className="mb-3" controlId="walletName">
@@ -85,14 +100,20 @@ export default function CreateWallet({ currentWallet, startWallet }) {
           <rb.Form.Control.Feedback type="invalid">Please set a password.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Button variant="dark" type="submit" disabled={isCreating}>
-          {isCreating
-            ? <div>
+          {isCreating ? (
+            <div>
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               Creating
             </div>
-            : 'Create'}
+          ) : (
+            'Create'
+          )}
         </rb.Button>
       </rb.Form>
-      : <rb.Alert variant="warning">Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.</rb.Alert>
+    ) : (
+      <rb.Alert variant="warning">
+        Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.
+      </rb.Alert>
+    )
   }
 }

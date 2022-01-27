@@ -19,8 +19,11 @@
     "bootstrap": "^5.1.3",
     "buffer": "^6.0.3",
     "http-proxy-middleware": "^2.0.1",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.1",
     "moving-letters": "^1.0.1",
     "nth-check": ">=2.0.1",
+    "prettier": "^2.5.1",
     "react": "^17.0.2",
     "react-bootstrap": "^2.1.1",
     "react-dom": "^17.0.2",
@@ -37,13 +40,21 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "prepare": "husky install",
+    "lint": "prettier --check --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
+    "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
     ]
+  },
+  "prettier": {
+    "printWidth": 120,
+    "semi": false,
+    "singleQuote": true
   },
   "browserslist": {
     "production": [
@@ -56,5 +67,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,json,css,md}": "prettier --no-error-on-unmatched-pattern --write"
   }
 }

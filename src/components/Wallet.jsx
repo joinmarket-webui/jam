@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize, walletDisplayName } from '../utils'
 
-export default function Wallet({ name, currentWallet, startWallet, stopWallet, setAlert, ...props}) {
+export default function Wallet({ name, currentWallet, startWallet, stopWallet, setAlert, ...props }) {
   const [validated, setValidated] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
@@ -13,11 +13,12 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     if (currentWallet) {
       setAlert({
         variant: 'warning',
-        message: currentWallet.name === walletName
-          // unlocking same wallet
-          ? `${walletDisplayName(walletName)} is already unlocked.`
-          // unlocking another wallet while one is already unlocked
-          : `${walletDisplayName(currentWallet.name)} is currently in use, please lock it first.`
+        message:
+          currentWallet.name === walletName
+            ? // unlocking same wallet
+              `${walletDisplayName(walletName)} is already unlocked.`
+            : // unlocking another wallet while one is already unlocked
+              `${walletDisplayName(currentWallet.name)} is currently in use, please lock it first.`,
       })
     } else {
       setAlert(null)
@@ -34,7 +35,10 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           navigate('/wallet')
         } else {
           const { message } = await res.json()
-          setAlert({ variant: 'danger', message: message.replace('Wallet', walletName) })
+          setAlert({
+            variant: 'danger',
+            message: message.replace('Wallet', walletName),
+          })
         }
       } catch (e) {
         setAlert({ variant: 'danger', message: e.message })
@@ -44,15 +48,18 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     }
   }
 
-  const lockWallet = async name => {
+  const lockWallet = async (name) => {
     if (currentWallet && currentWallet.name !== name) {
-      setAlert({ variant: 'warning', message: `${walletDisplayName(name)} is not unlocked.` })
+      setAlert({
+        variant: 'warning',
+        message: `${walletDisplayName(name)} is not unlocked.`,
+      })
     }
 
     try {
       const { name, token } = currentWallet
       const opts = {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       }
 
       setAlert(null)
@@ -64,7 +71,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           message: `${walletDisplayName(walletname)} ${already_locked ? 'already locked' : 'locked succesfully'}.`,
-          dismissible: true
+          dismissible: true,
         })
       } else {
         const { message } = await res.json()
@@ -77,7 +84,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     }
   }
 
-  const onSubmit = e => {
+  const onSubmit = (e) => {
     e.preventDefault()
 
     const form = e.currentTarget
@@ -109,41 +116,70 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     <rb.Card style={{ maxWidth: '24em' }} className="mt-3" {...props}>
       <rb.Card.Body>
         <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-          <rb.Card.Title className={!isActive && !noneActive && "mb-0"}>{walletDisplayName(name)}</rb.Card.Title>
-          {isActive
-            ? (hasToken
-                ? <>
-                    <Link className="btn btn-dark me-2" to="/wallet">Display</Link>
-                    <rb.FormControl type="hidden" name="action" value="lock" />
-                    <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
-                      {isLocking
-                      ? <>
-                          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                          Locking
-                        </>
-                      : 'Lock'}
-                    </rb.Button>
-                  </>
-                : <rb.Alert variant="warning" className="mb-0">
-                    This wallet is active, but there is no token to interact with it.
-                    Please remove the lock file on the server.
-                  </rb.Alert>
-              )
-            : (noneActive &&
-                <rb.InputGroup hasValidation={true}>
-                  <rb.FormControl type="password" placeholder="Password" name="password" disabled={isUnlocking} required />
-                  <rb.FormControl type="hidden" name="action" value="unlock" />
-                  <rb.Button variant="dark" type="submit" disabled={isUnlocking}>
-                    {isUnlocking
-                      ? <>
-                          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                          Unlocking
-                        </>
-                      : 'Unlock'}
-                  </rb.Button>
-                  <rb.Form.Control.Feedback type="invalid">Please set the wallet's password.</rb.Form.Control.Feedback>
-                </rb.InputGroup>)
-          }
+          <rb.Card.Title className={!isActive && !noneActive && 'mb-0'}>{walletDisplayName(name)}</rb.Card.Title>
+          {isActive ? (
+            hasToken ? (
+              <>
+                <Link className="btn btn-dark me-2" to="/wallet">
+                  Display
+                </Link>
+                <rb.FormControl type="hidden" name="action" value="lock" />
+                <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
+                  {isLocking ? (
+                    <>
+                      <rb.Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Locking
+                    </>
+                  ) : (
+                    'Lock'
+                  )}
+                </rb.Button>
+              </>
+            ) : (
+              <rb.Alert variant="warning" className="mb-0">
+                This wallet is active, but there is no token to interact with it. Please remove the lock file on the
+                server.
+              </rb.Alert>
+            )
+          ) : (
+            noneActive && (
+              <rb.InputGroup hasValidation={true}>
+                <rb.FormControl
+                  type="password"
+                  placeholder="Password"
+                  name="password"
+                  disabled={isUnlocking}
+                  required
+                />
+                <rb.FormControl type="hidden" name="action" value="unlock" />
+                <rb.Button variant="dark" type="submit" disabled={isUnlocking}>
+                  {isUnlocking ? (
+                    <>
+                      <rb.Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      Unlocking
+                    </>
+                  ) : (
+                    'Unlock'
+                  )}
+                </rb.Button>
+                <rb.Form.Control.Feedback type="invalid">Please set the wallet's password.</rb.Form.Control.Feedback>
+              </rb.InputGroup>
+            )
+          )}
         </rb.Form>
       </rb.Card.Body>
     </rb.Card>

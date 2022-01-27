@@ -15,13 +15,17 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
                 <h5 className="mb-0">Account {account}</h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-                 <Balance value={balance} unit={unit} showBalance={showBalances} />
+                <Balance value={balance} unit={unit} showBalance={showBalances} />
               </rb.Col>
             </rb.Row>
           </rb.Accordion.Header>
           <rb.Accordion.Body className="pe-5">
-            <Link to="/payment" state={{ account } } className="btn btn-outline-dark">Send</Link>{' '}
-            <Link to="/receive" state={{ account }} className="btn btn-outline-dark">Receive</Link>
+            <Link to="/payment" state={{ account }} className="btn btn-outline-dark">
+              Send
+            </Link>{' '}
+            <Link to="/receive" state={{ account }} className="btn btn-outline-dark">
+              Receive
+            </Link>
             {branches.map(({ balance, branch, entries }) => {
               const [type, derivation, xpub] = branch.split('\t')
               return (
@@ -48,14 +52,14 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
                         <code className="text-break">{hdPath}</code>
                       </rb.Col>
                       <rb.Col>
-                        <code className="text-break">{address}</code>
-                        {' '}
+                        <code className="text-break">{address}</code>{' '}
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
                         <Balance value={balance} unit={unit} showBalance={showBalances} />
                       </rb.Col>
-                    </rb.Row>))}
+                    </rb.Row>
+                  ))}
                 </article>
               )
             })}

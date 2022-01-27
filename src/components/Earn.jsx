@@ -15,22 +15,22 @@ export default function Earn({ currentWallet, makerRunning }) {
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
   const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100000)
 
-  const setAndPersistOffertype = value => {
+  const setAndPersistOffertype = (value) => {
     setOffertype(value)
     window.localStorage.setItem('jm-offertype', value)
   }
 
-  const setAndPersistFeeRel = value => {
+  const setAndPersistFeeRel = (value) => {
     setFeeRel(value)
     window.localStorage.setItem('jm-feeRel', value)
   }
 
-  const setAndPersistFeeAbs = value => {
+  const setAndPersistFeeAbs = (value) => {
     setFeeAbs(value)
     window.localStorage.setItem('jm-feeAbs', value)
   }
 
-  const setAndPersistMinsize = value => {
+  const setAndPersistMinsize = (value) => {
     setMinsize(value)
     window.localStorage.setItem('jm-minsize', value)
   }
@@ -39,14 +39,14 @@ export default function Earn({ currentWallet, makerRunning }) {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         txfee: 0,
         cjfee_a,
         cjfee_r,
         ordertype,
-        minsize
-      })
+        minsize,
+      }),
     }
 
     setAlert(null)
@@ -74,12 +74,12 @@ export default function Earn({ currentWallet, makerRunning }) {
   useEffect(() => {
     setIsWaiting(false)
     setAlert(null)
-  }, [makerRunning]);
+  }, [makerRunning])
 
   const stopMakerService = async () => {
     const { name, token } = currentWallet
     const opts = {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     }
 
     setAlert(null)
@@ -127,35 +127,75 @@ export default function Earn({ currentWallet, makerRunning }) {
       <h1>Earn</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <p>Service {makerRunning ? 'running' : 'not running'}.</p>
-      {!makerRunning && !isWaiting &&
+      {!makerRunning && !isWaiting && (
         <>
           <rb.Form.Group className="mb-3" controlId="offertype">
-            <rb.Form.Check type="switch" label="Relative offer" checked={isRelOffer} onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)} />
+            <rb.Form.Check
+              type="switch"
+              label="Relative offer"
+              checked={isRelOffer}
+              onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)}
+            />
           </rb.Form.Group>
-          {isRelOffer
-            ? <rb.Form.Group className="mb-3" controlId="feeRel">
-                <rb.Form.Label>Relative Fee (percent)</rb.Form.Label>
-                <rb.Form.Control type="number" name="feeRel" required step={0.0001} value={feeRel} min={0} max={0.1} style={{ width: '16ch' }} onChange={(e) => setAndPersistFeeRel(e.target.value)} />
-                <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
-              </rb.Form.Group>
-            : <rb.Form.Group className="mb-3" controlId="feeAbs">
-                <rb.Form.Label>Absolute Fee in SATS</rb.Form.Label>
-                <rb.Form.Control type="number" name="feeAbs" required step={1} value={feeAbs} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistFeeAbs(e.target.value)} />
-                <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
-              </rb.Form.Group>}
+          {isRelOffer ? (
+            <rb.Form.Group className="mb-3" controlId="feeRel">
+              <rb.Form.Label>Relative Fee (percent)</rb.Form.Label>
+              <rb.Form.Control
+                type="number"
+                name="feeRel"
+                required
+                step={0.0001}
+                value={feeRel}
+                min={0}
+                max={0.1}
+                style={{ width: '16ch' }}
+                onChange={(e) => setAndPersistFeeRel(e.target.value)}
+              />
+              <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
+            </rb.Form.Group>
+          ) : (
+            <rb.Form.Group className="mb-3" controlId="feeAbs">
+              <rb.Form.Label>Absolute Fee in SATS</rb.Form.Label>
+              <rb.Form.Control
+                type="number"
+                name="feeAbs"
+                required
+                step={1}
+                value={feeAbs}
+                min={0}
+                style={{ width: '16ch' }}
+                onChange={(e) => setAndPersistFeeAbs(e.target.value)}
+              />
+              <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
+            </rb.Form.Group>
+          )}
           <rb.Form.Group className="mb-3" controlId="minsize">
             <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
-            <rb.Form.Control type="number" name="minsize" required step={1000} value={minsize} min={0} style={{ width: '16ch' }} onChange={(e) => setAndPersistMinsize(e.target.value)} />
+            <rb.Form.Control
+              type="number"
+              name="minsize"
+              required
+              step={1000}
+              value={minsize}
+              min={0}
+              style={{ width: '16ch' }}
+              onChange={(e) => setAndPersistMinsize(e.target.value)}
+            />
             <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
           </rb.Form.Group>
-        </>}
+        </>
+      )}
       <rb.Button variant="dark" type="submit" disabled={isSending}>
-        {isSending
-          ? <>
+        {isSending ? (
+          <>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             {makerRunning === true ? 'Stopping' : 'Starting'}
           </>
-          : makerRunning === true ? 'Stop' : 'Start'}
+        ) : makerRunning === true ? (
+          'Stop'
+        ) : (
+          'Start'
+        )}
       </rb.Button>
     </rb.Form>
   )

@@ -16,12 +16,12 @@ export default function Payment({ currentWallet }) {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         mixdepth: String(account),
         destination,
-        amount_sats
-      })
+        amount_sats,
+      }),
     }
 
     setAlert(null)
@@ -30,9 +30,14 @@ export default function Payment({ currentWallet }) {
     try {
       const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, opts)
       if (res.ok) {
-        const { txinfo: { outputs } } = await res.json()
-        const output = outputs.find(o => o.address === destination)
-        setAlert({ variant: 'success', message: `Payment successful: Sent ${output.value_sats} sats to ${output.address}.` })
+        const {
+          txinfo: { outputs },
+        } = await res.json()
+        const output = outputs.find((o) => o.address === destination)
+        setAlert({
+          variant: 'success',
+          message: `Payment successful: Sent ${output.value_sats} sats to ${output.address}.`,
+        })
         success = true
       } else {
         const { message } = await res.json()
@@ -51,12 +56,12 @@ export default function Payment({ currentWallet }) {
     const { name, token } = currentWallet
     const opts = {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         mixdepth: String(account),
         destination,
         amount_sats,
-        counterparties
+        counterparties,
       }),
     }
 
@@ -83,7 +88,7 @@ export default function Payment({ currentWallet }) {
     return success
   }
 
-  const onSubmit = async e => {
+  const onSubmit = async (e) => {
     e.preventDefault()
 
     const form = e.currentTarget
@@ -115,31 +120,55 @@ export default function Payment({ currentWallet }) {
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="account">
         <rb.Form.Label>Account</rb.Form.Label>
-        <rb.Form.Select defaultValue={account} onChange={e => setAccount(parseInt(e.target.value, 10))} style={{ maxWidth: '21ch' }} required>
-          {ACCOUNTS.map(val => <option key={val} value={val}>Account {val}</option>)}
+        <rb.Form.Select
+          defaultValue={account}
+          onChange={(e) => setAccount(parseInt(e.target.value, 10))}
+          style={{ maxWidth: '21ch' }}
+          required
+        >
+          {ACCOUNTS.map((val) => (
+            <option key={val} value={val}>
+              Account {val}
+            </option>
+          ))}
         </rb.Form.Select>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="amount">
         <rb.Form.Label>Amount in Sats</rb.Form.Label>
-        <rb.Form.Control name="amount" type="number" min={1} defaultValue={0} required style={{ maxWidth: '21ch' }}/>
+        <rb.Form.Control name="amount" type="number" min={1} defaultValue={0} required style={{ maxWidth: '21ch' }} />
         <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="isCoinjoin">
-        <rb.Form.Check type="switch" label="As coinjoin" value={true} onChange={(e) => setIsCoinjoin(e.target.checked)} />
+        <rb.Form.Check
+          type="switch"
+          label="As coinjoin"
+          value={true}
+          onChange={(e) => setIsCoinjoin(e.target.checked)}
+        />
       </rb.Form.Group>
-      {isCoinjoin === true &&
+      {isCoinjoin === true && (
         <rb.Form.Group className="mb-3" controlId="counterparties">
           <rb.Form.Label>Number of counterparties</rb.Form.Label>
-          <rb.Form.Control name="counterparties" type="number" min={0} defaultValue={3} style={{ width: '10ch' }} required />
+          <rb.Form.Control
+            name="counterparties"
+            type="number"
+            min={0}
+            defaultValue={3}
+            style={{ width: '10ch' }}
+            required
+          />
           <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
-        </rb.Form.Group>}
+        </rb.Form.Group>
+      )}
       <rb.Button variant="dark" type="submit" disabled={isSending}>
-        {isSending
-          ? <div>
+        {isSending ? (
+          <div>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             Sending
           </div>
-          : 'Send'}
+        ) : (
+          'Send'
+        )}
       </rb.Button>
     </rb.Form>
   )
