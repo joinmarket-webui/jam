@@ -7,6 +7,7 @@ import Send from './Send'
 import Earn from './Earn'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
+import Settings from './Settings'
 import { getSession, setSession, clearSession } from '../session'
 import { walletDisplayName } from '../utils'
 
@@ -247,6 +248,7 @@ export default function App() {
                   }
                 />
                 <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
+                <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
               </>
             )}
           </Routes>
