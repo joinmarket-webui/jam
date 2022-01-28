@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Route, Routes, Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import Sprite from './Sprite'
 import Wallets from './Wallets'
 import CreateWallet from './CreateWallet'
 import Send from './Send'
@@ -8,10 +9,12 @@ import Earn from './Earn'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
 import Settings from './Settings'
+import { useSettings } from '../context/SettingsContext'
 import { getSession, setSession, clearSession } from '../session'
 import { walletDisplayName } from '../utils'
 
 export default function App() {
+  const settings = useSettings()
   const [currentWallet, setCurrentWallet] = useState()
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
@@ -137,14 +140,13 @@ export default function App() {
         as="header"
         sticky="top"
         expand="lg"
-        bg="white"
-        variant="light"
+        variant={settings.theme}
         collapseOnSelect
         className="border-bottom"
       >
         <rb.Container>
           <Link to="/" className="navbar-brand d-inline-flex align-items-center pt-1">
-            <img src="/logo.svg" width="30" height="30" className="d-inline-block align-top" alt="JoinMarket" />
+            <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
             <span className="ms-2">JoinMarket</span>
           </Link>
           {connectionError ? (
