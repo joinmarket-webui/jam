@@ -1,6 +1,7 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayUTXOs from './DisplayUTXOs'
+import { useSettings } from '../context/SettingsContext'
 
 const byAccount = (utxos) => {
   const ret = utxos.reduce((res, utxo) => {
@@ -12,7 +13,9 @@ const byAccount = (utxos) => {
   return ret
 }
 
-export default function DisplayAccountUTXOs({ utxos, unit, showBalances, ...props }) {
+export default function DisplayAccountUTXOs({ utxos, ...props }) {
+  const settings = useSettings()
+
   return (
     <rb.Accordion {...props}>
       {Object.entries(byAccount(utxos)).map(([account, utxos]) => (
@@ -21,7 +24,7 @@ export default function DisplayAccountUTXOs({ utxos, unit, showBalances, ...prop
             <h5 className="mb-0">Account {account}</h5>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
-            <DisplayUTXOs utxos={utxos} unit={unit} showBalances={showBalances} />
+            <DisplayUTXOs utxos={utxos} unit={settings.unit} showBalances={settings.showBalance} />
           </rb.Accordion.Body>
         </rb.Accordion.Item>
       ))}

@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { titleize } from '../utils'
 import Balance from './Balance'
+import { useSettings } from '../context/SettingsContext'
 
-export default function DisplayAccounts({ accounts, unit, showBalances, ...props }) {
+export default function DisplayAccounts({ accounts, ...props }) {
+  const settings = useSettings()
+
   return (
     <rb.Accordion {...props}>
       {Object.values(accounts).map(({ account, account_balance: balance, branches }) => (
@@ -15,7 +18,7 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
                 <h5 className="mb-0">Account {account}</h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-                <Balance value={balance} unit={unit} showBalance={showBalances} />
+                <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
               </rb.Col>
             </rb.Row>
           </rb.Accordion.Header>
@@ -35,7 +38,7 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
                       <h6>{titleize(type)}</h6>
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center justify-content-end">
-                      <Balance value={balance} unit={unit} showBalance={showBalances} />
+                      <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
                     </rb.Col>
                   </rb.Row>
                   <rb.Row className="w-100">
@@ -56,7 +59,7 @@ export default function DisplayAccounts({ accounts, unit, showBalances, ...props
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
-                        <Balance value={balance} unit={unit} showBalance={showBalances} />
+                        <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
                       </rb.Col>
                     </rb.Row>
                   ))}

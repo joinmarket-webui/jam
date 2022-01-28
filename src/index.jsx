@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
 import App from './components/App'
+import { SettingsProvider } from './context/SettingsContext'
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '@ibunker/bitcoin-react/dist/index.css'
@@ -9,7 +10,9 @@ import './index.css'
 
 ReactDOM.render(
   <BrowserRouter>
-    <App />
+    <SettingsProvider>
+      <App />
+    </SettingsProvider>
   </BrowserRouter>,
   document.getElementById('root')
 )

@@ -2,8 +2,11 @@ import React from 'react'
 import * as rb from 'react-bootstrap'
 import { displayDate } from '../utils'
 import Balance from './Balance'
+import { useSettings } from '../context/SettingsContext'
 
-export default function DisplayUTXOs({ utxos, unit, showBalances, ...props }) {
+export default function DisplayUTXOs({ utxos, ...props }) {
+  const settings = useSettings()
+
   return (
     <rb.ListGroup variant="flush" {...props}>
       {utxos.map((utxo) => (
@@ -13,7 +16,7 @@ export default function DisplayUTXOs({ utxos, unit, showBalances, ...props }) {
               <code className="text-break">{utxo.address}</code>
             </rb.Col>
             <rb.Col className="d-flex align-items-center justify-content-end pe-5">
-              <Balance value={utxo.value} unit={unit} showBalance={showBalances} />
+              <Balance value={utxo.value} unit={settings.unit} showBalance={settings.showBalance} />
             </rb.Col>
           </rb.Row>
           <rb.Row className="w-100 mt-1">
