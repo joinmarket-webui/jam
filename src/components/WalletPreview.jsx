@@ -22,7 +22,7 @@ export default function WalletPreview({ wallet }) {
         <rect x="5.5" y="7.5" width="16.6" height="15" rx="1.5" stroke="black" />
         <circle cx="9.59999" cy="14.8" r="1.4" stroke="black" strokeWidth="0.8" />
       </svg>
-      <div style={{ fontSize: '13px' }} className="d-flex flex-column ms-2">
+      <div style={{ fontSize: '14px' }} className="d-flex flex-column ms-2">
         <div className="fw-normal">{walletDisplayName(wallet.name)}</div>
         <div>
           <Balance value="0.00167930" unit="BTC" showBalance="true" />

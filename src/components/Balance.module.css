@@ -7,7 +7,7 @@
 
 .balance {
   font-family: Inter;
-  font-weight: 500;
+  font-weight: 400;
   font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
