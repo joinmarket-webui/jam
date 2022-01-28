@@ -255,6 +255,14 @@ main {
   border-color: var(--bs-gray-800) !important;
 }
 
+:root[data-theme='dark'] a.nav-link {
+  border-color: transparent !important;
+}
+
+:root[data-theme='dark'] a.nav-link.active {
+  border-color: white !important;
+}
+
 :root[data-theme='dark'] .card {
   background-color: var(--bs-gray-dark) !important;
   border-color: var(--bs-gray-dark) !important;
