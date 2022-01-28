@@ -3,6 +3,7 @@
   align-items: baseline;
 
   color: black;
+  min-height: 22px;
 }
 
 .balance {

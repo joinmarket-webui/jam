@@ -23,10 +23,12 @@ export default function Balance({ value, unit, showBalance = false }) {
 
   if (unitMode === UNIT_MODE_HIDDEN) {
     return (
-      <span className={styles.balance}>
-        <span className={styles.text}>*****</span>
-        &nbsp;
-        <IoEyeOff className={styles.icon} />
+      <span className={styles['balance-wrapper']}>
+        <span className={styles['balance']}>
+          <span className={styles['text']}>*****</span>
+          &nbsp;
+          <IoEyeOff className={styles['icon']} />
+        </span>
       </span>
     )
   }

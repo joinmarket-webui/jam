@@ -7,9 +7,12 @@ import { walletDisplayName } from '../utils'
 import DisplayUTXOs from './DisplayUTXOs'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
+import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 
-export default function CurrentWallet({ currentWallet }) {
-  const [walletInfo, setWalletInfo] = useState(null)
+export default function CurrentWallet() {
+  const currentWallet = useCurrentWallet()
+  const walletInfo = useCurrentWalletInfo()
+  const setWalletInfo = useSetCurrentWalletInfo()
   const [fidelityBonds, setFidelityBonds] = useState(null)
   const [utxos, setUtxos] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
