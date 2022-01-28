@@ -9,20 +9,8 @@ import { walletDisplayName } from '../utils'
 
 const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   return (
-    <div className="d-flex align-items-center">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="30px"
-        height="30px"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="black"
-        data-v-4fa90e7f=""
-      >
-        <path d="M15 17.5h3.005a1.5 1.5 0 001.5-1.5V8a1.5 1.5 0 00-1.5-1.5H15A1.5 1.5 0 0116.5 8v8a1.5 1.5 0 01-1.5 1.5z"></path>
-        <rect width="12" height="11" x="4.5" y="6.5" rx="1.5"></rect>
-        <circle cx="8.75" cy="11.75" r="1.25"></circle>
-      </svg>
+    <div className="d-flex align-items-center text-body">
+      <Sprite symbol="wallet" width="30" height="30" />
       <div style={{ fontSize: '14px' }} className="d-flex flex-column ms-2">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
         {walletInfo && walletInfo?.total_balance && unit ? (
@@ -131,37 +119,10 @@ export default function Navbar({ connectionError }) {
                         onClick={() => isExpanded && setIsExpanded(false)}
                         className="nav-link px-0 py-2"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="30px"
-                          height="30px"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          data-v-4fa90e7f=""
-                        >
-                          <path
-                            d="M17.3 10.453l1.927.315a.326.326 0 01.273.322v1.793a.326.326 0 01-.27.321l-1.93.339c-.111.387-.265.76-.459 1.111l1.141 1.584a.326.326 0 01-.034.422l-1.268 1.268a.326.326 0 01-.418.037l-1.6-1.123a5.482 5.482 0 01-1.118.468l-.34 1.921a.326.326 0 01-.322.269H11.09a.325.325 0 01-.321-.272l-.319-1.911a5.5 5.5 0 01-1.123-.465l-1.588 1.113a.326.326 0 01-.418-.037L6.052 16.66a.327.327 0 01-.035-.42l1.123-1.57a5.497 5.497 0 01-.47-1.129l-1.901-.337a.326.326 0 01-.269-.321V11.09c0-.16.115-.296.273-.322l1.901-.317c.115-.393.272-.77.47-1.128l-1.11-1.586a.326.326 0 01.037-.417L7.34 6.052a.326.326 0 01.42-.034l1.575 1.125c.354-.194.73-.348 1.121-.46l.312-1.91a.326.326 0 01.322-.273h1.793c.159 0 .294.114.322.27l.336 1.92c.389.112.764.268 1.12.465l1.578-1.135a.326.326 0 01.422.033l1.268 1.268a.326.326 0 01.036.418L16.84 9.342c.193.352.348.724.46 1.11zM9.716 12a2.283 2.283 0 104.566 0 2.283 2.283 0 00-4.566 0z"
-                            clip-rule="evenodd"
-                          ></path>
-                        </svg>
+                        <Sprite symbol="gear" width="30" height="30" />
                       </Link>
                       <Link to="/" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link px-0 py-2">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="30px"
-                          height="30px"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          data-v-4fa90e7f=""
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M5.5 9.5v-3a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1zM13.5 9.5v-3a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1zM13.5 17.5v-3a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1zM5.5 17.5v-3a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1z"
-                          ></path>
-                        </svg>
+                        <Sprite symbol="grid" width="30" height="30" />
                       </Link>
                     </rb.Nav>
                   </span>

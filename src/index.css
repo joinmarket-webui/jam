@@ -243,7 +243,7 @@ main {
 
 /* Theme overrides */
 :root[data-theme='dark'] {
-  --bs-body-color-rgb: 0, 0, 0;
+  --bs-body-color-rgb: var(--bs-white);
   --bs-body-bg-rgb: 33, 37, 41;
   --bs-body-color: var(--bs-white);
   --bs-body-bg: var(--bs-gray-900);
