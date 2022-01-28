@@ -105,7 +105,7 @@ export default function App() {
       abortCtrl.abort()
       clearInterval(interval)
     }
-  }, [currentWallet])
+  }, [currentWallet, setCurrentWallet])
 
   useEffect(() => {
     const session = getSession()
