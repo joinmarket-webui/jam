@@ -1,5 +1,4 @@
 import React from 'react'
-import * as rb from 'react-bootstrap'
 import { walletDisplayName } from '../utils'
 import Balance from './Balance'
 

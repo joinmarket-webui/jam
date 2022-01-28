@@ -14,7 +14,7 @@ export default function Navbar({ currentWallet, connectionError }) {
       variant="light"
       expanded={isExpanded}
       onToggle={(expanded) => setIsExpanded(expanded)}
-      className="border-bottom pb-0"
+      className="border-bottom py-0"
     >
       <div className="container-md align-items-stretch">
         {connectionError ? (
@@ -23,7 +23,7 @@ export default function Navbar({ currentWallet, connectionError }) {
           <>
             {!currentWallet ? (
               <>
-                <Link to="/" className="navbar-brand">
+                <Link to="/" className="navbar-brand" style={{ padding: '15px 0' }}>
                   <img src="/logo.svg" width="30" height="30" className="d-inline-block align-top" alt="JoinMarket" />
                   <span className="ms-2">JoinMarket</span>
                 </Link>
@@ -54,7 +54,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                       to="/send"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center pb-0 fw-bolder' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-0 fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
                       <li class="nav-item">Send</li>
@@ -63,7 +63,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                       to="/receive"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center pb-0 fw-bolder mx-md-4' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-0 fw-bolder mx-md-4' + (isActive ? ' active' : '')
                       }
                     >
                       <div class="nav-item">Receive </div>
@@ -72,7 +72,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                       to="/earn"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center pb-0 fw-bolder' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-0 fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
                       <div class="nav-item"> Earn </div>
