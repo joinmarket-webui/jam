@@ -9,10 +9,12 @@ import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
 import Settings from './Settings'
 import Navbar from './Navbar'
+import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
 
 export default function App() {
-  const [currentWallet, setCurrentWallet] = useState()
+  const currentWallet = useCurrentWallet()
+  const setCurrentWallet = useSetCurrentWallet()
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
