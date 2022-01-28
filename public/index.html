@@ -12,11 +12,15 @@
     <meta name="theme-color" content="#ffffff">
     <title>JoinMarket</title>
     <script>
-      window.JM = { THEMES: ['light', 'dark'], THEME_STORE_ATTR: 'jm-theme', THEME_ROOT_ATTR: 'data-theme' }
+      window.JM = { SETTINGS_STORE_KEY: 'jm-settings', THEMES: ['light', 'dark'], THEME_ROOT_ATTR: 'data-theme' }
+      const settings = JSON.parse(window.localStorage.getItem(JM.SETTINGS_STORE_KEY) || '{}')
+      const userColorMode = settings.theme;
       const systemColorMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? JM.THEMES[1] : JM.THEMES[0];
-      const userColorMode = window.localStorage.getItem(JM.THEME_STORE_ATTR);
       const initialColorMode = JM.THEMES.includes(userColorMode) ? userColorMode : systemColorMode;
-      window.localStorage.setItem(JM.THEME_STORE_ATTR, initialColorMode)
+      if (!userColorMode) {
+        const updatedSettings = Object.assign(settings, { theme: initialColorMode })
+        window.localStorage.setItem(JM.SETTINGS_STORE_KEY, JSON.stringify(updatedSettings))
+      }
       document.documentElement.setAttribute(JM.THEME_ROOT_ATTR, initialColorMode)
     </script>
   </head>
