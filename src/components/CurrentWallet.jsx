@@ -57,19 +57,12 @@ export default function CurrentWallet() {
 
   return (
     <div>
-      <h1>{walletDisplayName(currentWallet.name)}</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading && (
         <div className="mb-3">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading
         </div>
-      )}
-      {walletInfo && walletInfo?.total_balance && (
-        <p>
-          Total balance:{' '}
-          <Balance value={walletInfo.total_balance} unit={settings.unit} showBalance={settings.showBalance} />
-        </p>
       )}
       {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
       {!!fidelityBonds?.length && (

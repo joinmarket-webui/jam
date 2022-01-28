@@ -36,6 +36,7 @@ export default function Navbar({ connectionError }) {
 
   return (
     <rb.Navbar
+      bg={settings.theme == 'light' ? 'white' : 'dark'}
       sticky="top"
       expand="md"
       variant={settings.theme}
@@ -43,7 +44,7 @@ export default function Navbar({ connectionError }) {
       onToggle={(expanded) => setIsExpanded(expanded)}
       className="border-bottom py-0"
     >
-      <div className="container-md align-items-stretch">
+      <div className="container-xl align-items-stretch">
         {connectionError ? (
           <rb.Navbar.Text style={{ padding: '15px 0' }}>No Connection</rb.Navbar.Text>
         ) : (
@@ -86,7 +87,7 @@ export default function Navbar({ connectionError }) {
                       to="/send"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-2 fw-bolder' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-auto fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
                       <li class="nav-item">Send</li>
@@ -95,7 +96,7 @@ export default function Navbar({ connectionError }) {
                       to="/receive"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-2 fw-bolder mx-md-4' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-auto fw-bolder mx-md-4' + (isActive ? ' active' : '')
                       }
                     >
                       <div class="nav-item">Receive </div>
@@ -104,7 +105,7 @@ export default function Navbar({ connectionError }) {
                       to="/earn"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-2 fw-bolder' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-auto fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
                       <div class="nav-item"> Earn </div>
