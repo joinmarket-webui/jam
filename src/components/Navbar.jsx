@@ -101,7 +101,7 @@ export default function Navbar({ connectionError }) {
                       to="/send"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-0 fw-bolder' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-2 fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
                       <li class="nav-item">Send</li>
@@ -110,7 +110,7 @@ export default function Navbar({ connectionError }) {
                       to="/receive"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-0 fw-bolder mx-md-4' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-2 fw-bolder mx-md-4' + (isActive ? ' active' : '')
                       }
                     >
                       <div class="nav-item">Receive </div>
@@ -119,7 +119,7 @@ export default function Navbar({ connectionError }) {
                       to="/earn"
                       onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-0 fw-bolder' + (isActive ? ' active' : '')
+                        'nav-link d-flex align-items-center py-2 fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
                       <div class="nav-item"> Earn </div>
@@ -129,7 +129,11 @@ export default function Navbar({ connectionError }) {
                 <rb.Navbar.Collapse className="flex-1">
                   <span className="ms-auto">
                     <rb.Nav>
-                      <Link to="/settings" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link p-0">
+                      <Link
+                        to="/settings"
+                        onClick={() => isExpanded && setIsExpanded(false)}
+                        className="nav-link px-0 py-2"
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="30px"
@@ -145,7 +149,7 @@ export default function Navbar({ connectionError }) {
                           ></path>
                         </svg>
                       </Link>
-                      <Link to="/" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link p-0">
+                      <Link to="/" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link px-0 py-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="30px"
