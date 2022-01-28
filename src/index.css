@@ -226,6 +226,14 @@ main {
     flex-shrink: 0;
     flex-basis: 0 !important;
   }
+
+  a.nav-link {
+    border-bottom: 2px solid transparent;
+  }
+
+  a.nav-link.active {
+    border-bottom: 2px solid black;
+  }
 }
 
 .fw-bolder {

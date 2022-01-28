@@ -23,7 +23,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
             </rb.Row>
           </rb.Accordion.Header>
           <rb.Accordion.Body className="pe-5">
-            <Link to="/payment" state={{ account }} className="btn btn-outline-dark">
+            <Link to="/send" state={{ account }} className="btn btn-outline-dark">
               Send
             </Link>{' '}
             <Link to="/receive" state={{ account }} className="btn btn-outline-dark">

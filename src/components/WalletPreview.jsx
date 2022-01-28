@@ -9,8 +9,8 @@ export default function WalletPreview({ wallet }) {
       <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
         <mask id="path-1-inside-1_650_163" fill="white">
           <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
+            fillRule="evenodd"
+            clipRule="evenodd"
             d="M19.6 23H23C24.1046 23 25 22.1046 25 21V9C25 7.89543 24.1046 7 23 7H19.6C20.7046 7 21.6 7.89543 21.6 9V21C21.6 22.1046 20.7046 23 19.6 23Z"
           />
         </mask>
@@ -20,11 +20,11 @@ export default function WalletPreview({ wallet }) {
           mask="url(#path-1-inside-1_650_163)"
         />
         <rect x="5.5" y="7.5" width="16.6" height="15" rx="1.5" stroke="black" />
-        <circle cx="9.59999" cy="14.8" r="1.4" stroke="black" stroke-width="0.8" />
+        <circle cx="9.59999" cy="14.8" r="1.4" stroke="black" strokeWidth="0.8" />
       </svg>
-      <div className="d-flex flex-column ms-2">
-        <div style={{ 'font-size': '13px' }}>{walletDisplayName(wallet.name)}</div>
-        <div style={{ 'font-size': '13px' }}>
+      <div style={{ fontSize: '13px' }} className="d-flex flex-column ms-2">
+        <div className="fw-normal">{walletDisplayName(wallet.name)}</div>
+        <div>
           <Balance value="0.00167930" unit="BTC" showBalance="true" />
         </div>
       </div>

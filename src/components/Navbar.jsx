@@ -1,23 +1,22 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import WalletPreview from './WalletPreview'
-import { walletDisplayName } from '../utils'
 
 export default function Navbar({ currentWallet, connectionError }) {
   return (
-    <rb.Navbar bg="white" sticky="top" expand="md" variant="light" collapseOnSelect className="border-bottom">
-      <div className="container-lg">
+    <rb.Navbar bg="white" sticky="top" expand="md" variant="light" collapseOnSelect className="border-bottom pb-0">
+      <div className="container-lg align-items-stretch">
         {connectionError ? (
           <rb.Navbar.Text>No Connection</rb.Navbar.Text>
         ) : (
           <>
             {!currentWallet ? (
               <>
-                <rb.Navbar.Brand>
+                <Link to="/" className="navbar-brand">
                   <img src="/logo.svg" width="30" height="30" className="d-inline-block align-top" alt="JoinMarket" />
                   <span className="ms-2">JoinMarket</span>
-                </rb.Navbar.Brand>
+                </Link>
                 <rb.Navbar.Toggle className="border-0" />
                 <rb.Navbar.Collapse>
                   <rb.Nav className="ms-auto">
@@ -30,25 +29,42 @@ export default function Navbar({ currentWallet, connectionError }) {
             ) : (
               <>
                 <rb.Nav className="d-flex flex-1">
-                  <Link to="/wallet" className="nav-link text-body">
+                  <NavLink to="/wallet" className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}>
                     <span className="me-auto">
-                      <WalletPreview wallet={currentWallet} />
+                      <div class="nav-item">
+                        <WalletPreview wallet={currentWallet} />
+                      </div>
                     </span>
-                  </Link>
+                  </NavLink>
                 </rb.Nav>
                 <rb.Navbar.Toggle className="border-0" />
-                <rb.Navbar.Collapse className="flex-1 flex-grow-0">
-                  <rb.Nav>
-                    <Link to="/payment" className="nav-link fw-bolder">
-                      Send
-                    </Link>
-                    <Link to="/receive" className="nav-link fw-bolder mx-md-4">
-                      Receive
-                    </Link>
-                    <Link to="/earn" className="nav-link fw-bolder">
-                      Earn
-                    </Link>
-                  </rb.Nav>
+                <rb.Navbar.Collapse className="flex-1 flex-grow-0 align-items-stretch">
+                  <ul class="navbar-nav justify-content-center align-items-stretch">
+                    <NavLink
+                      to="/send"
+                      className={({ isActive }) =>
+                        'nav-link d-flex align-items-center pb-0 fw-bolder' + (isActive ? ' active' : '')
+                      }
+                    >
+                      <li class="nav-item">Send</li>
+                    </NavLink>
+                    <NavLink
+                      to="/receive"
+                      className={({ isActive }) =>
+                        'nav-link d-flex align-items-center pb-0 fw-bolder mx-md-4' + (isActive ? ' active' : '')
+                      }
+                    >
+                      <div class="nav-item">Receive </div>
+                    </NavLink>
+                    <NavLink
+                      to="/earn"
+                      className={({ isActive }) =>
+                        'nav-link d-flex align-items-center pb-0 fw-bolder' + (isActive ? ' active' : '')
+                      }
+                    >
+                      <div class="nav-item"> Earn </div>
+                    </NavLink>
+                  </ul>
                 </rb.Navbar.Collapse>
                 <rb.Navbar.Collapse className="flex-1">
                   <span className="ms-auto">

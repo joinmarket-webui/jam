@@ -1,6 +1,8 @@
 .balance-wrapper {
   display: inline-flex;
   align-items: baseline;
+
+  color: black;
 }
 
 .balance {

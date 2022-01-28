@@ -131,7 +131,7 @@ export default function App() {
             {currentWallet && (
               <>
                 <Route path="wallet" element={<CurrentWallet currentWallet={currentWallet} />} />
-                <Route path="payment" element={<Send currentWallet={currentWallet} />} />
+                <Route path="send" element={<Send currentWallet={currentWallet} />} />
                 <Route
                   path="earn"
                   element={
