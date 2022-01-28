@@ -5,7 +5,7 @@
 
 .balance {
   font-family: Inter;
-  font-weight: 400;
+  font-weight: 500;
   font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
@@ -19,12 +19,13 @@
 
 .bitcoin-symbol {
   font-family: Inter;
-  font-weight: 400;
+  font-weight: 500;
+  padding-right: 0.2em;
 }
 
 .satoshi-symbol {
   font-family: 'Satoshi Symbol';
-  font-weight: 400;
+  font-weight: 500;
   text-rendering: optimizeLegibility;
   font-feature-settings: 'kern' on;
   -moz-font-feature-settings: 'kern' on;
