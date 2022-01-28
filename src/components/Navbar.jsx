@@ -1,12 +1,22 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import WalletPreview from './WalletPreview'
 
 export default function Navbar({ currentWallet, connectionError }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   return (
-    <rb.Navbar bg="white" sticky="top" expand="md" variant="light" collapseOnSelect className="border-bottom pb-0">
-      <div className="container-lg align-items-stretch">
+    <rb.Navbar
+      bg="white"
+      sticky="top"
+      expand="md"
+      variant="light"
+      expanded={isExpanded}
+      onToggle={(expanded) => setIsExpanded(expanded)}
+      className="border-bottom pb-0"
+    >
+      <div className="container-md align-items-stretch">
         {connectionError ? (
           <rb.Navbar.Text>No Connection</rb.Navbar.Text>
         ) : (
@@ -20,7 +30,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                 <rb.Navbar.Toggle className="border-0" />
                 <rb.Navbar.Collapse>
                   <rb.Nav className="ms-auto">
-                    <Link to="/create-wallet" className="nav-link">
+                    <Link to="/create-wallet" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link">
                       Create Wallet
                     </Link>
                   </rb.Nav>
@@ -42,6 +52,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                   <ul class="navbar-nav justify-content-center align-items-stretch">
                     <NavLink
                       to="/send"
+                      onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
                         'nav-link d-flex align-items-center pb-0 fw-bolder' + (isActive ? ' active' : '')
                       }
@@ -50,6 +61,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                     </NavLink>
                     <NavLink
                       to="/receive"
+                      onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
                         'nav-link d-flex align-items-center pb-0 fw-bolder mx-md-4' + (isActive ? ' active' : '')
                       }
@@ -58,6 +70,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                     </NavLink>
                     <NavLink
                       to="/earn"
+                      onClick={() => isExpanded && setIsExpanded(false)}
                       className={({ isActive }) =>
                         'nav-link d-flex align-items-center pb-0 fw-bolder' + (isActive ? ' active' : '')
                       }
@@ -69,7 +82,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                 <rb.Navbar.Collapse className="flex-1">
                   <span className="ms-auto">
                     <rb.Nav>
-                      <Link to="/settings" className="nav-link px-0">
+                      <Link to="/settings" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link p-0">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="30px"
@@ -85,7 +98,7 @@ export default function Navbar({ currentWallet, connectionError }) {
                           ></path>
                         </svg>
                       </Link>
-                      <Link to="/" className="nav-link px-0">
+                      <Link to="/" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link p-0">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="30px"
