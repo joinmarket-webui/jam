@@ -214,6 +214,10 @@ main {
   display: none;
 }
 
+.center-nav-link {
+  font-weight: 600 !important;
+}
+
 @media only screen and (min-width: 768px) {
   .flex-1 {
     flex-grow: 1;
@@ -223,18 +227,13 @@ main {
 
   .center-nav-link {
     min-width: 80px;
-    padding: 12px 0 12px 0 !important;
+    padding: auto 0 12px 0 !important;
   }
 
   .center-nav-link.active {
     padding: 12px 0 10px 0 !important;
     border-bottom: 2px solid black;
   }
-}
-
-.fw-bolder {
-  font-weight: 600 !important;
-  font-size: 15px;
 }
 
 /* Theme overrides */

@@ -11,7 +11,7 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   return (
     <div className="d-flex align-items-center">
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
-      <div style={{ fontSize: '14px' }} className="d-flex flex-column ms-2">
+      <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
         {walletInfo && walletInfo?.total_balance && unit ? (
           <div className="text-body">
@@ -34,6 +34,8 @@ export default function Navbar({ connectionError }) {
 
   const [isExpanded, setIsExpanded] = useState(false)
 
+  const height = '75px'
+
   return (
     <rb.Navbar
       bg={settings.theme === 'light' ? 'white' : 'dark'}
@@ -46,14 +48,14 @@ export default function Navbar({ connectionError }) {
     >
       <rb.Container fluid="xl" className="align-items-stretch">
         {connectionError ? (
-          <rb.Navbar.Text className="d-flex align-items-center" style={{ height: '68px' }}>
+          <rb.Navbar.Text className="d-flex align-items-center" style={{ height: height }}>
             No Connection
           </rb.Navbar.Text>
         ) : (
           <>
             {!currentWallet ? (
               <>
-                <Link to="/" className="navbar-brand nav-link d-flex align-items-center" style={{ height: '68px' }}>
+                <Link to="/" className="navbar-brand nav-link d-flex align-items-center" style={{ height: height }}>
                   <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
                   <span className="ms-2">JoinMarket</span>
                 </Link>
@@ -70,11 +72,14 @@ export default function Navbar({ connectionError }) {
               </>
             ) : (
               <>
-                <rb.Nav className="d-flex flex-1">
-                  <rb.Nav.Item>
+                <rb.Nav className="d-flex flex-1 align-items-stretch">
+                  <rb.Nav.Item className="d-flex align-items-stretch">
                     <NavLink
                       to="/wallet"
-                      className={({ isActive }) => 'center-nav-link nav-link' + (isActive ? ' active' : '')}
+                      style={{ height: height }}
+                      className={({ isActive }) =>
+                        'center-nav-link nav-link d-flex align-items-center' + (isActive ? ' active' : '')
+                      }
                     >
                       <>
                         <WalletPreview
@@ -95,7 +100,7 @@ export default function Navbar({ connectionError }) {
                         to="/send"
                         onClick={() => isExpanded && setIsExpanded(false)}
                         className={({ isActive }) =>
-                          'center-nav-link nav-link d-flex align-items-center justify-content-center fw-bolder' +
+                          'center-nav-link nav-link d-flex align-items-center justify-content-center' +
                           (isActive ? ' active' : '')
                         }
                       >
@@ -107,7 +112,7 @@ export default function Navbar({ connectionError }) {
                         to="/receive"
                         onClick={() => isExpanded && setIsExpanded(false)}
                         className={({ isActive }) =>
-                          'center-nav-link nav-link d-flex align-items-center justify-content-center fw-bolder' +
+                          'center-nav-link nav-link d-flex align-items-center justify-content-center' +
                           (isActive ? ' active' : '')
                         }
                       >
@@ -119,11 +124,11 @@ export default function Navbar({ connectionError }) {
                         to="/earn"
                         onClick={() => isExpanded && setIsExpanded(false)}
                         className={({ isActive }) =>
-                          'center-nav-link  nav-link d-flex align-items-center justify-content-center fw-bolder' +
+                          'center-nav-link  nav-link d-flex align-items-center justify-content-center' +
                           (isActive ? ' active' : '')
                         }
                       >
-                        <div className="nav-item"> Earn </div>
+                        Earn
                       </NavLink>
                     </rb.Nav.Item>
                   </rb.Nav>
