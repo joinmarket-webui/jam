@@ -4,6 +4,7 @@ import { BTC } from '../utils'
 const localStorageKey = 'jm-settings'
 
 const initialSettings = {
+  theme: 'light',
   showBalance: false,
   unit: BTC,
 }
@@ -22,7 +23,7 @@ const settingsReducer = (oldSettings, action) => {
 const SettingsProvider = ({ children }) => {
   const [settings, dispatch] = useReducer(
     settingsReducer,
-    JSON.parse(window.localStorage.getItem(localStorageKey)) || initialSettings
+    Object.assign({}, initialSettings, JSON.parse(window.localStorage.getItem(localStorageKey)))
   )
 
   useEffect(() => {
