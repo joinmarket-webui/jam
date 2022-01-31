@@ -1,12 +1,8 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
-import { walletDisplayName } from '../utils'
 import DisplayUTXOs from './DisplayUTXOs'
-import Balance from './Balance'
-import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 
 export default function CurrentWallet() {
@@ -18,7 +14,6 @@ export default function CurrentWallet() {
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-  const settings = useSettings()
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -53,7 +48,7 @@ export default function CurrentWallet() {
     Promise.all([loadingWallet, loadingUtxos]).finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet])
+  }, [currentWallet, setWalletInfo])
 
   return (
     <div>

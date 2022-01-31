@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
@@ -20,39 +20,42 @@ export default function App() {
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const websocket = useRef(null)
 
-  const startWallet = (name, token) => {
-    setSession(name, token)
-    setCurrentWallet({ name, token })
+  const startWallet = useCallback(
+    (name, token) => {
+      setSession(name, token)
+      setCurrentWallet({ name, token })
 
-    const { protocol, host } = window.location
-    const scheme = protocol === 'https:' ? 'wss' : 'ws'
-    websocket.current = new WebSocket(`${scheme}://${host}/ws/`)
+      const { protocol, host } = window.location
+      const scheme = protocol === 'https:' ? 'wss' : 'ws'
+      websocket.current = new WebSocket(`${scheme}://${host}/ws/`)
 
-    websocket.current.onopen = () => {
-      console.debug('websocket connection openend')
-      websocket.current.send(token)
-    }
+      websocket.current.onopen = () => {
+        console.debug('websocket connection openend')
+        websocket.current.send(token)
+      }
 
-    websocket.current.onerror = (error) => {
-      console.error('websocket error', error)
-    }
+      websocket.current.onerror = (error) => {
+        console.error('websocket error', error)
+      }
 
-    websocket.current.onmessage = (event) => {
-      // For now we only have one message type, namely the transaction notification:
-      // For now, note that since the `getUtxos` function is called on every render of
-      // the display page, we don't need to somehow use this data other than as some
-      // kind of popup/status bar notifier.
-      // In future it might be possible to use the detailed transaction deserialization
-      // passed in this notification, for something.
-      const wsdata = JSON.parse(event.data)
-      console.debug('websocket sent', wsdata)
-    }
+      websocket.current.onmessage = (event) => {
+        // For now we only have one message type, namely the transaction notification:
+        // For now, note that since the `getUtxos` function is called on every render of
+        // the display page, we don't need to somehow use this data other than as some
+        // kind of popup/status bar notifier.
+        // In future it might be possible to use the detailed transaction deserialization
+        // passed in this notification, for something.
+        const wsdata = JSON.parse(event.data)
+        console.debug('websocket sent', wsdata)
+      }
 
-    const wsCurrent = websocket.current
-    return () => {
-      wsCurrent.close()
-    }
-  }
+      const wsCurrent = websocket.current
+      return () => {
+        wsCurrent.close()
+      }
+    },
+    [setCurrentWallet]
+  )
 
   const stopWallet = () => {
     clearSession()
@@ -112,7 +115,7 @@ export default function App() {
     if (session) {
       return startWallet(session.name, session.token)
     }
-  }, [])
+  }, [startWallet])
 
   return (
     <>

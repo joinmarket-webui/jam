@@ -45,4 +45,11 @@ const useSetCurrentWalletInfo = () => {
   return context.setCurrentWalletInfo
 }
 
-export { WalletProvider, useCurrentWallet, useSetCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo }
+export {
+  WalletContext,
+  WalletProvider,
+  useCurrentWallet,
+  useSetCurrentWallet,
+  useCurrentWalletInfo,
+  useSetCurrentWalletInfo,
+}

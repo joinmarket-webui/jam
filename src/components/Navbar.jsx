@@ -36,7 +36,7 @@ export default function Navbar({ connectionError }) {
 
   return (
     <rb.Navbar
-      bg={settings.theme == 'light' ? 'white' : 'dark'}
+      bg={settings.theme === 'light' ? 'white' : 'dark'}
       sticky="top"
       expand="md"
       variant={settings.theme}
@@ -69,7 +69,7 @@ export default function Navbar({ connectionError }) {
                 <rb.Nav className="d-flex flex-1">
                   <NavLink to="/wallet" className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}>
                     <span className="me-auto">
-                      <div class="nav-item">
+                      <div className="nav-item">
                         <WalletPreview
                           wallet={currentWallet}
                           walletInfo={currentWalletInfo}
@@ -82,7 +82,7 @@ export default function Navbar({ connectionError }) {
                 </rb.Nav>
                 <rb.Navbar.Toggle className="border-0" />
                 <rb.Navbar.Collapse className="flex-1 flex-grow-0 align-items-stretch">
-                  <ul class="navbar-nav justify-content-center align-items-stretch">
+                  <ul className="navbar-nav justify-content-center align-items-stretch">
                     <NavLink
                       to="/send"
                       onClick={() => isExpanded && setIsExpanded(false)}
@@ -90,7 +90,7 @@ export default function Navbar({ connectionError }) {
                         'nav-link d-flex align-items-center py-auto fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
-                      <li class="nav-item">Send</li>
+                      <li className="nav-item">Send</li>
                     </NavLink>
                     <NavLink
                       to="/receive"
@@ -99,7 +99,7 @@ export default function Navbar({ connectionError }) {
                         'nav-link d-flex align-items-center py-auto fw-bolder mx-md-4' + (isActive ? ' active' : '')
                       }
                     >
-                      <div class="nav-item">Receive </div>
+                      <div className="nav-item">Receive </div>
                     </NavLink>
                     <NavLink
                       to="/earn"
@@ -108,7 +108,7 @@ export default function Navbar({ connectionError }) {
                         'nav-link d-flex align-items-center py-auto fw-bolder' + (isActive ? ' active' : '')
                       }
                     >
-                      <div class="nav-item"> Earn </div>
+                      <div className="nav-item"> Earn </div>
                     </NavLink>
                   </ul>
                 </rb.Navbar.Collapse>
