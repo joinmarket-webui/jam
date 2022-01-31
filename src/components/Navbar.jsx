@@ -27,7 +27,11 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   )
 }
 
-export default function Navbar({ connectionError }) {
+const ActivityIndicator = ({ isOn }) => {
+  return <span className={`activity-indicator ${isOn ? 'activity-indicator-on' : 'activity-indicator-off'}`} />
+}
+
+export default function Navbar({ connectionError, makerRunning, coinjoinInProcess }) {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
@@ -128,14 +132,25 @@ export default function Navbar({ connectionError }) {
                           (isActive ? ' active' : '')
                         }
                       >
-                        Earn
+                        <div className="d-flex align-items-start">
+                          Earn
+                          <ActivityIndicator isOn={makerRunning} />
+                        </div>
                       </NavLink>
                     </rb.Nav.Item>
                   </rb.Nav>
                 </rb.Navbar.Collapse>
                 <rb.Navbar.Collapse className="flex-1">
                   <span className="ms-auto">
-                    <rb.Nav>
+                    <rb.Nav className="align-items-center">
+                      {coinjoinInProcess && (
+                        <rb.Nav.Item className="d-flex align-items-center pe-2">
+                          <>
+                            <rb.Navbar.Text>Joining</rb.Navbar.Text>
+                            <Sprite symbol="joining" width="30" height="30" className="text-secondary p-1" />
+                          </>
+                        </rb.Nav.Item>
+                      )}
                       <rb.Nav.Item className="d-flex">
                         <NavLink
                           to="/settings"
@@ -145,7 +160,7 @@ export default function Navbar({ connectionError }) {
                           <Sprite symbol="gear" width="30" height="30" />
                         </NavLink>
                       </rb.Nav.Item>
-                      <rb.Nav.Item className="d-flex align-items-stretch">
+                      <rb.Nav.Item className="d-flex">
                         <NavLink
                           to="/"
                           onClick={() => isExpanded && setIsExpanded(false)}

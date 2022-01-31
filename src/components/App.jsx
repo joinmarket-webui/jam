@@ -119,7 +119,7 @@ export default function App() {
 
   return (
     <>
-      <Navbar currentWallet={currentWallet} connectionError={connectionError} />
+      <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
       <rb.Container as="main" className="py-4">
         {connectionError ? (
           <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
@@ -137,16 +137,7 @@ export default function App() {
               <>
                 <Route path="wallet" element={<CurrentWallet currentWallet={currentWallet} />} />
                 <Route path="send" element={<Send currentWallet={currentWallet} />} />
-                <Route
-                  path="earn"
-                  element={
-                    <Earn
-                      currentWallet={currentWallet}
-                      makerRunning={makerRunning}
-                      coinjoinInProcess={coinjoinInProcess}
-                    />
-                  }
-                />
+                <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
                 <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
                 <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
               </>
