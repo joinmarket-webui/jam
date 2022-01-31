@@ -221,11 +221,13 @@ main {
     flex-basis: 0 !important;
   }
 
-  a.nav-link {
-    border-bottom: 2px solid transparent;
+  .center-nav-link {
+    min-width: 80px;
+    padding: 12px 0 12px 0 !important;
   }
 
-  a.nav-link.active {
+  .center-nav-link.active {
+    padding: 12px 0 10px 0 !important;
     border-bottom: 2px solid black;
   }
 }

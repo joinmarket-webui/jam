@@ -9,12 +9,12 @@ import { walletDisplayName } from '../utils'
 
 const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   return (
-    <div className="d-flex align-items-center text-body">
-      <Sprite symbol="wallet" width="30" height="30" />
+    <div className="d-flex align-items-center">
+      <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div style={{ fontSize: '14px' }} className="d-flex flex-column ms-2">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
         {walletInfo && walletInfo?.total_balance && unit ? (
-          <div>
+          <div className="text-body">
             <Balance value={walletInfo.total_balance} unit={unit} showBalance={showBalance || false} />
           </div>
         ) : (
@@ -44,87 +44,111 @@ export default function Navbar({ connectionError }) {
       onToggle={(expanded) => setIsExpanded(expanded)}
       className="border-bottom py-0"
     >
-      <div className="container-xl align-items-stretch">
+      <rb.Container fluid="xl" className="align-items-stretch">
         {connectionError ? (
-          <rb.Navbar.Text style={{ padding: '15px 0' }}>No Connection</rb.Navbar.Text>
+          <rb.Navbar.Text className="d-flex align-items-center" style={{ height: '68px' }}>
+            No Connection
+          </rb.Navbar.Text>
         ) : (
           <>
             {!currentWallet ? (
               <>
-                <Link to="/" className="navbar-brand" style={{ padding: '15px 0' }}>
+                <Link to="/" className="navbar-brand nav-link d-flex align-items-center" style={{ height: '68px' }}>
                   <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
                   <span className="ms-2">JoinMarket</span>
                 </Link>
                 <rb.Navbar.Toggle className="border-0" />
                 <rb.Navbar.Collapse>
                   <rb.Nav className="ms-auto">
-                    <Link to="/create-wallet" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link">
-                      Create Wallet
-                    </Link>
+                    <rb.Nav.Item>
+                      <Link to="/create-wallet" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link">
+                        Create Wallet
+                      </Link>
+                    </rb.Nav.Item>
                   </rb.Nav>
                 </rb.Navbar.Collapse>
               </>
             ) : (
               <>
                 <rb.Nav className="d-flex flex-1">
-                  <NavLink to="/wallet" className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}>
-                    <span className="me-auto">
-                      <div className="nav-item">
+                  <rb.Nav.Item>
+                    <NavLink
+                      to="/wallet"
+                      className={({ isActive }) => 'center-nav-link nav-link' + (isActive ? ' active' : '')}
+                    >
+                      <>
                         <WalletPreview
                           wallet={currentWallet}
                           walletInfo={currentWalletInfo}
                           showBalance={settings.showBalance}
                           unit={settings.unit}
                         />
-                      </div>
-                    </span>
-                  </NavLink>
+                      </>
+                    </NavLink>
+                  </rb.Nav.Item>
                 </rb.Nav>
                 <rb.Navbar.Toggle className="border-0" />
                 <rb.Navbar.Collapse className="flex-1 flex-grow-0 align-items-stretch">
-                  <ul className="navbar-nav justify-content-center align-items-stretch">
-                    <NavLink
-                      to="/send"
-                      onClick={() => isExpanded && setIsExpanded(false)}
-                      className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-auto fw-bolder' + (isActive ? ' active' : '')
-                      }
-                    >
-                      <li className="nav-item">Send</li>
-                    </NavLink>
-                    <NavLink
-                      to="/receive"
-                      onClick={() => isExpanded && setIsExpanded(false)}
-                      className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-auto fw-bolder mx-md-4' + (isActive ? ' active' : '')
-                      }
-                    >
-                      <div className="nav-item">Receive </div>
-                    </NavLink>
-                    <NavLink
-                      to="/earn"
-                      onClick={() => isExpanded && setIsExpanded(false)}
-                      className={({ isActive }) =>
-                        'nav-link d-flex align-items-center py-auto fw-bolder' + (isActive ? ' active' : '')
-                      }
-                    >
-                      <div className="nav-item"> Earn </div>
-                    </NavLink>
-                  </ul>
+                  <rb.Nav className="justify-content-center align-items-stretch">
+                    <rb.Nav.Item className="d-flex align-items-stretch">
+                      <NavLink
+                        to="/send"
+                        onClick={() => isExpanded && setIsExpanded(false)}
+                        className={({ isActive }) =>
+                          'center-nav-link nav-link d-flex align-items-center justify-content-center fw-bolder' +
+                          (isActive ? ' active' : '')
+                        }
+                      >
+                        Send
+                      </NavLink>
+                    </rb.Nav.Item>
+                    <rb.Nav.Item className="d-flex align-items-stretch">
+                      <NavLink
+                        to="/receive"
+                        onClick={() => isExpanded && setIsExpanded(false)}
+                        className={({ isActive }) =>
+                          'center-nav-link nav-link d-flex align-items-center justify-content-center fw-bolder' +
+                          (isActive ? ' active' : '')
+                        }
+                      >
+                        Receive
+                      </NavLink>
+                    </rb.Nav.Item>
+                    <rb.Nav.Item className="d-flex align-items-stretch">
+                      <NavLink
+                        to="/earn"
+                        onClick={() => isExpanded && setIsExpanded(false)}
+                        className={({ isActive }) =>
+                          'center-nav-link  nav-link d-flex align-items-center justify-content-center fw-bolder' +
+                          (isActive ? ' active' : '')
+                        }
+                      >
+                        <div className="nav-item"> Earn </div>
+                      </NavLink>
+                    </rb.Nav.Item>
+                  </rb.Nav>
                 </rb.Navbar.Collapse>
                 <rb.Navbar.Collapse className="flex-1">
                   <span className="ms-auto">
                     <rb.Nav>
-                      <Link
-                        to="/settings"
-                        onClick={() => isExpanded && setIsExpanded(false)}
-                        className="nav-link px-0 py-2"
-                      >
-                        <Sprite symbol="gear" width="30" height="30" />
-                      </Link>
-                      <Link to="/" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link px-0 py-2">
-                        <Sprite symbol="grid" width="30" height="30" />
-                      </Link>
+                      <rb.Nav.Item className="d-flex">
+                        <NavLink
+                          to="/settings"
+                          onClick={() => isExpanded && setIsExpanded(false)}
+                          className={({ isActive }) => 'nav-link px-0' + (isActive ? ' active' : '')}
+                        >
+                          <Sprite symbol="gear" width="30" height="30" />
+                        </NavLink>
+                      </rb.Nav.Item>
+                      <rb.Nav.Item className="d-flex align-items-stretch">
+                        <NavLink
+                          to="/"
+                          onClick={() => isExpanded && setIsExpanded(false)}
+                          className={({ isActive }) => 'nav-link px-0' + (isActive ? ' active' : '')}
+                        >
+                          <Sprite symbol="grid" width="30" height="30" />
+                        </NavLink>
+                      </rb.Nav.Item>
                     </rb.Nav>
                   </span>
                 </rb.Navbar.Collapse>
@@ -132,7 +156,7 @@ export default function Navbar({ connectionError }) {
             )}
           </>
         )}
-      </div>
+      </rb.Container>
     </rb.Navbar>
   )
 }
