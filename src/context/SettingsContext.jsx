@@ -1,10 +1,9 @@
 import React, { createContext, useReducer, useEffect, useContext } from 'react'
 import { BTC } from '../utils'
 
-const localStorageKey = 'jm-settings'
+const localStorageKey = window.JM.SETTINGS_STORE_KEY
 
 const initialSettings = {
-  theme: 'light',
   showBalance: false,
   unit: BTC,
 }
