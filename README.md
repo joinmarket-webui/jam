@@ -1,5 +1,7 @@
 <div align="center">
+  <br />
   <img src="readme-header.svg" width="80%" alt="JoinMarket Web UI" />
+  <br />
 </div>
 
 <h1 align="center" style="font-weight: bold !important">JoinMarket Web UI</h1>
@@ -35,6 +37,7 @@ We're aiming to make the JoinMarket Web UI available for different node systems.
 If your node of choice is missing, feel free to integrate it and let us know so we can add it here.
 
 - [**RaspiBlitz**](https://github.com/rootzoll/raspiblitz): A beta version of the JoinMarket Web UI will be [available in RaspiBlitz v1.7.2](https://github.com/rootzoll/raspiblitz/pull/2747). We're aiming for a production ready version to be available with [RaspiBlitz v1.8.0](https://github.com/rootzoll/raspiblitz/pull/2747#issuecomment-1013866678).
+- [**Citadel**](https://runcitadel.space/): Citadel integration is work in progress.
 - [**Umbrel**](https://getumbrel.com/): Umbrel integration is work in progress.
 
 ## ✨ Features
@@ -47,7 +50,7 @@ If your node of choice is missing, feel free to integrate it and let us know so 
 ## 👩‍🔧 Installation
 
 These instructions assume you want to run the web UI locally and connect it to a JoinMarket instance on your RaspiBlitz.
-See [Development](#-development)</a> for setting up a regtest development environment.
+See [DEVELOPING.md](DEVELOPING.md)</a> for setting up a regtest development environment.
 
 ### 🚨 Prerequisite: JoinMarket on RaspiBlitz
 
@@ -122,36 +125,6 @@ cd joinmarket-webui
 npm install && npm start
 ```
 
-## 👨‍💻 Development
+## 👨‍💻 Developing
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-### Available Scripts
-
-In the project directory, you can run:
-
-#### `npm start`
-
-Runs the app in the development mode.
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-The page will reload if you make edits.
-You will also see any lint errors in the console.
-
-#### `npm test`
-
-Launches the test runner in the interactive watch mode.
-
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-#### `npm run build`
-
-Builds the app for production to the `build` folder.
-It correctly bundles React in production mode and optimizes the build for the best performance.
-The build is minified and the filenames include the hashes.
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### JoinMarket Development Environment
-
-For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](docker/regtest/readme.md).
+See [DEVELOPING.md](DEVELOPING.md) for developer docs.
