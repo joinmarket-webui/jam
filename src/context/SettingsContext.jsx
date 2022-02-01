@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useEffect, useContext } from 'react'
 import { BTC } from '../utils'
 
-const localStorageKey = 'jm-settings'
+const localStorageKey = window.JM.SETTINGS_STORE_KEY
 
 const initialSettings = {
   showBalance: false,
@@ -22,7 +22,7 @@ const settingsReducer = (oldSettings, action) => {
 const SettingsProvider = ({ children }) => {
   const [settings, dispatch] = useReducer(
     settingsReducer,
-    JSON.parse(window.localStorage.getItem(localStorageKey)) || initialSettings
+    Object.assign({}, initialSettings, JSON.parse(window.localStorage.getItem(localStorageKey)))
   )
 
   useEffect(() => {
