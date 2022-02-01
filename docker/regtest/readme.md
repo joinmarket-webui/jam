@@ -1,7 +1,7 @@
-# Docker setup for running joinmarket in regtest mode
+# Docker setup for running JoinMarket in regtest mode
 
 This setup will help you set up a regtest environment quickly.
-It starts two JoinMarket container, hence not only API calls but also actual CoinJoin transactions can be tested.
+It starts two JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
 
 ## Commands
 
