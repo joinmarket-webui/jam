@@ -43,7 +43,7 @@ In order to incorporate the current contents of the master branch, simply rebuil
 docker image rm regtest_joinmarket:latest regtest_joinmarket2:latest
 
 # rebuilding the imags with contents of current master branch
-docker-compose build
+docker-compose build --no-cache
 ```
 
 ## Debugging
