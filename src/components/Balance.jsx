@@ -27,7 +27,7 @@ export default function Balance({ value, unit, showBalance = false }) {
         <span className={styles['balance']}>
           <span className={styles['text']}>*****</span>
           <span className="text-muted">
-            <Sprite symbol="hide" width="21px" height="21px" className="ps-1" />
+            <Sprite symbol="hide" width="20px" height="20px" className="ps-1" />
           </span>
         </span>
       </span>
