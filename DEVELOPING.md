@@ -64,7 +64,7 @@ Prettier has great [editor integrations](https://prettier.io/docs/en/editors.htm
 
 ### Git Pre-Commit Hook
 
-You can use a pre-commit hook that will automatically format all changes before commiting them to Git.
+You can use a pre-commit hook that will automatically format all changes before comitting them to Git.
 We use [husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/okonet/lint-staged) for that.
 
 To install and activate the Git hook, simply run `npm run setup-format-hook`.
