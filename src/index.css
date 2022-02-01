@@ -220,6 +220,10 @@ main {
   font-weight: 600 !important;
 }
 
+.center-nav-link > div {
+  position: relative;
+}
+
 @media only screen and (min-width: 768px) {
   .flex-1 {
     flex-grow: 1;
@@ -239,8 +243,11 @@ main {
 }
 
 .activity-indicator {
-  height: 6px;
-  width: 6px;
+  --size: 6px;
+  position: absolute;
+  right: calc(var(--size) * -1);
+  height: var(--size);
+  width: var(--size);
   border-radius: 50%;
 }
 
