@@ -33,11 +33,6 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 Formats the code base.
 See [Code Formatting](#code-formatting).
 
-### `npm run setup-format-hook`
-
-Sets up a pre-commit hook for code formatting.
-See [Code Formatting](#code-formatting).
-
 ## JoinMarket Development Environment
 
 For a complete development environment you need a local JoinMarket instance that the web UI can interact with. We provide a regtest environment that should give you everything needed to get started developing with JoinMarket. You can find details here: [docker/regtest/readme.md](docker/regtest/readme.md).
@@ -67,7 +62,7 @@ Prettier has great [editor integrations](https://prettier.io/docs/en/editors.htm
 You can use a pre-commit hook that will automatically format all changes before comitting them to Git.
 We use [husky](https://github.com/typicode/husky) and [lint-staged](https://github.com/okonet/lint-staged) for that.
 
-To install and activate the Git hook, simply run `npm run setup-format-hook`.
+By default, the hook will be installed automatically as an [NPM postinstall script](https://docs.npmjs.com/cli/v6/using-npm/scripts#npm-install).
 
 ### Troubleshooting
 
