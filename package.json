@@ -33,7 +33,6 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
-    "react-icons": "^4.3.1",
     "serve": "13.0.2"
   },
   "scripts": {

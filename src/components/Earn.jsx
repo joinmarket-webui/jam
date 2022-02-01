@@ -124,7 +124,6 @@ export default function Earn({ currentWallet, makerRunning }) {
 
   return (
     <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-      <h1>Earn</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <p>Service {makerRunning ? 'running' : 'not running'}.</p>
       {!makerRunning && !isWaiting && (

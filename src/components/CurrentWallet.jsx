@@ -1,21 +1,19 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
-import { walletDisplayName } from '../utils'
 import DisplayUTXOs from './DisplayUTXOs'
-import Balance from './Balance'
-import { useSettings } from '../context/SettingsContext'
+import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 
-export default function CurrentWallet({ currentWallet }) {
-  const [walletInfo, setWalletInfo] = useState(null)
+export default function CurrentWallet() {
+  const currentWallet = useCurrentWallet()
+  const walletInfo = useCurrentWalletInfo()
+  const setWalletInfo = useSetCurrentWalletInfo()
   const [fidelityBonds, setFidelityBonds] = useState(null)
   const [utxos, setUtxos] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-  const settings = useSettings()
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -50,23 +48,16 @@ export default function CurrentWallet({ currentWallet }) {
     Promise.all([loadingWallet, loadingUtxos]).finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet])
+  }, [currentWallet, setWalletInfo])
 
   return (
     <div>
-      <h1>{walletDisplayName(currentWallet.name)}</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading && (
         <div className="mb-3">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading
         </div>
-      )}
-      {walletInfo && walletInfo?.total_balance && (
-        <p>
-          Total balance:{' '}
-          <Balance value={walletInfo.total_balance} unit={settings.unit} showBalance={settings.showBalance} />
-        </p>
       )}
       {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
       {!!fidelityBonds?.length && (

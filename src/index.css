@@ -172,12 +172,6 @@ Usage:
   src: url('./fonts/Inter-italic.var.woff2?v=3.19') format('woff2');
 }
 
-/* https://satsymbol.com/ */
-@font-face {
-  font-family: 'Satoshi Symbol';
-  src: url('./fonts/SatoshiSymbol.otf') format('opentype');
-}
-
 :root {
   --bs-font-sans-serif: 'Inter', sans-serif;
 }
@@ -220,9 +214,71 @@ main {
   display: none;
 }
 
+/* Start Navbar Styles */
+
+.center-nav-link {
+  font-weight: 600 !important;
+}
+
+.center-nav-link > div {
+  position: relative;
+}
+
+@media only screen and (min-width: 768px) {
+  .flex-1 {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 0 !important;
+  }
+
+  .center-nav-link {
+    min-width: 80px;
+    padding: auto 0 12px 0 !important;
+  }
+
+  .center-nav-link.active {
+    padding: 12px 0 10px 0 !important;
+    border-bottom: 2px solid black;
+  }
+}
+
+.activity-indicator {
+  --size: 6px;
+  position: absolute;
+  right: calc(var(--size) * -1);
+  height: var(--size);
+  width: var(--size);
+  border-radius: 50%;
+}
+
+.activity-indicator-off {
+  background-color: #bbbbbb;
+}
+
+.activity-indicator-on {
+  animation-name: activity-indicator-pulse;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in;
+}
+
+@keyframes activity-indicator-pulse {
+  0% {
+    background-color: rgba(39, 174, 96, 0.2);
+  }
+  50% {
+    background-color: rgba(39, 174, 96, 1);
+  }
+  100% {
+    background-color: rgba(39, 174, 96, 0.2);
+  }
+}
+
+/* End Navbar Styles */
+
 /* Theme overrides */
 :root[data-theme='dark'] {
-  --bs-body-color-rgb: 0, 0, 0;
+  --bs-body-color-rgb: var(--bs-white);
   --bs-body-bg-rgb: 33, 37, 41;
   --bs-body-color: var(--bs-white);
   --bs-body-bg: var(--bs-gray-900);
@@ -232,6 +288,14 @@ main {
 
 :root[data-theme='dark'] * {
   border-color: var(--bs-gray-800) !important;
+}
+
+:root[data-theme='dark'] a.nav-link {
+  border-color: transparent !important;
+}
+
+:root[data-theme='dark'] a.nav-link.active {
+  border-color: white !important;
 }
 
 :root[data-theme='dark'] .card {

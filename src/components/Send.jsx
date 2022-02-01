@@ -111,7 +111,6 @@ export default function Payment({ currentWallet }) {
 
   return (
     <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-      <h1>Send</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <rb.Form.Group className="mb-3" controlId="destination">
         <rb.Form.Label>Receiver Address</rb.Form.Label>

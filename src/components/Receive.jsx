@@ -58,7 +58,6 @@ const Receive = ({ currentWallet }) => {
 
   return (
     <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-      <h1>Receive</h1>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {address && (
         <div className="qr-container">
