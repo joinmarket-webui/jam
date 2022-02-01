@@ -9,12 +9,13 @@ import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
 import Settings from './Settings'
 import Navbar from './Navbar'
-import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
+import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
 
 export default function App() {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
+  const setCurrentWalletInfo = useSetCurrentWalletInfo()
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
@@ -60,6 +61,7 @@ export default function App() {
   const stopWallet = () => {
     clearSession()
     setCurrentWallet(null)
+    setCurrentWalletInfo(null)
 
     if (websocket) {
       websocket.current.onclose = () => {
@@ -74,6 +76,7 @@ export default function App() {
 
     const resetState = () => {
       setCurrentWallet(null)
+      setCurrentWalletInfo(null)
       setMakerRunning(null)
       setCoinjoinInProcess(null)
     }
@@ -92,6 +95,7 @@ export default function App() {
           setCoinjoinInProcess(coinjoin_in_process)
           if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
             setCurrentWallet(null)
+            setCurrentWalletInfo(null)
             clearSession()
           }
         })
@@ -108,7 +112,7 @@ export default function App() {
       abortCtrl.abort()
       clearInterval(interval)
     }
-  }, [currentWallet, setCurrentWallet])
+  }, [currentWallet, setCurrentWallet, setCurrentWalletInfo])
 
   useEffect(() => {
     const session = getSession()
