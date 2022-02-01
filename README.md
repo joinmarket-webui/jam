@@ -50,7 +50,7 @@ If your node of choice is missing, feel free to integrate it and let us know so 
 ## 👩‍🔧 Installation
 
 These instructions assume you want to run the web UI locally and connect it to a JoinMarket instance on your RaspiBlitz.
-See [Development](#-development)</a> for setting up a regtest development environment.
+See [DEVELOPING.md](DEVELOPING.md)</a> for setting up a regtest development environment.
 
 ### 🚨 Prerequisite: JoinMarket on RaspiBlitz
 
@@ -124,3 +124,7 @@ git clone https://github.com/joinmarket-webui/joinmarket-webui.git
 cd joinmarket-webui
 npm install && npm start
 ```
+
+## 👨‍💻 Developing
+
+See [DEVELOPING.md](DEVELOPING.md) for developer docs.

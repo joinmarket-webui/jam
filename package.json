@@ -41,8 +41,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "prepare": "husky install",
-    "lint": "prettier --check --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
+    "setup-format-hook": "husky install",
     "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}"
   },
   "eslintConfig": {
