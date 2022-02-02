@@ -93,7 +93,8 @@ const TrailingNav = ({ coinjoinInProcess, onClick }) => {
             'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
           }
         >
-          <Sprite symbol="gear" width="30" height="30" />
+          <Sprite symbol="gear" width="30" height="30" className="d-none d-md-inline-block" />
+          <span className="d-inline-block d-md-none">Settings</span>
         </NavLink>
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
@@ -104,7 +105,8 @@ const TrailingNav = ({ coinjoinInProcess, onClick }) => {
             'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
           }
         >
-          <Sprite symbol="grid" width="30" height="30" />
+          <Sprite symbol="grid" width="30" height="30" className="d-none d-md-inline-block" />
+          <span className="d-inline-block d-md-none">Wallets</span>
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>

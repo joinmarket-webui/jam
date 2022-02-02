@@ -225,7 +225,7 @@ main {
 
 /* Start Navbar Styles */
 
-.center-nav-link {
+#mainNav .nav-link {
   font-weight: 600 !important;
 }
 
