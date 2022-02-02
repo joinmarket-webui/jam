@@ -249,6 +249,11 @@ main {
     padding: 12px 0 10px 0 !important;
     border-bottom: 2px solid black;
   }
+
+  .offcanvas,
+  .offcanvas-backdrop {
+    display: none;
+  }
 }
 
 .activity-indicator {
