@@ -142,20 +142,33 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
           <>
             {!currentWallet ? (
               <>
-                <Link to="/" className="navbar-brand nav-link d-flex align-items-center" style={{ height: height }}>
+                <Link
+                  to="/"
+                  className="navbar-brand nav-link d-flex align-items-center ps-0 ps-sm-2 ps-xl-0"
+                  style={{ height: height }}
+                >
                   <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
                   <span className="ms-2">JoinMarket</span>
                 </Link>
                 <rb.Navbar.Toggle className="border-0" />
-                <rb.Navbar.Collapse>
-                  <rb.Nav className="ms-auto">
-                    <rb.Nav.Item>
-                      <Link to="/create-wallet" onClick={() => isExpanded && setIsExpanded(false)} className="nav-link">
-                        Create Wallet
-                      </Link>
-                    </rb.Nav.Item>
-                  </rb.Nav>
-                </rb.Navbar.Collapse>
+                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                  <rb.Offcanvas.Header>
+                    <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
+                  </rb.Offcanvas.Header>
+                  <rb.Offcanvas.Body>
+                    <rb.Nav className="ms-auto">
+                      <rb.Nav.Item>
+                        <Link
+                          to="/create-wallet"
+                          onClick={() => isExpanded && setIsExpanded(false)}
+                          className="nav-link"
+                        >
+                          Create Wallet
+                        </Link>
+                      </rb.Nav.Item>
+                    </rb.Nav>
+                  </rb.Offcanvas.Body>
+                </rb.Navbar.Offcanvas>
               </>
             ) : (
               <>
@@ -181,15 +194,9 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                 </rb.Nav>
                 <rb.Navbar.Toggle className="border-0" />
                 <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
-                  {settings.theme === 'dark' ? (
-                    <rb.Offcanvas.Header closeButton closeVariant="white">
-                      <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
-                    </rb.Offcanvas.Header>
-                  ) : (
-                    <rb.Offcanvas.Header closeButton>
-                      <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
-                    </rb.Offcanvas.Header>
-                  )}
+                  <rb.Offcanvas.Header>
+                    <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
+                  </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
                     <CenterNav makerRunning={makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
                     <TrailingNav coinjoinInProcess={coinjoinInProcess} onClick={() => setIsExpanded(!isExpanded)} />
