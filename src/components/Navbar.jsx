@@ -122,6 +122,7 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
 
   return (
     <rb.Navbar
+      id="mainNav"
       bg={settings.theme === 'light' ? 'white' : 'dark'}
       sticky="top"
       expand="md"
