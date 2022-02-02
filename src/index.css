@@ -332,3 +332,7 @@ main {
 :root[data-theme='dark'] code {
   color: var(--bs-gray-300);
 }
+
+:root[data-theme='dark'] .offcanvas {
+  background-color: var(--bs-gray-900);
+}

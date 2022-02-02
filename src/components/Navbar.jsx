@@ -31,6 +31,86 @@ const ActivityIndicator = ({ isOn }) => {
   return <span className={`activity-indicator ${isOn ? 'activity-indicator-on' : 'activity-indicator-off'}`} />
 }
 
+const CenterNav = ({ makerRunning, onClick }) => {
+  return (
+    <rb.Nav className="justify-content-center align-items-stretch">
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to="/send"
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          Send
+        </NavLink>
+      </rb.Nav.Item>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to="/receive"
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          Receive
+        </NavLink>
+      </rb.Nav.Item>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to="/earn"
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          <div className="d-flex align-items-start">
+            Earn
+            <ActivityIndicator isOn={makerRunning} />
+          </div>
+        </NavLink>
+      </rb.Nav.Item>
+    </rb.Nav>
+  )
+}
+
+const TrailingNav = ({ coinjoinInProcess, onClick }) => {
+  return (
+    <rb.Nav className="justify-content-center align-items-stretch">
+      {coinjoinInProcess && (
+        <rb.Nav.Item className="d-flex align-items-center justify-content-center pe-2">
+          <div className="d-flex align-items-center px-0">
+            <rb.Navbar.Text>Joining</rb.Navbar.Text>
+            <Sprite symbol="joining" width="30" height="30" className="p-1 navbar-text" />
+          </div>
+        </rb.Nav.Item>
+      )}
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to="/settings"
+          onClick={onClick}
+          className={({ isActive }) =>
+            'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
+          }
+        >
+          <Sprite symbol="gear" width="30" height="30" />
+        </NavLink>
+      </rb.Nav.Item>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to="/"
+          onClick={onClick}
+          className={({ isActive }) =>
+            'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
+          }
+        >
+          <Sprite symbol="grid" width="30" height="30" />
+        </NavLink>
+      </rb.Nav.Item>
+    </rb.Nav>
+  )
+}
+
 export default function Navbar({ connectionError, makerRunning, coinjoinInProcess }) {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
@@ -97,81 +177,29 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                   </rb.Nav.Item>
                 </rb.Nav>
                 <rb.Navbar.Toggle className="border-0" />
-                <rb.Navbar.Collapse className="flex-1 flex-grow-0 align-items-stretch">
-                  <rb.Nav className="justify-content-center align-items-stretch">
-                    <rb.Nav.Item className="d-flex align-items-stretch">
-                      <NavLink
-                        to="/send"
-                        onClick={() => isExpanded && setIsExpanded(false)}
-                        className={({ isActive }) =>
-                          'center-nav-link nav-link d-flex align-items-center justify-content-center' +
-                          (isActive ? ' active' : '')
-                        }
-                      >
-                        Send
-                      </NavLink>
-                    </rb.Nav.Item>
-                    <rb.Nav.Item className="d-flex align-items-stretch">
-                      <NavLink
-                        to="/receive"
-                        onClick={() => isExpanded && setIsExpanded(false)}
-                        className={({ isActive }) =>
-                          'center-nav-link nav-link d-flex align-items-center justify-content-center' +
-                          (isActive ? ' active' : '')
-                        }
-                      >
-                        Receive
-                      </NavLink>
-                    </rb.Nav.Item>
-                    <rb.Nav.Item className="d-flex align-items-stretch">
-                      <NavLink
-                        to="/earn"
-                        onClick={() => isExpanded && setIsExpanded(false)}
-                        className={({ isActive }) =>
-                          'center-nav-link  nav-link d-flex align-items-center justify-content-center' +
-                          (isActive ? ' active' : '')
-                        }
-                      >
-                        <div className="d-flex align-items-start">
-                          Earn
-                          <ActivityIndicator isOn={makerRunning} />
-                        </div>
-                      </NavLink>
-                    </rb.Nav.Item>
-                  </rb.Nav>
-                </rb.Navbar.Collapse>
-                <rb.Navbar.Collapse className="flex-1">
-                  <span className="ms-auto">
-                    <rb.Nav className="align-items-center">
-                      {coinjoinInProcess && (
-                        <rb.Nav.Item className="d-flex align-items-center pe-2">
-                          <>
-                            <rb.Navbar.Text>Joining</rb.Navbar.Text>
-                            <Sprite symbol="joining" width="30" height="30" className="text-secondary p-1" />
-                          </>
-                        </rb.Nav.Item>
-                      )}
-                      <rb.Nav.Item className="d-flex">
-                        <NavLink
-                          to="/settings"
-                          onClick={() => isExpanded && setIsExpanded(false)}
-                          className={({ isActive }) => 'nav-link px-0' + (isActive ? ' active' : '')}
-                        >
-                          <Sprite symbol="gear" width="30" height="30" />
-                        </NavLink>
-                      </rb.Nav.Item>
-                      <rb.Nav.Item className="d-flex">
-                        <NavLink
-                          to="/"
-                          onClick={() => isExpanded && setIsExpanded(false)}
-                          className={({ isActive }) => 'nav-link px-0' + (isActive ? ' active' : '')}
-                        >
-                          <Sprite symbol="grid" width="30" height="30" />
-                        </NavLink>
-                      </rb.Nav.Item>
-                    </rb.Nav>
-                  </span>
-                </rb.Navbar.Collapse>
+                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                  {settings.theme === 'dark' ? (
+                    <rb.Offcanvas.Header closeButton closeVariant="white">
+                      <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
+                    </rb.Offcanvas.Header>
+                  ) : (
+                    <rb.Offcanvas.Header closeButton>
+                      <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
+                    </rb.Offcanvas.Header>
+                  )}
+                  <rb.Offcanvas.Body>
+                    <CenterNav makerRunning={makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
+                    <TrailingNav coinjoinInProcess={coinjoinInProcess} onClick={() => setIsExpanded(!isExpanded)} />
+                  </rb.Offcanvas.Body>
+                </rb.Navbar.Offcanvas>
+                <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
+                  <CenterNav makerRunning={makerRunning} />
+                </rb.Container>
+                <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
+                  <div className="ms-auto d-flex align-items-stretch">
+                    <TrailingNav coinjoinInProcess={coinjoinInProcess} />
+                  </div>
+                </rb.Container>
               </>
             )}
           </>
