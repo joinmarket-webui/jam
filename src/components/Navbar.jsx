@@ -150,7 +150,11 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                   <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
                   <span className="ms-2">JoinMarket</span>
                 </Link>
-                <rb.Navbar.Toggle className="border-0" />
+                <div className="d-flex d-md-none align-items-center">
+                  <rb.Navbar.Toggle id="mainNavToggle">
+                    <span>Menu</span>
+                  </rb.Navbar.Toggle>
+                </div>
                 <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
@@ -192,7 +196,11 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                     </NavLink>
                   </rb.Nav.Item>
                 </rb.Nav>
-                <rb.Navbar.Toggle className="border-0" />
+                <div className="d-flex d-md-none align-items-center">
+                  <rb.Navbar.Toggle id="mainNavToggle">
+                    <span>Menu</span>
+                  </rb.Navbar.Toggle>
+                </div>
                 <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>

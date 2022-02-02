@@ -211,6 +211,68 @@ body,
   height: 76px;
 }
 
+#mainNavToggle {
+  --line-thickness: 2px;
+  --transition-easing: ease-in-out;
+  --transition-duration: 0.25s;
+  --button-width: 40px;
+  --button-height: 40px;
+  --button-padding: 7px;
+  --icon-size: 1.5rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--button-width);
+  height: var(--button-height);
+  border: 0;
+  padding: var(--button-padding);
+  box-shadow: none;
+  color: inherit;
+}
+
+#mainNavToggle span {
+  position: relative;
+  display: inline-block;
+  width: calc(var(--button-width) - var(--button-padding) * 2);
+  height: calc(var(--button-height) - (var(--button-padding) * 2) - (var(--line-thickness) * 4));
+  border-top: var(--line-thickness) solid;
+  border-bottom: var(--line-thickness) solid;
+  border-color: currentColor !important;
+  font-size: 0;
+  transition: all var(--transition-duration) var(--transition-easing);
+}
+
+#mainNavToggle span:before,
+#mainNavToggle span:after {
+  position: absolute;
+  display: block;
+  content: '';
+  width: 100%;
+  height: var(--line-thickness);
+  top: 50%;
+  left: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+  transition: transform var(--transition-duration) var(--transition-easing);
+}
+
+#mainNavToggle:hover span {
+  /* color: var(--btcpay-header-text); */
+}
+
+#mainNavToggle:not(.collapsed) span {
+  border-color: transparent !important;
+}
+
+#mainNavToggle:not(.collapsed) span:before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+#mainNavToggle:not(.collapsed) span:after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
 main {
   flex: 1;
 }
