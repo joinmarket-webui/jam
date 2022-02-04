@@ -19,3 +19,8 @@
 .env.production.local
 
 npm-debug.log*
+
+# python stuff
+.env
+joinmarketwebui/static
+__pycache__

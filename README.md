@@ -128,3 +128,18 @@ npm install && npm start
 ## 👨‍💻 Developing
 
 See [DEVELOPING.md](DEVELOPING.md) for developer docs.
+
+## Specter integration
+
+
+```
+npm run build
+virtualenv --python=python3 .env
+# . ./.env/bin/activate
+# pip3 install -r requirements.txt --pre
+. ../specter-desktop/.env/bin/activate
+python3 -m cryptoadvance.specter server --config DevelopmentConfig --debug
+# open browser https://localhost:25441
+# choose service --> Joinmarket Webui
+```
+
