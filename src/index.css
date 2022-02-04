@@ -300,11 +300,20 @@ main {
 
   .center-nav-link {
     min-width: 80px;
-    padding: auto 0 12px 0 !important;
+    padding: 8px 0 !important;
   }
 
   .center-nav-link.active {
-    padding: 12px 0 10px 0 !important;
+    padding: 8px 0 6px 0 !important;
+    border-bottom: 2px solid black;
+  }
+
+  .leading-nav-link {
+    padding: 8px !important;
+  }
+
+  .leading-nav-link.active {
+    padding: 8px 8px 6px 8px !important;
     border-bottom: 2px solid black;
   }
 
