@@ -67,6 +67,25 @@ export default function Settings({ currentWallet }) {
           />
           {isLightTheme ? 'Dark' : 'Light'} theme
         </rb.Button>
+
+        <br />
+
+        <rb.Button
+          variant="outline-dark"
+          className="border-0 mb-2 d-inline-flex align-items-center"
+          onClick={(e) => {
+            e.preventDefault()
+            settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })
+          }}
+        >
+          <Sprite
+            symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'}
+            width="24"
+            height="24"
+            className="me-2"
+          />
+          Use {settings.useAdvancedWalletMode ? 'magic' : 'advanced'} wallet mode
+        </rb.Button>
       </div>
     </div>
   )

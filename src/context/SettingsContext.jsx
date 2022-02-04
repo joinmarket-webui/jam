@@ -6,6 +6,7 @@ const localStorageKey = window.JM.SETTINGS_STORE_KEY
 const initialSettings = {
   showBalance: false,
   unit: BTC,
+  useAdvancedWalletMode: false,
 }
 
 const SettingsContext = createContext()

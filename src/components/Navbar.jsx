@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useLocation, Link, NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
@@ -71,17 +71,6 @@ const CenterNav = ({ makerRunning, onClick }) => {
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>
-  )
-}
-
-const WalletPreviewLink = ({ ...props }) => {
-  let location = useLocation()
-
-  const pathname = location.pathname
-  const isActive = pathname === '/wallet' || pathname === '/advancedwallet'
-
-  return (
-    <Link {...props} className={`leading-nav-link nav-link d-flex align-items-center${isActive ? ' active' : ''}`} />
   )
 }
 
@@ -189,14 +178,22 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
               <>
                 <rb.Nav className="d-flex flex-1 align-items-stretch">
                   <rb.Nav.Item className="d-flex align-items-stretch">
-                    <WalletPreviewLink to="/wallet" style={{ height: height }}>
-                      <WalletPreview
-                        wallet={currentWallet}
-                        walletInfo={currentWalletInfo}
-                        showBalance={settings.showBalance}
-                        unit={settings.unit}
-                      />
-                    </WalletPreviewLink>
+                    <NavLink
+                      to="/wallet"
+                      style={{ height: height }}
+                      className={({ isActive }) =>
+                        'leading-nav-link nav-link d-flex align-items-center' + (isActive ? ' active' : '')
+                      }
+                    >
+                      <>
+                        <WalletPreview
+                          wallet={currentWallet}
+                          walletInfo={currentWalletInfo}
+                          showBalance={settings.showBalance}
+                          unit={settings.unit}
+                        />
+                      </>
+                    </NavLink>
                   </rb.Nav.Item>
                 </rb.Nav>
                 <div className="d-flex d-md-none align-items-center">

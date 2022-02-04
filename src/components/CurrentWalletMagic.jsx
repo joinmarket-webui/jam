@@ -58,7 +58,7 @@ const PrivacyLevel = ({ level, balance }) => {
   )
 }
 
-export default function CurrentWallet() {
+export default function CurrentWalletMagic() {
   const settings = useSettings()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
@@ -121,11 +121,14 @@ export default function CurrentWallet() {
             </rb.Row>
             <rb.Row className="mt-4">
               <rb.Col>
-                <Link to="/receive" className="btn btn-outline-dark w-100">
+                {/* Always receive on first mixdepth. */}
+                <Link to="/receive" state={{ account: 0 }} className="btn btn-outline-dark w-100">
                   Deposit
                 </Link>
               </rb.Col>
               <rb.Col>
+                {/* Todo: Withdrawing needs to factor in the privacy levels as well.
+                Depending on the mixdepth/account there will be different amounts available. */}
                 <Link to="/send" className="btn btn-outline-dark w-100">
                   Withdraw
                 </Link>
@@ -141,8 +144,11 @@ export default function CurrentWallet() {
               <hr className="my-4" />
             </rb.Row>
             <rb.Row>
-              <Link to="/advancedwallet" className="btn btn-outline-dark">
-                Show Advanced View
+              <Link to="/" className="btn btn-outline-dark">
+                <div className="d-flex justify-content-center align-items-center">
+                  <Sprite symbol="wallet" width="24" height="24" />
+                  <div className="ps-1">Switch Wallet</div>
+                </div>
               </Link>
             </rb.Row>
           </rb.Col>
