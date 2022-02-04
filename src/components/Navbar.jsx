@@ -182,7 +182,7 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                       to="/wallet"
                       style={{ height: height }}
                       className={({ isActive }) =>
-                        'center-nav-link nav-link d-flex align-items-center' + (isActive ? ' active' : '')
+                        'leading-nav-link nav-link d-flex align-items-center' + (isActive ? ' active' : '')
                       }
                     >
                       <>
