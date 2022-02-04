@@ -7,6 +7,7 @@ import Send from './Send'
 import Earn from './Earn'
 import Receive from './Receive'
 import CurrentWallet from './CurrentWallet'
+import CurrentWalletAdvanced from './CurrentWalletAdvanced'
 import Settings from './Settings'
 import Navbar from './Navbar'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
@@ -87,7 +88,7 @@ export default function App() {
   return (
     <>
       <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
-      <rb.Container as="main" className="py-4">
+      <rb.Container as="main" className="py-5">
         {connectionError ? (
           <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
         ) : (
@@ -102,7 +103,8 @@ export default function App() {
             />
             {currentWallet && (
               <>
-                <Route path="wallet" element={<CurrentWallet currentWallet={currentWallet} />} />
+                <Route path="wallet" element={<CurrentWallet />} />
+                <Route path="advancedwallet" element={<CurrentWalletAdvanced />} />
                 <Route path="send" element={<Send currentWallet={currentWallet} />} />
                 <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
                 <Route path="receive" element={<Receive currentWallet={currentWallet} />} />

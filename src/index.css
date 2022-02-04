@@ -357,6 +357,41 @@ main {
 
 /* End Navbar Styles */
 
+/* Start Privacy Level Styles */
+
+.privacy-level-4 {
+  color: rgba(39, 174, 96, 1);
+}
+
+.privacy-level-3 {
+  color: rgba(76, 157, 126, 1);
+}
+
+.privacy-level-2 {
+  color: rgba(113, 140, 157, 1);
+}
+
+.privacy-level-1 {
+  color: rgba(150, 124, 187, 1);
+}
+
+.privacy-level-0 {
+  color: rgba(187, 107, 217, 1);
+}
+
+.privacy-levels hr {
+  border-top: 1px solid rgba(222, 222, 222, 1);
+  opacity: 1;
+}
+
+.privacy-levels .btn.btn-outline-dark {
+  padding: 0.25rem;
+  font-weight: 500;
+  border-color: rgba(222, 222, 222, 1);
+}
+
+/* End Privacy Level Styles */
+
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white);
