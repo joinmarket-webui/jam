@@ -99,9 +99,9 @@ export default function CurrentWalletMagic() {
         </rb.Row>
       )}
       {isLoading && (
-        <rb.Row>
-          <rb.Col>
-            <div className="mb-3">
+        <rb.Row className="justify-content-center">
+          <rb.Col className="flex-grow-0">
+            <div className="d-flex justify-content-center align-items-center">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               Loading
             </div>

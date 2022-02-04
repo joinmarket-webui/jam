@@ -392,6 +392,11 @@ main {
 
 /* End Privacy Level Styles */
 
+.btn:focus:not(:focus-visible) {
+  outline: 0;
+  box-shadow: none;
+}
+
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white);
