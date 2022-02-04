@@ -59,7 +59,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                         {labels && <span className="badge bg-info">{labels}</span>}
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
-                        <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
+                        <Balance value={amount} unit={settings.unit} showBalance={settings.showBalance} />
                       </rb.Col>
                     </rb.Row>
                   ))}
