@@ -417,3 +417,8 @@ main {
 :root[data-theme='dark'] .offcanvas {
   background-color: var(--bs-gray-900);
 }
+
+:root[data-theme='dark'] .spinner-border {
+  border-color: var(--bs-white) !important;
+  border-right-color: transparent !important;
+}
