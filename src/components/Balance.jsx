@@ -26,8 +26,8 @@ export default function Balance({ value, unit, showBalance = false }) {
       <span className={styles['balance-wrapper']}>
         <span className={styles['balance']}>
           <span className={styles['text']}>*****</span>
-          <span className="text-muted">
-            <Sprite symbol="hide" width="20px" height="20px" className="ps-1" />
+          <span className="text-muted d-inline-flex align-items-center">
+            <Sprite symbol="hide" width="1.2em" height="1.2em" className="ps-1" />
           </span>
         </span>
       </span>
