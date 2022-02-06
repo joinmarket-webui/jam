@@ -11,6 +11,7 @@ import Settings from './Settings'
 import Navbar from './Navbar'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
+import Onboarding from './Onboarding'
 
 export default function App() {
   const currentWallet = useCurrentWallet()
