@@ -120,7 +120,8 @@ export default function App() {
             </div>
           ) : (
             <div class="d-flex justify-content-center">
-              <span class="text-success mx-1">•</span>Connected
+              <span class="text-success mx-1">•</span>
+              <span className="text-secondary">Connected</span>
             </div>
           )}
           <div class="d-flex justify-content-center">
