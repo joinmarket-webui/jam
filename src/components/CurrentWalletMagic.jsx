@@ -20,19 +20,20 @@ const WalletHeader = ({ name, balance, unit, showBalance }) => {
 
 const PrivacyLevels = ({ accounts }) => {
   const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account).reverse()
+  const numAccounts = sortedAccounts.length
 
   return (
     <div className="d-flex justify-content-center">
       <div className="d-flex flex-column align-items-start" style={{ gap: '1rem' }}>
         {sortedAccounts.map(({ account, account_balance: balance, branches }) => (
-          <PrivacyLevel key={account} level={parseInt(account)} balance={balance} />
+          <PrivacyLevel key={account} numAccounts={numAccounts} level={parseInt(account)} balance={balance} />
         ))}
       </div>
     </div>
   )
 }
 
-const PrivacyLevel = ({ level, balance }) => {
+const PrivacyLevel = ({ numAccounts, level, balance }) => {
   const settings = useSettings()
 
   const filledShields = Array(level + 1)
@@ -40,7 +41,7 @@ const PrivacyLevel = ({ level, balance }) => {
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-filled" width="24" height="30" />
     })
-  const outlienedShields = Array(5 - filledShields.length)
+  const outlinedShields = Array(numAccounts - filledShields.length)
     .fill()
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-outline" width="24" height="30" />
@@ -49,7 +50,7 @@ const PrivacyLevel = ({ level, balance }) => {
     <div className="d-flex align-items-center">
       <div className={`d-flex privacy-level-${level}`}>
         {filledShields}
-        {outlienedShields}
+        {outlinedShields}
       </div>
       <div className="ps-2">
         <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
