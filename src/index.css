@@ -281,7 +281,7 @@ main {
   display: none;
 }
 
-/* Start Navbar Styles */
+/* Navbar Styles */
 
 #mainNav .nav-link {
   font-weight: 600 !important;
@@ -355,9 +355,7 @@ main {
   }
 }
 
-/* End Navbar Styles */
-
-/* Start Privacy Level Styles */
+/* Privacy Level Styles */
 
 .privacy-level-4 {
   color: rgba(39, 174, 96, 1);
@@ -390,9 +388,11 @@ main {
   border-color: rgba(222, 222, 222, 1);
 }
 
-/* End Privacy Level Styles */
+/* Wallet Creation Styles */
 
 .seedphrase {
+  gap: 0.3rem;
+
   font-family: Inter;
   font-weight: 400;
   font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
@@ -400,6 +400,29 @@ main {
   -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
   -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+}
+
+.seedphrase > div {
+  background-color: rgba(244, 244, 244, 1);
+  width: 8rem;
+}
+
+.seedword-index {
+  width: 2ch;
+}
+
+:root[data-theme='dark'] .seedphrase > div {
+  background-color: var(--bs-gray-800);
+}
+
+.create-wallet form input {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.create-wallet button {
+  height: 3rem;
+  width: 100%;
 }
 
 /* Boostrap overrides */

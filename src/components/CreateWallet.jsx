@@ -26,7 +26,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <rb.Form.Group className="mb-4" controlId="walletName">
           <rb.Form.Label>Wallet Name</rb.Form.Label>
-          <rb.Form.Control name="wallet" placeholder="Your wallet..." style={{ height: '3.5rem' }} required />
+          <rb.Form.Control name="wallet" placeholder="Your wallet..." required />
           <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
           <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
         </rb.Form.Group>
@@ -37,13 +37,12 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
             type="password"
             placeholder="Choose a secure password..."
             autoComplete="new-password"
-            style={{ height: '3.5rem' }}
             required
           />
           <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
           <rb.Form.Control.Feedback type="invalid">Please set a password.</rb.Form.Control.Feedback>
         </rb.Form.Group>
-        <rb.Button variant="dark" type="submit" disabled={isCreating} style={{ height: '3rem', width: '100%' }}>
+        <rb.Button variant="dark" type="submit" disabled={isCreating}>
           {isCreating ? (
             <div>
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
@@ -86,7 +85,6 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         variant="dark"
         type="submit"
         disabled={!userConfirmed}
-        style={{ height: '3rem', width: '100%' }}
         onClick={() => userConfirmed && walletConfirmed()}
       >
         Fund Wallet
@@ -97,16 +95,10 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
 
 const Seedphrase = ({ seedphrase }) => {
   return (
-    <div className="seedphrase d-flex flex-wrap" style={{ gap: '0.3rem' }}>
+    <div className="seedphrase d-flex flex-wrap">
       {seedphrase.split(' ').map((seedWord, index) => (
-        <div
-          key={index}
-          className="d-flex py-2 ps-2 pe-3"
-          style={{ width: '8rem', backgroundColor: 'rgba(244, 244, 244, 1)' }}
-        >
-          <span className="text-secondary text-end" style={{ width: '2ch' }}>
-            {index + 1}
-          </span>
+        <div key={index} className="d-flex py-2 ps-2 pe-3">
+          <span className="seedword-index text-secondary text-end">{index + 1}</span>
           <span className="text-secondary">.&nbsp;</span>
           <span>{seedWord}</span>
         </div>
@@ -167,7 +159,7 @@ export default function CreateWallet({ startWallet }) {
   const canCreate = !currentWallet && !isCreated
 
   return (
-    <rb.Row className="justify-content-center">
+    <rb.Row className="create-wallet justify-content-center">
       <rb.Col md={10} lg={8} xl={6}>
         {isCreated ? (
           <PageTitle
