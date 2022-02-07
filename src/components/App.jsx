@@ -122,17 +122,17 @@ export default function App() {
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container>
           {connectionError ? (
-            <div class="d-flex justify-content-center pt-2">
-              <span class="text-danger mx-1">•</span>
+            <div className="d-flex justify-content-center pt-2">
+              <span className="text-danger mx-1">•</span>
               <span className="text-secondary">Disconnected</span>
             </div>
           ) : (
-            <div class="d-flex justify-content-center pt-2">
-              <span class="text-success mx-1">•</span>
+            <div className="d-flex justify-content-center pt-2">
+              <span className="text-success mx-1">•</span>
               <span className="text-secondary">Connected</span>
             </div>
           )}
-          <div class="d-flex justify-content-center">
+          <div className="d-flex justify-content-center">
             <rb.Nav.Item>
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
