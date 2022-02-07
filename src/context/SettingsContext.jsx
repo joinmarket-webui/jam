@@ -7,6 +7,7 @@ const initialSettings = {
   showBalance: false,
   unit: BTC,
   showOnboarding: true,
+  useAdvancedWalletMode: false,
 }
 
 const SettingsContext = createContext()

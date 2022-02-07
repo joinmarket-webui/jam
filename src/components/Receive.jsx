@@ -4,9 +4,11 @@ import { BitcoinQR } from '@ibunker/bitcoin-react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { ACCOUNTS } from '../utils'
+import { useSettings } from '../context/SettingsContext'
 
 const Receive = ({ currentWallet }) => {
   const location = useLocation()
+  const settings = useSettings()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -71,6 +73,7 @@ const Receive = ({ currentWallet }) => {
           onChange={(e) => setAccount(parseInt(e.target.value, 10))}
           style={{ maxWidth: '21ch' }}
           required
+          disabled={!settings.useAdvancedWalletMode}
         >
           {ACCOUNTS.map((val) => (
             <option key={val} value={val}>

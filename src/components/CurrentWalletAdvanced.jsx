@@ -5,7 +5,7 @@ import DisplayAccountUTXOs from './DisplayAccountUTXOs'
 import DisplayUTXOs from './DisplayUTXOs'
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 
-export default function CurrentWallet() {
+export default function CurrentWalletAdvanced() {
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
