@@ -65,7 +65,7 @@ export default function CurrentWalletMagic() {
   const setWalletInfo = useSetCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const abortCtrl = new AbortController()
