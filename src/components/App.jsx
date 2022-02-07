@@ -115,7 +115,7 @@ export default function App() {
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container>
           {connectionError ? (
-            <div class="d-flex justify-content-center">
+            <div class="d-flex justify-content-center pt-2">
               <span class="text-danger mx-1">•</span>
               <span className="text-secondary">Disconnected</span>
             </div>
