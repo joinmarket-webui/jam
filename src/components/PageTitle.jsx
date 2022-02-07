@@ -1,5 +1,4 @@
 import React from 'react'
-import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 
 export default function PageTitle({ title, subtitle, success = false }) {
