@@ -1,6 +1,7 @@
 import logo from '../assets/logo.png'
 import * as rb from 'react-bootstrap'
 import React, { useState } from 'react'
+import Sprite from './Sprite'
 
 export default function Onboarding() {
   const [step, setStep] = useState(0)
