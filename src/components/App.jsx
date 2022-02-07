@@ -120,7 +120,7 @@ export default function App() {
               <span className="text-secondary">Disconnected</span>
             </div>
           ) : (
-            <div class="d-flex justify-content-center">
+            <div class="d-flex justify-content-center pt-2">
               <span class="text-success mx-1">•</span>
               <span className="text-secondary">Connected</span>
             </div>
