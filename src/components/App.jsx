@@ -11,6 +11,7 @@ import Settings from './Settings'
 import Navbar from './Navbar'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
+import { useSettings } from '../context/SettingsContext'
 import Onboarding from './Onboarding'
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
+  const settings = useSettings()
 
   const startWallet = useCallback(
     (name, token) => {
@@ -85,78 +87,81 @@ export default function App() {
     }
   }, [startWallet])
 
-  return (
-    <>
-      <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
-      <rb.Container as="main" className="py-4">
-        {connectionError ? (
-          <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
-        ) : (
-          <Routes>
-            <Route
-              path="/"
-              element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
-            />
-            <Route
-              path="create-wallet"
-              element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
-            />
-            {currentWallet && (
-              <>
-                <Route path="wallet" element={<CurrentWallet currentWallet={currentWallet} />} />
-                <Route path="send" element={<Send currentWallet={currentWallet} />} />
-                <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
-                <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
-                <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
-              </>
-            )}
-          </Routes>
-        )}
-      </rb.Container>
-      <rb.Nav as="footer" className="border-top py-2">
-        <rb.Container className="d-flex justify-content-center">
-          <rb.Nav.Item>
-            <a
-              href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
-              target="_blank"
-              rel="noreferrer"
-              className="nav-link text-secondary"
-            >
-              Docs
-            </a>
-          </rb.Nav.Item>
-          <rb.Nav.Item>
-            <a
-              href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
-              target="_blank"
-              rel="noreferrer"
-              className="nav-link text-secondary"
-            >
-              Features
-            </a>
-          </rb.Nav.Item>
-          <rb.Nav.Item>
-            <a
-              href="https://github.com/JoinMarket-Org/joinmarket-clientserver"
-              target="_blank"
-              rel="noreferrer"
-              className="nav-link text-secondary"
-            >
-              GitHub
-            </a>
-          </rb.Nav.Item>
-          <rb.Nav.Item>
-            <a
-              href="https://twitter.com/joinmarket"
-              target="_blank"
-              rel="noreferrer"
-              className="nav-link text-secondary"
-            >
-              Twitter
-            </a>
-          </rb.Nav.Item>
+  if (settings.showOnboarding === true) {
+    return <Onboarding />
+  } else
+    return (
+      <>
+        <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
+        <rb.Container as="main" className="py-4">
+          {connectionError ? (
+            <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
+          ) : (
+            <Routes>
+              <Route
+                path="/"
+                element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
+              />
+              <Route
+                path="create-wallet"
+                element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
+              />
+              {currentWallet && (
+                <>
+                  <Route path="wallet" element={<CurrentWallet currentWallet={currentWallet} />} />
+                  <Route path="send" element={<Send currentWallet={currentWallet} />} />
+                  <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
+                  <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
+                  <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
+                </>
+              )}
+            </Routes>
+          )}
         </rb.Container>
-      </rb.Nav>
-    </>
-  )
+        <rb.Nav as="footer" className="border-top py-2">
+          <rb.Container className="d-flex justify-content-center">
+            <rb.Nav.Item>
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                Docs
+              </a>
+            </rb.Nav.Item>
+            <rb.Nav.Item>
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                Features
+              </a>
+            </rb.Nav.Item>
+            <rb.Nav.Item>
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                GitHub
+              </a>
+            </rb.Nav.Item>
+            <rb.Nav.Item>
+              <a
+                href="https://twitter.com/joinmarket"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                Twitter
+              </a>
+            </rb.Nav.Item>
+          </rb.Container>
+        </rb.Nav>
+      </>
+    )
 }

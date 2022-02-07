@@ -1,9 +1,11 @@
 import * as rb from 'react-bootstrap'
 import React, { useState } from 'react'
 import Sprite from './Sprite'
+import { useSettingsDispatch } from '../context/SettingsContext'
 
 export default function Onboarding() {
   const [step, setStep] = useState(0)
+  const settingsDispatch = useSettingsDispatch()
 
   if (step === 0) {
     return (
@@ -14,7 +16,7 @@ export default function Onboarding() {
         <h1 class="text-center">JoinMarket</h1>
         <p class="text-center fs-4 text-secondary mb-5">Top-notch privacy for your bitcoin.</p>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => setStep(1)}>
+          <rb.Button size="lg" className="col-10" variant="dark" onClick={() => setStep(1)}>
             Get started
           </rb.Button>
         </div>
@@ -28,7 +30,7 @@ export default function Onboarding() {
     return (
       <div class="mx-auto my-auto col-12 col-md-4">
         <div class="d-flex justify-content-center">
-          <Sprite symbol="welcome" width="100" height="100" className="mb-4" />
+          <Sprite symbol="welcome" width="150" height="150" className="mb-4" />
         </div>
         <p class="fs-3 text-center">1: Welcome to JoinMarket!</p>
         <p class="text-center text-secondary mb-5">
@@ -37,13 +39,18 @@ export default function Onboarding() {
           marketplace. <br />
           <br />
           ⚠️ Warning: While JoinMarket is tried and tested, this user interface is not. If anything breaks please{' '}
-          <a href="https://github.com/joinmarket-webui/joinmarket-webui/issues" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/joinmarket-webui/joinmarket-webui/issues"
+            target="_blank"
+            rel="noreferrer"
+            class="link-secondary"
+          >
             report an issue
           </a>{' '}
           on GitHub.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => setStep(2)}>
+          <rb.Button size="lg" variant="dark" onClick={() => setStep(2)}>
             Continue
           </rb.Button>
         </div>
@@ -53,7 +60,7 @@ export default function Onboarding() {
     return (
       <div class="mx-auto my-auto col-12 col-md-4">
         <div class="d-flex justify-content-center">
-          <Sprite symbol="collab" width="100" height="100" className="mb-4" />
+          <Sprite symbol="collab" width="150" height="150" className="mb-4" />
         </div>
         <p class="fs-3 text-center">2: Collaborative Transactions</p>
         <p class="text-center text-secondary mb-5">
@@ -61,7 +68,7 @@ export default function Onboarding() {
           have to be created. JoinMarket helps you to create these transactions in an easy and automated way.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => setStep(3)}>
+          <rb.Button size="lg" variant="dark" onClick={() => setStep(3)}>
             Continue
           </rb.Button>
         </div>
@@ -71,7 +78,7 @@ export default function Onboarding() {
     return (
       <div class="mx-auto my-auto col-12 col-md-4">
         <div class="d-flex justify-content-center">
-          <Sprite symbol="key" width="100" height="100" className="mb-4" />
+          <Sprite symbol="key" width="150" height="150" className="mb-4" />
         </div>
         <p class="fs-3 text-center">3: You Are In Control</p>
         <p class="text-center text-secondary mb-5">
@@ -80,7 +87,7 @@ export default function Onboarding() {
           times.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => setStep(4)}>
+          <rb.Button size="lg" variant="dark" onClick={() => setStep(4)}>
             Continue
           </rb.Button>
         </div>
@@ -90,7 +97,7 @@ export default function Onboarding() {
     return (
       <div class="mx-auto my-auto col-12 col-md-4">
         <div class="d-flex justify-content-center">
-          <Sprite symbol="handshake" width="100" height="100" className="mb-4" />
+          <Sprite symbol="handshake" width="150" height="150" className="mb-4" />
         </div>
         <p class="fs-3 text-center">4. No Trusted Third Parties</p>
         <p class="text-center text-secondary mb-5">
@@ -98,7 +105,7 @@ export default function Onboarding() {
           market-driven approach reduces counterparty risk to a minimum.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => setStep(5)}>
+          <rb.Button size="lg" variant="dark" onClick={() => setStep(5)}>
             Continue
           </rb.Button>
         </div>
@@ -108,7 +115,7 @@ export default function Onboarding() {
     return (
       <div class="mx-auto my-auto col-12 col-md-4">
         <div class="d-flex justify-content-center">
-          <Sprite symbol="shield" width="100" height="100" className="mb-4" />
+          <Sprite symbol="shield" width="150" height="150" className="mb-4" />
         </div>
         <p class="fs-3 text-center">5: Privacy for All</p>
         <p class="text-center text-secondary mb-5">
@@ -116,8 +123,14 @@ export default function Onboarding() {
           build upon it.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => setStep(0)}>
-            Continue
+          <rb.Button
+            size="lg"
+            variant="dark"
+            onClick={() => {
+              settingsDispatch({ showOnboarding: false })
+            }}
+          >
+            Let's go!
           </rb.Button>
         </div>
       </div>
