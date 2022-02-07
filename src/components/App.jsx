@@ -116,7 +116,8 @@ export default function App() {
         <rb.Container>
           {connectionError ? (
             <div class="d-flex justify-content-center">
-              <span class="text-danger mx-1">•</span>Disconnected
+              <span class="text-danger mx-1">•</span>
+              <span className="text-secondary">Disconnected</span>
             </div>
           ) : (
             <div class="d-flex justify-content-center">
