@@ -392,6 +392,24 @@ main {
 
 /* End Privacy Level Styles */
 
+.seedphrase {
+  font-family: Inter;
+  font-weight: 400;
+  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+}
+
+/* Boostrap overrides */
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
 .btn:focus:not(:focus-visible) {
   outline: 0;
   box-shadow: none;
