@@ -39,12 +39,12 @@ const PrivacyLevel = ({ level, balance }) => {
     .fill()
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-filled" width="24" height="30" />
-    }) // todo: no IE support. fine?
+    })
   const outlienedShields = Array(5 - filledShields.length)
     .fill()
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-outline" width="24" height="30" />
-    }) // todo: no IE support. fine?
+    })
   return (
     <div className="d-flex align-items-center">
       <div className={`d-flex privacy-level-${level}`}>
