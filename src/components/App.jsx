@@ -13,14 +13,13 @@ import Navbar from './Navbar'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
-import { useSettings } from '../context/SettingsContext'
+
 import Onboarding from './Onboarding'
 
 export default function App() {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
-  const settings = useSettings()
 
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
@@ -181,50 +180,7 @@ export default function App() {
               </rb.Nav.Item>
             </div>
           </rb.Container>
-          <rb.Nav as="footer" className="border-top py-2">
-            <rb.Container className="d-flex justify-content-center">
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  Docs
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  Features
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  GitHub
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://twitter.com/joinmarket"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  Twitter
-                </a>
-              </rb.Nav.Item>
-            </rb.Container>
-          </rb.Nav>
-        </>
-     )
-  }
+        </rb.Nav>
+      </>
+    )
+}
