@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import PageTitle from './PageTitle'
 import { serialize, walletDisplayName } from '../utils'
 import { useCurrentWallet } from '../context/WalletContext'
@@ -58,7 +58,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
   )
 }
 
-const WalletCreationConfirmation = ({ createdWallet }) => {
+const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const [userConfirmed, setUserConfirmed] = useState(false)
 
   const onSwitch = (e) => {
@@ -82,16 +82,15 @@ const WalletCreationConfirmation = ({ createdWallet }) => {
       <p className="mb-4">
         <rb.Form.Switch onChange={onSwitch} label="I've written down the information above." />
       </p>
-      <Link
-        to="/wallet"
-        className={`btn btn-dark d-flex align-items-center justify-content-center${userConfirmed ? '' : ' disabled'}`}
-        style={{ pointerEvents: userConfirmed ? 'auto' : 'none', height: '3rem' }}
-        onClick={(e) => {
-          userConfirmed || e.preventDefault()
-        }}
+      <rb.Button
+        variant="dark"
+        type="submit"
+        disabled={!userConfirmed}
+        style={{ height: '3rem', width: '100%' }}
+        onClick={() => userConfirmed && walletConfirmed()}
       >
         Fund Wallet
-      </Link>
+      </rb.Button>
     </div>
   )
 }
@@ -118,6 +117,7 @@ const Seedphrase = ({ seedphrase }) => {
 
 export default function CreateWallet({ startWallet }) {
   const currentWallet = useCurrentWallet()
+  const navigate = useNavigate()
 
   const [alert, setAlert] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -142,8 +142,7 @@ export default function CreateWallet({ startWallet }) {
 
       if (res.ok) {
         const { seedphrase, token, walletname: name } = await res.json()
-        setCreatedWallet({ name, seedphrase, password })
-        startWallet(name, token)
+        setCreatedWallet({ name, seedphrase, password, token })
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
@@ -155,8 +154,17 @@ export default function CreateWallet({ startWallet }) {
     }
   }
 
-  const isCreated = currentWallet?.name === createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password
-  const canCreate = !currentWallet
+  const walletConfirmed = () => {
+    if (createWallet.name && createdWallet.token) {
+      startWallet(createdWallet.name, createdWallet.token)
+      navigate('/wallet')
+    } else {
+      setAlert({ variant: 'danger', message: 'Wallet confirmation failed.' })
+    }
+  }
+
+  const isCreated = createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password
+  const canCreate = !currentWallet && !isCreated
 
   return (
     <rb.Row className="justify-content-center">
@@ -172,7 +180,7 @@ export default function CreateWallet({ startWallet }) {
         )}
         {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
         {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
-        {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} />}
+        {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
         {!canCreate && !isCreated && (
           <rb.Alert variant="warning">
             Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.{' '}
