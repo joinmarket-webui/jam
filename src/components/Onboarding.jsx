@@ -9,7 +9,7 @@ export default function Onboarding() {
     return (
       <div class="mx-auto my-auto">
         <div class="d-flex justify-content-center">
-          <img src={logo} alt="logo" class="mb-4" width="200rem" />
+          <Sprite symbol="logo" width="200" height="200" className="mb-4" />
         </div>
         <h1 class="text-center">JoinMarket</h1>
         <p class="text-center fs-4 text-secondary mb-5">Top-notch privacy for your bitcoin.</p>
