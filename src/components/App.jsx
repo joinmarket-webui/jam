@@ -6,9 +6,11 @@ import CreateWallet from './CreateWallet'
 import Send from './Send'
 import Earn from './Earn'
 import Receive from './Receive'
-import CurrentWallet from './CurrentWallet'
+import CurrentWalletMagic from './CurrentWalletMagic'
+import CurrentWalletAdvanced from './CurrentWalletAdvanced'
 import Settings from './Settings'
 import Navbar from './Navbar'
+import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
 
@@ -16,6 +18,8 @@ export default function App() {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
+  const settings = useSettings()
+
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
@@ -87,7 +91,7 @@ export default function App() {
   return (
     <>
       <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
-      <rb.Container as="main" className="py-4">
+      <rb.Container as="main" className="py-5">
         {connectionError ? (
           <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
         ) : (
@@ -102,7 +106,10 @@ export default function App() {
             />
             {currentWallet && (
               <>
-                <Route path="wallet" element={<CurrentWallet currentWallet={currentWallet} />} />
+                <Route
+                  path="wallet"
+                  element={settings.useAdvancedWalletMode ? <CurrentWalletAdvanced /> : <CurrentWalletMagic />}
+                />
                 <Route path="send" element={<Send currentWallet={currentWallet} />} />
                 <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
                 <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
