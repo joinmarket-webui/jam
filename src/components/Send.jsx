@@ -20,7 +20,7 @@ export default function Payment({ currentWallet }) {
     setIsSending(true)
     let success = false
     try {
-      const res = await Api.takerDirectSend({ walletname: name, token }, { account, destination, amount_sats })
+      const res = await Api.postDirectSend({ walletname: name, token }, { account, destination, amount_sats })
       if (res.ok) {
         const {
           txinfo: { outputs },
@@ -51,7 +51,7 @@ export default function Payment({ currentWallet }) {
     setIsSending(true)
     let success = false
     try {
-      const res = await Api.takerCoinjoin(
+      const res = await Api.postCoinjoin(
         { walletname: name, token },
         { account, destination, amount_sats, counterparties }
       )

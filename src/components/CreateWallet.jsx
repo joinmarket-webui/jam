@@ -125,7 +125,7 @@ export default function CreateWallet({ startWallet }) {
     setIsCreating(true)
 
     try {
-      const res = await Api.walletCreate({ walletname, password })
+      const res = await Api.postWalletCreate({ walletname, password })
 
       if (res.ok) {
         const { seedphrase, token, walletname: name } = await res.json()

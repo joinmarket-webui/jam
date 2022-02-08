@@ -50,7 +50,7 @@ export default function App() {
     }
 
     const refreshSession = () => {
-      Api.session({ signal: abortCtrl.signal })
+      Api.getSession({ signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
           const { maker_running, coinjoin_in_process, wallet_name } = data

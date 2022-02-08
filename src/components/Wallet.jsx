@@ -25,7 +25,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       setAlert(null)
       setIsUnlocking(true)
       try {
-        const res = await Api.walletUnlock({ walletname: walletName }, { password })
+        const res = await Api.postWalletUnlock({ walletname: walletName }, { password })
         if (res.ok) {
           const { walletname: name, token } = await res.json()
           startWallet(name, token)
@@ -58,7 +58,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       setAlert(null)
       setIsLocking(true)
 
-      const res = await Api.walletLock({ walletname: name, token })
+      const res = await Api.getWalletLock({ walletname: name, token })
       if (res.ok) {
         const { walletname, already_locked } = await res.json()
         stopWallet()

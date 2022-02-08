@@ -76,7 +76,7 @@ export default function CurrentWalletMagic() {
     setAlert(null)
     setIsLoading(true)
 
-    Api.walletDisplay({ walletname: name, token, signal: abortCtrl.signal })
+    Api.getWalletDisplay({ walletname: name, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {

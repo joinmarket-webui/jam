@@ -23,7 +23,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
     const abortCtrl = new AbortController()
 
     setIsLoading(true)
-    Api.walletAll({ signal: abortCtrl.signal })
+    Api.getWalletAll({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallets failed.'))))
       .then((data) => {
         const { wallets = [] } = data

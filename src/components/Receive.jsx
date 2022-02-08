@@ -25,7 +25,7 @@ const Receive = ({ currentWallet }) => {
 
       setAlert(null)
       setIsLoading(true)
-      Api.walletAddressNew({ walletname: name, accountNr, token, signal: abortCtrl.signal })
+      Api.getAddressNew({ walletname: name, accountNr, token, signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading new address failed.'))))
         .then((data) => setAddress(data.address))
         .catch((err) => {

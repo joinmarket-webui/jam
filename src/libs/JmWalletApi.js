@@ -1,7 +1,7 @@
 /**
- * Simple collection of all api requests to jmwalletd.
+ * Simple collection of api requests to jmwalletd.
  *
- * It is not tried to be feature-complete, but to represent only what is really used.
+ * This is not aiming to be feature-complete.
  *
  * See OpenAPI spec: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/api/wallet-rpc.yaml
  */
@@ -10,24 +10,24 @@ const Authorization = (token) => {
   return { Authorization: `Bearer ${token}` }
 }
 
-const session = async ({ signal }) => {
+const getSession = async ({ signal }) => {
   return await fetch(`/api/v1/session`, { signal })
 }
 
-const walletAddressNew = async ({ walletname, token, accountNr, signal }) => {
+const getAddressNew = async ({ walletname, token, accountNr, signal }) => {
   return await fetch(`/api/v1/wallet/${walletname}/address/new/${accountNr}`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
-const walletAll = async ({ signal }) => {
+const getWalletAll = async ({ signal }) => {
   return await fetch(`/api/v1/wallet/all`, {
     signal,
   })
 }
 
-const walletCreate = async ({ walletname, password }) => {
+const postWalletCreate = async ({ walletname, password }) => {
   const wallettype = 'sw-fb'
 
   return await fetch(`/api/v1/wallet/create`, {
@@ -40,34 +40,40 @@ const walletCreate = async ({ walletname, password }) => {
   })
 }
 
-const walletDisplay = async ({ walletname, token, signal }) => {
+const getWalletDisplay = async ({ walletname, token, signal }) => {
   return await fetch(`/api/v1/wallet/${walletname}/display`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
-const walletLock = async ({ walletname, token }) => {
+/**
+ * Block access to a currently decrypted wallet.
+ * After this (authenticated) action, the wallet will not be readable or writeable.
+ *
+ * Note: Performs a non-idempotent GET request.
+ */
+const getWalletLock = async ({ walletname, token }) => {
   return await fetch(`/api/v1/wallet/${walletname}/lock`, {
     headers: { ...Authorization(token) },
   })
 }
 
-const walletUnlock = async ({ walletname }, { password }) => {
+const postWalletUnlock = async ({ walletname }, { password }) => {
   return await fetch(`/api/v1/wallet/${walletname}/unlock`, {
     method: 'POST',
     body: JSON.stringify({ password }),
   })
 }
 
-const walletUtxos = async ({ walletname, token, signal }) => {
+const getWalletUtxos = async ({ walletname, token, signal }) => {
   return await fetch(`/api/v1/wallet/${walletname}/utxos`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
-const makerStart = async ({ walletname, token, signal }, { cjfee_a, cjfee_r, ordertype, minsize }) => {
+const postMakerStart = async ({ walletname, token, signal }, { cjfee_a, cjfee_r, ordertype, minsize }) => {
   return await fetch(`/api/v1/wallet/${walletname}/maker/start`, {
     method: 'POST',
     headers: { ...Authorization(token) },
@@ -82,13 +88,18 @@ const makerStart = async ({ walletname, token, signal }, { cjfee_a, cjfee_r, ord
   })
 }
 
-const makerStop = async ({ walletname, token }) => {
+/**
+ * Stop the yield generator service.
+ *
+ * Note: Performs a non-idempotent GET request.
+ */
+const getMakerStop = async ({ walletname, token }) => {
   return await fetch(`/api/v1/wallet/${walletname}/maker/stop`, {
     headers: { ...Authorization(token) },
   })
 }
 
-const takerDirectSend = async ({ walletname, token }, { account, destination, amount_sats }) => {
+const postDirectSend = async ({ walletname, token }, { account, destination, amount_sats }) => {
   return await fetch(`/api/v1/wallet/${walletname}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Authorization(token) },
@@ -100,7 +111,7 @@ const takerDirectSend = async ({ walletname, token }, { account, destination, am
   })
 }
 
-const takerCoinjoin = async ({ walletname, token }, { account, destination, amount_sats, counterparties }) => {
+const postCoinjoin = async ({ walletname, token }, { account, destination, amount_sats, counterparties }) => {
   return await fetch(`/api/v1/wallet/${walletname}/taker/coinjoin`, {
     method: 'POST',
     headers: { ...Authorization(token) },
@@ -114,16 +125,16 @@ const takerCoinjoin = async ({ walletname, token }, { account, destination, amou
 }
 
 export {
-  makerStart,
-  makerStop,
-  session,
-  takerDirectSend,
-  takerCoinjoin,
-  walletAddressNew,
-  walletAll,
-  walletCreate,
-  walletDisplay,
-  walletLock,
-  walletUnlock,
-  walletUtxos,
+  postMakerStart,
+  getMakerStop,
+  getSession,
+  postDirectSend,
+  postCoinjoin,
+  getAddressNew,
+  getWalletAll,
+  postWalletCreate,
+  getWalletDisplay,
+  getWalletLock,
+  postWalletUnlock,
+  getWalletUtxos,
 }

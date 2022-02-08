@@ -28,14 +28,14 @@ export default function CurrentWalletAdvanced() {
     setAlert(null)
     setIsLoading(true)
 
-    const loadingWallet = Api.walletDisplay({ walletname: name, token, signal: abortCtrl.signal })
+    const loadingWallet = Api.getWalletDisplay({ walletname: name, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    const loadingUtxos = Api.walletUtxos({ walletname: name, token, signal: abortCtrl.signal })
+    const loadingUtxos = Api.getWalletUtxos({ walletname: name, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.'))))
       .then((data) => setUtxoData(data.utxos))
       .catch((err) => {

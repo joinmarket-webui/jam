@@ -43,7 +43,7 @@ export default function Earn({ currentWallet, makerRunning }) {
     setIsSending(true)
     setIsWaiting(false)
     try {
-      const res = await Api.makerStart(
+      const res = await Api.postMakerStart(
         { walletname: name, token },
         {
           cjfee_a,
@@ -81,7 +81,7 @@ export default function Earn({ currentWallet, makerRunning }) {
     setIsSending(true)
     setIsWaiting(false)
     try {
-      const res = await Api.makerStop({ walletname: name, token })
+      const res = await Api.getMakerStop({ walletname: name, token })
 
       if (res.ok) {
         // FIXME: Right now there is no response data to check if maker got stopped
