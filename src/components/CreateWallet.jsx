@@ -88,7 +88,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         disabled={!userConfirmed}
         onClick={() => userConfirmed && walletConfirmed()}
       >
-        Fund Wallet
+        Fund wallet
       </rb.Button>
     </div>
   )
