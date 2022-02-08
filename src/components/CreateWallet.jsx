@@ -61,7 +61,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const [userConfirmed, setUserConfirmed] = useState(false)
 
-  const onToggle = (toggled) => {
+  const onToggle = (isToggled) => {
     setUserConfirmed(toggled)
   }
 
