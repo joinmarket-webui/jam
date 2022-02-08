@@ -9,15 +9,20 @@ export default function Onboarding() {
 
   if (step === 0) {
     return (
-      <div class="mx-auto my-auto">
+      <div class="mx-auto my-auto py-5">
         <div class="d-flex justify-content-center">
           <Sprite symbol="logo" width="200" height="200" className="mb-4" />
         </div>
         <h1 class="text-center">JoinMarket</h1>
         <p class="text-center fs-4 text-secondary mb-5">Top-notch privacy for your bitcoin.</p>
-        <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-center mb-2">
           <rb.Button size="lg" className="col-10" variant="dark" onClick={() => setStep(1)}>
             Get started
+          </rb.Button>
+        </div>
+        <div class="d-flex justify-content-center">
+          <rb.Button variant="dark" onClick={() => settingsDispatch({ showOnboarding: false })}>
+            Skip intro
           </rb.Button>
         </div>
         <p class="mt-4 text-center">
@@ -28,7 +33,7 @@ export default function Onboarding() {
     )
   } else if (step === 1) {
     return (
-      <div class="mx-auto my-auto col-12 col-md-4">
+      <div class="mx-auto my-auto py-5 col-10 col-md-4">
         <div class="d-flex justify-content-center">
           <Sprite symbol="welcome" width="150" height="150" className="mb-4" />
         </div>
@@ -51,14 +56,14 @@ export default function Onboarding() {
         </p>
         <div class="d-flex justify-content-center">
           <rb.Button size="lg" variant="dark" onClick={() => setStep(2)}>
-            Continue
+            Next
           </rb.Button>
         </div>
       </div>
     )
   } else if (step === 2) {
     return (
-      <div class="mx-auto my-auto col-12 col-md-4">
+      <div class="mx-auto my-auto py-5 col-10 col-md-4">
         <div class="d-flex justify-content-center">
           <Sprite symbol="collab" width="150" height="150" className="mb-4" />
         </div>
@@ -69,14 +74,14 @@ export default function Onboarding() {
         </p>
         <div class="d-flex justify-content-center">
           <rb.Button size="lg" variant="dark" onClick={() => setStep(3)}>
-            Continue
+            Next
           </rb.Button>
         </div>
       </div>
     )
   } else if (step === 3) {
     return (
-      <div class="mx-auto my-auto col-12 col-md-4">
+      <div class="mx-auto my-auto py-5 col-10 col-md-4">
         <div class="d-flex justify-content-center">
           <Sprite symbol="key" width="150" height="150" className="mb-4" />
         </div>
@@ -88,14 +93,14 @@ export default function Onboarding() {
         </p>
         <div class="d-flex justify-content-center">
           <rb.Button size="lg" variant="dark" onClick={() => setStep(4)}>
-            Continue
+            Next
           </rb.Button>
         </div>
       </div>
     )
   } else if (step === 4) {
     return (
-      <div class="mx-auto my-auto col-12 col-md-4">
+      <div class="mx-auto my-auto py-5 col-10 col-md-4">
         <div class="d-flex justify-content-center">
           <Sprite symbol="handshake" width="150" height="150" className="mb-4" />
         </div>
@@ -106,14 +111,14 @@ export default function Onboarding() {
         </p>
         <div class="d-flex justify-content-center">
           <rb.Button size="lg" variant="dark" onClick={() => setStep(5)}>
-            Continue
+            Next
           </rb.Button>
         </div>
       </div>
     )
   } else if (step === 5) {
     return (
-      <div class="mx-auto my-auto col-12 col-md-4">
+      <div class="mx-auto my-auto py-5 col-10 col-md-4">
         <div class="d-flex justify-content-center">
           <Sprite symbol="shield" width="150" height="150" className="mb-4" />
         </div>
