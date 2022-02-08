@@ -21,7 +21,12 @@ export default function Onboarding() {
           </rb.Button>
         </div>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => settingsDispatch({ showOnboarding: false })}>
+          <rb.Button
+            size="lg"
+            className="col-10"
+            variant="outline-dark"
+            onClick={() => settingsDispatch({ showOnboarding: false })}
+          >
             Skip intro
           </rb.Button>
         </div>
@@ -120,7 +125,7 @@ export default function Onboarding() {
     return (
       <div class="mx-auto my-auto py-5 col-10 col-md-4">
         <div class="d-flex justify-content-center">
-          <Sprite symbol="shield" width="150" height="150" className="mb-4" />
+          <Sprite symbol="shield-filled" width="150" height="150" className="mb-4" />
         </div>
         <p class="fs-3 text-center">5: Privacy for All</p>
         <p class="text-center text-secondary mb-5">
