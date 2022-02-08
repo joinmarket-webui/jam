@@ -42,7 +42,7 @@ export default function Onboarding() {
         <div class="d-flex justify-content-center">
           <Sprite symbol="welcome" width="150" height="150" className="mb-4" />
         </div>
-        <p class="fs-3 text-center">1: Welcome to JoinMarket!</p>
+        <p class="fs-3 text-center">Welcome to JoinMarket!</p>
         <p class="text-center text-secondary mb-5">
           JoinMarket is a privacy-focused software solution that aims to improve the confidentiality and privacy of your
           bitcoin transactions. It facilitates the creation of collaborative transactions through a peer-to-peer
@@ -60,7 +60,7 @@ export default function Onboarding() {
           on GitHub.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button size="lg" variant="dark" onClick={() => setStep(2)}>
+          <rb.Button size="lg" className="col-10" variant="dark" onClick={() => setStep(2)}>
             Next
           </rb.Button>
         </div>
