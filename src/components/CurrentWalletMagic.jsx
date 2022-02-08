@@ -21,6 +21,7 @@ const WalletHeader = ({ name, balance, unit, showBalance }) => {
 const PrivacyLevels = ({ accounts }) => {
   const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account).reverse()
   const numAccounts = sortedAccounts.length
+
   return (
     <div className="d-flex justify-content-center">
       <div className="d-flex flex-column align-items-start" style={{ gap: '1rem' }}>
