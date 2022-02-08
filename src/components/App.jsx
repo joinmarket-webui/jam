@@ -92,95 +92,95 @@ export default function App() {
 
   if (settings.showOnboarding === true) {
     return <Onboarding />
-  } else
-    return (
-      <>
-        <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
-        <rb.Container as="main" className="py-5">
-          {connectionError ? (
-            <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
-          ) : (
-            <Routes>
-              <Route
-                path="/"
-                element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
-              />
-              <Route
-                path="create-wallet"
-                element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
-              />
-              {currentWallet && (
-                <>
-                  <Route
-                    path="wallet"
-                    element={settings.useAdvancedWalletMode ? <CurrentWalletAdvanced /> : <CurrentWalletMagic />}
-                  />
-                  <Route path="send" element={<Send currentWallet={currentWallet} />} />
-                  <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
-                  <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
-                  <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
-                </>
-              )}
-            </Routes>
-          )}
-        </rb.Container>
-        <rb.Nav as="footer" className="border-top py-2">
-          <rb.Container>
-            {connectionError ? (
-              <div class="d-flex justify-content-center pt-2">
-                <span class="text-danger mx-1">•</span>
-                <span className="text-secondary">Disconnected</span>
-              </div>
-            ) : (
-              <div class="d-flex justify-content-center pt-2">
-                <span class="text-success mx-1">•</span>
-                <span className="text-secondary">Connected</span>
-              </div>
+  }
+  return (
+    <>
+      <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
+      <rb.Container as="main" className="py-5">
+        {connectionError ? (
+          <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
+        ) : (
+          <Routes>
+            <Route
+              path="/"
+              element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
+            />
+            <Route
+              path="create-wallet"
+              element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
+            />
+            {currentWallet && (
+              <>
+                <Route
+                  path="wallet"
+                  element={settings.useAdvancedWalletMode ? <CurrentWalletAdvanced /> : <CurrentWalletMagic />}
+                />
+                <Route path="send" element={<Send currentWallet={currentWallet} />} />
+                <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
+                <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
+                <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
+              </>
             )}
-            <div class="d-flex justify-content-center">
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  Docs
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  Features
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  GitHub
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://twitter.com/joinmarket"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="nav-link text-secondary"
-                >
-                  Twitter
-                </a>
-              </rb.Nav.Item>
+          </Routes>
+        )}
+      </rb.Container>
+      <rb.Nav as="footer" className="border-top py-2">
+        <rb.Container>
+          {connectionError ? (
+            <div class="d-flex justify-content-center pt-2">
+              <span class="text-danger mx-1">•</span>
+              <span className="text-secondary">Disconnected</span>
             </div>
-          </rb.Container>
-        </rb.Nav>
-      </>
-    )
+          ) : (
+            <div class="d-flex justify-content-center pt-2">
+              <span class="text-success mx-1">•</span>
+              <span className="text-secondary">Connected</span>
+            </div>
+          )}
+          <div class="d-flex justify-content-center">
+            <rb.Nav.Item>
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                Docs
+              </a>
+            </rb.Nav.Item>
+            <rb.Nav.Item>
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                Features
+              </a>
+            </rb.Nav.Item>
+            <rb.Nav.Item>
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                GitHub
+              </a>
+            </rb.Nav.Item>
+            <rb.Nav.Item>
+              <a
+                href="https://twitter.com/joinmarket"
+                target="_blank"
+                rel="noreferrer"
+                className="nav-link text-secondary"
+              >
+                Twitter
+              </a>
+            </rb.Nav.Item>
+          </div>
+        </rb.Container>
+      </rb.Nav>
+    </>
+  )
 }
