@@ -36,6 +36,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
             name="password"
             type="password"
             placeholder="Choose a secure password..."
+            disabled={isCreating}
             autoComplete="new-password"
             required
           />
