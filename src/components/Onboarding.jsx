@@ -60,7 +60,7 @@ export default function Onboarding() {
           on GitHub.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button size="lg" variant="dark" onClick={() => setStep(2)}>
+          <rb.Button size="lg" className="col-10" variant="dark" onClick={() => setStep(2)}>
             Next
           </rb.Button>
         </div>
