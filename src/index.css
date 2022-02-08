@@ -281,7 +281,7 @@ main {
   display: none;
 }
 
-/* Start Navbar Styles */
+/* Navbar Styles */
 
 #mainNav .nav-link {
   font-weight: 600 !important;
@@ -355,7 +355,55 @@ main {
   }
 }
 
-/* End Navbar Styles */
+/* Wallet Creation Styles */
+
+.seedphrase {
+  gap: 0.3rem;
+
+  font-family: Inter;
+  font-weight: 400;
+  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+}
+
+.seedphrase > div {
+  background-color: rgba(244, 244, 244, 1);
+  width: 8rem;
+}
+
+.seedword-index {
+  width: 2ch;
+}
+
+:root[data-theme='dark'] .seedphrase > div {
+  background-color: var(--bs-gray-800);
+}
+
+.create-wallet form input {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.create-wallet button {
+  height: 3rem;
+  width: 100%;
+}
+
+/* Boostrap overrides */
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.btn:focus:not(:focus-visible) {
+  outline: 0;
+  box-shadow: none;
+}
 
 /* Start Privacy Level Styles */
 
@@ -388,13 +436,6 @@ main {
   padding: 0.25rem;
   font-weight: 500;
   border-color: rgba(222, 222, 222, 1);
-}
-
-/* End Privacy Level Styles */
-
-.btn:focus:not(:focus-visible) {
-  outline: 0;
-  box-shadow: none;
 }
 
 /* Theme overrides */
