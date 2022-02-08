@@ -61,8 +61,6 @@ const walletUnlock = async ({ walletname }, { password }) => {
 }
 
 const walletUtxos = async ({ walletname, token, signal }) => {
-  const wallettype = 'sw-fb'
-
   return await fetch(`/api/v1/wallet/${walletname}/utxos`, {
     headers: { ...Authorization(token) },
     signal,
