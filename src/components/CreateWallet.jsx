@@ -1,43 +1,13 @@
 import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
+import { Link, useNavigate } from 'react-router-dom'
+import PageTitle from './PageTitle'
+import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
+import { useCurrentWallet } from '../context/WalletContext'
 
-export default function CreateWallet({ currentWallet, startWallet }) {
+const WalletCreationForm = ({ createWallet, isCreating }) => {
   const [validated, setValidated] = useState(false)
-  const [alert, setAlert] = useState(null)
-  const [isCreating, setIsCreating] = useState(false)
-  const [createdWallet, setCreatedWallet] = useState(null)
-
-  const createWallet = async (name, password) => {
-    const walletname = name.endsWith('.jmdat') ? name : `${name}.jmdat`
-    setAlert(null)
-    setIsCreating(true)
-    try {
-      const wallettype = 'sw-fb'
-      const res = await fetch(`/api/v1/wallet/create`, {
-        method: 'POST',
-        body: JSON.stringify({
-          password,
-          walletname,
-          wallettype,
-        }),
-      })
-
-      if (res.ok) {
-        const { seedphrase, token, walletname: createdWallet } = await res.json()
-        setAlert({ variant: 'success', seedphrase, password })
-        setCreatedWallet(createdWallet)
-        startWallet(createdWallet, token)
-      } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
-      }
-    } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
-      setIsCreating(false)
-    }
-  }
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -52,57 +22,26 @@ export default function CreateWallet({ currentWallet, startWallet }) {
     }
   }
 
-  const isCreated = currentWallet && currentWallet.name === createdWallet
-  const canCreate = !currentWallet && !isCreated
-
-  if (isCreated && alert?.seedphrase) {
-    return (
-      <rb.Alert variant="success">
-        <rb.Alert.Heading>Wallet created succesfully!</rb.Alert.Heading>
-        <p className="d-flex align-items-center my-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
-            fill="currentColor"
-            className="me-3"
-            viewBox="0 0 16 16"
-          >
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-          </svg>
-          <span>
-            Please write down your seed phrase and password!
-            <br />
-            Without this information you will not be able to access and recover your wallet!
-          </span>
-        </p>
-        <p>
-          Seed phrase: <strong>{alert.seedphrase}</strong>
-        </p>
-        <p className="mb-0">
-          Password: <strong>{alert.password}</strong>
-        </p>
-      </rb.Alert>
-    )
-  } else {
-    return canCreate ? (
+  return (
+    <>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-        <h1>Create Wallet</h1>
-        {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-        <rb.Form.Group className="mb-3" controlId="walletName">
+        <rb.Form.Group className="mb-4" controlId="walletName">
           <rb.Form.Label>Wallet Name</rb.Form.Label>
-          <rb.Form.Control name="wallet" style={{ maxWidth: '20em' }} required />
+          <rb.Form.Control name="wallet" placeholder="Your wallet..." disabled={isCreating} required />
+          <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
           <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
         </rb.Form.Group>
-        <rb.Form.Group className="mb-3" controlId="password">
+        <rb.Form.Group className="mb-4" controlId="password">
           <rb.Form.Label>Password</rb.Form.Label>
           <rb.Form.Control
             name="password"
             type="password"
+            placeholder="Choose a secure password..."
+            disabled={isCreating}
             autoComplete="new-password"
-            style={{ maxWidth: '20em' }}
             required
           />
+          <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
           <rb.Form.Control.Feedback type="invalid">Please set a password.</rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Button variant="dark" type="submit" disabled={isCreating}>
@@ -116,10 +55,136 @@ export default function CreateWallet({ currentWallet, startWallet }) {
           )}
         </rb.Button>
       </rb.Form>
-    ) : (
-      <rb.Alert variant="warning">
-        Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.
-      </rb.Alert>
-    )
+    </>
+  )
+}
+
+const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
+  const [userConfirmed, setUserConfirmed] = useState(false)
+
+  const onToggle = (isToggled) => {
+    setUserConfirmed(isToggled)
   }
+
+  return (
+    <div>
+      <p className="mb-4">
+        <div>Wallet Name</div>
+        <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
+      </p>
+      <p className="mb-4">
+        <div className="mb-2">Seedphrase</div>
+        <Seedphrase seedphrase={createdWallet.seedphrase} />
+      </p>
+      <p className="mb-4">
+        <div>Password</div>
+        <div className="fs-4">{createdWallet.password}</div>
+      </p>
+      <div className="mb-4">
+        <ToggleSwitch label="I've written down the information above." onToggle={onToggle} />
+      </div>
+      <rb.Button
+        variant="dark"
+        type="submit"
+        disabled={!userConfirmed}
+        onClick={() => userConfirmed && walletConfirmed()}
+      >
+        Fund wallet
+      </rb.Button>
+    </div>
+  )
+}
+
+const Seedphrase = ({ seedphrase }) => {
+  return (
+    <div className="seedphrase d-flex flex-wrap">
+      {seedphrase.split(' ').map((seedWord, index) => (
+        <div key={index} className="d-flex py-2 ps-2 pe-3">
+          <span className="seedword-index text-secondary text-end">{index + 1}</span>
+          <span className="text-secondary">.&nbsp;</span>
+          <span>{seedWord}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function CreateWallet({ startWallet }) {
+  const currentWallet = useCurrentWallet()
+  const navigate = useNavigate()
+
+  const [alert, setAlert] = useState(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [createdWallet, setCreatedWallet] = useState(null)
+
+  const createWallet = async (name, password) => {
+    const walletname = name.endsWith('.jmdat') ? name : `${name}.jmdat`
+
+    setAlert(null)
+    setIsCreating(true)
+
+    try {
+      const wallettype = 'sw-fb'
+      const res = await fetch(`/api/v1/wallet/create`, {
+        method: 'POST',
+        body: JSON.stringify({
+          password,
+          walletname,
+          wallettype,
+        }),
+      })
+
+      if (res.ok) {
+        const { seedphrase, token, walletname: name } = await res.json()
+        setCreatedWallet({ name, seedphrase, password, token })
+      } else {
+        const { message } = await res.json()
+        setAlert({ variant: 'danger', message })
+      }
+    } catch (e) {
+      setAlert({ variant: 'danger', message: e.message })
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  const walletConfirmed = () => {
+    if (createWallet.name && createdWallet.token) {
+      startWallet(createdWallet.name, createdWallet.token)
+      navigate('/wallet')
+    } else {
+      setAlert({ variant: 'danger', message: 'Wallet confirmation failed.' })
+    }
+  }
+
+  const isCreated = createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password
+  const canCreate = !currentWallet && !isCreated
+
+  return (
+    <rb.Row className="create-wallet justify-content-center">
+      <rb.Col md={10} lg={8} xl={6}>
+        {isCreated ? (
+          <PageTitle
+            title="Wallet created successfully!"
+            subtitle="Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!"
+            success
+          />
+        ) : (
+          <PageTitle title="Create Wallet" />
+        )}
+        {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+        {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
+        {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
+        {!canCreate && !isCreated && (
+          <rb.Alert variant="warning">
+            Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.{' '}
+            <Link to="/" className="alert-link">
+              Go back
+            </Link>
+            .
+          </rb.Alert>
+        )}
+      </rb.Col>
+    </rb.Row>
+  )
 }
