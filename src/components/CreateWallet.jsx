@@ -27,7 +27,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <rb.Form.Group className="mb-4" controlId="walletName">
           <rb.Form.Label>Wallet Name</rb.Form.Label>
-          <rb.Form.Control name="wallet" placeholder="Your wallet..." required />
+          <rb.Form.Control name="wallet" placeholder="Your wallet..." disabled={isCreating} required />
           <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
           <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
         </rb.Form.Group>
@@ -37,6 +37,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
             name="password"
             type="password"
             placeholder="Choose a secure password..."
+            disabled={isCreating}
             autoComplete="new-password"
             required
           />
@@ -88,7 +89,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         disabled={!userConfirmed}
         onClick={() => userConfirmed && walletConfirmed()}
       >
-        Fund Wallet
+        Fund wallet
       </rb.Button>
     </div>
   )
