@@ -26,7 +26,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <rb.Form.Group className="mb-4" controlId="walletName">
           <rb.Form.Label>Wallet Name</rb.Form.Label>
-          <rb.Form.Control name="wallet" placeholder="Your wallet..." required />
+          <rb.Form.Control name="wallet" placeholder="Your wallet..." disabled={isCreating} required />
           <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
           <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
         </rb.Form.Group>
