@@ -60,7 +60,7 @@ export default function Onboarding() {
           on GitHub.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button size="lg" className="col-10" variant="dark" onClick={() => setStep(2)}>
+          <rb.Button size="lg" className="col-6" variant="dark" onClick={() => setStep(2)}>
             Next
           </rb.Button>
         </div>
@@ -72,13 +72,13 @@ export default function Onboarding() {
         <div class="d-flex justify-content-center">
           <Sprite symbol="collab" width="150" height="150" className="mb-4" />
         </div>
-        <p class="fs-3 text-center">2: Collaborative Transactions</p>
+        <p class="fs-3 text-center">Collaborative Transactions</p>
         <p class="text-center text-secondary mb-5">
           To have strong privacy guarantees in the open and transparent world of bitcoin, special kinds of transactions
           have to be created. JoinMarket helps you to create these transactions in an easy and automated way.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button size="lg" variant="dark" onClick={() => setStep(3)}>
+          <rb.Button size="lg" className="col-6" variant="dark" onClick={() => setStep(3)}>
             Next
           </rb.Button>
         </div>
@@ -90,14 +90,14 @@ export default function Onboarding() {
         <div class="d-flex justify-content-center">
           <Sprite symbol="key" width="150" height="150" className="mb-4" />
         </div>
-        <p class="fs-3 text-center">3: You Are In Control</p>
+        <p class="fs-3 text-center">You Are In Control</p>
         <p class="text-center text-secondary mb-5">
           JoinMarket is fully non-custodial, meaning that you always have full control over your funds. The system uses
           Bitcoin’s smart contracts to make sure that all transactions are atomic and your funds are secure at all
           times.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button size="lg" variant="dark" onClick={() => setStep(4)}>
+          <rb.Button size="lg" className="col-6" variant="dark" onClick={() => setStep(4)}>
             Next
           </rb.Button>
         </div>
@@ -109,13 +109,13 @@ export default function Onboarding() {
         <div class="d-flex justify-content-center">
           <Sprite symbol="handshake" width="150" height="150" className="mb-4" />
         </div>
-        <p class="fs-3 text-center">4. No Trusted Third Parties</p>
+        <p class="fs-3 text-center">No Trusted Third Parties</p>
         <p class="text-center text-secondary mb-5">
           Since JoinMarket is a peer-to-peer system, trusted third parties are eliminated from the get-go. This unique
           market-driven approach reduces counterparty risk to a minimum.
         </p>
         <div class="d-flex justify-content-center">
-          <rb.Button size="lg" variant="dark" onClick={() => setStep(5)}>
+          <rb.Button size="lg" className="col-6" variant="dark" onClick={() => setStep(5)}>
             Next
           </rb.Button>
         </div>
@@ -127,7 +127,7 @@ export default function Onboarding() {
         <div class="d-flex justify-content-center">
           <Sprite symbol="shield-filled" width="150" height="150" className="mb-4" />
         </div>
-        <p class="fs-3 text-center">5: Privacy for All</p>
+        <p class="fs-3 text-center">Privacy for All</p>
         <p class="text-center text-secondary mb-5">
           JoinMarket is free and open-source software without a single point of failure. Everyone is free to use it and
           build upon it.
@@ -135,6 +135,7 @@ export default function Onboarding() {
         <div class="d-flex justify-content-center">
           <rb.Button
             size="lg"
+            className="col-6"
             variant="dark"
             onClick={() => {
               settingsDispatch({ showOnboarding: false })
