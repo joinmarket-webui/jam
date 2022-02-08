@@ -14,8 +14,8 @@ const getSession = async ({ signal }) => {
   return await fetch(`/api/v1/session`, { signal })
 }
 
-const getAddressNew = async ({ walletname, token, accountNr, signal }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/address/new/${accountNr}`, {
+const getAddressNew = async ({ walletName, token, accountNr, signal }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/address/new/${accountNr}`, {
     headers: { ...Authorization(token) },
     signal,
   })
@@ -27,21 +27,21 @@ const getWalletAll = async ({ signal }) => {
   })
 }
 
-const postWalletCreate = async ({ walletname, password }) => {
-  const wallettype = 'sw-fb'
+const postWalletCreate = async ({ walletName: name, password }) => {
+  const walletname = name.endsWith('.jmdat') ? name : `${name}.jmdat`
 
   return await fetch(`/api/v1/wallet/create`, {
     method: 'POST',
     body: JSON.stringify({
-      password,
+      wallettype: 'sw-fb',
       walletname,
-      wallettype,
+      password,
     }),
   })
 }
 
-const getWalletDisplay = async ({ walletname, token, signal }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/display`, {
+const getWalletDisplay = async ({ walletName, token, signal }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/display`, {
     headers: { ...Authorization(token) },
     signal,
   })
@@ -53,28 +53,28 @@ const getWalletDisplay = async ({ walletname, token, signal }) => {
  *
  * Note: Performs a non-idempotent GET request.
  */
-const getWalletLock = async ({ walletname, token }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/lock`, {
+const getWalletLock = async ({ walletName, token }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/lock`, {
     headers: { ...Authorization(token) },
   })
 }
 
-const postWalletUnlock = async ({ walletname }, { password }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/unlock`, {
+const postWalletUnlock = async ({ walletName }, { password }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/unlock`, {
     method: 'POST',
     body: JSON.stringify({ password }),
   })
 }
 
-const getWalletUtxos = async ({ walletname, token, signal }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/utxos`, {
+const getWalletUtxos = async ({ walletName, token, signal }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/utxos`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
-const postMakerStart = async ({ walletname, token, signal }, { cjfee_a, cjfee_r, ordertype, minsize }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/maker/start`, {
+const postMakerStart = async ({ walletName, token, signal }, { cjfee_a, cjfee_r, ordertype, minsize }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/maker/start`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     signal,
@@ -93,14 +93,14 @@ const postMakerStart = async ({ walletname, token, signal }, { cjfee_a, cjfee_r,
  *
  * Note: Performs a non-idempotent GET request.
  */
-const getMakerStop = async ({ walletname, token }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/maker/stop`, {
+const getMakerStop = async ({ walletName, token }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/maker/stop`, {
     headers: { ...Authorization(token) },
   })
 }
 
-const postDirectSend = async ({ walletname, token }, { account, destination, amount_sats }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/taker/direct-send`, {
+const postDirectSend = async ({ walletName, token }, { account, destination, amount_sats }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify({
@@ -111,8 +111,8 @@ const postDirectSend = async ({ walletname, token }, { account, destination, amo
   })
 }
 
-const postCoinjoin = async ({ walletname, token }, { account, destination, amount_sats, counterparties }) => {
-  return await fetch(`/api/v1/wallet/${walletname}/taker/coinjoin`, {
+const postCoinjoin = async ({ walletName, token }, { account, destination, amount_sats, counterparties }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/taker/coinjoin`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify({

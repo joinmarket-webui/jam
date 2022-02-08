@@ -37,14 +37,14 @@ export default function Earn({ currentWallet, makerRunning }) {
   }
 
   const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
-    const { name, token } = currentWallet
+    const { name: walletName, token } = currentWallet
 
     setAlert(null)
     setIsSending(true)
     setIsWaiting(false)
     try {
       const res = await Api.postMakerStart(
-        { walletname: name, token },
+        { walletName, token },
         {
           cjfee_a,
           cjfee_r,
@@ -75,13 +75,13 @@ export default function Earn({ currentWallet, makerRunning }) {
   }, [makerRunning])
 
   const stopMakerService = async () => {
-    const { name, token } = currentWallet
+    const { name: walletName, token } = currentWallet
 
     setAlert(null)
     setIsSending(true)
     setIsWaiting(false)
     try {
-      const res = await Api.getMakerStop({ walletname: name, token })
+      const res = await Api.getMakerStop({ walletName, token })
 
       if (res.ok) {
         // FIXME: Right now there is no response data to check if maker got stopped

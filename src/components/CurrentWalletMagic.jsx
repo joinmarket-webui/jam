@@ -71,12 +71,12 @@ export default function CurrentWalletMagic() {
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const { name, token } = wallet
+    const { name: walletName, token } = wallet
 
     setAlert(null)
     setIsLoading(true)
 
-    Api.getWalletDisplay({ walletname: name, token, signal: abortCtrl.signal })
+    Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {

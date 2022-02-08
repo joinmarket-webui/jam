@@ -21,11 +21,11 @@ const Receive = ({ currentWallet }) => {
   useEffect(() => {
     const abortCtrl = new AbortController()
     const fetchAddress = async (accountNr) => {
-      const { name, token } = currentWallet
+      const { name: walletName, token } = currentWallet
 
       setAlert(null)
       setIsLoading(true)
-      Api.getAddressNew({ walletname: name, accountNr, token, signal: abortCtrl.signal })
+      Api.getAddressNew({ walletName, accountNr, token, signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading new address failed.'))))
         .then((data) => setAddress(data.address))
         .catch((err) => {
