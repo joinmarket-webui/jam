@@ -13,6 +13,7 @@ import Navbar from './Navbar'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
+import * as Api from '../libs/JmWalletApi'
 
 export default function App() {
   const currentWallet = useCurrentWallet()
@@ -49,9 +50,7 @@ export default function App() {
     }
 
     const refreshSession = () => {
-      const opts = { signal: abortCtrl.signal }
-
-      fetch('/api/v1/session', opts)
+      Api.session({ signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
           const { maker_running, coinjoin_in_process, wallet_name } = data

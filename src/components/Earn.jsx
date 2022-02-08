@@ -1,6 +1,7 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
+import * as Api from '../libs/JmWalletApi'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
@@ -37,23 +38,20 @@ export default function Earn({ currentWallet, makerRunning }) {
 
   const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
     const { name, token } = currentWallet
-    const opts = {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        txfee: 0,
-        cjfee_a,
-        cjfee_r,
-        ordertype,
-        minsize,
-      }),
-    }
 
     setAlert(null)
     setIsSending(true)
     setIsWaiting(false)
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/maker/start`, opts)
+      const res = await Api.makerStart(
+        { walletname: name, token },
+        {
+          cjfee_a,
+          cjfee_r,
+          ordertype,
+          minsize,
+        }
+      )
 
       if (res.ok) {
         // FIXME: Right now there is no response data to check if maker got started
@@ -78,15 +76,12 @@ export default function Earn({ currentWallet, makerRunning }) {
 
   const stopMakerService = async () => {
     const { name, token } = currentWallet
-    const opts = {
-      headers: { Authorization: `Bearer ${token}` },
-    }
 
     setAlert(null)
     setIsSending(true)
     setIsWaiting(false)
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/maker/stop`, opts)
+      const res = await Api.makerStop({ walletname: name, token })
 
       if (res.ok) {
         // FIXME: Right now there is no response data to check if maker got stopped

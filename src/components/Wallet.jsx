@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize, walletDisplayName } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 
 export default function Wallet({ name, currentWallet, startWallet, stopWallet, setAlert, ...props }) {
   const [validated, setValidated] = useState(false)
@@ -24,11 +25,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       setAlert(null)
       setIsUnlocking(true)
       try {
-        const opts = {
-          method: 'POST',
-          body: JSON.stringify({ password }),
-        }
-        const res = await fetch(`/api/v1/wallet/${walletName}/unlock`, opts)
+        const res = await Api.walletUnlock({ walletname: walletName }, { password })
         if (res.ok) {
           const { walletname: name, token } = await res.json()
           startWallet(name, token)
@@ -58,13 +55,10 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
 
     try {
       const { name, token } = currentWallet
-      const opts = {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-
       setAlert(null)
       setIsLocking(true)
-      const res = await fetch(`/api/v1/wallet/${name}/lock`, opts)
+
+      const res = await Api.walletLock({ walletname: name, token })
       if (res.ok) {
         const { walletname, already_locked } = await res.json()
         stopWallet()

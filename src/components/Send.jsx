@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize, ACCOUNTS } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 
 export default function Payment({ currentWallet }) {
   const location = useLocation()
@@ -14,21 +15,12 @@ export default function Payment({ currentWallet }) {
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name, token } = currentWallet
-    const opts = {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        mixdepth: String(account),
-        destination,
-        amount_sats,
-      }),
-    }
 
     setAlert(null)
     setIsSending(true)
     let success = false
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, opts)
+      const res = await Api.takerDirectSend({ walletname: name, token }, { account, destination, amount_sats })
       if (res.ok) {
         const {
           txinfo: { outputs },
@@ -54,22 +46,15 @@ export default function Payment({ currentWallet }) {
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
     const { name, token } = currentWallet
-    const opts = {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        mixdepth: String(account),
-        destination,
-        amount_sats,
-        counterparties,
-      }),
-    }
 
     setAlert(null)
     setIsSending(true)
     let success = false
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`, opts)
+      const res = await Api.takerCoinjoin(
+        { walletname: name, token },
+        { account, destination, amount_sats, counterparties }
+      )
       if (res.ok) {
         const data = await res.json()
         console.log(data)

@@ -4,6 +4,7 @@ import * as rb from 'react-bootstrap'
 import Alert from './Alert'
 import Wallet from './Wallet'
 import { walletDisplayName } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 
 export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   const [walletList, setWalletList] = useState(null)
@@ -20,10 +21,9 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const opts = { signal: abortCtrl.signal }
 
     setIsLoading(true)
-    fetch('/api/v1/wallet/all', opts)
+    Api.walletAll({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallets failed.'))))
       .then((data) => {
         const { wallets = [] } = data

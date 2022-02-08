@@ -4,6 +4,7 @@ import DisplayAccounts from './DisplayAccounts'
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
 import DisplayUTXOs from './DisplayUTXOs'
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
+import * as Api from '../libs/JmWalletApi'
 
 export default function CurrentWalletAdvanced() {
   const currentWallet = useCurrentWallet()
@@ -18,10 +19,6 @@ export default function CurrentWalletAdvanced() {
   useEffect(() => {
     const abortCtrl = new AbortController()
     const { name, token } = currentWallet
-    const opts = {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: abortCtrl.signal,
-    }
 
     const setUtxoData = (utxos) => {
       setUtxos(utxos)
@@ -31,14 +28,14 @@ export default function CurrentWalletAdvanced() {
     setAlert(null)
     setIsLoading(true)
 
-    const loadingWallet = fetch(`/api/v1/wallet/${name}/display`, opts)
+    const loadingWallet = Api.walletDisplay({ walletname: name, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    const loadingUtxos = fetch(`/api/v1/wallet/${name}/utxos`, opts)
+    const loadingUtxos = Api.walletUtxos({ walletname: name, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading UTXOs failed.'))))
       .then((data) => setUtxoData(data.utxos))
       .catch((err) => {

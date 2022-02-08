@@ -6,6 +6,7 @@ import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from 
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 
 const WalletHeader = ({ name, balance, unit, showBalance }) => {
   return (
@@ -71,15 +72,11 @@ export default function CurrentWalletMagic() {
   useEffect(() => {
     const abortCtrl = new AbortController()
     const { name, token } = wallet
-    const opts = {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: abortCtrl.signal,
-    }
 
     setAlert(null)
     setIsLoading(true)
 
-    fetch(`/api/v1/wallet/${name}/display`, opts)
+    Api.walletDisplay({ walletname: name, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
