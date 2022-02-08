@@ -21,7 +21,12 @@ export default function Onboarding() {
           </rb.Button>
         </div>
         <div class="d-flex justify-content-center">
-          <rb.Button variant="dark" onClick={() => settingsDispatch({ showOnboarding: false })}>
+          <rb.Button
+            size="lg"
+            className="col-10"
+            variant="outline-dark"
+            onClick={() => settingsDispatch({ showOnboarding: false })}
+          >
             Skip intro
           </rb.Button>
         </div>
