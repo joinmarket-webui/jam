@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTitle from './PageTitle'
+import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
 import { useCurrentWallet } from '../context/WalletContext'
 
@@ -61,8 +62,8 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const [userConfirmed, setUserConfirmed] = useState(false)
 
-  const onSwitch = (e) => {
-    setUserConfirmed(e.target.checked)
+  const onToggle = (isToggled) => {
+    setUserConfirmed(isToggled)
   }
 
   return (
@@ -79,9 +80,9 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         <div>Password</div>
         <div className="fs-4">{createdWallet.password}</div>
       </p>
-      <p className="mb-4">
-        <rb.Form.Switch onChange={onSwitch} label="I've written down the information above." />
-      </p>
+      <div className="mb-4">
+        <ToggleSwitch label="I've written down the information above." onToggle={onToggle} />
+      </div>
       <rb.Button
         variant="dark"
         type="submit"
