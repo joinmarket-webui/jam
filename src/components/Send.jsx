@@ -70,7 +70,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
   )
 }
 
-export default function Send({ currentWallet }) {
+export default function Send() {
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
@@ -108,7 +108,7 @@ export default function Send({ currentWallet }) {
   }, [wallet, setWalletInfo, walletInfo])
 
   const sendPayment = async (account, destination, amount_sats) => {
-    const { name: walletName, token } = currentWallet
+    const { name: walletName, token } = wallet
 
     setAlert(null)
     setIsSending(true)
@@ -139,7 +139,7 @@ export default function Send({ currentWallet }) {
   }
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
-    const { name: walletName, token } = currentWallet
+    const { name: walletName, token } = wallet
 
     setAlert(null)
     setIsSending(true)
