@@ -5,6 +5,7 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
 import { useCurrentWallet } from '../context/WalletContext'
+import * as Api from '../libs/JmWalletApi'
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
   const [validated, setValidated] = useState(false)
@@ -117,26 +118,16 @@ export default function CreateWallet({ startWallet }) {
   const [isCreating, setIsCreating] = useState(false)
   const [createdWallet, setCreatedWallet] = useState(null)
 
-  const createWallet = async (name, password) => {
-    const walletname = name.endsWith('.jmdat') ? name : `${name}.jmdat`
-
+  const createWallet = async (walletName, password) => {
     setAlert(null)
     setIsCreating(true)
 
     try {
-      const wallettype = 'sw-fb'
-      const res = await fetch(`/api/v1/wallet/create`, {
-        method: 'POST',
-        body: JSON.stringify({
-          password,
-          walletname,
-          wallettype,
-        }),
-      })
+      const res = await Api.postWalletCreate({ walletName, password })
 
       if (res.ok) {
-        const { seedphrase, token, walletname: name } = await res.json()
-        setCreatedWallet({ name, seedphrase, password, token })
+        const { seedphrase, token, walletname: createdWalletName } = await res.json()
+        setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
