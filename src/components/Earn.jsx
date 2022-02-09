@@ -2,13 +2,13 @@ import React from 'react'
 import { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useSettings } from '../context/SettingsContext'
-import ToggleSwitch from './ToggleSwitch'
+import Sprite from './Sprite'
 import * as Api from '../libs/JmWalletApi'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-const YieldgenReport = ({ lines, isLoading }) => {
+const YieldgenReport = ({ lines }) => {
   const settings = useSettings()
 
   const empty = !lines || lines.length < 2
@@ -21,17 +21,9 @@ const YieldgenReport = ({ lines, isLoading }) => {
         .reverse()
 
   return (
-    <div className="mt-5 mb-3 pe-3">
-      <h6>Report</h6>
-
-      {isLoading && (
-        <div className="d-flex justify-content-center align-items-center mb-3">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          Loading
-        </div>
-      )}
-      {!isLoading && empty && <rb.Alert variant="info">The report is empty.</rb.Alert>}
-      {!isLoading && !empty && (
+    <div className="mt-2 mb-3">
+      {empty && <rb.Alert variant="info">The report is empty.</rb.Alert>}
+      {!empty && (
         <>
           <rb.Table striped bordered hover variant={settings.theme} responsive>
             <thead>
@@ -63,8 +55,8 @@ export default function Earn({ currentWallet, makerRunning }) {
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const [isWaiting, setIsWaiting] = useState(false)
-  const [isReportLoading, setIsReportLoading] = useState(true)
-  const [isDisplayReport, setIsDisplayReport] = useState(false)
+  const [isReportLoading, setIsReportLoading] = useState(false)
+  const [isShowReport, setIsShowReport] = useState(false)
   const [offertype, setOffertype] = useState(window.localStorage.getItem('jm-offertype') || OFFERTYPE_REL)
   const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.0003)
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
@@ -130,23 +122,27 @@ export default function Earn({ currentWallet, makerRunning }) {
   }, [makerRunning])
 
   useEffect(() => {
-    if (!isDisplayReport) return
+    if (!isShowReport) return
 
     const abortCtrl = new AbortController()
     setIsReportLoading(true)
 
     Api.getYieldgenReport({ signal: abortCtrl.signal })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading yieldgenerator report failed.'))
-      )
+      .then((res) => {
+        if (res.ok) return res.json()
+        if (res.status === 404) return {}
+        return Promise.reject(new Error(res.message || 'Loading yieldgenerator report failed.'))
+      })
       .then((data) => setYieldgenReportLines(data.yigen_data))
       .catch((err) => {
         console.log(`Error while loading yield generator`, err)
       })
+      // show the loader a little longer to avoid flickering
+      .then((_) => new Promise((r) => setTimeout(r, 200)))
       .finally(() => setIsReportLoading(false))
 
     return () => abortCtrl.abort()
-  }, [makerRunning, isDisplayReport])
+  }, [makerRunning, isShowReport])
 
   const stopMakerService = async () => {
     const { name: walletName, token } = currentWallet
@@ -270,8 +266,29 @@ export default function Earn({ currentWallet, makerRunning }) {
 
       {settings.useAdvancedWalletMode && (
         <div className="mt-5 mb-3 pe-3">
-          <ToggleSwitch label="Display report" onToggle={(val) => setIsDisplayReport(val)} />
-          {isDisplayReport && <YieldgenReport lines={yieldgenReportLines} isLoading={isReportLoading} />}
+          <h6>Report</h6>
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 mb-2 d-inline-flex align-items-center"
+            onClick={(e) => {
+              e.preventDefault()
+              setIsShowReport(!isShowReport)
+            }}
+          >
+            <Sprite symbol={isShowReport ? 'hide' : 'show'} width="24" height="24" className="me-2" />
+            {isShowReport ? 'Hide' : 'Show'} report
+            {isReportLoading && (
+              <rb.Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+                className="ms-2 me-1"
+              />
+            )}
+          </rb.Button>
+          {isShowReport && <YieldgenReport lines={yieldgenReportLines} />}
         </div>
       )}
     </>
