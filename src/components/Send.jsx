@@ -89,15 +89,10 @@ export default function Send() {
     if (walletInfo) return
 
     const abortCtrl = new AbortController()
-    const { name, token } = wallet
-    const opts = {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: abortCtrl.signal,
-    }
 
     setAlert(null)
 
-    fetch(`/api/v1/wallet/${name}/display`, opts)
+    Api.getWalletDisplay({ walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
