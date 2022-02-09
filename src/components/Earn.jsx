@@ -2,6 +2,7 @@ import React from 'react'
 import { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useSettings } from '../context/SettingsContext'
+import ToggleSwitch from './ToggleSwitch'
 import * as Api from '../libs/JmWalletApi'
 
 const OFFERTYPE_REL = 'sw0reloffer'
@@ -24,7 +25,7 @@ const YieldgenReport = ({ lines, isLoading }) => {
       <h6>Report</h6>
 
       {isLoading && (
-        <div className="mb-3">
+        <div className="d-flex justify-content-center align-items-center mb-3">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading
         </div>
@@ -57,11 +58,13 @@ const YieldgenReport = ({ lines, isLoading }) => {
 }
 
 export default function Earn({ currentWallet, makerRunning }) {
+  const settings = useSettings()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const [isWaiting, setIsWaiting] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(true)
+  const [isDisplayReport, setIsDisplayReport] = useState(false)
   const [offertype, setOffertype] = useState(window.localStorage.getItem('jm-offertype') || OFFERTYPE_REL)
   const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.0003)
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
@@ -127,6 +130,8 @@ export default function Earn({ currentWallet, makerRunning }) {
   }, [makerRunning])
 
   useEffect(() => {
+    if (!isDisplayReport) return
+
     const abortCtrl = new AbortController()
     setIsReportLoading(true)
 
@@ -141,7 +146,7 @@ export default function Earn({ currentWallet, makerRunning }) {
       .finally(() => setIsReportLoading(false))
 
     return () => abortCtrl.abort()
-  }, [makerRunning])
+  }, [makerRunning, isDisplayReport])
 
   const stopMakerService = async () => {
     const { name: walletName, token } = currentWallet
@@ -263,7 +268,12 @@ export default function Earn({ currentWallet, makerRunning }) {
         </rb.Button>
       </rb.Form>
 
-      <YieldgenReport lines={yieldgenReportLines} isLoading={isReportLoading} />
+      {settings.useAdvancedWalletMode && (
+        <div className="mt-5 mb-3 pe-3">
+          <ToggleSwitch label="Display report" onToggle={(val) => setIsDisplayReport(val)} />
+          {isDisplayReport && <YieldgenReport lines={yieldgenReportLines} isLoading={isReportLoading} />}
+        </div>
+      )}
     </>
   )
 }
