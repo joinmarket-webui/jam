@@ -5,6 +5,7 @@ import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
+import { useSettings } from '../context/SettingsContext'
 import { serialize } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 
@@ -65,6 +66,7 @@ export default function Send({ currentWallet }) {
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
+  const settings = useSettings()
 
   const location = useLocation()
   const [validated, setValidated] = useState(false)
@@ -219,7 +221,7 @@ export default function Send({ currentWallet }) {
                     .sort((lhs, rhs) => lhs.account - rhs.account)
                     .map(({ account, account_balance: balance }) => (
                       <option key={account} value={account}>
-                        Account {account} ({balance})
+                        Account {account} {settings.showBalance && `(\u20BF${balance})`}
                       </option>
                     ))}
                 </rb.Form.Select>
