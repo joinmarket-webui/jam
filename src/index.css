@@ -405,7 +405,7 @@ h2 {
   box-shadow: none;
 }
 
-/* Start Privacy Level Styles */
+/* Privacy Level Styles */
 
 .privacy-level-4 {
   color: rgba(39, 174, 96, 1);
@@ -436,6 +436,22 @@ h2 {
   padding: 0.25rem;
   font-weight: 500;
   border-color: rgba(222, 222, 222, 1);
+}
+
+option:after {
+  content: 's';
+}
+
+/* Send, Receive, Earn Styles */
+
+.number {
+  font-family: Inter;
+  font-weight: 400;
+  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
 }
 
 /* Theme overrides */
