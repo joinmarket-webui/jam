@@ -130,8 +130,9 @@ export default function Earn({ currentWallet, makerRunning }) {
     Api.getYieldgenReport({ signal: abortCtrl.signal })
       .then((res) => {
         if (res.ok) return res.json()
+        // 404 is returned till the maker is started at least once
         if (res.status === 404) return {}
-        return Promise.reject(new Error(res.message || 'Loading yieldgenerator report failed.'))
+        return Promise.reject(new Error(res.message || 'Failed to load yield generator report.'))
       })
       .then((data) => setYieldgenReportLines(data.yigen_data))
       .catch((err) => {
