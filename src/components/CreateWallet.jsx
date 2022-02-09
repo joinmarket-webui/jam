@@ -62,32 +62,43 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 
 const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const [userConfirmed, setUserConfirmed] = useState(false)
-
-  const onToggle = (isToggled) => {
-    setUserConfirmed(isToggled)
-  }
+  const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
+  const [sensitiveInfoWasRevealed, setSensitiveInfoWasRevealed] = useState(false)
 
   return (
     <div>
-      <p className="mb-4">
+      <div className="mb-4">
         <div>Wallet Name</div>
         <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
-      </p>
-      <p className="mb-4">
-        <div className="mb-2">Seedphrase</div>
-        <Seedphrase seedphrase={createdWallet.seedphrase} />
-      </p>
-      <p className="mb-4">
-        <div>Password</div>
-        <div className="fs-4">{createdWallet.password}</div>
-      </p>
+      </div>
       <div className="mb-4">
-        <ToggleSwitch label="I've written down the information above." onToggle={onToggle} />
+        <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
+      </div>
+      <div className="mb-4">
+        <div>Password</div>
+        <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
+          {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+        </div>
+      </div>
+      <div className="mb-2">
+        <ToggleSwitch
+          label="Reveal sensitive information"
+          onToggle={(isToggled) => {
+            setRevealSensitiveInfo(isToggled)
+            setSensitiveInfoWasRevealed(true)
+          }}
+        />
+      </div>
+      <div className="mb-4">
+        <ToggleSwitch
+          label="I've written down the information above."
+          onToggle={(isToggled) => setUserConfirmed(isToggled)}
+        />
       </div>
       <rb.Button
         variant="dark"
         type="submit"
-        disabled={!userConfirmed}
+        disabled={!sensitiveInfoWasRevealed || !userConfirmed}
         onClick={() => userConfirmed && walletConfirmed()}
       >
         Fund wallet
@@ -96,14 +107,14 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   )
 }
 
-const Seedphrase = ({ seedphrase }) => {
+const Seedphrase = ({ seedphrase, isBlurred }) => {
   return (
     <div className="seedphrase d-flex flex-wrap">
       {seedphrase.split(' ').map((seedWord, index) => (
         <div key={index} className="d-flex py-2 ps-2 pe-3">
           <span className="seedword-index text-secondary text-end">{index + 1}</span>
           <span className="text-secondary">.&nbsp;</span>
-          <span>{seedWord}</span>
+          <span className={isBlurred ? 'blurred-text' : ''}>{isBlurred ? 'random' : seedWord}</span>
         </div>
       ))}
     </div>

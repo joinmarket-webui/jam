@@ -378,6 +378,16 @@ main {
   width: 2ch;
 }
 
+.create-wallet .blurred-text {
+  color: transparent;
+  text-shadow: 0 0 15px var(--bs-gray-600);
+}
+
+:root[data-theme='dark'] .create-wallet .blurred-text {
+  color: transparent;
+  text-shadow: 0 0 15px var(--bs-gray-400);
+}
+
 :root[data-theme='dark'] .seedphrase > div {
   background-color: var(--bs-gray-800);
 }
