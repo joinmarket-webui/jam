@@ -65,7 +65,7 @@ export default function Settings({ currentWallet }) {
             height="24"
             className="me-2"
           />
-          {isLightTheme ? 'Dark' : 'Light'} theme
+          {isLightTheme ? 'Switch to dark' : 'Switch to light'} theme
         </rb.Button>
 
         <br />
