@@ -107,7 +107,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   )
 }
 
-const Seedphrase = ({ seedphrase, isBlurred }) => {
+const Seedphrase = ({ seedphrase, isBlurred = true }) => {
   return (
     <div className="seedphrase d-flex flex-wrap">
       {seedphrase.split(' ').map((seedWord, index) => (
