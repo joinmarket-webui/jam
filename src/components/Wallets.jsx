@@ -51,7 +51,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
   return (
     <>
-      <h1>Wallets</h1>
+      <h2 className="text-center">Wallets</h2>
       {alert && <Alert {...alert} />}
       {isLoading && (
         <div>
@@ -69,10 +69,11 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
           setAlert={setAlert}
         />
       ))}
-
-      <Link to="/create-wallet" className={`btn mt-3 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}>
-        Create Wallet
-      </Link>
+      <div className="d-flex justify-content-center">
+        <Link to="/create-wallet" className={`btn mt-3 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}>
+          Create Wallet
+        </Link>
+      </div>
     </>
   )
 }

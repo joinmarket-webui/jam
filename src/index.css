@@ -461,8 +461,7 @@ h2 {
 }
 
 :root[data-theme='dark'] .card {
-  background-color: var(--bs-gray-dark) !important;
-  border-color: var(--bs-gray-dark) !important;
+  border-color: var(--bs-gray-800) !important;
 }
 
 :root[data-theme='dark'] .btn-dark {

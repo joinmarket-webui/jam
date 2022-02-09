@@ -113,84 +113,90 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
   const noneActive = !currentWallet
 
   return (
-    <rb.Card style={{ maxWidth: '24em' }} className="mt-3" {...props}>
-      <rb.Card.Body>
-        <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-          <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <div>
-              <rb.Card.Title className={!isActive && !noneActive && 'mb-0'}>{walletDisplayName(name)}</rb.Card.Title>
-              {isActive ? <span class="text-success">Active</span> : <></>}
-            </div>
-            <div>
-              {isActive ? (
-                hasToken ? (
-                  <>
-                    <Link className="btn btn-dark me-2" to="/wallet">
-                      Display
-                    </Link>
-                    <rb.FormControl type="hidden" name="action" value="lock" />
-                    <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
-                      {isLocking ? (
-                        <>
-                          <rb.Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                            className="me-2"
-                          />
-                          Locking
-                        </>
-                      ) : (
-                        'Lock'
-                      )}
-                    </rb.Button>
-                  </>
-                ) : (
-                  <rb.Alert variant="warning" className="mb-0">
-                    This wallet is active, but there is no token to interact with it. Please remove the lock file on the
-                    server.
-                  </rb.Alert>
-                )
-              ) : (
-                noneActive && (
-                  <rb.InputGroup hasValidation={true} className="mt-2">
-                    <rb.FormControl
-                      type="password"
-                      placeholder="Password"
-                      name="password"
-                      disabled={isUnlocking}
-                      required
-                    />
-                    <rb.FormControl type="hidden" name="action" value="unlock" />
-                    <rb.Button variant="dark" type="submit" disabled={isUnlocking}>
-                      {isUnlocking ? (
-                        <>
-                          <rb.Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                            className="me-2"
-                          />
-                          Unlocking
-                        </>
-                      ) : (
-                        'Unlock'
-                      )}
-                    </rb.Button>
-                    <rb.Form.Control.Feedback type="invalid">
-                      Please set the wallet's password.
-                    </rb.Form.Control.Feedback>
-                  </rb.InputGroup>
-                )
-              )}
-            </div>
-          </div>
-        </rb.Form>
-      </rb.Card.Body>
-    </rb.Card>
+    <rb.Row className="justify-content-center">
+      <rb.Col md={10} lg={8} xl={6}>
+        <rb.Card className="mt-3 bg-transparent border-start-0 border-end-0 rounded-0" {...props}>
+          <rb.Card.Body>
+            <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+              <div className="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                  <rb.Card.Title className={!isActive && !noneActive && 'mb-0'}>
+                    {walletDisplayName(name)}
+                  </rb.Card.Title>
+                  {isActive ? <span className="text-success">Active</span> : <></>}
+                </div>
+                <div>
+                  {isActive ? (
+                    hasToken ? (
+                      <>
+                        <Link className="btn btn-outline-dark me-2" to="/wallet">
+                          Display
+                        </Link>
+                        <rb.FormControl type="hidden" name="action" value="lock" />
+                        <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
+                          {isLocking ? (
+                            <>
+                              <rb.Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                                className="me-2"
+                              />
+                              Locking
+                            </>
+                          ) : (
+                            'Lock'
+                          )}
+                        </rb.Button>
+                      </>
+                    ) : (
+                      <rb.Alert variant="warning" className="mb-0">
+                        This wallet is active, but there is no token to interact with it. Please remove the lock file on
+                        the server.
+                      </rb.Alert>
+                    )
+                  ) : (
+                    noneActive && (
+                      <rb.InputGroup hasValidation={true} className="mt-2">
+                        <rb.FormControl
+                          type="password"
+                          placeholder="Password"
+                          name="password"
+                          disabled={isUnlocking}
+                          required
+                        />
+                        <rb.FormControl type="hidden" name="action" value="unlock" />
+                        <rb.Button variant="outline-dark" type="submit" disabled={isUnlocking}>
+                          {isUnlocking ? (
+                            <>
+                              <rb.Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                                className="me-2"
+                              />
+                              Unlocking
+                            </>
+                          ) : (
+                            'Unlock'
+                          )}
+                        </rb.Button>
+                        <rb.Form.Control.Feedback type="invalid">
+                          Please set the wallet's password.
+                        </rb.Form.Control.Feedback>
+                      </rb.InputGroup>
+                    )
+                  )}
+                </div>
+              </div>
+            </rb.Form>
+          </rb.Card.Body>
+        </rb.Card>
+      </rb.Col>
+    </rb.Row>
   )
 }
