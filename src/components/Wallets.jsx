@@ -59,6 +59,11 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
           Loading wallets
         </div>
       )}
+      <rb.Row className="justify-content-center">
+        <rb.Col md={10} lg={8} xl={6}>
+          <div className="border-top px-3"></div>
+        </rb.Col>
+      </rb.Row>
       {walletList?.map((wallet) => (
         <Wallet
           key={wallet}
@@ -70,7 +75,10 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         />
       ))}
       <div className="d-flex justify-content-center">
-        <Link to="/create-wallet" className={`btn mt-3 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}>
+        <Link
+          to="/create-wallet"
+          className={`btn mt-3 weight py-1 px-3 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}
+        >
           Create new wallet
         </Link>
       </div>

@@ -405,6 +405,10 @@ h2 {
   box-shadow: none;
 }
 
+.weight {
+  font-weight: 500;
+}
+
 /* Start Privacy Level Styles */
 
 .privacy-level-4 {

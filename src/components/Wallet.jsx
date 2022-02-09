@@ -111,25 +111,41 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
   return (
     <rb.Row className="justify-content-center">
       <rb.Col md={10} lg={8} xl={6}>
-        <rb.Card className="mt-3 bg-transparent border-start-0 border-end-0 rounded-0" {...props}>
+        <rb.Card className="bg-transparent border-start-0 border-end-0 border-top-0 rounded-0" {...props}>
           <rb.Card.Body>
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
               <div className="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
-                  <rb.Card.Title className={!isActive && !noneActive && 'mb-0'}>
-                    {walletDisplayName(name)}
-                  </rb.Card.Title>
-                  {isActive ? <span className="text-success">Active</span> : <></>}
+                  {isActive ? (
+                    <rb.Card.Title>
+                      <Link className="btn btn-outline-dark py-1 px-3 weight" to="/wallet">
+                        {walletDisplayName(name)}
+                      </Link>
+                    </rb.Card.Title>
+                  ) : (
+                    <rb.Card.Title>{walletDisplayName(name)}</rb.Card.Title>
+                  )}
+
+                  {isActive ? (
+                    <span className="text-success">Active</span>
+                  ) : (
+                    <span className="text-muted">Inactive</span>
+                  )}
                 </div>
                 <div>
                   {isActive ? (
                     hasToken ? (
                       <>
-                        <Link className="btn btn-outline-dark me-2" to="/wallet">
-                          Display
+                        <Link className="btn btn-outline-dark me-2 py-1 px-3 weight" to="/wallet">
+                          Open
                         </Link>
                         <rb.FormControl type="hidden" name="action" value="lock" />
-                        <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
+                        <rb.Button
+                          variant="outline-dark"
+                          className="py-1 px-3 weight"
+                          type="submit"
+                          disabled={isLocking}
+                        >
                           {isLocking ? (
                             <>
                               <rb.Spinner
@@ -155,7 +171,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                     )
                   ) : (
                     noneActive && (
-                      <rb.InputGroup hasValidation={true} className="mt-2">
+                      <rb.InputGroup hasValidation={true}>
                         <rb.FormControl
                           type="password"
                           placeholder="Password"
@@ -164,7 +180,12 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                           required
                         />
                         <rb.FormControl type="hidden" name="action" value="unlock" />
-                        <rb.Button variant="outline-dark" type="submit" disabled={isUnlocking}>
+                        <rb.Button
+                          variant="outline-dark"
+                          className="py-1 px-3 weight"
+                          type="submit"
+                          disabled={isUnlocking}
+                        >
                           {isUnlocking ? (
                             <>
                               <rb.Spinner
