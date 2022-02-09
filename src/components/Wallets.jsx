@@ -71,7 +71,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       ))}
       <div className="d-flex justify-content-center">
         <Link to="/create-wallet" className={`btn mt-3 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}>
-          Create Wallet
+          Create new wallet
         </Link>
       </div>
     </>
