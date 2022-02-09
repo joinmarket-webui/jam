@@ -10,6 +10,7 @@ import { serialize } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 
 const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
+  const settings = useSettings()
   const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
 
   const collaboratorsSelection = [3, 5, 6, 9]
