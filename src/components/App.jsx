@@ -15,15 +15,17 @@ import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '
 import { getSession, setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 
+import Onboarding from './Onboarding'
+
 export default function App() {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
-  const settings = useSettings()
 
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
+  const settings = useSettings()
 
   const startWallet = useCallback(
     (name, token) => {
@@ -87,6 +89,9 @@ export default function App() {
     }
   }, [startWallet])
 
+  if (settings.showOnboarding === true) {
+    return <Onboarding />
+  }
   return (
     <>
       <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
