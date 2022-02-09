@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize, ACCOUNTS } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 
 export default function Payment({ currentWallet }) {
   const location = useLocation()
@@ -13,22 +14,13 @@ export default function Payment({ currentWallet }) {
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
 
   const sendPayment = async (account, destination, amount_sats) => {
-    const { name, token } = currentWallet
-    const opts = {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        mixdepth: String(account),
-        destination,
-        amount_sats,
-      }),
-    }
+    const { name: walletName, token } = currentWallet
 
     setAlert(null)
     setIsSending(true)
     let success = false
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/taker/direct-send`, opts)
+      const res = await Api.postDirectSend({ walletName, token }, { account, destination, amount_sats })
       if (res.ok) {
         const {
           txinfo: { outputs },
@@ -53,23 +45,13 @@ export default function Payment({ currentWallet }) {
   }
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
-    const { name, token } = currentWallet
-    const opts = {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        mixdepth: String(account),
-        destination,
-        amount_sats,
-        counterparties,
-      }),
-    }
+    const { name: walletName, token } = currentWallet
 
     setAlert(null)
     setIsSending(true)
     let success = false
     try {
-      const res = await fetch(`/api/v1/wallet/${name}/taker/coinjoin`, opts)
+      const res = await Api.postCoinjoin({ walletName, token }, { account, destination, amount_sats, counterparties })
       if (res.ok) {
         const data = await res.json()
         console.log(data)
