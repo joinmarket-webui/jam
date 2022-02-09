@@ -64,8 +64,10 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
             }
           }}
         />
+        {usesCustomNumCollaborators && (
+          <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
+        )}
       </div>
-      <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
     </rb.Form.Group>
   )
 }
