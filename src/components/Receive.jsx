@@ -64,7 +64,7 @@ const Receive = ({ currentWallet }) => {
         </div>
       )}
       <rb.Form.Group className="mb-3" controlId="account">
-        <rb.Form.Label>Account</rb.Form.Label>
+        <rb.Form.Label>Privacy Level</rb.Form.Label>
         <rb.Form.Select
           defaultValue={account}
           onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -74,7 +74,7 @@ const Receive = ({ currentWallet }) => {
         >
           {ACCOUNTS.map((val) => (
             <option key={val} value={val}>
-              Account {val}
+              Privacy Level {val}
             </option>
           ))}
         </rb.Form.Select>

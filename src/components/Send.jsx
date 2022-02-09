@@ -100,7 +100,7 @@ export default function Payment({ currentWallet }) {
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="account">
-        <rb.Form.Label>Account</rb.Form.Label>
+        <rb.Form.Label>Privacy Level</rb.Form.Label>
         <rb.Form.Select
           defaultValue={account}
           onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -109,7 +109,7 @@ export default function Payment({ currentWallet }) {
         >
           {ACCOUNTS.map((val) => (
             <option key={val} value={val}>
-              Account {val}
+              Privacy Level {val}
             </option>
           ))}
         </rb.Form.Select>
