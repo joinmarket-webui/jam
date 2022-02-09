@@ -2,8 +2,10 @@ import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTitle from './PageTitle'
+import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
 import { useCurrentWallet } from '../context/WalletContext'
+import * as Api from '../libs/JmWalletApi'
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
   const [validated, setValidated] = useState(false)
@@ -61,8 +63,8 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const [userConfirmed, setUserConfirmed] = useState(false)
 
-  const onSwitch = (e) => {
-    setUserConfirmed(e.target.checked)
+  const onToggle = (isToggled) => {
+    setUserConfirmed(isToggled)
   }
 
   return (
@@ -79,9 +81,9 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         <div>Password</div>
         <div className="fs-4">{createdWallet.password}</div>
       </p>
-      <p className="mb-4">
-        <rb.Form.Switch onChange={onSwitch} label="I've written down the information above." />
-      </p>
+      <div className="mb-4">
+        <ToggleSwitch label="I've written down the information above." onToggle={onToggle} />
+      </div>
       <rb.Button
         variant="dark"
         type="submit"
@@ -116,26 +118,16 @@ export default function CreateWallet({ startWallet }) {
   const [isCreating, setIsCreating] = useState(false)
   const [createdWallet, setCreatedWallet] = useState(null)
 
-  const createWallet = async (name, password) => {
-    const walletname = name.endsWith('.jmdat') ? name : `${name}.jmdat`
-
+  const createWallet = async (walletName, password) => {
     setAlert(null)
     setIsCreating(true)
 
     try {
-      const wallettype = 'sw-fb'
-      const res = await fetch(`/api/v1/wallet/create`, {
-        method: 'POST',
-        body: JSON.stringify({
-          password,
-          walletname,
-          wallettype,
-        }),
-      })
+      const res = await Api.postWalletCreate({ walletName, password })
 
       if (res.ok) {
-        const { seedphrase, token, walletname: name } = await res.json()
-        setCreatedWallet({ name, seedphrase, password, token })
+        const { seedphrase, token, walletname: createdWalletName } = await res.json()
+        setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })

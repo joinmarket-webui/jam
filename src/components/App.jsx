@@ -13,6 +13,7 @@ import Navbar from './Navbar'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
+import * as Api from '../libs/JmWalletApi'
 
 export default function App() {
   const currentWallet = useCurrentWallet()
@@ -49,9 +50,7 @@ export default function App() {
     }
 
     const refreshSession = () => {
-      const opts = { signal: abortCtrl.signal }
-
-      fetch('/api/v1/session', opts)
+      Api.getSession({ signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
           const { maker_running, coinjoin_in_process, wallet_name } = data
@@ -122,17 +121,17 @@ export default function App() {
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container>
           {connectionError ? (
-            <div class="d-flex justify-content-center pt-2">
-              <span class="text-danger mx-1">•</span>
+            <div className="d-flex justify-content-center pt-2">
+              <span className="text-danger mx-1">•</span>
               <span className="text-secondary">Disconnected</span>
             </div>
           ) : (
-            <div class="d-flex justify-content-center pt-2">
-              <span class="text-success mx-1">•</span>
+            <div className="d-flex justify-content-center pt-2">
+              <span className="text-success mx-1">•</span>
               <span className="text-secondary">Connected</span>
             </div>
           )}
-          <div class="d-flex justify-content-center">
+          <div className="d-flex justify-content-center">
             <rb.Nav.Item>
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"

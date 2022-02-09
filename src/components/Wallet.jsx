@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize, walletDisplayName } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 
 export default function Wallet({ name, currentWallet, startWallet, stopWallet, setAlert, ...props }) {
   const [validated, setValidated] = useState(false)
@@ -24,14 +25,10 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       setAlert(null)
       setIsUnlocking(true)
       try {
-        const opts = {
-          method: 'POST',
-          body: JSON.stringify({ password }),
-        }
-        const res = await fetch(`/api/v1/wallet/${walletName}/unlock`, opts)
+        const res = await Api.postWalletUnlock({ walletName }, { password })
         if (res.ok) {
-          const { walletname: name, token } = await res.json()
-          startWallet(name, token)
+          const { walletname: unlockedWalletName, token } = await res.json()
+          startWallet(unlockedWalletName, token)
           navigate('/wallet')
         } else {
           const { message } = await res.json()
@@ -57,20 +54,19 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     }
 
     try {
-      const { name, token } = currentWallet
-      const opts = {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-
+      const { name: walletName, token } = currentWallet
       setAlert(null)
       setIsLocking(true)
-      const res = await fetch(`/api/v1/wallet/${name}/lock`, opts)
+
+      const res = await Api.getWalletLock({ walletName, token })
       if (res.ok) {
-        const { walletname, already_locked } = await res.json()
+        const { walletname: lockedWalletName, already_locked } = await res.json()
         stopWallet()
         setAlert({
           variant: already_locked ? 'warning' : 'success',
-          message: `${walletDisplayName(walletname)} ${already_locked ? 'already locked' : 'locked succesfully'}.`,
+          message: `${walletDisplayName(lockedWalletName)} ${
+            already_locked ? 'already locked' : 'locked successfully'
+          }.`,
           dismissible: true,
         })
       } else {

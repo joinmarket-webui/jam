@@ -392,6 +392,37 @@ main {
   width: 100%;
 }
 
+/* Send, Receive, Earn Styles */
+
+.send form input:not(.collaborators-selector input) {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.send select {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.send button {
+  height: 3rem;
+  width: 100%;
+}
+
+.collaborators-selector button {
+  min-width: 6rem;
+  flex: 1;
+}
+
+.collaborators-selector input {
+  min-width: 6rem;
+  flex: 1;
+}
+
+.collaborators-selector .d-flex {
+  gap: 0.5rem;
+}
+
 /* Boostrap overrides */
 
 h2 {

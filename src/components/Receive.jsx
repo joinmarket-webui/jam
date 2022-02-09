@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { ACCOUNTS } from '../utils'
 import { useSettings } from '../context/SettingsContext'
+import * as Api from '../libs/JmWalletApi'
 
 const Receive = ({ currentWallet }) => {
   const location = useLocation()
@@ -20,15 +21,11 @@ const Receive = ({ currentWallet }) => {
   useEffect(() => {
     const abortCtrl = new AbortController()
     const fetchAddress = async (accountNr) => {
-      const { name, token } = currentWallet
-      const opts = {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: abortCtrl.signal,
-      }
+      const { name: walletName, token } = currentWallet
 
       setAlert(null)
       setIsLoading(true)
-      fetch(`/api/v1/wallet/${name}/address/new/${accountNr}`, opts)
+      Api.getAddressNew({ walletName, accountNr, token, signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading new address failed.'))))
         .then((data) => setAddress(data.address))
         .catch((err) => {
