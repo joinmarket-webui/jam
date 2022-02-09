@@ -433,6 +433,16 @@ main {
   gap: 0.5rem;
 }
 
+:root[data-theme='dark'] .collaborators-selector input {
+  background-color: var(--bs-gray-800);
+  color: var(--bs-white);
+}
+
+:root[data-theme='dark'] .collaborators-selector .selected-dark {
+  background-color: var(--bs-gray-dark);
+  border-color: var(--bs-gray-dark) !important;
+}
+
 /* Boostrap overrides */
 
 h2 {

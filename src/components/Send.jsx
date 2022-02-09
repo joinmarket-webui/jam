@@ -28,9 +28,13 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
           return (
             <rb.Button
               key={index}
-              variant="white"
-              className={`py-2 px-2 border rounded text-center${
-                !usesCustomNumCollaborators && numCollaborators === number ? ' border-dark border-2' : ''
+              variant={settings.theme === 'light' ? 'white' : 'dark'}
+              className={`py-2 px-2 border border-1 rounded text-center${
+                !usesCustomNumCollaborators && numCollaborators === number
+                  ? settings.theme === 'light'
+                    ? ' border-dark'
+                    : ' selected-dark'
+                  : ''
               }`}
               onClick={() => {
                 setUsesCustomNumCollaborators(false)
@@ -44,8 +48,11 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
         <rb.Form.Control
           type="number"
           min={1}
+          max={99}
           placeholder="Other"
-          className={`py-2 px-2 border rounded text-center${usesCustomNumCollaborators ? ' border-dark border-2' : ''}`}
+          className={`py-2 px-2 border border-1 rounded text-center${
+            usesCustomNumCollaborators ? (settings.theme === 'light' ? ' border-dark' : ' selected-dark') : ''
+          }`}
           onChange={(e) => {
             setUsesCustomNumCollaborators(true)
             setNumCollaborators(e.target.value)
