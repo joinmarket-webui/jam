@@ -51,7 +51,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
   return (
     <>
-      <h2 className="text-center">Wallets</h2>
+      <h2 className="text-center">Your wallets</h2>
       {alert && <Alert {...alert} />}
       {isLoading && (
         <div>
