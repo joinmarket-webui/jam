@@ -257,7 +257,7 @@ export default function Send() {
                 <rb.Form.Control
                   name="destination"
                   placeholder="Enter address..."
-                  className="number"
+                  className="slashed-zeroes"
                   defaultValue=""
                   required
                   onChange={(e) => setDestination(e.target.value)}
@@ -271,7 +271,7 @@ export default function Send() {
                   defaultValue={account}
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
                   required
-                  className="number"
+                  className="slashed-zeroes"
                   isInvalid={!isValidAccount(account)}
                 >
                   {walletInfo.accounts
