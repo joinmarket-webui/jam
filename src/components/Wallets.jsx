@@ -31,13 +31,6 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
           wallets.sort((a, b) => b === currentWallet.name)
         }
         setWalletList(wallets)
-        if (wallets.length === 0) {
-          setAlert({
-            variant: 'info',
-            message: 'It looks like you do not have a wallet, yet. Please create one first.',
-            dismissible: true,
-          })
-        }
       })
       .catch((err) => {
         if (!abortCtrl.signal.aborted) {
@@ -50,8 +43,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   }, [currentWallet])
 
   return (
-    <>
-      <h2 className="text-center">Your wallets</h2>
+    <div className="wallets">
+      <h2 className="text-center mb-4">Your wallets</h2>
       {alert && <Alert {...alert} />}
       {isLoading && (
         <div>
@@ -59,11 +52,17 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
           Loading wallets
         </div>
       )}
-      <rb.Row className="justify-content-center">
-        <rb.Col md={10} lg={8} xl={6}>
-          <div className="border-top px-3"></div>
-        </rb.Col>
-      </rb.Row>
+      {walletList?.length !== 0 ? (
+        <rb.Row className="justify-content-center">
+          <rb.Col md={10} lg={8} xl={6}>
+            <div className="border-top px-3"></div>
+          </rb.Col>
+        </rb.Row>
+      ) : (
+        <div className="text-secondary text-center">
+          It looks like you do not have a wallet, yet. Please create one first.
+        </div>
+      )}
       {walletList?.map((wallet) => (
         <Wallet
           key={wallet}
@@ -75,13 +74,10 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         />
       ))}
       <div className="d-flex justify-content-center">
-        <Link
-          to="/create-wallet"
-          className={`btn mt-3 weight py-1 px-3 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}
-        >
+        <Link to="/create-wallet" className={`btn mt-4 ${walletList?.length === 0 ? 'btn-dark' : 'btn-outline-dark'}`}>
           Create new wallet
         </Link>
       </div>
-    </>
+    </div>
   )
 }

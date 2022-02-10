@@ -405,10 +405,6 @@ h2 {
   box-shadow: none;
 }
 
-.weight {
-  font-weight: 500;
-}
-
 /* Start Privacy Level Styles */
 
 .privacy-level-4 {
@@ -438,6 +434,23 @@ h2 {
 
 .privacy-levels .btn.btn-outline-dark {
   padding: 0.25rem;
+  font-weight: 500;
+  border-color: rgba(222, 222, 222, 1);
+}
+
+/* Wallets Styles */
+
+.wallets a.wallet-name {
+  text-decoration: none;
+  color: var(--bs-body-color);
+}
+
+.wallets a.wallet-name:hover {
+  text-decoration: underline;
+}
+
+.wallets .btn.btn-outline-dark {
+  padding: 0.25rem 1rem;
   font-weight: 500;
   border-color: rgba(222, 222, 222, 1);
 }

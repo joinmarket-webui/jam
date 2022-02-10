@@ -118,7 +118,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                 <div>
                   {isActive ? (
                     <rb.Card.Title>
-                      <Link className="btn btn-outline-dark py-1 px-3 weight" to="/wallet">
+                      <Link className="wallet-name" to="/wallet">
                         {walletDisplayName(name)}
                       </Link>
                     </rb.Card.Title>
@@ -136,16 +136,11 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                   {isActive ? (
                     hasToken ? (
                       <>
-                        <Link className="btn btn-outline-dark me-2 py-1 px-3 weight" to="/wallet">
+                        <Link className="btn btn-outline-dark me-2" to="/wallet">
                           Open
                         </Link>
                         <rb.FormControl type="hidden" name="action" value="lock" />
-                        <rb.Button
-                          variant="outline-dark"
-                          className="py-1 px-3 weight"
-                          type="submit"
-                          disabled={isLocking}
-                        >
+                        <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
                           {isLocking ? (
                             <>
                               <rb.Spinner
@@ -180,12 +175,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                           required
                         />
                         <rb.FormControl type="hidden" name="action" value="unlock" />
-                        <rb.Button
-                          variant="outline-dark"
-                          className="py-1 px-3 weight"
-                          type="submit"
-                          disabled={isUnlocking}
-                        >
+                        <rb.Button variant="outline-dark" className="py-1 px-3" type="submit" disabled={isUnlocking}>
                           {isUnlocking ? (
                             <>
                               <rb.Spinner
