@@ -17,7 +17,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
 
   return (
     <rb.Form.Group className="collaborators-selector">
-      <rb.Form.Label className="mb-0">Choose a number of collaborators ({numCollaborators})</rb.Form.Label>
+      <rb.Form.Label className="mb-0">Number of collaborators: {numCollaborators}</rb.Form.Label>
       <div className="mb-2">
         <rb.Form.Text className="text-secondary">
           A higher number is better for privacy, but also increases the fee.
