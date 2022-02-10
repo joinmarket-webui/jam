@@ -199,7 +199,7 @@ export default function Send() {
           <rb.Col md={10} lg={8} xl={6}>
             <PageTitle
               title="Send bitcoin"
-              subtitle="You can mix your bitcoin before sending them for better privacy." // Todo: Copy.
+              subtitle="Collaborative transactions increase the privacy of yourself and others."
             />
             {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
@@ -215,7 +215,7 @@ export default function Send() {
                 <rb.Form.Control.Feedback type="invalid">Please provide a recipient address.</rb.Form.Control.Feedback>
               </rb.Form.Group>
               <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
-                <rb.Form.Label>Choose account</rb.Form.Label>
+                <rb.Form.Label>Account to send from</rb.Form.Label>
                 <rb.Form.Select
                   defaultValue={account}
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -238,7 +238,7 @@ export default function Send() {
               </rb.Form.Group>
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
                 <ToggleSwitch
-                  label="Send as CoinJoin for improved privacy"
+                  label="Send as collaborative transaction for improved privacy"
                   onToggle={(isToggled) => setIsCoinjoin(isToggled)}
                 />
               </rb.Form.Group>
