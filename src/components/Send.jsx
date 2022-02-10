@@ -6,69 +6,104 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
 import { useSettings } from '../context/SettingsContext'
-import { serialize } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+
+const isValidAddress = (candidate) => {
+  return typeof candidate === 'string' && !(candidate === '')
+}
+
+const isValidAccount = (candidate) => {
+  const parsed = parseInt(candidate, 10)
+  return !isNaN(parsed) && parsed >= 0
+}
+
+const isValidAmount = (candidate) => {
+  const parsed = parseInt(candidate, 10)
+  return !isNaN(parsed) && parsed > 0
+}
+
+const isValidNumCollaborators = (candidate) => {
+  const parsed = parseInt(candidate, 10)
+  return !isNaN(parsed) && parsed >= 1 && parsed <= 99
+}
 
 const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
   const settings = useSettings()
+
   const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
 
-  const collaboratorsSelection = [3, 5, 6, 9]
+  const validateAndSetCustomNumCollaborators = (candidate) => {
+    if (isValidNumCollaborators(candidate)) {
+      setNumCollaborators(candidate)
+    } else {
+      setNumCollaborators(null)
+    }
+  }
+
+  const defaultCollaboratorsSelection = [3, 5, 6, 9]
 
   return (
-    <rb.Form.Group className="collaborators-selector">
-      <rb.Form.Label className="mb-0">Number of collaborators: {numCollaborators}</rb.Form.Label>
-      <div className="mb-2">
-        <rb.Form.Text className="text-secondary">
-          A higher number is better for privacy, but also increases the fee.
-        </rb.Form.Text>
-      </div>
-      <div className="d-flex flex-row flex-wrap">
-        {collaboratorsSelection.map((number, index) => {
-          return (
-            <rb.Button
-              key={index}
-              variant={settings.theme === 'light' ? 'white' : 'dark'}
-              className={`py-2 px-2 border border-1 rounded text-center${
-                !usesCustomNumCollaborators && numCollaborators === number
-                  ? settings.theme === 'light'
-                    ? ' border-dark'
-                    : ' selected-dark'
-                  : ''
-              }`}
-              onClick={() => {
-                setUsesCustomNumCollaborators(false)
-                setNumCollaborators(number)
-              }}
-            >
-              {number}
-            </rb.Button>
-          )
-        })}
-        <rb.Form.Control
-          type="number"
-          min={1}
-          max={99}
-          placeholder="Other"
-          className={`py-2 px-2 border border-1 rounded text-center${
-            usesCustomNumCollaborators ? (settings.theme === 'light' ? ' border-dark' : ' selected-dark') : ''
-          }`}
-          onChange={(e) => {
-            setUsesCustomNumCollaborators(true)
-            setNumCollaborators(e.target.value)
-          }}
-          onClick={(e) => {
-            if (e.target.value) {
+    <rb.Form noValidate className="collaborators-selector">
+      <rb.Form.Group>
+        <rb.Form.Label className="mb-0">Number of collaborators: {numCollaborators}</rb.Form.Label>
+        <div className="mb-2">
+          <rb.Form.Text className="text-secondary">
+            A higher number is better for privacy, but also increases the fee.
+          </rb.Form.Text>
+        </div>
+        <div className="d-flex flex-row flex-wrap">
+          {defaultCollaboratorsSelection.map((number) => {
+            return (
+              <rb.Button
+                key={number}
+                variant={settings.theme === 'light' ? 'white' : 'dark'}
+                className={`p-2 border border-1 rounded text-center${
+                  !usesCustomNumCollaborators && numCollaborators === number
+                    ? settings.theme === 'light'
+                      ? ' border-dark'
+                      : ' selected-dark'
+                    : ''
+                }`}
+                onClick={() => {
+                  setUsesCustomNumCollaborators(false)
+                  setNumCollaborators(number)
+                }}
+              >
+                {number}
+              </rb.Button>
+            )
+          })}
+          <rb.Form.Control
+            type="number"
+            min={1}
+            max={99}
+            isInvalid={!isValidNumCollaborators(numCollaborators)}
+            placeholder="Other"
+            defaultValue=""
+            className={`p-2 border border-1 rounded text-center${
+              usesCustomNumCollaborators ? (settings.theme === 'light' ? ' border-dark' : ' selected-dark') : ''
+            }`}
+            onChange={(e) => {
+              console.log(e.target.value)
               setUsesCustomNumCollaborators(true)
-              setNumCollaborators(e.target.value)
-            }
-          }}
-        />
-        {usesCustomNumCollaborators && (
-          <rb.Form.Control.Feedback type="invalid">Please set the counterparties.</rb.Form.Control.Feedback>
-        )}
-      </div>
-    </rb.Form.Group>
+              validateAndSetCustomNumCollaborators(e.target.value)
+            }}
+            onClick={(e) => {
+              console.log(e.target.value)
+              if (e.target.value !== '') {
+                setUsesCustomNumCollaborators(true)
+                validateAndSetCustomNumCollaborators(parseInt(e.target.value, 10))
+              }
+            }}
+          />
+          {usesCustomNumCollaborators && (
+            <rb.Form.Control.Feedback type="invalid">
+              Please use between 1 and 99 collaborators.
+            </rb.Form.Control.Feedback>
+          )}
+        </div>
+      </rb.Form.Group>
+    </rb.Form>
   )
 }
 
@@ -79,12 +114,28 @@ export default function Send() {
   const settings = useSettings()
 
   const location = useLocation()
-  const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
+
+  const [destination, setDestination] = useState(null)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
+  const [amount, setAmount] = useState(null)
   const [numCollaborators, setNumCollaborators] = useState(6) // Todo: Sane default
+  const [formIsValid, setFormIsValid] = useState(false)
+
+  useEffect(() => {
+    if (
+      isValidAddress(destination) &&
+      isValidAccount(account) &&
+      isValidAmount(amount) &&
+      (isCoinjoin ? isValidNumCollaborators(numCollaborators) : true)
+    ) {
+      setFormIsValid(true)
+    } else {
+      setFormIsValid(false)
+    }
+  }, [destination, account, amount, numCollaborators, isCoinjoin])
 
   useEffect(() => {
     // Reload wallet info if not already available.
@@ -165,12 +216,11 @@ export default function Send() {
     e.preventDefault()
 
     const form = e.currentTarget
-    const isValid = form.checkValidity()
-    setValidated(true)
+    const isValid = formIsValid
 
     if (isValid) {
       const counterparties = parseInt(numCollaborators)
-      const { amount, destination } = serialize(form)
+
       const success = isCoinjoin
         ? await startCoinjoin(account, destination, amount, counterparties)
         : await sendPayment(account, destination, amount)
@@ -178,7 +228,6 @@ export default function Send() {
       if (success) {
         form.reset()
         setIsCoinjoin(false)
-        setValidated(false)
       }
     }
   }
@@ -202,15 +251,17 @@ export default function Send() {
               subtitle="Collaborative transactions increase the privacy of yourself and others."
             />
             {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-            <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+            <rb.Form onSubmit={onSubmit} noValidate id="send-form">
               <rb.Form.Group className="mb-4" controlId="destination">
                 <rb.Form.Label>Recipient</rb.Form.Label>
                 <rb.Form.Control
                   name="destination"
                   placeholder="Enter address..."
-                  defaultValue=""
                   className="number"
+                  defaultValue=""
                   required
+                  onChange={(e) => setDestination(e.target.value)}
+                  isInvalid={destination !== null && !isValidAddress(destination)}
                 />
                 <rb.Form.Control.Feedback type="invalid">Please provide a recipient address.</rb.Form.Control.Feedback>
               </rb.Form.Group>
@@ -221,6 +272,7 @@ export default function Send() {
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
                   required
                   className="number"
+                  isInvalid={!isValidAccount(account)}
                 >
                   {walletInfo.accounts
                     .sort((lhs, rhs) => lhs.account - rhs.account)
@@ -232,9 +284,21 @@ export default function Send() {
                 </rb.Form.Select>
               </rb.Form.Group>
               <rb.Form.Group className="mb-4" controlId="amount">
-                <rb.Form.Label>Amount in sats</rb.Form.Label>
-                <rb.Form.Control name="amount" type="number" className="number" min={1} defaultValue={0} required />
-                <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
+                <rb.Form.Label form="send-form">Amount in sats</rb.Form.Label>
+                <rb.Form.Control
+                  name="amount"
+                  type="number"
+                  defaultValue=""
+                  className="number"
+                  min={1}
+                  placeholder="Enter amount..."
+                  required
+                  onChange={(e) => setAmount(parseInt(e.target.value, 10))}
+                  isInvalid={amount !== null && !isValidAmount(amount)}
+                />
+                <rb.Form.Control.Feedback form="send-form" type="invalid">
+                  Please provide a valid amount.
+                </rb.Form.Control.Feedback>
               </rb.Form.Group>
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
                 <ToggleSwitch
@@ -242,27 +306,33 @@ export default function Send() {
                   onToggle={(isToggled) => setIsCoinjoin(isToggled)}
                 />
               </rb.Form.Group>
-              {isCoinjoin && (
-                <CollaboratorsSelector numCollaborators={numCollaborators} setNumCollaborators={setNumCollaborators} />
-              )}
-              <rb.Button variant="dark" type="submit" disabled={isSending} className="mt-4">
-                {isSending ? (
-                  <div>
-                    <rb.Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-2"
-                    />
-                    Sending
-                  </div>
-                ) : (
-                  'Send'
-                )}
-              </rb.Button>
             </rb.Form>
+            {isCoinjoin && (
+              <CollaboratorsSelector numCollaborators={numCollaborators} setNumCollaborators={setNumCollaborators} />
+            )}
+            <rb.Button
+              variant="dark"
+              type="submit"
+              disabled={isSending || !formIsValid}
+              className="mt-4"
+              form="send-form"
+            >
+              {isSending ? (
+                <div>
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="me-2"
+                  />
+                  Sending
+                </div>
+              ) : (
+                'Send'
+              )}
+            </rb.Button>
           </rb.Col>
         </rb.Row>
       )}
