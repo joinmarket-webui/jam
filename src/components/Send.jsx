@@ -8,6 +8,11 @@ import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from 
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 
+// not cryptographically random
+const pseudoRandomNumber = (min, max) => {
+  return Math.round(Math.random() * (max - min)) + min
+}
+
 const isValidAddress = (candidate) => {
   return typeof candidate === 'string' && !(candidate === '')
 }
@@ -40,7 +45,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
     }
   }
 
-  const defaultCollaboratorsSelection = [3, 5, 6, 9]
+  const defaultCollaboratorsSelection = [3, 5, 6, 7, 9]
 
   return (
     <rb.Form noValidate className="collaborators-selector">
@@ -121,7 +126,8 @@ export default function Send() {
   const [destination, setDestination] = useState(null)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
   const [amount, setAmount] = useState(null)
-  const [numCollaborators, setNumCollaborators] = useState(6) // Todo: Sane default
+  // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
+  const [numCollaborators, setNumCollaborators] = useState(pseudoRandomNumber(5, 7))
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
