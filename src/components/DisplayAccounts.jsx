@@ -15,7 +15,9 @@ export default function DisplayAccounts({ accounts, ...props }) {
           <rb.Accordion.Header>
             <rb.Row className="w-100">
               <rb.Col>
-                <h5 className="mb-0">Privacy Level {account}</h5>
+                <h5 className="mb-0">
+                  {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}
+                </h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end pe-5">
                 <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />

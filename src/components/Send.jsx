@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize, ACCOUNTS } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import { useSettings } from '../context/SettingsContext'
 
 export default function Payment({ currentWallet }) {
   const location = useLocation()
@@ -12,6 +13,7 @@ export default function Payment({ currentWallet }) {
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
+  const settings = useSettings()
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name: walletName, token } = currentWallet
@@ -100,7 +102,7 @@ export default function Payment({ currentWallet }) {
         <rb.Form.Control.Feedback type="invalid">Please provide a receiving address.</rb.Form.Control.Feedback>
       </rb.Form.Group>
       <rb.Form.Group className="mb-3" controlId="account">
-        <rb.Form.Label>Privacy Level</rb.Form.Label>
+        <rb.Form.Label>{settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'}</rb.Form.Label>
         <rb.Form.Select
           defaultValue={account}
           onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -109,7 +111,7 @@ export default function Payment({ currentWallet }) {
         >
           {ACCOUNTS.map((val) => (
             <option key={val} value={val}>
-              Privacy Level {val}
+              {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {val}
             </option>
           ))}
         </rb.Form.Select>
