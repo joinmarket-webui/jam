@@ -201,17 +201,24 @@ export default function Earn({ currentWallet, makerRunning }) {
         <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
           {!makerRunning && !isWaiting && (
             <>
-              <rb.Form.Group className="mb-3" controlId="offertype">
-                <rb.Form.Check
-                  type="switch"
-                  label="Relative offer"
-                  checked={isRelOffer}
-                  onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)}
-                />
-              </rb.Form.Group>
+              {(settings.useAdvancedWalletMode || !isRelOffer) && (
+                <rb.Form.Group className="mb-3" controlId="offertype">
+                  <rb.Form.Check
+                    type="switch"
+                    label="Relative offer"
+                    checked={isRelOffer}
+                    onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)}
+                  />
+                </rb.Form.Group>
+              )}
               {isRelOffer ? (
                 <rb.Form.Group className="mb-3" controlId="feeRel">
-                  <rb.Form.Label>Relative Fee (percent)</rb.Form.Label>
+                  <rb.Form.Label className="mb-0">Relative Fee (percent)</rb.Form.Label>
+                  <div className="mb-2">
+                    <rb.Form.Text className="text-secondary">
+                      As a percentage of the amounts you help others mix.
+                    </rb.Form.Text>
+                  </div>
                   <rb.Form.Control
                     type="number"
                     name="feeRel"
@@ -239,19 +246,21 @@ export default function Earn({ currentWallet, makerRunning }) {
                   <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
                 </rb.Form.Group>
               )}
-              <rb.Form.Group className="mb-3" controlId="minsize">
-                <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
-                <rb.Form.Control
-                  type="number"
-                  name="minsize"
-                  required
-                  step={1000}
-                  value={minsize}
-                  min={0}
-                  onChange={(e) => setAndPersistMinsize(e.target.value)}
-                />
-                <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
-              </rb.Form.Group>
+              {settings.useAdvancedWalletMode && (
+                <rb.Form.Group className="mb-3" controlId="minsize">
+                  <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
+                  <rb.Form.Control
+                    type="number"
+                    name="minsize"
+                    required
+                    step={1000}
+                    value={minsize}
+                    min={0}
+                    onChange={(e) => setAndPersistMinsize(e.target.value)}
+                  />
+                  <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
+                </rb.Form.Group>
+              )}
             </>
           )}
           <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
@@ -269,7 +278,7 @@ export default function Earn({ currentWallet, makerRunning }) {
         </rb.Form>
 
         {settings.useAdvancedWalletMode && (
-          <div className="mt-5 mb-3 pe-3">
+          <div className="mt-5 mb-3">
             <h6>Report</h6>
             <rb.Button
               variant="outline-dark"
