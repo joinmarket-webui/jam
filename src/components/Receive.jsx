@@ -96,6 +96,7 @@ export default function Receive({ currentWallet }) {
                       data-bs-toggle="tooltip"
                       data-bs-placement="left"
                       onClick={() => {
+                        // might not work on iOS.
                         navigator.clipboard.writeText(address).then(
                           () => {
                             setAddressCopiedFlag(addressCopiedFlag + 1)
