@@ -402,6 +402,57 @@ main {
   width: 100%;
 }
 
+/* Send, Receive, Earn Styles */
+
+.slashed-zeroes {
+  font-family: Inter;
+  font-weight: 400;
+  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+}
+
+.send form input:not(.collaborators-selector input) {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.send select {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.send button {
+  height: 3rem;
+  width: 100%;
+}
+
+.collaborators-selector button {
+  min-width: 6rem;
+  flex: 1;
+}
+
+.collaborators-selector input {
+  min-width: 6rem;
+  flex: 1;
+}
+
+.collaborators-selector .d-flex {
+  gap: 0.5rem;
+}
+
+:root[data-theme='dark'] .collaborators-selector input {
+  background-color: var(--bs-gray-800);
+  color: var(--bs-white);
+}
+
+:root[data-theme='dark'] .collaborators-selector .selected-dark {
+  background-color: var(--bs-gray-dark);
+  border-color: var(--bs-gray-dark) !important;
+}
+
 /* Boostrap overrides */
 
 h2 {
@@ -415,7 +466,7 @@ h2 {
   box-shadow: none;
 }
 
-/* Start Privacy Level Styles */
+/* Privacy Level Styles */
 
 .privacy-level-4 {
   color: rgba(39, 174, 96, 1);
