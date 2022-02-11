@@ -241,7 +241,12 @@ export default function Earn({ currentWallet, makerRunning }) {
                   </rb.Form.Group>
                 ) : (
                   <rb.Form.Group className="mb-3" controlId="feeAbs">
-                    <rb.Form.Label>Absolute fee in sats</rb.Form.Label>
+                    <rb.Form.Label className="mb-0">Absolute fee in sats</rb.Form.Label>
+                    <div className="mb-2">
+                      <rb.Form.Text className="text-secondary">
+                        An absolute amount you get for helping others to improve their privacy.
+                      </rb.Form.Text>
+                    </div>
                     <rb.Form.Control
                       type="number"
                       name="feeAbs"
