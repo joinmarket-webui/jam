@@ -89,12 +89,10 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
               usesCustomNumCollaborators ? (settings.theme === 'light' ? ' border-dark' : ' selected-dark') : ''
             }`}
             onChange={(e) => {
-              console.log(e.target.value)
               setUsesCustomNumCollaborators(true)
               validateAndSetCustomNumCollaborators(e.target.value)
             }}
             onClick={(e) => {
-              console.log(e.target.value)
               if (e.target.value !== '') {
                 setUsesCustomNumCollaborators(true)
                 validateAndSetCustomNumCollaborators(parseInt(e.target.value, 10))
@@ -123,11 +121,18 @@ export default function Send() {
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
 
-  const [destination, setDestination] = useState(null)
-  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
-  const [amount, setAmount] = useState(null)
+  const initialDestination = null
+  const initialAccount = 0
+  const initialAmount = null
+  const initialNumCollaborators = () => {
+    return pseudoRandomNumber(5, 7)
+  }
+
+  const [destination, setDestination] = useState(initialDestination)
+  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || initialAccount)
+  const [amount, setAmount] = useState(initialAmount)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
-  const [numCollaborators, setNumCollaborators] = useState(pseudoRandomNumber(5, 7))
+  const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators())
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
@@ -233,6 +238,10 @@ export default function Send() {
 
       if (success) {
         form.reset()
+        setDestination(initialDestination)
+        setAccount(initialAccount)
+        setAmount(initialAmount)
+        setNumCollaborators(initialNumCollaborators())
         setIsCoinjoin(false)
       }
     }
@@ -264,7 +273,7 @@ export default function Send() {
                   name="destination"
                   placeholder="Enter address..."
                   className="slashed-zeroes"
-                  defaultValue=""
+                  defaultValue={destination}
                   required
                   onChange={(e) => setDestination(e.target.value)}
                   isInvalid={destination !== null && !isValidAddress(destination)}
@@ -294,7 +303,7 @@ export default function Send() {
                 <rb.Form.Control
                   name="amount"
                   type="number"
-                  defaultValue=""
+                  defaultValue={amount}
                   className="number"
                   min={1}
                   placeholder="Enter amount..."
