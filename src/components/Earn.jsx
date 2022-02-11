@@ -214,7 +214,7 @@ export default function Earn({ currentWallet, makerRunning }) {
         <rb.Col md={10} lg={8} xl={6}>
           <PageTitle
             title="Earn bitcoin"
-            subtitle="By making your bitcoin available for others, you help them improve their privacy and you can also earn a yield."
+            subtitle="By making your bitcoin available for others, you help them improve their privacy and can also earn a yield."
           />
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
           <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
