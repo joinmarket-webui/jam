@@ -106,7 +106,7 @@ export default function Earn({ currentWallet, makerRunning }) {
       if (res.ok) {
         // FIXME: Right now there is no response data to check if maker got started
         // https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1120
-        setAlert({ variant: 'success', message: 'The service is starting.' })
+        setAlert({ variant: 'success', message: 'Service is starting.' })
         setIsWaiting(true)
       } else {
         const { message } = await res.json()
@@ -121,7 +121,12 @@ export default function Earn({ currentWallet, makerRunning }) {
 
   useEffect(() => {
     setIsWaiting(false)
-    setAlert(null)
+
+    if (makerRunning) {
+      setAlert({ variant: 'success', message: 'Service is running.' })
+    } else {
+      setAlert(null)
+    }
   }, [makerRunning])
 
   useEffect(() => {
@@ -160,7 +165,7 @@ export default function Earn({ currentWallet, makerRunning }) {
       if (res.ok) {
         // FIXME: Right now there is no response data to check if maker got stopped
         // https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1120
-        setAlert({ variant: 'success', message: 'The service is stopping.' })
+        setAlert({ variant: 'success', message: 'Service is stopping.' })
         setIsWaiting(true)
       } else {
         const { message } = await res.json()
