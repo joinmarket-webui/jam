@@ -229,11 +229,12 @@ export default function Earn({ currentWallet, makerRunning }) {
                     <rb.Form.Control
                       type="number"
                       name="feeRel"
-                      required
-                      step={0.0001}
                       value={feeRel}
+                      className="slashed-zeroes"
                       min={0}
                       max={0.1}
+                      step={0.0001}
+                      required
                       onChange={(e) => setAndPersistFeeRel(e.target.value)}
                     />
                     <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
@@ -244,10 +245,11 @@ export default function Earn({ currentWallet, makerRunning }) {
                     <rb.Form.Control
                       type="number"
                       name="feeAbs"
-                      required
-                      step={1}
                       value={feeAbs}
+                      className="slashed-zeroes"
                       min={0}
+                      step={1}
+                      required
                       onChange={(e) => setAndPersistFeeAbs(e.target.value)}
                     />
                     <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
@@ -259,10 +261,11 @@ export default function Earn({ currentWallet, makerRunning }) {
                     <rb.Form.Control
                       type="number"
                       name="minsize"
-                      required
-                      step={1000}
                       value={minsize}
+                      className="slashed-zeroes"
                       min={0}
+                      step={1000}
+                      required
                       onChange={(e) => setAndPersistMinsize(e.target.value)}
                     />
                     <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
