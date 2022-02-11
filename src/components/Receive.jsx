@@ -80,7 +80,7 @@ export default function Receive({ currentWallet }) {
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
           {address && (
             <div className="qr-container">
-              <rb.Card>
+              <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
                 <div className="d-flex justify-content-center">
                   {amount ? (
                     <BitcoinQR bitcoinAddress={address} amount={satsToBtc(amount)} title={address} />
@@ -88,11 +88,10 @@ export default function Receive({ currentWallet }) {
                     <BitcoinQR bitcoinAddress={address} title={address} />
                   )}
                 </div>
-                <rb.Card.Body>
+                <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
                   <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>
                   <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
                     <rb.Button
-                      isInvalid={false}
                       variant="outline-dark"
                       data-bs-toggle="tooltip"
                       data-bs-placement="left"
@@ -123,7 +122,7 @@ export default function Receive({ currentWallet }) {
           )}
           <div className="mt-4">
             <rb.Button
-              variant="light"
+              variant={`${settings.theme}`}
               className="ps-0 border-0 d-flex align-items-center"
               onClick={() => setShowSettings(!showSettings)}
             >
