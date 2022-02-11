@@ -58,7 +58,9 @@ export default function Earn({ currentWallet, makerRunning }) {
   const [isWaiting, setIsWaiting] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
-  const [offertype, setOffertype] = useState(window.localStorage.getItem('jm-offertype') || OFFERTYPE_REL)
+  const [offertype, setOffertype] = useState(
+    (settings.useAdvancedWalletMode && window.localStorage.getItem('jm-offertype')) || OFFERTYPE_REL
+  )
   const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.0003)
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
   const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100000)
@@ -201,7 +203,7 @@ export default function Earn({ currentWallet, makerRunning }) {
         <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
           {!makerRunning && !isWaiting && (
             <>
-              {(settings.useAdvancedWalletMode || !isRelOffer) && (
+              {settings.useAdvancedWalletMode && (
                 <rb.Form.Group className="mb-3" controlId="offertype">
                   <rb.Form.Check
                     type="switch"
@@ -213,10 +215,10 @@ export default function Earn({ currentWallet, makerRunning }) {
               )}
               {isRelOffer ? (
                 <rb.Form.Group className="mb-3" controlId="feeRel">
-                  <rb.Form.Label className="mb-0">Relative Fee (percent)</rb.Form.Label>
+                  <rb.Form.Label className="mb-0">Relative fee</rb.Form.Label>
                   <div className="mb-2">
                     <rb.Form.Text className="text-secondary">
-                      As a percentage of the amounts you help others mix.
+                      As a percentage of the amounts you help others with improved privacy.
                     </rb.Form.Text>
                   </div>
                   <rb.Form.Control
