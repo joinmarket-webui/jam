@@ -124,6 +124,12 @@ const postCoinjoin = async ({ walletName, token }, { account, destination, amoun
   })
 }
 
+const getYieldgenReport = async ({ signal }) => {
+  return await fetch(`/api/v1/wallet/yieldgen/report`, {
+    signal,
+  })
+}
+
 export {
   postMakerStart,
   getMakerStop,
@@ -137,4 +143,5 @@ export {
   getWalletLock,
   postWalletUnlock,
   getWalletUtxos,
+  getYieldgenReport,
 }
