@@ -199,7 +199,6 @@ export default function Earn({ currentWallet, makerRunning }) {
           subtitle="By making your bitcoin available for others, you help them improve their privacy and you can also earn a yield."
         />
         {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-        <p>Service {makerRunning ? 'running' : 'not running'}.</p>
         <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
           {!makerRunning && !isWaiting && (
             <>
