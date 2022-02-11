@@ -235,7 +235,7 @@ export default function Earn({ currentWallet, makerRunning }) {
                   </rb.Form.Group>
                 ) : (
                   <rb.Form.Group className="mb-3" controlId="feeAbs">
-                    <rb.Form.Label>Absolute Fee in SATS</rb.Form.Label>
+                    <rb.Form.Label>Absolute fee in sats</rb.Form.Label>
                     <rb.Form.Control
                       type="number"
                       name="feeAbs"
@@ -250,7 +250,7 @@ export default function Earn({ currentWallet, makerRunning }) {
                 )}
                 {settings.useAdvancedWalletMode && (
                   <rb.Form.Group className="mb-3" controlId="minsize">
-                    <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
+                    <rb.Form.Label>Minimum amount in sats</rb.Form.Label>
                     <rb.Form.Control
                       type="number"
                       name="minsize"
