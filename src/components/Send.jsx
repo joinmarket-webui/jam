@@ -302,7 +302,9 @@ export default function Send() {
                 <rb.Form.Control.Feedback type="invalid">Please provide a recipient address.</rb.Form.Control.Feedback>
               </rb.Form.Group>
               <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
-                <rb.Form.Label>Account to send from</rb.Form.Label>
+                <rb.Form.Label>
+                  {settings.useAdvancedWalletMode ? 'Account' : 'Privacy level'} to send from
+                </rb.Form.Label>
                 <rb.Form.Select
                   defaultValue={account}
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -314,7 +316,8 @@ export default function Send() {
                     .sort((lhs, rhs) => lhs.account - rhs.account)
                     .map(({ account, account_balance: balance }) => (
                       <option key={account} value={account}>
-                        Account {account} {settings.showBalance && `(\u20BF${balance})`}
+                        {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}{' '}
+                        {settings.showBalance && `(\u20BF${balance})`}
                       </option>
                     ))}
                 </rb.Form.Select>

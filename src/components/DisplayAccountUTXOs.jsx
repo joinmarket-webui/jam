@@ -21,7 +21,9 @@ export default function DisplayAccountUTXOs({ utxos, ...props }) {
       {Object.entries(byAccount(utxos)).map(([account, utxos]) => (
         <rb.Accordion.Item key={account} eventKey={account}>
           <rb.Accordion.Header className="head">
-            <h5 className="mb-0">Account {account}</h5>
+            <h5 className="mb-0">
+              {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}
+            </h5>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
             <DisplayUTXOs utxos={utxos} unit={settings.unit} showBalances={settings.showBalance} />
