@@ -378,6 +378,16 @@ main {
   width: 2ch;
 }
 
+.create-wallet .blurred-text {
+  color: transparent;
+  text-shadow: 0 0 15px var(--bs-gray-600);
+}
+
+:root[data-theme='dark'] .create-wallet .blurred-text {
+  color: transparent;
+  text-shadow: 0 0 15px var(--bs-gray-400);
+}
+
 :root[data-theme='dark'] .seedphrase > div {
   background-color: var(--bs-gray-800);
 }
@@ -390,6 +400,57 @@ main {
 .create-wallet button {
   height: 3rem;
   width: 100%;
+}
+
+/* Send, Receive, Earn Styles */
+
+.slashed-zeroes {
+  font-family: Inter;
+  font-weight: 400;
+  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
+}
+
+.send form input:not(.collaborators-selector input) {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.send select {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.send button {
+  height: 3rem;
+  width: 100%;
+}
+
+.collaborators-selector button {
+  min-width: 6rem;
+  flex: 1;
+}
+
+.collaborators-selector input {
+  min-width: 6rem;
+  flex: 1;
+}
+
+.collaborators-selector .d-flex {
+  gap: 0.5rem;
+}
+
+:root[data-theme='dark'] .collaborators-selector input {
+  background-color: var(--bs-gray-800);
+  color: var(--bs-white);
+}
+
+:root[data-theme='dark'] .collaborators-selector .selected-dark {
+  background-color: var(--bs-gray-dark);
+  border-color: var(--bs-gray-dark) !important;
 }
 
 /* Boostrap overrides */
@@ -405,7 +466,7 @@ h2 {
   box-shadow: none;
 }
 
-/* Start Privacy Level Styles */
+/* Privacy Level Styles */
 
 .privacy-level-4 {
   color: rgba(39, 174, 96, 1);
@@ -438,6 +499,23 @@ h2 {
   border-color: rgba(222, 222, 222, 1);
 }
 
+/* Wallets Styles */
+
+.wallets a.wallet-name {
+  text-decoration: none;
+  color: var(--bs-body-color);
+}
+
+.wallets a.wallet-name:hover {
+  text-decoration: underline;
+}
+
+.wallets .btn.btn-outline-dark {
+  padding: 0.25rem 1rem;
+  font-weight: 500;
+  border-color: rgba(222, 222, 222, 1);
+}
+
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white);
@@ -461,8 +539,7 @@ h2 {
 }
 
 :root[data-theme='dark'] .card {
-  background-color: var(--bs-gray-dark) !important;
-  border-color: var(--bs-gray-dark) !important;
+  border-color: var(--bs-gray-800) !important;
 }
 
 :root[data-theme='dark'] .btn-dark {
