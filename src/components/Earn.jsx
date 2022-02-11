@@ -62,10 +62,20 @@ export default function Earn({ currentWallet, makerRunning }) {
   const [offertype, setOffertype] = useState(
     (settings.useAdvancedWalletMode && window.localStorage.getItem('jm-offertype')) || OFFERTYPE_REL
   )
-  const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.0003)
+  const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.03)
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
-  const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100000)
+  const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100_000)
   const [yieldgenReportLines, setYieldgenReportLines] = useState([])
+
+  const minRelFee = 0
+  const maxRelFee = 10.0
+
+  const percentageToFactor = (val, precision = 6) => {
+    // Value cannot just be divided
+    // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
+    // but: ✓ Number((0.0027 / 100).toFixed(6)) = 0.000027
+    return Number((val / 100).toFixed(precision))
+  }
 
   const setAndPersistOffertype = (value) => {
     setOffertype(value)
@@ -188,7 +198,8 @@ export default function Earn({ currentWallet, makerRunning }) {
 
     if (isValid) {
       if (makerRunning === false) {
-        await startMakerService(feeAbs, feeRel, offertype, minsize)
+        const feeRelFactor = percentageToFactor(feeRel)
+        await startMakerService(feeAbs, feeRelFactor, offertype, minsize)
       } else {
         await stopMakerService()
       }
@@ -220,7 +231,7 @@ export default function Earn({ currentWallet, makerRunning }) {
                 )}
                 {isRelOffer ? (
                   <rb.Form.Group className="mb-3" controlId="feeRel">
-                    <rb.Form.Label className="mb-0">Relative fee</rb.Form.Label>
+                    <rb.Form.Label className="mb-0">Relative fee {feeRel !== '' && `(${feeRel}%)`}</rb.Form.Label>
                     <div className="mb-2">
                       <rb.Form.Text className="text-secondary">
                         As a percentage of the amounts you help others with improved privacy.
@@ -231,13 +242,15 @@ export default function Earn({ currentWallet, makerRunning }) {
                       name="feeRel"
                       value={feeRel}
                       className="slashed-zeroes"
-                      min={0}
-                      max={0.1}
+                      min={minRelFee}
+                      max={maxRelFee}
                       step={0.0001}
                       required
                       onChange={(e) => setAndPersistFeeRel(e.target.value)}
                     />
-                    <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
+                    <rb.Form.Control.Feedback type="invalid">
+                      Please provide a relative fee between {minRelFee}% and {maxRelFee}%.
+                    </rb.Form.Control.Feedback>
                   </rb.Form.Group>
                 ) : (
                   <rb.Form.Group className="mb-3" controlId="feeAbs">
