@@ -135,7 +135,7 @@ export default function Receive({ currentWallet }) {
             {showSettings && (
               <>
                 <rb.Form.Group className="mt-4" controlId="account">
-                  <rb.Form.Label>Choose account</rb.Form.Label>
+                  <rb.Form.Label>Choose {settings.useAdvancedWalletMode ? 'account' : 'privacy level'}</rb.Form.Label>
                   <rb.Form.Select
                     defaultValue={account}
                     onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -144,7 +144,7 @@ export default function Receive({ currentWallet }) {
                   >
                     {ACCOUNTS.map((val) => (
                       <option key={val} value={val}>
-                        Account {val}
+                        {settings.useAdvancedWalletMode ? 'Account' : 'Privacy level'} {val}
                       </option>
                     ))}
                   </rb.Form.Select>
