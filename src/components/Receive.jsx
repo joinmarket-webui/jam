@@ -97,8 +97,14 @@ export default function Receive({ currentWallet }) {
                       data-bs-toggle="tooltip"
                       data-bs-placement="left"
                       onClick={() => {
-                        navigator.clipboard.writeText(address)
-                        setAddressCopiedFlag(addressCopiedFlag + 1)
+                        navigator.clipboard.writeText(address).then(
+                          () => {
+                            setAddressCopiedFlag(addressCopiedFlag + 1)
+                          },
+                          () => {
+                            setAlert({ variant: 'warning', message: 'Could not copy address.' })
+                          }
+                        )
                       }}
                     >
                       {showAddressCopiedConfirmation ? (
