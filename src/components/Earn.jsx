@@ -304,7 +304,6 @@ export default function Earn({ currentWallet, makerRunning }) {
       {settings.useAdvancedWalletMode && (
         <rb.Row className="justify-content-center mt-5 mb-3">
           <rb.Col md={10} lg={8} xl={6}>
-            <h6>Report</h6>
             <rb.Button
               variant="outline-dark"
               className="border-0 mb-2 d-inline-flex align-items-center"
