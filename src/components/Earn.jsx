@@ -4,6 +4,7 @@ import * as rb from 'react-bootstrap'
 import { useSettings } from '../context/SettingsContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
+import ToggleSwitch from './ToggleSwitch'
 import * as Api from '../libs/JmWalletApi'
 
 const OFFERTYPE_REL = 'sw0reloffer'
@@ -210,11 +211,10 @@ export default function Earn({ currentWallet, makerRunning }) {
               <>
                 {settings.useAdvancedWalletMode && (
                   <rb.Form.Group className="mb-3" controlId="offertype">
-                    <rb.Form.Check
-                      type="switch"
+                    <ToggleSwitch
                       label="Relative offer"
-                      checked={isRelOffer}
-                      onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)}
+                      initialValue={isRelOffer}
+                      onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
                     />
                   </rb.Form.Group>
                 )}
