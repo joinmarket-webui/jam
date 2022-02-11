@@ -192,94 +192,105 @@ export default function Earn({ currentWallet, makerRunning }) {
   const isRelOffer = offertype === OFFERTYPE_REL
 
   return (
-    <rb.Row className="earn justify-content-center">
-      <rb.Col md={10} lg={8} xl={6}>
-        <PageTitle
-          title="Earn bitcoin"
-          subtitle="By making your bitcoin available for others, you help them improve their privacy and you can also earn a yield."
-        />
-        {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-        <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-          {!makerRunning && !isWaiting && (
-            <>
-              {settings.useAdvancedWalletMode && (
-                <rb.Form.Group className="mb-3" controlId="offertype">
-                  <rb.Form.Check
-                    type="switch"
-                    label="Relative offer"
-                    checked={isRelOffer}
-                    onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)}
-                  />
-                </rb.Form.Group>
-              )}
-              {isRelOffer ? (
-                <rb.Form.Group className="mb-3" controlId="feeRel">
-                  <rb.Form.Label className="mb-0">Relative fee</rb.Form.Label>
-                  <div className="mb-2">
-                    <rb.Form.Text className="text-secondary">
-                      As a percentage of the amounts you help others with improved privacy.
-                    </rb.Form.Text>
-                  </div>
-                  <rb.Form.Control
-                    type="number"
-                    name="feeRel"
-                    required
-                    step={0.0001}
-                    value={feeRel}
-                    min={0}
-                    max={0.1}
-                    onChange={(e) => setAndPersistFeeRel(e.target.value)}
-                  />
-                  <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
-                </rb.Form.Group>
-              ) : (
-                <rb.Form.Group className="mb-3" controlId="feeAbs">
-                  <rb.Form.Label>Absolute Fee in SATS</rb.Form.Label>
-                  <rb.Form.Control
-                    type="number"
-                    name="feeAbs"
-                    required
-                    step={1}
-                    value={feeAbs}
-                    min={0}
-                    onChange={(e) => setAndPersistFeeAbs(e.target.value)}
-                  />
-                  <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
-                </rb.Form.Group>
-              )}
-              {settings.useAdvancedWalletMode && (
-                <rb.Form.Group className="mb-3" controlId="minsize">
-                  <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
-                  <rb.Form.Control
-                    type="number"
-                    name="minsize"
-                    required
-                    step={1000}
-                    value={minsize}
-                    min={0}
-                    onChange={(e) => setAndPersistMinsize(e.target.value)}
-                  />
-                  <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
-                </rb.Form.Group>
-              )}
-            </>
-          )}
-          <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
-            {isSending ? (
+    <div className="earn">
+      <rb.Row className="justify-content-center">
+        <rb.Col md={10} lg={8} xl={6}>
+          <PageTitle
+            title="Earn bitcoin"
+            subtitle="By making your bitcoin available for others, you help them improve their privacy and you can also earn a yield."
+          />
+          {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+          <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+            {!makerRunning && !isWaiting && (
               <>
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                {makerRunning === true ? 'Stopping' : 'Starting'}
+                {settings.useAdvancedWalletMode && (
+                  <rb.Form.Group className="mb-3" controlId="offertype">
+                    <rb.Form.Check
+                      type="switch"
+                      label="Relative offer"
+                      checked={isRelOffer}
+                      onChange={(e) => setAndPersistOffertype(e.target.checked ? OFFERTYPE_REL : OFFERTYPE_ABS)}
+                    />
+                  </rb.Form.Group>
+                )}
+                {isRelOffer ? (
+                  <rb.Form.Group className="mb-3" controlId="feeRel">
+                    <rb.Form.Label className="mb-0">Relative fee</rb.Form.Label>
+                    <div className="mb-2">
+                      <rb.Form.Text className="text-secondary">
+                        As a percentage of the amounts you help others with improved privacy.
+                      </rb.Form.Text>
+                    </div>
+                    <rb.Form.Control
+                      type="number"
+                      name="feeRel"
+                      required
+                      step={0.0001}
+                      value={feeRel}
+                      min={0}
+                      max={0.1}
+                      onChange={(e) => setAndPersistFeeRel(e.target.value)}
+                    />
+                    <rb.Form.Control.Feedback type="invalid">Please provide a relative fee.</rb.Form.Control.Feedback>
+                  </rb.Form.Group>
+                ) : (
+                  <rb.Form.Group className="mb-3" controlId="feeAbs">
+                    <rb.Form.Label>Absolute Fee in SATS</rb.Form.Label>
+                    <rb.Form.Control
+                      type="number"
+                      name="feeAbs"
+                      required
+                      step={1}
+                      value={feeAbs}
+                      min={0}
+                      onChange={(e) => setAndPersistFeeAbs(e.target.value)}
+                    />
+                    <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
+                  </rb.Form.Group>
+                )}
+                {settings.useAdvancedWalletMode && (
+                  <rb.Form.Group className="mb-3" controlId="minsize">
+                    <rb.Form.Label>Minimum amount in SATS</rb.Form.Label>
+                    <rb.Form.Control
+                      type="number"
+                      name="minsize"
+                      required
+                      step={1000}
+                      value={minsize}
+                      min={0}
+                      onChange={(e) => setAndPersistMinsize(e.target.value)}
+                    />
+                    <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
+                  </rb.Form.Group>
+                )}
               </>
-            ) : makerRunning === true ? (
-              'Stop'
-            ) : (
-              'Start'
             )}
-          </rb.Button>
-        </rb.Form>
+            <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
+              {isSending ? (
+                <>
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="me-2"
+                  />
+                  {makerRunning === true ? 'Stopping' : 'Starting'}
+                </>
+              ) : makerRunning === true ? (
+                'Stop'
+              ) : (
+                'Start'
+              )}
+            </rb.Button>
+          </rb.Form>
+        </rb.Col>
+      </rb.Row>
 
-        {settings.useAdvancedWalletMode && (
-          <div className="mt-5 mb-3">
+      {settings.useAdvancedWalletMode && (
+        <rb.Row className="justify-content-center mt-5 mb-3">
+          <rb.Col md={10} lg={8} xl={6}>
             <h6>Report</h6>
             <rb.Button
               variant="outline-dark"
@@ -302,10 +313,14 @@ export default function Earn({ currentWallet, makerRunning }) {
                 />
               )}
             </rb.Button>
-            {isShowReport && <YieldgenReport lines={yieldgenReportLines} />}
-          </div>
-        )}
-      </rb.Col>
-    </rb.Row>
+          </rb.Col>
+          {isShowReport && (
+            <rb.Col md={12}>
+              <YieldgenReport lines={yieldgenReportLines} />
+            </rb.Col>
+          )}
+        </rb.Row>
+      )}
+    </div>
   )
 }
