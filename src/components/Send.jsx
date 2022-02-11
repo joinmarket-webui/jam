@@ -237,12 +237,12 @@ export default function Send() {
         : await sendPayment(account, destination, amount)
 
       if (success) {
-        form.reset()
         setDestination(initialDestination)
         setAccount(initialAccount)
         setAmount(initialAmount)
         setNumCollaborators(initialNumCollaborators())
         setIsCoinjoin(false)
+        form.reset()
       }
     }
   }
@@ -273,7 +273,7 @@ export default function Send() {
                   name="destination"
                   placeholder="Enter address..."
                   className="slashed-zeroes"
-                  defaultValue={destination}
+                  value={destination || ''}
                   required
                   onChange={(e) => setDestination(e.target.value)}
                   isInvalid={destination !== null && !isValidAddress(destination)}
@@ -303,7 +303,7 @@ export default function Send() {
                 <rb.Form.Control
                   name="amount"
                   type="number"
-                  defaultValue={amount}
+                  value={amount || ''}
                   className="number"
                   min={1}
                   placeholder="Enter amount..."
