@@ -273,14 +273,6 @@ main {
   flex: 1;
 }
 
-.qr-container {
-  margin: 0 0 1rem -1rem;
-}
-
-.qr-container h5 {
-  display: none;
-}
-
 /* Navbar Styles */
 
 #mainNav .nav-link {
@@ -451,6 +443,35 @@ main {
 :root[data-theme='dark'] .collaborators-selector .selected-dark {
   background-color: var(--bs-gray-dark);
   border-color: var(--bs-gray-dark) !important;
+}
+
+.receive form input {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.receive select {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.receive .btn.btn-outline-dark {
+  padding: 0.25rem 1rem;
+  font-weight: 500;
+  border-color: rgba(222, 222, 222, 1);
+}
+
+.receive .btn.btn-light {
+  background-color: transparent;
+}
+
+.receive hr {
+  background-color: rgba(222, 222, 222, 1);
+  opacity: 100%;
+}
+
+.qr-container h5 {
+  display: none;
 }
 
 /* Boostrap overrides */
