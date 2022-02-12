@@ -119,7 +119,16 @@ export default function App() {
                   path="send"
                   element={<Send makerRunning={makerRunning} coinjoinInProcess={coinjoinInProcess} />}
                 />
-                <Route path="earn" element={<Earn currentWallet={currentWallet} makerRunning={makerRunning} />} />
+                <Route
+                  path="earn"
+                  element={
+                    <Earn
+                      currentWallet={currentWallet}
+                      coinjoinInProcess={coinjoinInProcess}
+                      makerRunning={makerRunning}
+                    />
+                  }
+                />
                 <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
                 <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
               </>

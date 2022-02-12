@@ -51,7 +51,7 @@ const YieldgenReport = ({ lines }) => {
   )
 }
 
-export default function Earn({ currentWallet, makerRunning }) {
+export default function Earn({ currentWallet, coinjoinInProcess, makerRunning }) {
   const settings = useSettings()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -216,101 +216,117 @@ export default function Earn({ currentWallet, makerRunning }) {
             title="Earn bitcoin"
             subtitle="By making your bitcoin available for others, you help them improve their privacy and can also earn a yield."
           />
+
+          {coinjoinInProcess && (
+            <div className="mb-4 border border-1 p-3" style={{ borderRadius: '.25rem' }}>
+              🛈{` `}
+              <small className="text-secondary">A collaborative transaction is currently in progress.</small>
+            </div>
+          )}
+
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-          <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-            {!makerRunning && !isWaiting && (
-              <>
-                {settings.useAdvancedWalletMode && (
-                  <rb.Form.Group className="mb-3" controlId="offertype">
-                    <ToggleSwitch
-                      label="Relative offer"
-                      initialValue={isRelOffer}
-                      onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
-                    />
-                  </rb.Form.Group>
-                )}
-                {isRelOffer ? (
-                  <rb.Form.Group className="mb-3" controlId="feeRel">
-                    <rb.Form.Label className="mb-0">Relative fee {feeRel !== '' && `(${feeRel}%)`}</rb.Form.Label>
-                    <div className="mb-2">
-                      <rb.Form.Text className="text-secondary">
-                        As a percentage of the amounts you help others with improved privacy.
-                      </rb.Form.Text>
-                    </div>
-                    <rb.Form.Control
-                      type="number"
-                      name="feeRel"
-                      value={feeRel}
-                      className="slashed-zeroes"
-                      min={minRelFee}
-                      max={maxRelFee}
-                      step={0.0001}
-                      required
-                      onChange={(e) => setAndPersistFeeRel(e.target.value)}
-                    />
-                    <rb.Form.Control.Feedback type="invalid">
-                      Please provide a relative fee between {minRelFee}% and {maxRelFee}%.
-                    </rb.Form.Control.Feedback>
-                  </rb.Form.Group>
-                ) : (
-                  <rb.Form.Group className="mb-3" controlId="feeAbs">
-                    <rb.Form.Label className="mb-0">Absolute fee in sats</rb.Form.Label>
-                    <div className="mb-2">
-                      <rb.Form.Text className="text-secondary">
-                        An absolute amount you get for helping others to improve their privacy.
-                      </rb.Form.Text>
-                    </div>
-                    <rb.Form.Control
-                      type="number"
-                      name="feeAbs"
-                      value={feeAbs}
-                      className="slashed-zeroes"
-                      min={0}
-                      step={1}
-                      required
-                      onChange={(e) => setAndPersistFeeAbs(e.target.value)}
-                    />
-                    <rb.Form.Control.Feedback type="invalid">Please provide an absolute fee.</rb.Form.Control.Feedback>
-                  </rb.Form.Group>
-                )}
-                {settings.useAdvancedWalletMode && (
-                  <rb.Form.Group className="mb-3" controlId="minsize">
-                    <rb.Form.Label>Minimum amount in sats</rb.Form.Label>
-                    <rb.Form.Control
-                      type="number"
-                      name="minsize"
-                      value={minsize}
-                      className="slashed-zeroes"
-                      min={0}
-                      step={1000}
-                      required
-                      onChange={(e) => setAndPersistMinsize(e.target.value)}
-                    />
-                    <rb.Form.Control.Feedback type="invalid">Please provide a minimum amount.</rb.Form.Control.Feedback>
-                  </rb.Form.Group>
-                )}
-              </>
-            )}
-            <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
-              {isSending ? (
+
+          {!coinjoinInProcess && (
+            <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+              {!makerRunning && !isWaiting && (
                 <>
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="me-2"
-                  />
-                  {makerRunning === true ? 'Stopping' : 'Starting'}
+                  {settings.useAdvancedWalletMode && (
+                    <rb.Form.Group className="mb-3" controlId="offertype">
+                      <ToggleSwitch
+                        label="Relative offer"
+                        initialValue={isRelOffer}
+                        onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
+                      />
+                    </rb.Form.Group>
+                  )}
+                  {isRelOffer ? (
+                    <rb.Form.Group className="mb-3" controlId="feeRel">
+                      <rb.Form.Label className="mb-0">Relative fee {feeRel !== '' && `(${feeRel}%)`}</rb.Form.Label>
+                      <div className="mb-2">
+                        <rb.Form.Text className="text-secondary">
+                          As a percentage of the amounts you help others with improved privacy.
+                        </rb.Form.Text>
+                      </div>
+                      <rb.Form.Control
+                        type="number"
+                        name="feeRel"
+                        value={feeRel}
+                        className="slashed-zeroes"
+                        min={minRelFee}
+                        max={maxRelFee}
+                        step={0.0001}
+                        required
+                        onChange={(e) => setAndPersistFeeRel(e.target.value)}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">
+                        Please provide a relative fee between {minRelFee}% and {maxRelFee}%.
+                      </rb.Form.Control.Feedback>
+                    </rb.Form.Group>
+                  ) : (
+                    <rb.Form.Group className="mb-3" controlId="feeAbs">
+                      <rb.Form.Label className="mb-0">Absolute fee in sats</rb.Form.Label>
+                      <div className="mb-2">
+                        <rb.Form.Text className="text-secondary">
+                          An absolute amount you get for helping others to improve their privacy.
+                        </rb.Form.Text>
+                      </div>
+                      <rb.Form.Control
+                        type="number"
+                        name="feeAbs"
+                        value={feeAbs}
+                        className="slashed-zeroes"
+                        min={0}
+                        step={1}
+                        required
+                        onChange={(e) => setAndPersistFeeAbs(e.target.value)}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">
+                        Please provide an absolute fee.
+                      </rb.Form.Control.Feedback>
+                    </rb.Form.Group>
+                  )}
+                  {settings.useAdvancedWalletMode && (
+                    <rb.Form.Group className="mb-3" controlId="minsize">
+                      <rb.Form.Label>Minimum amount in sats</rb.Form.Label>
+                      <rb.Form.Control
+                        type="number"
+                        name="minsize"
+                        value={minsize}
+                        className="slashed-zeroes"
+                        min={0}
+                        step={1000}
+                        required
+                        onChange={(e) => setAndPersistMinsize(e.target.value)}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">
+                        Please provide a minimum amount.
+                      </rb.Form.Control.Feedback>
+                    </rb.Form.Group>
+                  )}
                 </>
-              ) : makerRunning === true ? (
-                'Stop'
-              ) : (
-                'Start'
               )}
-            </rb.Button>
-          </rb.Form>
+
+              <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
+                {isSending ? (
+                  <>
+                    <rb.Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                    {makerRunning === true ? 'Stopping' : 'Starting'}
+                  </>
+                ) : makerRunning === true ? (
+                  'Stop'
+                ) : (
+                  'Start'
+                )}
+              </rb.Button>
+            </rb.Form>
+          )}
         </rb.Col>
       </rb.Row>
 
