@@ -10,17 +10,20 @@ import * as Api from '../libs/JmWalletApi'
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-const YieldgenReport = ({ lines }) => {
+const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
   const settings = useSettings()
 
   const empty = !lines || lines.length < 2
   const headers = empty ? [] : lines[0].split(',')
+
   const linesWithoutHeader = empty
     ? []
     : lines
         .slice(1, lines.length)
         .map((line) => line.split(','))
         .reverse()
+
+  const visibleLines = linesWithoutHeader.slice(0, maxAmountOfRows)
 
   return (
     <div className="mt-2 mb-3">
@@ -36,15 +39,27 @@ const YieldgenReport = ({ lines }) => {
               </tr>
             </thead>
             <tbody>
-              {linesWithoutHeader.map((line, lineIndex) => (
-                <tr key={lineIndex}>
-                  {line.map((val, valIndex) => (
-                    <td key={valIndex}>{val}</td>
+              {visibleLines.map((line, trIndex) => (
+                <tr key={`tr_${trIndex}`}>
+                  {line.map((val, tdIndex) => (
+                    <td key={`td_${tdIndex}`}>{val}</td>
                   ))}
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr>
+                {headers.map((name, index) => (
+                  <th key={`footer_${index}`}>{name}</th>
+                ))}
+              </tr>
+            </tfoot>
           </rb.Table>
+          <div className="mt-1 d-flex justify-content-end">
+            <small>
+              Showing {visibleLines.length} of {linesWithoutHeader.length} entries
+            </small>
+          </div>
         </>
       )}
     </div>
