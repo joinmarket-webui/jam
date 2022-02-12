@@ -232,12 +232,12 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
             subtitle="By making your bitcoin available for others, you help them improve their privacy and can also earn a yield."
           />
 
-          {coinjoinInProcess && (
+          <rb.Fade in={coinjoinInProcess} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 border border-1 p-3" style={{ borderRadius: '.25rem' }}>
               🛈{` `}
               <small className="text-secondary">A collaborative transaction is currently in progress.</small>
             </div>
-          )}
+          </rb.Fade>
 
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
@@ -370,11 +370,11 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
               )}
             </rb.Button>
           </rb.Col>
-          {isShowReport && (
+          <rb.Fade in={isShowReport} mountOnEnter={true} unmountOnExit={true}>
             <rb.Col md={12}>
               <YieldgenReport lines={yieldgenReportLines} />
             </rb.Col>
-          )}
+          </rb.Fade>
         </rb.Row>
       )}
     </div>
