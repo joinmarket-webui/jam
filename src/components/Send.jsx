@@ -131,7 +131,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
   )
 }
 
-export default function Send() {
+export default function Send({ makerRunning, coinjoinInProcess }) {
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
@@ -141,6 +141,7 @@ export default function Send() {
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
+  const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
 
   const initialDestination = null
   const initialAccount = 0
@@ -155,6 +156,15 @@ export default function Send() {
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators())
   const [formIsValid, setFormIsValid] = useState(false)
+
+  useEffect(() => {
+    const coinjoinOptionEnabled = !makerRunning && !coinjoinInProcess
+    setIsCoinjoinOptionEnabled(coinjoinOptionEnabled)
+
+    if (!coinjoinOptionEnabled && isCoinjoin) {
+      setIsCoinjoin(false)
+    }
+  }, [makerRunning, coinjoinInProcess, isCoinjoin])
 
   useEffect(() => {
     if (
@@ -229,7 +239,7 @@ export default function Send() {
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setAlert({ variant: 'success', message: 'Coinjoin started' })
+        setAlert({ variant: 'success', message: 'Collaborative transaction started' })
         success = true
       } else {
         const message = await extractErrorMessage(res)
@@ -286,7 +296,19 @@ export default function Send() {
               title="Send bitcoin"
               subtitle="Collaborative transactions increase the privacy of yourself and others."
             />
+
+            <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
+              <div className="mb-4 p-3 border border-1 rounded">
+                🛈{' '}
+                <small className="text-secondary">
+                  {makerRunning && <>Earn is active. Stop the service in order to send collaborative transactions.</>}
+                  {coinjoinInProcess && <>A collaborative transaction is currently in progress.</>}
+                </small>
+              </div>
+            </rb.Fade>
+
             {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+
             <rb.Form onSubmit={onSubmit} noValidate id="send-form">
               <rb.Form.Group className="mb-4" controlId="destination">
                 <rb.Form.Label>Recipient</rb.Form.Label>
@@ -339,12 +361,14 @@ export default function Send() {
                   Please provide a valid amount.
                 </rb.Form.Control.Feedback>
               </rb.Form.Group>
-              <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-                <ToggleSwitch
-                  label="Send as collaborative transaction for improved privacy"
-                  onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-                />
-              </rb.Form.Group>
+              {isCoinjoinOptionEnabled && (
+                <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
+                  <ToggleSwitch
+                    label="Send as collaborative transaction for improved privacy"
+                    onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+                  />
+                </rb.Form.Group>
+              )}
             </rb.Form>
             {isCoinjoin && (
               <CollaboratorsSelector numCollaborators={numCollaborators} setNumCollaborators={setNumCollaborators} />
