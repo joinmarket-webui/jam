@@ -52,7 +52,7 @@ export default function Onboarding() {
           <a
             href="https://github.com/joinmarket-webui/joinmarket-webui/issues"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="link-secondary"
           >
             report an issue
