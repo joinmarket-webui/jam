@@ -546,6 +546,40 @@ h2 {
   border-color: rgba(222, 222, 222, 1);
 }
 
+/* Alpha Warning */
+
+.warning-hint {
+  font-size: 0.8rem;
+}
+
+.warning-card-wrapper {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(1px);
+}
+
+.warning-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 75%;
+}
+
+@media only screen and (min-width: 576px) {
+  .warning-card {
+    width: 50%;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  .warning-card {
+    width: 25%;
+  }
+}
+
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white);

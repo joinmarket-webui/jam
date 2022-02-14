@@ -25,6 +25,7 @@ export default function App() {
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
+  const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const settings = useSettings()
 
   const startWallet = useCallback(
@@ -94,6 +95,24 @@ export default function App() {
   }
   return (
     <>
+      {showAlphaWarning && (
+        <div className="warning-card-wrapper">
+          <rb.Card className="warning-card translate-middle shadow-lg">
+            <rb.Card.Body>
+              <rb.Card.Title className="text-center mb-3">Warning</rb.Card.Title>
+              <p className="text-secondary">
+                While JoinMarket is tried and tested, this user interface is not. It is in a pre-alpha stage and
+                currently does not offer the same functionality and privacy guarantees as existing JoinMarket tools.
+              </p>
+              <div className="text-center mt-3">
+                <rb.Button variant="secondary" onClick={() => setShowAlphaWarning(false)}>
+                  Fine with me.
+                </rb.Button>
+              </div>
+            </rb.Card.Body>
+          </rb.Card>
+        </div>
+      )}
       <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
       <rb.Container as="main" className="py-5">
         {connectionError ? (
@@ -126,19 +145,18 @@ export default function App() {
         )}
       </rb.Container>
       <rb.Nav as="footer" className="border-top py-2">
-        <rb.Container>
-          {connectionError ? (
-            <div className="d-flex justify-content-center pt-2">
-              <span className="text-danger mx-1">•</span>
-              <span className="text-secondary">Disconnected</span>
-            </div>
-          ) : (
-            <div className="d-flex justify-content-center pt-2">
-              <span className="text-success mx-1">•</span>
-              <span className="text-secondary">Connected</span>
-            </div>
-          )}
-          <div className="d-flex justify-content-center">
+        <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2">
+          <div className="d-flex flex-1 order-2 order-md-0 flex-column justify-content-center align-items-center align-items-md-start">
+            <div className="warning-hint text-start text-secondary d-none d-md-block">This is pre-alpha software.</div>
+            <rb.Button
+              variant="link"
+              className="warning-hint text-start border-0 p-0 text-secondary"
+              onClick={() => setShowAlphaWarning(true)}
+            >
+              Read this before using.
+            </rb.Button>
+          </div>
+          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center">
             <rb.Nav.Item>
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
@@ -180,6 +198,17 @@ export default function App() {
               </a>
             </rb.Nav.Item>
           </div>
+          {connectionError ? (
+            <div className="d-flex order-0 order-md-2  justify-content-center justify-content-md-end align-items-center">
+              <span className="text-danger mx-1">•</span>
+              <span className="text-secondary">Disconnected</span>
+            </div>
+          ) : (
+            <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
+              <span className="text-success mx-1">•</span>
+              <span className="text-secondary">Connected</span>
+            </div>
+          )}
         </rb.Container>
       </rb.Nav>
     </>
