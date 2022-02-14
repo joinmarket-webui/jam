@@ -302,7 +302,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                 🛈{' '}
                 <small className="text-secondary">
                   {makerRunning && <>Earn is active. Stop the service in order to send collaborative transactions.</>}
-                  {coinjoinInProcess && <>A collaborative transaction is in progress.</>}
+                  {coinjoinInProcess && <>A collaborative transaction is currently in progress.</>}
                 </small>
               </div>
             </rb.Fade>
