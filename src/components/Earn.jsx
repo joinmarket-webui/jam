@@ -77,19 +77,27 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
   const [offertype, setOffertype] = useState(
     (settings.useAdvancedWalletMode && window.localStorage.getItem('jm-offertype')) || OFFERTYPE_REL
   )
-  const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.03)
+  const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.000_3)
   const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
   const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100_000)
   const [yieldgenReportLines, setYieldgenReportLines] = useState([])
 
-  const minRelFee = 0
-  const maxRelFee = 10.0
+  const feeRelPercentageMin = 0.0
+  const feeRelPercentageMax = 10.0
+  const feeRelPercentageStep = 0.0001
 
   const percentageToFactor = (val, precision = 6) => {
     // Value cannot just be divided
     // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
     // but: ✓ Number((0.0027 / 100).toFixed(6)) = 0.000027
     return Number((val / 100).toFixed(precision))
+  }
+
+  const factorToPercentage = (val, precision = 6) => {
+    // Value cannot just be divided
+    // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
+    // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
+    return Number((val * 100).toFixed(precision))
   }
 
   const setAndPersistOffertype = (value) => {
@@ -213,8 +221,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
 
     if (isValid) {
       if (makerRunning === false) {
-        const feeRelFactor = percentageToFactor(feeRel)
-        await startMakerService(feeAbs, feeRelFactor, offertype, minsize)
+        await startMakerService(feeAbs, feeRel, offertype, minsize)
       } else {
         await stopMakerService()
       }
@@ -255,7 +262,9 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                   )}
                   {isRelOffer ? (
                     <rb.Form.Group className="mb-3" controlId="feeRel">
-                      <rb.Form.Label className="mb-0">Relative fee {feeRel !== '' && `(${feeRel}%)`}</rb.Form.Label>
+                      <rb.Form.Label className="mb-0">
+                        Relative fee {feeRel !== '' && `(${factorToPercentage(feeRel)}%)`}
+                      </rb.Form.Label>
                       <div className="mb-2">
                         <rb.Form.Text className="text-secondary">
                           As a percentage of the amounts you help others with improved privacy.
@@ -264,16 +273,16 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                       <rb.Form.Control
                         type="number"
                         name="feeRel"
-                        value={feeRel}
+                        value={factorToPercentage(feeRel)}
                         className="slashed-zeroes"
-                        min={minRelFee}
-                        max={maxRelFee}
-                        step={0.0001}
+                        min={feeRelPercentageMin}
+                        max={feeRelPercentageMax}
+                        step={feeRelPercentageStep}
                         required
-                        onChange={(e) => setAndPersistFeeRel(e.target.value)}
+                        onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
                       />
                       <rb.Form.Control.Feedback type="invalid">
-                        Please provide a relative fee between {minRelFee}% and {maxRelFee}%.
+                        Please provide a relative fee between {feeRelPercentageMin}% and {feeRelPercentageMax}%.
                       </rb.Form.Control.Feedback>
                     </rb.Form.Group>
                   ) : (
