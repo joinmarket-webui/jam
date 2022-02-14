@@ -298,8 +298,8 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
             />
 
             <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
-              <div className="mb-4 border border-1 p-3" style={{ borderRadius: '.25rem' }}>
-                🛈{` `}
+              <div className="mb-4 p-3 border border-1 rounded">
+                🛈{' '}
                 <small className="text-secondary">
                   {makerRunning && <>Earn is active. Stop the service in order to send collaborative transactions.</>}
                   {coinjoinInProcess && <>A collaborative transaction is in progress.</>}
