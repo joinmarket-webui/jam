@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
 import CreateWallet from './CreateWallet'
@@ -101,6 +101,7 @@ export default function App() {
         ) : (
           <Routes>
             <Route
+              exact
               path="/"
               element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
             />
@@ -120,6 +121,7 @@ export default function App() {
                 <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
               </>
             )}
+            <Route path="*" element={<Navigate to="/" replace={true} />} />
           </Routes>
         )}
       </rb.Container>
