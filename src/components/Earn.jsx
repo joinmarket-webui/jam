@@ -234,8 +234,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
 
           <rb.Fade in={coinjoinInProcess} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
-              🛈{` `}
-              <small className="text-secondary">A collaborative transaction is currently in progress.</small>
+              🛈 <small className="text-secondary">A collaborative transaction is currently in progress.</small>
             </div>
           </rb.Fade>
 
