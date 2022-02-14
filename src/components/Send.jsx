@@ -350,7 +350,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                   name="amount"
                   type="number"
                   value={amount || ''}
-                  className="number"
+                  className="slashed-zeroes"
                   min={1}
                   placeholder="Enter amount..."
                   required
