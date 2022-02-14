@@ -155,7 +155,7 @@ export default function App() {
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="nav-link text-secondary"
               >
                 Docs
@@ -165,7 +165,7 @@ export default function App() {
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="nav-link text-secondary"
               >
                 Features
@@ -175,7 +175,7 @@ export default function App() {
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="nav-link text-secondary"
               >
                 GitHub
@@ -185,7 +185,7 @@ export default function App() {
               <a
                 href="https://twitter.com/joinmarket"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 className="nav-link text-secondary"
               >
                 Twitter
