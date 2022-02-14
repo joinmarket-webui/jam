@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
