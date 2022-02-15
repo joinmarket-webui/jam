@@ -38,7 +38,7 @@ If your node of choice is missing, feel free to integrate it and let us know so 
 
 - [**RaspiBlitz**](https://github.com/rootzoll/raspiblitz): A beta version of the JoinMarket Web UI will be [available in RaspiBlitz v1.7.2](https://github.com/rootzoll/raspiblitz/pull/2747). We're aiming for a production ready version to be available with [RaspiBlitz v1.8.0](https://github.com/rootzoll/raspiblitz/pull/2747#issuecomment-1013866678).
 - [**Citadel**](https://runcitadel.space/): Citadel integration is work in progress.
-- [**Umbrel**](https://getumbrel.com/): Umbrel integration is work in progress.
+- [**Umbrel**](https://getumbrel.com/): Umbrel integration is [work in progress](https://github.com/getumbrel/umbrel/pull/1216).
 
 ## ✨ Features
 
