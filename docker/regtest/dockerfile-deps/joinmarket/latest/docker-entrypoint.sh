@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-cd ..
-. jmvenv/bin/activate
-cd scripts
-
 export JM_onion_serving_host="$(/sbin/ip route | awk '/src/ { print $9 }')"
 
 # First we restore the default cfg as created by wallet-tool.py generate

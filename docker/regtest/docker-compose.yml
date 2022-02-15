@@ -94,14 +94,12 @@ services:
   joinmarket:
     container_name: jm_regtest_joinmarket
     build:
-      context: ./dockerfile-deps/joinmarket/webui-standalone
+      context: ./dockerfile-deps/joinmarket/latest
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       READY_FILE: /root/.nbxplorer/btc_fully_synched
       ENSURE_WALLET: 1
-      APP_USER: joinmarket
-      APP_PASSWORD: joinmarket
       jm_gaplimit: 2000
       jm_rpc_wallet_file: jm_primary
       jm_max_cj_fee_abs: 42000000 # 0.42 btc
@@ -123,7 +121,6 @@ services:
       jm_socks5_host: tor
       jm_socks5_port: 9050
     expose:
-      - 80    # nginx
       - 8080  # payjoin server
       - 62601 # obwatch
       - 27183 # joinmarketd
@@ -131,7 +128,6 @@ services:
     ports:
       - "62601:62601"
       - "28183:28183"
-      - "28080:80"
     volumes:
       - "joinmarket_datadir:/root/.joinmarket"
       - "nbxplorer_datadir:/root/.nbxplorer"
