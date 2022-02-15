@@ -273,6 +273,16 @@ main {
   flex: 1;
 }
 
+.slashed-zeroes {
+  font-family: Inter;
+  font-weight: 400;
+  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
+  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
+  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
+  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
+  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
+}
+
 /* Navbar Styles */
 
 #mainNav .nav-link {
@@ -351,14 +361,6 @@ main {
 
 .seedphrase {
   gap: 0.3rem;
-
-  font-family: Inter;
-  font-weight: 400;
-  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
 }
 
 .seedphrase > div {
@@ -404,16 +406,6 @@ main {
 .earn form button {
   height: 3rem;
   width: 100%;
-}
-
-.slashed-zeroes {
-  font-family: Inter;
-  font-weight: 400;
-  font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -moz-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -ms-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -webkit-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
-  -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on;
 }
 
 .send form input:not(.collaborators-selector input) {
@@ -588,6 +580,22 @@ h2 {
   .warning-card {
     width: 25%;
   }
+}
+
+/* Balance Styles */
+
+.balance-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.balance {
+  display: flex;
+  align-items: center;
+}
+
+.bitcoin-symbol {
+  padding-right: 0.1em;
 }
 
 /* Theme overrides */

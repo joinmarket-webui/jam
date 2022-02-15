@@ -299,7 +299,6 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
             <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
               <div className="mb-4 p-3 border border-1 rounded">
-                🛈{' '}
                 <small className="text-secondary">
                   {makerRunning && <>Earn is active. Stop the service in order to send collaborative transactions.</>}
                   {coinjoinInProcess && <>A collaborative transaction is currently in progress.</>}
@@ -307,7 +306,11 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
               </div>
             </rb.Fade>
 
-            {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+            {alert && (
+              <rb.Alert className="slashed-zeroes" variant={alert.variant}>
+                {alert.message}
+              </rb.Alert>
+            )}
 
             <rb.Form onSubmit={onSubmit} noValidate id="send-form">
               <rb.Form.Group className="mb-4" controlId="destination">

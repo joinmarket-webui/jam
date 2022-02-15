@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import Sprite from './Sprite'
-import styles from './Balance.module.css'
 import { BTC, SATS, btcToSats, satsToBtc } from '../utils'
 
 const UNIT_MODE_BTC = 0
@@ -23,9 +22,9 @@ export default function Balance({ value, unit, showBalance = false }) {
 
   if (unitMode === UNIT_MODE_HIDDEN) {
     return (
-      <span className={styles['balance-wrapper']}>
-        <span className={styles['balance']}>
-          <span className={styles['text']}>*****</span>
+      <span className="balance-wrapper">
+        <span className="balance slashed-zeroes">
+          <span>*****</span>
           <span className="text-muted d-inline-flex align-items-center">
             <Sprite symbol="hide" width="1.2em" height="1.2em" className="ps-1" />
           </span>
@@ -47,14 +46,14 @@ export default function Balance({ value, unit, showBalance = false }) {
   const isSats = value === parseInt(value)
   const isBTC = !isSats && typeof value === 'string' && value.indexOf('.') > -1
 
-  const btcSymbol = <span className={styles['bitcoin-symbol']}>{'\u20BF'}</span>
+  const btcSymbol = <span className="bitcoin-symbol">{'\u20BF'}</span>
   const satSymbol = <Sprite symbol="sats" width="20px" height="20px" />
 
   const balanceJSX = (symbolJSX, formattedValue, isPrefix = true) => {
     return (
-      <span className={styles['balance-wrapper']}>
+      <span className="balance-wrapper">
         {isPrefix ? symbolJSX : ''}
-        <span className={styles['balance']}>{formattedValue}</span>
+        <span className="balance slashed-zeroes">{formattedValue}</span>
         {!isPrefix ? symbolJSX : ''}
       </span>
     )
@@ -68,7 +67,7 @@ export default function Balance({ value, unit, showBalance = false }) {
 
   // Something unexpected happened. Simply render what was passed in the props.
   return (
-    <span className={styles.balance}>
+    <span className="balance">
       {value} {unit}
     </span>
   )
