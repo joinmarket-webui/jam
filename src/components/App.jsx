@@ -157,7 +157,7 @@ export default function App() {
         )}
       </rb.Container>
       <rb.Nav as="footer" className="border-top py-2">
-        <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2">
+        <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2 px-4">
           <div className="d-flex flex-1 order-2 order-md-0 flex-column justify-content-center align-items-center align-items-md-start">
             <div className="warning-hint text-start text-secondary d-none d-md-block">This is pre-alpha software.</div>
             <rb.Button
@@ -168,33 +168,33 @@ export default function App() {
               Read this before using.
             </rb.Button>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center">
+          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center px-4">
             <rb.Nav.Item>
               <a
-                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master/docs"
+                href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="nav-link text-secondary"
+                className="nav-link text-secondary px-2"
               >
                 Docs
               </a>
             </rb.Nav.Item>
             <rb.Nav.Item>
               <a
-                href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
+                href="https://github.com/joinmarket-webui/joinmarket-webui#-features"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="nav-link text-secondary"
+                className="nav-link text-secondary px-2"
               >
                 Features
               </a>
             </rb.Nav.Item>
             <rb.Nav.Item>
               <a
-                href="https://github.com/JoinMarket-Org/joinmarket-clientserver"
+                href="https://github.com/joinmarket-webui/joinmarket-webui"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="nav-link text-secondary"
+                className="nav-link text-secondary px-2"
               >
                 GitHub
               </a>
@@ -204,14 +204,14 @@ export default function App() {
                 href="https://twitter.com/joinmarket"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="nav-link text-secondary"
+                className="nav-link text-secondary px-2"
               >
                 Twitter
               </a>
             </rb.Nav.Item>
           </div>
           {connectionError ? (
-            <div className="d-flex order-0 order-md-2  justify-content-center justify-content-md-end align-items-center">
+            <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
               <span className="text-danger mx-1">•</span>
               <span className="text-secondary">Disconnected</span>
             </div>
