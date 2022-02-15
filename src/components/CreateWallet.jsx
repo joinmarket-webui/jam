@@ -151,7 +151,7 @@ export default function CreateWallet({ startWallet }) {
   }
 
   const walletConfirmed = () => {
-    if (createWallet.name && createdWallet.token) {
+    if (createdWallet.name && createdWallet.token) {
       startWallet(createdWallet.name, createdWallet.token)
       navigate('/wallet')
     } else {
