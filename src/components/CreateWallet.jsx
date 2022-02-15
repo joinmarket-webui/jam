@@ -109,7 +109,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
 
 const Seedphrase = ({ seedphrase, isBlurred = true }) => {
   return (
-    <div className="seedphrase d-flex flex-wrap">
+    <div className="seedphrase slashed-zeroes d-flex flex-wrap">
       {seedphrase.split(' ').map((seedWord, index) => (
         <div key={index} className="d-flex py-2 ps-2 pe-3">
           <span className="seedword-index text-secondary text-end">{index + 1}</span>
