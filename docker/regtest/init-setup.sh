@@ -72,8 +72,6 @@ else
         msg_success "Successfully started maker for wallet $wallet_name in secondary container."
     fi
     
-    # normally we should lock the wallet again, but it seems this leads to the maker service
-    # responding very slowly which causes failing coinjoins. as the secondary instance is never
-    # interacted with directly, we can refrain from unlocking the wallet for now.
+    # do not lock the wallet as this will terminate the maker service
     msg_warn "Wallet $wallet_name in secondary container remains unlocked!"
 fi
