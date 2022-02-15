@@ -16,6 +16,15 @@ if ! [ -f "$AUTO_START" ]; then
     cp "$DEFAULT_AUTO_START" "$AUTO_START"
 fi
 
+# generate ssl certificates for jmwalletd
+if ! [ -f "${DATADIR}/ssl/key.pem" ]; then
+    subj="/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=example.com"
+    mkdir -p "${DATADIR}/ssl/" \
+      && pushd "$_" \
+      && openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem -subj "$subj" \
+      && popd
+fi
+
 # auto start services
 while read p; do
   [[ "$p" == "" ]] && continue
