@@ -8,6 +8,11 @@ module.exports = (app) => {
       changeOrigin: true,
       secure: false,
       ws: false,
+      onProxyReq: (proxyReq, req, res) => {
+        if (req.headers['x-jm-authorization']) {
+          proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
+        }
+      },
     })
   )
   app.use(

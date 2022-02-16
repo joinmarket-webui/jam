@@ -4,10 +4,24 @@
  * This is not aiming to be feature-complete.
  *
  * See OpenAPI spec: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/api/wallet-rpc.yaml
+ *
+ * Because we forward all requests through a proxy, additional functionality
+ * can be provided. One adaptation is to send the Authorization header as
+ * 'x-jm-authorization' so that the reverse proxy can apply its own
+ * authentication mechanism.
  */
 
+/**
+ * Construct a bearer authorization header object for the given token.
+ *
+ * The 'x-jm-authorization' header is forwarded as 'Authorization' header in
+ * requests to jmwalletd by the reverse proxy.
+ *
+ * @param {string} token the bearer token
+ * @returns an object containing the authorization header
+ */
 const Authorization = (token) => {
-  return { Authorization: `Bearer ${token}` }
+  return { 'x-jm-authorization': `Bearer ${token}` }
 }
 
 const getSession = async ({ signal }) => {
