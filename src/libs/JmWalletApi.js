@@ -14,7 +14,7 @@
 /**
  * Construct a bearer authorization header object for the given token.
  *
- * The 'x-jm-authorization' header is used as 'Authorization' header for
+ * The 'x-jm-authorization' header is forwarded as 'Authorization' header in
  * requests to jmwalletd by the reverse proxy.
  *
  * @param {string} token the bearer token
