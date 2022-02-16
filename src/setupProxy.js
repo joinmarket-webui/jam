@@ -10,7 +10,7 @@ module.exports = (app) => {
       ws: false,
       onProxyReq: (proxyReq, req, res) => {
         if (req.headers['x-jm-authorization']) {
-          proxyReq.setHeader('authorization', req.headers['x-jm-authorization'])
+          proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
         }
       },
     })
