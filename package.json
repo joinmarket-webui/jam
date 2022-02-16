@@ -30,6 +30,8 @@
     "react-router-bootstrap": "^0.26.0",
     "react-router-dom": "^6.2.1",
     "react-scripts": "^5.0.0",
+    "replace": "^1.2.1",
+    "standard-version": "^9.3.2",
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
@@ -42,7 +44,10 @@
     "eject": "react-scripts eject",
     "postinstall": "husky install",
     "lint": "prettier --check --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
-    "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}"
+    "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
+    "prepare:patch": "node scripts/release.js patch",
+    "prepare:minor": "node scripts/release.js minor",
+    "prepare:major": "node scripts/release.js major"
   },
   "eslintConfig": {
     "extends": [
