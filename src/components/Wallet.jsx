@@ -111,7 +111,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
   return (
     <rb.Row className="justify-content-center">
       <rb.Col md={10} lg={8} xl={6}>
-        <rb.Card className="bg-transparent border-start-0 border-end-0 border-top-0 rounded-0" {...props}>
+        <rb.Card className="bg-transparent border-start-0 border-end-0 rounded-0" {...props}>
           <rb.Card.Body>
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
               <div className="d-flex justify-content-between align-items-center flex-wrap">

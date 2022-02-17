@@ -54,18 +54,12 @@ export default function Wallets({ startWallet, stopWallet }) {
           Loading wallets
         </div>
       )}
-      {walletList?.length !== 0 ? (
-        <rb.Row className="justify-content-center">
-          <rb.Col md={10} lg={8} xl={6}>
-            <div className="border-top px-3"></div>
-          </rb.Col>
-        </rb.Row>
-      ) : (
+      {walletList?.length === 0 && (
         <div className="text-secondary text-center">
           It looks like you do not have a wallet, yet. Please create one first.
         </div>
       )}
-      {walletList?.map((wallet) => (
+      {walletList?.map((wallet, index) => (
         <Wallet
           key={wallet}
           name={wallet}
@@ -73,6 +67,9 @@ export default function Wallets({ startWallet, stopWallet }) {
           startWallet={startWallet}
           stopWallet={stopWallet}
           setAlert={setAlert}
+          className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
+            index === 0 ? 'border-top-1' : 'border-top-0'
+          }`}
         />
       ))}
       <div className="d-flex justify-content-center">
