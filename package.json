@@ -44,7 +44,7 @@
     "postinstall": "husky install",
     "lint": "prettier --check --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
     "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
-    "changelog": "node scripts/changelog.mjs"
+    "version": "node scripts/changelog.mjs"
   },
   "eslintConfig": {
     "extends": [
