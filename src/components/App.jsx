@@ -127,11 +127,7 @@ export default function App() {
           <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
         ) : (
           <Routes>
-            <Route
-              exact
-              path="/"
-              element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
-            />
+            <Route exact path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
             <Route
               path="create-wallet"
               element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
