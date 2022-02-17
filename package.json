@@ -1,6 +1,6 @@
 {
   "name": "joinmarket-webui",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "description": "JoinMarket Web UI",
   "repository": "git@github.com:joinmarket-webui/joinmarket-webui.git",
