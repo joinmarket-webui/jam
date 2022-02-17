@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Alert from './Alert'
 import Wallet from './Wallet'
+import { useCurrentWallet } from '../context/WalletContext'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 
-export default function Wallets({ currentWallet, startWallet, stopWallet }) {
+export default function Wallets({ startWallet, stopWallet }) {
+  const currentWallet = useCurrentWallet()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState(
