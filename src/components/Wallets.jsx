@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Alert from './Alert'
 import Wallet from './Wallet'
+import PageTitle from './PageTitle'
 import { useCurrentWallet } from '../context/WalletContext'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
@@ -47,17 +48,15 @@ export default function Wallets({ startWallet, stopWallet }) {
   return (
     <rb.Row className="wallets justify-content-center">
       <rb.Col md={10} lg={8} xl={6}>
-        <h2 className="text-center mb-4">Your wallets</h2>
+        <PageTitle
+          title="Your wallets"
+          subtitle={walletList?.length === 0 ? 'It looks like you do not have a wallet, yet.' : null}
+        />
         {alert && <Alert {...alert} />}
         {isLoading && (
           <div>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             Loading wallets
-          </div>
-        )}
-        {walletList?.length === 0 && (
-          <div className="text-secondary text-center">
-            It looks like you do not have a wallet, yet. Please create one first.
           </div>
         )}
         {walletList?.map((wallet, index) => (
