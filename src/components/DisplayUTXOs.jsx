@@ -22,7 +22,8 @@ const Utxo = ({ utxo, ...props }) => {
           <rb.Col>
             {utxo.locktime && <span className="me-2">Locked until {displayDate(utxo.locktime)}</span>}
             {utxo.label && <span className="me-2 badge bg-light">{utxo.label}</span>}
-            {utxo.frozen && <span className="badge bg-info">frozen</span>}
+            {utxo.frozen && <span className="me-2 badge bg-info">frozen</span>}
+            {utxo.confirmations === 0 && <span className="badge bg-secondary">unconfirmed</span>}
           </rb.Col>
           <rb.Col className="d-flex align-items-center justify-content-end pe-5">
             <small className="text-secondary">{utxo.confirmations} Confirmations</small>
@@ -37,7 +38,7 @@ export default function DisplayUTXOs({ utxos, ...props }) {
   const settings = useSettings()
 
   return (
-    <rb.ListGroup variant="flush" {...props}>
+    <div {...props}>
       {utxos.map((utxo, index) => (
         <Utxo
           key={utxo.utxo}
@@ -47,6 +48,6 @@ export default function DisplayUTXOs({ utxos, ...props }) {
           }`}
         />
       ))}
-    </rb.ListGroup>
+    </div>
   )
 }
