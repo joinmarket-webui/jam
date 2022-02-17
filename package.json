@@ -44,7 +44,8 @@
     "postinstall": "husky install",
     "lint": "prettier --check --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
     "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
-    "version": "node scripts/changelog.mjs"
+    "version": "node scripts/changelog.mjs && git checkout -b \"prepare-v${npm_package_version}-$(date +%s)\" && git add --all && git commit --message \"chore(release): prepare v${npm_package_version}\" && git push --set-upstream origin $(git branch --show-current)",
+    "postversion": "which gh && gh pr create --title \"[WIP] Ignore\" --body \"Prepares for the v${npm_package_version} release.\" --reviewer joinmarket-webui/implementation-contributors --assignee @me --label release --repo joinmarket-webui/joinmarket-webui --draft"
   },
   "eslintConfig": {
     "extends": [
