@@ -70,7 +70,7 @@ export default function Onboarding() {
           Your wallet, your coins. <br />
           100% open-source & open-design.
         </p>
-        <p className="mt-4 text-secondary text-center">
+        <div className="mt-4 text-secondary text-center">
           <div className="fw-bolder">Warning</div>
           <div>
             While JoinMarket is tried and tested, this user interface is not. It is in a pre-alpha stage and currently
@@ -86,7 +86,7 @@ export default function Onboarding() {
             </a>{' '}
             on GitHub.
           </div>
-        </p>
+        </div>
       </div>
     )
   } else {
