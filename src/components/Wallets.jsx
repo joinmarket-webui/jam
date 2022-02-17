@@ -51,6 +51,7 @@ export default function Wallets({ startWallet, stopWallet }) {
         <PageTitle
           title="Your wallets"
           subtitle={walletList?.length === 0 ? 'It looks like you do not have a wallet, yet.' : null}
+          center={true}
         />
         {alert && <Alert {...alert} />}
         {isLoading && (
