@@ -113,17 +113,16 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       <rb.Card.Body>
         <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
           <div className="d-flex justify-content-between align-items-center flex-wrap">
-            <div>
-              {isActive ? (
-                <rb.Card.Title>
+            <div class="py-1">
+              <rb.Card.Title>
+                {isActive ? (
                   <Link className="wallet-name" to="/wallet">
                     {walletDisplayName(name)}
                   </Link>
-                </rb.Card.Title>
-              ) : (
-                <rb.Card.Title>{walletDisplayName(name)}</rb.Card.Title>
-              )}
-
+                ) : (
+                  <>{walletDisplayName(name)}</>
+                )}
+              </rb.Card.Title>
               {isActive ? <span className="text-success">Active</span> : <span className="text-muted">Inactive</span>}
             </div>
             <div>
