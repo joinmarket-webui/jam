@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { useSettings } from '../context/SettingsContext'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
@@ -62,6 +62,7 @@ const PrivacyLevel = ({ numAccounts, level, balance }) => {
 
 export default function CurrentWalletMagic() {
   const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
@@ -109,7 +110,10 @@ export default function CurrentWalletMagic() {
       {!isLoading && wallet && walletInfo && (
         <rb.Row className="justify-content-center">
           <rb.Col xs={10} sm={8} md={6} lg={4}>
-            <rb.Row>
+            <rb.Row
+              onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
+              style={{ cursor: 'pointer' }}
+            >
               <WalletHeader
                 name={wallet.name}
                 balance={walletInfo.total_balance}
