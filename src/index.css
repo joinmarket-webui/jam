@@ -598,6 +598,13 @@ h2 {
   padding-right: 0.1em;
 }
 
+/* Onboarding */
+
+.onboarding button {
+  height: 3rem;
+  width: 80%;
+}
+
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white);
