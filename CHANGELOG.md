@@ -18,7 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 * ability for reverse proxy to enforce own auth scheme ([#102](https://github.com/joinmarket-webui/joinmarket-webui/issues/102)) ([5b7fc98](https://github.com/joinmarket-webui/joinmarket-webui/commit/5b7fc982e5241219e5f43fd5cd77f1d9a65abbfe))
-* adapt favicon color based on system theme ([#39](https://github.com/joinmarket-webui/joinmarket-webui/issues/39)) ([5f1d6e9](https://github.com/joinmarket-webui/joinmarket-webui/commit/5f1d6e97f8f336f458303b57fddce4f27d0abe0c))
 * add connection indicator to footer ([#55](https://github.com/joinmarket-webui/joinmarket-webui/issues/55)) ([6470ab4](https://github.com/joinmarket-webui/joinmarket-webui/commit/6470ab431627c091a40016b9baa2516157ca5ba2))
 * add privacy levels ([#51](https://github.com/joinmarket-webui/joinmarket-webui/issues/51)) ([7546ca7](https://github.com/joinmarket-webui/joinmarket-webui/commit/7546ca74d44369c4d8dba6961b4d441bd98edb09))
 * add quick hide balance ([#106](https://github.com/joinmarket-webui/joinmarket-webui/issues/106)) ([56b4d1e](https://github.com/joinmarket-webui/joinmarket-webui/commit/56b4d1e64f51dbe243d5b9877800c94caa5f0fa9))
@@ -27,20 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * add theming support ([#10](https://github.com/joinmarket-webui/joinmarket-webui/issues/10)) ([d7268aa](https://github.com/joinmarket-webui/joinmarket-webui/commit/d7268aa70c54fa08a094b0e4c1e8eb2c88e00c77))
 * developer docs ([#37](https://github.com/joinmarket-webui/joinmarket-webui/issues/37)) ([d843770](https://github.com/joinmarket-webui/joinmarket-webui/commit/d84377071a87c2011b5fe1bc957243f491f66cfd))
 * display basic yield generator report ([#73](https://github.com/joinmarket-webui/joinmarket-webui/issues/73)) ([b37de70](https://github.com/joinmarket-webui/joinmarket-webui/commit/b37de7083ecb9575d798a2df2aa69a6d21dba0a0))
-* do not autocomplete password when creating wallet ([#38](https://github.com/joinmarket-webui/joinmarket-webui/issues/38)) ([0db76d9](https://github.com/joinmarket-webui/joinmarket-webui/commit/0db76d99ddffb6ba451ff98601660ffa173a0110))
-* fancy toggle switch ([#63](https://github.com/joinmarket-webui/joinmarket-webui/issues/63)) ([ed8aa4b](https://github.com/joinmarket-webui/joinmarket-webui/commit/ed8aa4b22b2dcbcbefa34fce6ccc81aaaec9c190))
-* freeze/unfreeze utxos and fix style on dark theme ([#110](https://github.com/joinmarket-webui/joinmarket-webui/issues/110)) ([2c2d228](https://github.com/joinmarket-webui/joinmarket-webui/commit/2c2d22875422771ffc2962f584ba60db78c8398d))
+* freeze/unfreeze utxos ([#110](https://github.com/joinmarket-webui/joinmarket-webui/issues/110)) ([2c2d228](https://github.com/joinmarket-webui/joinmarket-webui/commit/2c2d22875422771ffc2962f584ba60db78c8398d))
 * hide sensitive info on wallet create ([#77](https://github.com/joinmarket-webui/joinmarket-webui/issues/77)) ([174726b](https://github.com/joinmarket-webui/joinmarket-webui/commit/174726b74fd889980c124b9d56e2c1d1766e8a2f))
-* improve wording in settings ([#71](https://github.com/joinmarket-webui/joinmarket-webui/issues/71)) ([cd2f0bf](https://github.com/joinmarket-webui/joinmarket-webui/commit/cd2f0bf98be474d60be0e142a1a7e89d55f37e44))
-* rename accounts to privacy levels ([#79](https://github.com/joinmarket-webui/joinmarket-webui/issues/79)) ([3b882f4](https://github.com/joinmarket-webui/joinmarket-webui/commit/3b882f4da8aeb912471eaf4e7bf2431b9b89f308))
-* setup code formatting ([#21](https://github.com/joinmarket-webui/joinmarket-webui/issues/21)) ([08232d7](https://github.com/joinmarket-webui/joinmarket-webui/commit/08232d7d365f279e7632016120eab53f57ecff90))
-* style navbar ([#29](https://github.com/joinmarket-webui/joinmarket-webui/issues/29)) ([699e951](https://github.com/joinmarket-webui/joinmarket-webui/commit/699e951fda7f7311cd7a49ad97925731e99e5395))
 * update create wallet flow ([#62](https://github.com/joinmarket-webui/joinmarket-webui/issues/62)) ([8ed27ae](https://github.com/joinmarket-webui/joinmarket-webui/commit/8ed27ae745f46ffda246006b5f7ba549493aa39b))
 * update earn page ([#82](https://github.com/joinmarket-webui/joinmarket-webui/issues/82)) ([7d62a38](https://github.com/joinmarket-webui/joinmarket-webui/commit/7d62a3820a83103a691633c8030bc26312e8310d))
 * update receive page ([#85](https://github.com/joinmarket-webui/joinmarket-webui/issues/85)) ([756d8e8](https://github.com/joinmarket-webui/joinmarket-webui/commit/756d8e8a93185933d0a92713f92bf92f7ccdf664))
 * update send page ([#76](https://github.com/joinmarket-webui/joinmarket-webui/issues/76)) ([0d71915](https://github.com/joinmarket-webui/joinmarket-webui/commit/0d71915180dafb03ce69c8ba82c3c76fa5b2db46))
-* update wallets page ([#108](https://github.com/joinmarket-webui/joinmarket-webui/issues/108)) ([68e7a7f](https://github.com/joinmarket-webui/joinmarket-webui/commit/68e7a7fab85015efcdbcebad38c0e04ceb2024fc))
-* update wallets page ([#64](https://github.com/joinmarket-webui/joinmarket-webui/issues/64)) ([f900344](https://github.com/joinmarket-webui/joinmarket-webui/commit/f90034454920fb77ddb7fedcbe3e92f1bb994322))
+* update wallets page ([#108](https://github.com/joinmarket-webui/joinmarket-webui/issues/108)) ([68e7a7f](https://github.com/joinmarket-webui/joinmarket-webui/commit/68e7a7fab85015efcdbcebad38c0e04ceb2024fc), [#64](https://github.com/joinmarket-webui/joinmarket-webui/issues/64)) ([f900344](https://github.com/joinmarket-webui/joinmarket-webui/commit/f90034454920fb77ddb7fedcbe3e92f1bb994322))
 
 ### [0.0.2](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.1...v0.0.2) (2022-02-16)
 
