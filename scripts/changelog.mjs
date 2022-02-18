@@ -1,8 +1,6 @@
 import conventionalChangelog from 'conventional-changelog'
 import fs from 'fs'
 
-const pkg = JSON.parse(fs.readFileSync('./package.json'))
-
 const START_OF_LAST_RELEASE_PATTERN = /(^#+ \[?[0-9]+\.[0-9]+\.[0-9]+|<a name=)/m
 
 const file = 'CHANGELOG.md'
@@ -68,4 +66,4 @@ const generateChangelog = (newVersion) => {
   })
 }
 
-await generateChangelog(pkg.version)
+await generateChangelog(process.env.npm_package_version)
