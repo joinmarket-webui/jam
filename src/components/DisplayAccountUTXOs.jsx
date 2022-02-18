@@ -26,7 +26,7 @@ export default function DisplayAccountUTXOs({ utxos, ...props }) {
             </h5>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
-            <DisplayUTXOs utxos={utxos} unit={settings.unit} showBalances={settings.showBalance} />
+            <DisplayUTXOs utxos={utxos} />
           </rb.Accordion.Body>
         </rb.Accordion.Item>
       ))}

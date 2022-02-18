@@ -144,6 +144,17 @@ const getYieldgenReport = async ({ signal }) => {
   })
 }
 
+const postFreeze = async ({ walletName, token }, { utxo, freeze = true }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/freeze`, {
+    method: 'POST',
+    headers: { ...Authorization(token) },
+    body: JSON.stringify({
+      'utxo-string': utxo,
+      freeze,
+    }),
+  })
+}
+
 export {
   postMakerStart,
   getMakerStop,
@@ -158,4 +169,5 @@ export {
   postWalletUnlock,
   getWalletUtxos,
   getYieldgenReport,
+  postFreeze,
 }
