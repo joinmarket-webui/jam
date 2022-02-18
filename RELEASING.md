@@ -23,7 +23,7 @@ This will:
 1. Bump the version in `package.json` and `package.lock.json`
 1. Update the changelog
 1. Commit the changes and push the branch
-1. Open a _draft_ pull request to `master`
+1. If you have the [GitHub CLI](https://cli.github.com/) installed it will automatically open a _draft_ pull request to `master`
 
 ## Merge the Release Pull Request
 
