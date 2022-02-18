@@ -58,12 +58,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [0.0.2](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.1...v0.0.2) (2022-02-16)
 
-#### Added
+#### Fixed
 
-- Todo
+* remove displayed artifact on missing fidelity bonds ([#2](https://github.com/joinmarket-webui/joinmarket-webui/pull/2)) ([17d5afa](https://github.com/joinmarket-webui/joinmarket-webui/commit/17d5afaa578b6390a27a1d195dd31523f5228546))
 
 ### [0.0.1](https://github.com/joinmarket-webui/joinmarket-webui/compare/2b9704d...v0.0.1) (2022-02-16)
 
 #### Added
 
-- Todo
+* fork [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client) ([79e90ea](https://github.com/joinmarket-webui/joinmarket-webui/commit/79e90eadaa772689d30bbc7e9107887dad331183))
+* refactor app ([a72e0a9](https://github.com/joinmarket-webui/joinmarket-webui/commit/a72e0a97c1d4c425f8ad1d6f928f985d464aa59d))
+* UI updates ([c838a7b](https://github.com/joinmarket-webui/joinmarket-webui/commit/c838a7b9dab915c8a20655f63430837ecea4f290))
