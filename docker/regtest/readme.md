@@ -27,23 +27,21 @@ docker-compose down --volumes
 
 ## Images
 
-The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is directly taken from [BTCPay Server](https://github.com/btcpayserver/dockerfile-deps/tree/master/JoinMarket) with as little adaptations as possible.
+The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is an adaption of [joinmarket-webui-standalone](https://github.com/joinmarket-webui/joinmarket-webui-docker/tree/master/standalone) with as little adaptations as possible.
 It will fetch the latest commit from the [`master` branch of the joinmarket-clientserver repo](https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master).
+Keep in mind: Building from `master` is not always reliable. This tradeoff is made to enable testing new features immediately by just rebuilding the images.
 
-As an example and as reference on how to build and test against specific versions,
-see the adaptions needed to use BTCPay Servers image as base image in [`v0.9.3/Dockerfile`](dockerfile-deps/joinmarket/v0.9.3/Dockerfile).
+The second JoinMarket container is based on `joinmarket-webui/joinmarket-webui-dev-standalone:master` which exposes an UI on port `29080`
+(username `joinmarket` and pass `joinmarket` for Basic Authentication).
 This is useful if you want to perform regression tests.
 
 ### Rebuild
 
-In order to incorporate the current contents of the master branch, simply rebuild the joinmarket images from scratch.
+In order to incorporate the current contents of `master` branch, simply rebuild the joinmarket images from scratch.
 
 ```sh
-# remove existing images
-docker image rm regtest_joinmarket:latest regtest_joinmarket2:latest
-
-# rebuilding the imags with contents of current master branch
-docker-compose build --no-cache
+# rebuilding the images with contents of current master branch
+docker-compose build --pull --no-cache
 ```
 
 ## Debugging
