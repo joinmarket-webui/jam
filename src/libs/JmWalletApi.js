@@ -156,7 +156,7 @@ const postFreeze = async ({ walletName, token }, { utxo, freeze = true }) => {
 }
 
 /**
- * Get the value of a specific config setting. Note values are always returned as string.
+ * Get the value of a specific config setting. Note that values are always returned as string.
  *
  * @returns an object with property `configvalue` as string
  */
