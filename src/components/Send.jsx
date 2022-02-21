@@ -8,6 +8,9 @@ import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from 
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 
+// initial value for `minimum_markers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
+const MINIMUM_MAKERS_DEFAULT_VAL = 4
+
 // not cryptographically random
 const pseudoRandomNumber = (min, max) => {
   return Math.round(Math.random() * (max - min)) + min
@@ -122,13 +125,14 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
-  const [minNumCollaborators, setMinNumCollaborators] = useState(4) // default value from an unchanged joinmarket.cfg (last check 2022-02-20)
+  const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
 
   const initialDestination = null
   const initialAccount = 0
   const initialAmount = null
   const initialNumCollaborators = (minValue) => {
-    return minValue + pseudoRandomNumber(1, 3)
+    // always suggest a reasonably large number even when the configured minimum is unreasonably low
+    return Math.max(MINIMUM_MAKERS_DEFAULT_VAL, minValue) + pseudoRandomNumber(1, 3)
   }
 
   const [destination, setDestination] = useState(initialDestination)
