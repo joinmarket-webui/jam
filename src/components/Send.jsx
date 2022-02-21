@@ -27,9 +27,9 @@ const isValidAmount = (candidate) => {
   return !isNaN(parsed) && parsed > 0
 }
 
-const isValidNumCollaborators = (candidate) => {
+const isValidNumCollaborators = (candidate, minNumCollaborators) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && parsed >= 1 && parsed <= 99
+  return !isNaN(parsed) && parsed >= minNumCollaborators && parsed <= 99
 }
 
 const extractErrorMessage = async (response, fallbackReason = 'Unknown Error - No exact reasons are available : (') => {
@@ -53,20 +53,20 @@ const extractErrorMessage = async (response, fallbackReason = 'Unknown Error - N
   return message || fallbackReason
 }
 
-const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
+const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators }) => {
   const settings = useSettings()
 
   const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
 
   const validateAndSetCustomNumCollaborators = (candidate) => {
-    if (isValidNumCollaborators(candidate)) {
+    if (isValidNumCollaborators(candidate, minNumCollaborators)) {
       setNumCollaborators(candidate)
     } else {
       setNumCollaborators(null)
     }
   }
 
-  const defaultCollaboratorsSelection = [3, 5, 6, 7, 9]
+  const defaultCollaboratorsSelection = [0, 2, 3, 4, 6].map((val) => val + minNumCollaborators)
 
   return (
     <rb.Form noValidate className="collaborators-selector">
@@ -101,9 +101,9 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
           })}
           <rb.Form.Control
             type="number"
-            min={1}
+            min={minNumCollaborators}
             max={99}
-            isInvalid={!isValidNumCollaborators(numCollaborators)}
+            isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
             placeholder="Other"
             defaultValue=""
             className={`p-2 border border-1 rounded text-center${
@@ -122,7 +122,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
           />
           {usesCustomNumCollaborators && (
             <rb.Form.Control.Feedback type="invalid">
-              Please use between 1 and 99 collaborators.
+              Please use between {minNumCollaborators} and 99 collaborators.
             </rb.Form.Control.Feedback>
           )}
         </div>
@@ -139,15 +139,17 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
   const location = useLocation()
   const [alert, setAlert] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
+  const [minNumCollaborators, setMinNumCollaborators] = useState(4) // default value from an unchanged joinmarket.cfg (last check 2022-02-20)
 
   const initialDestination = null
   const initialAccount = 0
   const initialAmount = null
   const initialNumCollaborators = () => {
-    return pseudoRandomNumber(5, 7)
+    return pseudoRandomNumber(minNumCollaborators + 1, minNumCollaborators + 3)
   }
 
   const [destination, setDestination] = useState(initialDestination)
@@ -171,28 +173,45 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       isValidAddress(destination) &&
       isValidAccount(account) &&
       isValidAmount(amount) &&
-      (isCoinjoin ? isValidNumCollaborators(numCollaborators) : true)
+      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
     ) {
       setFormIsValid(true)
     } else {
       setFormIsValid(false)
     }
-  }, [destination, account, amount, numCollaborators, isCoinjoin])
+  }, [destination, account, amount, numCollaborators, minNumCollaborators, isCoinjoin])
 
   useEffect(() => {
-    // Reload wallet info if not already available.
-    if (walletInfo) return
-
     const abortCtrl = new AbortController()
 
     setAlert(null)
+    setIsLoading(true)
 
-    Api.getWalletDisplay({ walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
-      .then((data) => setWalletInfo(data.walletinfo))
+    const requestContext = { walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal }
+    // Reload wallet info if not already available.
+    const loadingWalletInfo = walletInfo
+      ? Promise.resolve()
+      : Api.getWalletDisplay(requestContext)
+          .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
+          .then((data) => setWalletInfo(data.walletinfo))
+          .catch((err) => {
+            !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+          })
+
+    const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading config value failed.'))))
+      .then((data) => setMinNumCollaborators(parseInt(data.configvalue, 10)))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
+
+    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig])
+      .then((_) => {
+        if (minNumCollaborators && numCollaborators < minNumCollaborators) {
+          setNumCollaborators(minNumCollaborators)
+        }
+      })
+      .finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [wallet, setWalletInfo, walletInfo])
@@ -261,7 +280,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     const isValid = formIsValid
 
     if (isValid) {
-      const counterparties = parseInt(numCollaborators)
+      const counterparties = parseInt(numCollaborators, 10)
 
       const success = isCoinjoin
         ? await startCoinjoin(account, destination, amount, counterparties)
@@ -280,7 +299,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
   return (
     <>
-      {!walletInfo ? (
+      {isLoading ? (
         <rb.Row className="justify-content-center">
           <rb.Col className="flex-grow-0">
             <div className="d-flex justify-content-center align-items-center">
@@ -374,7 +393,11 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
               )}
             </rb.Form>
             {isCoinjoin && (
-              <CollaboratorsSelector numCollaborators={numCollaborators} setNumCollaborators={setNumCollaborators} />
+              <CollaboratorsSelector
+                numCollaborators={numCollaborators}
+                setNumCollaborators={setNumCollaborators}
+                minNumCollaborators={minNumCollaborators}
+              />
             )}
             <rb.Button
               variant="dark"
