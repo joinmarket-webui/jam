@@ -127,15 +127,15 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const initialDestination = null
   const initialAccount = 0
   const initialAmount = null
-  const initialNumCollaborators = () => {
-    return pseudoRandomNumber(minNumCollaborators + 1, minNumCollaborators + 3)
+  const initialNumCollaborators = (minValue) => {
+    return minValue + pseudoRandomNumber(1, 3)
   }
 
   const [destination, setDestination] = useState(initialDestination)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || initialAccount)
   const [amount, setAmount] = useState(initialAmount)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
-  const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators())
+  const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
@@ -179,18 +179,16 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading config value failed.'))))
-      .then((data) => setMinNumCollaborators(parseInt(data.configvalue, 10)))
+      .then((data) => {
+        const minimumMakers = parseInt(data.configvalue, 10)
+        setMinNumCollaborators(minimumMakers)
+        setNumCollaborators(initialNumCollaborators(minimumMakers))
+      })
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig])
-      .then((_) => {
-        if (minNumCollaborators && numCollaborators < minNumCollaborators) {
-          setNumCollaborators(minNumCollaborators)
-        }
-      })
-      .finally(() => setIsLoading(false))
+    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [wallet, setWalletInfo, walletInfo])
@@ -269,7 +267,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         setDestination(initialDestination)
         setAccount(initialAccount)
         setAmount(initialAmount)
-        setNumCollaborators(initialNumCollaborators())
+        setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(false)
         form.reset()
       }
