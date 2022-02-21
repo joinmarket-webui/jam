@@ -32,27 +32,6 @@ const isValidNumCollaborators = (candidate, minNumCollaborators) => {
   return !isNaN(parsed) && parsed >= minNumCollaborators && parsed <= 99
 }
 
-const extractErrorMessage = async (response, fallbackReason = 'Unknown Error - No exact reasons are available : (') => {
-  // The server will answer with a html response instead of json on certain errors.
-  // The situation is mitigated by parsing the returned html till a fix is available.
-  // Tracked here: https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1170 (last checked: 2022-02-11)
-  const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
-
-  if (isHtmlErrorMessage) {
-    return await response
-      .text()
-      .then((html) => {
-        var parser = new DOMParser()
-        var doc = parser.parseFromString(html, 'text/html')
-        return doc.title || fallbackReason
-      })
-      .then((reason) => `The server reported a problem: ${reason}`)
-  }
-
-  const { message } = await response.json()
-  return message || fallbackReason
-}
-
 const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators }) => {
   const settings = useSettings()
 
@@ -235,7 +214,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         })
         success = true
       } else {
-        const message = await extractErrorMessage(res)
+        const { message } = await res.json()
         setAlert({ variant: 'danger', message })
       }
     } catch (e) {
@@ -261,7 +240,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         setAlert({ variant: 'success', message: 'Collaborative transaction started' })
         success = true
       } else {
-        const message = await extractErrorMessage(res)
+        const { message } = await res.json()
         setAlert({ variant: 'danger', message })
       }
     } catch (e) {
