@@ -9,7 +9,7 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
-  "homepage": "/svc/joinmarketwebui",
+  "homepage": "/ext/joinmarketwebui",
   "devDependencies": {
     "@ibunker/bitcoin-react": "^0.1.13-cd",
     "@popperjs/core": "^2.11.2",
@@ -37,7 +37,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "rm -rf joinmarketwebui/static && react-scripts build && mv build joinmarketwebui/static && mv joinmarketwebui/static/static/* joinmarketwebui/static",
+    "build": "rm -rf src/joinmarket-webui/specterext/joinmarketwebui/static && react-scripts build && mv build src/joinmarket-webui/specterext/joinmarketwebui/static && mv src/joinmarket-webui/specterext/joinmarketwebui/static/static/* src/joinmarket-webui/specterext/joinmarketwebui/static",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "postinstall": "husky install",

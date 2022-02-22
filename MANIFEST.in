@@ -1,0 +1,5 @@
+recursive-include src/joinmarket-webui/specterext/joinmarketwebui/templates *
+recursive-include src/joinmarket-webui/specterext/joinmarketwebui/static *
+recursive-include src/joinmarket-webui/specterext/joinmarketwebui/*/LC_MESSAGES *.mo
+recursive-include src/joinmarket-webui/specterext/joinmarketwebui/translations/*/LC_MESSAGES *.po
+include requirements.txt

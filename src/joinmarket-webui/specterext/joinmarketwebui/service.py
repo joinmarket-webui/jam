@@ -8,7 +8,8 @@ class JoinmarketwebuiService(Service):
     logo = "mstile-70x70.png"
     desc = "A WebUI for joinmarket."
     has_blueprint = True
-    blueprint_module = "joinmarketwebui.controller"
+    blueprint_module = "joinmarket-webui.specterext.joinmarketwebui.controller"
+    isolated_client = True
     devstatus = devstatus_alpha
 
     # TODO: As more Services are integrated, we'll want more robust categorization and sorting logic
