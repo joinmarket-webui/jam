@@ -155,6 +155,23 @@ const postFreeze = async ({ walletName, token }, { utxo, freeze = true }) => {
   })
 }
 
+/**
+ * Get the value of a specific config setting. Note that values are always returned as string.
+ *
+ * @returns an object with property `configvalue` as string
+ */
+const postConfigGet = async ({ walletName, token, signal }, { section, field }) => {
+  return await fetch(`/api/v1/wallet/${walletName}/configget`, {
+    method: 'POST',
+    headers: { ...Authorization(token) },
+    signal,
+    body: JSON.stringify({
+      section,
+      field,
+    }),
+  })
+}
+
 export {
   postMakerStart,
   getMakerStop,
@@ -170,4 +187,5 @@ export {
   getWalletUtxos,
   getYieldgenReport,
   postFreeze,
+  postConfigGet,
 }

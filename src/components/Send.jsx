@@ -8,6 +8,9 @@ import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from 
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 
+// initial value for `minimum_markers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
+const MINIMUM_MAKERS_DEFAULT_VAL = 4
+
 // not cryptographically random
 const pseudoRandomNumber = (min, max) => {
   return Math.round(Math.random() * (max - min)) + min
@@ -27,46 +30,25 @@ const isValidAmount = (candidate) => {
   return !isNaN(parsed) && parsed > 0
 }
 
-const isValidNumCollaborators = (candidate) => {
+const isValidNumCollaborators = (candidate, minNumCollaborators) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && parsed >= 1 && parsed <= 99
+  return !isNaN(parsed) && parsed >= minNumCollaborators && parsed <= 99
 }
 
-const extractErrorMessage = async (response, fallbackReason = 'Unknown Error - No exact reasons are available : (') => {
-  // The server will answer with a html response instead of json on certain errors.
-  // The situation is mitigated by parsing the returned html till a fix is available.
-  // Tracked here: https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1170 (last checked: 2022-02-11)
-  const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
-
-  if (isHtmlErrorMessage) {
-    return await response
-      .text()
-      .then((html) => {
-        var parser = new DOMParser()
-        var doc = parser.parseFromString(html, 'text/html')
-        return doc.title || fallbackReason
-      })
-      .then((reason) => `The server reported a problem: ${reason}`)
-  }
-
-  const { message } = await response.json()
-  return message || fallbackReason
-}
-
-const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
+const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators }) => {
   const settings = useSettings()
 
   const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
 
   const validateAndSetCustomNumCollaborators = (candidate) => {
-    if (isValidNumCollaborators(candidate)) {
+    if (isValidNumCollaborators(candidate, minNumCollaborators)) {
       setNumCollaborators(candidate)
     } else {
       setNumCollaborators(null)
     }
   }
 
-  const defaultCollaboratorsSelection = [3, 5, 6, 7, 9]
+  const defaultCollaboratorsSelection = [0, 2, 3, 4, 6].map((val) => val + minNumCollaborators)
 
   return (
     <rb.Form noValidate className="collaborators-selector">
@@ -101,9 +83,9 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
           })}
           <rb.Form.Control
             type="number"
-            min={1}
+            min={minNumCollaborators}
             max={99}
-            isInvalid={!isValidNumCollaborators(numCollaborators)}
+            isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
             placeholder="Other"
             defaultValue=""
             className={`p-2 border border-1 rounded text-center${
@@ -122,7 +104,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators }) => {
           />
           {usesCustomNumCollaborators && (
             <rb.Form.Control.Feedback type="invalid">
-              Please use between 1 and 99 collaborators.
+              Please use between {minNumCollaborators} and 99 collaborators.
             </rb.Form.Control.Feedback>
           )}
         </div>
@@ -139,22 +121,25 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
   const location = useLocation()
   const [alert, setAlert] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
+  const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
 
   const initialDestination = null
   const initialAccount = 0
   const initialAmount = null
-  const initialNumCollaborators = () => {
-    return pseudoRandomNumber(5, 7)
+  const initialNumCollaborators = (minValue) => {
+    // always suggest a reasonably large number even when the configured minimum is unreasonably low
+    return Math.max(MINIMUM_MAKERS_DEFAULT_VAL, minValue) + pseudoRandomNumber(1, 3)
   }
 
   const [destination, setDestination] = useState(initialDestination)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || initialAccount)
   const [amount, setAmount] = useState(initialAmount)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
-  const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators())
+  const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
@@ -171,28 +156,43 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       isValidAddress(destination) &&
       isValidAccount(account) &&
       isValidAmount(amount) &&
-      (isCoinjoin ? isValidNumCollaborators(numCollaborators) : true)
+      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
     ) {
       setFormIsValid(true)
     } else {
       setFormIsValid(false)
     }
-  }, [destination, account, amount, numCollaborators, isCoinjoin])
+  }, [destination, account, amount, numCollaborators, minNumCollaborators, isCoinjoin])
 
   useEffect(() => {
-    // Reload wallet info if not already available.
-    if (walletInfo) return
-
     const abortCtrl = new AbortController()
 
     setAlert(null)
+    setIsLoading(true)
 
-    Api.getWalletDisplay({ walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
-      .then((data) => setWalletInfo(data.walletinfo))
+    const requestContext = { walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal }
+    // Reload wallet info if not already available.
+    const loadingWalletInfo = walletInfo
+      ? Promise.resolve()
+      : Api.getWalletDisplay(requestContext)
+          .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
+          .then((data) => setWalletInfo(data.walletinfo))
+          .catch((err) => {
+            !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+          })
+
+    const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading config value failed.'))))
+      .then((data) => {
+        const minimumMakers = parseInt(data.configvalue, 10)
+        setMinNumCollaborators(minimumMakers)
+        setNumCollaborators(initialNumCollaborators(minimumMakers))
+      })
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
+
+    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [wallet, setWalletInfo, walletInfo])
@@ -216,7 +216,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         })
         success = true
       } else {
-        const message = await extractErrorMessage(res)
+        const { message } = await res.json()
         setAlert({ variant: 'danger', message })
       }
     } catch (e) {
@@ -242,7 +242,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         setAlert({ variant: 'success', message: 'Collaborative transaction started' })
         success = true
       } else {
-        const message = await extractErrorMessage(res)
+        const { message } = await res.json()
         setAlert({ variant: 'danger', message })
       }
     } catch (e) {
@@ -261,7 +261,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     const isValid = formIsValid
 
     if (isValid) {
-      const counterparties = parseInt(numCollaborators)
+      const counterparties = parseInt(numCollaborators, 10)
 
       const success = isCoinjoin
         ? await startCoinjoin(account, destination, amount, counterparties)
@@ -271,7 +271,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         setDestination(initialDestination)
         setAccount(initialAccount)
         setAmount(initialAmount)
-        setNumCollaborators(initialNumCollaborators())
+        setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(false)
         form.reset()
       }
@@ -280,7 +280,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
   return (
     <>
-      {!walletInfo ? (
+      {isLoading ? (
         <rb.Row className="justify-content-center">
           <rb.Col className="flex-grow-0">
             <div className="d-flex justify-content-center align-items-center">
@@ -374,7 +374,11 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
               )}
             </rb.Form>
             {isCoinjoin && (
-              <CollaboratorsSelector numCollaborators={numCollaborators} setNumCollaborators={setNumCollaborators} />
+              <CollaboratorsSelector
+                numCollaborators={numCollaborators}
+                setNumCollaborators={setNumCollaborators}
+                minNumCollaborators={minNumCollaborators}
+              />
             )}
             <rb.Button
               variant="dark"
