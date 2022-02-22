@@ -124,10 +124,12 @@ services:
       - 8080  # payjoin server
       - 62601 # obwatch
       - 27183 # joinmarketd
-      - 28183 # jmwalletd
+      - 28183 # jmwalletd api
+      - 28283 # jmwalletd websocket
     ports:
       - "62601:62601"
       - "28183:28183"
+      - "28283:28283"
     volumes:
       - "joinmarket_datadir:/root/.joinmarket"
       - "nbxplorer_datadir:/root/.nbxplorer"
