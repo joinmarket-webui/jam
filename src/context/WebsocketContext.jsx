@@ -1,44 +1,53 @@
-import React, { createContext, useEffect, useRef, useContext } from 'react'
+import React, { createContext, useEffect, useState, useContext } from 'react'
 
 import { useCurrentWallet } from './WalletContext'
+
+// delay in milliseconds to attempt reconnecting after the connection has been lost
+const WEBSOCKET_RECONNECT_DELAY = 1_000
+
+const createWebSocket = () => {
+  const { protocol, host } = window.location
+  const scheme = protocol === 'https:' ? 'wss' : 'ws'
+  const websocket = new WebSocket(`${scheme}://${host}/jmws`)
+
+  websocket.onopen = () => {
+    console.debug('websocket connection openend')
+  }
+
+  websocket.onclose = () => {
+    console.debug('websocket connection closed')
+  }
+
+  websocket.onerror = (error) => {
+    console.error('websocket error', error)
+  }
+
+  websocket.onmessage = (event) => {
+    const data = JSON.parse(event?.data)
+    console.debug('websocket message', data)
+  }
+
+  return websocket
+}
+
+const initialWebsocket = createWebSocket()
 
 const WebsocketContext = createContext()
 
 const WebsocketProvider = ({ children }) => {
-  const websocket = useRef(null)
+  const [websocket, setWebsocket] = useState(initialWebsocket)
   const currentWallet = useCurrentWallet()
 
   useEffect(() => {
-    if (websocket.current) {
-      websocket.current.close()
-    }
+    const onClose = () =>
+      setTimeout(() => {
+        setWebsocket(createWebSocket())
+      }, WEBSOCKET_RECONNECT_DELAY)
 
-    const { protocol, host } = window.location
-    const scheme = protocol === 'https:' ? 'wss' : 'ws'
-    websocket.current = new WebSocket(`${scheme}://${host}/jmws`)
+    websocket.addEventListener('close', onClose)
 
-    websocket.current.onopen = () => {
-      console.debug('websocket connection openend')
-    }
-
-    websocket.current.onclose = () => {
-      console.debug('websocket connection closed')
-    }
-
-    websocket.current.onerror = (error) => {
-      console.error('websocket error', error)
-    }
-
-    websocket.current.onmessage = (event) => {
-      const wsdata = JSON.parse(event.data)
-      console.debug('websocket sent', wsdata)
-    }
-
-    const wsCurrent = websocket.current
-    return () => {
-      wsCurrent.close()
-    }
-  }, [])
+    return () => websocket.removeEventListener('close', onClose)
+  }, [websocket])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -46,14 +55,12 @@ const WebsocketProvider = ({ children }) => {
     // The client must send the authentication token when it connects,
     // otherwise it will not receive any notifications.
     const initNotifications = () => {
-      if (!websocket.current || !currentWallet) return
+      if (!websocket || !currentWallet) return
 
-      const socket = websocket.current
-
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(currentWallet.token)
-      } else if (socket.readyState === WebSocket.CONNECTING) {
-        socket.addEventListener('open', (e) => e.isTrusted && currentWallet && socket.send(currentWallet.token), {
+      if (websocket.readyState === WebSocket.OPEN) {
+        websocket.send(currentWallet.token)
+      } else if (websocket.readyState === WebSocket.CONNECTING) {
+        websocket.addEventListener('open', (e) => e.isTrusted && currentWallet && websocket.send(currentWallet.token), {
           once: true,
           signal: abortCtrl.signal,
         })
@@ -65,9 +72,9 @@ const WebsocketProvider = ({ children }) => {
     return () => {
       abortCtrl.abort()
     }
-  }, [currentWallet])
+  }, [websocket, currentWallet])
 
-  return <WebsocketContext.Provider value={{ websocket: websocket.current }}>{children}</WebsocketContext.Provider>
+  return <WebsocketContext.Provider value={{ websocket }}>{children}</WebsocketContext.Provider>
 }
 
 const useWebsocket = () => {
