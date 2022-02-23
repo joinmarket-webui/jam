@@ -40,7 +40,11 @@ export default function Wallets({ startWallet, stopWallet }) {
           setAlert({ variant: 'danger', message: err.message })
         }
       })
-      .finally(() => setIsLoading(false))
+      .finally(() => {
+        if (!abortCtrl.signal.aborted) {
+          setIsLoading(false)
+        }
+      })
 
     return () => abortCtrl.abort()
   }, [currentWallet])

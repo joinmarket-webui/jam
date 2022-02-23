@@ -36,10 +36,10 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
             variant: 'danger',
             message: message.replace('Wallet', walletName),
           })
+          setIsUnlocking(false)
         }
       } catch (e) {
         setAlert({ variant: 'danger', message: e.message })
-      } finally {
         setIsUnlocking(false)
       }
     }
