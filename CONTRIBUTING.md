@@ -18,31 +18,31 @@ However, if you want to find out more about it, see [docker/regtest/readme.md](d
 
 [Fork](https://github.com/joinmarket-webui/joinmarket-webui/fork), then clone this repo:
 
-```
+```sh
 git clone git@github.com:<your-username>/joinmarket-webui.git
 ```
 
 Start the JoinMarket HTTP API service in regtest:
 
-```
+```sh
 docker-compose --file docker/regtest/docker-compose.yml up
 ```
 
 Initialize the regtest setup. This creates and funds a wallet `funded` with password `test`.
 
-```
+```sh
 docker/regtest/init-setup.sh
 ```
 
 Install dependencies:
 
-```
+```sh
 npm install
 ```
 
 Start the UI on port 3000:
 
-```
+```sh
 npm start
 ```
 
@@ -65,37 +65,37 @@ You can follow this convention for commits on your fork but this isn't a require
 
 Clone this repo:
 
-```
+```sh
 git clone git@github.com:joinmarket-webui/joinmarket-webui.git
 ```
 
 Checkout the version you want to test. If you want to test the cutting edge development version, simply skip this step and test directly on master.
 
-```
+```sh
 git fetch --tags git checkout <version>
 ```
 
 Start the JoinMarket HTTP API service in regtest:
 
-```
+```sh
 docker-compose --file docker/regtest/docker-compose.yml up
 ```
 
 Initialize the regtest setup. This creates and funds a wallet `funded` with password `test`.
 
-```
+```sh
 docker/regtest/init-setup.sh
 ```
 
 Install dependencies:
 
-```
+```sh
 npm install
 ```
 
 Start the UI on port 3000:
 
-```
+```sh
 npm start
 ```
 

@@ -39,13 +39,13 @@ If your node of choice is missing, feel free to integrate it and let us know so 
 
 The alpha version of the JoinMarket Web UI is [available as CLI install in RaspiBlitz v1.7.2](https://github.com/rootzoll/raspiblitz/pull/2747). To install it, exit the Raspiblitz menu and run:
 
-```
+```sh
 config.scripts/bonus.joinmarket-webui.sh on
 ```
 
 To get information on how to connect to the JoinMarket Web UI run:
 
-```
+```sh
 config.scripts/bonus.joinmarket-webui.sh menu
 ```
 
