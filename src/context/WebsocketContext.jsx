@@ -41,21 +41,30 @@ const WebsocketProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
+    const abortCtrl = new AbortController()
+
     // The client must send the authentication token when it connects,
     // otherwise it will not receive any notifications.
     const initNotifications = () => {
       if (!websocket.current || !currentWallet) return
 
-      if (websocket.current.readyState === WebSocket.OPEN) {
-        websocket.current.send(currentWallet.token)
-      } else if (websocket.current.readyState === WebSocket.CONNECTING) {
-        websocket.current.onopen = () => {
-          websocket.current.send(currentWallet.token)
-        }
+      const socket = websocket.current
+
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(currentWallet.token)
+      } else if (socket.readyState === WebSocket.CONNECTING) {
+        socket.addEventListener('open', (e) => e.isTrusted && currentWallet && socket.send(currentWallet.token), {
+          once: true,
+          signal: abortCtrl.signal,
+        })
       }
     }
 
     initNotifications()
+
+    return () => {
+      abortCtrl.abort()
+    }
   }, [currentWallet])
 
   return <WebsocketContext.Provider value={{ websocket: websocket.current }}>{children}</WebsocketContext.Provider>
