@@ -20,6 +20,7 @@ const WebsocketProvider = ({ children }) => {
     websocket.current.onopen = () => {
       console.debug('websocket connection openend')
     }
+
     websocket.current.onclose = () => {
       console.debug('websocket connection closed')
     }
@@ -43,8 +44,14 @@ const WebsocketProvider = ({ children }) => {
     // The client must send the authentication token when it connects,
     // otherwise it will not receive any notifications.
     const initNotifications = () => {
-      if (websocket.current && currentWallet) {
+      if (!websocket.current || !currentWallet) return
+
+      if (websocket.current.readyState === WebSocket.OPEN) {
         websocket.current.send(currentWallet.token)
+      } else if (websocket.current.readyState === WebSocket.CONNECTING) {
+        websocket.current.onopen = () => {
+          websocket.current.send(currentWallet.token)
+        }
       }
     }
 
