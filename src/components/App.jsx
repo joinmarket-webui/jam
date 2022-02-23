@@ -11,6 +11,7 @@ import CurrentWalletAdvanced from './CurrentWalletAdvanced'
 import Settings from './Settings'
 import Navbar from './Navbar'
 import { useSettings } from '../context/SettingsContext'
+import { useWebsocket } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
@@ -27,6 +28,7 @@ export default function App() {
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const settings = useSettings()
+  const websocket = useWebsocket()
 
   const startWallet = useCallback(
     (name, token) => {
@@ -41,6 +43,22 @@ export default function App() {
     setCurrentWallet(null)
     setCurrentWalletInfo(null)
   }
+
+  const onWebsocketMessage = useCallback((message) => {
+    const data = JSON.parse(message?.data)
+    if (data && typeof data.coinjoin_state === 'number') {
+      setCoinjoinInProcess(data.coinjoin_state === 0)
+      setMakerRunning(data.coinjoin_state === 1)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!websocket) return
+
+    websocket.addEventListener('message', onWebsocketMessage)
+
+    return () => websocket.removeEventListener('message', onWebsocketMessage)
+  }, [websocket, onWebsocketMessage])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
