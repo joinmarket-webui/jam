@@ -113,7 +113,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       <rb.Card.Body>
         <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
           <div className="d-flex justify-content-between align-items-center flex-wrap">
-            <div class="py-1">
+            <div className="py-1">
               <rb.Card.Title>
                 {isActive ? (
                   <Link className="wallet-name" to="/wallet">
