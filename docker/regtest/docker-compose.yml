@@ -1,6 +1,14 @@
 version: "3"
 
 services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./dockerfile-deps/joinmarket/nginx:/etc/nginx/templates
+    ports:
+      - "8000:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   bitcoind:
     container_name: jm_regtest_bitcoind
