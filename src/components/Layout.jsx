@@ -2,12 +2,12 @@ import React from 'react'
 import * as rb from 'react-bootstrap'
 import { Outlet } from 'react-router-dom'
 
-const Col = ({ isWide, isNarrow, children }) => {
-  if (isWide) {
+const Col = ({ variant, children }) => {
+  if (variant === 'wide') {
     return <rb.Col>{children}</rb.Col>
   }
 
-  if (isNarrow) {
+  if (variant === 'narrow') {
     return (
       <rb.Col xs={10} sm={8} md={6} lg={4}>
         {children}
@@ -22,10 +22,10 @@ const Col = ({ isWide, isNarrow, children }) => {
   )
 }
 
-const Layout = ({ isWide = false, isNarrow = false }) => {
+const Layout = ({ variant }) => {
   return (
     <rb.Row className="justify-content-center">
-      <Col isWide={isWide} isNarrow={isNarrow}>
+      <Col variant={variant}>
         <Outlet />
       </Col>
     </rb.Row>

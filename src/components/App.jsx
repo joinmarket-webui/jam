@@ -156,9 +156,7 @@ export default function App() {
               )}
             </Route>
             {currentWallet && (
-              <Route
-                element={<Layout isWide={settings.useAdvancedWalletMode} isNarrow={!settings.useAdvancedWalletMode} />}
-              >
+              <Route element={<Layout variant={settings.useAdvancedWalletMode ? 'wide' : 'narrow'} />}>
                 <Route
                   path="wallet"
                   element={settings.useAdvancedWalletMode ? <CurrentWalletAdvanced /> : <CurrentWalletMagic />}
