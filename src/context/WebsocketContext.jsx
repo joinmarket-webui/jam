@@ -36,7 +36,20 @@ const WebsocketContext = createContext()
 
 const WebsocketProvider = ({ children }) => {
   const [websocket, setWebsocket] = useState(initialWebsocket)
+  const [websocketState, setWebsocketState] = useState(initialWebsocket.readyState)
   const currentWallet = useCurrentWallet()
+
+  useEffect(() => {
+    const onStateChange = () => setWebsocketState(websocket.readyState)
+
+    websocket.addEventListener('open', onStateChange)
+    websocket.addEventListener('close', onStateChange)
+
+    return () => {
+      websocket.removeEventListener('close', onStateChange)
+      websocket.removeEventListener('open', onStateChange)
+    }
+  }, [websocket])
 
   useEffect(() => {
     const onClose = () =>
@@ -55,7 +68,7 @@ const WebsocketProvider = ({ children }) => {
     // The client must send the authentication token when it connects,
     // otherwise it will not receive any notifications.
     const initNotifications = () => {
-      if (!websocket || !currentWallet) return
+      if (!currentWallet) return
 
       if (websocket.readyState === WebSocket.OPEN) {
         websocket.send(currentWallet.token)
@@ -74,7 +87,7 @@ const WebsocketProvider = ({ children }) => {
     }
   }, [websocket, currentWallet])
 
-  return <WebsocketContext.Provider value={{ websocket }}>{children}</WebsocketContext.Provider>
+  return <WebsocketContext.Provider value={{ websocket, websocketState }}>{children}</WebsocketContext.Provider>
 }
 
 const useWebsocket = () => {
@@ -85,4 +98,12 @@ const useWebsocket = () => {
   return context.websocket
 }
 
-export { WebsocketContext, WebsocketProvider, useWebsocket }
+const useWebsocketState = () => {
+  const context = useContext(WebsocketContext)
+  if (context === undefined) {
+    throw new Error('useWebsocketState must be used within a WebsocketProvider')
+  }
+  return context.websocketState
+}
+
+export { WebsocketContext, WebsocketProvider, useWebsocket, useWebsocketState }

@@ -11,12 +11,14 @@ import CurrentWalletAdvanced from './CurrentWalletAdvanced'
 import Settings from './Settings'
 import Navbar from './Navbar'
 import { useSettings } from '../context/SettingsContext'
-import { useWebsocket } from '../context/WebsocketContext'
+import { useWebsocket, useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
-
 import Onboarding from './Onboarding'
+
+// interval in milliseconds for periodic session requests
+const SESSION_REQUEST_INTERVAL = 10_000
 
 export default function App() {
   const currentWallet = useCurrentWallet()
@@ -29,6 +31,7 @@ export default function App() {
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const settings = useSettings()
   const websocket = useWebsocket()
+  const websocketState = useWebsocketState()
 
   const startWallet = useCallback(
     (name, token) => {
@@ -61,6 +64,15 @@ export default function App() {
   }, [websocket, onWebsocketMessage])
 
   useEffect(() => {
+    const websocketError = websocketState !== WebSocket.CONNECTING && websocketState !== WebSocket.OPEN
+    if (!websocketError) {
+      setConnectionError(null)
+    } else {
+      setConnectionError('Websocket is disconnected.')
+    }
+  }, [websocketState])
+
+  useEffect(() => {
     const abortCtrl = new AbortController()
 
     const resetState = () => {
@@ -88,13 +100,16 @@ export default function App() {
         })
         .catch((err) => {
           if (!abortCtrl.signal.aborted) {
+            // set the connection error message from the http request as it
+            // might contain more useful information for the user than just
+            // "Websocket is disconnected", e.g. "Gateway Timeout"
             setConnectionError(err.message)
             resetState()
           }
         })
     }
     refreshSession()
-    const interval = setInterval(refreshSession, 10000)
+    const interval = setInterval(refreshSession, SESSION_REQUEST_INTERVAL)
     return () => {
       abortCtrl.abort()
       clearInterval(interval)
@@ -119,6 +134,7 @@ export default function App() {
       </rb.Container>
     )
   }
+
   return (
     <>
       {showAlphaWarning && (
@@ -232,17 +248,10 @@ export default function App() {
               </a>
             </rb.Nav.Item>
           </div>
-          {connectionError ? (
-            <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-              <span className="text-danger mx-1">•</span>
-              <span className="text-secondary">Disconnected</span>
-            </div>
-          ) : (
-            <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-              <span className="text-success mx-1">•</span>
-              <span className="text-secondary">Connected</span>
-            </div>
-          )}
+          <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
+            <span className={`mx-1 ${connectionError ? 'text-danger' : 'text-success'}`}>•</span>
+            <span className="text-secondary">{connectionError ? 'Disconnected' : 'Connected'}</span>
+          </div>
         </rb.Container>
       </rb.Nav>
     </>
