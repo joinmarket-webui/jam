@@ -47,9 +47,16 @@ export default function App() {
     setCurrentWalletInfo(null)
   }
 
+  // update maker/taker indicator based on websocket data
   const onWebsocketMessage = useCallback((message) => {
     const data = JSON.parse(message?.data)
+
+    // if the data contains a property named `coinjoin_state`...
     if (data && typeof data.coinjoin_state === 'number') {
+      // ... update the maker/taker indicator accordingly:
+      // 0 := Taker running
+      // 1 := Maker running
+      // 2 := Neither are running
       setCoinjoinInProcess(data.coinjoin_state === 0)
       setMakerRunning(data.coinjoin_state === 1)
     }
@@ -60,9 +67,10 @@ export default function App() {
 
     websocket.addEventListener('message', onWebsocketMessage)
 
-    return () => websocket.removeEventListener('message', onWebsocketMessage)
+    return () => websocket && websocket.removeEventListener('message', onWebsocketMessage)
   }, [websocket, onWebsocketMessage])
 
+  // update the connection indicator based on the websocket connection state
   useEffect(() => {
     const websocketError = websocketState !== WebSocket.CONNECTING && websocketState !== WebSocket.OPEN
     if (!websocketError) {
