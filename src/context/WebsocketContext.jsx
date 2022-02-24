@@ -8,6 +8,11 @@ const WEBSOCKET_RECONNECT_DELAY = 1_000
 // path that will be proxied to the backend server
 const WEBSOCKET_ENDPOINT_PATH = '/jmws'
 
+// possible values for property `coinjoin_state` in websocket messages
+const CJ_STATE_TAKER_RUNNING = 0
+const CJ_STATE_MAKER_RUNNING = 1
+const CJ_STATE_NONE_RUNNING = 2
+
 const createWebSocket = () => {
   const { protocol, host } = window.location
   const scheme = protocol === 'https:' ? 'wss' : 'ws'
@@ -114,4 +119,12 @@ const useWebsocketState = () => {
   return context.websocketState
 }
 
-export { WebsocketContext, WebsocketProvider, useWebsocket, useWebsocketState }
+export {
+  WebsocketContext,
+  WebsocketProvider,
+  useWebsocket,
+  useWebsocketState,
+  CJ_STATE_TAKER_RUNNING,
+  CJ_STATE_MAKER_RUNNING,
+  CJ_STATE_NONE_RUNNING,
+}
