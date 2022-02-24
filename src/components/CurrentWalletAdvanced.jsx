@@ -51,12 +51,16 @@ export default function CurrentWalletAdvanced() {
     <div>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading && (
-        <div className="mb-3">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          Loading
-        </div>
+        <rb.Row className="justify-content-center">
+          <rb.Col className="flex-grow-0">
+            <div className="d-flex mb-3">
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              Loading
+            </div>
+          </rb.Col>
+        </rb.Row>
       )}
-      {walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
+      {!isLoading && walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
           <h5>Fidelity Bonds</h5>

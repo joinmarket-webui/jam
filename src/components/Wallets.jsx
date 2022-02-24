@@ -50,42 +50,40 @@ export default function Wallets({ startWallet, stopWallet }) {
   }, [currentWallet])
 
   return (
-    <rb.Row className="wallets justify-content-center">
-      <rb.Col md={10} lg={8} xl={6}>
-        <PageTitle
-          title="Your wallets"
-          subtitle={walletList?.length === 0 ? 'It looks like you do not have a wallet, yet.' : null}
-          center={true}
-        />
-        {alert && <Alert {...alert} />}
-        {isLoading && (
-          <div>
-            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-            Loading wallets
-          </div>
-        )}
-        {walletList?.map((wallet, index) => (
-          <Wallet
-            key={wallet}
-            name={wallet}
-            currentWallet={currentWallet}
-            startWallet={startWallet}
-            stopWallet={stopWallet}
-            setAlert={setAlert}
-            className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
-              index === 0 ? 'border-top-1' : 'border-top-0'
-            }`}
-          />
-        ))}
-        <div className="d-flex justify-content-center">
-          <Link
-            to="/create-wallet"
-            className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
-          >
-            Create new wallet
-          </Link>
+    <div className="wallets">
+      <PageTitle
+        title="Your wallets"
+        subtitle={walletList?.length === 0 ? 'It looks like you do not have a wallet, yet.' : null}
+        center={true}
+      />
+      {alert && <Alert {...alert} />}
+      {isLoading && (
+        <div>
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          Loading wallets
         </div>
-      </rb.Col>
-    </rb.Row>
+      )}
+      {walletList?.map((wallet, index) => (
+        <Wallet
+          key={wallet}
+          name={wallet}
+          currentWallet={currentWallet}
+          startWallet={startWallet}
+          stopWallet={stopWallet}
+          setAlert={setAlert}
+          className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
+            index === 0 ? 'border-top-1' : 'border-top-0'
+          }`}
+        />
+      ))}
+      <div className="d-flex justify-content-center">
+        <Link
+          to="/create-wallet"
+          className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
+        >
+          Create new wallet
+        </Link>
+      </div>
+    </div>
   )
 }
