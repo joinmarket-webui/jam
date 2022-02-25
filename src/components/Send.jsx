@@ -281,14 +281,10 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   return (
     <>
       {isLoading ? (
-        <rb.Row className="justify-content-center">
-          <rb.Col className="flex-grow-0">
-            <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              Loading
-            </div>
-          </rb.Col>
-        </rb.Row>
+        <div className="d-flex justify-content-center align-items-center">
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          Loading
+        </div>
       ) : (
         <div className="send">
           <PageTitle
