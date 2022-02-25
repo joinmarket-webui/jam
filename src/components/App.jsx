@@ -33,6 +33,7 @@ export default function App() {
 
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
+  const [websocketConnected, setWebsocketConnected] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const settings = useSettings()
@@ -75,11 +76,7 @@ export default function App() {
   // update the connection indicator based on the websocket connection state
   useEffect(() => {
     const websocketError = websocketState !== WebSocket.CONNECTING && websocketState !== WebSocket.OPEN
-    if (!websocketError) {
-      setConnectionError(null)
-    } else {
-      setConnectionError('Websocket is disconnected.')
-    }
+    setWebsocketConnected(!websocketError)
   }, [websocketState])
 
   useEffect(() => {
@@ -110,9 +107,6 @@ export default function App() {
         })
         .catch((err) => {
           if (!abortCtrl.signal.aborted) {
-            // set the connection error message from the http request as it
-            // might contain more useful information for the user than just
-            // "Websocket is disconnected", e.g. "Gateway Timeout"
             setConnectionError(err.message)
             resetState()
           }
@@ -267,8 +261,8 @@ export default function App() {
             </rb.Nav.Item>
           </div>
           <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-            <span className={`mx-1 ${connectionError ? 'text-danger' : 'text-success'}`}>•</span>
-            <span className="text-secondary">{connectionError ? 'Disconnected' : 'Connected'}</span>
+            <span className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}>•</span>
+            <span className="text-secondary">{websocketConnected ? 'Connected' : 'Disconnected'}</span>
           </div>
         </rb.Container>
       </rb.Nav>
