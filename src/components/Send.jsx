@@ -330,14 +330,15 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                 className="slashed-zeroes"
                 isInvalid={!isValidAccount(account)}
               >
-                {walletInfo.accounts
-                  .sort((lhs, rhs) => lhs.account - rhs.account)
-                  .map(({ account, account_balance: balance }) => (
-                    <option key={account} value={account}>
-                      {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}{' '}
-                      {settings.showBalance && `(\u20BF${balance})`}
-                    </option>
-                  ))}
+                {walletInfo &&
+                  walletInfo.accounts
+                    .sort((lhs, rhs) => lhs.account - rhs.account)
+                    .map(({ account, account_balance: balance }) => (
+                      <option key={account} value={account}>
+                        {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}{' '}
+                        {settings.showBalance && `(\u20BF${balance})`}
+                      </option>
+                    ))}
               </rb.Form.Select>
             </rb.Form.Group>
             <rb.Form.Group className="mb-4" controlId="amount">
