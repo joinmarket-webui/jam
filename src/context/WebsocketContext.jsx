@@ -5,6 +5,10 @@ import { useCurrentWallet } from './WalletContext'
 const WEBSOCKET_RECONNECT_DELAY_STEP = 1_000
 const WEBSOCKET_RECONNECT_MAX_DELAY = 10_000
 
+// webservers will close a websocket connection on inactivity (e.g nginx default is 60s)
+// specify the time in milliseconds at least one 'keepalive' message is sent
+const WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL = 30_000
+
 // return delay in milliseconds to attempt reconnecting after the connection has been lost
 const connectionRetryDelayLinear = (attempt = 0) => {
   // linear increase per attempt by `step` amount till `max` is reached
@@ -118,7 +122,11 @@ const WebsocketProvider = ({ children }) => {
 
     initNotifications()
 
-    return () => abortCtrl.abort()
+    const keepaliveInterval = setInterval(initNotifications, WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL)
+    return () => {
+      abortCtrl.abort()
+      clearInterval(keepaliveInterval)
+    }
   }, [websocket, currentWallet])
 
   return <WebsocketContext.Provider value={{ websocket, websocketState }}>{children}</WebsocketContext.Provider>
