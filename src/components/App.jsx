@@ -155,12 +155,14 @@ export default function App() {
                 </>
               )}
             </Route>
-            {currentWallet && (
-              <Route element={<Layout variant={settings.useAdvancedWalletMode ? 'wide' : 'narrow'} />}>
-                <Route
-                  path="wallet"
-                  element={settings.useAdvancedWalletMode ? <CurrentWalletAdvanced /> : <CurrentWalletMagic />}
-                />
+            {currentWallet && !settings.useAdvancedWalletMode && (
+              <Route element={<Layout variant="narrow" />}>
+                <Route path="wallet" element={<CurrentWalletMagic />} />
+              </Route>
+            )}
+            {currentWallet && settings.useAdvancedWalletMode && (
+              <Route element={<Layout variant="wide" />}>
+                <Route path="wallet" element={<CurrentWalletAdvanced />} />
               </Route>
             )}
             <Route path="*" element={<Navigate to="/" replace={true} />} />

@@ -58,7 +58,7 @@ export default function Wallets({ startWallet, stopWallet }) {
       />
       {alert && <Alert {...alert} />}
       {isLoading && (
-        <div>
+        <div className="d-flex justify-content-center align-items-center">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           Loading wallets
         </div>

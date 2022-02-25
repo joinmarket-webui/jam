@@ -14,7 +14,7 @@ export default function CurrentWalletAdvanced() {
   const [utxos, setUtxos] = useState(null)
   const [showUTXO, setShowUTXO] = useState(false)
   const [alert, setAlert] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const abortCtrl = new AbortController()
