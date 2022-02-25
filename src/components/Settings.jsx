@@ -1,6 +1,7 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
+import PageTitle from './PageTitle'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { SATS, BTC } from '../utils'
 
@@ -20,8 +21,7 @@ export default function Settings({ currentWallet }) {
 
   return (
     <div>
-      <h1 className="mb-4">Settings</h1>
-
+      <PageTitle title="Settings" />
       <div style={{ marginLeft: '-.75rem' }}>
         <rb.Button
           variant="outline-dark"

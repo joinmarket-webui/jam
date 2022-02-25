@@ -238,8 +238,8 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
 
   return (
     <div className="earn">
-      <rb.Row className="justify-content-center">
-        <rb.Col md={10} lg={8} xl={6}>
+      <rb.Row>
+        <rb.Col>
           <PageTitle
             title="Earn bitcoin"
             subtitle="By making your bitcoin available for others, you help them improve their privacy and can also earn a yield."
@@ -360,8 +360,8 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
       </rb.Row>
 
       {settings.useAdvancedWalletMode && (
-        <rb.Row className="justify-content-center mt-5 mb-3">
-          <rb.Col md={10} lg={8} xl={6}>
+        <rb.Row className="mt-5 mb-3">
+          <rb.Col>
             <rb.Button
               variant="outline-dark"
               className="border-0 mb-2 d-inline-flex align-items-center"

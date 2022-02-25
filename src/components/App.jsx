@@ -10,6 +10,7 @@ import CurrentWalletMagic from './CurrentWalletMagic'
 import CurrentWalletAdvanced from './CurrentWalletAdvanced'
 import Settings from './Settings'
 import Navbar from './Navbar'
+import Layout from './Layout'
 import { useSettings } from '../context/SettingsContext'
 import {
   useWebsocket,
@@ -170,34 +171,42 @@ export default function App() {
           <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
         ) : (
           <Routes>
-            <Route exact path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
-            <Route
-              path="create-wallet"
-              element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
-            />
-            {currentWallet && (
-              <>
-                <Route
-                  path="wallet"
-                  element={settings.useAdvancedWalletMode ? <CurrentWalletAdvanced /> : <CurrentWalletMagic />}
-                />
-                <Route
-                  path="send"
-                  element={<Send makerRunning={makerRunning} coinjoinInProcess={coinjoinInProcess} />}
-                />
-                <Route
-                  path="earn"
-                  element={
-                    <Earn
-                      currentWallet={currentWallet}
-                      coinjoinInProcess={coinjoinInProcess}
-                      makerRunning={makerRunning}
-                    />
-                  }
-                />
-                <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
-                <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
-              </>
+            <Route element={<Layout />}>
+              <Route exact path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
+              <Route
+                path="create-wallet"
+                element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
+              />
+              {currentWallet && (
+                <>
+                  <Route
+                    path="send"
+                    element={<Send makerRunning={makerRunning} coinjoinInProcess={coinjoinInProcess} />}
+                  />
+                  <Route
+                    path="earn"
+                    element={
+                      <Earn
+                        currentWallet={currentWallet}
+                        coinjoinInProcess={coinjoinInProcess}
+                        makerRunning={makerRunning}
+                      />
+                    }
+                  />
+                  <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
+                  <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
+                </>
+              )}
+            </Route>
+            {currentWallet && !settings.useAdvancedWalletMode && (
+              <Route element={<Layout variant="narrow" />}>
+                <Route path="wallet" element={<CurrentWalletMagic />} />
+              </Route>
+            )}
+            {currentWallet && settings.useAdvancedWalletMode && (
+              <Route element={<Layout variant="wide" />}>
+                <Route path="wallet" element={<CurrentWalletAdvanced />} />
+              </Route>
             )}
             <Route path="*" element={<Navigate to="/" replace={true} />} />
           </Routes>
