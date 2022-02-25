@@ -163,30 +163,28 @@ export default function CreateWallet({ startWallet }) {
   const canCreate = !currentWallet && !isCreated
 
   return (
-    <rb.Row className="create-wallet justify-content-center">
-      <rb.Col md={10} lg={8} xl={6}>
-        {isCreated ? (
-          <PageTitle
-            title="Wallet created successfully!"
-            subtitle="Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!"
-            success
-          />
-        ) : (
-          <PageTitle title="Create Wallet" />
-        )}
-        {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-        {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
-        {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
-        {!canCreate && !isCreated && (
-          <rb.Alert variant="warning">
-            Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.{' '}
-            <Link to="/" className="alert-link">
-              Go back
-            </Link>
-            .
-          </rb.Alert>
-        )}
-      </rb.Col>
-    </rb.Row>
+    <div className="create-wallet">
+      {isCreated ? (
+        <PageTitle
+          title="Wallet created successfully!"
+          subtitle="Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!"
+          success
+        />
+      ) : (
+        <PageTitle title="Create Wallet" />
+      )}
+      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
+      {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
+      {!canCreate && !isCreated && (
+        <rb.Alert variant="warning">
+          Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.{' '}
+          <Link to="/" className="alert-link">
+            Go back
+          </Link>
+          .
+        </rb.Alert>
+      )}
+    </div>
   )
 }
