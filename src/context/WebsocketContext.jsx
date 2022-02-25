@@ -2,8 +2,15 @@ import React, { createContext, useEffect, useState, useContext } from 'react'
 
 import { useCurrentWallet } from './WalletContext'
 
-// delay in milliseconds to attempt reconnecting after the connection has been lost
-const WEBSOCKET_RECONNECT_DELAY = 1_000
+const WEBSOCKET_RECONNECT_DELAY_STEP = 1_000
+const WEBSOCKET_RECONNECT_MAX_DELAY = 10_000
+
+// return delay in milliseconds to attempt reconnecting after the connection has been lost
+const connectionRetryDelayLinear = (attempt = 0) => {
+  // linear increase per attempt by `step` amount till `max` is reached
+  const delay = Math.max(WEBSOCKET_RECONNECT_DELAY_STEP, WEBSOCKET_RECONNECT_DELAY_STEP * attempt)
+  return Math.min(delay, WEBSOCKET_RECONNECT_MAX_DELAY)
+}
 
 // path that will be proxied to the backend server
 const WEBSOCKET_ENDPOINT_PATH = '/jmws'
@@ -52,6 +59,7 @@ const WebsocketContext = createContext()
 const WebsocketProvider = ({ children }) => {
   const [websocket, setWebsocket] = useState(initialWebsocket)
   const [websocketState, setWebsocketState] = useState(initialWebsocket.readyState)
+  const setConnectionErrorCount = useState(0)[1]
   const currentWallet = useCurrentWallet()
 
   // update websocket state based on open/close events
@@ -69,15 +77,26 @@ const WebsocketProvider = ({ children }) => {
 
   // reconnect handling in case the socket is closed
   useEffect(() => {
-    const onClose = () =>
-      setTimeout(() => {
-        setWebsocket(createWebSocket())
-      }, WEBSOCKET_RECONNECT_DELAY)
+    const onOpen = () => setConnectionErrorCount(0)
+    const onClose = () => {
+      setConnectionErrorCount((prev) => {
+        const retryDelay = connectionRetryDelayLinear(prev + 1)
+        console.log(`Retrying to connect websocket in ${retryDelay}ms`)
+        setTimeout(() => {
+          setWebsocket(createWebSocket())
+        }, retryDelay)
+        return prev + 1
+      })
+    }
 
+    websocket.addEventListener('open', onOpen)
     websocket.addEventListener('close', onClose)
 
-    return () => websocket && websocket.removeEventListener('close', onClose)
-  }, [websocket])
+    return () => {
+      websocket && websocket.removeEventListener('close', onClose)
+      websocket && websocket.removeEventListener('open', onOpen)
+    }
+  }, [websocket, setConnectionErrorCount])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
