@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import user from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
+import user from '@testing-library/user-event'
 
 import { BrowserRouter } from 'react-router-dom'
 
@@ -46,7 +46,7 @@ it('Display Onboarding screen initially', () => {
   expect(screen.getByText('Skip intro')).toBeInTheDocument()
 
   // Wallets screen shown after Intro is skipped
-  expect(screen.queryByText('Your wallets')).toBeNull()
+  expect(screen.queryByText('Your wallets')).not.toBeInTheDocument()
 
   act(() => {
     const skipIntro = screen.getByText('Skip intro')
@@ -56,7 +56,7 @@ it('Display Onboarding screen initially', () => {
   expect(screen.getByText('Your wallets')).toBeInTheDocument()
 })
 
-it('Display Wallets screen after Onboarding', () => {
+it('Display Wallets screen after Onboarding screen', () => {
   addToAppSettings({ showOnboarding: false })
 
   act(() => {
@@ -86,7 +86,9 @@ it('Alpha warning modal can be displayed', () => {
   })
 
   expect(screen.getByText('Read this before using.')).toBeInTheDocument()
-  expect(screen.queryByText(/While JoinMarket is tried and tested, this user interface is not./)).toBeNull()
+  expect(
+    screen.queryByText(/While JoinMarket is tried and tested, this user interface is not./)
+  ).not.toBeInTheDocument()
 
   act(() => {
     const readThis = screen.getByText('Read this before using.')
