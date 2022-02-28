@@ -10,7 +10,7 @@ import '@ibunker/bitcoin-react/dist/index.css'
 import './index.css'
 
 ReactDOM.render(
-  <BrowserRouter basename={window.JM.PUBLIC_PATH}>
+  <BrowserRouter>
     <SettingsProvider>
       <WalletProvider>
         <App />
