@@ -30,8 +30,9 @@ jobs:
       # Checks
       - name: Lint
         run: npm run lint
-      # - name: Test
-      #   run: npm test
+      # Test
+      - name: Test
+        run: npm test
       # Build
       - name: Build
         run: npm run build
