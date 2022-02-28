@@ -55,7 +55,7 @@ export default function Onboarding() {
           <Sprite symbol="logo" width="8rem" height="8rem" className="mb-4" />
         </div>
         <h1 className="text-center">Jam</h1>
-        <h2 className="text-center fw-normal text-secondary mb-5">A user-friendly UI for JoinMarket</h2>
+        <h2 className="text-center fw-normal text-secondary mb-5">A friendly UI for JoinMarket</h2>
         <div className="d-flex justify-content-center mb-2">
           <rb.Button size="lg" variant="dark" onClick={next}>
             Get started
