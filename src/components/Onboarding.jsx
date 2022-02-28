@@ -17,7 +17,7 @@ export default function Onboarding() {
 
   const steps = [
     {
-      title: 'Welcome to JoinMarket!',
+      title: 'Welcome to Jam for JoinMarket!',
       description:
         'JoinMarket is a privacy-focused software solution that aims to improve the confidentiality and privacy of your bitcoin transactions. It facilitates the creation of collaborative transactions through a peer-to-peer marketplace.',
       icon: 'welcome',
@@ -54,8 +54,8 @@ export default function Onboarding() {
         <div className="d-flex justify-content-center">
           <Sprite symbol="logo" width="8rem" height="8rem" className="mb-4" />
         </div>
-        <h1 className="text-center">JoinMarket</h1>
-        <h2 className="text-center fw-normal text-secondary mb-5">Top-notch privacy for your bitcoin.</h2>
+        <h1 className="text-center">Jam</h1>
+        <h2 className="text-center fw-normal text-secondary mb-5">A user-friendly UI for JoinMarket</h2>
         <div className="d-flex justify-content-center mb-2">
           <rb.Button size="lg" variant="dark" onClick={next}>
             Get started
@@ -73,9 +73,8 @@ export default function Onboarding() {
         <div className="mt-4 text-secondary text-center">
           <div className="fw-bolder">Warning</div>
           <div>
-            While JoinMarket is tried and tested, this user interface is not. It is in a pre-alpha stage and currently
-            does not offer the same functionality and privacy guarantees as existing JoinMarket tools. If anything
-            breaks please{' '}
+            While JoinMarket is tried and tested, Jam is not. It is in a pre-alpha stage and currently does not offer
+            the same functionality and privacy guarantees as existing JoinMarket tools. If anything breaks please{' '}
             <a
               href="https://github.com/joinmarket-webui/joinmarket-webui/issues"
               target="_blank"

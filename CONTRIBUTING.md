@@ -5,7 +5,7 @@ The aim of this document is to help you get setup for participating in all areas
 
 ## Understanding the Components Involved
 
-This project is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/).
+Jam is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) with a focus on user-friendlyness.
 The web UI's purpose is to be a rather lightweight front end for the JoinMarket API.
 To function, the web UI needs to connect to an instance of JoinMarket with [the API service](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md) running.
 

@@ -148,7 +148,7 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                   style={{ height: height }}
                 >
                   <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
-                  <span className="ms-2">JoinMarket</span>
+                  <span className="ms-2">Jam</span>
                 </Link>
                 <div className="d-flex d-md-none align-items-center">
                   <rb.Navbar.Toggle id="mainNavToggle">
@@ -157,7 +157,7 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                 </div>
                 <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
-                    <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
+                    <rb.Offcanvas.Title>Jam</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
                     <rb.Nav className="ms-auto">
@@ -203,7 +203,7 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                 </div>
                 <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
-                    <rb.Offcanvas.Title>JoinMarket Web UI</rb.Offcanvas.Title>
+                    <rb.Offcanvas.Title>Jam</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
                     <CenterNav makerRunning={makerRunning} onClick={() => setIsExpanded(!isExpanded)} />

@@ -110,8 +110,8 @@ export default function App() {
             <rb.Card.Body>
               <rb.Card.Title className="text-center mb-3">Warning</rb.Card.Title>
               <p className="text-secondary">
-                While JoinMarket is tried and tested, this user interface is not. It is in a pre-alpha stage and
-                currently does not offer the same functionality and privacy guarantees as existing JoinMarket tools.
+                While JoinMarket is tried and tested, Jam is not. It is in an alpha stage and currently does not offer
+                the same functionality and privacy guarantees as existing JoinMarket tools.
               </p>
               <div className="text-center mt-3">
                 <rb.Button variant="secondary" onClick={() => setShowAlphaWarning(false)}>
