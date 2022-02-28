@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './components/App'
 import { SettingsProvider } from './context/SettingsContext'
 import { WalletProvider } from './context/WalletContext'
+import { WebsocketProvider } from './context/WebsocketContext'
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '@ibunker/bitcoin-react/dist/index.css'
@@ -13,7 +14,9 @@ ReactDOM.render(
   <BrowserRouter>
     <SettingsProvider>
       <WalletProvider>
-        <App />
+        <WebsocketProvider>
+          <App />
+        </WebsocketProvider>
       </WalletProvider>
     </SettingsProvider>
   </BrowserRouter>,

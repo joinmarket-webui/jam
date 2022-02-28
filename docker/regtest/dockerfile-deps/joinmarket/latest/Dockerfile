@@ -38,7 +38,9 @@ EXPOSE 8080
 EXPOSE 62601 
 # joinmarketd daemon
 EXPOSE 27183
-# jmwallet daemon
+# jmwalletd api
 EXPOSE 28183
+# jmwalletd websocket
+EXPOSE 28283
 
 ENTRYPOINT  [ "tini", "-g", "--", "./docker-entrypoint.sh" ]
