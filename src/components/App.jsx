@@ -128,7 +128,7 @@ export default function App() {
 
   if (settings.showOnboarding === true) {
     return (
-      <rb.Container className="onboarding mt-5">
+      <rb.Container className="onboarding mt-5 mb-5">
         <rb.Row className="justify-content-center mt-md-5">
           <rb.Col xs={10} sm={10} md={8} lg={6} xl={4}>
             <Onboarding />
