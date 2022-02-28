@@ -72,6 +72,8 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
   const [isWaiting, setIsWaiting] = useState(false)
+  const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
+  const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
   const [offertype, setOffertype] = useState(
@@ -125,7 +127,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
 
     setAlert(null)
     setIsSending(true)
-    setIsWaiting(false)
+    setIsWaitingMakerStart(false)
     try {
       const res = await Api.postMakerStart(
         { walletName, token },
@@ -138,10 +140,9 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
       )
 
       if (res.ok) {
-        // FIXME: Right now there is no response data to check if maker got started
-        // https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1120
-        setAlert({ variant: 'success', message: 'Service is starting.' })
-        setIsWaiting(true)
+        // There is no response data to check if maker got started:
+        // Wait for the websocket or session response!
+        setIsWaitingMakerStart(true)
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
@@ -154,14 +155,20 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
   }
 
   useEffect(() => {
-    setIsWaiting(false)
+    setAlert(null)
 
-    if (makerRunning) {
-      setAlert({ variant: 'success', message: 'Service is running.' })
-    } else {
-      setAlert(null)
-    }
-  }, [makerRunning])
+    const waitingForMakerToStart = isWaitingMakerStart && !makerRunning
+    setIsWaitingMakerStart(waitingForMakerToStart)
+    waitingForMakerToStart && setAlert({ variant: 'success', message: 'Service is starting.' })
+
+    const waitingForMakerToStop = isWaitingMakerStop && makerRunning
+    setIsWaitingMakerStop(waitingForMakerToStop)
+    waitingForMakerToStop && setAlert({ variant: 'success', message: 'Service is stopping.' })
+
+    const waiting = waitingForMakerToStart || waitingForMakerToStop
+    setIsWaiting(waiting)
+    !waiting && makerRunning && setAlert({ variant: 'success', message: 'Service is running.' })
+  }, [makerRunning, isWaitingMakerStart, isWaitingMakerStop])
 
   useEffect(() => {
     if (!isShowReport) return
@@ -192,15 +199,14 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
 
     setAlert(null)
     setIsSending(true)
-    setIsWaiting(false)
+    setIsWaitingMakerStop(false)
     try {
       const res = await Api.getMakerStop({ walletName, token })
 
       if (res.ok) {
-        // FIXME: Right now there is no response data to check if maker got stopped
-        // https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1120
-        setAlert({ variant: 'success', message: 'Service is stopping.' })
-        setIsWaiting(true)
+        // There is no response data to check if maker got stopped:
+        // Wait for the websocket or session response!
+        setIsWaitingMakerStop(true)
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })

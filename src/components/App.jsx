@@ -12,11 +12,19 @@ import Settings from './Settings'
 import Navbar from './Navbar'
 import Layout from './Layout'
 import { useSettings } from '../context/SettingsContext'
+import {
+  useWebsocket,
+  useWebsocketState,
+  CJ_STATE_TAKER_RUNNING,
+  CJ_STATE_MAKER_RUNNING,
+} from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { getSession, setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
-
 import Onboarding from './Onboarding'
+
+// interval in milliseconds for periodic session requests
+const SESSION_REQUEST_INTERVAL = 10_000
 
 export default function App() {
   const currentWallet = useCurrentWallet()
@@ -25,9 +33,12 @@ export default function App() {
 
   const [makerRunning, setMakerRunning] = useState()
   const [connectionError, setConnectionError] = useState()
+  const [websocketConnected, setWebsocketConnected] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const settings = useSettings()
+  const websocket = useWebsocket()
+  const websocketState = useWebsocketState()
 
   const startWallet = useCallback(
     (name, token) => {
@@ -42,6 +53,30 @@ export default function App() {
     setCurrentWallet(null)
     setCurrentWalletInfo(null)
   }
+
+  // update maker/taker indicator based on websocket data
+  const onWebsocketMessage = useCallback((message) => {
+    const data = JSON.parse(message?.data)
+
+    // update the maker/taker indicator according to `coinjoin_state` property
+    if (data && typeof data.coinjoin_state === 'number') {
+      setCoinjoinInProcess(data.coinjoin_state === CJ_STATE_TAKER_RUNNING)
+      setMakerRunning(data.coinjoin_state === CJ_STATE_MAKER_RUNNING)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!websocket) return
+
+    websocket.addEventListener('message', onWebsocketMessage)
+
+    return () => websocket && websocket.removeEventListener('message', onWebsocketMessage)
+  }, [websocket, onWebsocketMessage])
+
+  // update the connection indicator based on the websocket connection state
+  useEffect(() => {
+    setWebsocketConnected(websocketState === WebSocket.OPEN)
+  }, [websocketState])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -77,7 +112,7 @@ export default function App() {
         })
     }
     refreshSession()
-    const interval = setInterval(refreshSession, 10000)
+    const interval = setInterval(refreshSession, SESSION_REQUEST_INTERVAL)
     return () => {
       abortCtrl.abort()
       clearInterval(interval)
@@ -102,6 +137,7 @@ export default function App() {
       </rb.Container>
     )
   }
+
   return (
     <>
       {showAlphaWarning && (
@@ -223,17 +259,10 @@ export default function App() {
               </a>
             </rb.Nav.Item>
           </div>
-          {connectionError ? (
-            <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-              <span className="text-danger mx-1">•</span>
-              <span className="text-secondary">Disconnected</span>
-            </div>
-          ) : (
-            <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-              <span className="text-success mx-1">•</span>
-              <span className="text-secondary">Connected</span>
-            </div>
-          )}
+          <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
+            <span className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}>•</span>
+            <span className="text-secondary">{websocketConnected ? 'Connected' : 'Disconnected'}</span>
+          </div>
         </rb.Container>
       </rb.Nav>
     </>
