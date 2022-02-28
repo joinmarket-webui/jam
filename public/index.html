@@ -2,8 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="base-url" href=".">
-    <link rel="public-url" href="%PUBLIC_URL%">
     <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png">
     <link rel="icon" href="%PUBLIC_URL%/favicon.svg">
     <link rel="manifest" href="%PUBLIC_URL%/site.webmanifest" crossorigin="use-credentials">
@@ -14,14 +12,6 @@
     <title>JoinMarket</title>
     <script>
       window.JM = { SETTINGS_STORE_KEY: 'jm-settings', THEMES: ['light', 'dark'], THEME_ROOT_ATTR: 'data-theme' }
-      // determine base path depending on whether PUBLIC_URL is set
-      const baseUrl = document.querySelector('link[rel="base-url"]').href
-      const publicUrl = document.querySelector('link[rel="public-url"]').href
-      const base = baseUrl.length > publicUrl.length ? baseUrl : publicUrl
-      window.JM.PUBLIC_PATH = base
-        .replace(`${window.location.protocol}//${window.location.host}`, '') // remove domain part
-        .replace(/\/$/, '') // remove trailing slash
-      // theme
       const settings = JSON.parse(window.localStorage.getItem(JM.SETTINGS_STORE_KEY) || '{}')
       const userColorMode = settings.theme;
       const systemColorMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? JM.THEMES[1] : JM.THEMES[0];
