@@ -29,6 +29,10 @@ const createWebSocket = () => {
   const scheme = protocol === 'https:' ? 'wss' : 'ws'
   const websocket = new WebSocket(`${scheme}://${host}${WEBSOCKET_ENDPOINT_PATH}`)
 
+  websocket.onerror = (error) => {
+    console.error('websocket error', error)
+  }
+
   if (process.env.NODE_ENV !== 'production') {
     websocket.onopen = () => {
       console.debug('websocket connection openend')
@@ -37,15 +41,6 @@ const createWebSocket = () => {
     websocket.onclose = () => {
       console.debug('websocket connection closed')
     }
-
-    websocket.onmessage = (event) => {
-      const data = JSON.parse(event?.data)
-      console.debug('websocket message', data)
-    }
-  }
-
-  websocket.onerror = (error) => {
-    console.error('websocket error', error)
   }
 
   return websocket
