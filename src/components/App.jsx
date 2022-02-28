@@ -75,8 +75,7 @@ export default function App() {
 
   // update the connection indicator based on the websocket connection state
   useEffect(() => {
-    const websocketError = websocketState !== WebSocket.CONNECTING && websocketState !== WebSocket.OPEN
-    setWebsocketConnected(!websocketError)
+    setWebsocketConnected(websocketState === WebSocket.OPEN)
   }, [websocketState])
 
   useEffect(() => {
