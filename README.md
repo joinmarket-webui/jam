@@ -1,5 +1,7 @@
-![JoinMarket Jam](docs/assets/readme-header-dark.svg#gh-light-mode-only)
-![JoinMarket Jam](docs/assets/readme-header-light.svg#gh-dark-mode-only)
+<div align="center">
+  <img src="docs/assets/readme-header-dark.svg#gh-light-mode-only">
+  <img src="docs/assets/readme-header-light.svg#gh-dark-mode-only">
+</div>
 
 <p align="center">
   <strong>⚠️ This is still work in progress. Use with caution. ⚠️</strong>
