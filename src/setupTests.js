@@ -7,6 +7,7 @@ global.JM = {
   SETTINGS_STORE_KEY: 'jm-settings',
   THEMES: ['light', 'dark'],
   THEME_ROOT_ATTR: 'data-theme',
+  PUBLIC_PATH: '',
 }
 
 global.JM_WEBSOCKET_SERVER_MOCK = new WebSocketServer('ws://localhost/jmws', { jsonProtocol: true })
