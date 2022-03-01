@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { Suspense, useState, useEffect, useCallback } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Wallets from './Wallets'
@@ -139,7 +139,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <Suspense fallback={'loading...'}>
       {showAlphaWarning && (
         <div className="warning-card-wrapper">
           <rb.Card className="warning-card translate-middle shadow-lg">
@@ -265,6 +265,6 @@ export default function App() {
           </div>
         </rb.Container>
       </rb.Nav>
-    </>
+    </Suspense>
   )
 }

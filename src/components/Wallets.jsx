@@ -5,10 +5,12 @@ import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
 import { useCurrentWallet } from '../context/WalletContext'
+import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 
 export default function Wallets({ startWallet, stopWallet }) {
+  const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -52,7 +54,7 @@ export default function Wallets({ startWallet, stopWallet }) {
   return (
     <div className="wallets">
       <PageTitle
-        title="Your wallets"
+        title={t('wallets.title')}
         subtitle={walletList?.length === 0 ? 'It looks like you do not have a wallet, yet.' : null}
         center={true}
       />
