@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
 
@@ -97,4 +97,26 @@ it('Alpha warning modal can be displayed', () => {
 
   expect(screen.getByText(/While JoinMarket is tried and tested, this user interface is not./)).toBeInTheDocument()
   expect(screen.getByText('Fine with me.')).toBeInTheDocument()
+})
+
+it('Connection indicator represents state of websocket connection', async () => {
+  addToAppSettings({ showOnboarding: false })
+
+  act(() => {
+    render(<App />, {
+      wrapper: AllTheProviders,
+    })
+  })
+
+  expect(screen.getByText('•').classList.contains('text-danger')).toBe(true)
+  expect(screen.getByText('•').classList.contains('text-success')).toBe(false)
+  expect(screen.getByText('Disconnected')).toBeInTheDocument()
+  expect(screen.queryByText('Connected')).not.toBeInTheDocument()
+
+  await global.JM_WEBSOCKET_SERVER_MOCK.connected
+
+  expect(screen.queryByText('Disconnected')).not.toBeInTheDocument()
+  expect(screen.getByText('Connected')).toBeInTheDocument()
+  expect(screen.getByText('•').classList.contains('text-success')).toBe(true)
+  expect(screen.getByText('•').classList.contains('text-danger')).toBe(false)
 })
