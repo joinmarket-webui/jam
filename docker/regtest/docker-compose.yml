@@ -2,6 +2,7 @@ version: "3"
 
 services:
   nginx:
+    container_name: jm_regtest_nginx_test_basepath
     image: nginx
     volumes:
       - ./dockerfile-deps/joinmarket/nginx:/etc/nginx/templates
