@@ -5,7 +5,7 @@ services:
     container_name: jm_regtest_nginx_test_basepath
     image: nginx
     volumes:
-      - ./dockerfile-deps/joinmarket/nginx:/etc/nginx/templates
+      - ./dockerfile-deps/nginx:/etc/nginx/templates
     ports:
       - "8000:80"
     extra_hosts:

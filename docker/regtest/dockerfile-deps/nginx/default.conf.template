@@ -8,6 +8,20 @@
 server {
     listen 80;
 
+    location /joinmarket/extrapath/jmws {
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Authorization "";
+
+        # allow 10m without socket activity (default is 60 sec)
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+
+        proxy_pass http://host.docker.internal:3000/joinmarket/jmws;
+    }
+
     location /joinmarket/extrapath {
         proxy_pass http://host.docker.internal:3000/joinmarket;
     }
