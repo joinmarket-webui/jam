@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="docs/assets/readme-header-dark.svg#gh-light-mode-only">
-  <img src="docs/assets/readme-header-light.svg#gh-dark-mode-only">
+  <img src="docs/assets/readme-header-dark.svg#gh-light-mode-only" alt="Jam – A friendly UI for JoinMarket">
+  <img src="docs/assets/readme-header-light.svg#gh-dark-mode-only" alt="Jam – A friendly UI for JoinMarket">
 </div>
 
 <p align="center">
@@ -30,8 +30,8 @@ This project builds upon work done by [Shobhitaa](https://github.com/shobhitaa),
 ## 📸
 
 <div align="center">
-  <img src="docs/assets/screenshot-light.png#gh-light-mode-only" width="80%">
-  <img src="docs/assets/screenshot-dark.png#gh-dark-mode-only" width="80%">
+  <img src="docs/assets/screenshot-light.png#gh-light-mode-only" width="80%" alt="Jam Screenshot">
+  <img src="docs/assets/screenshot-dark.png#gh-dark-mode-only" width="80%" alt="Jam Screenshot">
 </div>
 
 ## 📦 Integrations
