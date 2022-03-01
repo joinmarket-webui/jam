@@ -22,6 +22,7 @@
     "http-proxy-middleware": "^2.0.1",
     "husky": "^7.0.4",
     "jest-watch-typeahead": "^0.6.5",
+    "jest-websocket-mock": "^2.3.0",
     "lint-staged": "^12.3.1",
     "moving-letters": "^1.0.1",
     "nth-check": ">=2.0.1",
@@ -76,5 +77,5 @@
   },
   "jest": {
     "clearMocks": true
-   }
+  }
 }
