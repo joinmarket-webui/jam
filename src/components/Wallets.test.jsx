@@ -25,10 +25,6 @@ const AllTheProviders = ({ children }) => {
   )
 }
 
-beforeEach(() => {
-  jest.clearAllMocks()
-})
-
 it('Should render without errors', () => {
   apiMock.getWalletAll.mockResolvedValueOnce(new Promise((r) => setTimeout(r, 1_000)))
 

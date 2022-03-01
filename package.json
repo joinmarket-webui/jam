@@ -73,5 +73,8 @@
   },
   "lint-staged": {
     "src/**/*.{js,jsx,json,css,md}": "prettier --no-error-on-unmatched-pattern --write"
-  }
+  },
+  "jest": {
+    "clearMocks": true
+   }
 }
