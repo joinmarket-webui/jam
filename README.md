@@ -53,11 +53,6 @@ To get information on how to connect to the JoinMarket Web UI run:
 config.scripts/bonus.joinmarket-webui.sh menu
 ```
 
-Unfortunately, the Raspiblitz v1.7.2 integration is buggy. Fixes [^1][^2] are underway but not yet released.
-
-[^1]: https://github.com/rootzoll/raspiblitz/pull/2987
-[^2]: https://github.com/rootzoll/raspiblitz/pull/2988
-
 We're aiming for a more stable version to be available as a one-click app install with [RaspiBlitz v1.8.0](https://github.com/rootzoll/raspiblitz/issues/2891).
 
 ### [Umbrel](https://getumbrel.com/)
