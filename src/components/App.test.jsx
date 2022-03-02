@@ -23,17 +23,6 @@ const AllTheProviders = ({ children }) => {
   )
 }
 
-const addToAppSettings = () => {
-  global.localStorage.setItem(
-    global.JM.SETTINGS_STORE_KEY,
-    JSON.stringify(
-      Object.assign({}, global.localStorage.getItem(global.JM.SETTINGS_STORE_KEY) || {}, {
-        showOnboarding: false,
-      })
-    )
-  )
-}
-
 it('should display Onboarding screen initially', () => {
   act(() => {
     render(<App />, {
@@ -57,7 +46,7 @@ it('should display Onboarding screen initially', () => {
 })
 
 it('should display Wallets screen directly when Onboarding screen has been shown', () => {
-  addToAppSettings({ showOnboarding: false })
+  global.__DEV__.addToAppSettings({ showOnboarding: false })
 
   act(() => {
     render(<App />, {
@@ -77,7 +66,7 @@ it('should display Wallets screen directly when Onboarding screen has been shown
 })
 
 it('should display a modal with alpha warning information', () => {
-  addToAppSettings({ showOnboarding: false })
+  global.__DEV__.addToAppSettings({ showOnboarding: false })
 
   act(() => {
     render(<App />, {
@@ -100,7 +89,7 @@ it('should display a modal with alpha warning information', () => {
 })
 
 it('should display a websocket connection indicator', async () => {
-  addToAppSettings({ showOnboarding: false })
+  global.__DEV__.addToAppSettings({ showOnboarding: false })
 
   act(() => {
     render(<App />, {
@@ -113,7 +102,7 @@ it('should display a websocket connection indicator', async () => {
   expect(screen.getByText('Disconnected')).toBeInTheDocument()
   expect(screen.queryByText('Connected')).not.toBeInTheDocument()
 
-  await global.JM_WEBSOCKET_SERVER_MOCK.connected
+  await global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.connected
 
   expect(screen.queryByText('Disconnected')).not.toBeInTheDocument()
   expect(screen.getByText('Connected')).toBeInTheDocument()

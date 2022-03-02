@@ -10,7 +10,20 @@ global.JM = {
   PUBLIC_PATH: '',
 }
 
-global.JM_WEBSOCKET_SERVER_MOCK = new WebSocketServer('ws://localhost/jmws', { jsonProtocol: true })
+global.__DEV__ = {}
+
+global.__DEV__.addToAppSettings = () => {
+  global.localStorage.setItem(
+    global.JM.SETTINGS_STORE_KEY,
+    JSON.stringify(
+      Object.assign({}, global.localStorage.getItem(global.JM.SETTINGS_STORE_KEY) || {}, {
+        showOnboarding: false,
+      })
+    )
+  )
+}
+
+global.__DEV__.JM_WEBSOCKET_SERVER_MOCK = new WebSocketServer('ws://localhost/jmws', { jsonProtocol: true })
 
 afterEach(() => {
   // gracefully close all open connections and reset the environment between test runs
@@ -18,5 +31,5 @@ afterEach(() => {
 })
 
 afterAll(() => {
-  global.JM_WEBSOCKET_SERVER_MOCK.close()
+  global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.close()
 })
