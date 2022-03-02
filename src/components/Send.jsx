@@ -113,6 +113,29 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   )
 }
 
+const enhanceTakerErrorMessageIfPossible = async (requestContext, httpStatus, errorMessage) => {
+  const configExists = (section, field) => Api.postConfigGet(requestContext, { section, field }).then((res) => res.ok)
+
+  const isConfigVarError = httpStatus === 409 && errorMessage === 'Action cannot be performed, config vars are not set.'
+  if (isConfigVarError) {
+    const maxFeeSettingsPresent = await Promise.all([
+      configExists('POLICY', 'max_cj_fee_rel'),
+      configExists('POLICY', 'max_cj_fee_abs'),
+    ])
+      .then((arr) => arr.every((e) => e === true))
+      .catch(() => false)
+
+    if (!maxFeeSettingsPresent) {
+      return `
+        Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be defined in your configuration in order to send collaborative transactions. 
+        Consider adding them to your config manually.
+      `
+    }
+  }
+
+  return errorMessage
+}
+
 export default function Send({ makerRunning, coinjoinInProcess }) {
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
@@ -182,7 +205,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
           })
 
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading config value failed.'))))
+      .then((res) =>
+        res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading config value "minimum_makers" failed.'))
+      )
       .then((data) => {
         const minimumMakers = parseInt(data.configvalue, 10)
         setMinNumCollaborators(minimumMakers)
@@ -195,7 +220,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(() => setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [wallet, setWalletInfo, walletInfo])
+  }, [wallet, walletInfo, setWalletInfo])
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name: walletName, token } = wallet
@@ -229,13 +254,13 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   }
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
-    const { name: walletName, token } = wallet
+    const requestContext = { walletName: wallet.name, token: wallet.token }
 
     setAlert(null)
     setIsSending(true)
     let success = false
     try {
-      const res = await Api.postCoinjoin({ walletName, token }, { account, destination, amount_sats, counterparties })
+      const res = await Api.postCoinjoin(requestContext, { account, destination, amount_sats, counterparties })
       if (res.ok) {
         const data = await res.json()
         console.log(data)
@@ -243,7 +268,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         success = true
       } else {
         const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
+        const displayMessage = await enhanceTakerErrorMessageIfPossible(requestContext, res.status, message)
+
+        setAlert({ variant: 'danger', message: displayMessage })
       }
     } catch (e) {
       setAlert({ variant: 'danger', message: e.message })
