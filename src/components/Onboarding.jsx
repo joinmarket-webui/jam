@@ -80,8 +80,8 @@ export default function Onboarding() {
               rel="noopener noreferrer"
               className="link-secondary"
             >
-              report an issue
-            </a>{' '}
+              Help us improve the project on GitHub.
+            </a>
             on GitHub.
           </div>
         </div>
