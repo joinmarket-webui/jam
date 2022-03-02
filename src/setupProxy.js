@@ -1,9 +1,12 @@
 const { createProxyMiddleware } = require('http-proxy-middleware')
 
+const { PUBLIC_URL = '' } = process.env
+
 module.exports = (app) => {
   app.use(
-    createProxyMiddleware('/api/', {
+    createProxyMiddleware(`${PUBLIC_URL}/api/`, {
       target: 'https://localhost:28183',
+      pathRewrite: { [`^${PUBLIC_URL}`]: '' },
       changeOrigin: true,
       secure: false,
       ws: false,
@@ -17,9 +20,9 @@ module.exports = (app) => {
 
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md#websocket
   app.use(
-    createProxyMiddleware('/jmws', {
+    createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
       target: 'https://localhost:28283',
-      pathRewrite: { '^/jmws': '' },
+      pathRewrite: { [`^${PUBLIC_URL}/jmws`]: '' },
       changeOrigin: true,
       secure: false,
       ws: true,

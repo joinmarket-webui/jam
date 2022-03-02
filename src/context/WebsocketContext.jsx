@@ -17,7 +17,7 @@ const connectionRetryDelayLinear = (attempt = 0) => {
 }
 
 // path that will be proxied to the backend server
-const WEBSOCKET_ENDPOINT_PATH = '/jmws'
+const WEBSOCKET_ENDPOINT_PATH = `${window.JM.PUBLIC_PATH}/jmws`
 
 // possible values for property `coinjoin_state` in websocket messages
 const CJ_STATE_TAKER_RUNNING = 0
