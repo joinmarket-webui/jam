@@ -73,7 +73,7 @@ export default function Onboarding() {
         <div className="mt-4 text-secondary text-center">
           <div className="fw-bolder">Warning</div>
           <div>
-                While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.
+            While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.
             <a
               href="https://github.com/joinmarket-webui/joinmarket-webui/issues"
               target="_blank"
