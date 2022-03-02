@@ -1,27 +1,11 @@
 import React from 'react'
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
 
-import { BrowserRouter } from 'react-router-dom'
-
-import { SettingsProvider } from '../context/SettingsContext'
-import { WalletProvider } from '../context/WalletContext'
-import { WebsocketProvider } from '../context/WebsocketContext'
+import { AllTheProviders } from '../__util__/AllTheProviders'
 
 import App from './App'
-
-const AllTheProviders = ({ children }) => {
-  return (
-    <BrowserRouter>
-      <SettingsProvider>
-        <WalletProvider>
-          <WebsocketProvider>{children}</WebsocketProvider>
-        </WalletProvider>
-      </SettingsProvider>
-    </BrowserRouter>
-  )
-}
 
 it('should display Onboarding screen initially', () => {
   act(() => {

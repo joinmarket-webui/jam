@@ -2,28 +2,12 @@ import React from 'react'
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 
-import { BrowserRouter } from 'react-router-dom'
-
-import { SettingsProvider } from '../context/SettingsContext'
-import { WalletProvider } from '../context/WalletContext'
-import { WebsocketProvider } from '../context/WebsocketContext'
+import * as apiMock from '../libs/JmWalletApi'
+import { AllTheProviders } from '../__util__/AllTheProviders'
 
 import Wallets from './Wallets'
-import * as apiMock from '../libs/JmWalletApi'
 
 jest.mock('../libs/JmWalletApi')
-
-const AllTheProviders = ({ children }) => {
-  return (
-    <BrowserRouter>
-      <SettingsProvider>
-        <WalletProvider>
-          <WebsocketProvider>{children}</WebsocketProvider>
-        </WalletProvider>
-      </SettingsProvider>
-    </BrowserRouter>
-  )
-}
 
 it('should render without errors', () => {
   apiMock.getWalletAll.mockResolvedValueOnce(new Promise((r) => setTimeout(r, 1_000)))
