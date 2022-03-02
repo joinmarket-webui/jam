@@ -19,7 +19,7 @@
 
 ---
 
-Jam is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) with a focus on user-friendliness.
+Jam is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) with focus on user-friendliness.
 It aims to provide sensible defaults and be easy to use for beginners while still providing the features advanced users expect.
 
 - 💬 Join our [Telegram group](https://t.me/JoinMarketWebUI).
