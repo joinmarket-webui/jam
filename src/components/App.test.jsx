@@ -34,7 +34,7 @@ const addToAppSettings = () => {
   )
 }
 
-it('Display Onboarding screen initially', () => {
+it('should display Onboarding screen initially', () => {
   act(() => {
     render(<App />, {
       wrapper: AllTheProviders,
@@ -56,7 +56,7 @@ it('Display Onboarding screen initially', () => {
   expect(screen.getByText('Your wallets')).toBeInTheDocument()
 })
 
-it('Display Wallets screen after Onboarding screen', () => {
+it('should display Wallets screen directly when Onboarding screen has been shown', () => {
   addToAppSettings({ showOnboarding: false })
 
   act(() => {
@@ -76,7 +76,7 @@ it('Display Wallets screen after Onboarding screen', () => {
   expect(screen.getByText('Twitter')).toBeInTheDocument()
 })
 
-it('Alpha warning modal can be displayed', () => {
+it('should display a modal with alpha warning information', () => {
   addToAppSettings({ showOnboarding: false })
 
   act(() => {
@@ -99,7 +99,7 @@ it('Alpha warning modal can be displayed', () => {
   expect(screen.getByText('Fine with me.')).toBeInTheDocument()
 })
 
-it('Connection indicator represents state of websocket connection', async () => {
+it('should display a websocket connection indicator', async () => {
   addToAppSettings({ showOnboarding: false })
 
   act(() => {

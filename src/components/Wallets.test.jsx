@@ -25,7 +25,7 @@ const AllTheProviders = ({ children }) => {
   )
 }
 
-it('Should render without errors', () => {
+it('should render without errors', () => {
   apiMock.getWalletAll.mockResolvedValueOnce(new Promise((r) => setTimeout(r, 1_000)))
 
   act(() => {
@@ -39,7 +39,7 @@ it('Should render without errors', () => {
   expect(screen.getByText('Create new wallet')).toBeInTheDocument()
 })
 
-it('Should display error message when loading wallets fails', async () => {
+it('should display error message when loading wallets fails', async () => {
   apiMock.getWalletAll.mockResolvedValueOnce({
     ok: false,
   })
@@ -59,7 +59,7 @@ it('Should display error message when loading wallets fails', async () => {
   expect(screen.getByText('Create new wallet')).toBeInTheDocument()
 })
 
-it('Should display big call-to-action button if no wallet has been created yet', async () => {
+it('should display big call-to-action button if no wallet has been created yet', async () => {
   apiMock.getWalletAll.mockResolvedValueOnce({
     ok: true,
     json: () => Promise.resolve({ wallets: [] }),
@@ -85,7 +85,7 @@ it('Should display big call-to-action button if no wallet has been created yet',
   expect(callToActionButtonAfter.classList.contains('btn-lg')).toBe(true)
 })
 
-it('Should display login for available wallets', async () => {
+it('should display login for available wallets', async () => {
   apiMock.getWalletAll.mockResolvedValueOnce({
     ok: true,
     json: () => Promise.resolve({ wallets: ['wallet0.jmdat', 'wallet1.jmdat'] }),
