@@ -11,7 +11,7 @@
   },
   "homepage": ".",
   "devDependencies": {
-    "@ibunker/bitcoin-react": "^0.1.13-cd",
+    "qrcode": "^1.5.0",
     "@popperjs/core": "^2.11.2",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
