@@ -1,6 +1,15 @@
 version: "3"
 
 services:
+  nginx:
+    container_name: jm_regtest_nginx_test_basepath
+    image: nginx
+    volumes:
+      - ./dockerfile-deps/nginx:/etc/nginx/templates
+    ports:
+      - "8000:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   bitcoind:
     container_name: jm_regtest_bitcoind

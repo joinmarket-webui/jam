@@ -132,21 +132,22 @@ export default function Receive({ currentWallet }) {
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         {showSettings && (
           <>
-            <rb.Form.Group className="mt-4" controlId="account">
-              <rb.Form.Label>Choose {settings.useAdvancedWalletMode ? 'account' : 'privacy level'}</rb.Form.Label>
-              <rb.Form.Select
-                defaultValue={account}
-                onChange={(e) => setAccount(parseInt(e.target.value, 10))}
-                required
-                disabled={!settings.useAdvancedWalletMode}
-              >
-                {ACCOUNTS.map((val) => (
-                  <option key={val} value={val}>
-                    {settings.useAdvancedWalletMode ? 'Account' : 'Privacy level'} {val}
-                  </option>
-                ))}
-              </rb.Form.Select>
-            </rb.Form.Group>
+            {settings.useAdvancedWalletMode && (
+              <rb.Form.Group className="mt-4" controlId="account">
+                <rb.Form.Label>Choose account</rb.Form.Label>
+                <rb.Form.Select
+                  defaultValue={account}
+                  onChange={(e) => setAccount(parseInt(e.target.value, 10))}
+                  required
+                >
+                  {ACCOUNTS.map((val) => (
+                    <option key={val} value={val}>
+                      Account {val}
+                    </option>
+                  ))}
+                </rb.Form.Select>
+              </rb.Form.Group>
+            )}
             <rb.Form.Group className="my-4" controlId="amountSats">
               <rb.Form.Label>Amount to request in sats</rb.Form.Label>
               <rb.Form.Control
