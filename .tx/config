@@ -1,0 +1,15 @@
+[main]
+host = https://www.transifex.com
+
+[o:joinmarket:p:joinmarket-web-ui:r:jam]
+file_filter  = src/locales/<lang>/translation.json
+source_file  = src/locales/en/translation.json
+type         = KEYVALUEJSON
+minimum_perc = 0
+
+[o:joinmarket:p:joinmarket-web-ui:r:joinmarket-web-ui]
+file_filter  = src/locales/<lang>/translation.json
+source_file  = src/locales/en/translation.json
+type         = FILELESS
+minimum_perc = 0
+
