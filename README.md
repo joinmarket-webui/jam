@@ -39,30 +39,37 @@ This project builds upon work done by [Shobhitaa](https://github.com/shobhitaa),
 We're aiming to make Jam available for different node systems.
 If your node of choice is missing, feel free to integrate it and let us know so we can add it here.
 
-### [RaspiBlitz](https://github.com/rootzoll/raspiblitz)
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><img src="docs/assets/raspiblitz-dark.svg#gh-light-mode-only" height="50px" alt="RaspiBlitz Logo" /><img src="docs/assets/raspiblitz-light.svg#gh-dark-mode-only" width="45px" alt="RaspiBlitz Logo" /></th>
+<th style="text-align:center"><img src="docs/assets/umbrel.svg" width="45px" alt="Umbrel Logo" /></th>
+<th style="text-align:center"><img src="docs/assets/citadel.png" width="45px" alt="Citadel Logo" /></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><a href="https://github.com/rootzoll/raspiblitz">RaspiBlitz</a>: v1.7.2*</td>
+<td style="text-align:center"><a href="https://getumbrel.com">Umbrel</a>: v0.4.15</td>
+<td style="text-align:center"><a href="https://runcitadel.space">Citadel</a>: v0.0.1</td>
+</tr>
+</tbody>
+</table>
 
-The alpha version of Jam is [available as CLI install in RaspiBlitz v1.7.2](https://github.com/rootzoll/raspiblitz/pull/2747). To install it, exit the Raspiblitz menu and run:
+\*Jam is [available as CLI install in RaspiBlitz v1.7.2](https://github.com/rootzoll/raspiblitz/pull/2747). To install it, exit the Raspiblitz menu and run:
 
 ```sh
 patch
 config.scripts/bonus.joinmarket-webui.sh on
 ```
 
-To get information on how to connect to the JoinMarket Web UI run:
+To get information on how to connect to Jam run:
 
 ```sh
 config.scripts/bonus.joinmarket-webui.sh menu
 ```
 
 We're aiming for a more stable version to be available as a one-click app install with [RaspiBlitz v1.8.0](https://github.com/rootzoll/raspiblitz/issues/2891).
-
-### [Umbrel](https://getumbrel.com/)
-
-Umbrel integration is [work in progress](https://github.com/getumbrel/umbrel/pull/1216).
-
-### [Citadel](https://runcitadel.space/)
-
-Citadel integration is [work in progress](https://github.com/runcitadel/apps/pull/9).
 
 ## 🍊 Features
 
