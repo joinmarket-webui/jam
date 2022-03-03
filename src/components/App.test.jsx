@@ -59,16 +59,14 @@ it('should display a modal with alpha warning information', () => {
   })
 
   expect(screen.getByText('Read this before using.')).toBeInTheDocument()
-  expect(
-    screen.queryByText(/While JoinMarket is tried and tested, this user interface is not./)
-  ).not.toBeInTheDocument()
+  expect(screen.queryByText(/While JoinMarket is tried and tested, Jam is not./)).not.toBeInTheDocument()
 
   act(() => {
     const readThis = screen.getByText('Read this before using.')
     user.click(readThis)
   })
 
-  expect(screen.getByText(/While JoinMarket is tried and tested, this user interface is not./)).toBeInTheDocument()
+  expect(screen.getByText(/While JoinMarket is tried and tested, Jam is not./)).toBeInTheDocument()
   expect(screen.getByText('Fine with me.')).toBeInTheDocument()
 })
 
