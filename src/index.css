@@ -481,10 +481,6 @@ main {
   opacity: 100%;
 }
 
-.qr-container h5 {
-  display: none;
-}
-
 /* Boostrap overrides */
 
 h2 {
