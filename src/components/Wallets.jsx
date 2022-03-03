@@ -17,9 +17,7 @@ export default function Wallets({ startWallet, stopWallet }) {
   const [alert, setAlert] = useState(
     currentWallet?.name && {
       variant: 'info',
-      message: `There can be only one active wallet. If you want to open another wallet, please lock ${walletDisplayName(
-        currentWallet.name
-      )} first.`,
+      message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
       dismissible: true,
     }
   )
@@ -29,7 +27,9 @@ export default function Wallets({ startWallet, stopWallet }) {
 
     setIsLoading(true)
     Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallets failed.'))))
+      .then((res) =>
+        res.ok ? res.json() : Promise.reject(new Error(res.message || t('wallets.error_loading_failed')))
+      )
       .then((data) => {
         const { wallets = [] } = data
         if (currentWallet) {
@@ -55,14 +55,14 @@ export default function Wallets({ startWallet, stopWallet }) {
     <div className="wallets">
       <PageTitle
         title={t('wallets.title')}
-        subtitle={walletList?.length === 0 ? 'It looks like you do not have a wallet, yet.' : null}
+        subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : null}
         center={true}
       />
       {alert && <Alert {...alert} />}
       {isLoading && (
         <div className="d-flex justify-content-center align-items-center">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          Loading wallets
+          {t('wallets.text_loading')}
         </div>
       )}
       {walletList?.map((wallet, index) => (
@@ -83,7 +83,7 @@ export default function Wallets({ startWallet, stopWallet }) {
           to="/create-wallet"
           className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
         >
-          Create new wallet
+          {t('wallets.button_new_wallet')}
         </Link>
       </div>
     </div>
