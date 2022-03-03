@@ -33,7 +33,7 @@ const createWebSocket = () => {
     console.error('websocket error', error)
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV === 'development') {
     websocket.onopen = () => {
       console.debug('websocket connection openend')
     }

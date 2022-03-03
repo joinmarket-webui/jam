@@ -60,7 +60,7 @@ export default function Wallets({ startWallet, stopWallet }) {
       {isLoading && (
         <div className="d-flex justify-content-center align-items-center">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          Loading wallets
+          <span>Loading wallets</span>
         </div>
       )}
       {walletList?.map((wallet, index) => (
