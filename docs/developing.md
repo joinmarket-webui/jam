@@ -111,7 +111,7 @@ Host raspiblitz
   LocalForward 28183 localhost:28183
 ```
 
-### 💻 Download and Install the Web UI
+### 💻 Download, Install, Jam
 
 In short:
 

@@ -1,8 +1,8 @@
 {
-  "name": "joinmarket-webui",
+  "name": "jam",
   "version": "0.0.3",
   "private": true,
-  "description": "JoinMarket Web UI",
+  "description": "A friendly UI for JoinMarket",
   "repository": "git@github.com:joinmarket-webui/joinmarket-webui.git",
   "license": "MIT",
   "engines": {
