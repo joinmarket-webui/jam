@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-export JM_onion_serving_host="$(/sbin/ip route | awk '/src/ { print $9 }')"
+export JM_ONION_SERVING_HOST
+JM_ONION_SERVING_HOST="$(/sbin/ip route|awk '/src/ { print $9 }')"
 
 # First we restore the default cfg as created by wallet-tool.py generate
 if ! [ -f "$CONFIG" ]; then
@@ -25,17 +26,17 @@ fi
 mkdir -p "${DATADIR}/logs"
 
 # auto start services
-while read p; do
+while read -r p; do
     [[ "$p" == "" ]] && continue
     [[ "$p" == "#"* ]] && continue
     echo "Auto start: $p"
     file_path="/etc/supervisor/conf.d/$p.conf"
     if [ -f "$file_path" ]; then
-      sed -i 's/autostart=false/autostart=true/g' $file_path
+      sed -i 's/autostart=false/autostart=true/g' "$file_path"
     else
       echo "$file_path not found"
     fi
-done <$AUTO_START
+done < "$AUTO_START"
 
 declare -A jmenv
 while IFS='=' read -r -d '' envkey parsedval; do
@@ -60,7 +61,7 @@ if [ "${jmenv['network']}" == "regtest" ]; then
 fi
 
 # For every env variable JM_FOO=BAR, replace the default configuration value of 'foo' by 'BAR'
-for key in ${!jmenv[@]}; do
+for key in "${!jmenv[@]}"; do
     val=${jmenv[${key}]}
     sed -i "s/^$key =.*/$key = $val/g" "$CONFIG" || echo "Couldn't set : $key = $val, please modify $CONFIG manually"
 done

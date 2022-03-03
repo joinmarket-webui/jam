@@ -118,8 +118,8 @@ parse_params "$@"
 
 msg "Trying to fund wallet $wallet_name.."
 
-[ -z $(is_docker_container_running "jm_regtest_bitcoind") ] && die "Please make sure bitcoin container 'jm_regtest_bitcoind' is running."
-[ -z $(is_docker_container_running "$container") ] && die "Please make sure joinmarket container '$container' is running."
+[ -z "$(is_docker_container_running "jm_regtest_bitcoind")" ] && die "Please make sure bitcoin container 'jm_regtest_bitcoind' is running."
+[ -z "$(is_docker_container_running "$container")" ] && die "Please make sure joinmarket container '$container' is running."
 
 
 verify_no_open_session_or_throw "$base_url"
@@ -198,7 +198,7 @@ msg_success "Successfully locked wallet $wallet_name."
 # --------------------------
 # generate new blocks with rewards to wallet
 msg "Generating $blocks blocks with rewards to $address"
-. "$script_dir/mine-block.sh" $blocks $address &>/dev/null
+. "$script_dir/mine-block.sh" "$blocks" "$address" &>/dev/null
 
 if [ "$unmatured" = true ]; then
   msg_warn "Block rewards are not yet matured and will not be immediately spendable"

@@ -54,7 +54,7 @@ fi
 
 is_docker_container_running() {
   [ -z "${1-}" ] && die "is_docker_container_running: Missing required parameter: name"
-  echo $(docker ps --filter "name=^/${1-}$" --filter status=running -q)
+  echo "$(docker ps --filter "name=^/${1-}$" --filter status=running -q)"
 }
 
 # --------------------------
@@ -77,7 +77,7 @@ unlock_wallet() {
     # param "--insecure": Is needed because a self-signed certificate is used in joinmarket regtest container
     # param "--silent": Don't show progress meter or error messages (errors are reactivated with "--show-error").
     # param "--show-error": When used with -s, --silent, it makes curl show an error message if it fails.
-    local unlock_result=$(curl "$base_url/api/v1/wallet/$wallet_name/unlock" --silent --show-error --insecure --data $unlock_request_payload | jq ".")
+    local unlock_result="$(curl "$base_url/api/v1/wallet/$wallet_name/unlock" --silent --show-error --insecure --data "$unlock_request_payload" | jq ".")"
 
     local unlock_result_error_msg=$(jq -r '. | select(.message != null) | .message' <<< "$unlock_result")
     if [ "$unlock_result_error_msg" != "" ]; then
@@ -134,7 +134,7 @@ create_wallet() {
     local wallet_password=${3:-}
     local create_request_payload="{\"password\":\"$wallet_password\",\"walletname\":\"$wallet_name\",\"wallettype\":\"sw-fb\"}"
 
-    local create_result=$(curl "$base_url/api/v1/wallet/create" --silent --show-error --insecure --data $create_request_payload | jq ".")
+    local create_result="$(curl "$base_url/api/v1/wallet/create" --silent --show-error --insecure --data "$create_request_payload" | jq ".")"
 
     local create_result_error_msg=$(jq -r '. | select(.message != null) | .message' <<< "$create_result")
     if [ "$create_result_error_msg" != "" ]; then
@@ -181,8 +181,8 @@ fetch_new_address() {
 fetch_available_wallets() {
     local base_url=${1:-}
 
-    local wallet_all_result=$(curl "$base_url/api/v1/wallet/all" --silent --show-error --insecure | jq ".")
-    local available_wallets=$(jq -r '.wallets' <<< "$wallet_all_result")
+    local wallet_all_result="$(curl "$base_url/api/v1/wallet/all" --silent --show-error --insecure | jq ".")"
+    local available_wallets="$(jq -r '.wallets' <<< "$wallet_all_result")"
 
     echo "$available_wallets"
 }
@@ -210,8 +210,8 @@ verify_no_open_session_or_throw() {
       die "Could not connect to joinmarket. Please make sure jmwalletd is running inside container."
     fi
 
-    [ $(jq -r '.session' <<< "$session_result") != "false" ] && die "Please make sure no session is active."
-    [ $(jq -r '.wallet_name' <<< "$session_result") != "None" ] && die "Please make sure no wallet is active."
+    [ "$(jq -r '.session' <<< "$session_result")" != "false" ] && die "Please make sure no session is active."
+    [ "$(jq -r '.wallet_name' <<< "$session_result")" != "None" ] && die "Please make sure no wallet is active."
 
     return 0
 }
