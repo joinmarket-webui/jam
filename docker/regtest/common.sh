@@ -11,6 +11,9 @@ setup_colors() {
   fi
 }
 
+# setup colors to enable using `msg_*` functions immediately
+setup_colors
+
 msg() {
   echo >&2 -e "${1-}"
 }
@@ -37,6 +40,17 @@ die() {
   exit "$code"
 }
 
+### Check if dependencies are installed.
+################################################################################
+if ! command -v curl &> /dev/null; then
+    die "This script needs 'curl' to run. Consider installing it."
+fi
+if ! command -v jq &> /dev/null; then
+    die "This script needs 'jq' to run. Consider installing it."
+fi
+if ! command -v docker &> /dev/null; then
+    die "This script needs 'docker' to run. Consider installing it."
+fi
 
 is_docker_container_running() {
   [ -z "${1-}" ] && die "is_docker_container_running: Missing required parameter: name"

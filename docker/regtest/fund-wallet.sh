@@ -3,6 +3,11 @@
 set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
+cleanup() {
+  trap - SIGINT SIGTERM ERR EXIT
+  # script cleanup here
+}
+
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 . "$script_dir/common.sh"
@@ -37,11 +42,6 @@ Examples:
 
 EOF
   exit
-}
-
-cleanup() {
-  trap - SIGINT SIGTERM ERR EXIT
-  # script cleanup here
 }
 
 parse_params() {
@@ -112,7 +112,6 @@ parse_params() {
   return 0
 }
 
-setup_colors
 parse_params "$@"
 
 # ----------------------------------------
