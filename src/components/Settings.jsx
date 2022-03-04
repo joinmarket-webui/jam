@@ -104,6 +104,7 @@ export default function Settings({ currentWallet }) {
                 </rb.Dropdown.Item>
               )
             })}
+            <rb.Dropdown.Item href="https://t.me/JoinMarketWebUI">Missing your language? Help us out!</rb.Dropdown.Item>
           </rb.Dropdown.Menu>
         </rb.Dropdown>
       </div>
