@@ -22,14 +22,14 @@ export default function Wallets({ startWallet, stopWallet }) {
     }
   )
 
+  const walletsFailedError = t('wallets.error_loading_failed')
+
   useEffect(() => {
     const abortCtrl = new AbortController()
 
     setIsLoading(true)
     Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || t('wallets.error_loading_failed')))
-      )
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || walletsFailedError))))
       .then((data) => {
         const { wallets = [] } = data
         if (currentWallet) {
@@ -49,7 +49,7 @@ export default function Wallets({ startWallet, stopWallet }) {
       })
 
     return () => abortCtrl.abort()
-  }, [currentWallet])
+  }, [currentWallet, walletsFailedError])
 
   return (
     <div className="wallets">
