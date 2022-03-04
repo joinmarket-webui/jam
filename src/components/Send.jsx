@@ -136,8 +136,8 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const initialNumCollaborators = (minValue) => {
     const defaultNumber = pseudoRandomNumber(8, 10)
 
-    if (defaultNumber < minValue) {
-      return minValue + pseudoRandomNumber(1, 3)
+    if (minValue > 8) {
+      return minValue + pseudoRandomNumber(0, 2)
     }
 
     return defaultNumber
