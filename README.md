@@ -12,9 +12,9 @@
   <span> · </span>
   <a href="#-features">Features</a>
   <span> · </span>
-  <a href="#-installation">Installation</a>
+  <a href="#-running-locally">Installation</a>
   <span> · </span>
-  <a href="#-development">Development</a>
+  <a href="#-participating">Development</a>
 </h3>
 
 ---
