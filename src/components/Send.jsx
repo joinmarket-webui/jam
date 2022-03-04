@@ -11,7 +11,7 @@ import * as Api from '../libs/JmWalletApi'
 // initial value for `minimum_markers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
-// not cryptographically random
+// not cryptographically random. returned number is in range [min, max] (both inclusive).
 const pseudoRandomNumber = (min, max) => {
   return Math.round(Math.random() * (max - min)) + min
 }
@@ -48,7 +48,11 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
     }
   }
 
-  const defaultCollaboratorsSelection = [0, 2, 3, 4, 6].map((val) => val + minNumCollaborators)
+  var defaultCollaboratorsSelection = [8, 9, 10]
+
+  if (numCollaborators > 10) {
+    defaultCollaboratorsSelection = [numCollaborators - 1, numCollaborators, numCollaborators + 1]
+  }
 
   return (
     <rb.Form noValidate className="collaborators-selector">
@@ -131,8 +135,13 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const initialAccount = 0
   const initialAmount = null
   const initialNumCollaborators = (minValue) => {
-    // always suggest a reasonably large number even when the configured minimum is unreasonably low
-    return Math.max(MINIMUM_MAKERS_DEFAULT_VAL, minValue) + pseudoRandomNumber(1, 3)
+    const defaultNumber = pseudoRandomNumber(8, 10)
+
+    if (defaultNumber < minValue) {
+      return minValue + pseudoRandomNumber(1, 3)
+    }
+
+    return defaultNumber
   }
 
   const [destination, setDestination] = useState(initialDestination)
