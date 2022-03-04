@@ -48,7 +48,10 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
     }
   }
 
-  const defaultCollaboratorsSelection = [8, 9, 10]
+  var defaultCollaboratorsSelection = [8, 9, 10]
+  if (minNumCollaborators > 8) {
+    defaultCollaboratorsSelection = [minNumCollaborators, minNumCollaborators + 1, minNumCollaborators + 2]
+  }
 
   return (
     <rb.Form noValidate className="collaborators-selector">
