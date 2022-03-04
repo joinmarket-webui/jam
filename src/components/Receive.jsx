@@ -1,13 +1,12 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
-import { BitcoinQR } from '@ibunker/bitcoin-react'
+import { BitcoinQR } from './BitcoinQR'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { ACCOUNTS } from '../utils'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
-import { satsToBtc } from '../utils'
 import Sprite from './Sprite'
 
 export default function Receive({ currentWallet }) {
@@ -80,11 +79,7 @@ export default function Receive({ currentWallet }) {
         <div className="qr-container">
           <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
             <div className="d-flex justify-content-center">
-              {amount ? (
-                <BitcoinQR bitcoinAddress={address} amount={satsToBtc(amount)} title={address} />
-              ) : (
-                <BitcoinQR bitcoinAddress={address} title={address} />
-              )}
+              <BitcoinQR address={address} sats={amount} />
             </div>
             <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
               <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>
@@ -132,21 +127,22 @@ export default function Receive({ currentWallet }) {
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         {showSettings && (
           <>
-            <rb.Form.Group className="mt-4" controlId="account">
-              <rb.Form.Label>Choose {settings.useAdvancedWalletMode ? 'account' : 'privacy level'}</rb.Form.Label>
-              <rb.Form.Select
-                defaultValue={account}
-                onChange={(e) => setAccount(parseInt(e.target.value, 10))}
-                required
-                disabled={!settings.useAdvancedWalletMode}
-              >
-                {ACCOUNTS.map((val) => (
-                  <option key={val} value={val}>
-                    {settings.useAdvancedWalletMode ? 'Account' : 'Privacy level'} {val}
-                  </option>
-                ))}
-              </rb.Form.Select>
-            </rb.Form.Group>
+            {settings.useAdvancedWalletMode && (
+              <rb.Form.Group className="mt-4" controlId="account">
+                <rb.Form.Label>Choose account</rb.Form.Label>
+                <rb.Form.Select
+                  defaultValue={account}
+                  onChange={(e) => setAccount(parseInt(e.target.value, 10))}
+                  required
+                >
+                  {ACCOUNTS.map((val) => (
+                    <option key={val} value={val}>
+                      Account {val}
+                    </option>
+                  ))}
+                </rb.Form.Select>
+              </rb.Form.Group>
+            )}
             <rb.Form.Group className="my-4" controlId="amountSats">
               <rb.Form.Label>Amount to request in sats</rb.Form.Label>
               <rb.Form.Control

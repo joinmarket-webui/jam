@@ -7,12 +7,11 @@ import { WalletProvider } from './context/WalletContext'
 import { WebsocketProvider } from './context/WebsocketContext'
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import '@ibunker/bitcoin-react/dist/index.css'
 import './index.css'
 import './i18n'
 
 ReactDOM.render(
-  <BrowserRouter>
+  <BrowserRouter basename={window.JM.PUBLIC_PATH}>
     <SettingsProvider>
       <WalletProvider>
         <WebsocketProvider>
