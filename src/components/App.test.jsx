@@ -7,6 +7,18 @@ import { AllTheProviders } from '../__util__/AllTheProviders'
 
 import App from './App'
 
+jest.mock('react-i18next', () => ({
+  ...jest.requireActual('react-i18next'),
+  useTranslation: () => {
+    return {
+      t: (str: string) => str,
+      i18n: {
+        changeLanguage: () => new Promise(() => {}),
+      },
+    }
+  },
+}))
+
 it('should display Onboarding screen initially', () => {
   act(() => {
     render(<App />, {
@@ -26,7 +38,7 @@ it('should display Onboarding screen initially', () => {
     user.click(skipIntro)
   })
 
-  expect(screen.getByText('Your wallets')).toBeInTheDocument()
+  expect(screen.getByText('wallets.title')).toBeInTheDocument()
 })
 
 it('should display Wallets screen directly when Onboarding screen has been shown', () => {
@@ -39,8 +51,8 @@ it('should display Wallets screen directly when Onboarding screen has been shown
   })
 
   // Wallets screen
-  expect(screen.getByText('Your wallets')).toBeInTheDocument()
-  expect(screen.getByText('Create new wallet')).toBeInTheDocument()
+  expect(screen.getByText('wallets.title')).toBeInTheDocument()
+  expect(screen.getByText('wallets.button_new_wallet')).toBeInTheDocument()
 
   // footer
   expect(screen.getByText('Docs')).toBeInTheDocument()
