@@ -64,47 +64,104 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const [userConfirmed, setUserConfirmed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
   const [sensitiveInfoWasRevealed, setSensitiveInfoWasRevealed] = useState(false)
+  const [step, setStep] = useState(0)
+  const [seedBackup, setSeedBackup] = useState(false)
+  const [words, setWords] = useState('')
+  const [feedback, setFeedback] = useState(false)
 
-  return (
-    <div>
-      <div className="mb-4">
-        <div>Wallet Name</div>
-        <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
+  const onSubmit = () => {
+    if (words === createdWallet.seedphrase) {
+      setSeedBackup(true)
+    } else {
+      setFeedback(true)
+    }
+  }
+
+  if (step === 0) {
+    return (
+      <div>
+        <div className="mb-4">
+          <div>Wallet Name</div>
+          <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
+        </div>
+        <div className="mb-4">
+          <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
+        </div>
+        <div className="mb-4">
+          <div>Password</div>
+          <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
+            {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+          </div>
+        </div>
+        <div className="mb-2">
+          <ToggleSwitch
+            label="Reveal sensitive information"
+            onToggle={(isToggled) => {
+              setRevealSensitiveInfo(isToggled)
+              setSensitiveInfoWasRevealed(true)
+            }}
+          />
+        </div>
+        <div className="mb-4">
+          <ToggleSwitch
+            label="I've written down the information above."
+            onToggle={(isToggled) => setUserConfirmed(isToggled)}
+          />
+        </div>
+        <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
+          Next
+        </rb.Button>
       </div>
-      <div className="mb-4">
-        <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
-      </div>
-      <div className="mb-4">
-        <div>Password</div>
-        <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
-          {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+    )
+  } else {
+    return (
+      <div>
+        <div className="fs-4">Confirm seed phrase backup</div>
+        <p className="text-secondary">Enter each word in sequential order with a space in between.</p>
+
+        <rb.Form onSubmit={onSubmit} validated={seedBackup} noValidate>
+          <rb.Form.Control
+            as="textarea"
+            placeholder="Enter your seed phrase"
+            style={{ height: '100px' }}
+            value={words}
+            onChange={(e) => {
+              setFeedback(false)
+              setWords(e.target.value)
+            }}
+            disabled={seedBackup}
+            isInvalid={feedback === true}
+            isValid={seedBackup === true}
+          />
+          <rb.Form.Control.Feedback>Seed phrase confirmed!</rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback type="invalid">Words do not match.</rb.Form.Control.Feedback>
+        </rb.Form>
+        <div className="d-flex mt-3 gap-3">
+          <rb.Button
+            variant="dark"
+            disabled={seedBackup}
+            onClick={() => {
+              setRevealSensitiveInfo(false)
+              setSensitiveInfoWasRevealed(false)
+              setUserConfirmed(false)
+              setStep(0)
+            }}
+          >
+            Back
+          </rb.Button>
+          {seedBackup === false ? (
+            <rb.Button variant="dark" type="submit" onClick={() => onSubmit()}>
+              Verify
+            </rb.Button>
+          ) : (
+            <rb.Button variant="dark" onClick={() => userConfirmed && walletConfirmed()}>
+              Fund wallet
+            </rb.Button>
+          )}
         </div>
       </div>
-      <div className="mb-2">
-        <ToggleSwitch
-          label="Reveal sensitive information"
-          onToggle={(isToggled) => {
-            setRevealSensitiveInfo(isToggled)
-            setSensitiveInfoWasRevealed(true)
-          }}
-        />
-      </div>
-      <div className="mb-4">
-        <ToggleSwitch
-          label="I've written down the information above."
-          onToggle={(isToggled) => setUserConfirmed(isToggled)}
-        />
-      </div>
-      <rb.Button
-        variant="dark"
-        type="submit"
-        disabled={!sensitiveInfoWasRevealed || !userConfirmed}
-        onClick={() => userConfirmed && walletConfirmed()}
-      >
-        Fund wallet
-      </rb.Button>
-    </div>
-  )
+    )
+  }
 }
 
 const Seedphrase = ({ seedphrase, isBlurred = true }) => {
