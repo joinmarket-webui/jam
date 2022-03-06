@@ -122,7 +122,7 @@ const enhanceTakerErrorMessageIfPossible = async (requestContext, httpStatus, er
       configExists('POLICY', 'max_cj_fee_rel'),
       configExists('POLICY', 'max_cj_fee_abs'),
     ])
-      .then((arr) => arr.every((e) => e === true))
+      .then((arr) => arr.every((e) => e))
       .catch(() => false)
 
     if (!maxFeeSettingsPresent) {
