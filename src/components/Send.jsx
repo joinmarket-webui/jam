@@ -127,7 +127,7 @@ const enhanceTakerErrorMessageIfPossible = async (requestContext, httpStatus, er
 
     if (!maxFeeSettingsPresent) {
       return `
-        Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be defined in your configuration in order to send collaborative transactions. 
+        Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. 
         Consider adding them to your config manually.
       `
     }
