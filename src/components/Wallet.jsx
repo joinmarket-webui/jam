@@ -147,7 +147,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                           Locking
                         </>
                       ) : (
-                        'Lock'
+                        <>Lock</>
                       )}
                     </rb.Button>
                   </>
@@ -182,7 +182,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                           Unlocking
                         </>
                       ) : (
-                        'Unlock'
+                        <>Unlock</>
                       )}
                     </rb.Button>
                     <rb.Form.Control.Feedback type="invalid">
