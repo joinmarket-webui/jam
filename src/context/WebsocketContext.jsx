@@ -85,7 +85,7 @@ const WebsocketProvider = ({ children }) => {
       // and will always use the minimum delay between reconnect attempts.
       setConnectionErrorCount(0)
     }
-  }, [isWebsocketHealthy])
+  }, [isWebsocketHealthy, setConnectionErrorCount])
 
   // reconnect handling in case the socket is closed
   useEffect(() => {
