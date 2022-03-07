@@ -5,6 +5,9 @@ import { useCurrentWallet } from './WalletContext'
 const WEBSOCKET_RECONNECT_DELAY_STEP = 1_000
 const WEBSOCKET_RECONNECT_MAX_DELAY = 10_000
 
+// minimum amount of time in milliseconds the connection must stay open to be considered "healthy"
+const WEBSOCKET_CONNECTION_HEALTHY_DURATION = 1_000
+
 // webservers will close a websocket connection on inactivity (e.g nginx default is 60s)
 // specify the time in milliseconds at least one 'keepalive' message is sent
 const WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL = 30_000
@@ -58,6 +61,7 @@ const WebsocketContext = createContext()
 const WebsocketProvider = ({ children }) => {
   const [websocket, setWebsocket] = useState(initialWebsocket)
   const [websocketState, setWebsocketState] = useState(initialWebsocket.readyState)
+  const [isWebsocketHealthy, setIsWebsocketHealthy] = useState(false)
   const setConnectionErrorCount = useState(0)[1]
   const currentWallet = useCurrentWallet()
 
@@ -74,14 +78,31 @@ const WebsocketProvider = ({ children }) => {
     }
   }, [websocket])
 
+  useEffect(() => {
+    if (isWebsocketHealthy) {
+      // connection must be healthy before the error counter can be reset.
+      // otherwise the back-off mechanism assumes connections to be stable
+      // and will always use the minimum delay between reconnect attempts.
+      setConnectionErrorCount(0)
+    }
+  }, [isWebsocketHealthy])
+
   // reconnect handling in case the socket is closed
   useEffect(() => {
-    const onOpen = () => setConnectionErrorCount(0)
+    let assumeHealthyDelayTimer
+    let retryDelayTimer
+    const onOpen = (event) => {
+      assumeHealthyDelayTimer = setTimeout(() => {
+        const stillConnectedToSameSocket = event.currentTarget === websocket
+        setIsWebsocketHealthy(stillConnectedToSameSocket)
+      }, WEBSOCKET_CONNECTION_HEALTHY_DURATION)
+    }
     const onClose = () => {
+      setIsWebsocketHealthy(false)
       setConnectionErrorCount((prev) => {
         const retryDelay = connectionRetryDelayLinear(prev + 1)
         console.log(`Retrying to connect websocket in ${retryDelay}ms`)
-        setTimeout(() => {
+        retryDelayTimer = setTimeout(() => {
           setWebsocket(createWebSocket())
         }, retryDelay)
         return prev + 1
@@ -92,6 +113,8 @@ const WebsocketProvider = ({ children }) => {
     websocket.addEventListener('close', onClose)
 
     return () => {
+      clearTimeout(assumeHealthyDelayTimer)
+      clearTimeout(retryDelayTimer)
       websocket && websocket.removeEventListener('close', onClose)
       websocket && websocket.removeEventListener('open', onOpen)
     }
