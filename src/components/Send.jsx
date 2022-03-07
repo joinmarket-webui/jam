@@ -113,11 +113,11 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   )
 }
 
-const enhanceTakerErrorMessageIfPossible = async (requestContext, httpStatus, errorMessage) => {
+const enhanceTakerErrorMessageIfNecessary = async (requestContext, httpStatus, errorMessage) => {
   const configExists = (section, field) => Api.postConfigGet(requestContext, { section, field }).then((res) => res.ok)
 
-  const isConfigVarError = httpStatus === 409 && errorMessage === 'Action cannot be performed, config vars are not set.'
-  if (isConfigVarError) {
+  const tryEnhanceMessage = httpStatus === 409
+  if (tryEnhanceMessage) {
     const maxFeeSettingsPresent = await Promise.all([
       configExists('POLICY', 'max_cj_fee_rel'),
       configExists('POLICY', 'max_cj_fee_abs'),
@@ -126,10 +126,11 @@ const enhanceTakerErrorMessageIfPossible = async (requestContext, httpStatus, er
       .catch(() => false)
 
     if (!maxFeeSettingsPresent) {
-      return `
+      const maxFeeSettingsMissingMessage = `
         Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. 
         Consider adding them to your config manually.
       `
+      return `${errorMessage} ${maxFeeSettingsMissingMessage}`
     }
   }
 
@@ -268,7 +269,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         success = true
       } else {
         const { message } = await res.json()
-        const displayMessage = await enhanceTakerErrorMessageIfPossible(requestContext, res.status, message)
+        const displayMessage = await enhanceTakerErrorMessageIfNecessary(requestContext, res.status, message)
 
         setAlert({ variant: 'danger', message: displayMessage })
       }
