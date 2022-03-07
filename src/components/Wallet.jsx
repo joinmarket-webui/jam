@@ -26,17 +26,18 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       setIsUnlocking(true)
       try {
         const res = await Api.postWalletUnlock({ walletName }, { password })
+        const json = await res.json()
+        setIsUnlocking(false)
         if (res.ok) {
-          const { walletname: unlockedWalletName, token } = await res.json()
+          const { walletname: unlockedWalletName, token } = json
           startWallet(unlockedWalletName, token)
           navigate('/wallet')
         } else {
-          const { message } = await res.json()
+          const { message } = json
           setAlert({
             variant: 'danger',
             message: message.replace('Wallet', walletName),
           })
-          setIsUnlocking(false)
         }
       } catch (e) {
         setAlert({ variant: 'danger', message: e.message })

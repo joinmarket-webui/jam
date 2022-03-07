@@ -1,6 +1,8 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
+import user from '@testing-library/user-event'
+import * as apiMock from '../libs/JmWalletApi'
 
 import { AllTheProviders } from '../__util__/AllTheProviders'
 
@@ -8,13 +10,28 @@ import Wallet from './Wallet'
 
 jest.mock('../libs/JmWalletApi')
 
+const mockedNavigate = jest.fn()
+jest.mock('react-router-dom', () => {
+  return {
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockedNavigate,
+  }
+})
+
 describe('<Wallet />', () => {
+  const dummyWalletName = 'dummy.jmdat'
+  const dummyToken = 'dummyToken'
+
+  const mockStartWallet = jest.fn()
+  const mockStopWallet = jest.fn()
+  const mockSetAlert = jest.fn()
+
   const setup = ({
     name,
     currentWallet = null,
-    startWallet = () => {},
-    stopWallet = () => {},
-    setAlert = () => {},
+    startWallet = mockStartWallet,
+    stopWallet = mockStopWallet,
+    setAlert = mockSetAlert,
   }) => {
     render(
       <Wallet
@@ -30,10 +47,10 @@ describe('<Wallet />', () => {
     )
   }
 
-  it('should render single inactive wallet without errors', () => {
-    act(() => setup({ name: 'wallet0.jmdat' }))
+  it('should render inactive wallet without errors', () => {
+    act(() => setup({ name: dummyWalletName }))
 
-    expect(screen.getByText('wallet0')).toBeInTheDocument()
+    expect(screen.getByText('dummy')).toBeInTheDocument()
     expect(screen.getByText('Inactive')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
     expect(screen.getByText('Unlock')).toBeInTheDocument()
@@ -41,18 +58,66 @@ describe('<Wallet />', () => {
     expect(screen.queryByText('Lock')).not.toBeInTheDocument()
   })
 
-  it('should render single active wallet without errors', () => {
-    act(() => setup({ name: 'wallet0.jmdat', currentWallet: { name: 'wallet0.jmdat', token: 'ANY_TOKEN' } }))
+  it('should unlock inactive wallet successfully', async () => {
+    apiMock.postWalletUnlock.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ walletname: dummyWalletName, token: dummyToken }),
+    })
 
-    expect(screen.getByText('wallet0')).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument()
-    expect(screen.getByText('Open')).toBeInTheDocument()
-    expect(screen.getByText('Lock')).toBeInTheDocument()
+    act(() => setup({ name: dummyWalletName }))
+
+    expect(screen.getByText('Inactive')).toBeInTheDocument()
+    expect(screen.getByText('Unlock')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
+
+    await act(async () => {
+      user.type(screen.getByPlaceholderText('Password'), 'correct horse battery staple')
+      const unlockWalletButton = screen.getByText('Unlock')
+      user.click(unlockWalletButton)
+
+      await waitFor(() => screen.findByText(/Unlocking/))
+      await waitFor(() => screen.findByText('Unlock'))
+    })
+
+    expect(mockStartWallet).toHaveBeenCalledWith(dummyWalletName, dummyToken)
+    expect(mockedNavigate).toHaveBeenCalledWith('/wallet')
   })
 
-  it('should render single active wallet when token is missing', () => {
-    act(() => setup({ name: 'wallet0.jmdat', currentWallet: { name: 'wallet0.jmdat', token: null } }))
+  it('should render active wallet without errors', () => {
+    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+
+    expect(screen.getByText('dummy')).toBeInTheDocument()
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.getByText('Open')).toBeInTheDocument()
+    expect(screen.getByText('Lock')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument()
+    expect(screen.queryByText('Unlock')).not.toBeInTheDocument()
+  })
+
+  it('should lock active wallet successfully', async () => {
+    apiMock.getWalletLock.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ walletname: dummyWalletName, already_locked: false }),
+    })
+
+    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.getByText('Lock')).toBeInTheDocument()
+
+    await act(async () => {
+      const lockWalletButton = screen.getByText('Lock')
+      user.click(lockWalletButton)
+
+      await waitFor(() => screen.findByText(/Locking/))
+      await waitFor(() => screen.findByText('Lock'))
+    })
+
+    expect(mockStopWallet).toHaveBeenCalled()
+  })
+
+  it('should render active wallet when token is missing', () => {
+    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: null } }))
 
     expect(
       screen.getByText(
@@ -60,7 +125,7 @@ describe('<Wallet />', () => {
       )
     ).toBeInTheDocument()
 
-    expect(screen.getByText('wallet0')).toBeInTheDocument()
+    expect(screen.getByText('dummy')).toBeInTheDocument()
     expect(screen.getByText('Active')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument()
     expect(screen.queryByText('Open')).not.toBeInTheDocument()
