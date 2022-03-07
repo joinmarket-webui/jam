@@ -1,33 +1,18 @@
 import React from 'react'
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
+import { render, screen, waitForElementToBeRemoved } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
 import * as apiMock from '../libs/JmWalletApi'
-import { AllTheProviders } from '../__util__/AllTheProviders'
 
 import Wallets from './Wallets'
 
 jest.mock('../libs/JmWalletApi')
 
-jest.mock('react-i18next', () => ({
-  ...jest.requireActual('react-i18next'),
-  useTranslation: () => {
-    return {
-      t: (str: string) => str,
-      i18n: {
-        changeLanguage: () => new Promise(() => {}),
-      },
-    }
-  },
-}))
-
 it('should render without errors', () => {
   apiMock.getWalletAll.mockResolvedValueOnce(new Promise((r) => setTimeout(r, 1_000)))
 
   act(() => {
-    render(<Wallets />, {
-      wrapper: AllTheProviders,
-    })
+    render(<Wallets />)
   })
 
   expect(screen.getByText('wallets.title')).toBeInTheDocument()
@@ -41,9 +26,7 @@ it('should display error message when loading wallets fails', async () => {
   })
 
   act(() => {
-    render(<Wallets />, {
-      wrapper: AllTheProviders,
-    })
+    render(<Wallets />)
   })
 
   expect(screen.getByText('wallets.title')).toBeInTheDocument()
@@ -62,9 +45,7 @@ it('should display big call-to-action button if no wallet has been created yet',
   })
 
   act(() => {
-    render(<Wallets />, {
-      wrapper: AllTheProviders,
-    })
+    render(<Wallets />)
   })
 
   expect(screen.getByText('wallets.text_loading')).toBeInTheDocument()
@@ -88,9 +69,7 @@ it('should display login for available wallets', async () => {
   })
 
   act(() => {
-    render(<Wallets />, {
-      wrapper: AllTheProviders,
-    })
+    render(<Wallets />)
   })
 
   expect(screen.getByText('wallets.text_loading')).toBeInTheDocument()

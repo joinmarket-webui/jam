@@ -5,7 +5,7 @@ import PageTitle from './PageTitle'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { SATS, BTC } from '../utils'
 import { useTranslation } from 'react-i18next'
-import { supportedLanguages } from '../i18n'
+import languages from '../i18n/languages'
 
 export default function Settings({ currentWallet }) {
   const settings = useSettings()
@@ -93,11 +93,11 @@ export default function Settings({ currentWallet }) {
         <rb.Dropdown>
           <rb.Dropdown.Toggle variant="outline-dark" className="border-0 mb-2 d-inline-flex align-items-center">
             <Sprite symbol="globe" width="24" height="24" className="me-2" />
-            {supportedLanguages.find((lng) => lng.key === i18n.language).description}
+            {languages.find((lng) => lng.key === i18n.language).description}
           </rb.Dropdown.Toggle>
 
           <rb.Dropdown.Menu variant={settings.theme === 'light' ? 'light' : 'dark'}>
-            {supportedLanguages.map((lng, index) => {
+            {languages.map((lng, index) => {
               return (
                 <rb.Dropdown.Item key={index} onClick={() => i18n.changeLanguage(lng.key)}>
                   {lng.description}

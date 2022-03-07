@@ -23,10 +23,13 @@ import { getSession, setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 import Onboarding from './Onboarding'
 
+import { useTranslation } from 'react-i18next'
+
 // interval in milliseconds for periodic session requests
 const SESSION_REQUEST_INTERVAL = 10_000
 
 export default function App() {
+  const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
