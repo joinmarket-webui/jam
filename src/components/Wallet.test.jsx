@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
+import { walletDisplayName } from '../utils'
 
 import { AllTheProviders } from '../__util__/AllTheProviders'
 
@@ -83,6 +84,36 @@ describe('<Wallet />', () => {
     expect(mockedNavigate).toHaveBeenCalledWith('/wallet')
   })
 
+  it('should add alert if unlocking of inactive wallet fails', async () => {
+    const apiErrorMessage = 'ANY_ERROR_MESSAGE with template <Wallet>'
+    apiMock.postWalletUnlock.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ message: apiErrorMessage }),
+    })
+
+    act(() => setup({ name: dummyWalletName }))
+
+    expect(screen.getByText('Inactive')).toBeInTheDocument()
+    expect(screen.getByText('Unlock')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
+
+    await act(async () => {
+      user.type(screen.getByPlaceholderText('Password'), 'correct horse battery staple')
+      const unlockWalletButton = screen.getByText('Unlock')
+      user.click(unlockWalletButton)
+
+      await waitFor(() => screen.findByText(/Unlocking/))
+      await waitFor(() => screen.findByText('Unlock'))
+    })
+
+    expect(mockStartWallet).not.toHaveBeenCalled()
+    expect(mockedNavigate).not.toHaveBeenCalled()
+    expect(mockSetAlert).toHaveBeenCalledWith({
+      variant: 'danger',
+      message: apiErrorMessage.replace('Wallet', dummyWalletName),
+    })
+  })
+
   it('should render active wallet without errors', () => {
     act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
 
@@ -114,6 +145,38 @@ describe('<Wallet />', () => {
     })
 
     expect(mockStopWallet).toHaveBeenCalled()
+    expect(mockSetAlert).toHaveBeenCalledWith({
+      variant: 'success',
+      message: `${walletDisplayName(dummyWalletName)} locked successfully.`,
+      dismissible: true,
+    })
+  })
+
+  it('should add alert if locking active wallet fails', async () => {
+    const apiErrorMessage = 'ANY_ERROR_MESSAGE'
+    apiMock.getWalletLock.mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ message: apiErrorMessage }),
+    })
+
+    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.getByText('Lock')).toBeInTheDocument()
+
+    await act(async () => {
+      const lockWalletButton = screen.getByText('Lock')
+      user.click(lockWalletButton)
+
+      await waitFor(() => screen.findByText(/Locking/))
+      await waitFor(() => screen.findByText('Lock'))
+    })
+
+    expect(mockStopWallet).not.toHaveBeenCalled()
+    expect(mockSetAlert).toHaveBeenCalledWith({
+      variant: 'danger',
+      message: apiErrorMessage,
+    })
   })
 
   it('should render active wallet when token is missing', () => {
