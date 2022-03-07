@@ -82,7 +82,6 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   let seedphrase = createdWallet.seedphrase.split(' ')
 
   const onSubmit = () => {
-    setFeedback(false)
     if (
       wordOne === seedphrase[0] &&
       wordTwo === seedphrase[1] &&
@@ -155,6 +154,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="One"
                   value={wordOne}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordOne(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -175,6 +175,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Two"
                   value={wordTwo}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordTwo(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -197,6 +198,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Three"
                   value={wordThree}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordThree(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -217,6 +219,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Four"
                   value={wordFour}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordFour(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -239,6 +242,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Five"
                   value={wordFive}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordFive(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -259,6 +263,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Six"
                   value={wordSix}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordSix(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -281,6 +286,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Seven"
                   value={wordSeven}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordSeven(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -301,6 +307,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Eight"
                   value={wordEight}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordEight(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -323,6 +330,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Nine"
                   value={wordNine}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordNine(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -343,6 +351,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Ten"
                   value={wordTen}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordTen(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -365,6 +374,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Eleven"
                   value={wordEleven}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordEleven(e.target.value)
                   }}
                   disabled={seedBackup}
@@ -385,6 +395,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
                   placeholder="Twelve"
                   value={wordTwelve}
                   onChange={(e) => {
+                    setFeedback(false)
                     setWordTwelve(e.target.value)
                   }}
                   disabled={seedBackup}
