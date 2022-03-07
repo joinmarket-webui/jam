@@ -8,7 +8,7 @@ import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from 
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 
-// initial value for `minimum_markers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
+// initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
 // not cryptographically random
