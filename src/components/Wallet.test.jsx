@@ -156,6 +156,7 @@ describe('<Wallet />', () => {
     const apiErrorMessage = 'ANY_ERROR_MESSAGE'
     apiMock.getWalletLock.mockResolvedValueOnce({
       ok: false,
+      status: 500, // any other error status than 401
       json: () => Promise.resolve({ message: apiErrorMessage }),
     })
 
@@ -172,7 +173,37 @@ describe('<Wallet />', () => {
       await waitFor(() => screen.findByText('Lock'))
     })
 
+    // on errors other than 401, stopWallet should not have been called
     expect(mockStopWallet).not.toHaveBeenCalled()
+    expect(mockSetAlert).toHaveBeenCalledWith({
+      variant: 'danger',
+      message: apiErrorMessage,
+    })
+  })
+
+  it('should add alert but clear wallet if locking active wallet fails with UNAUTHORIZED', async () => {
+    const apiErrorMessage = 'Invalid credentials.'
+    apiMock.getWalletLock.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: () => Promise.resolve({ message: apiErrorMessage }),
+    })
+
+    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.getByText('Lock')).toBeInTheDocument()
+
+    await act(async () => {
+      const lockWalletButton = screen.getByText('Lock')
+      user.click(lockWalletButton)
+
+      await waitFor(() => screen.findByText(/Locking/))
+      await waitFor(() => screen.findByText('Lock'))
+    })
+
+    // on 401 errors, stopWallet *should* have been called
+    expect(mockStopWallet).toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'danger',
       message: apiErrorMessage,

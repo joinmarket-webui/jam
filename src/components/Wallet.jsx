@@ -46,23 +46,28 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     }
   }
 
-  const lockWallet = async (name) => {
-    if (currentWallet && currentWallet.name !== name) {
-      setAlert({
-        variant: 'warning',
-        message: `${walletDisplayName(name)} is not unlocked.`,
-      })
-    }
-
+  const lockWallet = async () => {
     try {
       const { name: walletName, token } = currentWallet
       setAlert(null)
       setIsLocking(true)
 
       const res = await Api.getWalletLock({ walletName, token })
-      if (res.ok) {
-        const { walletname: lockedWalletName, already_locked } = await res.json()
+      const body = await res.json()
+
+      // on status OK or UNAUTHORIZED, stop the wallet and clear all local
+      // information. token might became invalid or another one has been
+      // issued for the same wallet, etc.
+      // in any case, user has no access to the wallet anymore.
+      if (res.ok || res.status === 401) {
         stopWallet()
+      }
+
+      if (!res.ok) {
+        setAlert({ variant: 'danger', message: body.message })
+      } else {
+        const { walletname: lockedWalletName, already_locked } = body
+
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           message: `${walletDisplayName(lockedWalletName)} ${
@@ -70,9 +75,6 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           }.`,
           dismissible: true,
         })
-      } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
       }
     } catch (e) {
       setAlert({ variant: 'danger', message: e.message })
@@ -96,7 +98,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           unlockWallet(name, password)
           break
         case 'lock':
-          lockWallet(name)
+          lockWallet()
           break
         default:
           break
