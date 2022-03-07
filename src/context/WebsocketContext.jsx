@@ -17,7 +17,7 @@ const connectionRetryDelayLinear = (attempt = 0) => {
 }
 
 // path that will be proxied to the backend server
-const WEBSOCKET_ENDPOINT_PATH = '/jmws'
+const WEBSOCKET_ENDPOINT_PATH = `${window.JM.PUBLIC_PATH}/jmws`
 
 // possible values for property `coinjoin_state` in websocket messages
 const CJ_STATE_TAKER_RUNNING = 0
@@ -33,7 +33,7 @@ const createWebSocket = () => {
     console.error('websocket error', error)
   }
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV === 'development') {
     websocket.onopen = () => {
       console.debug('websocket connection openend')
     }
