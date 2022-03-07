@@ -20,6 +20,9 @@
  * @param {string} token the bearer token
  * @returns an object containing the authorization header
  */
+
+const BASE_PATH = `${window.JM.PUBLIC_PATH}/api`
+
 const Authorization = (token) => {
   return { 'x-jm-authorization': `Bearer ${token}` }
 }
@@ -56,6 +59,13 @@ const postWalletCreate = async ({ walletName: name, password }) => {
 
 const getWalletDisplay = async ({ walletName, token, signal }) => {
   return await fetch(`/api/v1/wallet/${walletName}/display`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
+const getSeed = async ({ walletName, token, signal }) => {
+  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/getseed`, {
     headers: { ...Authorization(token) },
     signal,
   })
@@ -188,4 +198,5 @@ export {
   getYieldgenReport,
   postFreeze,
   postConfigGet,
+  getSeed,
 }
