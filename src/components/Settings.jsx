@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
@@ -10,21 +10,6 @@ import * as Api from '../libs/JmWalletApi'
 
 export default function Settings({ currentWallet }) {
   const [seed, setSeed] = useState('')
-  useEffect(() => {
-    async function getSeedphrase() {
-      const { name: walletName, token } = currentWallet
-      const res = await Api.getSeed({ walletName, token })
-      if (res.ok) {
-        const { seedphrase } = await res.json()
-        setSeed(seedphrase)
-        console.log(seed)
-      } else {
-        console.warn('Could not retrieve seedphrase')
-      }
-    }
-    getSeedphrase()
-  }, [currentWallet])
-
   const [showSeed, setShowSeed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
   const [sensitiveInfoWasRevealed, setSensitiveInfoWasRevealed] = useState(false)
@@ -109,40 +94,29 @@ export default function Settings({ currentWallet }) {
           Use {settings.useAdvancedWalletMode ? 'magic' : 'advanced'} wallet mode
         </rb.Button>
 
-        <rb.Button
-          variant="outline-dark"
-          className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={async (e) => {
-            e.preventDefault()
-
-            const { name: walletName, token } = currentWallet
-            const res = await Api.getSeed({ walletName, token })
-            if (res.ok) {
-              const { seedphrase } = await res.json()
-              console.info(`Seedphrase: ${seedphrase}`)
-            } else {
-              console.warn('Could not retrieve seedphrase')
-            }
-          }}
-        >
-          Log seed to console
-        </rb.Button>
-
         <br />
 
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.preventDefault()
-            setShowSeed(!showSeed)
+            const { name: walletName, token } = currentWallet
+            const res = await Api.getSeed({ walletName, token })
+            if (res.ok) {
+              const { seedphrase } = await res.json()
+              setSeed(seedphrase)
+              setShowSeed(!showSeed)
+            } else {
+              console.warn('Could not retrieve seedphrase')
+            }
           }}
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
           {showSeed ? 'Hide' : 'Show'} seed phrase backup
         </rb.Button>
         {showSeed && (
-          <div>
+          <div style={{ marginLeft: '1rem' }}>
             <div className="mb-4">
               <Seedphrase seedphrase={seed} isBlurred={!revealSensitiveInfo} />
             </div>

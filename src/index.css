@@ -372,12 +372,12 @@ main {
   width: 2ch;
 }
 
-.create-wallet .blurred-text {
+.blurred-text {
   color: transparent;
   text-shadow: 0 0 15px var(--bs-gray-600);
 }
 
-:root[data-theme='dark'] .create-wallet .blurred-text {
+:root[data-theme='dark'] .blurred-text {
   color: transparent;
   text-shadow: 0 0 15px var(--bs-gray-400);
 }

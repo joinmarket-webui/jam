@@ -22,8 +22,6 @@ const BASE_PATH = `${window.JM.PUBLIC_PATH}/api`
  * @returns an object containing the authorization header
  */
 
-const BASE_PATH = `${window.JM.PUBLIC_PATH}/api`
-
 const Authorization = (token) => {
   return { 'x-jm-authorization': `Bearer ${token}` }
 }
