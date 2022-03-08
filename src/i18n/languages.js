@@ -1,5 +1,4 @@
 import en from './locales/en/translation.json'
-// import de from './locales/de/translation.json'
 
 const languages = [
   {
@@ -7,11 +6,6 @@ const languages = [
     description: 'English',
     translation: en,
   },
-  // {
-  //   key: 'de',
-  //   description: 'Deutsch',
-  //   translation: de,
-  // },
 ]
 
 export default languages
