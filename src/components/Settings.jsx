@@ -12,7 +12,6 @@ export default function Settings({ currentWallet }) {
   const [seed, setSeed] = useState('')
   const [showSeed, setShowSeed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
-  const [sensitiveInfoWasRevealed, setSensitiveInfoWasRevealed] = useState(false)
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
 
@@ -102,7 +101,6 @@ export default function Settings({ currentWallet }) {
           onClick={async (e) => {
             e.preventDefault()
             setRevealSensitiveInfo(false)
-            setSensitiveInfoWasRevealed(false)
             const { name: walletName, token } = currentWallet
             const res = await Api.getSeed({ walletName, token })
             if (res.ok) {
@@ -127,7 +125,6 @@ export default function Settings({ currentWallet }) {
                 label="Reveal sensitive information"
                 onToggle={(isToggled) => {
                   setRevealSensitiveInfo(isToggled)
-                  setSensitiveInfoWasRevealed(true)
                 }}
               />
             </div>
