@@ -1,0 +1,10 @@
+{
+  "wallets": {
+    "title": "Deine Wallets",
+    "subtitle_no_wallets": "It looks like you do not have a wallet, yet.",
+    "text_loading": "Loading wallets",
+    "button_new_wallet": "Create new wallet",
+    "alert_wallet_open": "There can be only one active wallet. If you want to open another wallet, please lock '{{ currentWalletName }}' first.",
+    "error_loading_failed": "Loading wallets failed."
+  }
+}
