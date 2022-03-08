@@ -113,7 +113,7 @@ export default function Settings({ currentWallet }) {
           }}
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
-          {showSeed ? 'Hide' : 'Show'} seed phrase backup
+          {showSeed ? 'Hide' : 'Show'} seed phrase
         </rb.Button>
         {showSeed && (
           <div style={{ marginLeft: '1rem' }}>
