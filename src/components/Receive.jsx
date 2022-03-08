@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BitcoinQR } from './BitcoinQR'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
@@ -12,6 +12,7 @@ import Sprite from './Sprite'
 export default function Receive({ currentWallet }) {
   const location = useLocation()
   const settings = useSettings()
+  const inputRef = useRef()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -89,15 +90,15 @@ export default function Receive({ currentWallet }) {
                   data-bs-toggle="tooltip"
                   data-bs-placement="left"
                   onClick={() => {
-                    // might not work on iOS.
-                    navigator.clipboard.writeText(address).then(
-                      () => {
-                        setAddressCopiedFlag(addressCopiedFlag + 1)
-                      },
-                      () => {
-                        setAlert({ variant: 'warning', message: 'Could not copy address.' })
-                      }
-                    )
+                    inputRef.current.select()
+                    const success = document.execCommand('copy')
+
+                    if (!success) {
+                      setAlert({ variant: 'warning', message: 'Could not copy address.' })
+                      return
+                    }
+
+                    setAddressCopiedFlag(addressCopiedFlag + 1)
                   }}
                 >
                   {showAddressCopiedConfirmation ? (
@@ -109,6 +110,16 @@ export default function Receive({ currentWallet }) {
                     'Copy'
                   )}
                 </rb.Button>
+                <input
+                  aria-hidden
+                  ref={inputRef}
+                  defaultValue={address}
+                  style={{
+                    position: 'absolute',
+                    left: '-9999px',
+                    top: '-9999px',
+                  }}
+                />
               </div>
             </rb.Card.Body>
           </rb.Card>
