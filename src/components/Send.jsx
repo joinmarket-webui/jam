@@ -226,7 +226,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(() => setIsLoading(false))
+    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(
+      () => !abortCtrl.signal.aborted && setIsLoading(false)
+    )
 
     return () => abortCtrl.abort()
   }, [wallet, walletInfo, setWalletInfo])
