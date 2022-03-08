@@ -10,8 +10,9 @@ import * as Api from '../libs/JmWalletApi'
 
 export default function Settings({ currentWallet }) {
   const [seed, setSeed] = useState('')
-  const [showSeed, setShowSeed] = useState(false)
+  const [showingSeed, setShowingSeed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
+  const [error, setError] = useState(false)
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
 
@@ -100,22 +101,32 @@ export default function Settings({ currentWallet }) {
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={async (e) => {
             e.preventDefault()
+            setError(false)
             setRevealSensitiveInfo(false)
-            const { name: walletName, token } = currentWallet
-            const res = await Api.getSeed({ walletName, token })
-            if (res.ok) {
-              const { seedphrase } = await res.json()
-              setSeed(seedphrase)
-              setShowSeed(!showSeed)
+            if (!showingSeed) {
+              const { name: walletName, token } = currentWallet
+              const res = await Api.getSeed({ walletName, token })
+              if (res.ok) {
+                const { seedphrase } = await res.json()
+                setSeed(seedphrase)
+                setShowingSeed(!showingSeed)
+              } else {
+                setError(true)
+              }
             } else {
-              console.warn('Could not retrieve seedphrase')
+              setShowingSeed(!showingSeed)
             }
           }}
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
-          {showSeed ? 'Hide' : 'Show'} seed phrase backup
+          {showingSeed ? 'Hide' : 'Show'} seed phrase backup
         </rb.Button>
-        {showSeed && (
+        {error && (
+          <div className="text-danger" style={{ marginLeft: '1rem' }}>
+            Could not retreive seedphrase.
+          </div>
+        )}
+        {showingSeed && (
           <div style={{ marginLeft: '1rem' }}>
             <div className="mb-4">
               <Seedphrase seedphrase={seed} isBlurred={!revealSensitiveInfo} />
