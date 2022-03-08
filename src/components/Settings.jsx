@@ -101,6 +101,8 @@ export default function Settings({ currentWallet }) {
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={async (e) => {
             e.preventDefault()
+            setRevealSensitiveInfo(false)
+            setSensitiveInfoWasRevealed(false)
             const { name: walletName, token } = currentWallet
             const res = await Api.getSeed({ walletName, token })
             if (res.ok) {
