@@ -1,9 +1,21 @@
 import React, { createContext, useState, useContext } from 'react'
 
+import { getSession } from '../session'
+
 const WalletContext = createContext()
 
+const initialWalletFromSession = () => {
+  const session = getSession()
+  return !(session && session.name && session.token)
+    ? null
+    : {
+        name: session.name,
+        token: session.token,
+      }
+}
+
 const WalletProvider = ({ children }) => {
-  const [currentWallet, setCurrentWallet] = useState(null)
+  const [currentWallet, setCurrentWallet] = useState(initialWalletFromSession())
   const [currentWalletInfo, setCurrentWalletInfo] = useState(null)
 
   return (
