@@ -50,9 +50,7 @@
     "lint": "prettier --check --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
     "format": "prettier --write --no-error-on-unmatched-pattern src/**/*.{js,jsx,json,css,md}",
     "version": "node scripts/changelog.mjs && git checkout -b \"prepare-v${npm_package_version}-$(date +%s)\" && git add --all && git commit --message \"chore(release): prepare v${npm_package_version}\" && git push --set-upstream origin $(git branch --show-current)",
-    "postversion": "which gh && gh pr create --title \"chore(release): prepare v${npm_package_version}\" --body \"Prepares the v${npm_package_version} release.\" --assignee @me --label release --repo joinmarket-webui/joinmarket-webui --draft",
-    "push-translations": "which tx && tx push --source",
-    "pull-translations": "which tx && tx pull --translations"
+    "postversion": "which gh && gh pr create --title \"chore(release): prepare v${npm_package_version}\" --body \"Prepares the v${npm_package_version} release.\" --assignee @me --label release --repo joinmarket-webui/joinmarket-webui --draft"
   },
   "eslintConfig": {
     "extends": [

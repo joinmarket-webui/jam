@@ -52,29 +52,11 @@ Whenever translations on Transifex are done and reviewed, Transifex will open a 
 
 ### Adding a new Language
 
-To add a new language, e.g. `de`:
+To add a new language:
 
-1. Create a translation file: `src/i18n/de/translation.json`
-2. Import and add the newly created translation file to the list of supported languages in `src/i18n/languages.js`:
-
-```js
-import en from './locales/en/translation.json'
-import de from './locales/de/translation.json'
-
-const languages = [
-  {
-    key: 'en',
-    description: 'English',
-    translation: en,
-  },
-  {
-    key: 'de',
-    description: 'Deutsch',
-    translation: de,
-  },
-]
-
-export default languages
-```
+1. [Add it](https://docs.transifex.com/projects/adding-and-removing-project-languages) on [Transifex](https://www.transifex.com/joinmarket/jam/languages/).
+1. Trigger a [manual sync](https://docs.transifex.com/transifex-github-integrations/github-tx-ui#manual-sync) from Transifex to GitHub.
 
 ## Translators
+
+Let us know [on Telegram](https://t.me/JoinMarketWebUI) or [GitHub](https://github.com/joinmarket-webui/joinmarket-webui/issues/new) if you would like to help out translating!
