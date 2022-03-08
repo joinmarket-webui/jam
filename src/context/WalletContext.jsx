@@ -4,7 +4,7 @@ import { getSession } from '../session'
 
 const WalletContext = createContext()
 
-const initialWalletFromSession = () => {
+const restoreWalletFromSession = () => {
   const session = getSession()
   return session && session.name && session.token
     ? {
@@ -12,9 +12,10 @@ const initialWalletFromSession = () => {
         token: session.token,
       }
     : null
+}
 
 const WalletProvider = ({ children }) => {
-  const [currentWallet, setCurrentWallet] = useState(initialWalletFromSession())
+  const [currentWallet, setCurrentWallet] = useState(restoreWalletFromSession())
   const [currentWalletInfo, setCurrentWalletInfo] = useState(null)
 
   return (
