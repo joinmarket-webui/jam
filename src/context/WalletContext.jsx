@@ -6,13 +6,12 @@ const WalletContext = createContext()
 
 const initialWalletFromSession = () => {
   const session = getSession()
-  return !(session && session.name && session.token)
-    ? null
-    : {
+  return session && session.name && session.token
+    ? {
         name: session.name,
         token: session.token,
       }
-}
+    : null
 
 const WalletProvider = ({ children }) => {
   const [currentWallet, setCurrentWallet] = useState(initialWalletFromSession())
