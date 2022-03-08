@@ -119,7 +119,7 @@ export default function Settings({ currentWallet }) {
           }}
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
-          {showSeed ? 'Hide' : 'Show'} seed phrase
+          {showingSeed ? 'Hide' : 'Show'} seed phrase
         </rb.Button>
         {error && (
           <div className="text-danger" style={{ marginLeft: '1rem' }}>
