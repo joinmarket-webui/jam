@@ -105,6 +105,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
     wordTen,
     wordEleven,
     wordTwelve,
+    seedphrase,
   ])
 
   let seedphrase = createdWallet.seedphrase.split(' ')
