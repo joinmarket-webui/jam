@@ -80,8 +80,11 @@ export default function CurrentWalletAdvanced() {
           </rb.Button>
           <rb.Fade in={showUTXO} mountOnEnter={true} unmountOnExit={true}>
             <div>
-              {utxos.length === 0 && <rb.Alert variant="info">No UTXOs available.</rb.Alert>}
-              <DisplayAccountUTXOs utxos={utxos} className="mt-3" />
+              {utxos.length === 0 ? (
+                <rb.Alert variant="info">No UTXOs available.</rb.Alert>
+              ) : (
+                <DisplayAccountUTXOs utxos={utxos} className="mt-3" />
+              )}
             </div>
           </rb.Fade>
         </>
