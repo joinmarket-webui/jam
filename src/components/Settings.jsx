@@ -12,7 +12,7 @@ export default function Settings({ currentWallet }) {
   const [seed, setSeed] = useState('')
   const [showingSeed, setShowingSeed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
-  const [error, setError] = useState(false)
+  const [seedError, setSeedError] = useState(false)
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
 
