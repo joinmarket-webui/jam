@@ -75,6 +75,8 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
   const [wordEleven, setWordEleven] = useState('')
   const [wordTwelve, setWordTwelve] = useState('')
 
+  let seedphrase = createdWallet.seedphrase.split(' ')
+
   useEffect(() => {
     if (
       wordOne === seedphrase[0] &&
@@ -107,8 +109,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
     wordTwelve,
     seedphrase,
   ])
-
-  let seedphrase = createdWallet.seedphrase.split(' ')
 
   return (
     <div>
