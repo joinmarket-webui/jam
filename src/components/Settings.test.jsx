@@ -17,5 +17,6 @@ describe('<Settings />', () => {
     expect(screen.queryByText(/Display amounts in (sats|BTC)/)).toBeInTheDocument()
     expect(screen.queryByText(/Switch to (dark|light) theme/)).toBeInTheDocument()
     expect(screen.queryByText(/Use (advanced|magic) wallet mode/)).toBeInTheDocument()
+    expect(screen.queryByText(/English/)).toBeInTheDocument()
   })
 })
