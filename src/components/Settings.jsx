@@ -123,8 +123,6 @@ export default function Settings({ currentWallet }) {
           </rb.Dropdown.Menu>
         </rb.Dropdown>
 
-        <br />
-
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
