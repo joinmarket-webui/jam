@@ -197,5 +197,5 @@ export {
   getYieldgenReport,
   postFreeze,
   postConfigGet,
-  getSeed,
+  getWalletSeed,
 }

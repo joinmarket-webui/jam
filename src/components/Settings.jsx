@@ -11,8 +11,8 @@ import * as Api from '../libs/JmWalletApi'
 export default function Settings({ currentWallet }) {
   const [seed, setSeed] = useState('')
   const [showingSeed, setShowingSeed] = useState(false)
-  const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
-  const [error, setError] = useState(false)
+  const [revealSeed, setRevealSeed] = useState(false)
+  const [seedError, setSeedError] = useState(false)
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
 
@@ -101,17 +101,17 @@ export default function Settings({ currentWallet }) {
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={async (e) => {
             e.preventDefault()
-            setError(false)
-            setRevealSensitiveInfo(false)
+            setSeedError(false)
+            setRevealSeed(false)
             if (!showingSeed) {
               const { name: walletName, token } = currentWallet
-              const res = await Api.getSeed({ walletName, token })
+              const res = await Api.getWalletSeed({ walletName, token })
               if (res.ok) {
                 const { seedphrase } = await res.json()
                 setSeed(seedphrase)
                 setShowingSeed(!showingSeed)
               } else {
-                setError(true)
+                setSeedError(true)
               }
             } else {
               setShowingSeed(!showingSeed)
@@ -121,7 +121,7 @@ export default function Settings({ currentWallet }) {
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
           {showingSeed ? 'Hide' : 'Show'} seed phrase
         </rb.Button>
-        {error && (
+        {seedError && (
           <div className="text-danger" style={{ marginLeft: '1rem' }}>
             Could not retreive seedphrase.
           </div>
@@ -129,13 +129,13 @@ export default function Settings({ currentWallet }) {
         {showingSeed && (
           <div style={{ marginLeft: '1rem' }}>
             <div className="mb-4">
-              <Seedphrase seedphrase={seed} isBlurred={!revealSensitiveInfo} />
+              <Seedphrase seedphrase={seed} isBlurred={!revealSeed} />
             </div>
             <div className="mb-2">
               <ToggleSwitch
                 label="Reveal sensitive information"
                 onToggle={(isToggled) => {
-                  setRevealSensitiveInfo(isToggled)
+                  setRevealSeed(isToggled)
                 }}
               />
             </div>
