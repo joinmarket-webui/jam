@@ -116,7 +116,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
       <p className="text-secondary">Enter each word in sequential order.</p>
 
       <rb.Form noValidate>
-        <div className="container">
+        <div className="container slashed-zeroes p-0">
           <div className="row mb-4">
             <div className="col">
               <rb.InputGroup>
