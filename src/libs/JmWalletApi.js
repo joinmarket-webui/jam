@@ -62,7 +62,7 @@ const getWalletDisplay = async ({ walletName, token, signal }) => {
   })
 }
 
-const getSeed = async ({ walletName, token, signal }) => {
+const getWalletSeed = async ({ walletName, token, signal }) => {
   return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/getseed`, {
     headers: { ...Authorization(token) },
     signal,
