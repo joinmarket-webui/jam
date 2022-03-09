@@ -12,7 +12,7 @@ import Sprite from './Sprite'
 export default function Receive({ currentWallet }) {
   const location = useLocation()
   const settings = useSettings()
-  const inputRef = useRef()
+  const addressCopyFallbackInputRef = useRef()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -60,6 +60,24 @@ export default function Receive({ currentWallet }) {
     return () => clearTimeout(timer)
   }, [addressCopiedFlag])
 
+  const copyToClipboard = (text, fallbackInputField) => {
+    const copyToClipboardFallback = (inputField) =>
+      new Promise((resolve, reject) => {
+        inputField.select()
+        const success = document.execCommand && document.execCommand('copy')
+        inputField.blur()
+        success ? resolve(success) : reject(new Error('Could not copy address.'))
+      })
+
+    // `navigator.clipboard` might not be available, e.g. on sites served over plain `http`.
+    if (!navigator.clipboard) {
+      return copyToClipboardFallback(fallbackInputField)
+    }
+
+    // might not work on iOS.
+    return navigator.clipboard.writeText(text).catch(() => copyToClipboardFallback(fallbackInputField))
+  }
+
   const onSubmit = (e) => {
     e.preventDefault()
 
@@ -90,15 +108,14 @@ export default function Receive({ currentWallet }) {
                   data-bs-toggle="tooltip"
                   data-bs-placement="left"
                   onClick={() => {
-                    inputRef.current.select()
-                    const success = document.execCommand('copy')
-
-                    if (!success) {
-                      setAlert({ variant: 'warning', message: 'Could not copy address.' })
-                      return
-                    }
-
-                    setAddressCopiedFlag(addressCopiedFlag + 1)
+                    copyToClipboard(address, addressCopyFallbackInputRef.current).then(
+                      () => {
+                        setAddressCopiedFlag(addressCopiedFlag + 1)
+                      },
+                      (e) => {
+                        setAlert({ variant: 'warning', message: e.message })
+                      }
+                    )
                   }}
                 >
                   {showAddressCopiedConfirmation ? (
@@ -110,10 +127,12 @@ export default function Receive({ currentWallet }) {
                     'Copy'
                   )}
                 </rb.Button>
+
                 <input
+                  readOnly
                   aria-hidden
-                  ref={inputRef}
-                  defaultValue={address}
+                  ref={addressCopyFallbackInputRef}
+                  value={address}
                   style={{
                     position: 'absolute',
                     left: '-9999px',
