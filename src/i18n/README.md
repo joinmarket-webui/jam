@@ -46,7 +46,7 @@ Translation file:
 
 ### Background
 
-We've [connected Transifex with our GitHub repo](https://docs.transifex.com/transifex-github-integrations/github-tx-ui).
+Transifex [is connected with our GitHub repo](https://docs.transifex.com/transifex-github-integrations/github-tx-ui).
 Whenever new translation strings land on `master` (e.g. when being added as part of a new feature in a PR), [Transifex](https://www.transifex.com/joinmarket/jam/) will automatically add those new strings to the Transifex web app.
 Whenever translations on Transifex are done and reviewed, Transifex will open a PR on GitHub which will give us the chance to integrate translated texts into the app.
 
