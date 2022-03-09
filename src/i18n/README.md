@@ -6,7 +6,7 @@ We use [Transifex](https://www.transifex.com/joinmarket/jam/) for managing Jam's
 
 Our source language, i.e. the language we develop in, is English.
 If you add text to the app, make sure not to use plain language in source files.
-Instead add your any strings to the English translation file:
+Instead add any strings to the English translation file:
 
 ```
 src/i18n/locales/en/translation.json
