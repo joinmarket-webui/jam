@@ -6,7 +6,7 @@ We use [Transifex](https://www.transifex.com/joinmarket/jam/) for managing Jam's
 
 Our source language, i.e. the language we develop in, is English.
 If you add text to the app, make sure not to use plain language in source files.
-Instead add your any strings to the English translation file:
+Instead add any strings to the English translation file:
 
 ```
 src/i18n/locales/en/translation.json
@@ -46,9 +46,9 @@ Translation file:
 
 ### Background
 
-We've [connected Transifex with our GitHub repo](https://docs.transifex.com/transifex-github-integrations/github-tx-ui).
+Transifex [is connected with our GitHub repo](https://docs.transifex.com/transifex-github-integrations/github-tx-ui).
 Whenever new translation strings land on `master` (e.g. when being added as part of a new feature in a PR), [Transifex](https://www.transifex.com/joinmarket/jam/) will automatically add those new strings to the Transifex web app.
-Whenever translations on Transifex are done and reviewed, Transifex will open a PR on GitHub which will give us the chance to integrate translated texts into the app.
+Whenever translations on Transifex are done and reviewed, Transifex will open a PR on GitHub to integrate newly translated texts into the app.
 
 ### Adding a new Language
 
