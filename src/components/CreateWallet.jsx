@@ -60,7 +60,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
   )
 }
 
-const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, userConfirmed }) => {
+const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
   const [seedBackup, setSeedBackup] = useState(false)
   const [wordOne, setWordOne] = useState('')
   const [wordTwo, setWordTwo] = useState('')
@@ -133,12 +133,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordOne === seedphrase[0]}
                   required
                 />
-                {wordOne === seedphrase[0] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordOne !== seedphrase[0] && wordOne.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
             <div className="col">
@@ -156,12 +150,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordTwo === seedphrase[1]}
                   required
                 />
-                {wordTwo === seedphrase[1] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordTwo !== seedphrase[1] && wordTwo.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
           </div>
@@ -181,12 +169,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordThree === seedphrase[2]}
                   required
                 />
-                {wordThree === seedphrase[2] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordThree !== seedphrase[2] && wordThree.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
             <div className="col">
@@ -204,12 +186,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordFour === seedphrase[3]}
                   required
                 />
-                {wordFour === seedphrase[3] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordFour !== seedphrase[3] && wordFour.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
           </div>
@@ -229,12 +205,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordFive === seedphrase[4]}
                   required
                 />
-                {wordFive === seedphrase[4] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordFive !== seedphrase[4] && wordFive.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
             <div className="col">
@@ -252,12 +222,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordSix === seedphrase[5]}
                   required
                 />
-                {wordSix === seedphrase[5] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordSix !== seedphrase[5] && wordSix.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
           </div>
@@ -277,12 +241,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordSeven === seedphrase[6]}
                   required
                 />
-                {wordSeven === seedphrase[6] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordSeven !== seedphrase[6] && wordSeven.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
             <div className="col">
@@ -300,12 +258,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordEight === seedphrase[7]}
                   required
                 />
-                {wordEight === seedphrase[7] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordEight !== seedphrase[7] && wordEight.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
           </div>
@@ -325,12 +277,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordNine === seedphrase[8]}
                   required
                 />
-                {wordNine === seedphrase[8] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordNine !== seedphrase[8] && wordNine.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
             <div className="col">
@@ -348,12 +294,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordTen === seedphrase[9]}
                   required
                 />
-                {wordTen === seedphrase[9] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordTen !== seedphrase[9] && wordTen.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
           </div>
@@ -373,12 +313,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordEleven === seedphrase[10]}
                   required
                 />
-                {wordEleven === seedphrase[10] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordEleven !== seedphrase[10] && wordEleven.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
             <div className="col">
@@ -396,12 +330,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
                   isValid={wordTwelve === seedphrase[11]}
                   required
                 />
-                {wordTwelve === seedphrase[11] && !seedBackup && (
-                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-                )}
-                {wordTwelve !== seedphrase[11] && wordTwelve.length > 0 && (
-                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-                )}
               </rb.InputGroup>
             </div>
           </div>
@@ -420,12 +348,12 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
           Back
         </rb.Button>
 
-        <rb.Button variant="dark" onClick={() => userConfirmed && walletConfirmed()} disabled={!seedBackup}>
+        <rb.Button variant="dark" onClick={() => walletConfirmed()} disabled={!seedBackup}>
           Fund wallet
         </rb.Button>
       </div>
 
-      <rb.Button variant="outline-dark" onClick={() => userConfirmed && walletConfirmed()} disabled={seedBackup}>
+      <rb.Button variant="outline-dark" onClick={() => walletConfirmed()} disabled={seedBackup}>
         Skip
       </rb.Button>
     </div>
@@ -487,7 +415,6 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         parentStepSetter={childStepSetter}
         createdWallet={createdWallet}
         walletConfirmed={walletConfirmed}
-        userConfirmed={userConfirmed}
       />
     )
   }
