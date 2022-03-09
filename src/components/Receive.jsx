@@ -34,11 +34,9 @@ export default function Receive({ currentWallet }) {
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading new address failed.'))))
         .then((data) => setAddress(data.address))
         .catch((err) => {
-          if (!abortCtrl.signal.aborted) {
-            setAlert({ variant: 'danger', message: err.message })
-          }
+          !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
         })
-        .finally(() => setIsLoading(false))
+        .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
     }
 
     if (ACCOUNTS.includes(account)) {

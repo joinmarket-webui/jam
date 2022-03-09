@@ -20,7 +20,7 @@ const WalletHeader = ({ name, balance, unit, showBalance }) => {
 }
 
 const PrivacyLevels = ({ accounts }) => {
-  const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account).reverse()
+  const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account)
   const numAccounts = sortedAccounts.length
 
   return (
@@ -63,7 +63,7 @@ const PrivacyLevel = ({ numAccounts, level, balance }) => {
 export default function CurrentWalletMagic() {
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
-  const wallet = useCurrentWallet()
+  const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
 
@@ -72,7 +72,7 @@ export default function CurrentWalletMagic() {
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = wallet
+    const { name: walletName, token } = currentWallet
 
     setAlert(null)
     setIsLoading(true)
@@ -83,10 +83,10 @@ export default function CurrentWalletMagic() {
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
-      .finally(() => setIsLoading(false))
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [wallet, setWalletInfo])
+  }, [currentWallet, setWalletInfo])
 
   return (
     <div className="privacy-levels">
@@ -107,14 +107,14 @@ export default function CurrentWalletMagic() {
           </rb.Col>
         </rb.Row>
       )}
-      {!isLoading && wallet && walletInfo && (
+      {!isLoading && currentWallet && walletInfo && (
         <>
           <rb.Row
             onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
             style={{ cursor: 'pointer' }}
           >
             <WalletHeader
-              name={wallet.name}
+              name={currentWallet.name}
               balance={walletInfo.total_balance}
               unit={settings.unit}
               showBalance={settings.showBalance}

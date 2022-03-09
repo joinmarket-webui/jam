@@ -8,7 +8,7 @@ import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from 
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 
-// initial value for `minimum_markers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
+// initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
 // not cryptographically random. returned number is in range [min, max] (both inclusive).
@@ -226,7 +226,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(() => setIsLoading(false))
+    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(
+      () => !abortCtrl.signal.aborted && setIsLoading(false)
+    )
 
     return () => abortCtrl.abort()
   }, [wallet, walletInfo, setWalletInfo])
