@@ -93,12 +93,12 @@ export default function App() {
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
           const { maker_running, coinjoin_in_process, wallet_name } = data
-          const activeWallet = wallet_name !== 'None' ? wallet_name : null
+          const activeWalletName = wallet_name !== 'None' ? wallet_name : null
 
           setConnectionError(null)
           setMakerRunning(maker_running)
           setCoinjoinInProcess(coinjoin_in_process)
-          if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
+          if (currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)) {
             setCurrentWallet(null)
             setCurrentWalletInfo(null)
             clearSession()
