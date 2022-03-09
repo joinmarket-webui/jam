@@ -98,8 +98,8 @@ export default function Settings({ currentWallet }) {
         </rb.Button>
 
         <br />
-            
-                <rb.Dropdown>
+
+        <rb.Dropdown>
           <rb.Dropdown.Toggle variant="outline-dark" className="border-0 mb-2 d-inline-flex align-items-center">
             <Sprite symbol="globe" width="24" height="24" className="me-2" />
             {languages.find((lng) => lng.key === i18n.language).description}
@@ -121,7 +121,6 @@ export default function Settings({ currentWallet }) {
             </rb.Dropdown.Item>
           </rb.Dropdown.Menu>
         </rb.Dropdown>
-
 
         <br />
 
@@ -170,7 +169,6 @@ export default function Settings({ currentWallet }) {
             </div>
           </div>
         )}
-
       </div>
     </div>
   )
