@@ -20,7 +20,7 @@ const WalletHeader = ({ name, balance, unit, showBalance }) => {
 }
 
 const PrivacyLevels = ({ accounts }) => {
-  const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account).reverse()
+  const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account)
   const numAccounts = sortedAccounts.length
 
   return (
