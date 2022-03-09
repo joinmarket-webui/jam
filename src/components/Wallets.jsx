@@ -5,29 +5,31 @@ import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
 import { useCurrentWallet } from '../context/WalletContext'
+import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 
 export default function Wallets({ startWallet, stopWallet }) {
+  const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState(
     currentWallet?.name && {
       variant: 'info',
-      message: `There can be only one active wallet. If you want to open another wallet, please lock ${walletDisplayName(
-        currentWallet.name
-      )} first.`,
+      message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
       dismissible: true,
     }
   )
+
+  const walletsFailedError = t('wallets.error_loading_failed')
 
   useEffect(() => {
     const abortCtrl = new AbortController()
 
     setIsLoading(true)
     Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallets failed.'))))
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || walletsFailedError))))
       .then((data) => {
         const { wallets = [] } = data
         if (currentWallet) {
@@ -47,20 +49,20 @@ export default function Wallets({ startWallet, stopWallet }) {
       })
 
     return () => abortCtrl.abort()
-  }, [currentWallet])
+  }, [currentWallet, walletsFailedError])
 
   return (
     <div className="wallets">
       <PageTitle
-        title="Your wallets"
-        subtitle={walletList?.length === 0 ? 'It looks like you do not have a wallet, yet.' : null}
+        title={t('wallets.title')}
+        subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : null}
         center={true}
       />
       {alert && <Alert {...alert} />}
       {isLoading && (
         <div className="d-flex justify-content-center align-items-center">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          <span>Loading wallets</span>
+          <span>{t('wallets.text_loading')}</span>
         </div>
       )}
       {walletList?.map((wallet, index) => (
@@ -81,7 +83,7 @@ export default function Wallets({ startWallet, stopWallet }) {
           to="/create-wallet"
           className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
         >
-          Create new wallet
+          {t('wallets.button_new_wallet')}
         </Link>
       </div>
     </div>

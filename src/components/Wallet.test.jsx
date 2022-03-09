@@ -1,11 +1,9 @@
 import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
 import { walletDisplayName } from '../utils'
-
-import { AllTheProviders } from '../__util__/AllTheProviders'
 
 import Wallet from './Wallet'
 
@@ -41,10 +39,7 @@ describe('<Wallet />', () => {
         startWallet={startWallet}
         stopWallet={stopWallet}
         setAlert={setAlert}
-      />,
-      {
-        wrapper: AllTheProviders,
-      }
+      />
     )
   }
 

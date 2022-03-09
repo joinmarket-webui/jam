@@ -19,7 +19,7 @@ import {
   CJ_STATE_MAKER_RUNNING,
 } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
-import { getSession, setSession, clearSession } from '../session'
+import { setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 import Onboarding from './Onboarding'
 
@@ -118,13 +118,6 @@ export default function App() {
       clearInterval(interval)
     }
   }, [currentWallet, setCurrentWallet, setCurrentWalletInfo])
-
-  useEffect(() => {
-    const session = getSession()
-    if (session) {
-      return startWallet(session.name, session.token)
-    }
-  }, [startWallet])
 
   if (settings.showOnboarding === true) {
     return (
