@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTitle from './PageTitle'
@@ -74,10 +74,8 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
   const [wordTen, setWordTen] = useState('')
   const [wordEleven, setWordEleven] = useState('')
   const [wordTwelve, setWordTwelve] = useState('')
-  const [feedback, setFeedback] = useState(false)
-  let seedphrase = createdWallet.seedphrase.split(' ')
 
-  const onSubmit = () => {
+  useEffect(() => {
     if (
       wordOne === seedphrase[0] &&
       wordTwo === seedphrase[1] &&
@@ -93,10 +91,24 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
       wordTwelve === seedphrase[11]
     ) {
       setSeedBackup(true)
-    } else {
-      setFeedback(true)
     }
-  }
+  }, [
+    wordOne,
+    wordTwo,
+    wordThree,
+    wordFour,
+    wordFive,
+    wordSix,
+    wordSeven,
+    wordEight,
+    wordNine,
+    wordTen,
+    wordEleven,
+    wordTwelve,
+  ])
+
+  let seedphrase = createdWallet.seedphrase.split(' ')
+
   return (
     <div>
       <div className="fs-4">Confirm seed phrase backup</div>
@@ -106,272 +118,296 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
         <div className="container">
           <div className="row mb-4">
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="One"
-                value={wordOne}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordOne(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordOne === seedphrase[0]}
-                isValid={wordOne === seedphrase[0]}
-                required
-              />
-              {wordOne === seedphrase[0] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>1.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 1"
+                  value={wordOne}
+                  onChange={(e) => {
+                    setWordOne(e.target.value)
+                  }}
+                  disabled={wordOne === seedphrase[0]}
+                  isInvalid={wordOne !== seedphrase[0] && wordOne.length > 0}
+                  isValid={wordOne === seedphrase[0]}
+                  required
+                />
+                {wordOne === seedphrase[0] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordOne !== seedphrase[0] && wordOne.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Two"
-                value={wordTwo}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordTwo(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordTwo === seedphrase[1]}
-                isValid={wordTwo === seedphrase[1]}
-                required
-              />
-              {wordTwo === seedphrase[1] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
-            </div>
-          </div>
-          <div className="row mb-4">
-            <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Three"
-                value={wordThree}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordThree(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordThree === seedphrase[2]}
-                isValid={wordThree === seedphrase[2]}
-                required
-              />
-              {wordThree === seedphrase[2] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
-            </div>
-            <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Four"
-                value={wordFour}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordFour(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordFour === seedphrase[3]}
-                isValid={wordFour === seedphrase[3]}
-                required
-              />
-              {wordFour === seedphrase[3] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>2.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 2"
+                  value={wordTwo}
+                  onChange={(e) => {
+                    setWordTwo(e.target.value)
+                  }}
+                  disabled={wordTwo === seedphrase[1]}
+                  isInvalid={wordTwo !== seedphrase[1] && wordTwo.length > 0}
+                  isValid={wordTwo === seedphrase[1]}
+                  required
+                />
+                {wordTwo === seedphrase[1] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordTwo !== seedphrase[1] && wordTwo.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
           </div>
           <div className="row mb-4">
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Five"
-                value={wordFive}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordFive(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordFive === seedphrase[4]}
-                isValid={wordFive === seedphrase[4]}
-                required
-              />
-              {wordFive === seedphrase[4] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>3.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 3"
+                  value={wordThree}
+                  onChange={(e) => {
+                    setWordThree(e.target.value)
+                  }}
+                  disabled={wordThree === seedphrase[2]}
+                  isInvalid={wordThree !== seedphrase[2] && wordThree.length > 0}
+                  isValid={wordThree === seedphrase[2]}
+                  required
+                />
+                {wordThree === seedphrase[2] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordThree !== seedphrase[2] && wordThree.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Six"
-                value={wordSix}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordSix(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordSix === seedphrase[5]}
-                isValid={wordSix === seedphrase[5]}
-                required
-              />
-              {wordSix === seedphrase[5] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
-            </div>
-          </div>
-          <div className="row mb-4">
-            <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Seven"
-                value={wordSeven}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordSeven(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordSeven === seedphrase[6]}
-                isValid={wordSeven === seedphrase[6]}
-                required
-              />
-              {wordSeven === seedphrase[6] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
-            </div>
-            <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Eight"
-                value={wordEight}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordEight(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordEight === seedphrase[7]}
-                isValid={wordEight === seedphrase[7]}
-                required
-              />
-              {wordEight === seedphrase[7] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>4.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 4"
+                  value={wordFour}
+                  onChange={(e) => {
+                    setWordFour(e.target.value)
+                  }}
+                  disabled={wordFour === seedphrase[3]}
+                  isInvalid={wordFour !== seedphrase[3] && wordFour.length > 0}
+                  isValid={wordFour === seedphrase[3]}
+                  required
+                />
+                {wordFour === seedphrase[3] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordFour !== seedphrase[3] && wordFour.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
           </div>
           <div className="row mb-4">
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Nine"
-                value={wordNine}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordNine(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordNine === seedphrase[8]}
-                isValid={wordNine === seedphrase[8]}
-                required
-              />
-              {wordNine === seedphrase[8] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>5.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 5"
+                  value={wordFive}
+                  onChange={(e) => {
+                    setWordFive(e.target.value)
+                  }}
+                  disabled={wordFive === seedphrase[4]}
+                  isInvalid={wordFive !== seedphrase[4] && wordFive.length > 0}
+                  isValid={wordFive === seedphrase[4]}
+                  required
+                />
+                {wordFive === seedphrase[4] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordFive !== seedphrase[4] && wordFive.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Ten"
-                value={wordTen}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordTen(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordTen === seedphrase[9]}
-                isValid={wordTen === seedphrase[9]}
-                required
-              />
-              {wordTen === seedphrase[9] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>6.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 6"
+                  value={wordSix}
+                  onChange={(e) => {
+                    setWordSix(e.target.value)
+                  }}
+                  disabled={wordSix === seedphrase[5]}
+                  isInvalid={wordSix !== seedphrase[5] && wordSix.length > 0}
+                  isValid={wordSix === seedphrase[5]}
+                  required
+                />
+                {wordSix === seedphrase[5] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordSix !== seedphrase[5] && wordSix.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
+            </div>
+          </div>
+          <div className="row mb-4">
+            <div className="col">
+              <rb.InputGroup>
+                <rb.InputGroup.Text>7.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 7"
+                  value={wordSeven}
+                  onChange={(e) => {
+                    setWordSeven(e.target.value)
+                  }}
+                  disabled={wordSeven === seedphrase[6]}
+                  isInvalid={wordSeven !== seedphrase[6] && wordSeven.length > 0}
+                  isValid={wordSeven === seedphrase[6]}
+                  required
+                />
+                {wordSeven === seedphrase[6] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordSeven !== seedphrase[6] && wordSeven.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
+            </div>
+            <div className="col">
+              <rb.InputGroup>
+                <rb.InputGroup.Text>8.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 8"
+                  value={wordEight}
+                  onChange={(e) => {
+                    setWordEight(e.target.value)
+                  }}
+                  disabled={wordEight === seedphrase[7]}
+                  isInvalid={wordEight !== seedphrase[7] && wordEight.length > 0}
+                  isValid={wordEight === seedphrase[7]}
+                  required
+                />
+                {wordEight === seedphrase[7] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordEight !== seedphrase[7] && wordEight.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
+            </div>
+          </div>
+          <div className="row mb-4">
+            <div className="col">
+              <rb.InputGroup>
+                <rb.InputGroup.Text>9.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 9"
+                  value={wordNine}
+                  onChange={(e) => {
+                    setWordNine(e.target.value)
+                  }}
+                  disabled={wordNine === seedphrase[8]}
+                  isInvalid={wordNine !== seedphrase[8] && wordNine.length > 0}
+                  isValid={wordNine === seedphrase[8]}
+                  required
+                />
+                {wordNine === seedphrase[8] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordNine !== seedphrase[8] && wordNine.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
+            </div>
+            <div className="col">
+              <rb.InputGroup>
+                <rb.InputGroup.Text>10.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 10"
+                  value={wordTen}
+                  onChange={(e) => {
+                    setWordTen(e.target.value)
+                  }}
+                  disabled={wordTen === seedphrase[9]}
+                  isInvalid={wordTen !== seedphrase[9] && wordTen.length > 0}
+                  isValid={wordTen === seedphrase[9]}
+                  required
+                />
+                {wordTen === seedphrase[9] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordTen !== seedphrase[9] && wordTen.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
           </div>
           <div className="row mb-3">
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Eleven"
-                value={wordEleven}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordEleven(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordEleven === seedphrase[10]}
-                isValid={wordEleven === seedphrase[10]}
-                required
-              />
-              {wordEleven === seedphrase[10] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>11.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 11"
+                  value={wordEleven}
+                  onChange={(e) => {
+                    setWordEleven(e.target.value)
+                  }}
+                  disabled={wordEleven === seedphrase[10]}
+                  isInvalid={wordEleven !== seedphrase[10] && wordEleven.length > 0}
+                  isValid={wordEleven === seedphrase[10]}
+                  required
+                />
+                {wordEleven === seedphrase[10] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordEleven !== seedphrase[10] && wordEleven.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
             <div className="col">
-              <rb.InputGroup />
-              <rb.FormControl
-                type="text"
-                placeholder="Twelve"
-                value={wordTwelve}
-                onChange={(e) => {
-                  setFeedback(false)
-                  setWordTwelve(e.target.value)
-                }}
-                disabled={seedBackup}
-                isInvalid={!wordTwelve === seedphrase[11]}
-                isValid={wordTwelve === seedphrase[11]}
-                required
-              />
-              {wordTwelve === seedphrase[11] && !seedBackup ? (
-                <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
-              ) : (
-                <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
-              )}
+              <rb.InputGroup>
+                <rb.InputGroup.Text>12.</rb.InputGroup.Text>
+                <rb.FormControl
+                  type="text"
+                  placeholder="Word 12"
+                  value={wordTwelve}
+                  onChange={(e) => {
+                    setWordTwelve(e.target.value)
+                  }}
+                  disabled={wordTwelve === seedphrase[11]}
+                  isInvalid={wordTwelve !== seedphrase[11] && wordTwelve.length > 0}
+                  isValid={wordTwelve === seedphrase[11]}
+                  required
+                />
+                {wordTwelve === seedphrase[11] && !seedBackup && (
+                  <rb.Form.Control.Feedback>Word matches!</rb.Form.Control.Feedback>
+                )}
+                {wordTwelve !== seedphrase[11] && wordTwelve.length > 0 && (
+                  <rb.Form.Control.Feedback type="invalid">Word does not match.</rb.Form.Control.Feedback>
+                )}
+              </rb.InputGroup>
             </div>
           </div>
         </div>
       </rb.Form>
-      {seedBackup ? <div className="text-center text-success">Seed phrase confirmed.</div> : <></>}
-      {feedback ? <div className="text-center text-danger">All words must match.</div> : <></>}
+      {seedBackup && <div className="text-center text-success">Seed phrase confirmed.</div>}
+
       <div className="d-flex mt-4 mb-4 gap-3">
         <rb.Button
           variant="dark"
@@ -382,23 +418,15 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
         >
           Back
         </rb.Button>
-        {seedBackup === false ? (
-          <rb.Button variant="dark" onClick={() => onSubmit()}>
-            Verify
-          </rb.Button>
-        ) : (
-          <rb.Button variant="dark" onClick={() => userConfirmed && walletConfirmed()}>
-            Fund wallet
-          </rb.Button>
-        )}
-      </div>
-      {seedBackup === false ? (
-        <rb.Button variant="outline-dark" onClick={() => userConfirmed && walletConfirmed()}>
-          Skip
+
+        <rb.Button variant="dark" onClick={() => userConfirmed && walletConfirmed()} disabled={!seedBackup}>
+          Fund wallet
         </rb.Button>
-      ) : (
-        <></>
-      )}
+      </div>
+
+      <rb.Button variant="outline-dark" onClick={() => userConfirmed && walletConfirmed()} disabled={seedBackup}>
+        Skip
+      </rb.Button>
     </div>
   )
 }
