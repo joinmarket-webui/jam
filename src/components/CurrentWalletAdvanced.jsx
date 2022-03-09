@@ -68,17 +68,24 @@ export default function CurrentWalletAdvanced() {
         </div>
       )}
       {utxos && (
-        <rb.Button
-          variant="outline-dark"
-          onClick={() => {
-            setShowUTXO(!showUTXO)
-          }}
-          className="mb-3"
-        >
-          {showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}
-        </rb.Button>
+        <>
+          <rb.Button
+            variant="outline-dark"
+            onClick={() => {
+              setShowUTXO(!showUTXO)
+            }}
+            className="mb-3"
+          >
+            {showUTXO ? 'Hide UTXOs' : 'Show UTXOs'}
+          </rb.Button>
+          <rb.Fade in={showUTXO} mountOnEnter={true} unmountOnExit={true}>
+            <div>
+              {utxos.length === 0 && <rb.Alert variant="info">No UTXOs available.</rb.Alert>}
+              <DisplayAccountUTXOs utxos={utxos} className="mt-3" />
+            </div>
+          </rb.Fade>
+        </>
       )}
-      {utxos && showUTXO && <DisplayAccountUTXOs utxos={utxos} className="mt-3" />}
     </div>
   )
 }
