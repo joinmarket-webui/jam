@@ -56,6 +56,25 @@ To add a new language:
 
 1. [Add it](https://docs.transifex.com/projects/adding-and-removing-project-languages) on [Transifex](https://www.transifex.com/joinmarket/jam/languages/).
 1. Trigger a [manual sync](https://docs.transifex.com/transifex-github-integrations/github-tx-ui#manual-sync) from Transifex to GitHub.
+1. Transifex will open a pull request. On this branch, add the new language in `src/i18n/languages.js`. For example, when adding `de`:
+
+```js
+import en from './locales/en/translation.json'
+import de from './locales/de/translation.json' // This file should have been created by Transifex in the PR.
+
+const languages = [
+  {
+    key: 'en',
+    description: 'English',
+    translation: en,
+  },
+  {
+    key: 'de',
+    description: 'Deutsch',
+    translation: de,
+  },
+]
+```
 
 ## Translators
 
