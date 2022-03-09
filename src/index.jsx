@@ -8,6 +8,7 @@ import { WebsocketProvider } from './context/WebsocketContext'
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
+import './i18n/config'
 
 ReactDOM.render(
   <BrowserRouter basename={window.JM.PUBLIC_PATH}>

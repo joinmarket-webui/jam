@@ -4,10 +4,13 @@ import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { SATS, BTC } from '../utils'
+import { useTranslation } from 'react-i18next'
+import languages from '../i18n/languages'
 
 export default function Settings({ currentWallet }) {
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
+  const { i18n } = useTranslation()
 
   const setTheme = (theme) => {
     if (window.JM.THEMES.includes(theme)) {
@@ -86,6 +89,29 @@ export default function Settings({ currentWallet }) {
           />
           Use {settings.useAdvancedWalletMode ? 'magic' : 'advanced'} wallet mode
         </rb.Button>
+
+        <rb.Dropdown>
+          <rb.Dropdown.Toggle variant="outline-dark" className="border-0 mb-2 d-inline-flex align-items-center">
+            <Sprite symbol="globe" width="24" height="24" className="me-2" />
+            {languages.find((lng) => lng.key === i18n.language).description}
+          </rb.Dropdown.Toggle>
+
+          <rb.Dropdown.Menu variant={settings.theme === 'light' ? 'light' : 'dark'}>
+            {languages.map((lng, index) => {
+              return (
+                <rb.Dropdown.Item key={index} onClick={() => i18n.changeLanguage(lng.key)}>
+                  {lng.description}
+                </rb.Dropdown.Item>
+              )
+            })}
+            <rb.Dropdown.Item
+              href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
+              rel="noopener noreferrer"
+            >
+              Missing your language? Help us out!
+            </rb.Dropdown.Item>
+          </rb.Dropdown.Menu>
+        </rb.Dropdown>
       </div>
     </div>
   )

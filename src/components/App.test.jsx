@@ -1,46 +1,38 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
-
-import { AllTheProviders } from '../__util__/AllTheProviders'
 
 import App from './App'
 
 it('should display Onboarding screen initially', () => {
-  act(() => {
-    render(<App />, {
-      wrapper: AllTheProviders,
-    })
-  })
+  render(<App />)
 
   // Onboarding screen
   expect(screen.getByText('Get started')).toBeInTheDocument()
   expect(screen.getByText('Skip intro')).toBeInTheDocument()
 
   // Wallets screen shown after Intro is skipped
-  expect(screen.queryByText('Your wallets')).not.toBeInTheDocument()
+  expect(screen.queryByText('wallets.title')).not.toBeInTheDocument()
 
   act(() => {
     const skipIntro = screen.getByText('Skip intro')
     user.click(skipIntro)
   })
 
-  expect(screen.getByText('Your wallets')).toBeInTheDocument()
+  expect(screen.getByText('wallets.title')).toBeInTheDocument()
 })
 
 it('should display Wallets screen directly when Onboarding screen has been shown', () => {
   global.__DEV__.addToAppSettings({ showOnboarding: false })
 
   act(() => {
-    render(<App />, {
-      wrapper: AllTheProviders,
-    })
+    render(<App />)
   })
 
   // Wallets screen
-  expect(screen.getByText('Your wallets')).toBeInTheDocument()
-  expect(screen.getByText('Create new wallet')).toBeInTheDocument()
+  expect(screen.getByText('wallets.title')).toBeInTheDocument()
+  expect(screen.getByText('wallets.button_new_wallet')).toBeInTheDocument()
 
   // footer
   expect(screen.getByText('Docs')).toBeInTheDocument()
@@ -53,9 +45,7 @@ it('should display a modal with alpha warning information', () => {
   global.__DEV__.addToAppSettings({ showOnboarding: false })
 
   act(() => {
-    render(<App />, {
-      wrapper: AllTheProviders,
-    })
+    render(<App />)
   })
 
   expect(screen.getByText('Read this before using.')).toBeInTheDocument()
@@ -74,9 +64,7 @@ it('should display a websocket connection indicator', async () => {
   global.__DEV__.addToAppSettings({ showOnboarding: false })
 
   act(() => {
-    render(<App />, {
-      wrapper: AllTheProviders,
-    })
+    render(<App />)
   })
 
   expect(screen.getByText('•').classList.contains('text-danger')).toBe(true)

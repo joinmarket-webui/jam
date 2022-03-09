@@ -42,7 +42,7 @@ export default function CurrentWalletAdvanced() {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingWallet, loadingUtxos]).finally(() => setIsLoading(false))
+    Promise.all([loadingWallet, loadingUtxos]).finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [currentWallet, setWalletInfo])
