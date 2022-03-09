@@ -63,9 +63,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
         stopWallet()
       }
 
-      if (!res.ok) {
-        setAlert({ variant: 'danger', message: body.message })
-      } else {
+      if (res.ok) {
         const { walletname: lockedWalletName, already_locked } = body
 
         setAlert({
@@ -75,6 +73,8 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           }.`,
           dismissible: true,
         })
+      } else {
+        setAlert({ variant: 'danger', message: body.message })
       }
     } catch (e) {
       setAlert({ variant: 'danger', message: e.message })
