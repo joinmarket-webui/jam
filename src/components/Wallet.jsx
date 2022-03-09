@@ -55,10 +55,10 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       const res = await Api.getWalletLock({ walletName, token })
       const body = await res.json()
 
-      // on status OK or UNAUTHORIZED, stop the wallet and clear all local
-      // information. token might became invalid or another one has been
+      // On status OK or UNAUTHORIZED, stop the wallet and clear all local
+      // information. The token might have become invalid or another one might have been
       // issued for the same wallet, etc.
-      // in any case, user has no access to the wallet anymore.
+      // In any case, the user has no access to the wallet anymore.
       if (res.ok || res.status === 401) {
         stopWallet()
       }
