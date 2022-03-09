@@ -21,7 +21,6 @@ const BASE_PATH = `${window.JM.PUBLIC_PATH}/api`
  * @param {string} token the bearer token
  * @returns an object containing the authorization header
  */
-
 const Authorization = (token) => {
   return { 'x-jm-authorization': `Bearer ${token}` }
 }
@@ -63,7 +62,7 @@ const getWalletDisplay = async ({ walletName, token, signal }) => {
   })
 }
 
-const getSeed = async ({ walletName, token, signal }) => {
+const getWalletSeed = async ({ walletName, token, signal }) => {
   return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/getseed`, {
     headers: { ...Authorization(token) },
     signal,
