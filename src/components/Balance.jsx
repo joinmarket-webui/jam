@@ -74,8 +74,8 @@ export default function Balance({ value, unit, showBalance = false }) {
     )
   }
 
-  const valueIsSats = value === parseInt(value)
-  const valueIsBtc = !valueIsSats && typeof value === 'string' && value.indexOf('.') > -1
+  const valueIsSats = value === parseInt(value) || value === `${parseInt(value)}`
+  const valueIsBtc = !valueIsSats && value.toString().indexOf('.') > -1
 
   const btcSymbol = <span style={{ paddingRight: '0.1em' }}>{'\u20BF'}</span>
   const satSymbol = <Sprite symbol="sats" width="1.2em" height="1.2em" />
