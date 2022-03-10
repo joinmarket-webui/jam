@@ -372,13 +372,11 @@ main {
   width: 2ch;
 }
 
-
 .seedword-index-backup {
   width: 5ch;
 }
 
 .blurred-text {
-
   color: transparent;
   text-shadow: 0 0 15px var(--bs-gray-600);
 }
