@@ -62,6 +62,13 @@ const getWalletDisplay = async ({ walletName, token, signal }) => {
   })
 }
 
+const getWalletSeed = async ({ walletName, token, signal }) => {
+  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/getseed`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
 /**
  * Block access to a currently decrypted wallet.
  * After this (authenticated) action, the wallet will not be readable or writeable.
@@ -189,4 +196,5 @@ export {
   getYieldgenReport,
   postFreeze,
   postConfigGet,
+  getWalletSeed,
 }

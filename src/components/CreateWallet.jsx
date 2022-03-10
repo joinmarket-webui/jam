@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTitle from './PageTitle'
+import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
 import { useCurrentWallet } from '../context/WalletContext'
@@ -103,20 +104,6 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
       >
         Fund wallet
       </rb.Button>
-    </div>
-  )
-}
-
-const Seedphrase = ({ seedphrase, isBlurred = true }) => {
-  return (
-    <div className="seedphrase slashed-zeroes d-flex flex-wrap">
-      {seedphrase.split(' ').map((seedWord, index) => (
-        <div key={index} className="d-flex py-2 ps-2 pe-3">
-          <span className="seedword-index text-secondary text-end">{index + 1}</span>
-          <span className="text-secondary">.&nbsp;</span>
-          <span className={isBlurred ? 'blurred-text' : ''}>{isBlurred ? 'random' : seedWord}</span>
-        </div>
-      ))}
     </div>
   )
 }
