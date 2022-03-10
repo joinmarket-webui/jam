@@ -1,6 +1,6 @@
 {
   "name": "jam",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": true,
   "description": "A friendly UI for JoinMarket",
   "repository": "git@github.com:joinmarket-webui/joinmarket-webui.git",

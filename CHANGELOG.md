@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.0.4](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.3...v0.0.4) (2022-03-10)
+
+#### Fixed
+
+* add bottom spacing to onboarding screen ([#128](https://github.com/joinmarket-webui/joinmarket-webui/issues/128)) ([7fb425f](https://github.com/joinmarket-webui/joinmarket-webui/commit/7fb425fd483bef8fedd95f151c93507f82f86652))
+* address copy button on http sites ([#165](https://github.com/joinmarket-webui/joinmarket-webui/issues/165)) ([34f8d2d](https://github.com/joinmarket-webui/joinmarket-webui/commit/34f8d2dc2b2fb50def6ed3e316e50db769f84154))
+* clear UI wallet if locking fails with status 401 ([#158](https://github.com/joinmarket-webui/joinmarket-webui/issues/158)) ([13f0ac3](https://github.com/joinmarket-webui/joinmarket-webui/commit/13f0ac380383e1c48ec1178890f6fe8cf1e59bc2))
+* display message if utxos are empty ([#166](https://github.com/joinmarket-webui/joinmarket-webui/issues/166)) ([514bc5a](https://github.com/joinmarket-webui/joinmarket-webui/commit/514bc5a96d7a4ae175c63f0ca4b1c5bfe2fa1e0a))
+* fix tests after rename of app to Jam ([#148](https://github.com/joinmarket-webui/joinmarket-webui/issues/148)) ([57a563e](https://github.com/joinmarket-webui/joinmarket-webui/commit/57a563e97c4746f9047754cae0eb4d6a63fa7deb))
+* page reloads ([#162](https://github.com/joinmarket-webui/joinmarket-webui/issues/162)) ([78d15a1](https://github.com/joinmarket-webui/joinmarket-webui/commit/78d15a1a30c5bc755085820bbd85d02056c78eeb))
+* react classname markup ([#123](https://github.com/joinmarket-webui/joinmarket-webui/issues/123)) ([d4c7a49](https://github.com/joinmarket-webui/joinmarket-webui/commit/d4c7a49d5daa903a50798f589f3339587a1ff5e8))
+* set state on mounted component only ([#125](https://github.com/joinmarket-webui/joinmarket-webui/issues/125)) ([198a741](https://github.com/joinmarket-webui/joinmarket-webui/commit/198a741a4e842dc321e23605ffc2af0797dab9e0))
+* suggest number of collaborators based on configured minimum ([#116](https://github.com/joinmarket-webui/joinmarket-webui/issues/116)) ([d2c36bf](https://github.com/joinmarket-webui/joinmarket-webui/commit/d2c36bfc65311163f05c7415993a09c5d5131f82))
+* update suggested number of collaborators ([#150](https://github.com/joinmarket-webui/joinmarket-webui/issues/150)) ([26ffe8c](https://github.com/joinmarket-webui/joinmarket-webui/commit/26ffe8cdeb2146a757c90d05b67d3304485af918))
+* use own qrcode component to display addresses ([#146](https://github.com/joinmarket-webui/joinmarket-webui/issues/146)) ([87299b3](https://github.com/joinmarket-webui/joinmarket-webui/commit/87299b3268fbcb3710ce81cf3db8419325994138))
+* use resolvedLanguage in language picker ([#168](https://github.com/joinmarket-webui/joinmarket-webui/issues/168)) ([b38f7e8](https://github.com/joinmarket-webui/joinmarket-webui/commit/b38f7e840e62a9685685469c514bedfc75da65d5))
+* warn on missing config vars ([#152](https://github.com/joinmarket-webui/joinmarket-webui/issues/152)) ([3180103](https://github.com/joinmarket-webui/joinmarket-webui/commit/3180103da67f70dfd2030cc9db403d30a58a1b4a))
+
+#### Added
+
+* add display seed phrase option to settings ([#160](https://github.com/joinmarket-webui/joinmarket-webui/issues/160)) ([7fb76ff](https://github.com/joinmarket-webui/joinmarket-webui/commit/7fb76ff5d54a03e3ef0763e94f3f10bc3e73c503))
+* allow for deployment in subdirectory ([#124](https://github.com/joinmarket-webui/joinmarket-webui/issues/124)) ([4a3b168](https://github.com/joinmarket-webui/joinmarket-webui/commit/4a3b16847e71a79e8b0b57ccf20c2edb0df5bf98))
+* allow for deployment in subdirectory ([#129](https://github.com/joinmarket-webui/joinmarket-webui/issues/129)) ([c022c20](https://github.com/joinmarket-webui/joinmarket-webui/commit/c022c205bbc3d428262ab66e1cc264885907f445))
+* i18n ([#153](https://github.com/joinmarket-webui/joinmarket-webui/issues/153)) ([cc168eb](https://github.com/joinmarket-webui/joinmarket-webui/commit/cc168eb49faf7495bc653ff104f6cac1c090dbbe))
+* readd websocket connection ([#122](https://github.com/joinmarket-webui/joinmarket-webui/issues/122)) ([03e58c9](https://github.com/joinmarket-webui/joinmarket-webui/commit/03e58c905977138c0dbca740111706f801be2b02))
+* remove privacy levels on receive screen in magic mode ([#141](https://github.com/joinmarket-webui/joinmarket-webui/issues/141)) ([1852eca](https://github.com/joinmarket-webui/joinmarket-webui/commit/1852eca5c964d2ffd6852015a7ae9f65883f9b47))
+
 ### [0.0.3](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.2...v0.0.3) (2022-02-18)
 
 #### Fixed
