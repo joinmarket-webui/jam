@@ -189,7 +189,9 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
       })
       // show the loader a little longer to avoid flickering
       .then((_) => new Promise((r) => setTimeout(r, 200)))
-      .finally(() => setIsReportLoading(false))
+      .finally(() => {
+        !abortCtrl.signal.aborted && setIsReportLoading(false)
+      })
 
     return () => abortCtrl.abort()
   }, [makerRunning, isShowReport])

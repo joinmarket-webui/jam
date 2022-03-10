@@ -26,17 +26,18 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
       setIsUnlocking(true)
       try {
         const res = await Api.postWalletUnlock({ walletName }, { password })
+        const json = await res.json()
+        setIsUnlocking(false)
         if (res.ok) {
-          const { walletname: unlockedWalletName, token } = await res.json()
+          const { walletname: unlockedWalletName, token } = json
           startWallet(unlockedWalletName, token)
           navigate('/wallet')
         } else {
-          const { message } = await res.json()
+          const { message } = json
           setAlert({
             variant: 'danger',
             message: message.replace('Wallet', walletName),
           })
-          setIsUnlocking(false)
         }
       } catch (e) {
         setAlert({ variant: 'danger', message: e.message })
@@ -45,23 +46,26 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
     }
   }
 
-  const lockWallet = async (name) => {
-    if (currentWallet && currentWallet.name !== name) {
-      setAlert({
-        variant: 'warning',
-        message: `${walletDisplayName(name)} is not unlocked.`,
-      })
-    }
-
+  const lockWallet = async () => {
     try {
       const { name: walletName, token } = currentWallet
       setAlert(null)
       setIsLocking(true)
 
       const res = await Api.getWalletLock({ walletName, token })
-      if (res.ok) {
-        const { walletname: lockedWalletName, already_locked } = await res.json()
+      const body = await res.json()
+
+      // On status OK or UNAUTHORIZED, stop the wallet and clear all local
+      // information. The token might have become invalid or another one might have been
+      // issued for the same wallet, etc.
+      // In any case, the user has no access to the wallet anymore.
+      if (res.ok || res.status === 401) {
         stopWallet()
+      }
+
+      if (res.ok) {
+        const { walletname: lockedWalletName, already_locked } = body
+
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           message: `${walletDisplayName(lockedWalletName)} ${
@@ -70,8 +74,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           dismissible: true,
         })
       } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
+        setAlert({ variant: 'danger', message: body.message })
       }
     } catch (e) {
       setAlert({ variant: 'danger', message: e.message })
@@ -95,7 +98,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
           unlockWallet(name, password)
           break
         case 'lock':
-          lockWallet(name)
+          lockWallet()
           break
         default:
           break
@@ -147,7 +150,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                           Locking
                         </>
                       ) : (
-                        'Lock'
+                        <>Lock</>
                       )}
                     </rb.Button>
                   </>
@@ -182,7 +185,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                           Unlocking
                         </>
                       ) : (
-                        'Unlock'
+                        <>Unlock</>
                       )}
                     </rb.Button>
                     <rb.Form.Control.Feedback type="invalid">

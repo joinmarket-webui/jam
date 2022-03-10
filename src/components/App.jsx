@@ -19,7 +19,7 @@ import {
   CJ_STATE_MAKER_RUNNING,
 } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
-import { getSession, setSession, clearSession } from '../session'
+import { setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 import Onboarding from './Onboarding'
 
@@ -93,12 +93,12 @@ export default function App() {
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
           const { maker_running, coinjoin_in_process, wallet_name } = data
-          const activeWallet = wallet_name !== 'None' ? wallet_name : null
+          const activeWalletName = wallet_name !== 'None' ? wallet_name : null
 
           setConnectionError(null)
           setMakerRunning(maker_running)
           setCoinjoinInProcess(coinjoin_in_process)
-          if (currentWallet && (!activeWallet || currentWallet.name !== activeWallet)) {
+          if (currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)) {
             setCurrentWallet(null)
             setCurrentWalletInfo(null)
             clearSession()
@@ -118,13 +118,6 @@ export default function App() {
       clearInterval(interval)
     }
   }, [currentWallet, setCurrentWallet, setCurrentWalletInfo])
-
-  useEffect(() => {
-    const session = getSession()
-    if (session) {
-      return startWallet(session.name, session.token)
-    }
-  }, [startWallet])
 
   if (settings.showOnboarding === true) {
     return (
