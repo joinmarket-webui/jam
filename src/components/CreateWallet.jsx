@@ -72,7 +72,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid, key }) => {
 
   return (
     <rb.InputGroup>
-      <rb.InputGroup.Text>{number}.</rb.InputGroup.Text>
+      <rb.InputGroup.Text className="seedword-index-backup">{number}.</rb.InputGroup.Text>
       <rb.FormControl
         key={key}
         type="text"
