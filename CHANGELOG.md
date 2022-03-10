@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.0.4](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.3...v0.0.4) (2022-03-10)
+
+#### Fixed
+
+* address copy button on http sites ([#165](https://github.com/joinmarket-webui/joinmarket-webui/issues/165)) ([34f8d2d](https://github.com/joinmarket-webui/joinmarket-webui/commit/34f8d2dc2b2fb50def6ed3e316e50db769f84154))
+* page reloads ([#162](https://github.com/joinmarket-webui/joinmarket-webui/issues/162)) ([78d15a1](https://github.com/joinmarket-webui/joinmarket-webui/commit/78d15a1a30c5bc755085820bbd85d02056c78eeb))
+* suggest number of collaborators based on configured minimum ([#116](https://github.com/joinmarket-webui/joinmarket-webui/issues/116)) ([d2c36bf](https://github.com/joinmarket-webui/joinmarket-webui/commit/d2c36bfc65311163f05c7415993a09c5d5131f82))
+* update suggested number of collaborators ([#150](https://github.com/joinmarket-webui/joinmarket-webui/issues/150)) ([26ffe8c](https://github.com/joinmarket-webui/joinmarket-webui/commit/26ffe8cdeb2146a757c90d05b67d3304485af918))
+* qrcode on receive page ([#146](https://github.com/joinmarket-webui/joinmarket-webui/issues/146)) ([87299b3](https://github.com/joinmarket-webui/joinmarket-webui/commit/87299b3268fbcb3710ce81cf3db8419325994138))
+* warn on missing config vars ([#152](https://github.com/joinmarket-webui/joinmarket-webui/issues/152)) ([3180103](https://github.com/joinmarket-webui/joinmarket-webui/commit/3180103da67f70dfd2030cc9db403d30a58a1b4a))
+
+#### Added
+
+* show seed phrase in settings ([#160](https://github.com/joinmarket-webui/joinmarket-webui/issues/160)) ([7fb76ff](https://github.com/joinmarket-webui/joinmarket-webui/commit/7fb76ff5d54a03e3ef0763e94f3f10bc3e73c503))
+* i18n ([#153](https://github.com/joinmarket-webui/joinmarket-webui/issues/153)) ([cc168eb](https://github.com/joinmarket-webui/joinmarket-webui/commit/cc168eb49faf7495bc653ff104f6cac1c090dbbe))
+
 ### [0.0.3](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.2...v0.0.3) (2022-02-18)
 
 #### Fixed
