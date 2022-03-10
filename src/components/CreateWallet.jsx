@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import PageTitle from './PageTitle'
@@ -65,7 +65,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid, key }) => {
 
   useEffect(() => {
     if (!isValid && enteredWord === targetWord) {
-      // Only use callback when value changes from false -> true to prevent an endless re-rendering loop.
+      // Only use effect when value changes from false -> true to prevent an endless re-rendering loop.
       setIsValid(true)
     }
   }, [enteredWord, targetWord, setIsValid, isValid])
