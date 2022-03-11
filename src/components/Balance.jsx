@@ -53,6 +53,19 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
   )
 }
 
+/**
+ * Render balances nicely formatted.
+ *
+ * @param {valueString}: The balance value to render.
+ * Integer values are treated as SATS while decimal numbers with a decimal point (.) are treated as BTC.
+ * For example:
+ *  - 0, 10, 2100000000000000 are treated as a value in SATS; while
+ *  - 0.00000000, 150.00000001, 21000000.00000000 are treated as a value in BTC.
+ * @param {convertToUnit}: The unit to convert the `valueString` to.
+ * Possible options are `BTC` and `SATS` from `src/utils.js`
+ * @param {showBalance}: A flag indicating whether to render or hide the balance.
+ * Hidden balances are masked with `*****`.
+ */
 export default function Balance({ valueString, convertToUnit, showBalance = false }) {
   const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
 
