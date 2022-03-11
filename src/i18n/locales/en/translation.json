@@ -53,6 +53,21 @@
     "text_loading": "Loading wallets",
     "button_new_wallet": "Create new wallet",
     "alert_wallet_open": "There can be only one active wallet. If you want to open another wallet, please lock '{{ currentWalletName }}' first.",
-    "error_loading_failed": "Loading wallets failed."
+    "error_loading_failed": "Loading wallets failed.",
+    "wallet": {
+      "alert_wallet_already_unlocked": "{{ walletName }} is already unlocked.",
+      "alert_other_wallet_unlocked": "{{ walletName }} is currently in use, please lock it first.",
+      "alert_wallet_locked_successfully": "{{ walletName }} locked successfully.",
+      "alert_wallet_already_locked": "{{ walletName }} already locked.",
+      "wallet_active": "Active",
+      "wallet_inactive": "Inactive",
+      "button_open": "Open",
+      "button_lock": "Lock",
+      "button_unlock": "Unlock",
+      "button_locking": "Locking",
+      "button_unlocking": "Unlocking",
+      "feedback_missing_password": "Please set the wallet's password.",
+      "alert_missing_token": "This wallet is active, but there is no token to interact with it. Please remove the lock file on the server."
+    }
   }
 }

@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import { serialize, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 
 export default function Wallet({ name, currentWallet, startWallet, stopWallet, setAlert, ...props }) {
+  const { t } = useTranslation()
   const [validated, setValidated] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
@@ -17,9 +19,9 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
         message:
           currentWallet.name === walletName
             ? // unlocking same wallet
-              `${walletDisplayName(walletName)} is already unlocked.`
+              t('wallets.wallet.alert_wallet_already_unlocked', { walletName: walletDisplayName(walletName) })
             : // unlocking another wallet while one is already unlocked
-              `${walletDisplayName(currentWallet.name)} is currently in use, please lock it first.`,
+              t('wallets.wallet.alert_other_wallet_unlocked', { walletName: walletDisplayName(walletName) }),
       })
     } else {
       setAlert(null)
@@ -68,9 +70,9 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
 
         setAlert({
           variant: already_locked ? 'warning' : 'success',
-          message: `${walletDisplayName(lockedWalletName)} ${
-            already_locked ? 'already locked' : 'locked successfully'
-          }.`,
+          message: already_locked
+            ? t('wallets.wallet.alert_wallet_already_locked', { walletName: walletDisplayName(lockedWalletName) })
+            : t('wallets.wallet.alert_wallet_locked_successfully', { walletName: walletDisplayName(lockedWalletName) }),
           dismissible: true,
         })
       } else {
@@ -126,14 +128,18 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                   <>{walletDisplayName(name)}</>
                 )}
               </rb.Card.Title>
-              {isActive ? <span className="text-success">Active</span> : <span className="text-muted">Inactive</span>}
+              {isActive ? (
+                <span className="text-success">{t('wallets.wallet.wallet_active')}</span>
+              ) : (
+                <span className="text-muted">{t('wallets.wallet.wallet_inactive')}</span>
+              )}
             </div>
             <div>
               {isActive ? (
                 hasToken ? (
                   <>
                     <Link className="btn btn-outline-dark me-2" to="/wallet">
-                      Open
+                      {t('wallets.wallet.button_open')}
                     </Link>
                     <rb.FormControl type="hidden" name="action" value="lock" />
                     <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
@@ -147,17 +153,16 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                             aria-hidden="true"
                             className="me-2"
                           />
-                          Locking
+                          {t('wallets.wallet.button_locking')}
                         </>
                       ) : (
-                        <>Lock</>
+                        <>{t('wallets.wallet.button_lock')}</>
                       )}
                     </rb.Button>
                   </>
                 ) : (
                   <rb.Alert variant="warning" className="mb-0">
-                    This wallet is active, but there is no token to interact with it. Please remove the lock file on the
-                    server.
+                    {t('wallets.wallet.alert_missing_token')}
                   </rb.Alert>
                 )
               ) : (
@@ -182,14 +187,14 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                             aria-hidden="true"
                             className="me-2"
                           />
-                          Unlocking
+                          {t('wallets.wallet.button_unlocking')}
                         </>
                       ) : (
-                        <>Unlock</>
+                        <>{t('wallets.wallet.button_unlock')}</>
                       )}
                     </rb.Button>
                     <rb.Form.Control.Feedback type="invalid">
-                      Please set the wallet's password.
+                      {t('wallets.wallet.feedback_missing_password')}
                     </rb.Form.Control.Feedback>
                   </rb.InputGroup>
                 )
