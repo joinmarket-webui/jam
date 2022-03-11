@@ -6,6 +6,9 @@ const DISPLAY_MODE_BTC = 0
 const DISPLAY_MODE_SATS = 1
 const DISPLAY_MODE_HIDDEN = 2
 
+const decimalPoint = '\u002E'
+const nbHalfSpace = '\u202F'
+
 const getDisplayMode = (unit, showBalance) => {
   if (showBalance && unit === SATS) return DISPLAY_MODE_SATS
   if (showBalance && unit === BTC) return DISPLAY_MODE_BTC
@@ -20,9 +23,6 @@ const formatBtc = (value) => {
   })
 
   const numberString = formatter.format(value)
-
-  const decimalPoint = '\u002E'
-  const nbHalfSpace = '\u202F'
 
   const [integerPart, fractionalPart] = numberString.split(decimalPoint)
 
@@ -53,14 +53,14 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
   )
 }
 
-export default function Balance({ value, unit, showBalance = false }) {
-  const [unitMode, setUnitMode] = useState(getDisplayMode(unit, showBalance))
+export default function Balance({ valueString, convertToUnit, showBalance = false }) {
+  const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
 
   useEffect(() => {
-    setUnitMode(getDisplayMode(unit, showBalance))
-  }, [unit, showBalance])
+    setDisplayMode(getDisplayMode(convertToUnit, showBalance))
+  }, [convertToUnit, showBalance])
 
-  if (unitMode === DISPLAY_MODE_HIDDEN) {
+  if (displayMode === DISPLAY_MODE_HIDDEN) {
     return (
       <BalanceComponent
         symbol={
@@ -74,22 +74,29 @@ export default function Balance({ value, unit, showBalance = false }) {
     )
   }
 
-  const valueIsSats = value === parseInt(value) || value === `${parseInt(value)}`
-  const valueIsBtc = !valueIsSats && value.toString().indexOf('.') > -1
+  if (typeof valueString !== 'string') {
+    console.warn('<Balance /> component expects string input')
+    return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
+  }
+
+  // Treat integers as sats.
+  const valueIsSats = valueString === Number.parseInt(valueString).toString()
+  // Treat decimal numbers as btc.
+  const valueIsBtc = !valueIsSats && !Number.isNaN(Number.parseFloat(valueString)) && valueString.indexOf('.') > -1
 
   const btcSymbol = <span style={{ paddingRight: '0.1em' }}>{'\u20BF'}</span>
   const satSymbol = <Sprite symbol="sats" width="1.2em" height="1.2em" />
 
-  if (valueIsBtc && unitMode === DISPLAY_MODE_BTC)
-    return <BalanceComponent symbol={btcSymbol} value={formatBtc(value)} symbolIsPrefix={true} />
-  if (valueIsSats && unitMode === DISPLAY_MODE_SATS)
-    return <BalanceComponent symbol={satSymbol} value={formatSats(value)} symbolIsPrefix={false} />
+  if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
+    return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueString)} symbolIsPrefix={true} />
+  if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
+    return <BalanceComponent symbol={satSymbol} value={formatSats(valueString)} symbolIsPrefix={false} />
 
-  if (valueIsBtc && unitMode === DISPLAY_MODE_SATS)
-    return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(value))} symbolIsPrefix={false} />
-  if (valueIsSats && unitMode === DISPLAY_MODE_BTC)
-    return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(value))} symbolIsPrefix={true} />
+  if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
+    return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(valueString))} symbolIsPrefix={false} />
+  if (valueIsSats && displayMode === DISPLAY_MODE_BTC)
+    return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
 
-  // Something unexpected happened. Simply render what was passed in the props.
-  return <BalanceComponent symbol={unit} value={value} symbolIsPrefix={false} />
+  console.warn('<Balance /> component cannot determine balance format')
+  return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
 }

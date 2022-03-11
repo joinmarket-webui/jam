@@ -18,7 +18,7 @@ const BranchEntry = ({ entry, ...props }) => {
             <code className="text-break">{hdPath}</code>
           </rb.Col>
           <rb.Col lg={{ order: 'last' }} className="d-flex align-items-center justify-content-end">
-            <Balance value={amount} unit={settings.unit} showBalance={settings.showBalance} />
+            <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
           <rb.Col xs={'auto'}>
             <code className="text-break">{address}</code> {labels && <span className="badge bg-info">{labels}</span>}
@@ -45,7 +45,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                 </h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end">
-                <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
+                <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
               </rb.Col>
             </rb.Row>
           </rb.Accordion.Header>
@@ -65,7 +65,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                       <h6>{titleize(type)}</h6>
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center justify-content-end">
-                      <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
+                      <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
                     </rb.Col>
                   </rb.Row>
                   <rb.Row className="p-3">

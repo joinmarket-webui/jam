@@ -61,7 +61,7 @@ const Utxo = ({ utxo, ...props }) => {
           <rb.Col sm={6} md={4}>
             <rb.Stack className="d-flex align-items-end">
               <div>
-                <Balance value={utxo.value} unit={settings.unit} showBalance={settings.showBalance} />
+                <Balance valueString={utxo.value} convertToUnit={settings.unit} showBalance={settings.showBalance} />
               </div>
               <div>
                 <small className="text-secondary">{utxo.confirmations} Confirmations</small>

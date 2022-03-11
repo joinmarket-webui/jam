@@ -15,7 +15,7 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
         {walletInfo && walletInfo?.total_balance && unit ? (
           <div className="text-body">
-            <Balance value={walletInfo.total_balance} unit={unit} showBalance={showBalance || false} />
+            <Balance valueString={walletInfo.total_balance} convertToUnit={unit} showBalance={showBalance || false} />
           </div>
         ) : (
           <div className="invisible">
