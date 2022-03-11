@@ -73,6 +73,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 }
 
 const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
+  const { t } = useTranslation()
   const [userConfirmed, setUserConfirmed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
   const [sensitiveInfoWasRevealed, setSensitiveInfoWasRevealed] = useState(false)
@@ -80,21 +81,21 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   return (
     <div>
       <div className="mb-4">
-        <div>Wallet Name</div>
+        <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
         <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
       </div>
       <div className="mb-4">
         <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
       </div>
       <div className="mb-4">
-        <div>Password</div>
+        <div>{t('create_wallet.confirmation_label_password')}</div>
         <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
           {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
         </div>
       </div>
       <div className="mb-2">
         <ToggleSwitch
-          label="Reveal sensitive information"
+          label={t('create_wallet.confirmation_toggle_reveal_info')}
           onToggle={(isToggled) => {
             setRevealSensitiveInfo(isToggled)
             setSensitiveInfoWasRevealed(true)
@@ -103,7 +104,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
       </div>
       <div className="mb-4">
         <ToggleSwitch
-          label="I've written down the information above."
+          label={t('create_wallet.confirmation_toggle_info_written_down')}
           onToggle={(isToggled) => setUserConfirmed(isToggled)}
         />
       </div>
@@ -113,7 +114,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         disabled={!sensitiveInfoWasRevealed || !userConfirmed}
         onClick={() => userConfirmed && walletConfirmed()}
       >
-        Fund wallet
+        {t('create_wallet.confirmation_button_fund_wallet')}
       </rb.Button>
     </div>
   )
@@ -154,7 +155,7 @@ export default function CreateWallet({ startWallet }) {
       startWallet(createdWallet.name, createdWallet.token)
       navigate('/wallet')
     } else {
-      setAlert({ variant: 'danger', message: 'Wallet confirmation failed.' })
+      setAlert({ variant: 'danger', message: t('alert_confirmation_failed') })
     }
   }
 

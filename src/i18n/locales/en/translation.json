@@ -83,6 +83,12 @@
     "placeholder_password": "Choose a secure password...",
     "feedback_invalid_password": "Please set a password.",
     "button_create": "Create",
-    "button_creating": "Creating"
+    "button_creating": "Creating",
+    "alert_confirmation_failed": "Wallet confirmation failed.",
+    "confirmation_label_wallet_name": "Wallet Name",
+    "confirmation_label_password": "Password",
+    "confirmation_toggle_reveal_info": "Reveal sensitive information",
+    "confirmation_toggle_info_written_down": "I've written down the information above.",
+    "confirmation_button_fund_wallet": "Fund Wallet"
   }
 }
