@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
@@ -9,6 +10,7 @@ import { useCurrentWallet } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
+  const { t } = useTranslation()
   const [validated, setValidated] = useState(false)
 
   const onSubmit = (e) => {
@@ -28,32 +30,41 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
     <>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <rb.Form.Group className="mb-4" controlId="walletName">
-          <rb.Form.Label>Wallet Name</rb.Form.Label>
-          <rb.Form.Control name="wallet" placeholder="Your wallet..." disabled={isCreating} required />
-          <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
-          <rb.Form.Control.Feedback type="invalid">Please set a wallet name.</rb.Form.Control.Feedback>
+          <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
+          <rb.Form.Control
+            name="wallet"
+            placeholder={t('create_wallet.placeholder_wallet_name')}
+            disabled={isCreating}
+            required
+          />
+          <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback type="invalid">
+            {t('create_wallet.feedback_invalid_wallet_name')}
+          </rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Form.Group className="mb-4" controlId="password">
-          <rb.Form.Label>Password</rb.Form.Label>
+          <rb.Form.Label>{t('create_wallet.label_password')}</rb.Form.Label>
           <rb.Form.Control
             name="password"
             type="password"
-            placeholder="Choose a secure password..."
+            placeholder={t('create_wallet.placeholder_password')}
             disabled={isCreating}
             autoComplete="new-password"
             required
           />
-          <rb.Form.Control.Feedback>Looks good!</rb.Form.Control.Feedback>
-          <rb.Form.Control.Feedback type="invalid">Please set a password.</rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback type="invalid">
+            {t('create_wallet.feedback_invalid_password')}
+          </rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Button variant="dark" type="submit" disabled={isCreating}>
           {isCreating ? (
             <div>
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              Creating
+              {t('create_wallet.button_creating')}
             </div>
           ) : (
-            'Create'
+            t('create_wallet.button_create')
           )}
         </rb.Button>
       </rb.Form>
@@ -109,6 +120,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
 }
 
 export default function CreateWallet({ startWallet }) {
+  const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const navigate = useNavigate()
 
@@ -153,23 +165,26 @@ export default function CreateWallet({ startWallet }) {
     <div className="create-wallet">
       {isCreated ? (
         <PageTitle
-          title="Wallet created successfully!"
-          subtitle="Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!"
+          title={t('create_wallet.title_wallet_created')}
+          subtitle={t('create_wallet.subtitle_wallet_created')}
           success
         />
       ) : (
-        <PageTitle title="Create Wallet" />
+        <PageTitle title={t('create_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
       {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
-          Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.{' '}
-          <Link to="/" className="alert-link">
-            Go back
-          </Link>
-          .
+          <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
+            Currently <strong>{{ walletName: walletDisplayName(currentWallet.name) }}</strong> is active. You need to
+            lock it first.
+            <Link to="/" className="alert-link">
+              Go back
+            </Link>
+            .
+          </Trans>
         </rb.Alert>
       )}
     </div>

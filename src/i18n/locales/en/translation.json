@@ -69,5 +69,20 @@
       "feedback_missing_password": "Please set the wallet's password.",
       "alert_missing_token": "This wallet is active, but there is no token to interact with it. Please remove the lock file on the server."
     }
+  },
+  "create_wallet": {
+    "title": "Create Wallet",
+    "title_wallet_created": "Wallet created successfully!",
+    "subtitle_wallet_created": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
+    "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",
+    "feedback_valid": "Looks good!",
+    "label_wallet_name": "Wallet Name",
+    "placeholder_wallet_name": "Your Wallet...",
+    "feedback_invalid_wallet_name": "Please set a wallet name.",
+    "label_password": "Password",
+    "placeholder_password": "Choose a secure password...",
+    "feedback_invalid_password": "Please set a password.",
+    "button_create": "Create",
+    "button_creating": "Creating"
   }
 }
