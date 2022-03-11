@@ -1,4 +1,30 @@
 {
+  "navbar": {
+    "title": "Jam",
+    "button_create_wallet": "Create Wallet",
+    "tab_send": "Send",
+    "tab_receive": "Receive",
+    "tab_earn": "Earn",
+    "joining_in_progress": "Joining",
+    "menu_mobile": "Menu",
+    "menu_mobile_settings": "Settings",
+    "menu_mobile_wallets": "Wallets"
+  },
+  "app": {
+    "alert_no_connection": "No connecction to backend: {{ connectionError }}"
+  },
+  "footer": {
+    "warning": "This is alpha software.<br /><1>Read this before using.</1>",
+    "warning_alert_title": "Warning",
+    "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.",
+    "warning_alert_button_ok": "Fine with me.",
+    "docs": "Docs",
+    "features": "Features",
+    "github": "GitHub",
+    "twitter": "Twitter",
+    "connected": "Connected",
+    "disconnected": "Disconnected"
+  },
   "onboarding": {
     "splashscreen_title": "Jam",
     "splashscreen_subtitle": "A friendly UI for JoinMarket",
