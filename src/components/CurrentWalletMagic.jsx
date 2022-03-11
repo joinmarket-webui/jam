@@ -13,7 +13,7 @@ const WalletHeader = ({ name, balance, unit, showBalance }) => {
     <div className="d-flex flex-column align-items-center">
       <h6 className="text-secondary">{walletDisplayName(name)}</h6>
       <h4>
-        <Balance value={balance} unit={unit} showBalance={showBalance || false} />
+        <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
       </h4>
     </div>
   )
@@ -54,7 +54,7 @@ const PrivacyLevel = ({ numAccounts, level, balance }) => {
         {outlinedShields}
       </div>
       <div className="ps-2">
-        <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
+        <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
       </div>
     </div>
   )
