@@ -179,7 +179,7 @@ export default function App() {
                     }
                   />
                   <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
-                  <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
+                  <Route path="settings" element={<Settings />} />
                 </>
               )}
             </Route>

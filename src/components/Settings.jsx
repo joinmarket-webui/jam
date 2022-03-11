@@ -6,11 +6,13 @@ import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { SATS, BTC } from '../utils'
+import { useCurrentWallet } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import { useTranslation } from 'react-i18next'
 import languages from '../i18n/languages'
 
-export default function Settings({ currentWallet }) {
+const JamSettings = () => {
+  const currentWallet = useCurrentWallet()
   const [seed, setSeed] = useState('')
   const [showingSeed, setShowingSeed] = useState(false)
   const [revealSeed, setRevealSeed] = useState(false)
@@ -31,7 +33,6 @@ export default function Settings({ currentWallet }) {
 
   return (
     <div>
-      <PageTitle title="Settings" />
       <div style={{ marginLeft: '-.75rem' }}>
         <rb.Button
           variant="outline-dark"
@@ -169,6 +170,16 @@ export default function Settings({ currentWallet }) {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+export default function Settings() {
+  return (
+    <div>
+      <PageTitle title="Settings" />
+
+      <JamSettings />
     </div>
   )
 }
