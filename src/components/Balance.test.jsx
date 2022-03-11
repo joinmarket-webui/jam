@@ -42,6 +42,26 @@ describe('<Balance />', () => {
     expect(screen.getByText(`0`)).toBeInTheDocument()
   })
 
+  it('should render a large string BTC value correctly as BTC', () => {
+    render(<Balance valueString={'20999999.97690000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByText(`20,999,999.97 690 000`)).toBeInTheDocument()
+  })
+
+  it('should render a large string BTC value correctly as SATS', () => {
+    render(<Balance valueString={'20999999.97690000'} convertToUnit={SATS} showBalance={true} />)
+    expect(screen.getByText(`2,099,999,997,690,000`)).toBeInTheDocument()
+  })
+
+  it('should render a max string BTC value correctly as BTC', () => {
+    render(<Balance valueString={'21000000.00000000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByText(`21,000,000.00 000 000`)).toBeInTheDocument()
+  })
+
+  it('should render a max string BTC value correctly as SATS', () => {
+    render(<Balance valueString={'21000000.00000000'} convertToUnit={SATS} showBalance={true} />)
+    expect(screen.getByText(`2,100,000,000,000,000`)).toBeInTheDocument()
+  })
+
   it('should render a number BTC value as fallback', () => {
     render(<Balance valueString={123.456} convertToUnit={BTC} showBalance={true} />)
     expect(screen.getByText(`123.456`)).toBeInTheDocument()
@@ -55,6 +75,36 @@ describe('<Balance />', () => {
   it('should render a string SATS value correctly as BTC', () => {
     render(<Balance valueString={'43000'} convertToUnit={BTC} showBalance={true} />)
     expect(screen.getByText(`0.00 043 000`)).toBeInTheDocument()
+  })
+
+  it('should render a zero string SATS value correctly as BTC', () => {
+    render(<Balance valueString={'0'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByText(`0.00 000 000`)).toBeInTheDocument()
+  })
+
+  it('should render a zero string SATS value correctly as SATS', () => {
+    render(<Balance valueString={'0'} convertToUnit={SATS} showBalance={true} />)
+    expect(screen.getByText(`0`)).toBeInTheDocument()
+  })
+
+  it('should render a large string SATS value correctly as BTC', () => {
+    render(<Balance valueString={'2099999997690000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByText(`20,999,999.97 690 000`)).toBeInTheDocument()
+  })
+
+  it('should render a large string SATS value correctly as SATS', () => {
+    render(<Balance valueString={'2099999997690000'} convertToUnit={SATS} showBalance={true} />)
+    expect(screen.getByText(`2,099,999,997,690,000`)).toBeInTheDocument()
+  })
+
+  it('should render a max string SATS value correctly as BTC', () => {
+    render(<Balance valueString={'2100000000000000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByText(`21,000,000.00 000 000`)).toBeInTheDocument()
+  })
+
+  it('should render a max string SATS value correctly as SATS', () => {
+    render(<Balance valueString={'2100000000000000'} convertToUnit={SATS} showBalance={true} />)
+    expect(screen.getByText(`2,100,000,000,000,000`)).toBeInTheDocument()
   })
 
   it('should render a number SATS value as fallback', () => {
