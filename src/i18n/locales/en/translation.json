@@ -1,4 +1,26 @@
 {
+  "onboarding": {
+    "splashscreen_title": "Jam",
+    "splashscreen_subtitle": "A friendly UI for JoinMarket",
+    "splashscreen_button_get_started": "Get started",
+    "splashscreen_button_skip_intro": "Skip intro",
+    "splashscreen_description_line1": "Your wallet, your coins.",
+    "splashscreen_description_line2": "100% open-source & open-design.",
+    "splashscreen_warning_title": "Warning",
+    "splashscreen_warning_text": "While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution. <1>Help us improve the project on GitHub.</1>",
+    "screen_1_title": "Welcome to Jam for JoinMarket!",
+    "screen_1_description": "JoinMarket is a privacy-focused software solution that aims to improve the confidentiality and privacy of your bitcoin transactions. It facilitates the creation of collaborative transactions through a peer-to-peer marketplace.",
+    "screen_2_title": "Collaborative Transactions",
+    "screen_2_description": "To have strong privacy guarantees in the open and transparent world of bitcoin, special kinds of transactions have to be created. JoinMarket helps you to create these transactions in an easy and automated way.",
+    "screen_3_title": "You Are In Control",
+    "screen_3_description": "JoinMarket is fully non-custodial, meaning that you always have full control over your funds. The system uses Bitcoin’s smart contracts to make sure that all transactions are atomic and your funds are secure at all times.",
+    "screen_4_title": "No Trusted Third Parties",
+    "screen_4_description": "Since JoinMarket is a peer-to-peer system, trusted third parties are eliminated from the get-go. This unique market-driven approach reduces counterparty risk to a minimum.",
+    "screen_5_title": "Privacy for All",
+    "screen_5_description": "JoinMarket is free and open-source software without a single point of failure. Everyone is free to use it and build upon it.",
+    "button_next": "Next",
+    "button_complete": "Let's go!"
+  },
   "wallets": {
     "title": "Your Wallets",
     "subtitle_no_wallets": "It looks like you do not have a wallet, yet.",
