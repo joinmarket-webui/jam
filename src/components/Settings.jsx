@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useReducer } from 'react'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
@@ -174,12 +174,150 @@ const JamSettings = () => {
   )
 }
 
+const flatSectionReducer = (state, action) => ({ ...state, [action.key]: action.value })
+const withSubsectionReducer = (state, action) => ({
+  ...state,
+  [action.key]: Object.assign({}, state[action.key], action.value),
+})
+
+const JoinMarketSettings = () => {
+  const currentWallet = useCurrentWallet()
+  const [isLoading, setIsLoading] = useState(true)
+  const [alert, setAlert] = useState(null)
+
+  const [blockchainSection, dispatchBlockchainEntry] = useReducer(flatSectionReducer, {})
+  const [timeoutSection, dispatchTimeoutEntry] = useReducer(flatSectionReducer, {})
+  const [policySection, dispatchPolicyEntry] = useReducer(flatSectionReducer, {})
+  const [messagingSection, dispatchMessagingEntry] = useReducer(withSubsectionReducer, {})
+
+  useEffect(() => {
+    const fetchConfig = (context, section, field) =>
+      Api.postConfigGet(context, { section, field })
+        .then((res) =>
+          res.ok ? res.json() : Promise.reject(new Error(`Could not fetch config value '[${section}]:${field}'`))
+        )
+        .then((json) => json.configvalue)
+
+    const _fetchFlatConfig = (section) => (context, field) => fetchConfig(context, section, field)
+    const _fetchSubsectionConfig = (subsection) => (section) => _fetchFlatConfig(`${section}:${subsection}`)
+
+    const abortCtrl = new AbortController()
+
+    const requestContext = {
+      walletName: currentWallet.name,
+      token: currentWallet.token,
+      signal: abortCtrl.signal,
+    }
+
+    setIsLoading(true)
+
+    const _fetchAndSetConfig = (fetchFn, section, dispatchFn) => (key) =>
+      fetchFn(section)(requestContext, key).then((value) => dispatchFn({ key, value }))
+
+    const fetchAndSetBlockchainConfig = _fetchAndSetConfig(_fetchFlatConfig, 'BLOCKCHAIN', dispatchBlockchainEntry)
+    const fetchAndSetTimeoutConfig = _fetchAndSetConfig(_fetchFlatConfig, 'TIMEOUT', dispatchTimeoutEntry)
+    const fetchAndSetPolicyConfig = _fetchAndSetConfig(_fetchFlatConfig, 'POLICY', dispatchPolicyEntry)
+
+    const fetchAndSetMessagingConfig = (subsection, key) =>
+      _fetchSubsectionConfig(subsection)(`MESSAGING`)(requestContext, key).then((value) =>
+        dispatchMessagingEntry({ key: subsection, value: { [`${key}`]: value } })
+      )
+
+    const loadingBlockchain = Promise.all(
+      ['blockchain_source', 'network', 'rpc_wallet_file'].map(fetchAndSetBlockchainConfig)
+    )
+    const loadingTimeout = Promise.all(
+      ['maker_timeout_sec', 'unconfirm_timeout_sec', 'confirm_timeout_hours'].map(fetchAndSetTimeoutConfig)
+    )
+    const loadingPolicy = Promise.all(
+      ['minimum_makers', 'max_cj_fee_abs', 'max_cj_fee_rel', 'taker_utxo_age'].map(fetchAndSetPolicyConfig)
+    )
+
+    const loadingMessaging = Promise.all(
+      [
+        ['server1', 'host'],
+        ['server1', 'socks5'],
+      ].map((keyval) => fetchAndSetMessagingConfig(keyval[0], keyval[1]))
+    )
+
+    Promise.all([loadingBlockchain, loadingTimeout, loadingPolicy, loadingMessaging])
+      .catch((err) => {
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+
+    return () => abortCtrl.abort()
+  }, [currentWallet])
+
+  return (
+    <div>
+      {isLoading ? (
+        <div className="d-flex justify-content-center align-items-center">
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          Loading
+        </div>
+      ) : (
+        <>
+          {alert && (
+            <rb.Alert className="slashed-zeroes" variant={alert.variant}>
+              {alert.message}
+            </rb.Alert>
+          )}
+
+          <rb.Card className="my-4">
+            <rb.Card.Body>
+              <rb.Card.Title className="mb-3">Blockchain</rb.Card.Title>
+              <pre>{JSON.stringify(blockchainSection, null, 2)}</pre>
+            </rb.Card.Body>
+          </rb.Card>
+
+          <rb.Card className="my-4">
+            <rb.Card.Body>
+              <rb.Card.Title className="mb-3">Messaging</rb.Card.Title>
+              <pre>{JSON.stringify(messagingSection, null, 2)}</pre>
+            </rb.Card.Body>
+          </rb.Card>
+
+          <rb.Card className="my-4">
+            <rb.Card.Body>
+              <rb.Card.Title className="mb-3">Timeout</rb.Card.Title>
+              <pre>{JSON.stringify(timeoutSection, null, 2)}</pre>
+            </rb.Card.Body>
+          </rb.Card>
+
+          <rb.Card className="my-4">
+            <rb.Card.Body>
+              <rb.Card.Title className="mb-3">Policy</rb.Card.Title>
+              <pre>{JSON.stringify(policySection, null, 2)}</pre>
+            </rb.Card.Body>
+          </rb.Card>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function Settings() {
+  const settings = useSettings()
+
   return (
     <div>
       <PageTitle title="Settings" />
 
-      <JamSettings />
+      {!settings.useAdvancedWalletMode ? (
+        <div className="mt-6">
+          <JamSettings />
+        </div>
+      ) : (
+        <rb.Tabs defaultActiveKey="jam" id="settings-tab" variant="pills" className="mb-3">
+          <rb.Tab eventKey="jam" title="Jam">
+            <JamSettings />
+          </rb.Tab>
+          <rb.Tab eventKey="joinmarket" title="JoinMarket" mountOnEnter={true} unmountOnExit={false}>
+            <JoinMarketSettings />
+          </rb.Tab>
+        </rb.Tabs>
+      )}
     </div>
   )
 }
