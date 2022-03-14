@@ -14,7 +14,7 @@ import Layout from './Layout'
 import { useSettings } from '../context/SettingsContext'
 import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
-import { useSessionConnectionError } from '../context/SessionInfoContext'
+import { useSessionInfo, useSessionConnectionError } from '../context/SessionInfoContext'
 import { setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 import Onboarding from './Onboarding'
@@ -26,11 +26,10 @@ export default function App() {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
+  const sessionInfo = useSessionInfo()
   const sessionConnectionError = useSessionConnectionError()
 
-  const [makerRunning, setMakerRunning] = useState()
   const [websocketConnected, setWebsocketConnected] = useState()
-  const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const settings = useSettings()
   const websocketState = useWebsocketState()
@@ -60,8 +59,6 @@ export default function App() {
     const resetState = () => {
       setCurrentWallet(null)
       setCurrentWalletInfo(null)
-      setMakerRunning(null)
-      setCoinjoinInProcess(null)
     }
 
     const refreshSession = () => {
@@ -71,8 +68,6 @@ export default function App() {
           const { maker_running, coinjoin_in_process, wallet_name } = data
           const activeWalletName = wallet_name !== 'None' ? wallet_name : null
 
-          setMakerRunning(maker_running)
-          setCoinjoinInProcess(coinjoin_in_process)
           if (currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)) {
             setCurrentWallet(null)
             setCurrentWalletInfo(null)
@@ -140,15 +135,20 @@ export default function App() {
                 <>
                   <Route
                     path="send"
-                    element={<Send makerRunning={makerRunning} coinjoinInProcess={coinjoinInProcess} />}
+                    element={
+                      <Send
+                        makerRunning={sessionInfo.maker_running}
+                        coinjoinInProcess={sessionInfo.coinjoin_in_process}
+                      />
+                    }
                   />
                   <Route
                     path="earn"
                     element={
                       <Earn
                         currentWallet={currentWallet}
-                        coinjoinInProcess={coinjoinInProcess}
-                        makerRunning={makerRunning}
+                        coinjoinInProcess={sessionInfo.coinjoin_in_process}
+                        makerRunning={sessionInfo.maker_running}
                       />
                     }
                   />

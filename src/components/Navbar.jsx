@@ -210,19 +210,19 @@ export default function Navbar() {
                     <rb.Offcanvas.Title>Jam</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
-                    <CenterNav makerRunning={sessionInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
+                    <CenterNav makerRunning={sessionInfo.maker_running} onClick={() => setIsExpanded(!isExpanded)} />
                     <TrailingNav
-                      coinjoinInProcess={sessionInfo?.coinjoinInProcess}
+                      coinjoinInProcess={sessionInfo.coinjoin_in_process}
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
-                  <CenterNav makerRunning={sessionInfo?.makerRunning} />
+                  <CenterNav makerRunning={sessionInfo.maker_running} />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">
-                    <TrailingNav coinjoinInProcess={sessionInfo?.coinjoinInProcess} />
+                    <TrailingNav coinjoinInProcess={sessionInfo.coinjoin_in_process} />
                   </div>
                 </rb.Container>
               </>
