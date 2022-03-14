@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useContext, useReducer, useState, useEffect } from 'react'
 
-import { useWebsocket, CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../context/WebsocketContext'
+import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from './WalletContext'
+import { useWebsocket, CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from './WebsocketContext'
+import { clearSession } from '../session'
 
 import * as Api from '../libs/JmWalletApi'
 
@@ -10,10 +12,24 @@ const SESSION_REQUEST_INTERVAL = 10_000
 const SessionInfoContext = createContext()
 
 const SessionInfoProvider = ({ children }) => {
+  const currentWallet = useCurrentWallet()
+  const setCurrentWallet = useSetCurrentWallet()
+  const setCurrentWalletInfo = useSetCurrentWalletInfo()
   const websocket = useWebsocket()
 
-  const [sessionInfo, setSessionInfo] = useReducer((state, obj) => ({ ...state, ...obj }), {})
+  const [sessionInfo, setSessionInfo] = useReducer((state, obj) => ({ ...state, ...obj }), null)
   const [connectionError, setConnectionError] = useState()
+
+  useEffect(() => {
+    const shouldResetState = connectionError != null
+    if (shouldResetState) {
+      // Just reset the wallet info, not the session storage (token),
+      // as the connection might be down shortly and auth information
+      // is still valid most of the time.
+      setCurrentWallet(null)
+      setCurrentWalletInfo(null)
+    }
+  }, [connectionError, setCurrentWallet, setCurrentWalletInfo])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -23,8 +39,18 @@ const SessionInfoProvider = ({ children }) => {
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
         .then((data) => {
           if (!abortCtrl.signal.aborted) {
-            setSessionInfo(data)
+            const { maker_running, coinjoin_in_process, wallet_name, session } = data
+            setSessionInfo({ maker_running, coinjoin_in_process, wallet_name, session })
             setConnectionError(null)
+
+            const activeWalletName = wallet_name !== 'None' ? wallet_name : null
+
+            const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
+            if (shouldResetState) {
+              setCurrentWallet(null)
+              setCurrentWalletInfo(null)
+              clearSession()
+            }
           }
         })
         .catch((err) => {
@@ -40,7 +66,7 @@ const SessionInfoProvider = ({ children }) => {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [setSessionInfo, setConnectionError])
+  }, [setSessionInfo, setConnectionError, currentWallet, setCurrentWallet, setCurrentWalletInfo])
 
   // update maker/taker indicator based on websocket data
   const onWebsocketMessage = useCallback(
@@ -79,14 +105,6 @@ const useSessionInfo = () => {
   return context.sessionInfo
 }
 
-const useUpdateSessionInfo = () => {
-  const context = useContext(SessionInfoContext)
-  if (context === undefined) {
-    throw new Error('useUpdateSessionInfo must be used within a SessionInfoProvider')
-  }
-  return (key, value) => context.setSessionInfo({ [key]: value })
-}
-
 const useSessionConnectionError = () => {
   const context = useContext(SessionInfoContext)
   if (context === undefined) {
@@ -95,21 +113,4 @@ const useSessionConnectionError = () => {
   return context.connectionError
 }
 
-const useSetMakerRunning = () => {
-  const updateSessionInfo = useUpdateSessionInfo()
-  return (value) => updateSessionInfo('maker_running', value)
-}
-
-const useSetCoinjoinInProcess = () => {
-  const updateSessionInfo = useUpdateSessionInfo()
-  return (value) => updateSessionInfo('coinjoin_in_process', value)
-}
-
-export {
-  SessionInfoContext,
-  SessionInfoProvider,
-  useSessionInfo,
-  useSessionConnectionError,
-  useSetMakerRunning,
-  useSetCoinjoinInProcess,
-}
+export { SessionInfoContext, SessionInfoProvider, useSessionInfo, useSessionConnectionError }

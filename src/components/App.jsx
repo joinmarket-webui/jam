@@ -16,11 +16,7 @@ import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { useSessionInfo, useSessionConnectionError } from '../context/SessionInfoContext'
 import { setSession, clearSession } from '../session'
-import * as Api from '../libs/JmWalletApi'
 import Onboarding from './Onboarding'
-
-// interval in milliseconds for periodic session requests
-const SESSION_REQUEST_INTERVAL = 10_000
 
 export default function App() {
   const currentWallet = useCurrentWallet()
@@ -52,41 +48,6 @@ export default function App() {
   useEffect(() => {
     setWebsocketConnected(websocketState === WebSocket.OPEN)
   }, [websocketState])
-
-  useEffect(() => {
-    const abortCtrl = new AbortController()
-
-    const resetState = () => {
-      setCurrentWallet(null)
-      setCurrentWalletInfo(null)
-    }
-
-    const refreshSession = () => {
-      Api.getSession({ signal: abortCtrl.signal })
-        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
-        .then((data) => {
-          const { maker_running, coinjoin_in_process, wallet_name } = data
-          const activeWalletName = wallet_name !== 'None' ? wallet_name : null
-
-          if (currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)) {
-            setCurrentWallet(null)
-            setCurrentWalletInfo(null)
-            clearSession()
-          }
-        })
-        .catch((err) => {
-          if (!abortCtrl.signal.aborted) {
-            resetState()
-          }
-        })
-    }
-    refreshSession()
-    const interval = setInterval(refreshSession, SESSION_REQUEST_INTERVAL)
-    return () => {
-      abortCtrl.abort()
-      clearInterval(interval)
-    }
-  }, [currentWallet, setCurrentWallet, setCurrentWalletInfo])
 
   if (settings.showOnboarding === true) {
     return (
@@ -137,8 +98,8 @@ export default function App() {
                     path="send"
                     element={
                       <Send
-                        makerRunning={sessionInfo.maker_running}
-                        coinjoinInProcess={sessionInfo.coinjoin_in_process}
+                        makerRunning={sessionInfo?.maker_running}
+                        coinjoinInProcess={sessionInfo?.coinjoin_in_process}
                       />
                     }
                   />
@@ -147,8 +108,8 @@ export default function App() {
                     element={
                       <Earn
                         currentWallet={currentWallet}
-                        coinjoinInProcess={sessionInfo.coinjoin_in_process}
-                        makerRunning={sessionInfo.maker_running}
+                        coinjoinInProcess={sessionInfo?.coinjoin_in_process}
+                        makerRunning={sessionInfo?.maker_running}
                       />
                     }
                   />
