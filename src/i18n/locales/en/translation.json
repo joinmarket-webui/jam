@@ -175,5 +175,31 @@
     "feedback_invalid_amount": "Please provide a valid amount.",
     "button_new_address": "Get new address",
     "text_getting_address": "Getting new address"
+  },
+  "earn": {
+    "title": "Earn bitcoin",
+    "subtitle": "By making your bitcoin available for others, you help them improve their privacy and can also earn a yield.",
+    "alert_empty_report": "The report is empty.",
+    "text_report_length": "Showing {{ visibleLines } of {{ linesWithoutHeader }} entries",
+    "error_loading_report_failed": "Failed to load yield generator report.",
+    "alert_starting": "Service is starting.",
+    "alert_stopping": "Service is stopping.",
+    "alert_running": "Service is running.",
+    "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
+    "toggle_rel_offer": "Relative offer",
+    "label_rel_fee": "Relative fee {{ fee }}",
+    "description_rel_fee": "As a percentage of the amounts you help others with improved privacy.",
+    "feedback_invalid_rel_fee": "Please provide a relative fee between {{feeRelPercentageMin}} and {{feeRelPercentageMax}}.",
+    "label_abs_fee": "Absolute fee in sats",
+    "earn.description_abs_fee": "An absolute amount you get for helping others to improve their privacy.",
+    "feedback_invalid_abs_fee": "Please provide an absolute fee.",
+    "label_min_amount": "Minimum amount in sats",
+    "feedback_invalid_min_amount": "Please provide an absolute fee.",
+    "button_start": "Start",
+    "button_stop": "Stop",
+    "text_starting": "Starting",
+    "text_stopping": "Stopping",
+    "button_show_report": "Show report",
+    "button_hide_report": "Hide report"
   }
 }
