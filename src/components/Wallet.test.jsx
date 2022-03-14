@@ -159,7 +159,7 @@ describe('<Wallet />', () => {
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'success',
       message: `${walletDisplayName(dummyWalletName)} locked successfully.`,
-      dismissible: true,
+      dismissible: false,
     })
   })
 

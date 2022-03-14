@@ -56,7 +56,7 @@ export default function Wallets({ startWallet, stopWallet }) {
               setAlert({
                 variant: 'info',
                 message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
-                dismissible: true,
+                dismissible: false,
               })
             }
           }

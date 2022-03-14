@@ -83,7 +83,7 @@ export default function Wallet({
           message: `${walletDisplayName(lockedWalletName)} ${
             already_locked ? 'already locked' : 'locked successfully'
           }.`,
-          dismissible: true,
+          dismissible: false,
         })
       } else {
         setAlert({ variant: 'danger', message: body.message })
