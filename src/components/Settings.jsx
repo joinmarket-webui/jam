@@ -32,7 +32,7 @@ export default function Settings({ currentWallet }) {
 
   return (
     <div>
-      <PageTitle title={t('settings.heading')} />
+      <PageTitle title={t('settings.title')} />
       <div style={{ marginLeft: '-.75rem' }}>
         <rb.Button
           variant="outline-dark"

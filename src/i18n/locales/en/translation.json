@@ -61,6 +61,7 @@
       "alert_wallet_already_locked": "{{ walletName }} already locked.",
       "wallet_active": "Active",
       "wallet_inactive": "Inactive",
+      "placeholder_password": "Password",
       "button_open": "Open",
       "button_lock": "Lock",
       "button_unlock": "Unlock",
@@ -117,7 +118,7 @@
     "account_heading_internal_addresses": "Internal Addresses"
   },
   "settings": {
-    "heading": "Settings",
+    "title": "Settings",
     "show_balance": "Show Balance",
     "hide_balance": "Hide Balance",
     "use_sats": "Display amounts in sats",

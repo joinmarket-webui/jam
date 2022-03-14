@@ -9,14 +9,14 @@ it('should display Onboarding screen initially', () => {
   render(<App />)
 
   // Onboarding screen
-  expect(screen.getByText('Get started')).toBeInTheDocument()
-  expect(screen.getByText('Skip intro')).toBeInTheDocument()
+  expect(screen.getByText('onboarding.splashscreen_button_get_started')).toBeInTheDocument()
+  expect(screen.getByText('onboarding.splashscreen_button_skip_intro')).toBeInTheDocument()
 
   // Wallets screen shown after Intro is skipped
   expect(screen.queryByText('wallets.title')).not.toBeInTheDocument()
 
   act(() => {
-    const skipIntro = screen.getByText('Skip intro')
+    const skipIntro = screen.getByText('onboarding.splashscreen_button_skip_intro')
     user.click(skipIntro)
   })
 
@@ -35,10 +35,10 @@ it('should display Wallets screen directly when Onboarding screen has been shown
   expect(screen.getByText('wallets.button_new_wallet')).toBeInTheDocument()
 
   // footer
-  expect(screen.getByText('Docs')).toBeInTheDocument()
-  expect(screen.getByText('Features')).toBeInTheDocument()
-  expect(screen.getByText('GitHub')).toBeInTheDocument()
-  expect(screen.getByText('Twitter')).toBeInTheDocument()
+  expect(screen.getByText('footer.docs')).toBeInTheDocument()
+  expect(screen.getByText('footer.features')).toBeInTheDocument()
+  expect(screen.getByText('footer.github')).toBeInTheDocument()
+  expect(screen.getByText('footer.twitter')).toBeInTheDocument()
 })
 
 it('should display a modal with alpha warning information', () => {
@@ -56,8 +56,8 @@ it('should display a modal with alpha warning information', () => {
     user.click(readThis)
   })
 
-  expect(screen.getByText(/While JoinMarket is tried and tested, Jam is not./)).toBeInTheDocument()
-  expect(screen.getByText('Fine with me.')).toBeInTheDocument()
+  expect(screen.getByText('footer.warning_alert_text')).toBeInTheDocument()
+  expect(screen.getByText('footer.warning_alert_button_ok')).toBeInTheDocument()
 })
 
 it('should display a websocket connection indicator', async () => {
@@ -69,13 +69,13 @@ it('should display a websocket connection indicator', async () => {
 
   expect(screen.getByText('•').classList.contains('text-danger')).toBe(true)
   expect(screen.getByText('•').classList.contains('text-success')).toBe(false)
-  expect(screen.getByText('Disconnected')).toBeInTheDocument()
-  expect(screen.queryByText('Connected')).not.toBeInTheDocument()
+  expect(screen.getByText('footer.disconnected')).toBeInTheDocument()
+  expect(screen.queryByText('footer.connected')).not.toBeInTheDocument()
 
   await global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.connected
 
-  expect(screen.queryByText('Disconnected')).not.toBeInTheDocument()
-  expect(screen.getByText('Connected')).toBeInTheDocument()
+  expect(screen.queryByText('footer.disconnected')).not.toBeInTheDocument()
+  expect(screen.getByText('footer.connected')).toBeInTheDocument()
   expect(screen.getByText('•').classList.contains('text-success')).toBe(true)
   expect(screen.getByText('•').classList.contains('text-danger')).toBe(false)
 })

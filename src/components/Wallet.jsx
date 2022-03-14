@@ -174,7 +174,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                   <rb.InputGroup hasValidation={true}>
                     <rb.FormControl
                       type="password"
-                      placeholder="Password"
+                      placeholder={t('wallets.wallet_preview.placeholder_password')}
                       name="password"
                       disabled={isUnlocking}
                       required
