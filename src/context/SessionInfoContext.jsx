@@ -18,7 +18,7 @@ const SessionInfoProvider = ({ children }) => {
   const websocket = useWebsocket()
 
   const [sessionInfo, setSessionInfo] = useReducer((state, obj) => ({ ...state, ...obj }), null)
-  const [connectionError, setConnectionError] = useState()
+  const [connectionError, setConnectionError] = useState(null)
 
   useEffect(() => {
     const shouldResetState = connectionError != null

@@ -35,22 +35,23 @@ export default function Wallet({
       setIsUnlocking(true)
       try {
         const res = await Api.postWalletUnlock({ walletName }, { password })
-        const json = await res.json()
+        const body = await res.json()
+
         setIsUnlocking(false)
+
         if (res.ok) {
-          const { walletname: unlockedWalletName, token } = json
+          const { walletname: unlockedWalletName, token } = body
           startWallet(unlockedWalletName, token)
           navigate('/wallet')
         } else {
-          const { message } = json
           setAlert({
             variant: 'danger',
-            message: message.replace('Wallet', walletName),
+            message: body.message.replace('Wallet', walletName),
           })
         }
       } catch (e) {
-        setAlert({ variant: 'danger', message: e.message })
         setIsUnlocking(false)
+        setAlert({ variant: 'danger', message: e.message })
       }
     }
   }
@@ -63,6 +64,8 @@ export default function Wallet({
 
       const res = await Api.getWalletLock({ walletName, token })
       const body = await res.json()
+
+      setIsLocking(false)
 
       // On status OK or UNAUTHORIZED, stop the wallet and clear all local
       // information. The token might have become invalid or another one might have been
@@ -86,9 +89,8 @@ export default function Wallet({
         setAlert({ variant: 'danger', message: body.message })
       }
     } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
       setIsLocking(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
   }
 

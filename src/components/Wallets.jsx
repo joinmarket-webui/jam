@@ -86,27 +86,28 @@ export default function Wallets({ startWallet, stopWallet }) {
         center={true}
       />
       {alert && <Alert {...alert} />}
-      {isLoading && (
+      {isLoading ? (
         <div className="d-flex justify-content-center align-items-center">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           <span>{t('wallets.text_loading')}</span>
         </div>
+      ) : (
+        walletList?.map((wallet, index) => (
+          <Wallet
+            key={wallet}
+            name={wallet}
+            isActive={sessionInfo?.session && sessionInfo?.wallet_name === wallet}
+            hasToken={currentWallet?.token && sessionInfo?.wallet_name === currentWallet?.name}
+            currentWallet={currentWallet}
+            startWallet={startWallet}
+            stopWallet={stopWallet}
+            setAlert={setAlert}
+            className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
+              index === 0 ? 'border-top-1' : 'border-top-0'
+            }`}
+          />
+        ))
       )}
-      {walletList?.map((wallet, index) => (
-        <Wallet
-          key={wallet}
-          name={wallet}
-          isActive={sessionInfo?.session && sessionInfo?.wallet_name === wallet}
-          hasToken={currentWallet?.token && sessionInfo?.wallet_name === currentWallet?.name}
-          currentWallet={currentWallet}
-          startWallet={startWallet}
-          stopWallet={stopWallet}
-          setAlert={setAlert}
-          className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
-            index === 0 ? 'border-top-1' : 'border-top-0'
-          }`}
-        />
-      ))}
       <div className="d-flex justify-content-center">
         <Link
           to="/create-wallet"
