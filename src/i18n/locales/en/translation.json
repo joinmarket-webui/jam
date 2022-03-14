@@ -54,7 +54,7 @@
     "button_new_wallet": "Create new wallet",
     "alert_wallet_open": "There can be only one active wallet. If you want to open another wallet, please lock '{{ currentWalletName }}' first.",
     "error_loading_failed": "Loading wallets failed.",
-    "wallet": {
+    "wallet_preview": {
       "alert_wallet_already_unlocked": "{{ walletName }} is already unlocked.",
       "alert_other_wallet_unlocked": "{{ walletName }} is currently in use, please lock it first.",
       "alert_wallet_locked_successfully": "{{ walletName }} locked successfully.",

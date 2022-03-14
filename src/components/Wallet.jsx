@@ -19,9 +19,9 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
         message:
           currentWallet.name === walletName
             ? // unlocking same wallet
-              t('wallets.wallet.alert_wallet_already_unlocked', { walletName: walletDisplayName(walletName) })
+              t('wallets.wallet_preview.alert_wallet_already_unlocked', { walletName: walletDisplayName(walletName) })
             : // unlocking another wallet while one is already unlocked
-              t('wallets.wallet.alert_other_wallet_unlocked', { walletName: walletDisplayName(walletName) }),
+              t('wallets.wallet_preview.alert_other_wallet_unlocked', { walletName: walletDisplayName(walletName) }),
       })
     } else {
       setAlert(null)
@@ -71,8 +71,12 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           message: already_locked
-            ? t('wallets.wallet.alert_wallet_already_locked', { walletName: walletDisplayName(lockedWalletName) })
-            : t('wallets.wallet.alert_wallet_locked_successfully', { walletName: walletDisplayName(lockedWalletName) }),
+            ? t('wallets.wallet_preview.alert_wallet_already_locked', {
+                walletName: walletDisplayName(lockedWalletName),
+              })
+            : t('wallets.wallet_preview.alert_wallet_locked_successfully', {
+                walletName: walletDisplayName(lockedWalletName),
+              }),
           dismissible: true,
         })
       } else {
@@ -129,9 +133,9 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                 )}
               </rb.Card.Title>
               {isActive ? (
-                <span className="text-success">{t('wallets.wallet.wallet_active')}</span>
+                <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
               ) : (
-                <span className="text-muted">{t('wallets.wallet.wallet_inactive')}</span>
+                <span className="text-muted">{t('wallets.wallet_preview.wallet_inactive')}</span>
               )}
             </div>
             <div>
@@ -139,7 +143,7 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                 hasToken ? (
                   <>
                     <Link className="btn btn-outline-dark me-2" to="/wallet">
-                      {t('wallets.wallet.button_open')}
+                      {t('wallets.wallet_preview.button_open')}
                     </Link>
                     <rb.FormControl type="hidden" name="action" value="lock" />
                     <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
@@ -153,16 +157,16 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                             aria-hidden="true"
                             className="me-2"
                           />
-                          {t('wallets.wallet.button_locking')}
+                          {t('wallets.wallet_preview.button_locking')}
                         </>
                       ) : (
-                        <>{t('wallets.wallet.button_lock')}</>
+                        <>{t('wallets.wallet_preview.button_lock')}</>
                       )}
                     </rb.Button>
                   </>
                 ) : (
                   <rb.Alert variant="warning" className="mb-0">
-                    {t('wallets.wallet.alert_missing_token')}
+                    {t('wallets.wallet_preview.alert_missing_token')}
                   </rb.Alert>
                 )
               ) : (
@@ -187,14 +191,14 @@ export default function Wallet({ name, currentWallet, startWallet, stopWallet, s
                             aria-hidden="true"
                             className="me-2"
                           />
-                          {t('wallets.wallet.button_unlocking')}
+                          {t('wallets.wallet_preview.button_unlocking')}
                         </>
                       ) : (
-                        <>{t('wallets.wallet.button_unlock')}</>
+                        <>{t('wallets.wallet_preview.button_unlock')}</>
                       )}
                     </rb.Button>
                     <rb.Form.Control.Feedback type="invalid">
-                      {t('wallets.wallet.feedback_missing_password')}
+                      {t('wallets.wallet_preview.feedback_missing_password')}
                     </rb.Form.Control.Feedback>
                   </rb.InputGroup>
                 )
