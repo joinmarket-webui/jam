@@ -5,6 +5,7 @@ import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
 import { useCurrentWallet } from '../context/WalletContext'
+import { useSessionInfo } from '../context/SessionInfoContext'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
@@ -12,6 +13,7 @@ import * as Api from '../libs/JmWalletApi'
 export default function Wallets({ startWallet, stopWallet }) {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
+  const sessionInfo = useSessionInfo()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState(
@@ -69,6 +71,8 @@ export default function Wallets({ startWallet, stopWallet }) {
         <Wallet
           key={wallet}
           name={wallet}
+          isActive={sessionInfo?.session && sessionInfo?.wallet_name === wallet}
+          hasToken={currentWallet?.token && sessionInfo?.wallet_name === currentWallet?.name}
           currentWallet={currentWallet}
           startWallet={startWallet}
           stopWallet={stopWallet}

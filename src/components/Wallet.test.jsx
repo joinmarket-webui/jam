@@ -27,6 +27,8 @@ describe('<Wallet />', () => {
 
   const setup = ({
     name,
+    isActive = false,
+    hasToken = false,
     currentWallet = null,
     startWallet = mockStartWallet,
     stopWallet = mockStopWallet,
@@ -35,6 +37,8 @@ describe('<Wallet />', () => {
     render(
       <Wallet
         name={name}
+        isActive={isActive}
+        hasToken={hasToken}
         currentWallet={currentWallet}
         startWallet={startWallet}
         stopWallet={stopWallet}
@@ -115,7 +119,7 @@ describe('<Wallet />', () => {
   })
 
   it('should render active wallet without errors', () => {
-    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+    act(() => setup({ name: dummyWalletName, isActive: true, hasToken: true }))
 
     expect(screen.getByText('dummy')).toBeInTheDocument()
     expect(screen.getByText('Active')).toBeInTheDocument()
@@ -131,7 +135,14 @@ describe('<Wallet />', () => {
       json: () => Promise.resolve({ walletname: dummyWalletName, already_locked: false }),
     })
 
-    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+    act(() =>
+      setup({
+        name: dummyWalletName,
+        isActive: true,
+        hasToken: true,
+        currentWallet: { name: dummyWalletName, token: dummyToken },
+      })
+    )
 
     expect(screen.getByText('Active')).toBeInTheDocument()
     expect(screen.getByText('Lock')).toBeInTheDocument()
@@ -160,7 +171,14 @@ describe('<Wallet />', () => {
       json: () => Promise.resolve({ message: apiErrorMessage }),
     })
 
-    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+    act(() =>
+      setup({
+        name: dummyWalletName,
+        isActive: true,
+        hasToken: true,
+        currentWallet: { name: dummyWalletName, token: dummyToken },
+      })
+    )
 
     expect(screen.getByText('Active')).toBeInTheDocument()
     expect(screen.getByText('Lock')).toBeInTheDocument()
@@ -189,7 +207,14 @@ describe('<Wallet />', () => {
       json: () => Promise.resolve({ message: apiErrorMessage }),
     })
 
-    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: dummyToken } }))
+    act(() =>
+      setup({
+        name: dummyWalletName,
+        isActive: true,
+        hasToken: true,
+        currentWallet: { name: dummyWalletName, token: dummyToken },
+      })
+    )
 
     expect(screen.getByText('Active')).toBeInTheDocument()
     expect(screen.getByText('Lock')).toBeInTheDocument()
@@ -211,7 +236,7 @@ describe('<Wallet />', () => {
   })
 
   it('should render active wallet when token is missing', () => {
-    act(() => setup({ name: dummyWalletName, currentWallet: { name: dummyWalletName, token: null } }))
+    act(() => setup({ name: dummyWalletName, isActive: true, hasToken: false }))
 
     expect(
       screen.getByText(
@@ -221,9 +246,9 @@ describe('<Wallet />', () => {
 
     expect(screen.getByText('dummy')).toBeInTheDocument()
     expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Password')).toBeInTheDocument()
+    expect(screen.queryByText('Unlock')).toBeInTheDocument()
     expect(screen.queryByText('Open')).not.toBeInTheDocument()
     expect(screen.queryByText('Lock')).not.toBeInTheDocument()
-    expect(screen.queryByText('Unlock')).not.toBeInTheDocument()
   })
 })
