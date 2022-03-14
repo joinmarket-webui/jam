@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
+import ActivityIndicator from './ActivityIndicator'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useSessionInfo, useSessionConnectionError } from '../context/SessionInfoContext'
@@ -26,10 +27,6 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
       </div>
     </div>
   )
-}
-
-const ActivityIndicator = ({ isOn }) => {
-  return <span className={`activity-indicator ${isOn ? 'activity-indicator-on' : 'activity-indicator-off'}`} />
 }
 
 const CenterNav = ({ makerRunning, onClick }) => {
