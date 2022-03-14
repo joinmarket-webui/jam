@@ -90,5 +90,30 @@
     "confirmation_toggle_reveal_info": "Reveal sensitive information",
     "confirmation_toggle_info_written_down": "I've written down the information above.",
     "confirmation_button_fund_wallet": "Fund Wallet"
+  },
+  "current_wallet": {
+    "text_loading": "Loading",
+    "button_deposit": "Deposit",
+    "button_withdraw": "Withdraw",
+    "button_switch_wallet": "Switch wallet",
+    "error_loading_failed": "Loading wallet failed."
+  },
+  "current_wallet_advanced": {
+    "error_loading_utxos_failed": "Loading UTXOs failed.",
+    "title_fidelity_bonds": "Fidelity Bonds",
+    "button_show_utxos": "Show UTXOs",
+    "button_hide_utxos": "Hide UTXOs",
+    "alert_no_utxos": "No UTXOs available.",
+    "account": "Account",
+    "error_freeze_failed": "Request failed.",
+    "label_locked_until": "Locked until",
+    "label_frozen": "frozen",
+    "label_unconfirmed": "unconfirmed",
+    "button_freeze": "freeze",
+    "button_unfreeze": "unfreeze",
+    "account_button_send": "Send",
+    "account_button_receive": "Receive",
+    "account_heading_external_addresses": "External Addresses",
+    "account_heading_internal_addresses": "Internal Addresses"
   }
 }
