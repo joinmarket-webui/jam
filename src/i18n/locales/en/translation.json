@@ -131,5 +131,33 @@
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
     "error_loading_seed_failed": "Could not retrieve seed phrase."
+  },
+  "send": {
+    "loading": "Loading",
+    "title": "Send bitcoin",
+    "subtitle": "Collaborative transactions increase the privacy of yourself and others.",
+    "label_num_collaborators": "Number of collaborators:",
+    "input_num_collaborators_placeholder": "Other",
+    "description_num_collaborators": "A higher number is better for privacy, but also increases the fee.",
+    "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
+    "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. Consider adding them to your config manually.",
+    "error_loading_wallet_failed": "Loading wallet failed.",
+    "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
+    "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }}.",
+    "alert_coinjoin_started": "Collaborative transaction started",
+    "text_maker_running": "Earn is active. Stop the service in order to send collaborative transactions.",
+    "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
+    "label_recipient": "Recipient",
+    "placeholder_recipient": "Enter address...",
+    "feedback_invalid_recipient": "Please provide a recipient address.",
+    "label_account": "Privacy level to send from",
+    "label_account_dev_mode": "Account to send from",
+    "account_selector_option": "Privacy Level {{ number }}",
+    "account_selector_option_dev_mode": "Account {{ number }}",
+    "label_amount": "Amount in sats",
+    "placeholder_amount": "Enter amount...",
+    "feedback_invalid_amount": "Please provide a valid amount.",
+    "toggle_coinjoin": "Send as collaborative transaction for improved privacy",
+    "button_send": "Send"
   }
 }
