@@ -1,8 +1,9 @@
 import React from 'react'
 import { useState, useEffect, useRef } from 'react'
-import { BitcoinQR } from './BitcoinQR'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
+import { BitcoinQR } from './BitcoinQR'
 import { ACCOUNTS } from '../utils'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
@@ -10,6 +11,7 @@ import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 
 export default function Receive({ currentWallet }) {
+  const { t } = useTranslation()
   const location = useLocation()
   const settings = useSettings()
   const addressCopyFallbackInputRef = useRef()
@@ -32,7 +34,9 @@ export default function Receive({ currentWallet }) {
       setAlert(null)
       setIsLoading(true)
       Api.getAddressNew({ walletName, accountNr, token, signal: abortCtrl.signal })
-        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading new address failed.'))))
+        .then((res) =>
+          res.ok ? res.json() : Promise.reject(new Error(res.message || t('receive.error_loading_address_failed')))
+        )
         .then((data) => setAddress(data.address))
         .catch((err) => {
           !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
@@ -64,7 +68,7 @@ export default function Receive({ currentWallet }) {
         inputField.select()
         const success = document.execCommand && document.execCommand('copy')
         inputField.blur()
-        success ? resolve(success) : reject(new Error('Could not copy address.'))
+        success ? resolve(success) : reject(new Error(t('receive.error_copy_address_failed')))
       })
 
     // `navigator.clipboard` might not be available, e.g. on sites served over plain `http`.
@@ -90,7 +94,7 @@ export default function Receive({ currentWallet }) {
 
   return (
     <div className="receive">
-      <PageTitle title="Receive bitcoin" subtitle="Send bitcoin to the address below." />
+      <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {address && (
         <div className="qr-container">
@@ -118,11 +122,11 @@ export default function Receive({ currentWallet }) {
                 >
                   {showAddressCopiedConfirmation ? (
                     <>
-                      Copied
+                      {t('receive.text_copy_address_confirmed')}
                       <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
                     </>
                   ) : (
-                    'Copy'
+                    t('receive.button_copy_address')
                   )}
                 </rb.Button>
 
@@ -148,7 +152,7 @@ export default function Receive({ currentWallet }) {
           className="ps-0 border-0 d-flex align-items-center"
           onClick={() => setShowSettings(!showSettings)}
         >
-          Settings
+          {t('receive.button_settings')}
           <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
         </rb.Button>
       </div>
@@ -157,7 +161,7 @@ export default function Receive({ currentWallet }) {
           <>
             {settings.useAdvancedWalletMode && (
               <rb.Form.Group className="mt-4" controlId="account">
-                <rb.Form.Label>Choose account</rb.Form.Label>
+                <rb.Form.Label>{t('receive.label_choose_account')}</rb.Form.Label>
                 <rb.Form.Select
                   defaultValue={account}
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -165,14 +169,14 @@ export default function Receive({ currentWallet }) {
                 >
                   {ACCOUNTS.map((val) => (
                     <option key={val} value={val}>
-                      Account {val}
+                      {t('receive.account_selector_option_dev_mode', { number: val })}
                     </option>
                   ))}
                 </rb.Form.Select>
               </rb.Form.Group>
             )}
             <rb.Form.Group className="my-4" controlId="amountSats">
-              <rb.Form.Label>Amount to request in sats</rb.Form.Label>
+              <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
               <rb.Form.Control
                 className="slashed-zeroes"
                 name="amount"
@@ -182,7 +186,7 @@ export default function Receive({ currentWallet }) {
                 min={0}
                 onChange={(e) => setAmount(e.target.value)}
               />
-              <rb.Form.Control.Feedback type="invalid">Please provide a valid amount.</rb.Form.Control.Feedback>
+              <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
             </rb.Form.Group>
           </>
         )}
@@ -191,10 +195,10 @@ export default function Receive({ currentWallet }) {
           {isLoading ? (
             <div>
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              Getting new address
+              {t('receive.text_getting_address')}
             </div>
           ) : (
-            'Get new address'
+            t('receive.button_new_address')
           )}
         </rb.Button>
       </rb.Form>

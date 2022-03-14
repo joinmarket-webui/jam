@@ -158,6 +158,22 @@
     "placeholder_amount": "Enter amount...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "toggle_coinjoin": "Send as collaborative transaction for improved privacy",
-    "button_send": "Send"
+    "button_send": "Send",
+    "text_sending": "Sending"
+  },
+  "receive": {
+    "title": "Receive",
+    "subtitle": "Send bitcoin to the address below.",
+    "error_loading_address_failed": "Loading new address failed.",
+    "error_copy_address_failed": "Could not copy address.",
+    "button_copy_address": "Copy",
+    "text_copy_address_confirmed": "Copied",
+    "button_settings": "Settings",
+    "label_choose_account": "Choose account",
+    "account_selector_option_dev_mode": "Account {{ number }}",
+    "label_amount": "Amount to request in sats",
+    "feedback_invalid_amount": "Please provide a valid amount.",
+    "button_new_address": "Get new address",
+    "text_getting_address": "Getting new address"
   }
 }
