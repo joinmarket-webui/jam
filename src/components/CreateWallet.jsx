@@ -5,7 +5,7 @@ import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
-import { useCurrentWallet } from '../context/WalletContext'
+import { useSessionInfo } from '../context/SessionInfoContext'
 import * as Api from '../libs/JmWalletApi'
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
@@ -109,7 +109,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
 }
 
 export default function CreateWallet({ startWallet }) {
-  const currentWallet = useCurrentWallet()
+  const sessionInfo = useSessionInfo()
   const navigate = useNavigate()
 
   const [alert, setAlert] = useState(null)
@@ -147,7 +147,7 @@ export default function CreateWallet({ startWallet }) {
   }
 
   const isCreated = createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password
-  const canCreate = !currentWallet && !isCreated
+  const canCreate = !isCreated && sessionInfo && sessionInfo.wallet_name === 'None'
 
   return (
     <div className="create-wallet">
@@ -165,7 +165,8 @@ export default function CreateWallet({ startWallet }) {
       {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
-          Currently <strong>{walletDisplayName(currentWallet.name)}</strong> is active. You need to lock it first.{' '}
+          Currently <strong>{walletDisplayName(sessionInfo && sessionInfo.wallet_name)}</strong> is active. You need to
+          lock it first.{' '}
           <Link to="/" className="alert-link">
             Go back
           </Link>
