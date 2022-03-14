@@ -10,7 +10,7 @@
  * 'x-jm-authorization' so that the reverse proxy can apply its own
  * authentication mechanism.
  */
-const BASE_PATH = `${window.JM.PUBLIC_PATH}/api`
+const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
 /**
  * Construct a bearer authorization header object for the given token.
@@ -26,18 +26,18 @@ const Authorization = (token) => {
 }
 
 const getSession = async ({ signal }) => {
-  return await fetch(`${BASE_PATH}/v1/session`, { signal })
+  return await fetch(`${basePath()}/v1/session`, { signal })
 }
 
 const getAddressNew = async ({ walletName, token, accountNr, signal }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/address/new/${accountNr}`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/address/new/${accountNr}`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
 const getWalletAll = async ({ signal }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/all`, {
+  return await fetch(`${basePath()}/v1/wallet/all`, {
     signal,
   })
 }
@@ -45,7 +45,7 @@ const getWalletAll = async ({ signal }) => {
 const postWalletCreate = async ({ walletName: name, password }) => {
   const walletname = name.endsWith('.jmdat') ? name : `${name}.jmdat`
 
-  return await fetch(`${BASE_PATH}/v1/wallet/create`, {
+  return await fetch(`${basePath()}/v1/wallet/create`, {
     method: 'POST',
     body: JSON.stringify({
       wallettype: 'sw-fb',
@@ -56,14 +56,14 @@ const postWalletCreate = async ({ walletName: name, password }) => {
 }
 
 const getWalletDisplay = async ({ walletName, token, signal }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/display`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/display`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
 const getWalletSeed = async ({ walletName, token, signal }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/getseed`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/getseed`, {
     headers: { ...Authorization(token) },
     signal,
   })
@@ -76,27 +76,27 @@ const getWalletSeed = async ({ walletName, token, signal }) => {
  * Note: Performs a non-idempotent GET request.
  */
 const getWalletLock = async ({ walletName, token }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/lock`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/lock`, {
     headers: { ...Authorization(token) },
   })
 }
 
 const postWalletUnlock = async ({ walletName }, { password }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/unlock`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/unlock`, {
     method: 'POST',
     body: JSON.stringify({ password }),
   })
 }
 
 const getWalletUtxos = async ({ walletName, token, signal }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/utxos`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/utxos`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
 const postMakerStart = async ({ walletName, token, signal }, { cjfee_a, cjfee_r, ordertype, minsize }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/maker/start`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/maker/start`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     signal,
@@ -116,13 +116,13 @@ const postMakerStart = async ({ walletName, token, signal }, { cjfee_a, cjfee_r,
  * Note: Performs a non-idempotent GET request.
  */
 const getMakerStop = async ({ walletName, token }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/maker/stop`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/maker/stop`, {
     headers: { ...Authorization(token) },
   })
 }
 
 const postDirectSend = async ({ walletName, token }, { account, destination, amount_sats }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/taker/direct-send`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify({
@@ -134,7 +134,7 @@ const postDirectSend = async ({ walletName, token }, { account, destination, amo
 }
 
 const postCoinjoin = async ({ walletName, token }, { account, destination, amount_sats, counterparties }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/taker/coinjoin`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/coinjoin`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify({
@@ -147,13 +147,13 @@ const postCoinjoin = async ({ walletName, token }, { account, destination, amoun
 }
 
 const getYieldgenReport = async ({ signal }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/yieldgen/report`, {
+  return await fetch(`${basePath()}/v1/wallet/yieldgen/report`, {
     signal,
   })
 }
 
 const postFreeze = async ({ walletName, token }, { utxo, freeze = true }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/freeze`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/freeze`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify({
@@ -169,7 +169,7 @@ const postFreeze = async ({ walletName, token }, { utxo, freeze = true }) => {
  * @returns an object with property `configvalue` as string
  */
 const postConfigGet = async ({ walletName, token, signal }, { section, field }) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/configget`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/configget`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     signal,

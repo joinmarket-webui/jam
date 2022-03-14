@@ -43,6 +43,11 @@ describe('<Wallet />', () => {
     )
   }
 
+  beforeEach(() => {
+    const neverResolvingPromise = new Promise(() => {})
+    apiMock.getSession.mockResolvedValueOnce(neverResolvingPromise)
+  })
+
   it('should render inactive wallet without errors', () => {
     act(() => setup({ name: dummyWalletName }))
 
