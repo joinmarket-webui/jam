@@ -5,6 +5,7 @@ import App from './components/App'
 import { SettingsProvider } from './context/SettingsContext'
 import { WalletProvider } from './context/WalletContext'
 import { WebsocketProvider } from './context/WebsocketContext'
+import { SessionInfoProvider } from './context/SessionInfoContext'
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
@@ -14,9 +15,11 @@ ReactDOM.render(
   <BrowserRouter basename={window.JM.PUBLIC_PATH}>
     <SettingsProvider>
       <WalletProvider>
-        <WebsocketProvider>
-          <App />
-        </WebsocketProvider>
+        <SessionInfoProvider>
+          <WebsocketProvider>
+            <App />
+          </WebsocketProvider>
+        </SessionInfoProvider>
       </WalletProvider>
     </SettingsProvider>
   </BrowserRouter>,
