@@ -15,11 +15,11 @@ ReactDOM.render(
   <BrowserRouter basename={window.JM.PUBLIC_PATH}>
     <SettingsProvider>
       <WalletProvider>
-        <SessionInfoProvider>
-          <WebsocketProvider>
+        <WebsocketProvider>
+          <SessionInfoProvider>
             <App />
-          </WebsocketProvider>
-        </SessionInfoProvider>
+          </SessionInfoProvider>
+        </WebsocketProvider>
       </WalletProvider>
     </SettingsProvider>
   </BrowserRouter>,

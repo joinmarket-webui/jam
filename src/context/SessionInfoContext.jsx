@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useReducer, useState, useEffect } from 'react'
+import React, { createContext, useCallback, useContext, useReducer, useState, useEffect } from 'react'
+
+import { useWebsocket, CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../context/WebsocketContext'
 
 import * as Api from '../libs/JmWalletApi'
 
@@ -8,6 +10,8 @@ const SESSION_REQUEST_INTERVAL = 10_000
 const SessionInfoContext = createContext()
 
 const SessionInfoProvider = ({ children }) => {
+  const websocket = useWebsocket()
+
   const [sessionInfo, setSessionInfo] = useReducer((state, obj) => ({ ...state, ...obj }), {})
   const [connectionError, setConnectionError] = useState()
 
@@ -37,6 +41,28 @@ const SessionInfoProvider = ({ children }) => {
       abortCtrl.abort()
     }
   }, [setSessionInfo, setConnectionError])
+
+  // update maker/taker indicator based on websocket data
+  const onWebsocketMessage = useCallback(
+    (message) => {
+      const data = JSON.parse(message?.data)
+
+      // update the maker/taker indicator according to `coinjoin_state` property
+      if (data && typeof data.coinjoin_state === 'number') {
+        setSessionInfo({ coinjoin_in_process: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
+        setSessionInfo({ maker_running: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
+      }
+    },
+    [setSessionInfo]
+  )
+
+  useEffect(() => {
+    if (!websocket) return
+
+    websocket.addEventListener('message', onWebsocketMessage)
+
+    return () => websocket && websocket.removeEventListener('message', onWebsocketMessage)
+  }, [websocket, onWebsocketMessage])
 
   return (
     <SessionInfoContext.Provider value={{ sessionInfo, setSessionInfo, connectionError }}>

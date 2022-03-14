@@ -14,9 +14,9 @@ const AllTheProviders = ({ children }) => {
       <I18nextProvider i18n={i18n}>
         <SettingsProvider>
           <WalletProvider>
-            <SessionInfoProvider>
-              <WebsocketProvider>{children}</WebsocketProvider>
-            </SessionInfoProvider>
+            <WebsocketProvider>
+              <SessionInfoProvider>{children}</SessionInfoProvider>
+            </WebsocketProvider>
           </WalletProvider>
         </SettingsProvider>
       </I18nextProvider>

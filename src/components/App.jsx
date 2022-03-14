@@ -12,12 +12,7 @@ import Settings from './Settings'
 import Navbar from './Navbar'
 import Layout from './Layout'
 import { useSettings } from '../context/SettingsContext'
-import {
-  useWebsocket,
-  useWebsocketState,
-  CJ_STATE_TAKER_RUNNING,
-  CJ_STATE_MAKER_RUNNING,
-} from '../context/WebsocketContext'
+import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
@@ -37,7 +32,6 @@ export default function App() {
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const settings = useSettings()
-  const websocket = useWebsocket()
   const websocketState = useWebsocketState()
 
   const startWallet = useCallback(
@@ -53,25 +47,6 @@ export default function App() {
     setCurrentWallet(null)
     setCurrentWalletInfo(null)
   }
-
-  // update maker/taker indicator based on websocket data
-  const onWebsocketMessage = useCallback((message) => {
-    const data = JSON.parse(message?.data)
-
-    // update the maker/taker indicator according to `coinjoin_state` property
-    if (data && typeof data.coinjoin_state === 'number') {
-      setCoinjoinInProcess(data.coinjoin_state === CJ_STATE_TAKER_RUNNING)
-      setMakerRunning(data.coinjoin_state === CJ_STATE_MAKER_RUNNING)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!websocket) return
-
-    websocket.addEventListener('message', onWebsocketMessage)
-
-    return () => websocket && websocket.removeEventListener('message', onWebsocketMessage)
-  }, [websocket, onWebsocketMessage])
 
   // update the connection indicator based on the websocket connection state
   useEffect(() => {
