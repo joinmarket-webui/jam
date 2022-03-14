@@ -10,21 +10,36 @@ import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 
+function arrayEquals(a, b) {
+  return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
+}
+
+function sortWallets(wallets, activeWalletName = null) {
+  if (activeWalletName && wallets.indexOf(activeWalletName) >= 0) {
+    return [activeWalletName, ...sortWallets(wallets.filter((a) => a !== activeWalletName))]
+  } else {
+    return [...wallets].sort((a, b) => a.localeCompare(b))
+  }
+}
+
 export default function Wallets({ startWallet, stopWallet }) {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const sessionInfo = useSessionInfo()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [alert, setAlert] = useState(
-    currentWallet?.name && {
-      variant: 'info',
-      message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
-      dismissible: true,
-    }
-  )
+  const [alert, setAlert] = useState(null)
 
   const walletsFailedError = t('wallets.error_loading_failed')
+
+  useEffect(() => {
+    if (walletList && sessionInfo) {
+      const sortedWalletList = sortWallets(walletList, sessionInfo.wallet_name)
+      if (!arrayEquals(walletList, sortedWalletList)) {
+        setWalletList(sortedWalletList)
+      }
+    }
+  }, [sessionInfo, walletList, setWalletList])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -33,11 +48,21 @@ export default function Wallets({ startWallet, stopWallet }) {
     Api.getWalletAll({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || walletsFailedError))))
       .then((data) => {
-        const { wallets = [] } = data
-        if (currentWallet) {
-          wallets.sort((a, b) => b === currentWallet.name)
+        if (!abortCtrl.signal.aborted) {
+          const wallets = sortWallets(data.wallets || [], currentWallet?.name)
+
+          if (currentWallet) {
+            if (wallets.length > 1) {
+              setAlert({
+                variant: 'info',
+                message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
+                dismissible: true,
+              })
+            }
+          }
+
+          setWalletList(wallets)
         }
-        setWalletList(wallets)
       })
       .catch((err) => {
         if (!abortCtrl.signal.aborted) {
@@ -51,7 +76,7 @@ export default function Wallets({ startWallet, stopWallet }) {
       })
 
     return () => abortCtrl.abort()
-  }, [currentWallet, walletsFailedError])
+  }, [currentWallet, walletsFailedError, t])
 
   return (
     <div className="wallets">
