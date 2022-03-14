@@ -14,6 +14,7 @@ import Layout from './Layout'
 import { useSettings } from '../context/SettingsContext'
 import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
+import { useSessionConnectionError } from '../context/SessionInfoContext'
 import { setSession, clearSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 import Onboarding from './Onboarding'
@@ -25,9 +26,9 @@ export default function App() {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
+  const sessionConnectionError = useSessionConnectionError()
 
   const [makerRunning, setMakerRunning] = useState()
-  const [connectionError, setConnectionError] = useState()
   const [websocketConnected, setWebsocketConnected] = useState()
   const [coinjoinInProcess, setCoinjoinInProcess] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
@@ -70,7 +71,6 @@ export default function App() {
           const { maker_running, coinjoin_in_process, wallet_name } = data
           const activeWalletName = wallet_name !== 'None' ? wallet_name : null
 
-          setConnectionError(null)
           setMakerRunning(maker_running)
           setCoinjoinInProcess(coinjoin_in_process)
           if (currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)) {
@@ -81,7 +81,6 @@ export default function App() {
         })
         .catch((err) => {
           if (!abortCtrl.signal.aborted) {
-            setConnectionError(err.message)
             resetState()
           }
         })
@@ -127,8 +126,8 @@ export default function App() {
       )}
       <Navbar />
       <rb.Container as="main" className="py-5">
-        {connectionError ? (
-          <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>
+        {sessionConnectionError ? (
+          <rb.Alert variant="danger">No connection to backend: {sessionConnectionError.message}.</rb.Alert>
         ) : (
           <Routes>
             <Route element={<Layout />}>
