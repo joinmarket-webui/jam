@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
@@ -7,10 +8,10 @@ import ToggleSwitch from './ToggleSwitch'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { SATS, BTC } from '../utils'
 import * as Api from '../libs/JmWalletApi'
-import { useTranslation } from 'react-i18next'
 import languages from '../i18n/languages'
 
 export default function Settings({ currentWallet }) {
+  const { t } = useTranslation()
   const [seed, setSeed] = useState('')
   const [showingSeed, setShowingSeed] = useState(false)
   const [revealSeed, setRevealSeed] = useState(false)
@@ -31,7 +32,7 @@ export default function Settings({ currentWallet }) {
 
   return (
     <div>
-      <PageTitle title="Settings" />
+      <PageTitle title={t('settings.heading')} />
       <div style={{ marginLeft: '-.75rem' }}>
         <rb.Button
           variant="outline-dark"
@@ -42,7 +43,7 @@ export default function Settings({ currentWallet }) {
           }}
         >
           <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" className="me-2" />
-          {settings.showBalance ? 'Hide' : 'Show'} balance
+          {settings.showBalance ? t('settings.hide_balance') : t('settings.show_balance')}
         </rb.Button>
 
         <br />
@@ -56,7 +57,7 @@ export default function Settings({ currentWallet }) {
           }}
         >
           <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" className="me-2" />
-          Display amounts in {isSats ? BTC : SATS}
+          {isSats ? t('settings.use_btc') : t('settings.use_sats')}
         </rb.Button>
 
         <br />
@@ -75,7 +76,7 @@ export default function Settings({ currentWallet }) {
             height="24"
             className="me-2"
           />
-          Switch to {isLightTheme ? 'dark' : 'light'} theme
+          {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
         </rb.Button>
 
         <br />
@@ -94,7 +95,7 @@ export default function Settings({ currentWallet }) {
             height="24"
             className="me-2"
           />
-          Use {settings.useAdvancedWalletMode ? 'magic' : 'advanced'} wallet mode
+          {settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}
         </rb.Button>
 
         <br />
@@ -118,7 +119,7 @@ export default function Settings({ currentWallet }) {
               href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
               rel="noopener noreferrer"
             >
-              Missing your language? Help us out!
+              {t('settings.text_help_translate')}
             </rb.Dropdown.Item>
           </rb.Dropdown.Menu>
         </rb.Dropdown>
@@ -146,11 +147,11 @@ export default function Settings({ currentWallet }) {
           }}
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
-          {showingSeed ? 'Hide' : 'Show'} seed phrase
+          {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
         </rb.Button>
         {seedError && (
           <div className="text-danger" style={{ marginLeft: '1rem' }}>
-            Could not retreive seedphrase.
+            {t('settings.error_loading_seed_failed')}
           </div>
         )}
         {showingSeed && (
@@ -160,7 +161,7 @@ export default function Settings({ currentWallet }) {
             </div>
             <div className="mb-2">
               <ToggleSwitch
-                label="Reveal sensitive information"
+                label={t('settings.reveal_seed')}
                 onToggle={(isToggled) => {
                   setRevealSeed(isToggled)
                 }}

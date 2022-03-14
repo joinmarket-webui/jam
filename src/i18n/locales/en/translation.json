@@ -115,5 +115,21 @@
     "account_button_receive": "Receive",
     "account_heading_external_addresses": "External Addresses",
     "account_heading_internal_addresses": "Internal Addresses"
+  },
+  "settings": {
+    "heading": "Settings",
+    "show_balance": "Show Balance",
+    "hide_balance": "Hide Balance",
+    "use_sats": "Display amounts in sats",
+    "use_btc": "Display amounts in bitcoin",
+    "use_dark_theme": "Switch to dark theme",
+    "use_light_theme": "Switch to light theme",
+    "use_normal_mode": "Use normal wallet mode",
+    "use_dev_mode": "Use developer wallet mode",
+    "text_help_translate": "Missing your language? Help us out!",
+    "show_seed": "Show seed phrase",
+    "hide_seed": "Hide seed phrase",
+    "reveal_seed": "Reveal seed phrase",
+    "error_loading_seed_failed": "Could not retrieve seed phrase."
   }
 }
