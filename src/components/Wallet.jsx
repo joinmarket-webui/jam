@@ -199,7 +199,8 @@ export default function Wallet({
       {showNoTokenAlert && (
         <rb.Card.Footer>
           <rb.Alert variant="warning" className="mb-0">
-            This wallet is active, but there is no token to interact with it. Please remove the lock file on the server.
+            This wallet is active, but there is no token to interact with it. Please try unlocking a wallet or remove
+            the lock file on the server.
           </rb.Alert>
         </rb.Card.Footer>
       )}
