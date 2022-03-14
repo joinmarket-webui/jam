@@ -2,7 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { titleize } from '../utils'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 

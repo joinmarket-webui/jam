@@ -49,7 +49,7 @@ export default function Receive({ currentWallet }) {
     }
 
     return () => abortCtrl.abort()
-  }, [account, currentWallet, addressCount])
+  }, [account, currentWallet, addressCount, t])
 
   useEffect(() => {
     if (addressCopiedFlag < 1) return

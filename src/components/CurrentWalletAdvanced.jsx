@@ -53,7 +53,7 @@ export default function CurrentWalletAdvanced() {
     Promise.all([loadingWallet, loadingUtxos]).finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, setWalletInfo])
+  }, [currentWallet, setWalletInfo, t])
 
   return (
     <div>

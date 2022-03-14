@@ -174,7 +174,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
     const waiting = waitingForMakerToStart || waitingForMakerToStop
     setIsWaiting(waiting)
     !waiting && makerRunning && setAlert({ variant: 'success', message: t('earn.alert_running') })
-  }, [makerRunning, isWaitingMakerStart, isWaitingMakerStop])
+  }, [makerRunning, isWaitingMakerStart, isWaitingMakerStop, t])
 
   useEffect(() => {
     if (!isShowReport) return
@@ -200,7 +200,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
       })
 
     return () => abortCtrl.abort()
-  }, [makerRunning, isShowReport])
+  }, [makerRunning, isShowReport, t])
 
   const stopMakerService = async () => {
     const { name: walletName, token } = currentWallet

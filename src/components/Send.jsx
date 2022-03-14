@@ -232,7 +232,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     )
 
     return () => abortCtrl.abort()
-  }, [wallet, walletInfo, setWalletInfo])
+  }, [wallet, walletInfo, setWalletInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name: walletName, token } = wallet

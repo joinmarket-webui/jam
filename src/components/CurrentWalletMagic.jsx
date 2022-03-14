@@ -90,7 +90,7 @@ export default function CurrentWalletMagic() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, setWalletInfo])
+  }, [currentWallet, setWalletInfo, t])
 
   return (
     <div className="privacy-levels">
