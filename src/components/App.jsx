@@ -150,7 +150,7 @@ export default function App() {
           </rb.Card>
         </div>
       )}
-      <Navbar coinjoinInProcess={coinjoinInProcess} makerRunning={makerRunning} connectionError={connectionError} />
+      <Navbar />
       <rb.Container as="main" className="py-5">
         {connectionError ? (
           <rb.Alert variant="danger">No connection to backend: {connectionError}.</rb.Alert>

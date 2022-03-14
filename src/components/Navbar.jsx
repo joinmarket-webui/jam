@@ -5,6 +5,7 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
+import { useSessionInfo, useSessionConnectionError } from '../context/SessionInfoContext'
 import { walletDisplayName } from '../utils'
 
 const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
@@ -113,10 +114,13 @@ const TrailingNav = ({ coinjoinInProcess, onClick }) => {
   )
 }
 
-export default function Navbar({ connectionError, makerRunning, coinjoinInProcess }) {
+export default function Navbar() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
+
+  const sessionInfo = useSessionInfo()
+  const sessionConnectionError = useSessionConnectionError()
 
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -134,7 +138,7 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
       className="border-bottom py-0"
     >
       <rb.Container fluid="xl" className="align-items-stretch">
-        {connectionError ? (
+        {sessionConnectionError ? (
           <rb.Navbar.Text className="d-flex align-items-center" style={{ height: height }}>
             No Connection
           </rb.Navbar.Text>
@@ -206,16 +210,19 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                     <rb.Offcanvas.Title>Jam</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
-                    <CenterNav makerRunning={makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
-                    <TrailingNav coinjoinInProcess={coinjoinInProcess} onClick={() => setIsExpanded(!isExpanded)} />
+                    <CenterNav makerRunning={sessionInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
+                    <TrailingNav
+                      coinjoinInProcess={sessionInfo?.coinjoinInProcess}
+                      onClick={() => setIsExpanded(!isExpanded)}
+                    />
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
-                  <CenterNav makerRunning={makerRunning} />
+                  <CenterNav makerRunning={sessionInfo?.makerRunning} />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">
-                    <TrailingNav coinjoinInProcess={coinjoinInProcess} />
+                    <TrailingNav coinjoinInProcess={sessionInfo?.coinjoinInProcess} />
                   </div>
                 </rb.Container>
               </>
