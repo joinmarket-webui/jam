@@ -69,6 +69,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                       {type === 'internal addresses' && (
                         <h6>{t('current_wallet_advanced.account_heading_internal_addresses')}</h6>
                       )}
+                      {!['internal addresses', 'external addresses'].includes(type) && <h6>{type}</h6>}
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center justify-content-end">
                       <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
