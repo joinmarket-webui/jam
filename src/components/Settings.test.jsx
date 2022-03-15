@@ -12,11 +12,11 @@ describe('<Settings />', () => {
   it('should render settings without errors', () => {
     act(setup)
 
-    expect(screen.getByText('Settings')).toBeInTheDocument()
-    expect(screen.queryByText(/(Show|Hide) balance/)).toBeInTheDocument()
-    expect(screen.queryByText(/Display amounts in (sats|BTC)/)).toBeInTheDocument()
-    expect(screen.queryByText(/Switch to (dark|light) theme/)).toBeInTheDocument()
-    expect(screen.queryByText(/Use (advanced|magic) wallet mode/)).toBeInTheDocument()
+    expect(screen.getByText('settings.title')).toBeInTheDocument()
+    expect(screen.queryByText(/settings.(show|hide)_balance/)).toBeInTheDocument()
+    expect(screen.queryByText(/settings.use_(sats|bitcoin)/)).toBeInTheDocument()
+    expect(screen.queryByText(/settings.use_(dark|light)_theme/)).toBeInTheDocument()
+    expect(screen.queryByText(/settings.use_(normal|dev)_mode/)).toBeInTheDocument()
     expect(screen.queryByText(/English/)).toBeInTheDocument()
   })
 })
