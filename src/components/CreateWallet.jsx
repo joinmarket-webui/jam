@@ -61,7 +61,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
   )
 }
 
-const SeedWordInput = ({ number, targetWord, isValid, setIsValid, key }) => {
+const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
   const [enteredWord, setEnteredWord] = useState('')
 
   useEffect(() => {
@@ -75,7 +75,6 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid, key }) => {
     <rb.InputGroup>
       <rb.InputGroup.Text className="seedword-index-backup">{number}.</rb.InputGroup.Text>
       <rb.FormControl
-        key={key}
         type="text"
         placeholder={`Word ${number}`}
         value={enteredWord}
@@ -113,13 +112,12 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
             const seedWords = seedphrase.slice(outerIndex, outerIndex + 2)
 
             return (
-              <div className="row mb-4">
+              <div className="row mb-4" key={outerIndex}>
                 {seedWords.map((seedWord, innerIndex) => {
                   const wordIndex = outerIndex + innerIndex
                   return (
-                    <div className="col">
+                    <div className="col" key={wordIndex}>
                       <SeedWordInput
-                        key={wordIndex}
                         number={wordIndex + 1}
                         targetWord={seedWord}
                         isValid={seedWordConfirmations[wordIndex]}
