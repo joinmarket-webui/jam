@@ -181,7 +181,7 @@
     "title": "Earn bitcoin",
     "subtitle": "By making your bitcoin available for others, you help them improve their privacy and can also earn a yield.",
     "alert_empty_report": "The report is empty.",
-    "text_report_length": "Showing {{ visibleLines } of {{ linesWithoutHeader }} entries",
+    "text_report_length": "Showing {{ visibleLines }} of {{ linesWithoutHeader }} entries",
     "error_loading_report_failed": "Failed to load yield generator report.",
     "alert_starting": "Service is starting.",
     "alert_stopping": "Service is stopping.",
