@@ -10,6 +10,16 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import './i18n/config'
 
+declare global {
+  interface JamGlobal {
+    PUBLIC_PATH: string
+  }
+
+  interface Window {
+    JM: JamGlobal
+  }
+}
+
 ReactDOM.render(
   <BrowserRouter basename={window.JM.PUBLIC_PATH}>
     <SettingsProvider>

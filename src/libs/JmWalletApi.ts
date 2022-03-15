@@ -12,16 +12,18 @@
  */
 const BASE_PATH = `${window.JM.PUBLIC_PATH}/api`
 
+type ApiToken = string
+
 /**
  * Construct a bearer authorization header object for the given token.
  *
  * The 'x-jm-authorization' header is forwarded as 'Authorization' header in
  * requests to jmwalletd by the reverse proxy.
  *
- * @param {string} token the bearer token
+ * @param {ApiToken} token the bearer token
  * @returns an object containing the authorization header
  */
-const Authorization = (token) => {
+const Authorization = (token: ApiToken) => {
   return { 'x-jm-authorization': `Bearer ${token}` }
 }
 
