@@ -265,7 +265,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="offertype">
                       <ToggleSwitch
-                        label={t('earn.label_rel_offer')}
+                        label={t('earn.toggle_rel_offer')}
                         initialValue={isRelOffer}
                         onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
                       />
