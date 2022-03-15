@@ -28,7 +28,7 @@ const isValidAccount = (candidate) => {
 
 const isValidAmount = (candidate) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && parsed > 0
+  return !isNaN(parsed) && parsed >= 0
 }
 
 const isValidNumCollaborators = (candidate, minNumCollaborators) => {
@@ -388,9 +388,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
               <rb.Form.Control
                 name="amount"
                 type="number"
-                value={amount || ''}
+                value={amount === null ? '' : amount}
                 className="slashed-zeroes"
-                min={1}
+                min={0}
                 placeholder={t('send.placeholder_amount')}
                 required
                 onChange={(e) => setAmount(parseInt(e.target.value, 10))}
