@@ -248,7 +248,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
     <div className="earn">
       <rb.Row>
         <rb.Col>
-          <PageTitle title={t('title')} subtitle={t('subtitle')} />
+          <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
           <rb.Fade in={coinjoinInProcess} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
