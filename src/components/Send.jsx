@@ -58,9 +58,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   return (
     <rb.Form noValidate className="collaborators-selector">
       <rb.Form.Group>
-        <rb.Form.Label className="mb-0">
-          {t('send.label_num_collaborators')} {numCollaborators}
-        </rb.Form.Label>
+        <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
         <div className="mb-2">
           <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
         </div>
