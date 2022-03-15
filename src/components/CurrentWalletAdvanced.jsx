@@ -43,7 +43,7 @@ export default function CurrentWalletAdvanced() {
       .then((res) =>
         res.ok
           ? res.json()
-          : Promise.reject(new Error(res.message || t('current_wallet_advanced.error_loading_failed')))
+          : Promise.reject(new Error(res.message || t('current_wallet_advanced.error_loading_utxos_failed')))
       )
       .then((data) => setUtxoData(data.utxos))
       .catch((err) => {
