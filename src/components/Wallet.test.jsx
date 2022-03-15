@@ -56,11 +56,11 @@ describe('<Wallet />', () => {
     act(() => setup({ name: dummyWalletName }))
 
     expect(screen.getByText('dummy')).toBeInTheDocument()
-    expect(screen.getByText('Inactive')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
-    expect(screen.getByText('Unlock')).toBeInTheDocument()
-    expect(screen.queryByText('Open')).not.toBeInTheDocument()
-    expect(screen.queryByText('Lock')).not.toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_inactive')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
+    expect(screen.queryByText('wallets.wallet_preview.button_open')).not.toBeInTheDocument()
+    expect(screen.queryByText('wallets.wallet_preview.button_lock')).not.toBeInTheDocument()
   })
 
   it('should unlock inactive wallet successfully', async () => {
@@ -69,19 +69,22 @@ describe('<Wallet />', () => {
       json: () => Promise.resolve({ walletname: dummyWalletName, token: dummyToken }),
     })
 
-    act(() => setup({ name: dummyWalletName }))
+    await act(async () => setup({ name: dummyWalletName }))
 
-    expect(screen.getByText('Inactive')).toBeInTheDocument()
-    expect(screen.getByText('Unlock')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_inactive')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
 
     await act(async () => {
-      user.type(screen.getByPlaceholderText('Password'), 'correct horse battery staple')
-      const unlockWalletButton = screen.getByText('Unlock')
+      user.type(
+        screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'),
+        'correct horse battery staple'
+      )
+      const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
       user.click(unlockWalletButton)
 
-      await waitFor(() => screen.findByText(/Unlocking/))
-      await waitFor(() => screen.findByText('Unlock'))
+      await waitFor(() => screen.findByText(/wallets.wallet_preview.button_unlocking/))
+      await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
     })
 
     expect(mockStartWallet).toHaveBeenCalledWith(dummyWalletName, dummyToken)
@@ -97,17 +100,20 @@ describe('<Wallet />', () => {
 
     act(() => setup({ name: dummyWalletName }))
 
-    expect(screen.getByText('Inactive')).toBeInTheDocument()
-    expect(screen.getByText('Unlock')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_inactive')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
 
     await act(async () => {
-      user.type(screen.getByPlaceholderText('Password'), 'correct horse battery staple')
-      const unlockWalletButton = screen.getByText('Unlock')
+      user.type(
+        screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'),
+        'correct horse battery staple'
+      )
+      const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
       user.click(unlockWalletButton)
 
-      await waitFor(() => screen.findByText(/Unlocking/))
-      await waitFor(() => screen.findByText('Unlock'))
+      await waitFor(() => screen.findByText(/wallets.wallet_preview.button_unlocking/))
+      await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
     })
 
     expect(mockStartWallet).not.toHaveBeenCalled()
@@ -122,11 +128,11 @@ describe('<Wallet />', () => {
     act(() => setup({ name: dummyWalletName, isActive: true, hasToken: true }))
 
     expect(screen.getByText('dummy')).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('Open')).toBeInTheDocument()
-    expect(screen.getByText('Lock')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_open')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument()
-    expect(screen.queryByText('Unlock')).not.toBeInTheDocument()
+    expect(screen.queryByText('wallets.wallet_preview.button_unlock')).not.toBeInTheDocument()
   })
 
   it('should lock active wallet successfully', async () => {
@@ -144,21 +150,21 @@ describe('<Wallet />', () => {
       })
     )
 
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('Lock')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
     await act(async () => {
-      const lockWalletButton = screen.getByText('Lock')
+      const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
       user.click(lockWalletButton)
 
-      await waitFor(() => screen.findByText(/Locking/))
-      await waitFor(() => screen.findByText('Lock'))
+      await waitFor(() => screen.findByText(/wallet_preview.button_locking/))
+      await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
     })
 
     expect(mockStopWallet).toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'success',
-      message: `${walletDisplayName(dummyWalletName)} locked successfully.`,
+      message: `wallets.wallet_preview.alert_wallet_locked_successfully`,
       dismissible: false,
     })
   })
@@ -180,15 +186,15 @@ describe('<Wallet />', () => {
       })
     )
 
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('Lock')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
     await act(async () => {
-      const lockWalletButton = screen.getByText('Lock')
+      const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
       user.click(lockWalletButton)
 
-      await waitFor(() => screen.findByText(/Locking/))
-      await waitFor(() => screen.findByText('Lock'))
+      await waitFor(() => screen.findByText(/wallets.wallet_preview.button_locking/))
+      await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
     })
 
     // on errors other than 401, stopWallet should not have been called
@@ -216,15 +222,15 @@ describe('<Wallet />', () => {
       })
     )
 
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('Lock')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
     await act(async () => {
-      const lockWalletButton = screen.getByText('Lock')
+      const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
       user.click(lockWalletButton)
 
-      await waitFor(() => screen.findByText(/Locking/))
-      await waitFor(() => screen.findByText('Lock'))
+      await waitFor(() => screen.findByText(/wallets.wallet_preview.button_locking/))
+      await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
     })
 
     // on 401 errors, stopWallet *should* have been called
@@ -238,17 +244,13 @@ describe('<Wallet />', () => {
   it('should render active wallet when token is missing', () => {
     act(() => setup({ name: dummyWalletName, isActive: true, hasToken: false }))
 
-    expect(
-      screen.getByText(
-        'This wallet is active, but there is no token to interact with it. Please try unlocking a wallet or remove the lock file on the server.'
-      )
-    ).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.alert_missing_token')).toBeInTheDocument()
 
     expect(screen.getByText('dummy')).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Password')).toBeInTheDocument()
-    expect(screen.queryByText('Unlock')).toBeInTheDocument()
-    expect(screen.queryByText('Open')).not.toBeInTheDocument()
-    expect(screen.queryByText('Lock')).not.toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
+    expect(screen.queryByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
+    expect(screen.queryByText('wallets.wallet_preview.button_open')).not.toBeInTheDocument()
+    expect(screen.queryByText('wallets.wallet_preview.button_lock')).not.toBeInTheDocument()
   })
 })

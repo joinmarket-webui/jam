@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import { Trans, useTranslation } from 'react-i18next'
 import Wallets from './Wallets'
 import CreateWallet from './CreateWallet'
 import Send from './Send'
@@ -19,6 +20,7 @@ import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 
 export default function App() {
+  const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
@@ -67,13 +69,11 @@ export default function App() {
         <div className="warning-card-wrapper">
           <rb.Card className="warning-card translate-middle shadow-lg">
             <rb.Card.Body>
-              <rb.Card.Title className="text-center mb-3">Warning</rb.Card.Title>
-              <p className="text-secondary">
-                While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.
-              </p>
+              <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
+              <p className="text-secondary">{t('footer.warning_alert_text')}</p>
               <div className="text-center mt-3">
                 <rb.Button variant="secondary" onClick={() => setShowAlphaWarning(false)}>
-                  Fine with me.
+                  {t('footer.warning_alert_button_ok')}
                 </rb.Button>
               </div>
             </rb.Card.Body>
@@ -83,7 +83,9 @@ export default function App() {
       <Navbar />
       <rb.Container as="main" className="py-5">
         {sessionConnectionError ? (
-          <rb.Alert variant="danger">No connection to backend: {sessionConnectionError.message}.</rb.Alert>
+          <rb.Alert variant="danger">
+            {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
+          </rb.Alert>
         ) : (
           <Routes>
             <Route element={<Layout />}>
@@ -135,14 +137,18 @@ export default function App() {
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2 px-4">
           <div className="d-flex flex-1 order-2 order-md-0 flex-column justify-content-center align-items-center align-items-md-start">
-            <div className="warning-hint text-start text-secondary d-none d-md-block">This is pre-alpha software.</div>
-            <rb.Button
-              variant="link"
-              className="warning-hint text-start border-0 p-0 text-secondary"
-              onClick={() => setShowAlphaWarning(true)}
-            >
-              Read this before using.
-            </rb.Button>
+            <div className="warning-hint text-start text-secondary d-none d-md-block">
+              <Trans i18nKey="footer.warning">
+                This is pre-alpha software.
+                <rb.Button
+                  variant="link"
+                  className="warning-hint text-start border-0 p-0 text-secondary"
+                  onClick={() => setShowAlphaWarning(true)}
+                >
+                  Read this before using.
+                </rb.Button>
+              </Trans>
+            </div>
           </div>
           <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center px-4">
             <rb.Nav.Item>
@@ -152,7 +158,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="nav-link text-secondary px-2"
               >
-                Docs
+                {t('footer.docs')}
               </a>
             </rb.Nav.Item>
             <rb.Nav.Item>
@@ -162,7 +168,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="nav-link text-secondary px-2"
               >
-                Features
+                {t('footer.features')}
               </a>
             </rb.Nav.Item>
             <rb.Nav.Item>
@@ -172,7 +178,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="nav-link text-secondary px-2"
               >
-                GitHub
+                {t('footer.github')}
               </a>
             </rb.Nav.Item>
             <rb.Nav.Item>
@@ -182,13 +188,15 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="nav-link text-secondary px-2"
               >
-                Twitter
+                {t('footer.twitter')}
               </a>
             </rb.Nav.Item>
           </div>
           <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
             <span className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}>•</span>
-            <span className="text-secondary">{websocketConnected ? 'Connected' : 'Disconnected'}</span>
+            <span className="text-secondary">
+              {websocketConnected ? t('footer.connected') : t('footer.disconnected')}
+            </span>
           </div>
         </rb.Container>
       </rb.Nav>

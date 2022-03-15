@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import { serialize, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
@@ -17,6 +18,7 @@ export default function Wallet({
   setAlert,
   ...props
 }) {
+  const { t } = useTranslation()
   const [validated, setValidated] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
@@ -29,9 +31,9 @@ export default function Wallet({
         message:
           currentWallet.name === walletName
             ? // unlocking same wallet
-              `${walletDisplayName(walletName)} is already unlocked.`
+              t('wallets.wallet_preview.alert_wallet_already_unlocked', { walletName: walletDisplayName(walletName) })
             : // unlocking another wallet while one is already unlocked
-              `${walletDisplayName(currentWallet.name)} is currently in use, please lock it first.`,
+              t('wallets.wallet_preview.alert_other_wallet_unlocked', { walletName: walletDisplayName(walletName) }),
       })
     } else {
       setAlert(null)
@@ -83,9 +85,13 @@ export default function Wallet({
 
         setAlert({
           variant: already_locked ? 'warning' : 'success',
-          message: `${walletDisplayName(lockedWalletName)} ${
-            already_locked ? 'already locked' : 'locked successfully'
-          }.`,
+          message: already_locked
+            ? t('wallets.wallet_preview.alert_wallet_already_locked', {
+                walletName: walletDisplayName(lockedWalletName),
+              })
+            : t('wallets.wallet_preview.alert_wallet_locked_successfully', {
+                walletName: walletDisplayName(lockedWalletName),
+              }),
           dismissible: false,
         })
       } else {
@@ -143,16 +149,17 @@ export default function Wallet({
                   <>{walletDisplayName(name)}</>
                 )}
               </rb.Card.Title>
-              <span style={{ position: 'relative' }}>
-                {isActive ? <span className="text-success">Active</span> : <span className="text-muted">Inactive</span>}
-              </span>
+              {isActive ? (
+                <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
+              ) : (
+                <span className="text-muted">{t('wallets.wallet_preview.wallet_inactive')}</span>
+              )}
             </div>
-
             <div>
               {showLockOptions ? (
                 <>
                   <Link className="btn btn-outline-dark me-2" to="/wallet">
-                    Open
+                    {t('wallets.wallet_preview.button_open')}
                   </Link>
                   <rb.FormControl type="hidden" name="action" value="lock" />
                   <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
@@ -166,10 +173,10 @@ export default function Wallet({
                           aria-hidden="true"
                           className="me-2"
                         />
-                        Locking
+                        {t('wallets.wallet_preview.button_locking')}
                       </>
                     ) : (
-                      <>Lock</>
+                      <>{t('wallets.wallet_preview.button_lock')}</>
                     )}
                   </rb.Button>
                 </>
@@ -177,7 +184,7 @@ export default function Wallet({
                 <rb.InputGroup hasValidation={true}>
                   <rb.FormControl
                     type="password"
-                    placeholder="Password"
+                    placeholder={t('wallets.wallet_preview.placeholder_password')}
                     name="password"
                     disabled={isUnlocking}
                     required
@@ -194,13 +201,15 @@ export default function Wallet({
                           aria-hidden="true"
                           className="me-2"
                         />
-                        Unlocking
+                        {t('wallets.wallet_preview.button_unlocking')}
                       </>
                     ) : (
-                      <>Unlock</>
+                      <>{t('wallets.wallet_preview.button_unlock')}</>
                     )}
                   </rb.Button>
-                  <rb.Form.Control.Feedback type="invalid">Please set the wallet's password.</rb.Form.Control.Feedback>
+                  <rb.Form.Control.Feedback type="invalid">
+                    {t('wallets.wallet_preview.feedback_missing_password')}
+                  </rb.Form.Control.Feedback>
                 </rb.InputGroup>
               )}
             </div>
@@ -210,8 +219,7 @@ export default function Wallet({
       {showNoTokenAlert && (
         <rb.Card.Footer>
           <rb.Alert variant="warning" className="mb-0">
-            This wallet is active, but there is no token to interact with it. Please try unlocking a wallet or remove
-            the lock file on the server.
+            {t('wallets.wallet_preview.alert_missing_token')}
           </rb.Alert>
         </rb.Card.Footer>
       )}

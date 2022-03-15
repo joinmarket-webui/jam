@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -36,6 +37,7 @@ const isValidNumCollaborators = (candidate, minNumCollaborators) => {
 }
 
 const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators }) => {
+  const { t } = useTranslation()
   const settings = useSettings()
 
   const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
@@ -56,11 +58,9 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   return (
     <rb.Form noValidate className="collaborators-selector">
       <rb.Form.Group>
-        <rb.Form.Label className="mb-0">Number of collaborators: {numCollaborators}</rb.Form.Label>
+        <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
         <div className="mb-2">
-          <rb.Form.Text className="text-secondary">
-            A higher number is better for privacy, but also increases the fee.
-          </rb.Form.Text>
+          <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
         </div>
         <div className="d-flex flex-row flex-wrap">
           {defaultCollaboratorsSelection.map((number) => {
@@ -89,7 +89,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
             min={minNumCollaborators}
             max={99}
             isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
-            placeholder="Other"
+            placeholder={t('send.input_num_collaborators_placeholder')}
             defaultValue=""
             className={`p-2 border border-1 rounded text-center${
               usesCustomNumCollaborators ? (settings.theme === 'light' ? ' border-dark' : ' selected-dark') : ''
@@ -107,7 +107,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
           />
           {usesCustomNumCollaborators && (
             <rb.Form.Control.Feedback type="invalid">
-              Please use between {minNumCollaborators} and 99 collaborators.
+              {t('send.error_invalid_num_collaborators', { minNumCollaborators, maxNumCollaborators: 99 })}
             </rb.Form.Control.Feedback>
           )}
         </div>
@@ -129,11 +129,7 @@ const enhanceTakerErrorMessageIfNecessary = async (requestContext, httpStatus, e
       .catch(() => false)
 
     if (!maxFeeSettingsPresent) {
-      const maxFeeSettingsMissingMessage = `
-        Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. 
-        Consider adding them to your config manually.
-      `
-      return `${errorMessage} ${maxFeeSettingsMissingMessage}`
+      return `${errorMessage}`
     }
   }
 
@@ -141,6 +137,7 @@ const enhanceTakerErrorMessageIfNecessary = async (requestContext, httpStatus, e
 }
 
 export default function Send({ makerRunning, coinjoinInProcess }) {
+  const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
@@ -207,7 +204,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     const loadingWalletInfo = walletInfo
       ? Promise.resolve()
       : Api.getWalletDisplay(requestContext)
-          .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
+          .then((res) =>
+            res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_wallet_failed')))
+          )
           .then((data) => setWalletInfo(data.walletinfo))
           .catch((err) => {
             !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
@@ -215,7 +214,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
       .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading config value "minimum_makers" failed.'))
+        res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_min_makers_failed')))
       )
       .then((data) => {
         const minimumMakers = parseInt(data.configvalue, 10)
@@ -231,7 +230,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     )
 
     return () => abortCtrl.abort()
-  }, [wallet, walletInfo, setWalletInfo])
+  }, [wallet, walletInfo, setWalletInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name: walletName, token } = wallet
@@ -248,7 +247,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         const output = outputs.find((o) => o.address === destination)
         setAlert({
           variant: 'success',
-          message: `Payment successful: Sent ${output.value_sats} sats to ${output.address}.`,
+          message: t('send.alert_payment_successful', { amount: output.value_sats, address: output.address }),
         })
         success = true
       } else {
@@ -275,11 +274,15 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setAlert({ variant: 'success', message: 'Collaborative transaction started' })
+        setAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
         success = true
       } else {
         const { message } = await res.json()
-        const displayMessage = await enhanceTakerErrorMessageIfNecessary(requestContext, res.status, message)
+        const displayMessage = await enhanceTakerErrorMessageIfNecessary(
+          requestContext,
+          res.status,
+          `${message} ${t('send.taker_error_message_max_fees_config_missing')}`
+        )
 
         setAlert({ variant: 'danger', message: displayMessage })
       }
@@ -321,20 +324,17 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       {isLoading ? (
         <div className="d-flex justify-content-center align-items-center">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          Loading
+          {t('send.loading')}
         </div>
       ) : (
         <div className="send">
-          <PageTitle
-            title="Send bitcoin"
-            subtitle="Collaborative transactions increase the privacy of yourself and others."
-          />
+          <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
           <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">
-                {makerRunning && <>Earn is active. Stop the service in order to send collaborative transactions.</>}
-                {coinjoinInProcess && <>A collaborative transaction is currently in progress.</>}
+                {makerRunning && t('send.text_maker_running')}
+                {coinjoinInProcess && t('send.text_coinjoin_already_running')}
               </small>
             </div>
           </rb.Fade>
@@ -347,20 +347,22 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
 
           <rb.Form onSubmit={onSubmit} noValidate id="send-form">
             <rb.Form.Group className="mb-4" controlId="destination">
-              <rb.Form.Label>Recipient</rb.Form.Label>
+              <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
               <rb.Form.Control
                 name="destination"
-                placeholder="Enter address..."
+                placeholder={t('send.placeholder_recipient')}
                 className="slashed-zeroes"
                 value={destination || ''}
                 required
                 onChange={(e) => setDestination(e.target.value)}
                 isInvalid={destination !== null && !isValidAddress(destination)}
               />
-              <rb.Form.Control.Feedback type="invalid">Please provide a recipient address.</rb.Form.Control.Feedback>
+              <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
             </rb.Form.Group>
             <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
-              <rb.Form.Label>{settings.useAdvancedWalletMode ? 'Account' : 'Privacy level'} to send from</rb.Form.Label>
+              <rb.Form.Label>
+                {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
+              </rb.Form.Label>
               <rb.Form.Select
                 defaultValue={account}
                 onChange={(e) => setAccount(parseInt(e.target.value, 10))}
@@ -373,35 +375,34 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                     .sort((lhs, rhs) => lhs.account - rhs.account)
                     .map(({ account, account_balance: balance }) => (
                       <option key={account} value={account}>
-                        {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}{' '}
+                        {settings.useAdvancedWalletMode
+                          ? t('send.account_selector_option_dev_mode', { number: account })
+                          : t('send.account_selector_option', { number: account })}{' '}
                         {settings.showBalance && `(\u20BF${balance})`}
                       </option>
                     ))}
               </rb.Form.Select>
             </rb.Form.Group>
             <rb.Form.Group className="mb-4" controlId="amount">
-              <rb.Form.Label form="send-form">Amount in sats</rb.Form.Label>
+              <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
               <rb.Form.Control
                 name="amount"
                 type="number"
                 value={amount || ''}
                 className="slashed-zeroes"
                 min={1}
-                placeholder="Enter amount..."
+                placeholder={t('send.placeholder_amount')}
                 required
                 onChange={(e) => setAmount(parseInt(e.target.value, 10))}
                 isInvalid={amount !== null && !isValidAmount(amount)}
               />
               <rb.Form.Control.Feedback form="send-form" type="invalid">
-                Please provide a valid amount.
+                {t('send.feedback_invalid_amount')}
               </rb.Form.Control.Feedback>
             </rb.Form.Group>
             {isCoinjoinOptionEnabled && (
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-                <ToggleSwitch
-                  label="Send as collaborative transaction for improved privacy"
-                  onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-                />
+                <ToggleSwitch label={t('send.toggle_coinjoin')} onToggle={(isToggled) => setIsCoinjoin(isToggled)} />
               </rb.Form.Group>
             )}
           </rb.Form>
@@ -422,10 +423,10 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
             {isSending ? (
               <div>
                 <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                Sending
+                {t('send.text_sending')}
               </div>
             ) : (
-              'Send'
+              t('send.button_send')
             )}
           </rb.Button>
         </div>
