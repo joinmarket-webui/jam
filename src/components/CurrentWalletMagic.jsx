@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
@@ -13,7 +14,7 @@ const WalletHeader = ({ name, balance, unit, showBalance }) => {
     <div className="d-flex flex-column align-items-center">
       <h6 className="text-secondary">{walletDisplayName(name)}</h6>
       <h4>
-        <Balance value={balance} unit={unit} showBalance={showBalance || false} />
+        <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
       </h4>
     </div>
   )
@@ -54,13 +55,14 @@ const PrivacyLevel = ({ numAccounts, level, balance }) => {
         {outlinedShields}
       </div>
       <div className="ps-2">
-        <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
+        <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
       </div>
     </div>
   )
 }
 
 export default function CurrentWalletMagic() {
+  const { t } = useTranslation()
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
@@ -78,7 +80,9 @@ export default function CurrentWalletMagic() {
     setIsLoading(true)
 
     Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || 'Loading wallet failed.'))))
+      .then((res) =>
+        res.ok ? res.json() : Promise.reject(new Error(res.message || t('current_wallet.error_loading_failed')))
+      )
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
@@ -86,7 +90,7 @@ export default function CurrentWalletMagic() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, setWalletInfo])
+  }, [currentWallet, setWalletInfo, t])
 
   return (
     <div className="privacy-levels">
@@ -102,7 +106,7 @@ export default function CurrentWalletMagic() {
           <rb.Col className="flex-grow-0">
             <div className="d-flex justify-content-center align-items-center">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              Loading
+              {t('current_wallet.text_loading')}
             </div>
           </rb.Col>
         </rb.Row>
@@ -124,14 +128,14 @@ export default function CurrentWalletMagic() {
             <rb.Col>
               {/* Always receive on first mixdepth. */}
               <Link to="/receive" state={{ account: 0 }} className="btn btn-outline-dark w-100">
-                Deposit
+                {t('current_wallet.button_deposit')}
               </Link>
             </rb.Col>
             <rb.Col>
               {/* Todo: Withdrawing needs to factor in the privacy levels as well.
                 Depending on the mixdepth/account there will be different amounts available. */}
               <Link to="/send" className="btn btn-outline-dark w-100">
-                Withdraw
+                {t('current_wallet.button_withdraw')}
               </Link>
             </rb.Col>
           </rb.Row>
@@ -148,7 +152,7 @@ export default function CurrentWalletMagic() {
             <Link to="/" className="btn btn-outline-dark">
               <div className="d-flex justify-content-center align-items-center">
                 <Sprite symbol="wallet" width="24" height="24" />
-                <div className="ps-1">Switch Wallet</div>
+                <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
               </div>
             </Link>
           </rb.Row>

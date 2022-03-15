@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { titleize } from '../utils'
+import { useTranslation } from 'react-i18next'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 
@@ -18,7 +18,7 @@ const BranchEntry = ({ entry, ...props }) => {
             <code className="text-break">{hdPath}</code>
           </rb.Col>
           <rb.Col lg={{ order: 'last' }} className="d-flex align-items-center justify-content-end">
-            <Balance value={amount} unit={settings.unit} showBalance={settings.showBalance} />
+            <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
           <rb.Col xs={'auto'}>
             <code className="text-break">{address}</code> {labels && <span className="badge bg-info">{labels}</span>}
@@ -31,6 +31,7 @@ const BranchEntry = ({ entry, ...props }) => {
 }
 
 export default function DisplayAccounts({ accounts, ...props }) {
+  const { t } = useTranslation()
   const settings = useSettings()
 
   return (
@@ -41,20 +42,20 @@ export default function DisplayAccounts({ accounts, ...props }) {
             <rb.Row className="w-100  me-1">
               <rb.Col xs={'auto'}>
                 <h5 className="mb-0">
-                  {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}
+                  {t('current_wallet_advanced.account')} {account}
                 </h5>
               </rb.Col>
               <rb.Col className="d-flex align-items-center justify-content-end">
-                <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
+                <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
               </rb.Col>
             </rb.Row>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
             <Link to="/send" state={{ account }} className="btn btn-outline-dark">
-              Send
+              {t('current_wallet_advanced.account_button_send')}
             </Link>{' '}
             <Link to="/receive" state={{ account }} className="btn btn-outline-dark">
-              Receive
+              {t('current_wallet_advanced.account_button_receive')}
             </Link>
             {branches.map(({ balance, branch, entries }) => {
               const [type, derivation, xpub] = branch.split('\t')
@@ -62,10 +63,16 @@ export default function DisplayAccounts({ accounts, ...props }) {
                 <article key={derivation}>
                   <rb.Row className="mt-4 pe-3">
                     <rb.Col>
-                      <h6>{titleize(type)}</h6>
+                      {type === 'external addresses' && (
+                        <h6>{t('current_wallet_advanced.account_heading_external_addresses')}</h6>
+                      )}
+                      {type === 'internal addresses' && (
+                        <h6>{t('current_wallet_advanced.account_heading_internal_addresses')}</h6>
+                      )}
+                      {!['internal addresses', 'external addresses'].includes(type) && <h6>{type}</h6>}
                     </rb.Col>
                     <rb.Col className="d-flex align-items-center justify-content-end">
-                      <Balance value={balance} unit={settings.unit} showBalance={settings.showBalance} />
+                      <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
                     </rb.Col>
                   </rb.Row>
                   <rb.Row className="p-3">

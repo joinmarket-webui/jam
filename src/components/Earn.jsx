@@ -1,6 +1,7 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
@@ -11,6 +12,7 @@ const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
 const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
+  const { t } = useTranslation()
   const settings = useSettings()
 
   const empty = !lines || lines.length < 2
@@ -27,7 +29,7 @@ const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
 
   return (
     <div className="mt-2 mb-3">
-      {empty && <rb.Alert variant="info">The report is empty.</rb.Alert>}
+      {empty && <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>}
       {!empty && (
         <>
           <rb.Table striped bordered hover variant={settings.theme} responsive>
@@ -57,7 +59,10 @@ const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
           </rb.Table>
           <div className="mt-1 d-flex justify-content-end">
             <small>
-              Showing {visibleLines.length} of {linesWithoutHeader.length} entries
+              {t('earn.text_report_length', {
+                visibleLines: visibleLines.length,
+                linesWithoutHeader: linesWithoutHeader.length,
+              })}
             </small>
           </div>
         </>
@@ -67,6 +72,7 @@ const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
 }
 
 export default function Earn({ currentWallet, coinjoinInProcess, makerRunning }) {
+  const { t } = useTranslation()
   const settings = useSettings()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -159,16 +165,16 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
 
     const waitingForMakerToStart = isWaitingMakerStart && !makerRunning
     setIsWaitingMakerStart(waitingForMakerToStart)
-    waitingForMakerToStart && setAlert({ variant: 'success', message: 'Service is starting.' })
+    waitingForMakerToStart && setAlert({ variant: 'success', message: t('earn.alert_starting') })
 
     const waitingForMakerToStop = isWaitingMakerStop && makerRunning
     setIsWaitingMakerStop(waitingForMakerToStop)
-    waitingForMakerToStop && setAlert({ variant: 'success', message: 'Service is stopping.' })
+    waitingForMakerToStop && setAlert({ variant: 'success', message: t('earn.alert_stopping') })
 
     const waiting = waitingForMakerToStart || waitingForMakerToStop
     setIsWaiting(waiting)
-    !waiting && makerRunning && setAlert({ variant: 'success', message: 'Service is running.' })
-  }, [makerRunning, isWaitingMakerStart, isWaitingMakerStop])
+    !waiting && makerRunning && setAlert({ variant: 'success', message: t('earn.alert_running') })
+  }, [makerRunning, isWaitingMakerStart, isWaitingMakerStop, t])
 
   useEffect(() => {
     if (!isShowReport) return
@@ -181,7 +187,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
         if (res.ok) return res.json()
         // 404 is returned till the maker is started at least once
         if (res.status === 404) return {}
-        return Promise.reject(new Error(res.message || 'Failed to load yield generator report.'))
+        return Promise.reject(new Error(res.message || t('earn.error_loading_report_failed')))
       })
       .then((data) => setYieldgenReportLines(data.yigen_data))
       .catch((err) => {
@@ -194,7 +200,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
       })
 
     return () => abortCtrl.abort()
-  }, [makerRunning, isShowReport])
+  }, [makerRunning, isShowReport, t])
 
   const stopMakerService = async () => {
     const { name: walletName, token } = currentWallet
@@ -242,14 +248,11 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
     <div className="earn">
       <rb.Row>
         <rb.Col>
-          <PageTitle
-            title="Earn bitcoin"
-            subtitle="By making your bitcoin available for others, you help them improve their privacy and can also earn a yield."
-          />
+          <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
           <rb.Fade in={coinjoinInProcess} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
-              <small className="text-secondary">A collaborative transaction is currently in progress.</small>
+              <small className="text-secondary">{t('earn.alert_coinjoin_in_progress')}</small>
             </div>
           </rb.Fade>
 
@@ -262,7 +265,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="offertype">
                       <ToggleSwitch
-                        label="Relative offer"
+                        label={t('earn.toggle_rel_offer')}
                         initialValue={isRelOffer}
                         onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
                       />
@@ -271,12 +274,12 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                   {isRelOffer ? (
                     <rb.Form.Group className="mb-3" controlId="feeRel">
                       <rb.Form.Label className="mb-0">
-                        Relative fee {feeRel !== '' && `(${factorToPercentage(feeRel)}%)`}
+                        {t('earn.label_rel_fee', {
+                          fee: feeRel !== '' ? `(${factorToPercentage(feeRel)}%)` : '',
+                        })}
                       </rb.Form.Label>
                       <div className="mb-2">
-                        <rb.Form.Text className="text-secondary">
-                          As a percentage of the amounts you help others with improved privacy.
-                        </rb.Form.Text>
+                        <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
                       </div>
                       <rb.Form.Control
                         type="number"
@@ -290,16 +293,17 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                         onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
                       />
                       <rb.Form.Control.Feedback type="invalid">
-                        Please provide a relative fee between {feeRelPercentageMin}% and {feeRelPercentageMax}%.
+                        {t('feedback_invalid_rel_fee', {
+                          feeRelPercentageMin: `${feeRelPercentageMin}%`,
+                          feeRelPercentageMax: `${feeRelPercentageMax}%`,
+                        })}
                       </rb.Form.Control.Feedback>
                     </rb.Form.Group>
                   ) : (
                     <rb.Form.Group className="mb-3" controlId="feeAbs">
-                      <rb.Form.Label className="mb-0">Absolute fee in sats</rb.Form.Label>
+                      <rb.Form.Label className="mb-0">{t('earn.label_abs_fee')}</rb.Form.Label>
                       <div className="mb-2">
-                        <rb.Form.Text className="text-secondary">
-                          An absolute amount you get for helping others to improve their privacy.
-                        </rb.Form.Text>
+                        <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
                       </div>
                       <rb.Form.Control
                         type="number"
@@ -312,13 +316,13 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                         onChange={(e) => setAndPersistFeeAbs(e.target.value)}
                       />
                       <rb.Form.Control.Feedback type="invalid">
-                        Please provide an absolute fee.
+                        {t('earn.feedback_invalid_abs_fee')}
                       </rb.Form.Control.Feedback>
                     </rb.Form.Group>
                   )}
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="minsize">
-                      <rb.Form.Label>Minimum amount in sats</rb.Form.Label>
+                      <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
                       <rb.Form.Control
                         type="number"
                         name="minsize"
@@ -330,7 +334,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                         onChange={(e) => setAndPersistMinsize(e.target.value)}
                       />
                       <rb.Form.Control.Feedback type="invalid">
-                        Please provide a minimum amount.
+                        {t('earn.feedback_invalid_min_amount')}
                       </rb.Form.Control.Feedback>
                     </rb.Form.Group>
                   )}
@@ -348,12 +352,12 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
                       aria-hidden="true"
                       className="me-2"
                     />
-                    {makerRunning === true ? 'Stopping' : 'Starting'}
+                    {makerRunning === true ? t('earn.text_stopping') : t('earn.text_starting')}
                   </>
                 ) : makerRunning === true ? (
-                  'Stop'
+                  t('earn.button_stop')
                 ) : (
-                  'Start'
+                  t('earn.button_start')
                 )}
               </rb.Button>
             </rb.Form>
@@ -373,7 +377,7 @@ export default function Earn({ currentWallet, coinjoinInProcess, makerRunning })
               }}
             >
               <Sprite symbol={isShowReport ? 'hide' : 'show'} width="24" height="24" className="me-2" />
-              {isShowReport ? 'Hide' : 'Show'} report
+              {isShowReport ? t('earn.button_hide_report') : t('earn.button_show_report')}
               {isReportLoading && (
                 <rb.Spinner
                   as="span"

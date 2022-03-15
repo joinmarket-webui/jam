@@ -582,22 +582,6 @@ h2 {
   }
 }
 
-/* Balance Styles */
-
-.balance-wrapper {
-  display: inline-flex;
-  align-items: center;
-}
-
-.balance {
-  display: flex;
-  align-items: center;
-}
-
-.bitcoin-symbol {
-  padding-right: 0.1em;
-}
-
 /* Onboarding */
 
 .onboarding button {

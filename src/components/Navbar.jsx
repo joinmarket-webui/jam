@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
@@ -15,7 +16,7 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
         {walletInfo && walletInfo?.total_balance && unit ? (
           <div className="text-body">
-            <Balance value={walletInfo.total_balance} unit={unit} showBalance={showBalance || false} />
+            <Balance valueString={walletInfo.total_balance} convertToUnit={unit} showBalance={showBalance || false} />
           </div>
         ) : (
           <div className="invisible">
@@ -32,6 +33,7 @@ const ActivityIndicator = ({ isOn }) => {
 }
 
 const CenterNav = ({ makerRunning, onClick }) => {
+  const { t } = useTranslation()
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
       <rb.Nav.Item className="d-flex align-items-stretch">
@@ -42,7 +44,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
             'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
           }
         >
-          Send
+          {t('navbar.tab_send')}
         </NavLink>
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
@@ -53,7 +55,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
             'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
           }
         >
-          Receive
+          {t('navbar.tab_receive')}
         </NavLink>
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
@@ -65,7 +67,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
           }
         >
           <div className="d-flex align-items-start">
-            Earn
+            {t('navbar.tab_earn')}
             <ActivityIndicator isOn={makerRunning} />
           </div>
         </NavLink>
@@ -75,12 +77,14 @@ const CenterNav = ({ makerRunning, onClick }) => {
 }
 
 const TrailingNav = ({ coinjoinInProcess, onClick }) => {
+  const { t } = useTranslation()
+
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
       {coinjoinInProcess && (
         <rb.Nav.Item className="d-flex align-items-center justify-content-center pe-2">
           <div className="d-flex align-items-center px-0">
-            <rb.Navbar.Text>Joining</rb.Navbar.Text>
+            <rb.Navbar.Text>{t('navbar.joining_in_progress')}</rb.Navbar.Text>
             <Sprite symbol="joining" width="30" height="30" className="p-1 navbar-text" />
           </div>
         </rb.Nav.Item>
@@ -94,7 +98,7 @@ const TrailingNav = ({ coinjoinInProcess, onClick }) => {
           }
         >
           <Sprite symbol="gear" width="30" height="30" className="d-none d-md-inline-block" />
-          <span className="d-inline-block d-md-none">Settings</span>
+          <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_settings')}</span>
         </NavLink>
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
@@ -106,7 +110,7 @@ const TrailingNav = ({ coinjoinInProcess, onClick }) => {
           }
         >
           <Sprite symbol="grid" width="30" height="30" className="d-none d-md-inline-block" />
-          <span className="d-inline-block d-md-none">Wallets</span>
+          <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_wallets')}</span>
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>
@@ -114,6 +118,7 @@ const TrailingNav = ({ coinjoinInProcess, onClick }) => {
 }
 
 export default function Navbar({ connectionError, makerRunning, coinjoinInProcess }) {
+  const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
@@ -148,16 +153,16 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                   style={{ height: height }}
                 >
                   <Sprite symbol="logo" width="30" height="30" className="d-inline-block align-top" />
-                  <span className="ms-2">Jam</span>
+                  <span className="ms-2">{t('navbar.title')}</span>
                 </Link>
                 <div className="d-flex d-md-none align-items-center">
                   <rb.Navbar.Toggle id="mainNavToggle">
-                    <span>Menu</span>
+                    <span>{t('navbar.menu')}</span>
                   </rb.Navbar.Toggle>
                 </div>
                 <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
-                    <rb.Offcanvas.Title>Jam</rb.Offcanvas.Title>
+                    <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
                     <rb.Nav className="ms-auto">
@@ -167,7 +172,7 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                           onClick={() => isExpanded && setIsExpanded(false)}
                           className="nav-link"
                         >
-                          Create Wallet
+                          {t('navbar.button_create_wallet')}
                         </Link>
                       </rb.Nav.Item>
                     </rb.Nav>
@@ -198,12 +203,12 @@ export default function Navbar({ connectionError, makerRunning, coinjoinInProces
                 </rb.Nav>
                 <div className="d-flex d-md-none align-items-center">
                   <rb.Navbar.Toggle id="mainNavToggle">
-                    <span>Menu</span>
+                    <span>{t('navbar.menu_mobile')}</span>
                   </rb.Navbar.Toggle>
                 </div>
                 <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
-                    <rb.Offcanvas.Title>Jam</rb.Offcanvas.Title>
+                    <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
                     <CenterNav makerRunning={makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
