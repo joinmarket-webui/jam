@@ -1,9 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
+// @ts-ignore
 import App from './components/App'
+// @ts-ignore
 import { SettingsProvider } from './context/SettingsContext'
+// @ts-ignore
 import { WalletProvider } from './context/WalletContext'
+// @ts-ignore
 import { WebsocketProvider } from './context/WebsocketContext'
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
