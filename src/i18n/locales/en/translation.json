@@ -195,7 +195,7 @@
     "description_abs_fee": "An absolute amount you get for helping others to improve their privacy.",
     "feedback_invalid_abs_fee": "Please provide an absolute fee.",
     "label_min_amount": "Minimum amount in sats",
-    "feedback_invalid_min_amount": "Please provide an absolute fee.",
+    "feedback_invalid_min_amount": "Please provide a minimum amount.",
     "button_start": "Start",
     "button_stop": "Stop",
     "text_starting": "Starting",
