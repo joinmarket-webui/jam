@@ -1,6 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import { displayDate } from '../utils'
 import Balance from './Balance'
 import Alert from './Alert'
@@ -9,6 +10,7 @@ import { useCurrentWallet } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 
 const Utxo = ({ utxo, ...props }) => {
+  const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
 
@@ -29,7 +31,7 @@ const Utxo = ({ utxo, ...props }) => {
           return true
         } else {
           const { message } = await res.json()
-          throw new Error(message || 'Request failed.')
+          throw new Error(message || t('current_wallet_advanced.error_freeze_failed'))
         }
       })
       .then((_) => (utxo.frozen = !utxo.frozen))
@@ -51,10 +53,16 @@ const Utxo = ({ utxo, ...props }) => {
                 <code className="text-break">{utxo.address}</code>
               </div>
               <div>
-                {utxo.locktime && <span className="me-2">Locked until {displayDate(utxo.locktime)}</span>}
+                {utxo.locktime && (
+                  <span className="me-2">
+                    {t('current_wallet_advanced.label_locked_until')} {displayDate(utxo.locktime)}
+                  </span>
+                )}
                 {utxo.label && <span className="me-2 badge bg-light">{utxo.label}</span>}
-                {utxo.frozen && <span className="me-2 badge bg-info">frozen</span>}
-                {utxo.confirmations === 0 && <span className="badge bg-secondary">unconfirmed</span>}
+                {utxo.frozen && <span className="me-2 badge bg-info">{t('current_wallet_advanced.label_frozen')}</span>}
+                {utxo.confirmations === 0 && (
+                  <span className="badge bg-secondary">{t('current_wallet_advanced.label_unconfirmed')}</span>
+                )}
               </div>
             </rb.Stack>
           </rb.Col>
@@ -83,7 +91,9 @@ const Utxo = ({ utxo, ...props }) => {
                       className="ms-1 me-2"
                     />
                   )}
-                  {utxo.frozen ? 'unfreeze' : 'freeze'}
+                  {utxo.frozen
+                    ? t('current_wallet_advanced.button_unfreeze')
+                    : t('current_wallet_advanced.button_freeze')}
                 </rb.Button>
               </div>
             </rb.Stack>

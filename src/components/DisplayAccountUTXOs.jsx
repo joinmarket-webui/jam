@@ -1,7 +1,7 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
 import DisplayUTXOs from './DisplayUTXOs'
-import { useSettings } from '../context/SettingsContext'
 
 const byAccount = (utxos) => {
   const ret = utxos.reduce((res, utxo) => {
@@ -14,7 +14,7 @@ const byAccount = (utxos) => {
 }
 
 export default function DisplayAccountUTXOs({ utxos, ...props }) {
-  const settings = useSettings()
+  const { t } = useTranslation()
 
   return (
     <rb.Accordion {...props}>
@@ -22,7 +22,7 @@ export default function DisplayAccountUTXOs({ utxos, ...props }) {
         <rb.Accordion.Item key={account} eventKey={account}>
           <rb.Accordion.Header className="head">
             <h5 className="mb-0">
-              {settings.useAdvancedWalletMode ? 'Account' : 'Privacy Level'} {account}
+              {t('current_wallet_advanced.acount')} {account}
             </h5>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
