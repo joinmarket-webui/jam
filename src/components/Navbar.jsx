@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import ActivityIndicator from './ActivityIndicator'
+import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useSessionInfo, useSessionConnectionError } from '../context/SessionInfoContext'
@@ -64,7 +64,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
         >
           <div className="d-flex align-items-start">
             Earn
-            <ActivityIndicator isOn={makerRunning} />
+            <EarnIndicator isOn={makerRunning} />
           </div>
         </NavLink>
       </rb.Nav.Item>
@@ -79,7 +79,7 @@ const TrailingNav = ({ coinjoinInProcess, onClick }) => {
         <rb.Nav.Item className="d-flex align-items-center justify-content-center pe-2">
           <div className="d-flex align-items-center px-0">
             <rb.Navbar.Text>Joining</rb.Navbar.Text>
-            <Sprite symbol="joining" width="30" height="30" className="p-1 navbar-text" />
+            <JoiningIndicator isOn={coinjoinInProcess} className="navbar-text" />
           </div>
         </rb.Nav.Item>
       )}

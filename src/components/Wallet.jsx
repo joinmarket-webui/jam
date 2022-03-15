@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { serialize, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
-import ActivityIndicator from './ActivityIndicator'
-import Sprite from './Sprite'
+import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
 
 export default function Wallet({
   name,
@@ -137,21 +136,15 @@ export default function Wallet({
                     <Link className="wallet-name" to="/wallet">
                       {walletDisplayName(name)}
                     </Link>
-                    {makerRunning && <ActivityIndicator isOn={true} />}
+                    {makerRunning && <EarnIndicator isOn={true} />}
+                    {coinjoinInProcess && <JoiningIndicator isOn={true} className="text-success" />}
                   </span>
                 ) : (
                   <>{walletDisplayName(name)}</>
                 )}
               </rb.Card.Title>
               <span style={{ position: 'relative' }}>
-                {isActive ? (
-                  <span className="text-success">
-                    {coinjoinInProcess && <Sprite symbol="joining" width="30" height="30" className="p-1" />}
-                    Active
-                  </span>
-                ) : (
-                  <span className="text-muted">Inactive</span>
-                )}
+                {isActive ? <span className="text-success">Active</span> : <span className="text-muted">Inactive</span>}
               </span>
             </div>
 
