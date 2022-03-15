@@ -5,9 +5,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "jsx": "react-jsx",
+    "noImplicitAny": false,
     "skipLibCheck": true
-  },
-  "include": [
-    "src/**/*.(ts|tsx|js|jsx)"
-  ]
+  }
 }
