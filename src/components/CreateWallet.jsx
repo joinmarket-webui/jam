@@ -73,6 +73,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 }
 
 const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
+  const { t } = useTranslation()
   const [enteredWord, setEnteredWord] = useState('')
 
   useEffect(() => {
@@ -87,7 +88,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
       <rb.InputGroup.Text className="seedword-index-backup">{number}.</rb.InputGroup.Text>
       <rb.FormControl
         type="text"
-        placeholder={`Word ${number}`}
+        placeholder={`${t('create_wallet.word')} ${number}`}
         value={enteredWord}
         onChange={(e) => {
           setEnteredWord(e.target.value)
@@ -102,6 +103,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
 }
 
 const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
+  const { t } = useTranslation()
   const [seedBackup, setSeedBackup] = useState(false)
   let seedphrase = createdWallet.seedphrase.split(' ')
   const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
@@ -112,8 +114,8 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
 
   return (
     <div>
-      <div className="fs-4">Confirm seed phrase backup</div>
-      <p className="text-secondary">Enter each word in sequential order.</p>
+      <div className="fs-4">{t('create_wallet.confirm_backup')}</div>
+      <p className="text-secondary">{t('create_wallet.enter_words')}</p>
 
       <rb.Form noValidate>
         <div className="container slashed-zeroes p-0">
@@ -148,7 +150,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
           })}
         </div>
       </rb.Form>
-      {seedBackup && <div className="text-center text-success">Seed phrase confirmed.</div>}
+      {seedBackup && <div className="text-center text-success">{t('create_wallet.seed_confirmed')}</div>}
 
       <div className="d-flex mt-4 mb-4 gap-3">
         <rb.Button
@@ -158,16 +160,16 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
             parentStepSetter()
           }}
         >
-          Back
+          {t('create_wallet.back_button')}
         </rb.Button>
 
         <rb.Button variant="dark" onClick={() => walletConfirmed()} disabled={!seedBackup}>
-          Fund wallet
+          {t('create_wallet.confirmation_button_fund_wallet')}
         </rb.Button>
       </div>
 
       <rb.Button variant="outline-dark" onClick={() => walletConfirmed()} disabled={seedBackup}>
-        Skip
+        {t('create_wallet.skip_button')}
       </rb.Button>
     </div>
   )
@@ -219,7 +221,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
           />
         </div>
         <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
-          Next
+          {t('create_wallet.next_button')}
         </rb.Button>
       </div>
     )
