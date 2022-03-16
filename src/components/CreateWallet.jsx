@@ -114,7 +114,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
 
   return (
     <div>
-      <div className="fs-4">{t('create_wallet.confirm_backup')}</div>
+      <div className="fs-4">{t('create_wallet.confirm_backup_title')}</div>
       <p className="text-secondary">{t('create_wallet.enter_words')}</p>
 
       <rb.Form noValidate>
