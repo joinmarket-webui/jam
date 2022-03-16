@@ -11,7 +11,7 @@
     "menu_mobile_wallets": "Wallets"
   },
   "app": {
-    "alert_no_connection": "No connecction to backend: {{ connectionError }}"
+    "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "footer": {
     "warning": "This is alpha software.<br /><1>Read this before using.</1>",
