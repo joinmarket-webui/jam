@@ -26,6 +26,12 @@ export default function CurrentWalletAdvanced() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (!currentWallet) {
+      setAlert({ variant: 'danger', message: t('current_wallet.error_loading_failed') })
+      setIsLoading(false)
+      return
+    }
+
     const abortCtrl = new AbortController()
     const { name: walletName, token } = currentWallet
 
