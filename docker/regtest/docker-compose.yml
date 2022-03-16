@@ -109,7 +109,6 @@ services:
     environment:
       READY_FILE: /root/.nbxplorer/btc_fully_synched
       ENSURE_WALLET: 1
-      jm_gaplimit: 2000
       jm_rpc_wallet_file: jm_primary
       jm_max_cj_fee_abs: 42000000 # 0.42 btc
       jm_max_cj_fee_rel: 0.1337 # 13.37%
@@ -160,7 +159,6 @@ services:
       ENSURE_WALLET: 1
       APP_USER: joinmarket
       APP_PASSWORD: joinmarket
-      jm_gaplimit: 2000
       jm_rpc_wallet_file: jm_secondary
       jm_max_cj_fee_abs: 42000000 # 0.42 btc
       jm_max_cj_fee_rel: 0.1337 # 13.37%
