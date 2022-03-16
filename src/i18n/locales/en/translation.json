@@ -92,7 +92,7 @@
     "confirmation_toggle_info_written_down": "I've written down the information above.",
     "confirmation_button_fund_wallet": "Fund Wallet",
     "confirm_backup_title": "Confirm seed phrase backup",
-    "enter_words": "Enter each word in sequential order.",
+    "confirm_backup_subtitle": "Enter each word in sequential order.",
     "seed_confirmed": "Seed phrase confirmed.",
     "back_button": "Back",
     "skip_button": "Skip",
