@@ -122,12 +122,6 @@ services:
       jm_rpc_port: 43782
       jm_rpc_user: joinmarket
       jm_rpc_password: joinmarket
-      jm_tor_control_host: tor
-      jm_tor_control_port: 9051
-      jm_onion_socks5_host: tor
-      jm_onion_socks5_port: 9050
-      jm_socks5_host: tor
-      jm_socks5_port: 9050
     expose:
       - 8080  # payjoin server
       - 62601 # obwatch
@@ -141,12 +135,10 @@ services:
     volumes:
       - "joinmarket_datadir:/root/.joinmarket"
       - "nbxplorer_datadir:/root/.nbxplorer"
-      - "tor_datadir:/home/tor/.tor"
     depends_on:
       - bitcoind
-      - irc
       - nbxplorer
-      - tor
+      - irc
 
   joinmarket2:
     container_name: jm_regtest_joinmarket2
@@ -172,12 +164,14 @@ services:
       jm_rpc_port: 43782
       jm_rpc_user: joinmarket2
       jm_rpc_password: joinmarket2
+      # showcase exemplary tor environment vars
+      jm_socks5: 'false' # will _not_ connect to local irc over tor
+      jm_socks5_host: tor
+      jm_socks5_port: 9050
       jm_tor_control_host: tor
       jm_tor_control_port: 9051
       jm_onion_socks5_host: tor
       jm_onion_socks5_port: 9050
-      jm_socks5_host: tor
-      jm_socks5_port: 9050
     expose:
       - 80    # nginx
       - 8080  # payjoin server
