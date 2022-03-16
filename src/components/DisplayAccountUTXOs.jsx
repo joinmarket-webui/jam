@@ -22,7 +22,7 @@ export default function DisplayAccountUTXOs({ utxos, ...props }) {
         <rb.Accordion.Item key={account} eventKey={account}>
           <rb.Accordion.Header className="head">
             <h5 className="mb-0">
-              {t('current_wallet_advanced.acount')} {account}
+              {t('current_wallet_advanced.account')} {account}
             </h5>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
