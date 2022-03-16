@@ -650,3 +650,11 @@ h2 {
   border-color: var(--bs-white) !important;
   border-right-color: transparent !important;
 }
+
+:root[data-theme='dark'] .modal-content {
+  background-color: var(--bs-gray-900);
+}
+
+:root[data-theme='dark'] .modal-header .btn-close {
+  background-color: var(--bs-gray-900) !important;
+}

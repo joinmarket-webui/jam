@@ -96,7 +96,8 @@ export default function Wallets({ startWallet, stopWallet }) {
           <Wallet
             key={wallet}
             name={wallet}
-            isActive={sessionInfo?.session && sessionInfo?.wallet_name === wallet}
+            noneActive={sessionInfo?.wallet_name === 'None'}
+            isActive={sessionInfo?.wallet_name === wallet}
             hasToken={currentWallet?.token && sessionInfo?.wallet_name === currentWallet?.name}
             makerRunning={sessionInfo?.maker_running}
             coinjoinInProcess={sessionInfo?.coinjoin_in_process}

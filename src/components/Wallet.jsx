@@ -6,12 +6,41 @@ import { serialize, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
 
+function ConfirmModal({ show = false, onHide, title, body, children }) {
+  return (
+    <rb.Modal show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
+      <rb.Modal.Header closeButton>
+        <rb.Modal.Title>{title}</rb.Modal.Title>
+      </rb.Modal.Header>
+      <rb.Modal.Body>{body}</rb.Modal.Body>
+      <rb.Modal.Footer>{children}</rb.Modal.Footer>
+    </rb.Modal>
+  )
+}
+
+function ConfirmLockModal({ show = false, body, onHide, onConfirm, onSuggestedActionAccepted }) {
+  const { t } = useTranslation()
+  return (
+    <ConfirmModal show={show} onHide={onHide} title={t('wallets.wallet_preview.modal_lock_wallet_title')} body={body}>
+      <>
+        <rb.Button variant="outline-dark" onClick={onConfirm}>
+          {t('wallets.wallet_preview.modal_lock_wallet_button_confirm')}
+        </rb.Button>
+        <rb.Button variant="dark" onClick={onSuggestedActionAccepted}>
+          {t('wallets.wallet_preview.modal_lock_wallet_button_accept_suggestion_action')}
+        </rb.Button>
+      </>
+    </ConfirmModal>
+  )
+}
+
 export default function Wallet({
   name,
+  noneActive,
   isActive,
+  hasToken,
   makerRunning,
   coinjoinInProcess,
-  hasToken,
   currentWallet,
   startWallet,
   stopWallet,
@@ -22,42 +51,32 @@ export default function Wallet({
   const [validated, setValidated] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [isUnlocking, setIsUnlocking] = useState(false)
+  const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
+
   const navigate = useNavigate()
 
   const unlockWallet = async (walletName, password) => {
-    if (currentWallet) {
-      setAlert({
-        variant: 'warning',
-        message:
-          currentWallet.name === walletName
-            ? // unlocking same wallet
-              t('wallets.wallet_preview.alert_wallet_already_unlocked', { walletName: walletDisplayName(walletName) })
-            : // unlocking another wallet while one is already unlocked
-              t('wallets.wallet_preview.alert_other_wallet_unlocked', { walletName: walletDisplayName(walletName) }),
-      })
-    } else {
-      setAlert(null)
-      setIsUnlocking(true)
-      try {
-        const res = await Api.postWalletUnlock({ walletName }, { password })
-        const body = await res.json()
+    setAlert(null)
+    setIsUnlocking(true)
+    try {
+      const res = await Api.postWalletUnlock({ walletName }, { password })
+      const body = await res.json()
 
-        setIsUnlocking(false)
+      setIsUnlocking(false)
 
-        if (res.ok) {
-          const { walletname: unlockedWalletName, token } = body
-          startWallet(unlockedWalletName, token)
-          navigate('/wallet')
-        } else {
-          setAlert({
-            variant: 'danger',
-            message: body.message.replace('Wallet', walletName),
-          })
-        }
-      } catch (e) {
-        setIsUnlocking(false)
-        setAlert({ variant: 'danger', message: e.message })
+      if (res.ok) {
+        const { walletname: unlockedWalletName, token } = body
+        startWallet(unlockedWalletName, token)
+        navigate('/wallet')
+      } else {
+        setAlert({
+          variant: 'danger',
+          message: body.message.replace('Wallet', walletName),
+        })
       }
+    } catch (e) {
+      setIsUnlocking(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
   }
 
@@ -114,12 +133,31 @@ export default function Wallet({
       const { action, password } = serialize(form)
 
       switch (action) {
-        case 'unlock':
-          unlockWallet(name, password)
+        case 'unlock': {
+          if (currentWallet) {
+            setAlert({
+              variant: 'warning',
+              message:
+                currentWallet.name === name
+                  ? // unlocking same wallet
+                    t('wallets.wallet_preview.alert_wallet_already_unlocked', { walletName: walletDisplayName(name) })
+                  : // unlocking another wallet while one is already unlocked
+                    t('wallets.wallet_preview.alert_other_wallet_unlocked', { walletName: walletDisplayName(name) }),
+            })
+          } else {
+            unlockWallet(name, password)
+          }
           break
-        case 'lock':
-          lockWallet()
+        }
+        case 'lock': {
+          const needsLockConfirmation = coinjoinInProcess || makerRunning
+          if (needsLockConfirmation) {
+            setShowLockConfirmModal({ open: true })
+          } else {
+            lockWallet()
+          }
           break
+        }
         default:
           break
       }
@@ -128,101 +166,126 @@ export default function Wallet({
   }
 
   const showLockOptions = isActive && hasToken
+  const showUnlockOptions = noneActive || (isActive && !hasToken)
   const showNoTokenAlert = isActive && !hasToken
 
+  const confirmLockBody =
+    (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
+    (coinjoinInProcess && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) ||
+    null
+
   return (
-    <rb.Card {...props}>
-      <rb.Card.Body>
-        <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-          <div className="d-flex justify-content-between align-items-center flex-wrap">
-            <div className="py-1">
-              <rb.Card.Title>
+    <>
+      <ConfirmLockModal
+        show={showLockConfirmModal}
+        body={confirmLockBody}
+        onConfirm={() => {
+          setShowLockConfirmModal(false)
+          lockWallet()
+        }}
+        onSuggestedActionAccepted={() => {
+          setShowLockConfirmModal(false)
+          stopWallet()
+        }}
+        onHide={() => {
+          setShowLockConfirmModal(false)
+        }}
+      />
+      <rb.Card {...props}>
+        <rb.Card.Body>
+          <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+            <div className="d-flex justify-content-between align-items-center flex-wrap">
+              <div className="py-1">
+                <rb.Card.Title>
+                  {isActive ? (
+                    <span style={{ position: 'relative' }}>
+                      <Link className="wallet-name" to="/wallet">
+                        {walletDisplayName(name)}
+                      </Link>
+                      {makerRunning && <EarnIndicator isOn={true} />}
+                      {coinjoinInProcess && <JoiningIndicator isOn={true} className="text-success" />}
+                    </span>
+                  ) : (
+                    <>{walletDisplayName(name)}</>
+                  )}
+                </rb.Card.Title>
                 {isActive ? (
-                  <span style={{ position: 'relative' }}>
-                    <Link className="wallet-name" to="/wallet">
-                      {walletDisplayName(name)}
-                    </Link>
-                    {makerRunning && <EarnIndicator isOn={true} />}
-                    {coinjoinInProcess && <JoiningIndicator isOn={true} className="text-success" />}
-                  </span>
+                  <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
                 ) : (
-                  <>{walletDisplayName(name)}</>
+                  <span className="text-muted">{t('wallets.wallet_preview.wallet_inactive')}</span>
                 )}
-              </rb.Card.Title>
-              {isActive ? (
-                <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
-              ) : (
-                <span className="text-muted">{t('wallets.wallet_preview.wallet_inactive')}</span>
-              )}
+              </div>
+              <div>
+                {showLockOptions ? (
+                  <>
+                    <Link className="btn btn-outline-dark me-2" to="/wallet">
+                      {t('wallets.wallet_preview.button_open')}
+                    </Link>
+                    <rb.FormControl type="hidden" name="action" value="lock" />
+                    <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
+                      {isLocking ? (
+                        <>
+                          <rb.Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            className="me-2"
+                          />
+                          {t('wallets.wallet_preview.button_locking')}
+                        </>
+                      ) : (
+                        <>{t('wallets.wallet_preview.button_lock')}</>
+                      )}
+                    </rb.Button>
+                  </>
+                ) : (
+                  showUnlockOptions && (
+                    <rb.InputGroup hasValidation={true}>
+                      <rb.FormControl
+                        type="password"
+                        placeholder={t('wallets.wallet_preview.placeholder_password')}
+                        name="password"
+                        disabled={isUnlocking}
+                        required
+                      />
+                      <rb.FormControl type="hidden" name="action" value="unlock" />
+                      <rb.Button variant="outline-dark" className="py-1 px-3" type="submit" disabled={isUnlocking}>
+                        {isUnlocking ? (
+                          <>
+                            <rb.Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                              className="me-2"
+                            />
+                            {t('wallets.wallet_preview.button_unlocking')}
+                          </>
+                        ) : (
+                          <>{t('wallets.wallet_preview.button_unlock')}</>
+                        )}
+                      </rb.Button>
+                      <rb.Form.Control.Feedback type="invalid">
+                        {t('wallets.wallet_preview.feedback_missing_password')}
+                      </rb.Form.Control.Feedback>
+                    </rb.InputGroup>
+                  )
+                )}
+              </div>
             </div>
-            <div>
-              {showLockOptions ? (
-                <>
-                  <Link className="btn btn-outline-dark me-2" to="/wallet">
-                    {t('wallets.wallet_preview.button_open')}
-                  </Link>
-                  <rb.FormControl type="hidden" name="action" value="lock" />
-                  <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
-                    {isLocking ? (
-                      <>
-                        <rb.Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                          className="me-2"
-                        />
-                        {t('wallets.wallet_preview.button_locking')}
-                      </>
-                    ) : (
-                      <>{t('wallets.wallet_preview.button_lock')}</>
-                    )}
-                  </rb.Button>
-                </>
-              ) : (
-                <rb.InputGroup hasValidation={true}>
-                  <rb.FormControl
-                    type="password"
-                    placeholder={t('wallets.wallet_preview.placeholder_password')}
-                    name="password"
-                    disabled={isUnlocking}
-                    required
-                  />
-                  <rb.FormControl type="hidden" name="action" value="unlock" />
-                  <rb.Button variant="outline-dark" className="py-1 px-3" type="submit" disabled={isUnlocking}>
-                    {isUnlocking ? (
-                      <>
-                        <rb.Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                          className="me-2"
-                        />
-                        {t('wallets.wallet_preview.button_unlocking')}
-                      </>
-                    ) : (
-                      <>{t('wallets.wallet_preview.button_unlock')}</>
-                    )}
-                  </rb.Button>
-                  <rb.Form.Control.Feedback type="invalid">
-                    {t('wallets.wallet_preview.feedback_missing_password')}
-                  </rb.Form.Control.Feedback>
-                </rb.InputGroup>
-              )}
-            </div>
-          </div>
-        </rb.Form>
-      </rb.Card.Body>
-      {showNoTokenAlert && (
-        <rb.Card.Footer>
-          <rb.Alert variant="warning" className="mb-0">
-            {t('wallets.wallet_preview.alert_missing_token')}
-          </rb.Alert>
-        </rb.Card.Footer>
-      )}
-    </rb.Card>
+          </rb.Form>
+        </rb.Card.Body>
+        {showNoTokenAlert && (
+          <rb.Card.Footer>
+            <rb.Alert variant="warning" className="mb-0">
+              {t('wallets.wallet_preview.alert_missing_token')}
+            </rb.Alert>
+          </rb.Card.Footer>
+        )}
+      </rb.Card>
+    </>
   )
 }
