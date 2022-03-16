@@ -36,6 +36,10 @@ interface AuthApiRequestContext extends ApiRequestContext {
 
 type WalletRequestContext = AuthApiRequestContext & WithWalletName
 
+interface ApiError {
+  message: string
+}
+
 /**
  * Construct a bearer authorization header object for the given token.
  *
@@ -240,6 +244,36 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
   })
 }
 
+const Helper = (() => {
+  const extractErrorMessage = async (response: Response, fallbackReason: string): Promise<string> => {
+    // The server will answer with a html response instead of json on certain errors.
+    // The situation is mitigated by parsing the returned html.
+    const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
+
+    if (isHtmlErrorMessage) {
+      return await response
+        .text()
+        .then((html) => {
+          var parser = new DOMParser()
+          var doc = parser.parseFromString(html, 'text/html')
+          return doc.title || fallbackReason
+        })
+        .then((reason) => `The server reported a problem: ${reason}`)
+    }
+
+    const { message }: ApiError = await response.json()
+    return message || fallbackReason
+  }
+
+  const toError = async (response: Response, fallbackReason: string): Promise<Error> => {
+    return new Error(await extractErrorMessage(response, fallbackReason))
+  }
+
+  return {
+    toError,
+  }
+})()
+
 export {
   postMakerStart,
   getMakerStop,
@@ -257,4 +291,5 @@ export {
   postFreeze,
   postConfigGet,
   getWalletSeed,
+  Helper,
 }
