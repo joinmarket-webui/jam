@@ -93,11 +93,11 @@
     "confirmation_button_fund_wallet": "Fund Wallet",
     "confirm_backup_title": "Confirm seed phrase backup",
     "confirm_backup_subtitle": "Enter each word in sequential order.",
-    "seed_confirmed": "Seed phrase confirmed.",
+    "feedback_seed_confirmed": "Seed phrase confirmed.",
     "back_button": "Back",
     "skip_button": "Skip",
     "next_button": "Next",
-    "word": "Word"
+    "placeholder_seed_word_input": "Word"
   },
   "current_wallet": {
     "text_loading": "Loading",

@@ -88,7 +88,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
       <rb.InputGroup.Text className="seedword-index-backup">{number}.</rb.InputGroup.Text>
       <rb.FormControl
         type="text"
-        placeholder={`${t('create_wallet.word')} ${number}`}
+        placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${number}`}
         value={enteredWord}
         onChange={(e) => {
           setEnteredWord(e.target.value)
@@ -150,7 +150,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
           })}
         </div>
       </rb.Form>
-      {seedBackup && <div className="text-center text-success">{t('create_wallet.seed_confirmed')}</div>}
+      {seedBackup && <div className="text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>}
 
       <div className="d-flex mt-4 mb-4 gap-3">
         <rb.Button
