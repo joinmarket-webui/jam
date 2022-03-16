@@ -166,8 +166,7 @@ export default function Wallet({
   }
 
   const showLockOptions = isActive && hasToken
-  const showUnlockOptions = noneActive || (isActive && !hasToken)
-  const showNoTokenAlert = isActive && !hasToken
+  const showUnlockOptions = noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProcess)
 
   const confirmLockBody =
     (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
@@ -278,13 +277,6 @@ export default function Wallet({
             </div>
           </rb.Form>
         </rb.Card.Body>
-        {showNoTokenAlert && (
-          <rb.Card.Footer>
-            <rb.Alert variant="warning" className="mb-0">
-              {t('wallets.wallet_preview.alert_missing_token')}
-            </rb.Alert>
-          </rb.Card.Footer>
-        )}
       </rb.Card>
     </>
   )

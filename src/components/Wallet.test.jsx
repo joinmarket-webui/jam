@@ -241,10 +241,8 @@ describe('<Wallet />', () => {
     })
   })
 
-  it('should render active wallet when token is missing', () => {
+  it('should provide ability to unlock active wallet when token is missing', () => {
     act(() => setup({ name: dummyWalletName, isActive: true, hasToken: false }))
-
-    expect(screen.getByText('wallets.wallet_preview.alert_missing_token')).toBeInTheDocument()
 
     expect(screen.getByText('dummy')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
