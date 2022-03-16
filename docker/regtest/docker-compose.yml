@@ -1,15 +1,108 @@
 version: "3"
 
 services:
-  nginx:
-    container_name: jm_regtest_nginx_test_basepath
-    image: nginx
-    volumes:
-      - ./dockerfile-deps/nginx:/etc/nginx/templates
+
+  joinmarket:
+    container_name: jm_regtest_joinmarket
+    build:
+      context: ./dockerfile-deps/joinmarket/latest
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      READY_FILE: /root/.nbxplorer/btc_fully_synched
+      ENSURE_WALLET: 1
+      jm_rpc_wallet_file: jm_primary
+      jm_max_cj_fee_abs: 42000000 # 0.42 btc
+      jm_max_cj_fee_rel: 0.1337 # 13.37%
+      jm_minimum_makers: 1
+      jm_taker_utxo_age: 1
+      jm_taker_utxo_retries: 10
+      jm_tx_broadcast: self
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_rpc_user: joinmarket
+      jm_rpc_password: joinmarket
+    expose:
+      - 8080  # payjoin server
+      - 62601 # obwatch
+      - 27183 # joinmarketd
+      - 28183 # jmwalletd api
+      - 28283 # jmwalletd websocket
     ports:
-      - "8000:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - "62601:62601"
+      - "28183:28183"
+      - "28283:28283"
+    volumes:
+      - "joinmarket_datadir:/root/.joinmarket"
+      - "nbxplorer_datadir:/root/.nbxplorer"
+    depends_on:
+      - bitcoind
+      - nbxplorer
+      - irc
+
+  joinmarket2:
+    container_name: jm_regtest_joinmarket2
+    build:
+      context: ./dockerfile-deps/joinmarket/webui-standalone
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      READY_FILE: /root/.nbxplorer/btc_fully_synched
+      ENSURE_WALLET: 1
+      APP_USER: joinmarket
+      APP_PASSWORD: joinmarket
+      jm_rpc_wallet_file: jm_secondary
+      jm_max_cj_fee_abs: 42000000 # 0.42 btc
+      jm_max_cj_fee_rel: 0.1337 # 13.37%
+      jm_minimum_makers: 1
+      jm_taker_utxo_age: 1
+      jm_taker_utxo_retries: 10
+      jm_tx_broadcast: self
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_rpc_user: joinmarket2
+      jm_rpc_password: joinmarket2
+      # showcase exemplary tor environment vars
+      jm_socks5: "false" # will _not_ connect to local irc over tor
+      jm_socks5_host: tor
+      jm_socks5_port: 9050
+      jm_tor_control_host: tor
+      jm_tor_control_port: 9051
+      jm_onion_socks5_host: tor
+      jm_onion_socks5_port: 9050
+    expose:
+      - 80    # nginx
+      - 8080  # payjoin server
+      - 62601 # obwatch
+      - 27183 # joinmarketd
+      - 28183 # jmwalletd api
+      - 28283 # jmwalletd websocket
+    ports:
+      - "29183:28183"
+      - "29283:28283"
+      - "29080:80"
+    volumes:
+      - "joinmarket2_datadir:/root/.joinmarket"
+      - "nbxplorer_datadir:/root/.nbxplorer"
+      - "tor_datadir:/home/tor/.tor"
+    depends_on:
+      - bitcoind
+      - irc
+      - nbxplorer
+      - tor
+
+  irc:
+    container_name: jm_regtest_irc
+    restart: unless-stopped
+    image: ghcr.io/ergochat/ergo:stable
+    expose:
+      - 6667
+    volumes:
+      - "irc_datadir:/ircd"
 
   bitcoind:
     container_name: jm_regtest_bitcoind
@@ -55,11 +148,11 @@ services:
         # rpcauth (user=nbxplorer; password=nbxplorer)
         rpcauth=nbxplorer:8953867752ed07ca27bc0b1d7a10fa99$$e46553870d4a2c59753bfe453797be070ab4dbd5fdfc2fecdb7862ea0ae6b127
     expose:
-      - "43782" # RPC
-      - "39388" # P2P
-      - "28332" # ZMQ
-      - "28333" # ZMQ
-      - "28334" # ZMQ
+      - 43782 # RPC
+      - 39388 # P2P
+      - 28332 # ZMQ
+      - 28333 # ZMQ
+      - 28334 # ZMQ
     volumes:
       - "bitcoin_datadir:/data"
       - "bitcoin_wallet_datadir:/walletdata"
@@ -83,122 +176,12 @@ services:
       NBXPLORER_TRIMEVENTS: 10000
       NBXPLORER_SIGNALFILESDIR: /datadir
     expose:
-      - "32838"
+      - 32838
     volumes:
       - "nbxplorer_datadir:/datadir"
       - "bitcoin_datadir:/root/.bitcoin"
     depends_on:
       - bitcoind
-      - tor
-
-  irc:
-    container_name: jm_regtest_irc
-    restart: unless-stopped
-    image: ghcr.io/ergochat/ergo:stable
-    expose:
-      - 6667
-    volumes:
-      - "irc_datadir:/ircd"
-
-  joinmarket:
-    container_name: jm_regtest_joinmarket
-    build:
-      context: ./dockerfile-deps/joinmarket/latest
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      READY_FILE: /root/.nbxplorer/btc_fully_synched
-      ENSURE_WALLET: 1
-      jm_gaplimit: 2000
-      jm_rpc_wallet_file: jm_primary
-      jm_max_cj_fee_abs: 42000000 # 0.42 btc
-      jm_max_cj_fee_rel: 0.1337 # 13.37%
-      jm_minimum_makers: 1
-      jm_taker_utxo_age: 1
-      jm_taker_utxo_retries: 10
-      jm_tx_broadcast: self
-      jm_blockchain_source: regtest
-      jm_network: testnet
-      jm_rpc_host: bitcoind
-      jm_rpc_port: 43782
-      jm_rpc_user: joinmarket
-      jm_rpc_password: joinmarket
-      jm_tor_control_host: tor
-      jm_tor_control_port: 9051
-      jm_onion_socks5_host: tor
-      jm_onion_socks5_port: 9050
-      jm_socks5_host: tor
-      jm_socks5_port: 9050
-    expose:
-      - 8080  # payjoin server
-      - 62601 # obwatch
-      - 27183 # joinmarketd
-      - 28183 # jmwalletd api
-      - 28283 # jmwalletd websocket
-    ports:
-      - "62601:62601"
-      - "28183:28183"
-      - "28283:28283"
-    volumes:
-      - "joinmarket_datadir:/root/.joinmarket"
-      - "nbxplorer_datadir:/root/.nbxplorer"
-      - "tor_datadir:/home/tor/.tor"
-    depends_on:
-      - bitcoind
-      - irc
-      - nbxplorer
-      - tor
-
-  joinmarket2:
-    container_name: jm_regtest_joinmarket2
-    build:
-      context: ./dockerfile-deps/joinmarket/webui-standalone
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      READY_FILE: /root/.nbxplorer/btc_fully_synched
-      ENSURE_WALLET: 1
-      APP_USER: joinmarket
-      APP_PASSWORD: joinmarket
-      jm_gaplimit: 2000
-      jm_rpc_wallet_file: jm_secondary
-      jm_max_cj_fee_abs: 42000000 # 0.42 btc
-      jm_max_cj_fee_rel: 0.1337 # 13.37%
-      jm_minimum_makers: 1
-      jm_taker_utxo_age: 1
-      jm_taker_utxo_retries: 10
-      jm_tx_broadcast: self
-      jm_blockchain_source: regtest
-      jm_network: testnet
-      jm_rpc_host: bitcoind
-      jm_rpc_port: 43782
-      jm_rpc_user: joinmarket2
-      jm_rpc_password: joinmarket2
-      jm_tor_control_host: tor
-      jm_tor_control_port: 9051
-      jm_onion_socks5_host: tor
-      jm_onion_socks5_port: 9050
-      jm_socks5_host: tor
-      jm_socks5_port: 9050
-    expose:
-      - 80    # nginx
-      - 8080  # payjoin server
-      - 62601 # obwatch
-      - 27183 # joinmarketd
-      - 28183 # jmwalletd api
-      - 28283 # jmwalletd websocket
-    ports:
-      - "29183:28183"
-      - "29283:28283"
-      - "29080:80"
-    volumes:
-      - "joinmarket2_datadir:/root/.joinmarket"
-      - "nbxplorer_datadir:/root/.nbxplorer"
-      - "tor_datadir:/home/tor/.tor"
-    depends_on:
-      - bitcoind
-      - irc
-      - nbxplorer
       - tor
 
   tor:
@@ -211,13 +194,22 @@ services:
       TOR_EXTRA_ARGS: |
         CookieAuthentication 1
     expose:
-      - "9050"  # SOCKS
-      - "9051"  # Tor Control
+      - 9050  # SOCKS
+      - 9051  # Tor Control
     volumes:
       - "tor_datadir:/home/tor/.tor"
       - "tor_torrcdir:/usr/local/etc/tor"
       - "tor_servicesdir:/var/lib/tor/hidden_services"
 
+  nginx:
+    container_name: jm_regtest_nginx_test_basepath
+    image: nginx
+    volumes:
+      - ./dockerfile-deps/nginx:/etc/nginx/templates
+    ports:
+      - "8000:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   bitcoin_datadir:
