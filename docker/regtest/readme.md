@@ -7,22 +7,22 @@ It starts two JoinMarket containers, hence not only API calls but also actual Co
 
 ### Run
 
-Go to the docker directory (`cd docker/regtest`) and execute:
+Start the regtest environment with:
 
 ```sh
-docker-compose up
+npm run regtest:up
 ```
 
 ### Stop
 
 ```sh
-docker-compose down
+npm run regtest:down
 ```
 
-If you want to start from scratch, pass the `--volumes` param:
+If you want to start from scratch (removing all volumes):
 
 ```sh
-docker-compose down --volumes
+npm run regtest:clear
 ```
 
 ## Images
@@ -41,7 +41,7 @@ In order to incorporate the current contents of `master` branch, simply rebuild 
 
 ```sh
 # rebuilding the images with contents of current master branch
-docker-compose build --pull --no-cache
+npm run regtest:rebuild
 ```
 
 ## Debugging
@@ -49,7 +49,8 @@ docker-compose build --pull --no-cache
 ### Debug logs
 
 ```sh
-docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log
+# logs and follows content of log file `.joinmarket/logs/jmwalletd_stdout.log` in primary joinmarket container
+npm run regtest:logs:jmwalletd
 ```
 
 ### Display running JoinMarket version
