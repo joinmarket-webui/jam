@@ -91,7 +91,7 @@
     "confirmation_toggle_reveal_info": "Reveal sensitive information",
     "confirmation_toggle_info_written_down": "I've written down the information above.",
     "confirmation_button_fund_wallet": "Fund Wallet",
-    "confirm_backup": "Confirm seed phrase backup",
+    "confirm_backup_title": "Confirm seed phrase backup",
     "enter_words": "Enter each word in sequential order.",
     "seed_confirmed": "Seed phrase confirmed.",
     "back_button": "Back",
