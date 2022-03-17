@@ -344,21 +344,12 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   }
 
   useEffect(() => {
-    // console.log('isSweep:', isSweep)
     if (isSweep) {
       setAmount(0)
     } else {
       setAmount(null)
     }
   }, [isSweep])
-
-  // useEffect(() => {
-  //   console.log('amount:', amount)
-  // }, [amount])
-
-  // useEffect(() => {
-  //   console.log('account:', account, balanceOfCurrentAccount())
-  // }, [account])
 
   return (
     <>
