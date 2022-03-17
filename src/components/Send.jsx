@@ -116,7 +116,12 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   )
 }
 
-const enhanceTakerErrorMessageIfNecessary = async (requestContext, httpStatus, errorMessage) => {
+const enhanceTakerErrorMessageIfNecessary = async (
+  requestContext,
+  httpStatus,
+  errorMessage,
+  additionalErrorMessageProvider
+) => {
   const configExists = (section, field) => Api.postConfigGet(requestContext, { section, field }).then((res) => res.ok)
 
   const tryEnhanceMessage = httpStatus === 409
@@ -129,7 +134,7 @@ const enhanceTakerErrorMessageIfNecessary = async (requestContext, httpStatus, e
       .catch(() => false)
 
     if (!maxFeeSettingsPresent) {
-      return `${errorMessage}`
+      return `${errorMessage} ${additionalErrorMessageProvider()}`
     }
   }
 
@@ -283,10 +288,8 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         success = true
       } else {
         const { message } = await res.json()
-        const displayMessage = await enhanceTakerErrorMessageIfNecessary(
-          requestContext,
-          res.status,
-          `${message} ${t('send.taker_error_message_max_fees_config_missing')}`
+        const displayMessage = await enhanceTakerErrorMessageIfNecessary(requestContext, res.status, message, () =>
+          t('send.taker_error_message_max_fees_config_missing')
         )
 
         setAlert({ variant: 'danger', message: displayMessage })
