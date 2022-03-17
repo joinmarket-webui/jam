@@ -270,7 +270,12 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     setIsSending(true)
     let success = false
     try {
-      const res = await Api.postCoinjoin(requestContext, { account, destination, amount_sats, counterparties })
+      const res = await Api.postCoinjoin(requestContext, {
+        mixdepth: account,
+        destination,
+        amount_sats,
+        counterparties,
+      })
       if (res.ok) {
         const data = await res.json()
         console.log(data)
