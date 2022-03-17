@@ -40,6 +40,50 @@ interface ApiError {
   message: string
 }
 
+type WalletType = 'sw-fb'
+
+interface CreateWalletRequest {
+  wallettype: WalletType
+  walletname: WalletName
+  password: string
+}
+
+interface WalletUnlockRequest {
+  password: string
+}
+
+type OrderType = 'sw0reloffer' | 'sw0absoffer'
+
+interface StartMakerRequest {
+  cjfee_a: AmountSats
+  cjfee_r: number
+  ordertype: OrderType
+  minsize: AmountSats
+}
+
+interface DirectSendRequest {
+  mixdepth: Mixdepth
+  destination: BitcoinAddress
+  amount_sats: AmountSats
+}
+
+interface DoCoinjoinRequest {
+  mixdepth: Mixdepth
+  destination: BitcoinAddress
+  amount_sats: AmountSats
+  counterparties: number
+}
+
+interface FreezeRequest {
+  utxo: string
+  freeze: boolean
+}
+
+interface ConfigSetRequest {
+  section: string
+  field: string
+}
+
 /**
  * Construct a bearer authorization header object for the given token.
  *
@@ -68,14 +112,6 @@ const getWalletAll = async ({ signal }: ApiRequestContext) => {
   return await fetch(`${BASE_PATH}/v1/wallet/all`, {
     signal,
   })
-}
-
-type WalletType = 'sw-fb'
-
-interface CreateWalletRequest {
-  wallettype: WalletType
-  walletname: WalletName
-  password: string
 }
 
 const postWalletCreate = async (req: CreateWalletRequest) => {
@@ -114,10 +150,6 @@ const getWalletLock = async ({ token, signal, walletName }: WalletRequestContext
   })
 }
 
-interface WalletUnlockRequest {
-  password: string
-}
-
 const postWalletUnlock = async (
   { signal, walletName }: ApiRequestContext & WithWalletName,
   { password }: WalletUnlockRequest
@@ -134,15 +166,6 @@ const getWalletUtxos = async ({ token, signal, walletName }: WalletRequestContex
     headers: { ...Authorization(token) },
     signal,
   })
-}
-
-type OrderType = 'sw0reloffer' | 'sw0absoffer'
-
-interface StartMakerRequest {
-  cjfee_a: AmountSats
-  cjfee_r: number
-  ordertype: OrderType
-  minsize: AmountSats
 }
 
 const postMakerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartMakerRequest) => {
@@ -166,12 +189,6 @@ const getMakerStop = async ({ token, signal, walletName }: WalletRequestContext)
   })
 }
 
-interface DirectSendRequest {
-  mixdepth: Mixdepth
-  destination: BitcoinAddress
-  amount_sats: AmountSats
-}
-
 const postDirectSend = async ({ token, signal, walletName }: WalletRequestContext, req: DirectSendRequest) => {
   return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/taker/direct-send`, {
     method: 'POST',
@@ -180,13 +197,6 @@ const postDirectSend = async ({ token, signal, walletName }: WalletRequestContex
     body: JSON.stringify({ ...req, mixdepth: String(req.mixdepth) }),
     signal,
   })
-}
-
-interface DoCoinjoinRequest {
-  mixdepth: Mixdepth
-  destination: BitcoinAddress
-  amount_sats: AmountSats
-  counterparties: number
 }
 
 const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext, req: DoCoinjoinRequest) => {
@@ -205,11 +215,6 @@ const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
   })
 }
 
-interface FreezeRequest {
-  utxo: string
-  freeze: boolean
-}
-
 const postFreeze = async (
   { token, signal, walletName }: WalletRequestContext,
   { utxo, freeze = true }: FreezeRequest
@@ -223,11 +228,6 @@ const postFreeze = async (
     }),
     signal,
   })
-}
-
-interface ConfigSetRequest {
-  section: string
-  field: string
 }
 
 /**
