@@ -34,7 +34,7 @@ export default function Wallets({ startWallet, stopWallet }) {
 
   useEffect(() => {
     if (walletList && sessionInfo) {
-      const sortedWalletList = sortWallets(walletList, sessionInfo.wallet_name)
+      const sortedWalletList = sortWallets(walletList, sessionInfo.walletName)
       if (!arrayEquals(walletList, sortedWalletList)) {
         setWalletList(sortedWalletList)
       }
@@ -96,11 +96,11 @@ export default function Wallets({ startWallet, stopWallet }) {
           <Wallet
             key={wallet}
             name={wallet}
-            noneActive={sessionInfo?.wallet_name === 'None'}
-            isActive={sessionInfo?.wallet_name === wallet}
-            hasToken={currentWallet?.token && sessionInfo?.wallet_name === currentWallet?.name}
-            makerRunning={sessionInfo?.maker_running}
-            coinjoinInProcess={sessionInfo?.coinjoin_in_process}
+            noneActive={!sessionInfo?.walletName}
+            isActive={sessionInfo?.walletName === wallet}
+            hasToken={currentWallet && currentWallet.token && currentWallet.name === sessionInfo?.walletName}
+            makerRunning={sessionInfo?.makerRunning}
+            coinjoinInProgress={sessionInfo?.coinjoinInProgress}
             currentWallet={currentWallet}
             startWallet={startWallet}
             stopWallet={stopWallet}

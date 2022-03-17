@@ -166,7 +166,7 @@ export default function Earn() {
 
   useEffect(() => {
     setAlert(null)
-    const makerRunning = sessionInfo?.maker_running
+    const makerRunning = sessionInfo?.makerRunning
 
     const waitingForMakerToStart = isWaitingMakerStart && !makerRunning
     setIsWaitingMakerStart(waitingForMakerToStart)
@@ -239,7 +239,7 @@ export default function Earn() {
     setValidated(true)
 
     if (isValid) {
-      if (sessionInfo?.maker_running === false) {
+      if (sessionInfo?.makerRunning === false) {
         await startMakerService(feeAbs, feeRel, offertype, minsize)
       } else {
         await stopMakerService()
@@ -255,7 +255,7 @@ export default function Earn() {
         <rb.Col>
           <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
-          <rb.Fade in={sessionInfo?.coinjoin_in_process} mountOnEnter={true} unmountOnExit={true}>
+          <rb.Fade in={sessionInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">{t('earn.alert_coinjoin_in_progress')}</small>
             </div>
@@ -263,9 +263,9 @@ export default function Earn() {
 
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-          {!sessionInfo?.coinjoin_in_process && (
+          {!sessionInfo?.coinjoinInProgress && (
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-              {!sessionInfo?.maker_running && !isWaiting && (
+              {!sessionInfo?.makerRunning && !isWaiting && (
                 <>
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="offertype">
@@ -357,9 +357,9 @@ export default function Earn() {
                       aria-hidden="true"
                       className="me-2"
                     />
-                    {sessionInfo?.maker_running === true ? t('earn.text_stopping') : t('earn.text_starting')}
+                    {sessionInfo?.makerRunning === true ? t('earn.text_stopping') : t('earn.text_starting')}
                   </>
-                ) : sessionInfo?.maker_running === true ? (
+                ) : sessionInfo?.makerRunning === true ? (
                   t('earn.button_stop')
                 ) : (
                   t('earn.button_start')

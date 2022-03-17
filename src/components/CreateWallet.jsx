@@ -276,7 +276,7 @@ export default function CreateWallet({ startWallet }) {
   }
 
   const isCreated = createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password
-  const canCreate = !isCreated && sessionInfo && sessionInfo.wallet_name === 'None'
+  const canCreate = !isCreated && !sessionInfo?.walletName
 
   return (
     <div className="create-wallet">
@@ -295,8 +295,8 @@ export default function CreateWallet({ startWallet }) {
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-            Currently <strong>{{ walletName: walletDisplayName(sessionInfo && sessionInfo.wallet_name) }}</strong> is
-            active. You need to lock it first.
+            Currently <strong>{{ walletName: walletDisplayName(sessionInfo?.walletName) }}</strong> is active. You need
+            to lock it first.
             <Link to="/" className="alert-link">
               Go back
             </Link>

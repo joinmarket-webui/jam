@@ -74,16 +74,16 @@ const CenterNav = ({ makerRunning, onClick }) => {
   )
 }
 
-const TrailingNav = ({ coinjoinInProcess, onClick }) => {
+const TrailingNav = ({ coinjoinInProgess, onClick }) => {
   const { t } = useTranslation()
 
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
-      {coinjoinInProcess && (
+      {coinjoinInProgess && (
         <rb.Nav.Item className="d-flex align-items-center justify-content-center pe-2">
           <div className="d-flex align-items-center px-0">
             <rb.Navbar.Text>{t('navbar.joining_in_progress')}</rb.Navbar.Text>
-            <JoiningIndicator isOn={coinjoinInProcess} className="navbar-text" />
+            <JoiningIndicator isOn={coinjoinInProgess} className="navbar-text" />
           </div>
         </rb.Nav.Item>
       )}
@@ -212,19 +212,19 @@ export default function Navbar() {
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
-                    <CenterNav makerRunning={sessionInfo?.maker_running} onClick={() => setIsExpanded(!isExpanded)} />
+                    <CenterNav makerRunning={sessionInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
                     <TrailingNav
-                      coinjoinInProcess={sessionInfo?.coinjoin_in_process}
+                      coinjoinInProgess={sessionInfo?.coinjoinInProgress}
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
-                  <CenterNav makerRunning={sessionInfo?.maker_running} />
+                  <CenterNav makerRunning={sessionInfo?.makerRunning} />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">
-                    <TrailingNav coinjoinInProcess={sessionInfo?.coinjoin_in_process} />
+                    <TrailingNav coinjoinInProgess={sessionInfo?.coinjoinInProgress} />
                   </div>
                 </rb.Container>
               </>

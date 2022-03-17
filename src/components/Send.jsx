@@ -156,7 +156,7 @@ export default function Send() {
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(
-    sessionInfo && !sessionInfo.maker_running && !sessionInfo.coinjoin_in_process
+    sessionInfo && !sessionInfo.makerRunning && !sessionInfo.coinjoinInProgress
   )
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
 
@@ -181,7 +181,7 @@ export default function Send() {
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
-    const coinjoinOptionEnabled = sessionInfo && !sessionInfo.maker_running && !sessionInfo.coinjoin_in_process
+    const coinjoinOptionEnabled = sessionInfo && !sessionInfo.makerRunning && !sessionInfo.coinjoinInProgress
     setIsCoinjoinOptionEnabled(coinjoinOptionEnabled)
 
     if (!coinjoinOptionEnabled && isCoinjoin) {
@@ -345,8 +345,8 @@ export default function Send() {
           <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">
-                {sessionInfo && sessionInfo.maker_running && t('send.text_maker_running')}
-                {sessionInfo && sessionInfo.coinjoin_in_process && t('send.text_coinjoin_already_running')}
+                {sessionInfo?.makerRunning && t('send.text_maker_running')}
+                {sessionInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
               </small>
             </div>
           </rb.Fade>

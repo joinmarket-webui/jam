@@ -40,7 +40,7 @@ export default function Wallet({
   isActive,
   hasToken,
   makerRunning,
-  coinjoinInProcess,
+  coinjoinInProgress,
   currentWallet,
   startWallet,
   stopWallet,
@@ -150,7 +150,7 @@ export default function Wallet({
           break
         }
         case 'lock': {
-          const needsLockConfirmation = coinjoinInProcess || makerRunning
+          const needsLockConfirmation = coinjoinInProgress || makerRunning
           if (needsLockConfirmation) {
             setShowLockConfirmModal(true)
           } else {
@@ -166,11 +166,11 @@ export default function Wallet({
   }
 
   const showLockOptions = isActive && hasToken
-  const showUnlockOptions = noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProcess)
+  const showUnlockOptions = noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress)
 
   const confirmLockBody =
     (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
-    (coinjoinInProcess && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) ||
+    (coinjoinInProgress && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) ||
     null
 
   return (
@@ -202,7 +202,7 @@ export default function Wallet({
                         {walletDisplayName(name)}
                       </Link>
                       {makerRunning && <EarnIndicator isOn={true} />}
-                      {coinjoinInProcess && <JoiningIndicator isOn={true} className="text-success" />}
+                      {coinjoinInProgress && <JoiningIndicator isOn={true} className="text-success" />}
                     </span>
                   ) : (
                     <>{walletDisplayName(name)}</>

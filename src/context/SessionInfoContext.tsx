@@ -10,16 +10,23 @@ import * as Api from '../libs/JmWalletApi'
 // interval in milliseconds for periodic session requests
 const SESSION_REQUEST_INTERVAL = 10_000
 
-type SessionFlag = { session: boolean }
-type MakerRunningFlag = { maker_running: boolean }
-type CoinjoinInProcessFlag = { coinjoin_in_process: boolean }
-type WalletName = { wallet_name: string }
+interface JmSessionData {
+  session: boolean
+  maker_running: boolean
+  coinjoin_in_process: boolean
+  wallet_name: string
+}
 
-type JmSessionInfo = SessionFlag & MakerRunningFlag & CoinjoinInProcessFlag & WalletName
-type JmSessionInfoUpdate = JmSessionInfo | MakerRunningFlag | CoinjoinInProcessFlag
+type SessionFlag = { sessionActive: boolean }
+type MakerRunningFlag = { makerRunning: boolean }
+type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
+type WalletName = { walletName: string | null }
+
+type SessionInfo = SessionFlag & MakerRunningFlag & CoinjoinInProgressFlag & WalletName
+type SessionInfoUpdate = SessionInfo | MakerRunningFlag | CoinjoinInProgressFlag
 
 interface SessionInfoContextEntry {
-  sessionInfo: JmSessionInfo | null
+  sessionInfo: SessionInfo | null
   connectionError?: Error
 }
 
@@ -32,7 +39,7 @@ const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const websocket = useWebsocket()
 
   const [sessionInfo, dispatchSessionInfo] = useReducer(
-    (state: JmSessionInfo | null, obj: JmSessionInfoUpdate) => ({ ...state, ...obj } as JmSessionInfo | null),
+    (state: SessionInfo | null, obj: SessionInfoUpdate) => ({ ...state, ...obj } as SessionInfo | null),
     null
   )
   const [connectionError, setConnectionError] = useState<Error>()
@@ -54,12 +61,18 @@ const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
     const refreshSession = () => {
       Api.getSession({ signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, res.statusText)))
-        .then((data: JmSessionInfo) => {
+        .then((data: JmSessionData) => {
           if (!abortCtrl.signal.aborted) {
-            dispatchSessionInfo(data)
-            setConnectionError(undefined)
+            const {
+              session: sessionActive,
+              maker_running: makerRunning,
+              coinjoin_in_process: coinjoinInProgress,
+              wallet_name: walletNameOrNoneString,
+            } = data
+            const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
 
-            const activeWalletName = data.wallet_name !== 'None' ? data.wallet_name : null
+            dispatchSessionInfo({ sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName })
+            setConnectionError(undefined)
 
             const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
             if (shouldResetState) {
@@ -91,8 +104,8 @@ const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
 
       // update the maker/taker indicator according to `coinjoin_state` property
       if (data && typeof data.coinjoin_state === 'number') {
-        dispatchSessionInfo({ coinjoin_in_process: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
-        dispatchSessionInfo({ maker_running: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
+        dispatchSessionInfo({ coinjoinInProgress: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
+        dispatchSessionInfo({ makerRunning: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
       }
     },
     [dispatchSessionInfo]
