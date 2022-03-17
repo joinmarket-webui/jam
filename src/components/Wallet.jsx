@@ -152,7 +152,7 @@ export default function Wallet({
         case 'lock': {
           const needsLockConfirmation = coinjoinInProcess || makerRunning
           if (needsLockConfirmation) {
-            setShowLockConfirmModal({ open: true })
+            setShowLockConfirmModal(true)
           } else {
             lockWallet()
           }

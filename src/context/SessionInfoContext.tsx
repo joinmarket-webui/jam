@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useReducer, useState, useEffect } from 'react'
-
+// @ts-ignore
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from './WalletContext'
+// @ts-ignore
 import { useWebsocket, CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from './WebsocketContext'
 import { clearSession } from '../session'
 
@@ -9,16 +10,32 @@ import * as Api from '../libs/JmWalletApi'
 // interval in milliseconds for periodic session requests
 const SESSION_REQUEST_INTERVAL = 10_000
 
-const SessionInfoContext = createContext()
+type SessionFlag = { session: boolean }
+type MakerRunningFlag = { maker_running: boolean }
+type CoinjoinInProcessFlag = { coinjoin_in_process: boolean }
+type WalletName = { wallet_name: string }
 
-const SessionInfoProvider = ({ children }) => {
+type JmSessionInfo = SessionFlag & MakerRunningFlag & CoinjoinInProcessFlag & WalletName
+type JmSessionInfoUpdate = JmSessionInfo | MakerRunningFlag | CoinjoinInProcessFlag
+
+interface SessionInfoContextEntry {
+  sessionInfo: JmSessionInfo | null
+  connectionError?: Error
+}
+
+const SessionInfoContext = createContext<SessionInfoContextEntry | undefined>(undefined)
+
+const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
   const websocket = useWebsocket()
 
-  const [sessionInfo, setSessionInfo] = useReducer((state, obj) => ({ ...state, ...obj }), null)
-  const [connectionError, setConnectionError] = useState(null)
+  const [sessionInfo, dispatchSessionInfo] = useReducer(
+    (state: JmSessionInfo | null, obj: JmSessionInfoUpdate) => ({ ...state, ...obj } as JmSessionInfo | null),
+    null
+  )
+  const [connectionError, setConnectionError] = useState<Error>()
 
   useEffect(() => {
     const shouldResetState = connectionError != null
@@ -36,14 +53,13 @@ const SessionInfoProvider = ({ children }) => {
 
     const refreshSession = () => {
       Api.getSession({ signal: abortCtrl.signal })
-        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
-        .then((data) => {
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, res.statusText)))
+        .then((data: JmSessionInfo) => {
           if (!abortCtrl.signal.aborted) {
-            const { maker_running, coinjoin_in_process, wallet_name, session } = data
-            setSessionInfo({ maker_running, coinjoin_in_process, wallet_name, session })
-            setConnectionError(null)
+            dispatchSessionInfo(data)
+            setConnectionError(undefined)
 
-            const activeWalletName = wallet_name !== 'None' ? wallet_name : null
+            const activeWalletName = data.wallet_name !== 'None' ? data.wallet_name : null
 
             const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
             if (shouldResetState) {
@@ -66,7 +82,7 @@ const SessionInfoProvider = ({ children }) => {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [setSessionInfo, setConnectionError, currentWallet, setCurrentWallet, setCurrentWalletInfo])
+  }, [dispatchSessionInfo, setConnectionError, currentWallet, setCurrentWallet, setCurrentWalletInfo])
 
   // update maker/taker indicator based on websocket data
   const onWebsocketMessage = useCallback(
@@ -75,11 +91,11 @@ const SessionInfoProvider = ({ children }) => {
 
       // update the maker/taker indicator according to `coinjoin_state` property
       if (data && typeof data.coinjoin_state === 'number') {
-        setSessionInfo({ coinjoin_in_process: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
-        setSessionInfo({ maker_running: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
+        dispatchSessionInfo({ coinjoin_in_process: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
+        dispatchSessionInfo({ maker_running: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
       }
     },
-    [setSessionInfo]
+    [dispatchSessionInfo]
   )
 
   useEffect(() => {
@@ -90,11 +106,7 @@ const SessionInfoProvider = ({ children }) => {
     return () => websocket && websocket.removeEventListener('message', onWebsocketMessage)
   }, [websocket, onWebsocketMessage])
 
-  return (
-    <SessionInfoContext.Provider value={{ sessionInfo, setSessionInfo, connectionError }}>
-      {children}
-    </SessionInfoContext.Provider>
-  )
+  return <SessionInfoContext.Provider value={{ sessionInfo, connectionError }}>{children}</SessionInfoContext.Provider>
 }
 
 const useSessionInfo = () => {
