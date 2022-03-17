@@ -413,6 +413,37 @@ main {
   width: 100%;
 }
 
+/* Chrome, Safari, Edge, Opera */
+.send input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.send input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.send form .button-sweep {
+  width: 6rem;
+  height: 2rem;
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translate(0%, -50%);
+  padding: 0.2rem 0.5rem;
+}
+
+.send form .button-sweep div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding-right: 0.2rem;
+  font-size: 0.9rem;
+}
+
 .send select {
   height: 3.5rem;
   width: 100%;

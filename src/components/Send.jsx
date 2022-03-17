@@ -5,9 +5,11 @@ import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
+import Sprite from './Sprite'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
+import { btcToSats } from '../utils'
 
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
@@ -150,6 +152,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
+  const [isSweep, setIsSweep] = useState(false)
 
   const initialDestination = null
   const initialAccount = 0
@@ -304,6 +307,12 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     if (isValid) {
       const counterparties = parseInt(numCollaborators, 10)
 
+      if (isSweep && !amount === 0) {
+        console.error('Seep amount mismatch')
+        setAlert({ variant: 'danger', message: 'todo' })
+        return
+      }
+
       const success = isCoinjoin
         ? await startCoinjoin(account, destination, amount, counterparties)
         : await sendPayment(account, destination, amount)
@@ -318,6 +327,38 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       }
     }
   }
+
+  const balanceOfCurrentAccount = () => {
+    if (!walletInfo || !walletInfo.accounts) {
+      return null
+    }
+
+    const filtered = walletInfo.accounts.filter((acc) => {
+      return parseInt(acc.account, 10) === account
+    })
+    if (filtered.length === 1) {
+      return filtered[0].account_balance
+    } else {
+      return null
+    }
+  }
+
+  useEffect(() => {
+    // console.log('isSweep:', isSweep)
+    if (isSweep) {
+      setAmount(0)
+    } else {
+      setAmount(null)
+    }
+  }, [isSweep])
+
+  // useEffect(() => {
+  //   console.log('amount:', amount)
+  // }, [amount])
+
+  // useEffect(() => {
+  //   console.log('account:', account, balanceOfCurrentAccount())
+  // }, [account])
 
   return (
     <>
@@ -385,20 +426,36 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
             </rb.Form.Group>
             <rb.Form.Group className="mb-4" controlId="amount">
               <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
-              <rb.Form.Control
-                name="amount"
-                type="number"
-                value={amount === null ? '' : amount}
-                className="slashed-zeroes"
-                min={0}
-                placeholder={t('send.placeholder_amount')}
-                required
-                onChange={(e) => setAmount(parseInt(e.target.value, 10))}
-                isInvalid={amount !== null && !isValidAmount(amount)}
-              />
-              <rb.Form.Control.Feedback form="send-form" type="invalid">
-                {t('send.feedback_invalid_amount')}
-              </rb.Form.Control.Feedback>
+              <div className="position-relative">
+                <rb.Form.Control
+                  name="amount"
+                  type="number"
+                  value={
+                    amount === null || Number.isNaN(amount)
+                      ? ''
+                      : isSweep
+                      ? btcToSats(balanceOfCurrentAccount()).toString()
+                      : amount
+                  }
+                  className="slashed-zeroes"
+                  min={0}
+                  placeholder={t('send.placeholder_amount')}
+                  required
+                  onChange={(e) => setAmount(parseInt(e.target.value, 10))}
+                  isInvalid={(amount !== null || Number.isNaN(amount)) && !isValidAmount(amount)}
+                  disabled={isSweep}
+                />
+                <rb.Button variant="dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
+                  {isSweep ? (
+                    <div>Clear</div>
+                  ) : (
+                    <div>
+                      <Sprite symbol="sweep" width="1.5rem" height="1.5rem" className="" />
+                      Sweep
+                    </div>
+                  )}
+                </rb.Button>
+              </div>
             </rb.Form.Group>
             {isCoinjoinOptionEnabled && (
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
