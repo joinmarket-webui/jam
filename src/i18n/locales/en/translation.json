@@ -94,7 +94,14 @@
     "confirmation_label_password": "Password",
     "confirmation_toggle_reveal_info": "Reveal sensitive information",
     "confirmation_toggle_info_written_down": "I've written down the information above.",
-    "confirmation_button_fund_wallet": "Fund Wallet"
+    "confirmation_button_fund_wallet": "Fund Wallet",
+    "confirm_backup_title": "Confirm seed phrase backup",
+    "confirm_backup_subtitle": "Enter each word in sequential order.",
+    "feedback_seed_confirmed": "Seed phrase confirmed.",
+    "back_button": "Back",
+    "skip_button": "Skip",
+    "next_button": "Next",
+    "placeholder_seed_word_input": "Word"
   },
   "current_wallet": {
     "text_loading": "Loading",

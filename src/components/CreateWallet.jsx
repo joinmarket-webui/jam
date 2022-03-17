@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -72,52 +72,168 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
   )
 }
 
+const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
+  const { t } = useTranslation()
+  const [enteredWord, setEnteredWord] = useState('')
+
+  useEffect(() => {
+    if (!isValid && enteredWord === targetWord) {
+      // Only use effect when value changes from false -> true to prevent an endless re-rendering loop.
+      setIsValid(true)
+    }
+  }, [enteredWord, targetWord, setIsValid, isValid])
+
+  return (
+    <rb.InputGroup>
+      <rb.InputGroup.Text className="seedword-index-backup">{number}.</rb.InputGroup.Text>
+      <rb.FormControl
+        type="text"
+        placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${number}`}
+        value={enteredWord}
+        onChange={(e) => {
+          setEnteredWord(e.target.value)
+        }}
+        disabled={isValid}
+        isInvalid={!isValid && enteredWord.length > 0}
+        isValid={isValid}
+        required
+      />
+    </rb.InputGroup>
+  )
+}
+
+const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
+  const { t } = useTranslation()
+  const [seedBackup, setSeedBackup] = useState(false)
+  let seedphrase = createdWallet.seedphrase.split(' ')
+  const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
+
+  useEffect(() => {
+    setSeedBackup(seedWordConfirmations.every((wordConfirmed) => wordConfirmed))
+  }, [seedWordConfirmations])
+
+  return (
+    <div>
+      <div className="fs-4">{t('create_wallet.confirm_backup_title')}</div>
+      <p className="text-secondary">{t('create_wallet.confirm_backup_subtitle')}</p>
+
+      <rb.Form noValidate>
+        <div className="container slashed-zeroes p-0">
+          {[...new Array(seedphrase.length)].map((_, outerIndex) => {
+            if (outerIndex % 2 !== 0) return null
+
+            const seedWords = seedphrase.slice(outerIndex, outerIndex + 2)
+
+            return (
+              <div className="row mb-4" key={outerIndex}>
+                {seedWords.map((seedWord, innerIndex) => {
+                  const wordIndex = outerIndex + innerIndex
+                  return (
+                    <div className="col" key={wordIndex}>
+                      <SeedWordInput
+                        number={wordIndex + 1}
+                        targetWord={seedWord}
+                        isValid={seedWordConfirmations[wordIndex]}
+                        setIsValid={(isValid) => {
+                          setSeedWordConfirmations(
+                            seedWordConfirmations.map((confirmation, index) =>
+                              index === wordIndex ? isValid : confirmation
+                            )
+                          )
+                        }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+      </rb.Form>
+      {seedBackup && <div className="text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>}
+
+      <div className="d-flex mt-4 mb-4 gap-3">
+        <rb.Button
+          variant="dark"
+          disabled={seedBackup}
+          onClick={() => {
+            parentStepSetter()
+          }}
+        >
+          {t('create_wallet.back_button')}
+        </rb.Button>
+
+        <rb.Button variant="dark" onClick={() => walletConfirmed()} disabled={!seedBackup}>
+          {t('create_wallet.confirmation_button_fund_wallet')}
+        </rb.Button>
+      </div>
+
+      <rb.Button variant="outline-dark" onClick={() => walletConfirmed()} disabled={seedBackup}>
+        {t('create_wallet.skip_button')}
+      </rb.Button>
+    </div>
+  )
+}
+
 const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const { t } = useTranslation()
   const [userConfirmed, setUserConfirmed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
   const [sensitiveInfoWasRevealed, setSensitiveInfoWasRevealed] = useState(false)
+  const [step, setStep] = useState(0)
 
-  return (
-    <div>
-      <div className="mb-4">
-        <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
-        <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
-      </div>
-      <div className="mb-4">
-        <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
-      </div>
-      <div className="mb-4">
-        <div>{t('create_wallet.confirmation_label_password')}</div>
-        <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
-          {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+  function childStepSetter() {
+    setRevealSensitiveInfo(false)
+    setSensitiveInfoWasRevealed(false)
+    setUserConfirmed(false)
+    setStep(0)
+  }
+
+  if (step === 0) {
+    return (
+      <div>
+        <div className="mb-4">
+          <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
+          <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
         </div>
+        <div className="mb-4">
+          <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
+        </div>
+        <div className="mb-4">
+          <div>{t('create_wallet.confirmation_label_password')}</div>
+          <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
+            {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+          </div>
+        </div>
+        <div className="mb-2">
+          <ToggleSwitch
+            label={t('create_wallet.confirmation_toggle_reveal_info')}
+            onToggle={(isToggled) => {
+              setRevealSensitiveInfo(isToggled)
+              setSensitiveInfoWasRevealed(true)
+            }}
+          />
+        </div>
+        <div className="mb-4">
+          <ToggleSwitch
+            label={t('create_wallet.confirmation_toggle_info_written_down')}
+            onToggle={(isToggled) => setUserConfirmed(isToggled)}
+          />
+        </div>
+        <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
+          {t('create_wallet.next_button')}
+        </rb.Button>
       </div>
-      <div className="mb-2">
-        <ToggleSwitch
-          label={t('create_wallet.confirmation_toggle_reveal_info')}
-          onToggle={(isToggled) => {
-            setRevealSensitiveInfo(isToggled)
-            setSensitiveInfoWasRevealed(true)
-          }}
-        />
-      </div>
-      <div className="mb-4">
-        <ToggleSwitch
-          label={t('create_wallet.confirmation_toggle_info_written_down')}
-          onToggle={(isToggled) => setUserConfirmed(isToggled)}
-        />
-      </div>
-      <rb.Button
-        variant="dark"
-        type="submit"
-        disabled={!sensitiveInfoWasRevealed || !userConfirmed}
-        onClick={() => userConfirmed && walletConfirmed()}
-      >
-        {t('create_wallet.confirmation_button_fund_wallet')}
-      </rb.Button>
-    </div>
-  )
+    )
+  } else {
+    return (
+      <BackupConfirmation
+        parentStepSetter={childStepSetter}
+        createdWallet={createdWallet}
+        walletConfirmed={walletConfirmed}
+      />
+    )
+  }
 }
 
 export default function CreateWallet({ startWallet }) {
@@ -134,7 +250,7 @@ export default function CreateWallet({ startWallet }) {
     setIsCreating(true)
 
     try {
-      const res = await Api.postWalletCreate({ walletName, password })
+      const res = await Api.postWalletCreate({ walletname: walletName, password })
 
       if (res.ok) {
         const { seedphrase, token, walletname: createdWalletName } = await res.json()

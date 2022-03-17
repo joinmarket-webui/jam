@@ -33,7 +33,7 @@ export default function Receive({ currentWallet }) {
 
       setAlert(null)
       setIsLoading(true)
-      Api.getAddressNew({ walletName, accountNr, token, signal: abortCtrl.signal })
+      Api.getAddressNew({ walletName, mixdepth: accountNr, token, signal: abortCtrl.signal })
         .then((res) =>
           res.ok ? res.json() : Promise.reject(new Error(res.message || t('receive.error_loading_address_failed')))
         )

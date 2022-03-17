@@ -34,7 +34,7 @@ export default function App() {
 
   const startWallet = useCallback(
     (name, token) => {
-      setSession(name, token)
+      setSession({ name, token })
       setCurrentWallet({ name, token })
     },
     [setCurrentWallet]
