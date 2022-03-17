@@ -239,7 +239,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     setIsSending(true)
     let success = false
     try {
-      const res = await Api.postDirectSend({ walletName, token }, { account, destination, amount_sats })
+      const res = await Api.postDirectSend({ walletName, token }, { mixdepth: account, destination, amount_sats })
       if (res.ok) {
         const {
           txinfo: { outputs },
