@@ -6,6 +6,7 @@ import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
+import { useSessionInfo } from '../context/SessionInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 
@@ -141,11 +142,12 @@ const enhanceTakerErrorMessageIfNecessary = async (
   return errorMessage
 }
 
-export default function Send({ makerRunning, coinjoinInProcess }) {
+export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
+  const sessionInfo = useSessionInfo()
   const settings = useSettings()
 
   const location = useLocation()
@@ -153,7 +155,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
-  const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
+  const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(
+    sessionInfo && !sessionInfo.maker_running && !sessionInfo.coinjoin_in_process
+  )
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
 
   const initialDestination = null
@@ -177,13 +181,13 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
-    const coinjoinOptionEnabled = !makerRunning && !coinjoinInProcess
+    const coinjoinOptionEnabled = sessionInfo && !sessionInfo.maker_running && !sessionInfo.coinjoin_in_process
     setIsCoinjoinOptionEnabled(coinjoinOptionEnabled)
 
     if (!coinjoinOptionEnabled && isCoinjoin) {
       setIsCoinjoin(false)
     }
-  }, [makerRunning, coinjoinInProcess, isCoinjoin])
+  }, [sessionInfo, isCoinjoin])
 
   useEffect(() => {
     if (
@@ -341,8 +345,8 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
           <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">
-                {makerRunning && t('send.text_maker_running')}
-                {coinjoinInProcess && t('send.text_coinjoin_already_running')}
+                {sessionInfo && sessionInfo.maker_running && t('send.text_maker_running')}
+                {sessionInfo && sessionInfo.coinjoin_in_process && t('send.text_coinjoin_already_running')}
               </small>
             </div>
           </rb.Fade>

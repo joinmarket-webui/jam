@@ -15,7 +15,7 @@ import Layout from './Layout'
 import { useSettings } from '../context/SettingsContext'
 import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
-import { useSessionInfo, useSessionConnectionError } from '../context/SessionInfoContext'
+import { useSessionConnectionError } from '../context/SessionInfoContext'
 import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 
@@ -24,7 +24,6 @@ export default function App() {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
-  const sessionInfo = useSessionInfo()
   const sessionConnectionError = useSessionConnectionError()
 
   const [websocketConnected, setWebsocketConnected] = useState()
@@ -90,33 +89,13 @@ export default function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route exact path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
-              <Route
-                path="create-wallet"
-                element={<CreateWallet currentWallet={currentWallet} startWallet={startWallet} />}
-              />
+              <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} />} />
               {currentWallet && (
                 <>
-                  <Route
-                    path="send"
-                    element={
-                      <Send
-                        makerRunning={sessionInfo?.maker_running}
-                        coinjoinInProcess={sessionInfo?.coinjoin_in_process}
-                      />
-                    }
-                  />
-                  <Route
-                    path="earn"
-                    element={
-                      <Earn
-                        currentWallet={currentWallet}
-                        coinjoinInProcess={sessionInfo?.coinjoin_in_process}
-                        makerRunning={sessionInfo?.maker_running}
-                      />
-                    }
-                  />
-                  <Route path="receive" element={<Receive currentWallet={currentWallet} />} />
-                  <Route path="settings" element={<Settings currentWallet={currentWallet} />} />
+                  <Route path="send" element={<Send />} />
+                  <Route path="earn" element={<Earn />} />
+                  <Route path="receive" element={<Receive />} />
+                  <Route path="settings" element={<Settings />} />
                 </>
               )}
             </Route>
