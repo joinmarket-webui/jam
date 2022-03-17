@@ -44,13 +44,7 @@ export default function CurrentWalletAdvanced() {
     setIsLoading(true)
 
     const loadingWallet = Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
-      .then((res) =>
-        res.ok
-          ? res.json()
-          : Api.Helper.toError(res, t('current_wallet.error_loading_failed')).then((e) => {
-              throw e
-            })
-      )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet.error_loading_failed'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
@@ -59,11 +53,7 @@ export default function CurrentWalletAdvanced() {
     const loadingUtxos = Api.getWalletUtxos({ walletName, token, signal: abortCtrl.signal })
       .then(
         (res): Promise<{ utxos: Utxos }> =>
-          res.ok
-            ? res.json()
-            : Api.Helper.toError(res, t('current_wallet_advanced.error_loading_utxos_failed')).then((e) => {
-                throw e
-              })
+          res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet_advanced.error_loading_utxos_failed'))
       )
       .then((data) => setUtxoData(data.utxos))
       .catch((err) => {

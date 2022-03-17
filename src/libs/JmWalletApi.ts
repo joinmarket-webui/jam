@@ -265,12 +265,12 @@ const Helper = (() => {
     return message || fallbackReason
   }
 
-  const toError = async (response: Response, fallbackReason: string): Promise<Error> => {
-    return new Error(await extractErrorMessage(response, fallbackReason))
+  const throwError = async (response: Response, fallbackReason: string): Promise<void> => {
+    throw new Error(await extractErrorMessage(response, fallbackReason))
   }
 
   return {
-    toError,
+    throwError,
   }
 })()
 
