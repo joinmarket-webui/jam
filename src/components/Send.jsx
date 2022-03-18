@@ -10,7 +10,7 @@ import Balance from './Balance'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
-import { btcToSats, satsToBtc, SATS } from '../utils'
+import { btcToSats, SATS } from '../utils'
 
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
