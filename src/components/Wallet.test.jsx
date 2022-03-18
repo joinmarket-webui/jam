@@ -7,15 +7,12 @@ import { walletDisplayName } from '../utils'
 
 import Wallet from './Wallet'
 
-jest.mock('../libs/JmWalletApi', () => {
-  const original = jest.requireActual('../libs/JmWalletApi')
-  return {
-    ...original,
-    getSession: jest.fn(),
-    postWalletUnlock: jest.fn(),
-    getWalletLock: jest.fn(),
-  }
-})
+jest.mock('../libs/JmWalletApi', () => ({
+  ...jest.requireActual('../libs/JmWalletApi'),
+  getSession: jest.fn(),
+  postWalletUnlock: jest.fn(),
+  getWalletLock: jest.fn(),
+}))
 
 const mockedNavigate = jest.fn()
 jest.mock('react-router-dom', () => {
@@ -40,9 +37,6 @@ describe('<Wallet />', () => {
     makerRunning = false,
     coinjoinInProgress = false,
     currentWallet = null,
-    startWallet = mockStartWallet,
-    stopWallet = mockStopWallet,
-    setAlert = mockSetAlert,
   }) => {
     render(
       <Wallet
@@ -52,9 +46,9 @@ describe('<Wallet />', () => {
         makerRunning={makerRunning}
         coinjoinInProgress={coinjoinInProgress}
         currentWallet={currentWallet}
-        startWallet={startWallet}
-        stopWallet={stopWallet}
-        setAlert={setAlert}
+        startWallet={mockStartWallet}
+        stopWallet={mockStopWallet}
+        setAlert={mockSetAlert}
       />
     )
   }
@@ -262,6 +256,20 @@ describe('<Wallet />', () => {
     expect(screen.queryByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_open')).not.toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_lock')).not.toBeInTheDocument()
+  })
+
+  it('should display earn indicator when maker is running', () => {
+    act(() => setup({ name: dummyWalletName, isActive: true, makerRunning: true }))
+
+    expect(document.querySelector('.earn-indicator')).toBeInTheDocument()
+    expect(document.querySelector('.joining-indicator')).toBeNull()
+  })
+
+  it('should display joining indicator when taker is running', () => {
+    act(() => setup({ name: dummyWalletName, isActive: true, coinjoinInProgress: true }))
+
+    expect(document.querySelector('.joining-indicator')).toBeInTheDocument()
+    expect(document.querySelector('.earn-indicator')).toBeNull()
   })
 
   it.each`
