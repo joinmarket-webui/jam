@@ -213,18 +213,14 @@ export default function Send() {
     const loadingWalletInfo = walletInfo
       ? Promise.resolve()
       : Api.getWalletDisplay(requestContext)
-          .then((res) =>
-            res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_wallet_failed')))
-          )
+          .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
           .then((data) => setWalletInfo(data.walletinfo))
           .catch((err) => {
             !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
           })
 
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_min_makers_failed')))
-      )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_min_makers_failed'))))
       .then((data) => {
         const minimumMakers = parseInt(data.configvalue, 10)
         setMinNumCollaborators(minimumMakers)

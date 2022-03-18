@@ -36,9 +36,7 @@ export default function Receive() {
       setAlert(null)
       setIsLoading(true)
       Api.getAddressNew({ walletName, mixdepth: accountNr, token, signal: abortCtrl.signal })
-        .then((res) =>
-          res.ok ? res.json() : Promise.reject(new Error(res.message || t('receive.error_loading_address_failed')))
-        )
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
         .then((data) => setAddress(data.address))
         .catch((err) => {
           !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })

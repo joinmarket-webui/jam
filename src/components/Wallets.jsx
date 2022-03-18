@@ -30,8 +30,6 @@ export default function Wallets({ startWallet, stopWallet }) {
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState(null)
 
-  const walletsFailedError = t('wallets.error_loading_failed')
-
   useEffect(() => {
     if (walletList && serviceInfo) {
       const sortedWalletList = sortWallets(walletList, serviceInfo.walletName)
@@ -46,7 +44,7 @@ export default function Wallets({ startWallet, stopWallet }) {
 
     setIsLoading(true)
     Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.message || walletsFailedError))))
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
       .then((data) => {
         if (!abortCtrl.signal.aborted) {
           const wallets = sortWallets(data.wallets || [], currentWallet?.name)
@@ -65,18 +63,12 @@ export default function Wallets({ startWallet, stopWallet }) {
         }
       })
       .catch((err) => {
-        if (!abortCtrl.signal.aborted) {
-          setAlert({ variant: 'danger', message: err.message })
-        }
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
-      .finally(() => {
-        if (!abortCtrl.signal.aborted) {
-          setIsLoading(false)
-        }
-      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, walletsFailedError, t])
+  }, [currentWallet, t])
 
   return (
     <div className="wallets">

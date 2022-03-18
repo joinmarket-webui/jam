@@ -265,7 +265,7 @@ const Helper = (() => {
     return message || fallbackReason
   }
 
-  const throwError = async (response: Response, fallbackReason?: string): Promise<void> => {
+  const throwError = async (response: Response, fallbackReason?: string): Promise<never> => {
     throw new Error(await extractErrorMessage(response, fallbackReason))
   }
 
