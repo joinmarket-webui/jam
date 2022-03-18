@@ -246,26 +246,34 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
 
 const Helper = (() => {
   const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
-    // The server will answer with a html response instead of json on certain errors.
-    // The situation is mitigated by parsing the returned html.
-    const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
+    try {
+      // The server will answer with a html response instead of json on certain errors.
+      // The situation is mitigated by parsing the returned html.
+      const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
 
-    if (isHtmlErrorMessage) {
-      return await response
-        .text()
-        .then((html) => {
-          var parser = new DOMParser()
-          var doc = parser.parseFromString(html, 'text/html')
-          return doc.title || fallbackReason
-        })
-        .then((reason) => `The server reported a problem: ${reason}`)
+      if (isHtmlErrorMessage) {
+        return await response
+          .text()
+          .then((html) => {
+            var parser = new DOMParser()
+            var doc = parser.parseFromString(html, 'text/html')
+            return doc.title || fallbackReason
+          })
+          .then((reason) => `The server reported a problem: ${reason}`)
+      }
+
+      const { message }: ApiError = await response.json()
+      return message || fallbackReason
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Error while extracting error message from api response - will use fallback reason', err)
+      }
+
+      return fallbackReason
     }
-
-    const { message }: ApiError = await response.json()
-    return message || fallbackReason
   }
 
-  const throwError = async (response: Response, fallbackReason?: string): Promise<never> => {
+  const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
     throw new Error(await extractErrorMessage(response, fallbackReason))
   }
 

@@ -7,7 +7,15 @@ import { walletDisplayName } from '../utils'
 
 import Wallet from './Wallet'
 
-jest.mock('../libs/JmWalletApi')
+jest.mock('../libs/JmWalletApi', () => {
+  const original = jest.requireActual('../libs/JmWalletApi')
+  return {
+    ...original,
+    getSession: jest.fn(),
+    postWalletUnlock: jest.fn(),
+    getWalletLock: jest.fn(),
+  }
+})
 
 const mockedNavigate = jest.fn()
 jest.mock('react-router-dom', () => {
@@ -55,7 +63,7 @@ describe('<Wallet />', () => {
   it('should render inactive wallet without errors', () => {
     act(() => setup({ name: dummyWalletName }))
 
-    expect(screen.getByText('dummy')).toBeInTheDocument()
+    expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.wallet_inactive')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
@@ -127,7 +135,7 @@ describe('<Wallet />', () => {
   it('should render active wallet without errors', () => {
     act(() => setup({ name: dummyWalletName, isActive: true, hasToken: true }))
 
-    expect(screen.getByText('dummy')).toBeInTheDocument()
+    expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_open')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
@@ -244,7 +252,7 @@ describe('<Wallet />', () => {
   it('should provide ability to unlock active wallet when token is missing', () => {
     act(() => setup({ name: dummyWalletName, isActive: true, hasToken: false }))
 
-    expect(screen.getByText('dummy')).toBeInTheDocument()
+    expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()

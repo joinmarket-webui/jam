@@ -6,7 +6,14 @@ import * as apiMock from '../libs/JmWalletApi'
 
 import Wallets from './Wallets'
 
-jest.mock('../libs/JmWalletApi')
+jest.mock('../libs/JmWalletApi', () => {
+  const original = jest.requireActual('../libs/JmWalletApi')
+  return {
+    ...original,
+    getSession: jest.fn(),
+    getWalletAll: jest.fn(),
+  }
+})
 
 describe('<Wallets />', () => {
   const setup = () => {
