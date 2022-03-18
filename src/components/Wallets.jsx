@@ -5,7 +5,7 @@ import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
 import { useCurrentWallet } from '../context/WalletContext'
-import { useSessionInfo } from '../context/SessionInfoContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
@@ -25,7 +25,7 @@ function sortWallets(wallets, activeWalletName = null) {
 export default function Wallets({ startWallet, stopWallet }) {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
-  const sessionInfo = useSessionInfo()
+  const serviceInfo = useServiceInfo()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -33,13 +33,13 @@ export default function Wallets({ startWallet, stopWallet }) {
   const walletsFailedError = t('wallets.error_loading_failed')
 
   useEffect(() => {
-    if (walletList && sessionInfo) {
-      const sortedWalletList = sortWallets(walletList, sessionInfo.walletName)
+    if (walletList && serviceInfo) {
+      const sortedWalletList = sortWallets(walletList, serviceInfo.walletName)
       if (!arrayEquals(walletList, sortedWalletList)) {
         setWalletList(sortedWalletList)
       }
     }
-  }, [sessionInfo, walletList, setWalletList])
+  }, [serviceInfo, walletList, setWalletList])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -96,11 +96,11 @@ export default function Wallets({ startWallet, stopWallet }) {
           <Wallet
             key={wallet}
             name={wallet}
-            noneActive={!sessionInfo?.walletName}
-            isActive={sessionInfo?.walletName === wallet}
-            hasToken={currentWallet && currentWallet.token && currentWallet.name === sessionInfo?.walletName}
-            makerRunning={sessionInfo?.makerRunning}
-            coinjoinInProgress={sessionInfo?.coinjoinInProgress}
+            noneActive={!serviceInfo?.walletName}
+            isActive={serviceInfo?.walletName === wallet}
+            hasToken={currentWallet && currentWallet.token && currentWallet.name === serviceInfo?.walletName}
+            makerRunning={serviceInfo?.makerRunning}
+            coinjoinInProgress={serviceInfo?.coinjoinInProgress}
             currentWallet={currentWallet}
             startWallet={startWallet}
             stopWallet={stopWallet}

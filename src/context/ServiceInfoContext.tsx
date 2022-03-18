@@ -22,24 +22,24 @@ type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
 type WalletName = { walletName: string | null }
 
-type SessionInfo = SessionFlag & MakerRunningFlag & CoinjoinInProgressFlag & WalletName
-type SessionInfoUpdate = SessionInfo | MakerRunningFlag | CoinjoinInProgressFlag
+type ServiceInfo = SessionFlag & MakerRunningFlag & CoinjoinInProgressFlag & WalletName
+type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag
 
-interface SessionInfoContextEntry {
-  sessionInfo: SessionInfo | null
+interface ServiceInfoContextEntry {
+  serviceInfo: ServiceInfo | null
   connectionError?: Error
 }
 
-const SessionInfoContext = createContext<SessionInfoContextEntry | undefined>(undefined)
+const ServiceInfoContext = createContext<ServiceInfoContextEntry | undefined>(undefined)
 
-const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
+const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
   const websocket = useWebsocket()
 
-  const [sessionInfo, dispatchSessionInfo] = useReducer(
-    (state: SessionInfo | null, obj: SessionInfoUpdate) => ({ ...state, ...obj } as SessionInfo | null),
+  const [serviceInfo, dispatchServiceInfo] = useReducer(
+    (state: ServiceInfo | null, obj: ServiceInfoUpdate) => ({ ...state, ...obj } as ServiceInfo | null),
     null
   )
   const [connectionError, setConnectionError] = useState<Error>()
@@ -71,7 +71,7 @@ const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             } = data
             const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
 
-            dispatchSessionInfo({ sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName })
+            dispatchServiceInfo({ sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName })
             setConnectionError(undefined)
 
             const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
@@ -95,7 +95,7 @@ const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [dispatchSessionInfo, setConnectionError, currentWallet, setCurrentWallet, setCurrentWalletInfo])
+  }, [dispatchServiceInfo, setConnectionError, currentWallet, setCurrentWallet, setCurrentWalletInfo])
 
   // update maker/taker indicator based on websocket data
   const onWebsocketMessage = useCallback(
@@ -104,11 +104,11 @@ const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
 
       // update the maker/taker indicator according to `coinjoin_state` property
       if (data && typeof data.coinjoin_state === 'number') {
-        dispatchSessionInfo({ coinjoinInProgress: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
-        dispatchSessionInfo({ makerRunning: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
+        dispatchServiceInfo({ coinjoinInProgress: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
+        dispatchServiceInfo({ makerRunning: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
       }
     },
-    [dispatchSessionInfo]
+    [dispatchServiceInfo]
   )
 
   useEffect(() => {
@@ -119,23 +119,23 @@ const SessionInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
     return () => websocket && websocket.removeEventListener('message', onWebsocketMessage)
   }, [websocket, onWebsocketMessage])
 
-  return <SessionInfoContext.Provider value={{ sessionInfo, connectionError }}>{children}</SessionInfoContext.Provider>
+  return <ServiceInfoContext.Provider value={{ serviceInfo, connectionError }}>{children}</ServiceInfoContext.Provider>
 }
 
-const useSessionInfo = () => {
-  const context = useContext(SessionInfoContext)
+const useServiceInfo = () => {
+  const context = useContext(ServiceInfoContext)
   if (context === undefined) {
-    throw new Error('useSessionInfo must be used within a SessionInfoProvider')
+    throw new Error('useServiceInfo must be used within a ServiceInfoProvider')
   }
-  return context.sessionInfo
+  return context.serviceInfo
 }
 
 const useSessionConnectionError = () => {
-  const context = useContext(SessionInfoContext)
+  const context = useContext(ServiceInfoContext)
   if (context === undefined) {
-    throw new Error('useSessionConnectionError must be used within a SessionInfoProvider')
+    throw new Error('useSessionConnectionError must be used within a ServiceInfoProvider')
   }
   return context.connectionError
 }
 
-export { SessionInfoContext, SessionInfoProvider, useSessionInfo, useSessionConnectionError }
+export { ServiceInfoContext, ServiceInfoProvider, useServiceInfo, useSessionConnectionError }

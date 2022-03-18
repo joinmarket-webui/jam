@@ -7,7 +7,7 @@ import Balance from './Balance'
 import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
-import { useSessionInfo, useSessionConnectionError } from '../context/SessionInfoContext'
+import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 
 const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
@@ -121,7 +121,7 @@ export default function Navbar() {
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
 
-  const sessionInfo = useSessionInfo()
+  const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
 
   const [isExpanded, setIsExpanded] = useState(false)
@@ -212,19 +212,19 @@ export default function Navbar() {
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
-                    <CenterNav makerRunning={sessionInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
+                    <CenterNav makerRunning={serviceInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
                     <TrailingNav
-                      coinjoinInProgess={sessionInfo?.coinjoinInProgress}
+                      coinjoinInProgess={serviceInfo?.coinjoinInProgress}
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
-                  <CenterNav makerRunning={sessionInfo?.makerRunning} />
+                  <CenterNav makerRunning={serviceInfo?.makerRunning} />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">
-                    <TrailingNav coinjoinInProgess={sessionInfo?.coinjoinInProgress} />
+                    <TrailingNav coinjoinInProgess={serviceInfo?.coinjoinInProgress} />
                   </div>
                 </rb.Container>
               </>

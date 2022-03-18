@@ -10,7 +10,7 @@ import { WalletProvider } from './context/WalletContext'
 // @ts-ignore
 import { WebsocketProvider } from './context/WebsocketContext'
 // @ts-ignore
-import { SessionInfoProvider } from './context/SessionInfoContext'
+import { ServiceInfoProvider } from './context/ServiceInfoContext'
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
@@ -31,9 +31,9 @@ ReactDOM.render(
     <SettingsProvider>
       <WalletProvider>
         <WebsocketProvider>
-          <SessionInfoProvider>
+          <ServiceInfoProvider>
             <App />
-          </SessionInfoProvider>
+          </ServiceInfoProvider>
         </WebsocketProvider>
       </WalletProvider>
     </SettingsProvider>

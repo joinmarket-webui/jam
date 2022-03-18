@@ -4,7 +4,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
-import { useSessionInfo } from '../context/SessionInfoContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -77,7 +77,7 @@ export default function Earn() {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
-  const sessionInfo = useSessionInfo()
+  const serviceInfo = useServiceInfo()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
@@ -166,7 +166,7 @@ export default function Earn() {
 
   useEffect(() => {
     setAlert(null)
-    const makerRunning = sessionInfo?.makerRunning
+    const makerRunning = serviceInfo?.makerRunning
 
     const waitingForMakerToStart = isWaitingMakerStart && !makerRunning
     setIsWaitingMakerStart(waitingForMakerToStart)
@@ -179,7 +179,7 @@ export default function Earn() {
     const waiting = waitingForMakerToStart || waitingForMakerToStop
     setIsWaiting(waiting)
     !waiting && makerRunning && setAlert({ variant: 'success', message: t('earn.alert_running') })
-  }, [sessionInfo, isWaitingMakerStart, isWaitingMakerStop, t])
+  }, [serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
 
   useEffect(() => {
     if (!isShowReport) return
@@ -205,7 +205,7 @@ export default function Earn() {
       })
 
     return () => abortCtrl.abort()
-  }, [sessionInfo, isShowReport, t])
+  }, [serviceInfo, isShowReport, t])
 
   const stopMakerService = async () => {
     const { name: walletName, token } = currentWallet
@@ -239,7 +239,7 @@ export default function Earn() {
     setValidated(true)
 
     if (isValid) {
-      if (sessionInfo?.makerRunning === false) {
+      if (serviceInfo?.makerRunning === false) {
         await startMakerService(feeAbs, feeRel, offertype, minsize)
       } else {
         await stopMakerService()
@@ -255,7 +255,7 @@ export default function Earn() {
         <rb.Col>
           <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
-          <rb.Fade in={sessionInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
+          <rb.Fade in={serviceInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">{t('earn.alert_coinjoin_in_progress')}</small>
             </div>
@@ -263,9 +263,9 @@ export default function Earn() {
 
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-          {!sessionInfo?.coinjoinInProgress && (
+          {!serviceInfo?.coinjoinInProgress && (
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-              {!sessionInfo?.makerRunning && !isWaiting && (
+              {!serviceInfo?.makerRunning && !isWaiting && (
                 <>
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="offertype">
@@ -357,9 +357,9 @@ export default function Earn() {
                       aria-hidden="true"
                       className="me-2"
                     />
-                    {sessionInfo?.makerRunning === true ? t('earn.text_stopping') : t('earn.text_starting')}
+                    {serviceInfo?.makerRunning === true ? t('earn.text_stopping') : t('earn.text_starting')}
                   </>
-                ) : sessionInfo?.makerRunning === true ? (
+                ) : serviceInfo?.makerRunning === true ? (
                   t('earn.button_stop')
                 ) : (
                   t('earn.button_start')

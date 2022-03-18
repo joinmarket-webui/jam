@@ -5,7 +5,7 @@ import { I18nextProvider } from 'react-i18next'
 import { SettingsProvider } from './context/SettingsContext'
 import { WalletProvider } from './context/WalletContext'
 import { WebsocketProvider } from './context/WebsocketContext'
-import { SessionInfoProvider } from './context/SessionInfoContext'
+import { ServiceInfoProvider } from './context/ServiceInfoContext'
 import i18n from './i18n/testConfig'
 
 const AllTheProviders = ({ children }) => {
@@ -15,7 +15,7 @@ const AllTheProviders = ({ children }) => {
         <SettingsProvider>
           <WalletProvider>
             <WebsocketProvider>
-              <SessionInfoProvider>{children}</SessionInfoProvider>
+              <ServiceInfoProvider>{children}</ServiceInfoProvider>
             </WebsocketProvider>
           </WalletProvider>
         </SettingsProvider>

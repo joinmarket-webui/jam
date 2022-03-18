@@ -15,7 +15,7 @@ import Layout from './Layout'
 import { useSettings } from '../context/SettingsContext'
 import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
-import { useSessionConnectionError } from '../context/SessionInfoContext'
+import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 
