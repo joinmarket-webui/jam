@@ -18,16 +18,16 @@ function ConfirmModal({ show = false, onHide, title, body, children }) {
   )
 }
 
-function ConfirmLockModal({ show = false, body, onHide, onConfirm, onSuggestedActionAccepted }) {
+function ConfirmLockModal({ show = false, body, onHide, onConfirm }) {
   const { t } = useTranslation()
   return (
     <ConfirmModal show={show} onHide={onHide} title={t('wallets.wallet_preview.modal_lock_wallet_title')} body={body}>
       <>
-        <rb.Button variant="outline-dark" onClick={onConfirm}>
-          {t('wallets.wallet_preview.modal_lock_wallet_button_confirm')}
+        <rb.Button variant="outline-dark" onClick={onHide}>
+          {t('wallets.wallet_preview.modal_lock_wallet_button_cancel')}
         </rb.Button>
-        <rb.Button variant="dark" onClick={onSuggestedActionAccepted}>
-          {t('wallets.wallet_preview.modal_lock_wallet_button_accept_suggestion_action')}
+        <rb.Button variant="dark" onClick={onConfirm}>
+          {t('wallets.wallet_preview.modal_lock_wallet_button_confirm')}
         </rb.Button>
       </>
     </ConfirmModal>
@@ -181,10 +181,6 @@ export default function Wallet({
         onConfirm={() => {
           setShowLockConfirmModal(false)
           lockWallet()
-        }}
-        onSuggestedActionAccepted={() => {
-          setShowLockConfirmModal(false)
-          stopWallet()
         }}
         onHide={() => {
           setShowLockConfirmModal(false)
