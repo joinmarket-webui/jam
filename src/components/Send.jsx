@@ -6,10 +6,11 @@ import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
+import Balance from './Balance'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
-import { btcToSats, satsToBtc } from '../utils'
+import { btcToSats, satsToBtc, SATS } from '../utils'
 
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
@@ -28,9 +29,9 @@ const isValidAccount = (candidate) => {
   return !isNaN(parsed) && parsed >= 0
 }
 
-const isValidAmount = (candidate) => {
+const isValidAmount = (candidate, isSweep) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && parsed >= 0
+  return !isNaN(parsed) && (isSweep ? parsed >= 0 : parsed > 0)
 }
 
 const isValidNumCollaborators = (candidate, minNumCollaborators) => {
@@ -145,8 +146,6 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const setWalletInfo = useSetCurrentWalletInfo()
   const settings = useSettings()
 
-  const [utxos, setUtxos] = useState(null)
-
   const location = useLocation()
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -154,6 +153,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
+  const [utxos, setUtxos] = useState(null)
   const [isSweep, setIsSweep] = useState(false)
 
   const initialDestination = null
@@ -189,14 +189,22 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     if (
       isValidAddress(destination) &&
       isValidAccount(account) &&
-      isValidAmount(amount) &&
+      isValidAmount(amount, isSweep) &&
       (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
     ) {
       setFormIsValid(true)
     } else {
       setFormIsValid(false)
     }
-  }, [destination, account, amount, numCollaborators, minNumCollaborators, isCoinjoin])
+  }, [destination, account, amount, numCollaborators, minNumCollaborators, isCoinjoin, isSweep])
+
+  useEffect(() => {
+    if (isSweep) {
+      setAmount(0)
+    } else {
+      setAmount(null)
+    }
+  }, [isSweep])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -214,15 +222,11 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         setWalletInfo(data.walletinfo)
         return data.walletinfo
       })
-      .then((walletinfo) =>
-        Api.getWalletUtxos(requestContext)
-          .then((res) =>
-            res.ok
-              ? res.json()
-              : Promise.reject(new Error(res.message || t('current_wallet_advanced.error_loading_utxos_failed')))
-          )
-          .then((data) => setUtxos(data.utxos))
+      .then((walletinfo) => Api.getWalletUtxos(requestContext))
+      .then((res) =>
+        res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_wallet_failed')))
       )
+      .then((data) => setUtxos(data.utxos))
       .catch((err) => !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message }))
 
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
@@ -317,7 +321,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     if (isValid) {
       const counterparties = parseInt(numCollaborators, 10)
 
-      if (isSweep && !amount === 0) {
+      if (isSweep && amount !== 0) {
         console.error('Seep amount mismatch')
         setAlert({ variant: 'danger', message: 'todo' })
         return
@@ -338,15 +342,15 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     }
   }
 
-  const byAccount = (utxos) => {
-    return (utxos || []).reduce((acc, utxo) => {
-      acc[utxo.mixdepth] = acc[utxo.mixdepth] || []
-      acc[utxo.mixdepth].push(utxo)
-      return acc
-    }, {})
+  const amountFieldValue = () => {
+    if (amount === null || Number.isNaN(amount)) return ''
+
+    if (isSweep) return balanceBreakdown(account).totalBalance
+
+    return amount
   }
 
-  const accountBalance = (accountNumber) => {
+  const balanceBreakdown = (accountNumber) => {
     if (!walletInfo || !walletInfo.accounts) {
       return null
     }
@@ -359,24 +363,20 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       return null
     }
 
-    const account = filtered[0]
-    const accountUtxos = byAccount(utxos)[account.account] || []
+    const utxosByAccount = (utxos || []).reduce((acc, utxo) => {
+      acc[utxo.mixdepth] = acc[utxo.mixdepth] || []
+      acc[utxo.mixdepth].push(utxo)
+      return acc
+    }, {})
+    const accountUtxos = utxosByAccount[accountNumber] || []
     const frozenOrLockedUtxos = accountUtxos.filter((utxo) => utxo.frozen || utxo.locktime)
     const balanceFrozenOrLocked = frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
 
     return {
-      totalBalance: btcToSats(account.account_balance),
+      totalBalance: btcToSats(filtered[0].account_balance),
       frozenOrLockedBalance: balanceFrozenOrLocked,
     }
   }
-
-  useEffect(() => {
-    if (isSweep) {
-      setAmount(0)
-    } else {
-      setAmount(null)
-    }
-  }, [isSweep])
 
   return (
     <>
@@ -448,19 +448,13 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                 <rb.Form.Control
                   name="amount"
                   type="number"
-                  value={
-                    amount === null || Number.isNaN(amount)
-                      ? ''
-                      : isSweep
-                      ? accountBalance(account).totalBalance
-                      : amount
-                  }
+                  value={amountFieldValue()}
                   className="slashed-zeroes"
-                  min={0}
+                  min={1}
                   placeholder={t('send.placeholder_amount')}
                   required
                   onChange={(e) => setAmount(parseInt(e.target.value, 10))}
-                  isInvalid={(amount !== null || Number.isNaN(amount)) && !isValidAmount(amount)}
+                  isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
                   disabled={isSweep}
                 />
                 <rb.Button variant="dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
@@ -468,16 +462,43 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                     <div>Clear</div>
                   ) : (
                     <div>
-                      <Sprite symbol="sweep" width="1.5rem" height="1.5rem" className="" />
+                      <Sprite symbol="sweep" width="24px" height="24px" />
                       Sweep
                     </div>
                   )}
                 </rb.Button>
               </div>
               {isSweep && (
-                <div className="mt-1" style={{ display: 'block', color: '#2D9CDB', fontSize: '0.8rem' }}>
-                  At least {accountBalance(account).frozenOrLockedBalance} sats are locked for frozen and will not be
-                  sweeped.
+                <div className="frozen-warning mt-1">
+                  From these{' '}
+                  <Balance
+                    valueString={balanceBreakdown(account).totalBalance.toString()}
+                    convertToUnit={SATS}
+                    showBalance={true}
+                  />{' '}
+                  at least{' '}
+                  <Balance
+                    valueString={balanceBreakdown(account).frozenOrLockedBalance.toString()}
+                    convertToUnit={SATS}
+                    showBalance={true}
+                  />{' '}
+                  are{' '}
+                  <a
+                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    locked
+                  </a>{' '}
+                  or{' '}
+                  <a
+                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    frozen
+                  </a>{' '}
+                  and will not be swept.
                 </div>
               )}
             </rb.Form.Group>
