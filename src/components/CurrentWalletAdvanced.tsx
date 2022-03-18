@@ -1,28 +1,41 @@
 import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+// @ts-ignore
 import DisplayAccounts from './DisplayAccounts'
+// @ts-ignore
 import DisplayAccountUTXOs from './DisplayAccountUTXOs'
+// @ts-ignore
 import DisplayUTXOs from './DisplayUTXOs'
+// @ts-ignore
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
+
+type Utxos = any[]
+type Alert = { message: string; variant: string }
 
 export default function CurrentWalletAdvanced() {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
-  const [fidelityBonds, setFidelityBonds] = useState(null)
-  const [utxos, setUtxos] = useState(null)
+  const [fidelityBonds, setFidelityBonds] = useState<Utxos | null>(null)
+  const [utxos, setUtxos] = useState<Utxos | null>(null)
   const [showUTXO, setShowUTXO] = useState(false)
-  const [alert, setAlert] = useState(null)
+  const [alert, setAlert] = useState<Alert | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const abortCtrl = new AbortController()
-    const { name, token } = currentWallet
+    if (!currentWallet) {
+      setAlert({ variant: 'danger', message: t('current_wallet.error_loading_failed') })
+      setIsLoading(false)
+      return
+    }
 
-    const setUtxoData = (utxos) => {
+    const abortCtrl = new AbortController()
+    const { name: walletName, token } = currentWallet
+
+    const setUtxoData = (utxos: Utxos) => {
       setUtxos(utxos)
       setFidelityBonds(utxos.filter((utxo) => utxo.locktime))
     }
@@ -30,20 +43,17 @@ export default function CurrentWalletAdvanced() {
     setAlert(null)
     setIsLoading(true)
 
-    const loadingWallet = Api.getWalletDisplay({ walletName: name, token, signal: abortCtrl.signal })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || t('current_wallet.error_loading_failed')))
-      )
+    const loadingWallet = Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet.error_loading_failed'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    const loadingUtxos = Api.getWalletUtxos({ walletName: name, token, signal: abortCtrl.signal })
-      .then((res) =>
-        res.ok
-          ? res.json()
-          : Promise.reject(new Error(res.message || t('current_wallet_advanced.error_loading_utxos_failed')))
+    const loadingUtxos = Api.getWalletUtxos({ walletName, token, signal: abortCtrl.signal })
+      .then(
+        (res): Promise<{ utxos: Utxos }> =>
+          res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet_advanced.error_loading_utxos_failed'))
       )
       .then((data) => setUtxoData(data.utxos))
       .catch((err) => {
