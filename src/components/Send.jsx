@@ -330,8 +330,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       const counterparties = parseInt(numCollaborators, 10)
 
       if (isSweep && amount !== 0) {
-        console.error('Seep amount mismatch')
-        setAlert({ variant: 'danger', message: 'todo' })
+        console.error('Sweep amount mismatch. This should not happen.')
         return
       }
 
