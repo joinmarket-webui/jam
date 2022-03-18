@@ -245,7 +245,7 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
 }
 
 const Helper = (() => {
-  const extractErrorMessage = async (response: Response, fallbackReason: string): Promise<string> => {
+  const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
     // The server will answer with a html response instead of json on certain errors.
     // The situation is mitigated by parsing the returned html.
     const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
@@ -265,7 +265,7 @@ const Helper = (() => {
     return message || fallbackReason
   }
 
-  const throwError = async (response: Response, fallbackReason: string): Promise<void> => {
+  const throwError = async (response: Response, fallbackReason?: string): Promise<void> => {
     throw new Error(await extractErrorMessage(response, fallbackReason))
   }
 

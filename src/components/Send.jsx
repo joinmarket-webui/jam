@@ -121,7 +121,7 @@ const enhanceTakerErrorMessageIfNecessary = async (
   requestContext,
   httpStatus,
   errorMessage,
-  additionalErrorMessageProvider
+  onMaxFeeSettingsMissing
 ) => {
   const configExists = (section, field) => Api.postConfigGet(requestContext, { section, field }).then((res) => res.ok)
 
@@ -135,7 +135,7 @@ const enhanceTakerErrorMessageIfNecessary = async (
       .catch(() => false)
 
     if (!maxFeeSettingsPresent) {
-      return `${errorMessage} ${additionalErrorMessageProvider()}`
+      return onMaxFeeSettingsMissing(errorMessage)
     }
   }
 
@@ -292,8 +292,11 @@ export default function Send() {
         success = true
       } else {
         const { message } = await res.json()
-        const displayMessage = await enhanceTakerErrorMessageIfNecessary(requestContext, res.status, message, () =>
-          t('send.taker_error_message_max_fees_config_missing')
+        const displayMessage = await enhanceTakerErrorMessageIfNecessary(
+          requestContext,
+          res.status,
+          message,
+          (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`
         )
 
         setAlert({ variant: 'danger', message: displayMessage })
