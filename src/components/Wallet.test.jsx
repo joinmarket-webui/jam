@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, waitFor } from '../testUtils'
+import { render, screen, waitFor, waitForElementToBeRemoved } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
@@ -37,6 +37,8 @@ describe('<Wallet />', () => {
     name,
     isActive = false,
     hasToken = false,
+    makerRunning = false,
+    coinjoinInProgress = false,
     currentWallet = null,
     startWallet = mockStartWallet,
     stopWallet = mockStopWallet,
@@ -47,6 +49,8 @@ describe('<Wallet />', () => {
         name={name}
         isActive={isActive}
         hasToken={hasToken}
+        makerRunning={makerRunning}
+        coinjoinInProgress={coinjoinInProgress}
         currentWallet={currentWallet}
         startWallet={startWallet}
         stopWallet={stopWallet}
@@ -259,4 +263,71 @@ describe('<Wallet />', () => {
     expect(screen.queryByText('wallets.wallet_preview.button_open')).not.toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_lock')).not.toBeInTheDocument()
   })
+
+  it.each`
+    makerRunning | coinjoinInProgress | expectedModalBody
+    ${true}      | ${false}           | ${'wallets.wallet_preview.modal_lock_wallet_maker_running_text'}
+    ${false}     | ${true}            | ${'wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text'}
+  `(
+    'should confirm locking wallet if maker ($makerRunning) or taker ($coinjoinInProgress) is running',
+    async ({ makerRunning, coinjoinInProgress, expectedModalBody }) => {
+      apiMock.getWalletLock.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ walletname: dummyWalletName, already_locked: false }),
+      })
+
+      act(() =>
+        setup({
+          name: dummyWalletName,
+          isActive: true,
+          hasToken: true,
+          makerRunning,
+          coinjoinInProgress,
+          currentWallet: { name: dummyWalletName, token: dummyToken },
+        })
+      )
+
+      // modal is initially not shown
+      expect(screen.queryByText('wallets.wallet_preview.modal_lock_wallet_title')).not.toBeInTheDocument()
+      expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
+
+      act(() => {
+        // click on the "lock" button
+        const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
+        user.click(lockWalletButton)
+      })
+
+      // modal appeared
+      expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title')).toBeInTheDocument()
+      expect(screen.getByText(expectedModalBody)).toBeInTheDocument()
+      expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_cancel')).toBeInTheDocument()
+      expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_confirm')).toBeInTheDocument()
+
+      act(() => {
+        // click on the modal's "cancel" button
+        const lockWalletButton = screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_cancel')
+        user.click(lockWalletButton)
+      })
+      await waitForElementToBeRemoved(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title'))
+
+      expect(mockStopWallet).not.toHaveBeenCalled()
+
+      act(() => {
+        const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
+        user.click(lockWalletButton)
+      })
+
+      // modal appeared
+      expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title')).toBeInTheDocument()
+
+      act(() => {
+        // click on the modal's "confirm" button
+        const lockWalletButton = screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_confirm')
+        user.click(lockWalletButton)
+      })
+      await waitForElementToBeRemoved(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title'))
+
+      expect(mockStopWallet).toHaveBeenCalled()
+    }
+  )
 })
