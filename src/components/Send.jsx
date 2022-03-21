@@ -475,6 +475,13 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                   )}
                 </rb.Button>
               </div>
+              <rb.Form.Control.Feedback
+                className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
+                form="send-form"
+                type="invalid"
+              >
+                {t('send.feedback_invalid_amount')}
+              </rb.Form.Control.Feedback>
               {isSweep && (
                 <div className="frozen-warning mt-1">
                   From these{' '}
