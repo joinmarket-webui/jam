@@ -461,6 +461,10 @@ input::-webkit-inner-spin-button {
   box-shadow: none;
 }
 
+.send .sweep-breakdown .accordion-button:hover {
+  text-decoration: underline;
+}
+
 .send .sweep-breakdown .accordion-button::after {
   width: 0rem;
   height: 0rem;

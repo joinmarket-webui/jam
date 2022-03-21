@@ -31,7 +31,7 @@ const isValidAccount = (candidate) => {
 
 const isValidAmount = (candidate, isSweep) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && (isSweep ? parsed >= 0 : parsed > 0)
+  return !isNaN(parsed) && (isSweep ? parsed === 0 : parsed > 0)
 }
 
 const isValidNumCollaborators = (candidate, minNumCollaborators) => {
@@ -220,24 +220,18 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     const requestContext = { walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal }
 
     const loadingWalletInfoAndUtxos = Api.getWalletDisplay(requestContext)
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_wallet_failed')))
-      )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
       .then((data) => {
         setWalletInfo(data.walletinfo)
         return data.walletinfo
       })
       .then((walletinfo) => Api.getWalletUtxos(requestContext))
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_wallet_failed')))
-      )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
       .then((data) => setUtxos(data.utxos))
       .catch((err) => !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message }))
 
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || t('send.error_loading_min_makers_failed')))
-      )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_min_makers_failed'))))
       .then((data) => {
         const minimumMakers = parseInt(data.configvalue, 10)
         setMinNumCollaborators(minimumMakers)
@@ -434,7 +428,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                   </tr>
                 </tbody>
               </table>
-              <p>
+              <p className="mb-0 mt-4">
                 A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that have
                 been{' '}
                 <a
@@ -455,16 +449,16 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                 . Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero
                 change. The exact transaction amount can only be calculated by JoinMarket at the point when the
                 transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount.
+                Refer to the{' '}
+                <a
+                  href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  JoinMarket documentation
+                </a>{' '}
+                for more details.
               </p>
-              Refer to the{' '}
-              <a
-                href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
-                target="_blank"
-                rel="noreferrer"
-              >
-                JoinMarket documentation
-              </a>{' '}
-              for more details.
             </rb.Accordion.Body>
           </rb.Accordion.Item>
         </rb.Accordion>
