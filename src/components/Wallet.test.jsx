@@ -137,7 +137,7 @@ describe('<Wallet />', () => {
     expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_open')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('wallets.wallet_preview.placeholder_password')).not.toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_unlock')).not.toBeInTheDocument()
   })
 
