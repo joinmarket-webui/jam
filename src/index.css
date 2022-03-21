@@ -448,13 +448,26 @@ input::-webkit-inner-spin-button {
   font-size: 0.9rem;
 }
 
-.send .frozen-warning {
-  color: #2d9cdb;
+.send .sweep-breakdown {
   font-size: 0.8rem;
 }
 
-.send .frozen-warning a {
-  color: #2d9cdb;
+.send .sweep-breakdown .accordion-button {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-black);
+  font-size: 0.8rem;
+  height: 1rem;
+  padding-right: 0;
+  box-shadow: none;
+}
+
+.send .sweep-breakdown .accordion-button::after {
+  width: 0rem;
+  height: 0rem;
+  background-image: none;
+}
+
+.send .sweep-breakdown a {
   font-size: 0.8rem;
 }
 

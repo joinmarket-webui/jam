@@ -349,14 +349,6 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
     }
   }
 
-  const amountFieldValue = () => {
-    if (amount === null || Number.isNaN(amount)) return ''
-
-    if (isSweep) return balanceBreakdown(account).totalBalance
-
-    return amount
-  }
-
   const balanceBreakdown = (accountNumber) => {
     if (!walletInfo || !walletInfo.accounts) {
       return null
@@ -383,6 +375,101 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
       totalBalance: btcToSats(filtered[0].account_balance),
       frozenOrLockedBalance: balanceFrozenOrLocked,
     }
+  }
+
+  const amountFieldValue = () => {
+    if (amount === null || Number.isNaN(amount)) return ''
+
+    if (isSweep) {
+      const breakdown = balanceBreakdown(account)
+
+      if (!breakdown) return ''
+
+      return breakdown.totalBalance - breakdown.frozenOrLockedBalance
+    }
+
+    return amount
+  }
+
+  const frozenOrLockedWarning = () => {
+    const breakdown = balanceBreakdown(account)
+
+    if (!breakdown) return null
+
+    return (
+      <div className="sweep-breakdown mt-1">
+        <rb.Accordion flush>
+          <rb.Accordion.Item eventKey="0">
+            <rb.Accordion.Header>
+              <div className="d-flex align-items-center justify-content-end w-100">How is this calculated?</div>
+            </rb.Accordion.Header>
+            <rb.Accordion.Body className="px-0">
+              <table class="table table-sm" style={{ tableLayout: 'fixed' }}>
+                <tbody>
+                  <tr>
+                    <td>Total balance</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <Balance
+                        valueString={breakdown.totalBalance.toString()}
+                        convertToUnit={SATS}
+                        showBalance={true}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Frozen or locked balance</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <Balance
+                        valueString={breakdown.frozenOrLockedBalance.toString()}
+                        convertToUnit={SATS}
+                        showBalance={true}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Estimated amount to be sent</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <Balance valueString={amountFieldValue().toString()} convertToUnit={SATS} showBalance={true} />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p>
+                A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that have
+                been{' '}
+                <a
+                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  frozen
+                </a>{' '}
+                or{' '}
+                <a
+                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  time-locked
+                </a>
+                . Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero
+                change. The exact transaction amount can only be calculated by JoinMarket at the point when the
+                transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount.
+              </p>
+              Refer to the{' '}
+              <a
+                href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
+                target="_blank"
+                rel="noreferrer"
+              >
+                JoinMarket documentation
+              </a>{' '}
+              for more details.
+            </rb.Accordion.Body>
+          </rb.Accordion.Item>
+        </rb.Accordion>
+      </div>
+    )
   }
 
   return (
@@ -482,39 +569,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
               >
                 {t('send.feedback_invalid_amount')}
               </rb.Form.Control.Feedback>
-              {isSweep && (
-                <div className="frozen-warning mt-1">
-                  From these{' '}
-                  <Balance
-                    valueString={balanceBreakdown(account).totalBalance.toString()}
-                    convertToUnit={SATS}
-                    showBalance={true}
-                  />{' '}
-                  at least{' '}
-                  <Balance
-                    valueString={balanceBreakdown(account).frozenOrLockedBalance.toString()}
-                    convertToUnit={SATS}
-                    showBalance={true}
-                  />{' '}
-                  are{' '}
-                  <a
-                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    locked
-                  </a>{' '}
-                  or{' '}
-                  <a
-                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    frozen
-                  </a>{' '}
-                  and will not be swept.
-                </div>
-              )}
+              {isSweep && frozenOrLockedWarning()}
             </rb.Form.Group>
             {isCoinjoinOptionEnabled && (
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
