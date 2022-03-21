@@ -452,12 +452,16 @@ input::-webkit-inner-spin-button {
   font-size: 0.8rem;
 }
 
+.send .sweep-breakdown table {
+  color: var(--bs-black);
+}
+
 .send .sweep-breakdown table .balance-col {
   text-align: right;
 }
 
 .send .sweep-breakdown .accordion-button {
-  background-color: var(--bs-body-bg);
+  background-color: transparent;
   color: var(--bs-black);
   font-size: 0.8rem;
   height: 1rem;
@@ -477,6 +481,7 @@ input::-webkit-inner-spin-button {
 
 .send .sweep-breakdown a {
   font-size: 0.8rem;
+  color: var(--bs-black);
 }
 
 .send select {
@@ -501,6 +506,18 @@ input::-webkit-inner-spin-button {
 
 .collaborators-selector .d-flex {
   gap: 0.5rem;
+}
+
+:root[data-theme='dark'] .send .sweep-breakdown table {
+  color: var(--bs-white);
+}
+
+:root[data-theme='dark'] .send .sweep-breakdown a {
+  color: var(--bs-white);
+}
+
+:root[data-theme='dark'] .send .sweep-breakdown p {
+  color: var(--bs-white);
 }
 
 :root[data-theme='dark'] .collaborators-selector input {

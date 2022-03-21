@@ -400,7 +400,7 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
               </div>
             </rb.Accordion.Header>
             <rb.Accordion.Body className="px-0">
-              <table class="table table-sm">
+              <table className="table table-sm">
                 <tbody>
                   <tr>
                     <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
