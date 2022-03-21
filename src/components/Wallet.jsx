@@ -6,32 +6,33 @@ import { serialize, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
 
-function ConfirmModal({ show = false, onHide, title, body, children }) {
+function ConfirmModal({ show = false, onHide, title, body, footer }) {
   return (
     <rb.Modal show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
       <rb.Modal.Header closeButton>
         <rb.Modal.Title>{title}</rb.Modal.Title>
       </rb.Modal.Header>
       <rb.Modal.Body>{body}</rb.Modal.Body>
-      <rb.Modal.Footer>{children}</rb.Modal.Footer>
+      <rb.Modal.Footer>{footer}</rb.Modal.Footer>
     </rb.Modal>
   )
 }
 
 function ConfirmLockModal({ show = false, body, onHide, onConfirm }) {
   const { t } = useTranslation()
-  return (
-    <ConfirmModal show={show} onHide={onHide} title={t('wallets.wallet_preview.modal_lock_wallet_title')} body={body}>
-      <>
-        <rb.Button variant="outline-dark" onClick={onHide}>
-          {t('wallets.wallet_preview.modal_lock_wallet_button_cancel')}
-        </rb.Button>
-        <rb.Button variant="dark" onClick={onConfirm}>
-          {t('wallets.wallet_preview.modal_lock_wallet_button_confirm')}
-        </rb.Button>
-      </>
-    </ConfirmModal>
+
+  const title = t('wallets.wallet_preview.modal_lock_wallet_title')
+  const footer = (
+    <>
+      <rb.Button variant="outline-dark" onClick={onHide}>
+        {t('wallets.wallet_preview.modal_lock_wallet_button_cancel')}
+      </rb.Button>
+      <rb.Button variant="dark" onClick={onConfirm}>
+        {t('wallets.wallet_preview.modal_lock_wallet_button_confirm')}
+      </rb.Button>
+    </>
   )
+  return <ConfirmModal show={show} onHide={onHide} title={title} body={body} footer={footer} />
 }
 
 export default function Wallet({
@@ -168,10 +169,18 @@ export default function Wallet({
   const showLockOptions = isActive && hasToken
   const showUnlockOptions = noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress)
 
-  const confirmLockBody =
-    (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
-    (coinjoinInProgress && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) ||
-    null
+  const confirmLockBody = (() => {
+    const serviceRunningInfoText =
+      (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
+      (coinjoinInProgress && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text'))
+    return (
+      <>
+        {serviceRunningInfoText}
+        {serviceRunningInfoText ? ' ' : ''}
+        {t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}
+      </>
+    )
+  })()
 
   return (
     <>

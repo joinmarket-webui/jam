@@ -69,8 +69,9 @@
       "button_unlocking": "Unlocking",
       "feedback_missing_password": "Please set the wallet's password.",
       "modal_lock_wallet_title": "Confirm locking",
-      "modal_lock_wallet_maker_running_text": "Earn is active. Locking the wallet will stop the service. Alternatively, just close the window to log out.",
-      "modal_lock_wallet_coinjoin_in_progress_text": "A collaborative transaction is currently in progress. Locking the wallet will stop the service. Alternatively, just close the window to log out.",
+      "modal_lock_wallet_maker_running_text": "Earn is active. Locking the wallet will stop the service.",
+      "modal_lock_wallet_coinjoin_in_progress_text": "A collaborative transaction is currently in progress. Locking the wallet will stop the service.",
+      "modal_lock_wallet_alternative_action_text": "Alternatively, just close the window to log out.",
       "modal_lock_wallet_button_confirm": "Yes, lock wallet",
       "modal_lock_wallet_button_cancel": "Cancel"
     }

@@ -274,8 +274,8 @@ describe('<Wallet />', () => {
 
   it.each`
     makerRunning | coinjoinInProgress | expectedModalBody
-    ${true}      | ${false}           | ${'wallets.wallet_preview.modal_lock_wallet_maker_running_text'}
-    ${false}     | ${true}            | ${'wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text'}
+    ${true}      | ${false}           | ${'wallets.wallet_preview.modal_lock_wallet_maker_running_text wallets.wallet_preview.modal_lock_wallet_alternative_action_text'}
+    ${false}     | ${true}            | ${'wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text wallets.wallet_preview.modal_lock_wallet_alternative_action_text'}
   `(
     'should confirm locking wallet if maker ($makerRunning) or taker ($coinjoinInProgress) is running',
     async ({ makerRunning, coinjoinInProgress, expectedModalBody }) => {
