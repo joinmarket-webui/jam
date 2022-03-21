@@ -67,15 +67,13 @@ const WebsocketProvider = ({ children }) => {
 
   // update websocket state based on open/close events
   useEffect(() => {
+    const abortCtrl = new AbortController()
     const onStateChange = () => setWebsocketState(websocket.readyState)
 
-    websocket.addEventListener('open', onStateChange)
-    websocket.addEventListener('close', onStateChange)
+    websocket.addEventListener('open', onStateChange, { signal: abortCtrl.signal })
+    websocket.addEventListener('close', onStateChange, { signal: abortCtrl.signal })
 
-    return () => {
-      websocket && websocket.removeEventListener('close', onStateChange)
-      websocket && websocket.removeEventListener('open', onStateChange)
-    }
+    return () => abortCtrl.abort()
   }, [websocket])
 
   useEffect(() => {
@@ -93,6 +91,7 @@ const WebsocketProvider = ({ children }) => {
 
   // reconnect handling in case the socket is closed
   useEffect(() => {
+    const abortCtrl = new AbortController()
     let assumeHealthyDelayTimer
     let retryDelayTimer
     const onOpen = (event) => {
@@ -115,14 +114,13 @@ const WebsocketProvider = ({ children }) => {
       })
     }
 
-    websocket.addEventListener('open', onOpen)
-    websocket.addEventListener('close', onClose)
+    websocket.addEventListener('open', onOpen, { signal: abortCtrl.signal })
+    websocket.addEventListener('close', onClose, { signal: abortCtrl.signal })
 
     return () => {
       clearTimeout(assumeHealthyDelayTimer)
       clearTimeout(retryDelayTimer)
-      websocket && websocket.removeEventListener('close', onClose)
-      websocket && websocket.removeEventListener('open', onOpen)
+      abortCtrl.abort()
     }
   }, [websocket, setConnectionErrorCount])
 
