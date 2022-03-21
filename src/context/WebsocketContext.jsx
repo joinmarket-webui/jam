@@ -85,6 +85,10 @@ const WebsocketProvider = ({ children }) => {
       // and will always use the minimum delay between reconnect attempts.
       setConnectionErrorCount(0)
     }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('websocket healthy', isWebsocketHealthy)
+    }
   }, [isWebsocketHealthy, setConnectionErrorCount])
 
   // reconnect handling in case the socket is closed
@@ -93,8 +97,10 @@ const WebsocketProvider = ({ children }) => {
     let retryDelayTimer
     const onOpen = (event) => {
       assumeHealthyDelayTimer = setTimeout(() => {
-        const stillConnectedToSameSocket = event.currentTarget === websocket
-        setIsWebsocketHealthy(stillConnectedToSameSocket)
+        const stillConnectedToSameSocket = event.target === websocket
+        const websocketOpen = websocket.readyState === WebSocket.OPEN
+        const healthy = stillConnectedToSameSocket && websocketOpen
+        setIsWebsocketHealthy(healthy)
       }, WEBSOCKET_CONNECTION_HEALTHY_DURATION)
     }
     const onClose = () => {
