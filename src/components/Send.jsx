@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -395,14 +395,16 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         <rb.Accordion flush>
           <rb.Accordion.Item eventKey="0">
             <rb.Accordion.Header>
-              <div className="d-flex align-items-center justify-content-end w-100">How is this calculated?</div>
+              <div className="d-flex align-items-center justify-content-end w-100">
+                {t('send.button_sweep_amount_breakdown')}
+              </div>
             </rb.Accordion.Header>
             <rb.Accordion.Body className="px-0">
-              <table class="table table-sm" style={{ tableLayout: 'fixed' }}>
+              <table class="table table-sm">
                 <tbody>
                   <tr>
-                    <td>Total balance</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
+                    <td className="balance-col">
                       <Balance
                         valueString={breakdown.totalBalance.toString()}
                         convertToUnit={SATS}
@@ -411,8 +413,8 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                     </td>
                   </tr>
                   <tr>
-                    <td>Frozen or locked balance</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td>{t('send.sweep_amount_breakdown_frozen_balance')}</td>
+                    <td className="balance-col">
                       <Balance
                         valueString={breakdown.frozenOrLockedBalance.toString()}
                         convertToUnit={SATS}
@@ -421,43 +423,45 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                     </td>
                   </tr>
                   <tr>
-                    <td>Estimated amount to be sent</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td>{t('send.sweep_amount_breakdown_estimated_amount')}</td>
+                    <td className="balance-col">
                       <Balance valueString={amountFieldValue().toString()} convertToUnit={SATS} showBalance={true} />
                     </td>
                   </tr>
                 </tbody>
               </table>
               <p className="mb-0 mt-4">
-                A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that have
-                been{' '}
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  frozen
-                </a>{' '}
-                or{' '}
-                <a
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  time-locked
-                </a>
-                . Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero
-                change. The exact transaction amount can only be calculated by JoinMarket at the point when the
-                transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount.
-                Refer to the{' '}
-                <a
-                  href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  JoinMarket documentation
-                </a>{' '}
-                for more details.
+                <Trans i18nKey="send.sweep_amount_breakdown_explanation">
+                  A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that
+                  have been
+                  <a
+                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    frozen
+                  </a>
+                  or
+                  <a
+                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    time-locked
+                  </a>
+                  . Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero
+                  change. The exact transaction amount can only be calculated by JoinMarket at the point when the
+                  transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount.
+                  Refer to the
+                  <a
+                    href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    JoinMarket documentation
+                  </a>
+                  for more details.
+                </Trans>
               </p>
             </rb.Accordion.Body>
           </rb.Accordion.Item>
@@ -547,11 +551,11 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
                 />
                 <rb.Button variant="dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
                   {isSweep ? (
-                    <div>Clear</div>
+                    <div>{t('send.button_clear_sweep')}</div>
                   ) : (
                     <div>
                       <Sprite symbol="sweep" width="24px" height="24px" />
-                      Sweep
+                      {t('send.button_sweep')}
                     </div>
                   )}
                 </rb.Button>

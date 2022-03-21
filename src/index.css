@@ -452,6 +452,10 @@ input::-webkit-inner-spin-button {
   font-size: 0.8rem;
 }
 
+.send .sweep-breakdown table .balance-col {
+  text-align: right;
+}
+
 .send .sweep-breakdown .accordion-button {
   background-color: var(--bs-body-bg);
   color: var(--bs-black);
