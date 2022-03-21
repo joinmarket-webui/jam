@@ -9,15 +9,17 @@ import i18n from './i18n/testConfig'
 
 const AllTheProviders = ({ children }) => {
   return (
-    <BrowserRouter>
-      <I18nextProvider i18n={i18n}>
-        <SettingsProvider>
-          <WalletProvider>
-            <WebsocketProvider>{children}</WebsocketProvider>
-          </WalletProvider>
-        </SettingsProvider>
-      </I18nextProvider>
-    </BrowserRouter>
+    <React.StrictMode>
+      <BrowserRouter>
+        <I18nextProvider i18n={i18n}>
+          <SettingsProvider>
+            <WalletProvider>
+              <WebsocketProvider>{children}</WebsocketProvider>
+            </WalletProvider>
+          </SettingsProvider>
+        </I18nextProvider>
+      </BrowserRouter>
+    </React.StrictMode>
   )
 }
 
