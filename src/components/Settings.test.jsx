@@ -14,6 +14,7 @@ describe('<Settings />', () => {
 
     expect(screen.getByText('settings.title')).toBeInTheDocument()
     expect(screen.queryByText(/settings.(show|hide)_balance/)).toBeInTheDocument()
+    expect(screen.queryByText(/settings.(show|hide)_seed/)).toBeInTheDocument()
     expect(screen.queryByText(/settings.use_(sats|bitcoin)/)).toBeInTheDocument()
     expect(screen.queryByText(/settings.use_(dark|light)_theme/)).toBeInTheDocument()
     expect(screen.queryByText(/settings.use_(normal|dev)_mode/)).toBeInTheDocument()

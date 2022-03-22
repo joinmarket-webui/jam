@@ -80,9 +80,7 @@ export default function CurrentWalletMagic() {
     setIsLoading(true)
 
     Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
-      .then((res) =>
-        res.ok ? res.json() : Promise.reject(new Error(res.message || t('current_wallet.error_loading_failed')))
-      )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet.error_loading_failed'))))
       .then((data) => setWalletInfo(data.walletinfo))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })

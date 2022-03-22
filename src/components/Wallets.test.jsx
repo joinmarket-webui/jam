@@ -6,12 +6,21 @@ import * as apiMock from '../libs/JmWalletApi'
 
 import Wallets from './Wallets'
 
-jest.mock('../libs/JmWalletApi')
+jest.mock('../libs/JmWalletApi', () => ({
+  ...jest.requireActual('../libs/JmWalletApi'),
+  getSession: jest.fn(),
+  getWalletAll: jest.fn(),
+}))
 
 describe('<Wallets />', () => {
   const setup = () => {
     render(<Wallets />)
   }
+
+  beforeEach(() => {
+    const neverResolvingPromise = new Promise(() => {})
+    apiMock.getSession.mockResolvedValueOnce(neverResolvingPromise)
+  })
 
   it('should render without errors', () => {
     apiMock.getWalletAll.mockResolvedValueOnce(new Promise((r) => setTimeout(r, 1_000)))

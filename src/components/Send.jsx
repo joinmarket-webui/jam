@@ -8,6 +8,7 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 import { btcToSats, SATS } from '../utils'
@@ -123,7 +124,7 @@ const enhanceTakerErrorMessageIfNecessary = async (
   requestContext,
   httpStatus,
   errorMessage,
-  additionalErrorMessageProvider
+  onMaxFeeSettingsMissing
 ) => {
   const configExists = (section, field) => Api.postConfigGet(requestContext, { section, field }).then((res) => res.ok)
 
@@ -137,18 +138,19 @@ const enhanceTakerErrorMessageIfNecessary = async (
       .catch(() => false)
 
     if (!maxFeeSettingsPresent) {
-      return `${errorMessage} ${additionalErrorMessageProvider()}`
+      return onMaxFeeSettingsMissing(errorMessage)
     }
   }
 
   return errorMessage
 }
 
-export default function Send({ makerRunning, coinjoinInProcess }) {
+export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const setWalletInfo = useSetCurrentWalletInfo()
+  const serviceInfo = useServiceInfo()
   const settings = useSettings()
 
   const location = useLocation()
@@ -156,7 +158,9 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(false)
-  const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(!makerRunning && !coinjoinInProcess)
+  const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(
+    serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
+  )
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [utxos, setUtxos] = useState(null)
   const [isSweep, setIsSweep] = useState(false)
@@ -182,13 +186,13 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
-    const coinjoinOptionEnabled = !makerRunning && !coinjoinInProcess
+    const coinjoinOptionEnabled = serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
     setIsCoinjoinOptionEnabled(coinjoinOptionEnabled)
 
     if (!coinjoinOptionEnabled && isCoinjoin) {
       setIsCoinjoin(false)
     }
-  }, [makerRunning, coinjoinInProcess, isCoinjoin])
+  }, [serviceInfo, isCoinjoin])
 
   useEffect(() => {
     if (
@@ -299,8 +303,11 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
         success = true
       } else {
         const { message } = await res.json()
-        const displayMessage = await enhanceTakerErrorMessageIfNecessary(requestContext, res.status, message, () =>
-          t('send.taker_error_message_max_fees_config_missing')
+        const displayMessage = await enhanceTakerErrorMessageIfNecessary(
+          requestContext,
+          res.status,
+          message,
+          (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`
         )
 
         setAlert({ variant: 'danger', message: displayMessage })
@@ -484,8 +491,8 @@ export default function Send({ makerRunning, coinjoinInProcess }) {
           <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">
-                {makerRunning && t('send.text_maker_running')}
-                {coinjoinInProcess && t('send.text_coinjoin_already_running')}
+                {serviceInfo?.makerRunning && t('send.text_maker_running')}
+                {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
               </small>
             </div>
           </rb.Fade>
