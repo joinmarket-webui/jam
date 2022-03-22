@@ -6,14 +6,16 @@ import { useTranslation } from 'react-i18next'
 import { BitcoinQR } from './BitcoinQR'
 import { ACCOUNTS } from '../utils'
 import { useSettings } from '../context/SettingsContext'
+import { useCurrentWallet } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 
-export default function Receive({ currentWallet }) {
+export default function Receive() {
   const { t } = useTranslation()
   const location = useLocation()
   const settings = useSettings()
+  const currentWallet = useCurrentWallet()
   const addressCopyFallbackInputRef = useRef()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -34,9 +36,7 @@ export default function Receive({ currentWallet }) {
       setAlert(null)
       setIsLoading(true)
       Api.getAddressNew({ walletName, mixdepth: accountNr, token, signal: abortCtrl.signal })
-        .then((res) =>
-          res.ok ? res.json() : Promise.reject(new Error(res.message || t('receive.error_loading_address_failed')))
-        )
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
         .then((data) => setAddress(data.address))
         .catch((err) => {
           !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })

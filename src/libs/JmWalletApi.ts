@@ -10,7 +10,7 @@
  * 'x-jm-authorization' so that the reverse proxy can apply its own
  * authentication mechanism.
  */
-const BASE_PATH = `${window.JM.PUBLIC_PATH}/api`
+const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
 type ApiToken = string
 type WalletName = string
@@ -98,18 +98,18 @@ const Authorization = (token: ApiToken) => {
 }
 
 const getSession = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/session`, { signal })
+  return await fetch(`${basePath()}/v1/session`, { signal })
 }
 
 const getAddressNew = async ({ token, signal, walletName, mixdepth }: WalletRequestContext & WithMixdepth) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/address/new/${mixdepth}`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/address/new/${mixdepth}`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
 const getWalletAll = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/all`, {
+  return await fetch(`${basePath()}/v1/wallet/all`, {
     signal,
   })
 }
@@ -117,21 +117,21 @@ const getWalletAll = async ({ signal }: ApiRequestContext) => {
 const postWalletCreate = async (req: CreateWalletRequest) => {
   const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
 
-  return await fetch(`${BASE_PATH}/v1/wallet/create`, {
+  return await fetch(`${basePath()}/v1/wallet/create`, {
     method: 'POST',
     body: JSON.stringify({ ...req, walletname, wallettype: 'sw-fb' }),
   })
 }
 
 const getWalletDisplay = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/display`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/display`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
 const getWalletSeed = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/getseed`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/getseed`, {
     headers: { ...Authorization(token) },
     signal,
   })
@@ -144,7 +144,7 @@ const getWalletSeed = async ({ token, signal, walletName }: WalletRequestContext
  * Note: Performs a non-idempotent GET request.
  */
 const getWalletLock = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/lock`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/lock`, {
     headers: { ...Authorization(token) },
     signal,
   })
@@ -154,7 +154,7 @@ const postWalletUnlock = async (
   { signal, walletName }: ApiRequestContext & WithWalletName,
   { password }: WalletUnlockRequest
 ) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/unlock`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/unlock`, {
     method: 'POST',
     body: JSON.stringify({ password }),
     signal,
@@ -162,14 +162,14 @@ const postWalletUnlock = async (
 }
 
 const getWalletUtxos = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/utxos`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/utxos`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
 const postMakerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartMakerRequest) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/maker/start`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/maker/start`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify({ ...req, txfee: '0' }),
@@ -183,14 +183,14 @@ const postMakerStart = async ({ token, signal, walletName }: WalletRequestContex
  * Note: Performs a non-idempotent GET request.
  */
 const getMakerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/maker/stop`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/maker/stop`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
 const postDirectSend = async ({ token, signal, walletName }: WalletRequestContext, req: DirectSendRequest) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/taker/direct-send`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     // docs say "integer", but "midxdepth" must serialize as string!
@@ -200,7 +200,7 @@ const postDirectSend = async ({ token, signal, walletName }: WalletRequestContex
 }
 
 const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext, req: DoCoinjoinRequest) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/taker/coinjoin`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/coinjoin`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     // docs say "integer", but "midxdepth" must serialize as string!
@@ -210,7 +210,7 @@ const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext,
 }
 
 const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/yieldgen/report`, {
+  return await fetch(`${basePath()}/v1/wallet/yieldgen/report`, {
     signal,
   })
 }
@@ -219,7 +219,7 @@ const postFreeze = async (
   { token, signal, walletName }: WalletRequestContext,
   { utxo, freeze = true }: FreezeRequest
 ) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/freeze`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/freeze`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify({
@@ -236,7 +236,7 @@ const postFreeze = async (
  * @returns an object with property `configvalue` as string
  */
 const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext, req: ConfigSetRequest) => {
-  return await fetch(`${BASE_PATH}/v1/wallet/${walletName}/configget`, {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/configget`, {
     method: 'POST',
     headers: { ...Authorization(token) },
     body: JSON.stringify(req),
@@ -245,27 +245,35 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
 }
 
 const Helper = (() => {
-  const extractErrorMessage = async (response: Response, fallbackReason: string): Promise<string> => {
-    // The server will answer with a html response instead of json on certain errors.
-    // The situation is mitigated by parsing the returned html.
-    const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
+  const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
+    try {
+      // The server will answer with a html response instead of json on certain errors.
+      // The situation is mitigated by parsing the returned html.
+      const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
 
-    if (isHtmlErrorMessage) {
-      return await response
-        .text()
-        .then((html) => {
-          var parser = new DOMParser()
-          var doc = parser.parseFromString(html, 'text/html')
-          return doc.title || fallbackReason
-        })
-        .then((reason) => `The server reported a problem: ${reason}`)
+      if (isHtmlErrorMessage) {
+        return await response
+          .text()
+          .then((html) => {
+            var parser = new DOMParser()
+            var doc = parser.parseFromString(html, 'text/html')
+            return doc.title || fallbackReason
+          })
+          .then((reason) => `The server reported a problem: ${reason}`)
+      }
+
+      const { message }: ApiError = await response.json()
+      return message || fallbackReason
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Error while extracting error message from api response - will use fallback reason', err)
+      }
+
+      return fallbackReason
     }
-
-    const { message }: ApiError = await response.json()
-    return message || fallbackReason
   }
 
-  const throwError = async (response: Response, fallbackReason: string): Promise<void> => {
+  const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
     throw new Error(await extractErrorMessage(response, fallbackReason))
   }
 

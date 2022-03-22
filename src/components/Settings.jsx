@@ -6,12 +6,14 @@ import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
+import { useCurrentWallet } from '../context/WalletContext'
 import { SATS, BTC } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import languages from '../i18n/languages'
 
-export default function Settings({ currentWallet }) {
+export default function Settings() {
   const { t } = useTranslation()
+  const currentWallet = useCurrentWallet()
   const [seed, setSeed] = useState('')
   const [showingSeed, setShowingSeed] = useState(false)
   const [revealSeed, setRevealSeed] = useState(false)

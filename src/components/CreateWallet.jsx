@@ -6,7 +6,7 @@ import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
-import { useCurrentWallet } from '../context/WalletContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
@@ -238,7 +238,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
 
 export default function CreateWallet({ startWallet }) {
   const { t } = useTranslation()
-  const currentWallet = useCurrentWallet()
+  const serviceInfo = useServiceInfo()
   const navigate = useNavigate()
 
   const [alert, setAlert] = useState(null)
@@ -276,7 +276,7 @@ export default function CreateWallet({ startWallet }) {
   }
 
   const isCreated = createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password
-  const canCreate = !currentWallet && !isCreated
+  const canCreate = !isCreated && !serviceInfo?.walletName
 
   return (
     <div className="create-wallet">
@@ -295,8 +295,8 @@ export default function CreateWallet({ startWallet }) {
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-            Currently <strong>{{ walletName: walletDisplayName(currentWallet.name) }}</strong> is active. You need to
-            lock it first.
+            Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletName) }}</strong> is active. You need
+            to lock it first.
             <Link to="/" className="alert-link">
               Go back
             </Link>
