@@ -172,7 +172,14 @@
     "feedback_invalid_amount": "Please provide a valid amount.",
     "toggle_coinjoin": "Send as collaborative transaction for improved privacy",
     "button_send": "Send",
-    "text_sending": "Sending"
+    "text_sending": "Sending",
+    "button_sweep": "Sweep",
+    "button_clear_sweep": "Clear",
+    "button_sweep_amount_breakdown": "How is this calculated?",
+    "sweep_amount_breakdown_total_balance": "Total balance",
+    "sweep_amount_breakdown_frozen_balance": "Frozen or locked balance",
+    "sweep_amount_breakdown_estimated_amount": "Estimated amount to be sent",
+    "sweep_amount_breakdown_explanation": "A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that have been <1>frozen</1> or <3>time-locked</3>. Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero change. The exact transaction amount can only be calculated by JoinMarket at the point when the transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount. Refer to the <5>JoinMarket documentation</5> for more details."
   },
   "receive": {
     "title": "Receive",

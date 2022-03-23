@@ -412,45 +412,6 @@ main {
   width: 100%;
 }
 
-.send form input:not(.collaborators-selector input) {
-  height: 3.5rem;
-  width: 100%;
-}
-
-.send select {
-  height: 3.5rem;
-  width: 100%;
-}
-
-.send button {
-  height: 3rem;
-  width: 100%;
-}
-
-.collaborators-selector button {
-  min-width: 6rem;
-  flex: 1;
-}
-
-.collaborators-selector input {
-  min-width: 6rem;
-  flex: 1;
-}
-
-.collaborators-selector .d-flex {
-  gap: 0.5rem;
-}
-
-:root[data-theme='dark'] .collaborators-selector input {
-  background-color: var(--bs-gray-800);
-  color: var(--bs-white);
-}
-
-:root[data-theme='dark'] .collaborators-selector .selected-dark {
-  background-color: var(--bs-gray-dark);
-  border-color: var(--bs-gray-dark) !important;
-}
-
 .receive form input {
   height: 3.5rem;
   width: 100%;

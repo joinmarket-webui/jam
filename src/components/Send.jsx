@@ -1,14 +1,18 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
+import Sprite from './Sprite'
+import Balance from './Balance'
 import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
+import { btcToSats, SATS } from '../utils'
+import './Send.css'
 
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
@@ -27,9 +31,9 @@ const isValidAccount = (candidate) => {
   return !isNaN(parsed) && parsed >= 0
 }
 
-const isValidAmount = (candidate) => {
+const isValidAmount = (candidate, isSweep) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && parsed > 0
+  return !isNaN(parsed) && (isSweep ? parsed === 0 : parsed > 0)
 }
 
 const isValidNumCollaborators = (candidate, minNumCollaborators) => {
@@ -159,6 +163,8 @@ export default function Send() {
     serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
   )
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
+  const [utxos, setUtxos] = useState(null)
+  const [isSweep, setIsSweep] = useState(false)
 
   const initialDestination = null
   const initialAccount = 0
@@ -193,14 +199,22 @@ export default function Send() {
     if (
       isValidAddress(destination) &&
       isValidAccount(account) &&
-      isValidAmount(amount) &&
+      isValidAmount(amount, isSweep) &&
       (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
     ) {
       setFormIsValid(true)
     } else {
       setFormIsValid(false)
     }
-  }, [destination, account, amount, numCollaborators, minNumCollaborators, isCoinjoin])
+  }, [destination, account, amount, numCollaborators, minNumCollaborators, isCoinjoin, isSweep])
+
+  useEffect(() => {
+    if (isSweep) {
+      setAmount(0)
+    } else {
+      setAmount(null)
+    }
+  }, [isSweep])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -209,15 +223,17 @@ export default function Send() {
     setIsLoading(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal }
-    // Reload wallet info if not already available.
-    const loadingWalletInfo = walletInfo
-      ? Promise.resolve()
-      : Api.getWalletDisplay(requestContext)
-          .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
-          .then((data) => setWalletInfo(data.walletinfo))
-          .catch((err) => {
-            !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
-          })
+
+    const loadingWalletInfoAndUtxos = Api.getWalletDisplay(requestContext)
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
+      .then((data) => {
+        setWalletInfo(data.walletinfo)
+        return data.walletinfo
+      })
+      .then((walletinfo) => Api.getWalletUtxos(requestContext))
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
+      .then((data) => setUtxos(data.utxos))
+      .catch((err) => !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message }))
 
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_min_makers_failed'))))
@@ -230,12 +246,12 @@ export default function Send() {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingWalletInfo, loadingMinimumMakerConfig]).finally(
+    Promise.all([loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
       () => !abortCtrl.signal.aborted && setIsLoading(false)
     )
 
     return () => abortCtrl.abort()
-  }, [wallet, walletInfo, setWalletInfo, t])
+  }, [wallet, setWalletInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     const { name: walletName, token } = wallet
@@ -315,6 +331,11 @@ export default function Send() {
     if (isValid) {
       const counterparties = parseInt(numCollaborators, 10)
 
+      if (isSweep && amount !== 0) {
+        console.error('Sweep amount mismatch. This should not happen.')
+        return
+      }
+
       const success = isCoinjoin
         ? await startCoinjoin(account, destination, amount, counterparties)
         : await sendPayment(account, destination, amount)
@@ -328,6 +349,133 @@ export default function Send() {
         form.reset()
       }
     }
+  }
+
+  const balanceBreakdown = (accountNumber) => {
+    if (!walletInfo || !walletInfo.accounts) {
+      return null
+    }
+
+    const filtered = walletInfo.accounts.filter((account) => {
+      return parseInt(account.account, 10) === accountNumber
+    })
+
+    if (filtered.length !== 1) {
+      return null
+    }
+
+    const utxosByAccount = (utxos || []).reduce((acc, utxo) => {
+      acc[utxo.mixdepth] = acc[utxo.mixdepth] || []
+      acc[utxo.mixdepth].push(utxo)
+      return acc
+    }, {})
+    const accountUtxos = utxosByAccount[accountNumber] || []
+    const frozenOrLockedUtxos = accountUtxos.filter((utxo) => utxo.frozen || utxo.locktime)
+    const balanceFrozenOrLocked = frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
+
+    return {
+      totalBalance: btcToSats(filtered[0].account_balance),
+      frozenOrLockedBalance: balanceFrozenOrLocked,
+    }
+  }
+
+  const amountFieldValue = () => {
+    if (amount === null || Number.isNaN(amount)) return ''
+
+    if (isSweep) {
+      const breakdown = balanceBreakdown(account)
+
+      if (!breakdown) return ''
+
+      return breakdown.totalBalance - breakdown.frozenOrLockedBalance
+    }
+
+    return amount
+  }
+
+  const frozenOrLockedWarning = () => {
+    const breakdown = balanceBreakdown(account)
+
+    if (!breakdown) return null
+
+    return (
+      <div className="sweep-breakdown mt-1">
+        <rb.Accordion flush>
+          <rb.Accordion.Item eventKey="0">
+            <rb.Accordion.Header>
+              <div className="d-flex align-items-center justify-content-end w-100">
+                {t('send.button_sweep_amount_breakdown')}
+              </div>
+            </rb.Accordion.Header>
+            <rb.Accordion.Body className="px-0">
+              <table className="table table-sm">
+                <tbody>
+                  <tr>
+                    <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
+                    <td className="balance-col">
+                      <Balance
+                        valueString={breakdown.totalBalance.toString()}
+                        convertToUnit={SATS}
+                        showBalance={true}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{t('send.sweep_amount_breakdown_frozen_balance')}</td>
+                    <td className="balance-col">
+                      <Balance
+                        valueString={breakdown.frozenOrLockedBalance.toString()}
+                        convertToUnit={SATS}
+                        showBalance={true}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{t('send.sweep_amount_breakdown_estimated_amount')}</td>
+                    <td className="balance-col">
+                      <Balance valueString={amountFieldValue().toString()} convertToUnit={SATS} showBalance={true} />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p className="mb-0 mt-4">
+                <Trans i18nKey="send.sweep_amount_breakdown_explanation">
+                  A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that
+                  have been
+                  <a
+                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    frozen
+                  </a>
+                  or
+                  <a
+                    href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    time-locked
+                  </a>
+                  . Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero
+                  change. The exact transaction amount can only be calculated by JoinMarket at the point when the
+                  transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount.
+                  Refer to the
+                  <a
+                    href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    JoinMarket documentation
+                  </a>
+                  for more details.
+                </Trans>
+              </p>
+            </rb.Accordion.Body>
+          </rb.Accordion.Item>
+        </rb.Accordion>
+      </div>
+    )
   }
 
   return (
@@ -396,20 +544,38 @@ export default function Send() {
             </rb.Form.Group>
             <rb.Form.Group className="mb-4" controlId="amount">
               <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
-              <rb.Form.Control
-                name="amount"
-                type="number"
-                value={amount || ''}
-                className="slashed-zeroes"
-                min={1}
-                placeholder={t('send.placeholder_amount')}
-                required
-                onChange={(e) => setAmount(parseInt(e.target.value, 10))}
-                isInvalid={amount !== null && !isValidAmount(amount)}
-              />
-              <rb.Form.Control.Feedback form="send-form" type="invalid">
+              <div className="position-relative">
+                <rb.Form.Control
+                  name="amount"
+                  type="number"
+                  value={amountFieldValue()}
+                  className="slashed-zeroes"
+                  min={1}
+                  placeholder={t('send.placeholder_amount')}
+                  required
+                  onChange={(e) => setAmount(parseInt(e.target.value, 10))}
+                  isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
+                  disabled={isSweep}
+                />
+                <rb.Button variant="outline-dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
+                  {isSweep ? (
+                    <div>{t('send.button_clear_sweep')}</div>
+                  ) : (
+                    <div>
+                      <Sprite symbol="sweep" width="24px" height="24px" />
+                      {t('send.button_sweep')}
+                    </div>
+                  )}
+                </rb.Button>
+              </div>
+              <rb.Form.Control.Feedback
+                className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
+                form="send-form"
+                type="invalid"
+              >
                 {t('send.feedback_invalid_amount')}
               </rb.Form.Control.Feedback>
+              {isSweep && frozenOrLockedWarning()}
             </rb.Form.Group>
             {isCoinjoinOptionEnabled && (
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
