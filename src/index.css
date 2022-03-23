@@ -439,6 +439,13 @@ input::-webkit-inner-spin-button {
   padding: 0.2rem 0.5rem;
 }
 
+:root[data-theme='dark'] .send form .button-sweep {
+  color: var(--bs-gray-800);
+}
+:root[data-theme='dark'] .send form .button-sweep:hover {
+  color: var(--bs-white);
+}
+
 .send form .button-sweep div {
   display: flex;
   align-items: center;

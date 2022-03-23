@@ -556,7 +556,7 @@ export default function Send() {
                   isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
                   disabled={isSweep}
                 />
-                <rb.Button variant="dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
+                <rb.Button variant="outline-dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
                   {isSweep ? (
                     <div>{t('send.button_clear_sweep')}</div>
                   ) : (
