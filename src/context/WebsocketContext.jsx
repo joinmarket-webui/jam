@@ -67,15 +67,13 @@ const WebsocketProvider = ({ children }) => {
 
   // update websocket state based on open/close events
   useEffect(() => {
-    const onStateChange = () => setWebsocketState(websocket.readyState)
+    const abortCtrl = new AbortController()
+    const onStateChange = () => !abortCtrl.signal.aborted && setWebsocketState(websocket.readyState)
 
-    websocket.addEventListener('open', onStateChange)
-    websocket.addEventListener('close', onStateChange)
+    websocket.addEventListener('open', onStateChange, { signal: abortCtrl.signal })
+    websocket.addEventListener('close', onStateChange, { signal: abortCtrl.signal })
 
-    return () => {
-      websocket && websocket.removeEventListener('close', onStateChange)
-      websocket && websocket.removeEventListener('open', onStateChange)
-    }
+    return () => abortCtrl.abort()
   }, [websocket])
 
   useEffect(() => {
@@ -85,19 +83,30 @@ const WebsocketProvider = ({ children }) => {
       // and will always use the minimum delay between reconnect attempts.
       setConnectionErrorCount(0)
     }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('websocket healthy', isWebsocketHealthy)
+    }
   }, [isWebsocketHealthy, setConnectionErrorCount])
 
   // reconnect handling in case the socket is closed
   useEffect(() => {
+    const abortCtrl = new AbortController()
     let assumeHealthyDelayTimer
     let retryDelayTimer
     const onOpen = (event) => {
       assumeHealthyDelayTimer = setTimeout(() => {
-        const stillConnectedToSameSocket = event.currentTarget === websocket
-        setIsWebsocketHealthy(stillConnectedToSameSocket)
+        if (abortCtrl.signal.aborted) return
+
+        const stillConnectedToSameSocket = event.target === websocket
+        const websocketOpen = websocket.readyState === WebSocket.OPEN
+        const healthy = stillConnectedToSameSocket && websocketOpen
+        setIsWebsocketHealthy(healthy)
       }, WEBSOCKET_CONNECTION_HEALTHY_DURATION)
     }
     const onClose = () => {
+      if (abortCtrl.signal.aborted) return
+
       setIsWebsocketHealthy(false)
       setConnectionErrorCount((prev) => {
         const retryDelay = connectionRetryDelayLinear(prev + 1)
@@ -109,14 +118,13 @@ const WebsocketProvider = ({ children }) => {
       })
     }
 
-    websocket.addEventListener('open', onOpen)
-    websocket.addEventListener('close', onClose)
+    websocket.addEventListener('open', onOpen, { signal: abortCtrl.signal })
+    websocket.addEventListener('close', onClose, { signal: abortCtrl.signal })
 
     return () => {
       clearTimeout(assumeHealthyDelayTimer)
       clearTimeout(retryDelayTimer)
-      websocket && websocket.removeEventListener('close', onClose)
-      websocket && websocket.removeEventListener('open', onOpen)
+      abortCtrl.abort()
     }
   }, [websocket, setConnectionErrorCount])
 
@@ -131,10 +139,14 @@ const WebsocketProvider = ({ children }) => {
       if (websocket.readyState === WebSocket.OPEN) {
         websocket.send(currentWallet.token)
       } else if (websocket.readyState === WebSocket.CONNECTING) {
-        websocket.addEventListener('open', (e) => e.isTrusted && currentWallet && websocket.send(currentWallet.token), {
-          once: true,
-          signal: abortCtrl.signal,
-        })
+        websocket.addEventListener(
+          'open',
+          (e) => !abortCtrl.signal.aborted && e.isTrusted && currentWallet && websocket.send(currentWallet.token),
+          {
+            once: true,
+            signal: abortCtrl.signal,
+          }
+        )
       }
     }
 

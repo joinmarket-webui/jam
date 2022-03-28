@@ -21,7 +21,7 @@ export default function Receive() {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [address, setAddress] = useState('')
-  const [amount, setAmount] = useState(null)
+  const [amount, setAmount] = useState('')
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
   const [addressCount, setAddressCount] = useState(0)
   const [showSettings, setShowSettings] = useState(false)

@@ -27,17 +27,19 @@ declare global {
 }
 
 ReactDOM.render(
-  <BrowserRouter basename={window.JM.PUBLIC_PATH}>
-    <SettingsProvider>
-      <WalletProvider>
-        <WebsocketProvider>
-          <ServiceInfoProvider>
-            <App />
-          </ServiceInfoProvider>
-        </WebsocketProvider>
-      </WalletProvider>
-    </SettingsProvider>
-  </BrowserRouter>,
+  <React.StrictMode>
+    <BrowserRouter basename={window.JM.PUBLIC_PATH}>
+      <SettingsProvider>
+        <WalletProvider>
+          <WebsocketProvider>
+            <ServiceInfoProvider>
+              <App />
+            </ServiceInfoProvider>
+          </WebsocketProvider>
+        </WalletProvider>
+      </SettingsProvider>
+    </BrowserRouter>
+  </React.StrictMode>,
   document.getElementById('root')
 )
 
