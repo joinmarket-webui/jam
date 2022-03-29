@@ -8,6 +8,7 @@ import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
+import './CreateWallet.css'
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
   const { t } = useTranslation()

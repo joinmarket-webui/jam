@@ -1,0 +1,16 @@
+.seedphrase {
+  gap: 0.3rem;
+}
+
+.seedphrase > div {
+  background-color: rgba(244, 244, 244, 1);
+  width: 8rem;
+}
+
+.seedword-index {
+  width: 2ch;
+}
+
+:root[data-theme='dark'] .seedphrase > div {
+  background-color: var(--bs-gray-800);
+}
