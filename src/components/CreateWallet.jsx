@@ -10,6 +10,34 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import './CreateWallet.css'
 
+const PreventLeavingPageByMistake = () => {
+  // prompt users before refreshing or closing the page when this component is present.
+  // Firefox will show: "This page is asking you to confirm that you want to leave [...]"
+  // Chrome: "Leave site? Changes you made may not be saved."
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    window.addEventListener(
+      'beforeunload',
+      (event) => {
+        // cancel the event as stated by the standard.
+        event.preventDefault()
+
+        // Chrome requires returnValue to be set.
+        event.returnValue = ''
+
+        // return something to trigger a dialog
+        return ''
+      },
+      { signal: abortCtrl.signal }
+    )
+
+    return () => abortCtrl.abort()
+  }, [])
+
+  return <></>
+}
+
 const WalletCreationForm = ({ createWallet, isCreating }) => {
   const { t } = useTranslation()
   const [validated, setValidated] = useState(false)
@@ -194,51 +222,52 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
     setStep(0)
   }
 
-  if (step === 0) {
-    return (
-      <div>
-        <div className="mb-4">
-          <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
-          <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
-        </div>
-        <div className="mb-4">
-          <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
-        </div>
-        <div className="mb-4">
-          <div>{t('create_wallet.confirmation_label_password')}</div>
-          <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
-            {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+  return (
+    <>
+      <PreventLeavingPageByMistake />
+      {step === 0 ? (
+        <div>
+          <div className="mb-4">
+            <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
+            <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
           </div>
+          <div className="mb-4">
+            <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
+          </div>
+          <div className="mb-4">
+            <div>{t('create_wallet.confirmation_label_password')}</div>
+            <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
+              {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+            </div>
+          </div>
+          <div className="mb-2">
+            <ToggleSwitch
+              label={t('create_wallet.confirmation_toggle_reveal_info')}
+              onToggle={(isToggled) => {
+                setRevealSensitiveInfo(isToggled)
+                setSensitiveInfoWasRevealed(true)
+              }}
+            />
+          </div>
+          <div className="mb-4">
+            <ToggleSwitch
+              label={t('create_wallet.confirmation_toggle_info_written_down')}
+              onToggle={(isToggled) => setUserConfirmed(isToggled)}
+            />
+          </div>
+          <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
+            {t('create_wallet.next_button')}
+          </rb.Button>
         </div>
-        <div className="mb-2">
-          <ToggleSwitch
-            label={t('create_wallet.confirmation_toggle_reveal_info')}
-            onToggle={(isToggled) => {
-              setRevealSensitiveInfo(isToggled)
-              setSensitiveInfoWasRevealed(true)
-            }}
-          />
-        </div>
-        <div className="mb-4">
-          <ToggleSwitch
-            label={t('create_wallet.confirmation_toggle_info_written_down')}
-            onToggle={(isToggled) => setUserConfirmed(isToggled)}
-          />
-        </div>
-        <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
-          {t('create_wallet.next_button')}
-        </rb.Button>
-      </div>
-    )
-  } else {
-    return (
-      <BackupConfirmation
-        parentStepSetter={childStepSetter}
-        createdWallet={createdWallet}
-        walletConfirmed={walletConfirmed}
-      />
-    )
-  }
+      ) : (
+        <BackupConfirmation
+          parentStepSetter={childStepSetter}
+          createdWallet={createdWallet}
+          walletConfirmed={walletConfirmed}
+        />
+      )}
+    </>
+  )
 }
 
 export default function CreateWallet({ startWallet }) {

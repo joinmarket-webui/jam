@@ -2,13 +2,13 @@
   gap: 0.3rem;
 }
 
+.seedword-index {
+  width: 2ch;
+}
+
 .seedphrase > div {
   background-color: rgba(244, 244, 244, 1);
   width: 9rem;
-}
-
-.seedword-index {
-  width: 2ch;
 }
 
 :root[data-theme='dark'] .seedphrase > div {
