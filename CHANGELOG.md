@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.0.5](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.4...v0.0.5) (2022-03-29)
+
+#### Added
+
+* add seed phrase backup confirmation during wallet creation ([#156](https://github.com/joinmarket-webui/joinmarket-webui/issues/156)) ([0719dc6](https://github.com/joinmarket-webui/joinmarket-webui/commit/0719dc62359387282363e0f3e658106d64c4051f))
+* satscomma formatting for bitcoin balances ([#171](https://github.com/joinmarket-webui/joinmarket-webui/issues/171)) ([fe94945](https://github.com/joinmarket-webui/joinmarket-webui/commit/fe94945f2ae95a96f011cddf4d7a8604c1e76d2e))
+* sweep mixdepths ([#184](https://github.com/joinmarket-webui/joinmarket-webui/issues/184)) ([81876b7](https://github.com/joinmarket-webui/joinmarket-webui/commit/81876b72146e2ab5c69ef52ccc183576a5929a34))
+* translate screens ([#174](https://github.com/joinmarket-webui/joinmarket-webui/issues/174)) ([63018ac](https://github.com/joinmarket-webui/joinmarket-webui/commit/63018ac96b8dd743ef47cb9a9a010f773f1542e4))
+
+#### Fixed
+
+* make websocket health state work across browsers ([#186](https://github.com/joinmarket-webui/joinmarket-webui/issues/186)) ([39019cc](https://github.com/joinmarket-webui/joinmarket-webui/commit/39019ccbb668637b20c7220277b9b3cfcb6a7942))
+* pass correct request body in send-direct request ([#180](https://github.com/joinmarket-webui/joinmarket-webui/issues/180)) ([182b09c](https://github.com/joinmarket-webui/joinmarket-webui/commit/182b09c359e492531c3be7a1ad6d91310c7c5546))
+
 ### [0.0.4](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.3...v0.0.4) (2022-03-10)
 
 #### Fixed
