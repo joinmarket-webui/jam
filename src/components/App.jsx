@@ -31,6 +31,8 @@ export default function App() {
   const settings = useSettings()
   const websocketState = useWebsocketState()
 
+  const devMode = process.env.NODE_ENV === 'development'
+
   const startWallet = useCallback(
     (name, token) => {
       setSession({ name, token })
@@ -89,7 +91,7 @@ export default function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route exact path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
-              <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} />} />
+              <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
               {currentWallet && (
                 <>
                   <Route path="send" element={<Send />} />

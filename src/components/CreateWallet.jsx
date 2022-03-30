@@ -132,13 +132,13 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
   )
 }
 
-const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
+const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, devMode }) => {
   const seedphrase = createdWallet.seedphrase.split(' ')
-  const showSkipButton = process.env.NODE_ENV === 'development'
 
   const { t } = useTranslation()
   const [seedBackup, setSeedBackup] = useState(false)
   const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
+  const [showSkipButton] = useState(devMode)
 
   useEffect(() => {
     setSeedBackup(seedWordConfirmations.every((wordConfirmed) => wordConfirmed))
@@ -209,7 +209,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
   )
 }
 
-const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
+const WalletCreationConfirmation = ({ createdWallet, walletConfirmed, devMode }) => {
   const { t } = useTranslation()
   const [userConfirmed, setUserConfirmed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
@@ -265,13 +265,14 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
           parentStepSetter={childStepSetter}
           createdWallet={createdWallet}
           walletConfirmed={walletConfirmed}
+          devMode={devMode}
         />
       )}
     </>
   )
 }
 
-export default function CreateWallet({ startWallet }) {
+export default function CreateWallet({ startWallet, devMode = false }) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
   const navigate = useNavigate()
@@ -326,7 +327,9 @@ export default function CreateWallet({ startWallet }) {
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
-      {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
+      {isCreated && (
+        <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} devMode={devMode} />
+      )}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">

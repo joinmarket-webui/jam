@@ -18,12 +18,13 @@ const NOOP = () => {}
 describe('<CreateWallet />', () => {
   const setup = (props) => {
     const startWallet = props?.startWallet || NOOP
-    render(<CreateWallet startWallet={startWallet} />)
+    const devMode = props?.devMode || false
+    render(<CreateWallet startWallet={startWallet} devMode={devMode} />)
   }
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
-    apiMock.getSession.mockResolvedValueOnce(neverResolvingPromise)
+    apiMock.getSession.mockReturnValue(neverResolvingPromise)
   })
 
   it('should render without errors', () => {
@@ -83,7 +84,7 @@ describe('<CreateWallet />', () => {
     expect(screen.getByText('create_wallet.title_wallet_created')).toBeInTheDocument()
   })
 
-  it('should verify that "skip" button is only visible in development mode', async () => {
+  it('should verify that "skip" button is NOT visible when not in development mode', async () => {
     const walletName = 'wallet'
 
     apiMock.postWalletCreate.mockResolvedValueOnce({
@@ -96,7 +97,7 @@ describe('<CreateWallet />', () => {
         }),
     })
 
-    act(setup)
+    act(() => setup({ devMode: false }))
 
     await act(async () => {
       user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), walletName)
@@ -116,8 +117,46 @@ describe('<CreateWallet />', () => {
       user.click(nextButton)
     })
 
-    expect(process.env.NODE_ENV === 'test').toBe(true)
-    expect(screen.getByText('create_wallet.back_button')).toBeInTheDocument()
     expect(screen.queryByText('create_wallet.skip_button')).not.toBeInTheDocument()
+    expect(screen.getByText('create_wallet.back_button')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.confirmation_button_fund_wallet')).toBeDisabled()
+  })
+
+  it('should verify that "skip" button IS visible in development mode', async () => {
+    const walletName = 'wallet'
+
+    apiMock.postWalletCreate.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          walletname: `${walletName}.jmdat`,
+          token: 'ANY_TOKEN',
+          seedphrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+        }),
+    })
+
+    act(() => setup({ devMode: true }))
+
+    await act(async () => {
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), walletName)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), 'password')
+      const createWalletButton = screen.getByText('create_wallet.button_create')
+      user.click(createWalletButton)
+
+      await waitFor(() => screen.findByText(/create_wallet.button_creating/))
+
+      const revealToggle = screen.getByText('create_wallet.confirmation_toggle_reveal_info')
+      user.click(revealToggle)
+
+      const confirmToggle = screen.getByText('create_wallet.confirmation_toggle_info_written_down')
+      user.click(confirmToggle)
+
+      const nextButton = screen.getByText('create_wallet.next_button')
+      user.click(nextButton)
+    })
+
+    expect(screen.getByText('create_wallet.skip_button')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.back_button')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.confirmation_button_fund_wallet')).toBeDisabled()
   })
 })
