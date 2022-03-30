@@ -249,7 +249,7 @@ const Helper = (() => {
     try {
       // The server will answer with a html response instead of json on certain errors.
       // The situation is mitigated by parsing the returned html.
-      const isHtmlErrorMessage = response.headers.get('content-type') === 'text/html'
+      const isHtmlErrorMessage = response.headers && response.headers.get('content-type') === 'text/html'
 
       if (isHtmlErrorMessage) {
         return await response
@@ -266,7 +266,7 @@ const Helper = (() => {
       return message || fallbackReason
     } catch (err) {
       if (process.env.NODE_ENV === 'development') {
-        console.warn('Error while extracting error message from api response - will use fallback reason', err)
+        console.warn('Will use fallback reason - Error while extracting error message from api response:', err)
       }
 
       return fallbackReason

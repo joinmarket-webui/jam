@@ -254,41 +254,39 @@ export default function Send() {
   }, [wallet, setWalletInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
-    const { name: walletName, token } = wallet
-
     setAlert(null)
     setIsSending(true)
+
+    const { name: walletName, token } = wallet
     let success = false
     try {
       const res = await Api.postDirectSend({ walletName, token }, { mixdepth: account, destination, amount_sats })
-      if (res.ok) {
-        const {
-          txinfo: { outputs },
-        } = await res.json()
-        const output = outputs.find((o) => o.address === destination)
-        setAlert({
-          variant: 'success',
-          message: t('send.alert_payment_successful', { amount: output.value_sats, address: output.address }),
-        })
-        success = true
-      } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
-      }
-    } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
+
+      const {
+        txinfo: { outputs },
+      } = await (res.ok ? res.json() : Api.Helper.throwError(res))
+
       setIsSending(false)
+
+      const output = outputs.find((o) => o.address === destination)
+      setAlert({
+        variant: 'success',
+        message: t('send.alert_payment_successful', { amount: output.value_sats, address: output.address }),
+      })
+      success = true
+    } catch (e) {
+      setIsSending(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
 
     return success
   }
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
-    const requestContext = { walletName: wallet.name, token: wallet.token }
-
     setAlert(null)
     setIsSending(true)
+
+    const requestContext = { walletName: wallet.name, token: wallet.token }
     let success = false
     try {
       const res = await Api.postCoinjoin(requestContext, {
@@ -297,6 +295,9 @@ export default function Send() {
         amount_sats,
         counterparties,
       })
+
+      setIsSending(false)
+
       if (res.ok) {
         const data = await res.json()
         console.log(data)
@@ -314,9 +315,8 @@ export default function Send() {
         setAlert({ variant: 'danger', message: displayMessage })
       }
     } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
       setIsSending(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
 
     return success
