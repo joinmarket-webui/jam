@@ -57,6 +57,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 
   return (
     <>
+      {isCreating && <PreventLeavingPageByMistake />}
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <rb.Form.Group className="mb-4" controlId="walletName">
           <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
