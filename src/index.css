@@ -459,6 +459,12 @@ h2 {
   box-shadow: none;
 }
 
+.alert-info {
+  color: var(--bs-white);
+  background-color: var(--bs-gray-800);
+  border-color: var(--bs-gray-900);
+}
+
 /* Privacy Level Styles */
 
 .privacy-level-4 {
