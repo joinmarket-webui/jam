@@ -629,3 +629,12 @@ h2 {
 :root[data-theme='dark'] .modal-header .btn-close {
   background-color: var(--bs-gray-900) !important;
 }
+
+:root[data-theme='dark'] .form-control:disabled,
+.form-control[readonly] {
+  background-color: var(--bs-gray-500);
+}
+
+:root[data-theme='dark'] .form-control:disabled::placeholder {
+  color: var(--bs-gray-600);
+}
