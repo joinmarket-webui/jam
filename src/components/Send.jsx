@@ -158,10 +158,10 @@ export default function Send() {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(
     serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
   )
+  const [isCoinjoin, setIsCoinjoin] = useState(isCoinjoinOptionEnabled)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [utxos, setUtxos] = useState(null)
   const [isSweep, setIsSweep] = useState(false)
@@ -577,7 +577,11 @@ export default function Send() {
             </rb.Form.Group>
             {isCoinjoinOptionEnabled && (
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-                <ToggleSwitch label={t('send.toggle_coinjoin')} onToggle={(isToggled) => setIsCoinjoin(isToggled)} />
+                <ToggleSwitch
+                  label={t('send.toggle_coinjoin')}
+                  initialValue={isCoinjoin}
+                  onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+                />
               </rb.Form.Group>
             )}
           </rb.Form>
