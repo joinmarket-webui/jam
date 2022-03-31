@@ -101,7 +101,7 @@ export default function App() {
           {!sessionConnectionError && (
             <>
               <Route element={<Layout />}>
-                <Route exact path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
+                <Route path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
                 {currentWallet && (
                   <>
                     <Route path="send" element={<Send />} />
