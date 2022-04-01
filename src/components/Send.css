@@ -122,3 +122,11 @@ input::-webkit-inner-spin-button {
   background-color: var(--bs-gray-dark);
   border-color: var(--bs-gray-dark) !important;
 }
+
+.input-loader {
+  height: 3.5rem;
+}
+
+.text-loader {
+  height: 1.75rem;
+}
