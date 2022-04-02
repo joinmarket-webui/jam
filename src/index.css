@@ -418,7 +418,7 @@ main {
 
 .receive-placeholder {
   height: 1.5rem;
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: #e9ecef;
 }
 
 .receive-placeholder-qr-container {
@@ -429,7 +429,7 @@ main {
   width: 215px; /* 13.4375rem */
   height: 13.75rem;
   margin: 1.25rem;
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: #e9ecef;
 }
 
 :root[data-theme='dark'] hr {
