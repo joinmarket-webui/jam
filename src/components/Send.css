@@ -125,8 +125,14 @@ input::-webkit-inner-spin-button {
 
 .input-loader {
   height: 3.5rem;
+  background-color: rgba(0, 0, 0, 0.125) !important;
 }
 
 .text-loader {
   height: 1.75rem;
+  background-color: rgba(0, 0, 0, 0.125) !important;
+}
+
+.form-group-without-coinjoin-option {
+  margin-bottom: 3.25rem;
 }

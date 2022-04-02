@@ -96,56 +96,65 @@ export default function Receive() {
     <div className="receive">
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {address && (
-        <div className="qr-container">
-          <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
-            <div className="d-flex justify-content-center">
-              <BitcoinQR address={address} sats={amount} />
-            </div>
-            <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
-              <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>
-              <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
-                <rb.Button
-                  variant="outline-dark"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="left"
-                  onClick={() => {
-                    copyToClipboard(address, addressCopyFallbackInputRef.current).then(
-                      () => {
-                        setAddressCopiedFlag(addressCopiedFlag + 1)
-                      },
-                      (e) => {
-                        setAlert({ variant: 'warning', message: e.message })
-                      }
-                    )
-                  }}
-                >
-                  {showAddressCopiedConfirmation ? (
-                    <>
-                      {t('receive.text_copy_address_confirmed')}
-                      <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
-                    </>
-                  ) : (
-                    t('receive.button_copy_address')
-                  )}
-                </rb.Button>
+      <div className="qr-container">
+        <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
+          <div className="d-flex justify-content-center">
+            {address && <BitcoinQR address={address} sats={amount} />}
+            {!address && (
+              <rb.Placeholder as="p" animation="wave" className="receive-placeholder-qr-container">
+                <rb.Placeholder xs={12} className="receive-placeholder-qr" />
+              </rb.Placeholder>
+            )}
+          </div>
+          <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
+            {address && <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>}
+            {!address && (
+              <rb.Placeholder as="p" animation="wave" className="receive-placeholder-container">
+                <rb.Placeholder xs={8} className="receive-placeholder" />
+              </rb.Placeholder>
+            )}
+            <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
+              <rb.Button
+                variant="outline-dark"
+                data-bs-toggle="tooltip"
+                data-bs-placement="left"
+                onClick={() => {
+                  copyToClipboard(address, addressCopyFallbackInputRef.current).then(
+                    () => {
+                      setAddressCopiedFlag(addressCopiedFlag + 1)
+                    },
+                    (e) => {
+                      setAlert({ variant: 'warning', message: e.message })
+                    }
+                  )
+                }}
+                disabled={!address}
+              >
+                {showAddressCopiedConfirmation ? (
+                  <>
+                    {t('receive.text_copy_address_confirmed')}
+                    <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
+                  </>
+                ) : (
+                  t('receive.button_copy_address')
+                )}
+              </rb.Button>
 
-                <input
-                  readOnly
-                  aria-hidden
-                  ref={addressCopyFallbackInputRef}
-                  value={address}
-                  style={{
-                    position: 'absolute',
-                    left: '-9999px',
-                    top: '-9999px',
-                  }}
-                />
-              </div>
-            </rb.Card.Body>
-          </rb.Card>
-        </div>
-      )}
+              <input
+                readOnly
+                aria-hidden
+                ref={addressCopyFallbackInputRef}
+                value={address}
+                style={{
+                  position: 'absolute',
+                  left: '-9999px',
+                  top: '-9999px',
+                }}
+              />
+            </div>
+          </rb.Card.Body>
+        </rb.Card>
+      </div>
       <div className="mt-4">
         <rb.Button
           variant={`${settings.theme}`}

@@ -522,7 +522,7 @@ export default function Send() {
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
             {isLoading ? (
               <rb.Placeholder as="p" animation="wave">
-                <rb.Placeholder xs={12} className="input-loader" bg="secondary" />
+                <rb.Placeholder xs={12} className="input-loader" />
               </rb.Placeholder>
             ) : (
               <rb.Form.Control
@@ -543,7 +543,7 @@ export default function Send() {
             </rb.Form.Label>
             {isLoading ? (
               <rb.Placeholder as="p" animation="wave">
-                <rb.Placeholder xs={12} className="input-loader" bg="secondary" />
+                <rb.Placeholder xs={12} className="input-loader" />
               </rb.Placeholder>
             ) : (
               <rb.Form.Select
@@ -567,12 +567,15 @@ export default function Send() {
               </rb.Form.Select>
             )}
           </rb.Form.Group>
-          <rb.Form.Group className="mb-4" controlId="amount">
+          <rb.Form.Group
+            className={isCoinjoinOptionEnabled ? 'mb-4' : 'form-group-without-coinjoin-option'}
+            controlId="amount"
+          >
             <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
             <div className="position-relative">
               {isLoading ? (
                 <rb.Placeholder as="p" animation="wave">
-                  <rb.Placeholder xs={12} className="input-loader" bg="secondary" />
+                  <rb.Placeholder xs={12} className="input-loader" />
                 </rb.Placeholder>
               ) : (
                 <rb.Form.Control
