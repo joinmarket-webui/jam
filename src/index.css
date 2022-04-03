@@ -418,7 +418,6 @@ main {
 
 .receive-placeholder {
   height: 1.5rem;
-  background-color: #e9ecef;
 }
 
 .receive-placeholder-qr-container {
@@ -429,7 +428,6 @@ main {
   width: 215px; /* 13.4375rem */
   height: 13.75rem;
   margin: 1.25rem;
-  background-color: #e9ecef;
 }
 
 :root[data-theme='dark'] hr {
@@ -559,6 +557,10 @@ h2 {
   --bs-body-bg: var(--bs-gray-900);
   --bs-gray-dark: #16191c;
   --bs-black: #000;
+}
+
+.placeholder {
+  background-color: #e9ecef;
 }
 
 :root[data-theme='dark'] * {

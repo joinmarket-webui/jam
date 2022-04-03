@@ -502,14 +502,18 @@ export default function Send() {
       <div className="send">
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
-        {/* <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}> */}
-        {/*   <div className="mb-4 p-3 border border-1 rounded"> */}
-        {/*     <small className="text-secondary"> */}
-        {/*       {serviceInfo?.makerRunning && t('send.text_maker_running')} */}
-        {/*       {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')} */}
-        {/*     </small> */}
-        {/*   </div> */}
-        {/* </rb.Fade> */}
+        <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
+          {serviceInfo?.makerRunning || serviceInfo?.coinjoinInProgress ? (
+            <div className="mb-4 p-3 border border-1 rounded">
+              <small className="text-secondary">
+                {serviceInfo?.makerRunning && t('send.text_maker_running')}
+                {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
+              </small>
+            </div>
+          ) : (
+            <></>
+          )}
+        </rb.Fade>
 
         {alert && (
           <rb.Alert className="slashed-zeroes" variant={alert.variant}>

@@ -10,6 +10,7 @@ import DisplayUTXOs from './DisplayUTXOs'
 // @ts-ignore
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
+import { LoadingAccounts } from './LoadingAccounts'
 
 type Utxos = any[]
 type Alert = { message: string; variant: string }
@@ -68,16 +69,7 @@ export default function CurrentWalletAdvanced() {
   return (
     <div>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {isLoading && (
-        <rb.Row className="justify-content-center">
-          <rb.Col className="flex-grow-0">
-            <div className="d-flex mb-3">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              {t('current_wallet.text_loading')}
-            </div>
-          </rb.Col>
-        </rb.Row>
-      )}
+      {isLoading && <LoadingAccounts amount={5} />}
       {!isLoading && walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
@@ -85,28 +77,27 @@ export default function CurrentWalletAdvanced() {
           <DisplayUTXOs utxos={fidelityBonds} className="pe-2" />
         </div>
       )}
-      {utxos && (
-        <>
-          <rb.Button
-            variant="outline-dark"
-            onClick={() => {
-              setShowUTXO(!showUTXO)
-            }}
-            className="mb-3"
-          >
-            {showUTXO ? t('current_wallet_advanced.button_hide_utxos') : t('current_wallet_advanced.button_show_utxos')}
-          </rb.Button>
-          <rb.Fade in={showUTXO} mountOnEnter={true} unmountOnExit={true}>
-            <div>
-              {utxos.length === 0 ? (
-                <rb.Alert variant="info">{t('current_wallet_advanced.alert_no_utxos')}</rb.Alert>
-              ) : (
-                <DisplayAccountUTXOs utxos={utxos} className="mt-3" />
-              )}
-            </div>
-          </rb.Fade>
-        </>
-      )}
+      <>
+        <rb.Button
+          variant="outline-dark"
+          disabled={isLoading}
+          onClick={() => {
+            setShowUTXO(!showUTXO)
+          }}
+          className={isLoading ? 'mt-3 mb-3' : 'mb-3'}
+        >
+          {showUTXO ? t('current_wallet_advanced.button_hide_utxos') : t('current_wallet_advanced.button_show_utxos')}
+        </rb.Button>
+        <rb.Fade in={showUTXO} mountOnEnter={true} unmountOnExit={true}>
+          <div>
+            {utxos && utxos.length === 0 ? (
+              <rb.Alert variant="info">{t('current_wallet_advanced.alert_no_utxos')}</rb.Alert>
+            ) : (
+              <DisplayAccountUTXOs utxos={utxos} className="mt-3" />
+            )}
+          </div>
+        </rb.Fade>
+      </>
     </div>
   )
 }
