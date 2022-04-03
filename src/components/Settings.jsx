@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
@@ -10,6 +9,8 @@ import { useCurrentWallet } from '../context/WalletContext'
 import { SATS, BTC } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import languages from '../i18n/languages'
+import Button from 'react-bootstrap/Button'
+import Dropdown from 'react-bootstrap/Dropdown'
 
 export default function Settings() {
   const { t } = useTranslation()
@@ -36,7 +37,7 @@ export default function Settings() {
     <div>
       <PageTitle title={t('settings.title')} />
       <div style={{ marginLeft: '-.75rem' }}>
-        <rb.Button
+        <Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={(e) => {
@@ -46,11 +47,11 @@ export default function Settings() {
         >
           <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" className="me-2" />
           {settings.showBalance ? t('settings.hide_balance') : t('settings.show_balance')}
-        </rb.Button>
+        </Button>
 
         <br />
 
-        <rb.Button
+        <Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={(e) => {
@@ -60,11 +61,11 @@ export default function Settings() {
         >
           <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" className="me-2" />
           {isSats ? t('settings.use_btc') : t('settings.use_sats')}
-        </rb.Button>
+        </Button>
 
         <br />
 
-        <rb.Button
+        <Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={(e) => {
@@ -79,11 +80,11 @@ export default function Settings() {
             className="me-2"
           />
           {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
-        </rb.Button>
+        </Button>
 
         <br />
 
-        <rb.Button
+        <Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={(e) => {
@@ -98,35 +99,35 @@ export default function Settings() {
             className="me-2"
           />
           {settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}
-        </rb.Button>
+        </Button>
 
         <br />
 
-        <rb.Dropdown>
-          <rb.Dropdown.Toggle variant="outline-dark" className="border-0 mb-2 d-inline-flex align-items-center">
+        <Dropdown>
+          <Dropdown.Toggle variant="outline-dark" className="border-0 mb-2 d-inline-flex align-items-center">
             <Sprite symbol="globe" width="24" height="24" className="me-2" />
             {languages.find((lng) => lng.key === (i18n.resolvedLanguage || i18n.language))?.description ||
               languages[0].description}
-          </rb.Dropdown.Toggle>
+          </Dropdown.Toggle>
 
-          <rb.Dropdown.Menu variant={settings.theme === 'light' ? 'light' : 'dark'}>
+          <Dropdown.Menu variant={settings.theme === 'light' ? 'light' : 'dark'}>
             {languages.map((lng, index) => {
               return (
-                <rb.Dropdown.Item key={index} onClick={() => i18n.changeLanguage(lng.key)}>
+                <Dropdown.Item key={index} onClick={() => i18n.changeLanguage(lng.key)}>
                   {lng.description}
-                </rb.Dropdown.Item>
+                </Dropdown.Item>
               )
             })}
-            <rb.Dropdown.Item
+            <Dropdown.Item
               href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
               rel="noopener noreferrer"
             >
               {t('settings.text_help_translate')}
-            </rb.Dropdown.Item>
-          </rb.Dropdown.Menu>
-        </rb.Dropdown>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
 
-        <rb.Button
+        <Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
           onClick={async (e) => {
@@ -150,7 +151,7 @@ export default function Settings() {
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
           {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
-        </rb.Button>
+        </Button>
         {seedError && (
           <div className="text-danger" style={{ marginLeft: '1rem' }}>
             {t('settings.error_loading_seed_failed')}

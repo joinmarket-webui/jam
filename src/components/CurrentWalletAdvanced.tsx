@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import Button from 'react-bootstrap/Button'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Fade from 'react-bootstrap/Fade'
+import Alert from 'react-bootstrap/Alert'
+import Spinner from 'react-bootstrap/Spinner'
 // @ts-ignore
 import DisplayAccounts from './DisplayAccounts'
 // @ts-ignore
@@ -67,16 +72,16 @@ export default function CurrentWalletAdvanced() {
 
   return (
     <div>
-      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      {alert && <Alert variant={alert.variant}>{alert.message}</Alert>}
       {isLoading && (
-        <rb.Row className="justify-content-center">
-          <rb.Col className="flex-grow-0">
+        <Row className="justify-content-center">
+          <Col className="flex-grow-0">
             <div className="d-flex mb-3">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('current_wallet.text_loading')}
             </div>
-          </rb.Col>
-        </rb.Row>
+          </Col>
+        </Row>
       )}
       {!isLoading && walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
       {!!fidelityBonds?.length && (
@@ -87,7 +92,7 @@ export default function CurrentWalletAdvanced() {
       )}
       {utxos && (
         <>
-          <rb.Button
+          <Button
             variant="outline-dark"
             onClick={() => {
               setShowUTXO(!showUTXO)
@@ -95,16 +100,16 @@ export default function CurrentWalletAdvanced() {
             className="mb-3"
           >
             {showUTXO ? t('current_wallet_advanced.button_hide_utxos') : t('current_wallet_advanced.button_show_utxos')}
-          </rb.Button>
-          <rb.Fade in={showUTXO} mountOnEnter={true} unmountOnExit={true}>
+          </Button>
+          <Fade in={showUTXO} mountOnEnter={true} unmountOnExit={true}>
             <div>
               {utxos.length === 0 ? (
-                <rb.Alert variant="info">{t('current_wallet_advanced.alert_no_utxos')}</rb.Alert>
+                <Alert variant="info">{t('current_wallet_advanced.alert_no_utxos')}</Alert>
               ) : (
                 <DisplayAccountUTXOs utxos={utxos} className="mt-3" />
               )}
             </div>
-          </rb.Fade>
+          </Fade>
         </>
       )}
     </div>

@@ -1,8 +1,8 @@
-import * as rb from 'react-bootstrap'
 import React, { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import { useSettingsDispatch } from '../context/SettingsContext'
+import Button from 'react-bootstrap/Button'
 
 export default function Onboarding() {
   const { t } = useTranslation()
@@ -54,14 +54,14 @@ export default function Onboarding() {
         <h1 className="text-center">{t('onboarding.splashscreen_title')}</h1>
         <h2 className="text-center fw-normal text-secondary mb-5">{t('onboarding.splashscreen_subtitle')}</h2>
         <div className="d-flex justify-content-center mb-2">
-          <rb.Button size="lg" variant="dark" onClick={next}>
+          <Button size="lg" variant="dark" onClick={next}>
             {t('onboarding.splashscreen_button_get_started')}
-          </rb.Button>
+          </Button>
         </div>
         <div className="d-flex justify-content-center">
-          <rb.Button size="lg" variant="outline-dark" onClick={() => settingsDispatch({ showOnboarding: false })}>
+          <Button size="lg" variant="outline-dark" onClick={() => settingsDispatch({ showOnboarding: false })}>
             {t('onboarding.splashscreen_button_skip_intro')}
-          </rb.Button>
+          </Button>
         </div>
         <p className="mt-4 text-center text-secondary">
           {t('onboarding.splashscreen_description_line1')}
@@ -99,9 +99,9 @@ export default function Onboarding() {
           <p className="description text-center text-secondary mb-5">{content.description}</p>
         </div>
         <div className="button d-flex justify-content-center">
-          <rb.Button size="lg" variant="dark" onClick={next}>
+          <Button size="lg" variant="dark" onClick={next}>
             {step === steps.length ? t('onboarding.button_complete') : t('onboarding.button_next')}
-          </rb.Button>
+          </Button>
         </div>
       </>
     )

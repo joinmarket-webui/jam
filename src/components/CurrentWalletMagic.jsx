@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -8,6 +7,10 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Spinner from 'react-bootstrap/Spinner'
+import Alert from 'react-bootstrap/Alert'
 
 const WalletHeader = ({ name, balance, unit, showBalance }) => {
   return (
@@ -93,67 +96,64 @@ export default function CurrentWalletMagic() {
   return (
     <div className="privacy-levels">
       {alert && (
-        <rb.Row>
-          <rb.Col>
-            <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>
-          </rb.Col>
-        </rb.Row>
+        <Row>
+          <Col>
+            <Alert variant={alert.variant}>{alert.message}</Alert>
+          </Col>
+        </Row>
       )}
       {isLoading && (
-        <rb.Row className="justify-content-center">
-          <rb.Col className="flex-grow-0">
+        <Row className="justify-content-center">
+          <Col className="flex-grow-0">
             <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('current_wallet.text_loading')}
             </div>
-          </rb.Col>
-        </rb.Row>
+          </Col>
+        </Row>
       )}
       {!isLoading && currentWallet && walletInfo && (
         <>
-          <rb.Row
-            onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
-            style={{ cursor: 'pointer' }}
-          >
+          <Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
             <WalletHeader
               name={currentWallet.name}
               balance={walletInfo.total_balance}
               unit={settings.unit}
               showBalance={settings.showBalance}
             />
-          </rb.Row>
-          <rb.Row className="mt-4">
-            <rb.Col>
+          </Row>
+          <Row className="mt-4">
+            <Col>
               {/* Always receive on first mixdepth. */}
               <Link to="/receive" state={{ account: 0 }} className="btn btn-outline-dark w-100">
                 {t('current_wallet.button_deposit')}
               </Link>
-            </rb.Col>
-            <rb.Col>
+            </Col>
+            <Col>
               {/* Todo: Withdrawing needs to factor in the privacy levels as well.
                 Depending on the mixdepth/account there will be different amounts available. */}
               <Link to="/send" className="btn btn-outline-dark w-100">
                 {t('current_wallet.button_withdraw')}
               </Link>
-            </rb.Col>
-          </rb.Row>
-          <rb.Row>
+            </Col>
+          </Row>
+          <Row>
             <hr className="my-4" />
-          </rb.Row>
-          <rb.Row>
+          </Row>
+          <Row>
             <PrivacyLevels accounts={walletInfo.accounts} />
-          </rb.Row>
-          <rb.Row>
+          </Row>
+          <Row>
             <hr className="my-4" />
-          </rb.Row>
-          <rb.Row>
+          </Row>
+          <Row>
             <Link to="/" className="btn btn-outline-dark">
               <div className="d-flex justify-content-center align-items-center">
                 <Sprite symbol="wallet" width="24" height="24" />
                 <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
               </div>
             </Link>
-          </rb.Row>
+          </Row>
         </>
       )}
     </div>

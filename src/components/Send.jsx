@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
-import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
@@ -13,6 +12,12 @@ import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 import { btcToSats, SATS } from '../utils'
 import './Send.css'
+import Accordion from 'react-bootstrap/Accordion'
+import Alert from 'react-bootstrap/Alert'
+import Button from 'react-bootstrap/Button'
+import Fade from 'react-bootstrap/Fade'
+import Form from 'react-bootstrap/Form'
+import Spinner from 'react-bootstrap/Spinner'
 
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
@@ -61,16 +66,16 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   }
 
   return (
-    <rb.Form noValidate className="collaborators-selector">
-      <rb.Form.Group>
-        <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
+    <Form noValidate className="collaborators-selector">
+      <Form.Group>
+        <Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</Form.Label>
         <div className="mb-2">
-          <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
+          <Form.Text className="text-secondary">{t('send.description_num_collaborators')}</Form.Text>
         </div>
         <div className="d-flex flex-row flex-wrap">
           {defaultCollaboratorsSelection.map((number) => {
             return (
-              <rb.Button
+              <Button
                 key={number}
                 variant={settings.theme === 'light' ? 'white' : 'dark'}
                 className={`p-2 border border-1 rounded text-center${
@@ -86,10 +91,10 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
                 }}
               >
                 {number}
-              </rb.Button>
+              </Button>
             )
           })}
-          <rb.Form.Control
+          <Form.Control
             type="number"
             min={minNumCollaborators}
             max={99}
@@ -111,13 +116,13 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
             }}
           />
           {usesCustomNumCollaborators && (
-            <rb.Form.Control.Feedback type="invalid">
+            <Form.Control.Feedback type="invalid">
               {t('send.error_invalid_num_collaborators', { minNumCollaborators, maxNumCollaborators: 99 })}
-            </rb.Form.Control.Feedback>
+            </Form.Control.Feedback>
           )}
         </div>
-      </rb.Form.Group>
-    </rb.Form>
+      </Form.Group>
+    </Form>
   )
 }
 
@@ -415,14 +420,14 @@ export default function Send() {
 
     return (
       <div className="sweep-breakdown mt-1">
-        <rb.Accordion flush>
-          <rb.Accordion.Item eventKey="0">
-            <rb.Accordion.Header>
+        <Accordion flush>
+          <Accordion.Item eventKey="0">
+            <Accordion.Header>
               <div className="d-flex align-items-center justify-content-end w-100">
                 {t('send.button_sweep_amount_breakdown')}
               </div>
-            </rb.Accordion.Header>
-            <rb.Accordion.Body className="px-0">
+            </Accordion.Header>
+            <Accordion.Body className="px-0">
               <table className="table table-sm">
                 <tbody>
                   <tr>
@@ -486,9 +491,9 @@ export default function Send() {
                   for more details.
                 </Trans>
               </p>
-            </rb.Accordion.Body>
-          </rb.Accordion.Item>
-        </rb.Accordion>
+            </Accordion.Body>
+          </Accordion.Item>
+        </Accordion>
       </div>
     )
   }
@@ -497,32 +502,32 @@ export default function Send() {
     <>
       {isLoading ? (
         <div className="d-flex justify-content-center align-items-center">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           {t('send.loading')}
         </div>
       ) : (
         <div className="send">
           <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
-          <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
+          <Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">
                 {serviceInfo?.makerRunning && t('send.text_maker_running')}
                 {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
               </small>
             </div>
-          </rb.Fade>
+          </Fade>
 
           {alert && (
-            <rb.Alert className="slashed-zeroes" variant={alert.variant}>
+            <Alert className="slashed-zeroes" variant={alert.variant}>
               {alert.message}
-            </rb.Alert>
+            </Alert>
           )}
 
-          <rb.Form onSubmit={onSubmit} noValidate id="send-form">
-            <rb.Form.Group className="mb-4" controlId="destination">
-              <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
-              <rb.Form.Control
+          <Form onSubmit={onSubmit} noValidate id="send-form">
+            <Form.Group className="mb-4" controlId="destination">
+              <Form.Label>{t('send.label_recipient')}</Form.Label>
+              <Form.Control
                 name="destination"
                 placeholder={t('send.placeholder_recipient')}
                 className="slashed-zeroes"
@@ -531,13 +536,13 @@ export default function Send() {
                 onChange={(e) => setDestination(e.target.value)}
                 isInvalid={destination !== null && !isValidAddress(destination)}
               />
-              <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
-            </rb.Form.Group>
-            <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
-              <rb.Form.Label>
+              <Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group className="mb-4 flex-grow-1" controlId="account">
+              <Form.Label>
                 {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
-              </rb.Form.Label>
-              <rb.Form.Select
+              </Form.Label>
+              <Form.Select
                 defaultValue={account}
                 onChange={(e) => setAccount(parseInt(e.target.value, 10))}
                 required
@@ -555,12 +560,12 @@ export default function Send() {
                         {settings.showBalance && `(\u20BF${balance})`}
                       </option>
                     ))}
-              </rb.Form.Select>
-            </rb.Form.Group>
-            <rb.Form.Group className="mb-4" controlId="amount">
-              <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-4" controlId="amount">
+              <Form.Label form="send-form">{t('send.label_amount')}</Form.Label>
               <div className="position-relative">
-                <rb.Form.Control
+                <Form.Control
                   name="amount"
                   type="number"
                   value={amountFieldValue()}
@@ -572,7 +577,7 @@ export default function Send() {
                   isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
                   disabled={isSweep}
                 />
-                <rb.Button variant="outline-dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
+                <Button variant="outline-dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
                   {isSweep ? (
                     <div>{t('send.button_clear_sweep')}</div>
                   ) : (
@@ -581,23 +586,23 @@ export default function Send() {
                       {t('send.button_sweep')}
                     </div>
                   )}
-                </rb.Button>
+                </Button>
               </div>
-              <rb.Form.Control.Feedback
+              <Form.Control.Feedback
                 className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
                 form="send-form"
                 type="invalid"
               >
                 {t('send.feedback_invalid_amount')}
-              </rb.Form.Control.Feedback>
+              </Form.Control.Feedback>
               {isSweep && frozenOrLockedWarning()}
-            </rb.Form.Group>
+            </Form.Group>
             {isCoinjoinOptionEnabled && (
-              <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
+              <Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
                 <ToggleSwitch label={t('send.toggle_coinjoin')} onToggle={(isToggled) => setIsCoinjoin(isToggled)} />
-              </rb.Form.Group>
+              </Form.Group>
             )}
-          </rb.Form>
+          </Form>
           {isCoinjoin && (
             <CollaboratorsSelector
               numCollaborators={numCollaborators}
@@ -605,22 +610,16 @@ export default function Send() {
               minNumCollaborators={minNumCollaborators}
             />
           )}
-          <rb.Button
-            variant="dark"
-            type="submit"
-            disabled={isSending || !formIsValid}
-            className="mt-4"
-            form="send-form"
-          >
+          <Button variant="dark" type="submit" disabled={isSending || !formIsValid} className="mt-4" form="send-form">
             {isSending ? (
               <div>
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
                 {t('send.text_sending')}
               </div>
             ) : (
               t('send.button_send')
             )}
-          </rb.Button>
+          </Button>
         </div>
       )}
     </>

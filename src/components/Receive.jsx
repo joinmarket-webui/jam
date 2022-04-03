@@ -1,7 +1,6 @@
 import React from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { BitcoinQR } from './BitcoinQR'
 import { ACCOUNTS } from '../utils'
@@ -10,6 +9,11 @@ import { useCurrentWallet } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button'
+import Spinner from 'react-bootstrap/Spinner'
+import Card from 'react-bootstrap/Card'
+import Alert from 'react-bootstrap/Alert'
 
 export default function Receive() {
   const { t } = useTranslation()
@@ -95,17 +99,17 @@ export default function Receive() {
   return (
     <div className="receive">
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
-      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      {alert && <Alert variant={alert.variant}>{alert.message}</Alert>}
       {address && (
         <div className="qr-container">
-          <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
+          <Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
             <div className="d-flex justify-content-center">
               <BitcoinQR address={address} sats={amount} />
             </div>
-            <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
-              <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>
+            <Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
+              <Card.Text className="text-center slashed-zeroes">{address}</Card.Text>
               <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
-                <rb.Button
+                <Button
                   variant="outline-dark"
                   data-bs-toggle="tooltip"
                   data-bs-placement="left"
@@ -128,7 +132,7 @@ export default function Receive() {
                   ) : (
                     t('receive.button_copy_address')
                   )}
-                </rb.Button>
+                </Button>
 
                 <input
                   readOnly
@@ -142,42 +146,38 @@ export default function Receive() {
                   }}
                 />
               </div>
-            </rb.Card.Body>
-          </rb.Card>
+            </Card.Body>
+          </Card>
         </div>
       )}
       <div className="mt-4">
-        <rb.Button
+        <Button
           variant={`${settings.theme}`}
           className="ps-0 border-0 d-flex align-items-center"
           onClick={() => setShowSettings(!showSettings)}
         >
           {t('receive.button_settings')}
           <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
-        </rb.Button>
+        </Button>
       </div>
-      <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+      <Form onSubmit={onSubmit} validated={validated} noValidate>
         {showSettings && (
           <>
             {settings.useAdvancedWalletMode && (
-              <rb.Form.Group className="mt-4" controlId="account">
-                <rb.Form.Label>{t('receive.label_choose_account')}</rb.Form.Label>
-                <rb.Form.Select
-                  defaultValue={account}
-                  onChange={(e) => setAccount(parseInt(e.target.value, 10))}
-                  required
-                >
+              <Form.Group className="mt-4" controlId="account">
+                <Form.Label>{t('receive.label_choose_account')}</Form.Label>
+                <Form.Select defaultValue={account} onChange={(e) => setAccount(parseInt(e.target.value, 10))} required>
                   {ACCOUNTS.map((val) => (
                     <option key={val} value={val}>
                       {t('receive.account_selector_option_dev_mode', { number: val })}
                     </option>
                   ))}
-                </rb.Form.Select>
-              </rb.Form.Group>
+                </Form.Select>
+              </Form.Group>
             )}
-            <rb.Form.Group className="my-4" controlId="amountSats">
-              <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
-              <rb.Form.Control
+            <Form.Group className="my-4" controlId="amountSats">
+              <Form.Label>{t('receive.label_amount')}</Form.Label>
+              <Form.Control
                 className="slashed-zeroes"
                 name="amount"
                 type="number"
@@ -186,22 +186,22 @@ export default function Receive() {
                 min={0}
                 onChange={(e) => setAmount(e.target.value)}
               />
-              <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
-            </rb.Form.Group>
+              <Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</Form.Control.Feedback>
+            </Form.Group>
           </>
         )}
         <hr />
-        <rb.Button variant="outline-dark" type="submit" disabled={isLoading} className="mt-2" style={{ width: '100%' }}>
+        <Button variant="outline-dark" type="submit" disabled={isLoading} className="mt-2" style={{ width: '100%' }}>
           {isLoading ? (
             <div>
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('receive.text_getting_address')}
             </div>
           ) : (
             t('receive.button_new_address')
           )}
-        </rb.Button>
-      </rb.Form>
+        </Button>
+      </Form>
     </div>
   )
 }

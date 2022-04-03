@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import Balance from './Balance'
@@ -9,6 +8,10 @@ import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
+import RBNav from 'react-bootstrap/Nav'
+import RBNavbar from 'react-bootstrap/Navbar'
+import Container from 'react-bootstrap/Container'
+import Offcanvas from 'react-bootstrap/Offcanvas'
 
 const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   return (
@@ -33,8 +36,8 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
 const CenterNav = ({ makerRunning, onClick }) => {
   const { t } = useTranslation()
   return (
-    <rb.Nav className="justify-content-center align-items-stretch">
-      <rb.Nav.Item className="d-flex align-items-stretch">
+    <RBNav className="justify-content-center align-items-stretch">
+      <RBNav.Item className="d-flex align-items-stretch">
         <NavLink
           to="/send"
           onClick={onClick}
@@ -44,8 +47,8 @@ const CenterNav = ({ makerRunning, onClick }) => {
         >
           {t('navbar.tab_send')}
         </NavLink>
-      </rb.Nav.Item>
-      <rb.Nav.Item className="d-flex align-items-stretch">
+      </RBNav.Item>
+      <RBNav.Item className="d-flex align-items-stretch">
         <NavLink
           to="/receive"
           onClick={onClick}
@@ -55,8 +58,8 @@ const CenterNav = ({ makerRunning, onClick }) => {
         >
           {t('navbar.tab_receive')}
         </NavLink>
-      </rb.Nav.Item>
-      <rb.Nav.Item className="d-flex align-items-stretch">
+      </RBNav.Item>
+      <RBNav.Item className="d-flex align-items-stretch">
         <NavLink
           to="/earn"
           onClick={onClick}
@@ -69,8 +72,8 @@ const CenterNav = ({ makerRunning, onClick }) => {
             <EarnIndicator isOn={makerRunning} />
           </div>
         </NavLink>
-      </rb.Nav.Item>
-    </rb.Nav>
+      </RBNav.Item>
+    </RBNav>
   )
 }
 
@@ -78,16 +81,16 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
   const { t } = useTranslation()
 
   return (
-    <rb.Nav className="justify-content-center align-items-stretch">
+    <RBNav className="justify-content-center align-items-stretch">
       {coinjoinInProgess && (
-        <rb.Nav.Item className="d-flex align-items-center justify-content-center pe-2">
+        <RBNav.Item className="d-flex align-items-center justify-content-center pe-2">
           <div className="d-flex align-items-center px-0">
-            <rb.Navbar.Text>{t('navbar.joining_in_progress')}</rb.Navbar.Text>
+            <RBNavbar.Text>{t('navbar.joining_in_progress')}</RBNavbar.Text>
             <JoiningIndicator isOn={coinjoinInProgess} className="navbar-text" />
           </div>
-        </rb.Nav.Item>
+        </RBNav.Item>
       )}
-      <rb.Nav.Item className="d-flex align-items-stretch">
+      <RBNav.Item className="d-flex align-items-stretch">
         <NavLink
           to="/settings"
           onClick={onClick}
@@ -98,8 +101,8 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
           <Sprite symbol="gear" width="30" height="30" className="d-none d-md-inline-block" />
           <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_settings')}</span>
         </NavLink>
-      </rb.Nav.Item>
-      <rb.Nav.Item className="d-flex align-items-stretch">
+      </RBNav.Item>
+      <RBNav.Item className="d-flex align-items-stretch">
         <NavLink
           to="/"
           onClick={onClick}
@@ -110,8 +113,8 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
           <Sprite symbol="grid" width="30" height="30" className="d-none d-md-inline-block" />
           <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_wallets')}</span>
         </NavLink>
-      </rb.Nav.Item>
-    </rb.Nav>
+      </RBNav.Item>
+    </RBNav>
   )
 }
 
@@ -129,7 +132,7 @@ export default function Navbar() {
   const height = '75px'
 
   return (
-    <rb.Navbar
+    <RBNavbar
       id="mainNav"
       bg={settings.theme === 'light' ? 'white' : 'dark'}
       sticky="top"
@@ -139,11 +142,11 @@ export default function Navbar() {
       onToggle={(expanded) => setIsExpanded(expanded)}
       className="border-bottom py-0"
     >
-      <rb.Container fluid="xl" className="align-items-stretch">
+      <Container fluid="xl" className="align-items-stretch">
         {sessionConnectionError ? (
-          <rb.Navbar.Text className="d-flex align-items-center" style={{ height: height }}>
+          <RBNavbar.Text className="d-flex align-items-center" style={{ height: height }}>
             No Connection
-          </rb.Navbar.Text>
+          </RBNavbar.Text>
         ) : (
           <>
             {!currentWallet ? (
@@ -157,17 +160,17 @@ export default function Navbar() {
                   <span className="ms-2">{t('navbar.title')}</span>
                 </Link>
                 <div className="d-flex d-md-none align-items-center">
-                  <rb.Navbar.Toggle id="mainNavToggle">
+                  <RBNavbar.Toggle id="mainNavToggle">
                     <span>{t('navbar.menu')}</span>
-                  </rb.Navbar.Toggle>
+                  </RBNavbar.Toggle>
                 </div>
-                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
-                  <rb.Offcanvas.Header>
-                    <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
-                  </rb.Offcanvas.Header>
-                  <rb.Offcanvas.Body>
-                    <rb.Nav className="ms-auto">
-                      <rb.Nav.Item>
+                <RBNavbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                  <Offcanvas.Header>
+                    <Offcanvas.Title>{t('navbar.title')}</Offcanvas.Title>
+                  </Offcanvas.Header>
+                  <Offcanvas.Body>
+                    <RBNav className="ms-auto">
+                      <RBNav.Item>
                         <Link
                           to="/create-wallet"
                           onClick={() => isExpanded && setIsExpanded(false)}
@@ -175,15 +178,15 @@ export default function Navbar() {
                         >
                           {t('navbar.button_create_wallet')}
                         </Link>
-                      </rb.Nav.Item>
-                    </rb.Nav>
-                  </rb.Offcanvas.Body>
-                </rb.Navbar.Offcanvas>
+                      </RBNav.Item>
+                    </RBNav>
+                  </Offcanvas.Body>
+                </RBNavbar.Offcanvas>
               </>
             ) : (
               <>
-                <rb.Nav className="d-flex flex-1 align-items-stretch">
-                  <rb.Nav.Item className="d-flex align-items-stretch">
+                <RBNav className="d-flex flex-1 align-items-stretch">
+                  <RBNav.Item className="d-flex align-items-stretch">
                     <NavLink
                       to="/wallet"
                       style={{ height: height }}
@@ -200,38 +203,38 @@ export default function Navbar() {
                         />
                       </>
                     </NavLink>
-                  </rb.Nav.Item>
-                </rb.Nav>
+                  </RBNav.Item>
+                </RBNav>
                 <div className="d-flex d-md-none align-items-center">
-                  <rb.Navbar.Toggle id="mainNavToggle">
+                  <RBNavbar.Toggle id="mainNavToggle">
                     <span>{t('navbar.menu_mobile')}</span>
-                  </rb.Navbar.Toggle>
+                  </RBNavbar.Toggle>
                 </div>
-                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
-                  <rb.Offcanvas.Header>
-                    <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
-                  </rb.Offcanvas.Header>
-                  <rb.Offcanvas.Body>
+                <RBNavbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                  <Offcanvas.Header>
+                    <Offcanvas.Title>{t('navbar.title')}</Offcanvas.Title>
+                  </Offcanvas.Header>
+                  <Offcanvas.Body>
                     <CenterNav makerRunning={serviceInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
                     <TrailingNav
                       coinjoinInProgess={serviceInfo?.coinjoinInProgress}
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
-                  </rb.Offcanvas.Body>
-                </rb.Navbar.Offcanvas>
-                <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
+                  </Offcanvas.Body>
+                </RBNavbar.Offcanvas>
+                <Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
                   <CenterNav makerRunning={serviceInfo?.makerRunning} />
-                </rb.Container>
-                <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
+                </Container>
+                <Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">
                     <TrailingNav coinjoinInProgess={serviceInfo?.coinjoinInProgress} />
                   </div>
-                </rb.Container>
+                </Container>
               </>
             )}
           </>
         )}
-      </rb.Container>
-    </rb.Navbar>
+      </Container>
+    </RBNavbar>
   )
 }

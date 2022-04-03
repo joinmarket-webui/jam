@@ -1,6 +1,5 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
@@ -9,6 +8,14 @@ import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import * as Api from '../libs/JmWalletApi'
+import Table from 'react-bootstrap/Table'
+import Form from 'react-bootstrap/Form'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Spinner from 'react-bootstrap/Spinner'
+import Fade from 'react-bootstrap/Fade'
+import Button from 'react-bootstrap/Button'
+import Alert from './Alert'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
@@ -31,10 +38,10 @@ const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
 
   return (
     <div className="mt-2 mb-3">
-      {empty && <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>}
+      {empty && <Alert variant="info">{t('earn.alert_empty_report')}</Alert>}
       {!empty && (
         <>
-          <rb.Table striped bordered hover variant={settings.theme} responsive>
+          <Table striped bordered hover variant={settings.theme} responsive>
             <thead>
               <tr>
                 {headers.map((name, index) => (
@@ -58,7 +65,7 @@ const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
                 ))}
               </tr>
             </tfoot>
-          </rb.Table>
+          </Table>
           <div className="mt-1 d-flex justify-content-end">
             <small>
               {t('earn.text_report_length', {
@@ -251,42 +258,42 @@ export default function Earn() {
 
   return (
     <div className="earn">
-      <rb.Row>
-        <rb.Col>
+      <Row>
+        <Col>
           <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
-          <rb.Fade in={serviceInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
+          <Fade in={serviceInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
             <div className="mb-4 p-3 border border-1 rounded">
               <small className="text-secondary">{t('earn.alert_coinjoin_in_progress')}</small>
             </div>
-          </rb.Fade>
+          </Fade>
 
-          {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+          {alert && <Alert variant={alert.variant}>{alert.message}</Alert>}
 
           {!serviceInfo?.coinjoinInProgress && (
-            <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+            <Form onSubmit={onSubmit} validated={validated} noValidate>
               {!serviceInfo?.makerRunning && !isWaiting && (
                 <>
                   {settings.useAdvancedWalletMode && (
-                    <rb.Form.Group className="mb-3" controlId="offertype">
+                    <Form.Group className="mb-3" controlId="offertype">
                       <ToggleSwitch
                         label={t('earn.toggle_rel_offer')}
                         initialValue={isRelOffer}
                         onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
                       />
-                    </rb.Form.Group>
+                    </Form.Group>
                   )}
                   {isRelOffer ? (
-                    <rb.Form.Group className="mb-3" controlId="feeRel">
-                      <rb.Form.Label className="mb-0">
+                    <Form.Group className="mb-3" controlId="feeRel">
+                      <Form.Label className="mb-0">
                         {t('earn.label_rel_fee', {
                           fee: feeRel !== '' ? `(${factorToPercentage(feeRel)}%)` : '',
                         })}
-                      </rb.Form.Label>
+                      </Form.Label>
                       <div className="mb-2">
-                        <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
+                        <Form.Text className="text-secondary">{t('earn.description_rel_fee')}</Form.Text>
                       </div>
-                      <rb.Form.Control
+                      <Form.Control
                         type="number"
                         name="feeRel"
                         value={factorToPercentage(feeRel)}
@@ -297,20 +304,20 @@ export default function Earn() {
                         required
                         onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
                       />
-                      <rb.Form.Control.Feedback type="invalid">
+                      <Form.Control.Feedback type="invalid">
                         {t('feedback_invalid_rel_fee', {
                           feeRelPercentageMin: `${feeRelPercentageMin}%`,
                           feeRelPercentageMax: `${feeRelPercentageMax}%`,
                         })}
-                      </rb.Form.Control.Feedback>
-                    </rb.Form.Group>
+                      </Form.Control.Feedback>
+                    </Form.Group>
                   ) : (
-                    <rb.Form.Group className="mb-3" controlId="feeAbs">
-                      <rb.Form.Label className="mb-0">{t('earn.label_abs_fee')}</rb.Form.Label>
+                    <Form.Group className="mb-3" controlId="feeAbs">
+                      <Form.Label className="mb-0">{t('earn.label_abs_fee')}</Form.Label>
                       <div className="mb-2">
-                        <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
+                        <Form.Text className="text-secondary">{t('earn.description_abs_fee')}</Form.Text>
                       </div>
-                      <rb.Form.Control
+                      <Form.Control
                         type="number"
                         name="feeAbs"
                         value={feeAbs}
@@ -320,15 +327,13 @@ export default function Earn() {
                         required
                         onChange={(e) => setAndPersistFeeAbs(e.target.value)}
                       />
-                      <rb.Form.Control.Feedback type="invalid">
-                        {t('earn.feedback_invalid_abs_fee')}
-                      </rb.Form.Control.Feedback>
-                    </rb.Form.Group>
+                      <Form.Control.Feedback type="invalid">{t('earn.feedback_invalid_abs_fee')}</Form.Control.Feedback>
+                    </Form.Group>
                   )}
                   {settings.useAdvancedWalletMode && (
-                    <rb.Form.Group className="mb-3" controlId="minsize">
-                      <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
-                      <rb.Form.Control
+                    <Form.Group className="mb-3" controlId="minsize">
+                      <Form.Label>{t('earn.label_min_amount')}</Form.Label>
+                      <Form.Control
                         type="number"
                         name="minsize"
                         value={minsize}
@@ -338,25 +343,18 @@ export default function Earn() {
                         required
                         onChange={(e) => setAndPersistMinsize(e.target.value)}
                       />
-                      <rb.Form.Control.Feedback type="invalid">
+                      <Form.Control.Feedback type="invalid">
                         {t('earn.feedback_invalid_min_amount')}
-                      </rb.Form.Control.Feedback>
-                    </rb.Form.Group>
+                      </Form.Control.Feedback>
+                    </Form.Group>
                   )}
                 </>
               )}
 
-              <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
+              <Button variant="dark" type="submit" disabled={isSending || isWaiting}>
                 {isSending ? (
                   <>
-                    <rb.Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-2"
-                    />
+                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
                     {serviceInfo?.makerRunning === true ? t('earn.text_stopping') : t('earn.text_starting')}
                   </>
                 ) : serviceInfo?.makerRunning === true ? (
@@ -364,16 +362,16 @@ export default function Earn() {
                 ) : (
                   t('earn.button_start')
                 )}
-              </rb.Button>
-            </rb.Form>
+              </Button>
+            </Form>
           )}
-        </rb.Col>
-      </rb.Row>
+        </Col>
+      </Row>
 
       {settings.useAdvancedWalletMode && (
-        <rb.Row className="mt-5 mb-3">
-          <rb.Col>
-            <rb.Button
+        <Row className="mt-5 mb-3">
+          <Col>
+            <Button
               variant="outline-dark"
               className="border-0 mb-2 d-inline-flex align-items-center"
               onClick={(e) => {
@@ -384,7 +382,7 @@ export default function Earn() {
               <Sprite symbol={isShowReport ? 'hide' : 'show'} width="24" height="24" className="me-2" />
               {isShowReport ? t('earn.button_hide_report') : t('earn.button_show_report')}
               {isReportLoading && (
-                <rb.Spinner
+                <Spinner
                   as="span"
                   animation="border"
                   size="sm"
@@ -393,14 +391,14 @@ export default function Earn() {
                   className="ms-2 me-1"
                 />
               )}
-            </rb.Button>
-          </rb.Col>
-          <rb.Fade in={isShowReport} mountOnEnter={true} unmountOnExit={true}>
-            <rb.Col md={12}>
+            </Button>
+          </Col>
+          <Fade in={isShowReport} mountOnEnter={true} unmountOnExit={true}>
+            <Col md={12}>
               <YieldgenReport lines={yieldgenReportLines} />
-            </rb.Col>
-          </rb.Fade>
-        </rb.Row>
+            </Col>
+          </Fade>
+        </Row>
       )}
     </div>
   )

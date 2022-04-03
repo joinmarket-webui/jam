@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import * as rb from 'react-bootstrap'
 import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
@@ -9,6 +8,7 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import Spinner from 'react-bootstrap/Spinner'
 
 function arrayEquals(a, b) {
   return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
@@ -80,7 +80,7 @@ export default function Wallets({ startWallet, stopWallet }) {
       {alert && <Alert {...alert} />}
       {isLoading ? (
         <div className="d-flex justify-content-center align-items-center">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           <span>{t('wallets.text_loading')}</span>
         </div>
       ) : (

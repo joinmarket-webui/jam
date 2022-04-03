@@ -1,6 +1,5 @@
 import React from 'react'
 import { useState } from 'react'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { displayDate } from '../utils'
 import Balance from './Balance'
@@ -8,6 +7,12 @@ import Alert from './Alert'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
+import Button from 'react-bootstrap/Button'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Card from 'react-bootstrap/Card'
+import Stack from 'react-bootstrap/Stack'
+import Spinner from 'react-bootstrap/Spinner'
 
 const Utxo = ({ utxo, ...props }) => {
   const { t } = useTranslation()
@@ -44,11 +49,11 @@ const Utxo = ({ utxo, ...props }) => {
   }
 
   return (
-    <rb.Card {...props}>
-      <rb.Card.Body>
-        <rb.Row>
-          <rb.Col sm={6} md={8}>
-            <rb.Stack className="d-flex align-items-start">
+    <Card {...props}>
+      <Card.Body>
+        <Row>
+          <Col sm={6} md={8}>
+            <Stack className="d-flex align-items-start">
               <div>
                 <code className="text-break">{utxo.address}</code>
               </div>
@@ -64,10 +69,10 @@ const Utxo = ({ utxo, ...props }) => {
                   <span className="badge bg-secondary">{t('current_wallet_advanced.label_unconfirmed')}</span>
                 )}
               </div>
-            </rb.Stack>
-          </rb.Col>
-          <rb.Col sm={6} md={4}>
-            <rb.Stack className="d-flex align-items-end">
+            </Stack>
+          </Col>
+          <Col sm={6} md={4}>
+            <Stack className="d-flex align-items-end">
               <div>
                 <Balance
                   valueString={`${utxo.value}`}
@@ -79,14 +84,14 @@ const Utxo = ({ utxo, ...props }) => {
                 <small className="text-secondary">{utxo.confirmations} Confirmations</small>
               </div>
               <div>
-                <rb.Button
+                <Button
                   size="sm"
                   variant={utxo.frozen ? 'outline-warning' : 'outline-info'}
                   disabled={isSending}
                   onClick={() => onClickFreeze(utxo)}
                 >
                   {isSending && (
-                    <rb.Spinner
+                    <Spinner
                       as="span"
                       animation="border"
                       size="sm"
@@ -98,18 +103,18 @@ const Utxo = ({ utxo, ...props }) => {
                   {utxo.frozen
                     ? t('current_wallet_advanced.button_unfreeze')
                     : t('current_wallet_advanced.button_freeze')}
-                </rb.Button>
+                </Button>
               </div>
-            </rb.Stack>
-          </rb.Col>
+            </Stack>
+          </Col>
           {alert && (
-            <rb.Col xs={12}>
+            <Col xs={12}>
               <Alert {...alert} />
-            </rb.Col>
+            </Col>
           )}
-        </rb.Row>
-      </rb.Card.Body>
-    </rb.Card>
+        </Row>
+      </Card.Body>
+    </Card>
   )
 }
 

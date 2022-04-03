@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Alert as BsAlert } from 'react-bootstrap'
+import BsAlert from 'react-bootstrap/Alert'
 
 export default function Alert({ variant, dismissible, message, ...props }) {
   const [show, setShow] = useState(true)

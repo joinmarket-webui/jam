@@ -1,20 +1,26 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { serialize, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
+import Modal from 'react-bootstrap/Modal'
+import Button from 'react-bootstrap/Button'
+import InputGroup from 'react-bootstrap/InputGroup'
+import FormControl from 'react-bootstrap/FormControl'
+import Form from 'react-bootstrap/Form'
+import Spinner from 'react-bootstrap/Spinner'
+import Card from 'react-bootstrap/Card'
 
 function ConfirmModal({ show = false, onHide, title, body, footer }) {
   return (
-    <rb.Modal show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
-      <rb.Modal.Header closeButton>
-        <rb.Modal.Title>{title}</rb.Modal.Title>
-      </rb.Modal.Header>
-      <rb.Modal.Body>{body}</rb.Modal.Body>
-      <rb.Modal.Footer>{footer}</rb.Modal.Footer>
-    </rb.Modal>
+    <Modal show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
+      <Modal.Header closeButton>
+        <Modal.Title>{title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>{body}</Modal.Body>
+      <Modal.Footer>{footer}</Modal.Footer>
+    </Modal>
   )
 }
 
@@ -24,12 +30,12 @@ function ConfirmLockModal({ show = false, body, onHide, onConfirm }) {
   const title = t('wallets.wallet_preview.modal_lock_wallet_title')
   const footer = (
     <>
-      <rb.Button variant="outline-dark" onClick={onHide}>
+      <Button variant="outline-dark" onClick={onHide}>
         {t('wallets.wallet_preview.modal_lock_wallet_button_cancel')}
-      </rb.Button>
-      <rb.Button variant="dark" onClick={onConfirm}>
+      </Button>
+      <Button variant="dark" onClick={onConfirm}>
         {t('wallets.wallet_preview.modal_lock_wallet_button_confirm')}
-      </rb.Button>
+      </Button>
     </>
   )
   return <ConfirmModal show={show} onHide={onHide} title={title} body={body} footer={footer} />
@@ -195,12 +201,12 @@ export default function Wallet({
           setShowLockConfirmModal(false)
         }}
       />
-      <rb.Card {...props}>
-        <rb.Card.Body>
-          <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
+      <Card {...props}>
+        <Card.Body>
+          <Form onSubmit={onSubmit} validated={validated} noValidate>
             <div className="d-flex justify-content-between align-items-center flex-wrap">
               <div className="py-1">
-                <rb.Card.Title>
+                <Card.Title>
                   {isActive ? (
                     <span style={{ position: 'relative' }}>
                       <Link className="wallet-name" to="/wallet">
@@ -212,7 +218,7 @@ export default function Wallet({
                   ) : (
                     <>{walletDisplayName(name)}</>
                   )}
-                </rb.Card.Title>
+                </Card.Title>
                 {isActive ? (
                   <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
                 ) : (
@@ -225,11 +231,11 @@ export default function Wallet({
                     <Link className="btn btn-outline-dark me-2" to="/wallet">
                       {t('wallets.wallet_preview.button_open')}
                     </Link>
-                    <rb.FormControl type="hidden" name="action" value="lock" />
-                    <rb.Button variant="outline-dark" type="submit" disabled={isLocking}>
+                    <FormControl type="hidden" name="action" value="lock" />
+                    <Button variant="outline-dark" type="submit" disabled={isLocking}>
                       {isLocking ? (
                         <>
-                          <rb.Spinner
+                          <Spinner
                             as="span"
                             animation="border"
                             size="sm"
@@ -242,23 +248,23 @@ export default function Wallet({
                       ) : (
                         <>{t('wallets.wallet_preview.button_lock')}</>
                       )}
-                    </rb.Button>
+                    </Button>
                   </>
                 ) : (
                   showUnlockOptions && (
-                    <rb.InputGroup hasValidation={true}>
-                      <rb.FormControl
+                    <InputGroup hasValidation={true}>
+                      <FormControl
                         type="password"
                         placeholder={t('wallets.wallet_preview.placeholder_password')}
                         name="password"
                         disabled={isUnlocking}
                         required
                       />
-                      <rb.FormControl type="hidden" name="action" value="unlock" />
-                      <rb.Button variant="outline-dark" className="py-1 px-3" type="submit" disabled={isUnlocking}>
+                      <FormControl type="hidden" name="action" value="unlock" />
+                      <Button variant="outline-dark" className="py-1 px-3" type="submit" disabled={isUnlocking}>
                         {isUnlocking ? (
                           <>
-                            <rb.Spinner
+                            <Spinner
                               as="span"
                               animation="border"
                               size="sm"
@@ -271,18 +277,18 @@ export default function Wallet({
                         ) : (
                           <>{t('wallets.wallet_preview.button_unlock')}</>
                         )}
-                      </rb.Button>
-                      <rb.Form.Control.Feedback type="invalid">
+                      </Button>
+                      <Form.Control.Feedback type="invalid">
                         {t('wallets.wallet_preview.feedback_missing_password')}
-                      </rb.Form.Control.Feedback>
-                    </rb.InputGroup>
+                      </Form.Control.Feedback>
+                    </InputGroup>
                   )
                 )}
               </div>
             </div>
-          </rb.Form>
-        </rb.Card.Body>
-      </rb.Card>
+          </Form>
+        </Card.Body>
+      </Card>
     </>
   )
 }
