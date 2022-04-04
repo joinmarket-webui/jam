@@ -59,7 +59,7 @@ function SeedModal({ show = false, onHide }) {
           )}
           {seed && (
             <>
-              <div className="mb-4">{t('settings.seed_modal_subtitle')}</div>
+              <div className="mb-4">{t('settings.seed_modal_info_text')}</div>
               <rb.Row className="justify-content-center align-items-center">
                 <rb.Col xs={12} md={10} className="mb-4">
                   <Seedphrase seedphrase={seed} centered={true} isBlurred={!revealSeed} />
