@@ -102,10 +102,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            settingsDispatch({ showBalance: !settings.showBalance })
-          }}
+          onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
         >
           <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" className="me-2" />
           {settings.showBalance ? t('settings.hide_balance') : t('settings.show_balance')}
@@ -116,10 +113,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            settingsDispatch({ unit: isSats ? BTC : SATS })
-          }}
+          onClick={() => settingsDispatch({ unit: isSats ? BTC : SATS })}
         >
           <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" className="me-2" />
           {isSats ? t('settings.use_btc') : t('settings.use_sats')}
@@ -130,10 +124,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])
-          }}
+          onClick={(e) => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
         >
           <Sprite
             symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]}
@@ -149,10 +140,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })
-          }}
+          onClick={(e) => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
         >
           <Sprite
             symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'}
@@ -192,10 +180,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            setShowingSeed((current) => !current)
-          }}
+          onClick={(e) => setShowingSeed(true)}
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
           {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
