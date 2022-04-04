@@ -15,7 +15,7 @@ import Col from 'react-bootstrap/Col'
 import Spinner from 'react-bootstrap/Spinner'
 import Fade from 'react-bootstrap/Fade'
 import Button from 'react-bootstrap/Button'
-import Alert from './Alert'
+import Alert from 'react-bootstrap/Alert'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
