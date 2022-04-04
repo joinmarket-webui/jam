@@ -319,7 +319,6 @@ export default function Send() {
 
       if (res.ok) {
         const data = await res.json()
-        console.log(data)
         setAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
         success = true
       } else {
@@ -503,16 +502,16 @@ export default function Send() {
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
         <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
-          {serviceInfo?.makerRunning || serviceInfo?.coinjoinInProgress ? (
-            <div className="mb-4 p-3 border border-1 rounded">
-              <small className="text-secondary">
-                {serviceInfo?.makerRunning && t('send.text_maker_running')}
-                {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
-              </small>
-            </div>
-          ) : (
-            <></>
-          )}
+          <>
+            {serviceInfo?.makerRunning || serviceInfo?.coinjoinInProgress ? (
+              <div className="mb-4 p-3 border border-1 rounded">
+                <small className="text-secondary">
+                  {serviceInfo?.makerRunning && t('send.text_maker_running')}
+                  {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
+                </small>
+              </div>
+            ) : null}
+          </>
         </rb.Fade>
 
         {alert && (
