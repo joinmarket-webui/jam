@@ -357,24 +357,7 @@ main {
   }
 }
 
-/* Wallet Creation Styles */
-
-.seedphrase {
-  gap: 0.3rem;
-}
-
-.seedphrase > div {
-  background-color: rgba(244, 244, 244, 1);
-  width: 8rem;
-}
-
-.seedword-index {
-  width: 2ch;
-}
-
-.seedword-index-backup {
-  width: 5ch;
-}
+/* Blurred Text Styles */
 
 .blurred-text {
   color: transparent;
@@ -384,20 +367,6 @@ main {
 :root[data-theme='dark'] .blurred-text {
   color: transparent;
   text-shadow: 0 0 15px var(--bs-gray-400);
-}
-
-:root[data-theme='dark'] .seedphrase > div {
-  background-color: var(--bs-gray-800);
-}
-
-.create-wallet form input {
-  height: 3.5rem;
-  width: 100%;
-}
-
-.create-wallet button {
-  height: 3rem;
-  width: 100%;
 }
 
 /* Send, Receive, Earn Styles */

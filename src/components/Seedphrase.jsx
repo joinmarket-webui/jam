@@ -1,4 +1,5 @@
 import React from 'react'
+import './Seedphrase.css'
 
 export default function Seedphrase({ seedphrase, isBlurred = true }) {
   return (
