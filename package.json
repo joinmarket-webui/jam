@@ -44,8 +44,7 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
-    "serve": "13.0.2",
-    "source-map-explorer": "^2.5.2"
+    "serve": "13.0.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -61,8 +60,7 @@
     "regtest:clear": "docker-compose --file docker/regtest/docker-compose.yml down --volumes --remove-orphans",
     "regtest:up": "docker-compose --file docker/regtest/docker-compose.yml up",
     "regtest:down": "docker-compose --file docker/regtest/docker-compose.yml down",
-    "regtest:logs:jmwalletd": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log",
-    "analyze": "source-map-explorer 'build/static/js/*.js'"
+    "regtest:logs:jmwalletd": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log"
   },
   "eslintConfig": {
     "extends": [
