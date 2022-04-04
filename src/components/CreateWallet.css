@@ -1,0 +1,14 @@
+.create-wallet form input {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.create-wallet button {
+  height: 3rem;
+  width: 100%;
+}
+
+.seedword-index-backup {
+  width: 5ch;
+  justify-content: right;
+}

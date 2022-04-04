@@ -121,6 +121,15 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   )
 }
 
+const enhanceDirectPaymentErrorMessageIfNecessary = async (httpStatus, errorMessage, onBadRequest) => {
+  const tryEnhanceMessage = httpStatus === 400
+  if (tryEnhanceMessage) {
+    return onBadRequest(errorMessage)
+  }
+
+  return errorMessage
+}
+
 const enhanceTakerErrorMessageIfNecessary = async (
   requestContext,
   httpStatus,
@@ -254,13 +263,13 @@ export default function Send() {
   }, [wallet, setWalletInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
-    const { name: walletName, token } = wallet
+    const requestContext = { walletName: wallet.name, token: wallet.token }
 
     setAlert(null)
     setIsSending(true)
     let success = false
     try {
-      const res = await Api.postDirectSend({ walletName, token }, { mixdepth: account, destination, amount_sats })
+      const res = await Api.postDirectSend(requestContext, { mixdepth: account, destination, amount_sats })
       if (res.ok) {
         const {
           txinfo: { outputs },
@@ -273,7 +282,13 @@ export default function Send() {
         success = true
       } else {
         const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
+
+        const displayMessage = await enhanceDirectPaymentErrorMessageIfNecessary(
+          res.status,
+          message,
+          (errorMessage) => `${errorMessage} ${t('send.direct_payment_error_message_bad_request')}`
+        )
+        setAlert({ variant: 'danger', message: displayMessage })
       }
     } catch (e) {
       setAlert({ variant: 'danger', message: e.message })
