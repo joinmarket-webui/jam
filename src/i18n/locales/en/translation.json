@@ -154,6 +154,7 @@
     "description_num_collaborators": "A higher number is better for privacy, but also increases the fee.",
     "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
     "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. Consider adding them to your config manually.",
+    "direct_payment_error_message_bad_request": "Please verify your inputs carefully.",
     "error_loading_wallet_failed": "Loading wallet failed.",
     "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }}.",

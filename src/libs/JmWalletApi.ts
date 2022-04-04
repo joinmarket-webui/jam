@@ -279,6 +279,7 @@ const Helper = (() => {
 
   return {
     throwError,
+    extractErrorMessage,
   }
 })()
 

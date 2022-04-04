@@ -31,6 +31,8 @@ export default function App() {
   const settings = useSettings()
   const websocketState = useWebsocketState()
 
+  const devMode = process.env.NODE_ENV === 'development'
+
   const startWallet = useCallback(
     (name, token) => {
       setSession({ name, token })
@@ -93,7 +95,7 @@ export default function App() {
            * that it stays visible in case the backend becomes unavailable.
            */}
           <Route element={<Layout />}>
-            <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} />} />
+            <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
           </Route>
           {/**
            * This section defines all routes that are displayed only if the backend is reachable.

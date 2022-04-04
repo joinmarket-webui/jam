@@ -8,6 +8,35 @@ import ToggleSwitch from './ToggleSwitch'
 import { serialize, walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
+import './CreateWallet.css'
+
+const PreventLeavingPageByMistake = () => {
+  // prompt users before refreshing or closing the page when this component is present.
+  // Firefox will show: "This page is asking you to confirm that you want to leave [...]"
+  // Chrome: "Leave site? Changes you made may not be saved."
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    window.addEventListener(
+      'beforeunload',
+      (event) => {
+        // cancel the event as stated by the standard.
+        event.preventDefault()
+
+        // Chrome requires returnValue to be set.
+        event.returnValue = ''
+
+        // return something to trigger a dialog
+        return ''
+      },
+      { signal: abortCtrl.signal }
+    )
+
+    return () => abortCtrl.abort()
+  }, [])
+
+  return <></>
+}
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
   const { t } = useTranslation()
@@ -28,6 +57,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 
   return (
     <>
+      {isCreating && <PreventLeavingPageByMistake />}
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <rb.Form.Group className="mb-4" controlId="walletName">
           <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
@@ -102,11 +132,13 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
   )
 }
 
-const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
+const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, devMode }) => {
+  const seedphrase = createdWallet.seedphrase.split(' ')
+
   const { t } = useTranslation()
   const [seedBackup, setSeedBackup] = useState(false)
-  let seedphrase = createdWallet.seedphrase.split(' ')
   const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
+  const [showSkipButton] = useState(devMode)
 
   useEffect(() => {
     setSeedBackup(seedWordConfirmations.every((wordConfirmed) => wordConfirmed))
@@ -152,9 +184,13 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
       </rb.Form>
       {seedBackup && <div className="text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>}
 
-      <div className="d-flex mt-4 mb-4 gap-3">
+      <rb.Button variant="dark" onClick={() => walletConfirmed()} disabled={!seedBackup}>
+        {t('create_wallet.confirmation_button_fund_wallet')}
+      </rb.Button>
+
+      <div className="d-flex mt-4 mb-4 gap-4">
         <rb.Button
-          variant="dark"
+          variant="outline-dark"
           disabled={seedBackup}
           onClick={() => {
             parentStepSetter()
@@ -163,19 +199,17 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
           {t('create_wallet.back_button')}
         </rb.Button>
 
-        <rb.Button variant="dark" onClick={() => walletConfirmed()} disabled={!seedBackup}>
-          {t('create_wallet.confirmation_button_fund_wallet')}
-        </rb.Button>
+        {showSkipButton && (
+          <rb.Button variant="outline-dark" onClick={() => walletConfirmed()} disabled={seedBackup}>
+            {t('create_wallet.skip_button')}
+          </rb.Button>
+        )}
       </div>
-
-      <rb.Button variant="outline-dark" onClick={() => walletConfirmed()} disabled={seedBackup}>
-        {t('create_wallet.skip_button')}
-      </rb.Button>
     </div>
   )
 }
 
-const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
+const WalletCreationConfirmation = ({ createdWallet, walletConfirmed, devMode }) => {
   const { t } = useTranslation()
   const [userConfirmed, setUserConfirmed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
@@ -189,54 +223,56 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
     setStep(0)
   }
 
-  if (step === 0) {
-    return (
-      <div>
-        <div className="mb-4">
-          <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
-          <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
-        </div>
-        <div className="mb-4">
-          <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
-        </div>
-        <div className="mb-4">
-          <div>{t('create_wallet.confirmation_label_password')}</div>
-          <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
-            {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+  return (
+    <>
+      <PreventLeavingPageByMistake />
+      {step === 0 ? (
+        <div>
+          <div className="mb-4">
+            <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
+            <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
           </div>
+          <div className="mb-4">
+            <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
+          </div>
+          <div className="mb-4">
+            <div>{t('create_wallet.confirmation_label_password')}</div>
+            <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
+              {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
+            </div>
+          </div>
+          <div className="mb-2">
+            <ToggleSwitch
+              label={t('create_wallet.confirmation_toggle_reveal_info')}
+              onToggle={(isToggled) => {
+                setRevealSensitiveInfo(isToggled)
+                setSensitiveInfoWasRevealed(true)
+              }}
+            />
+          </div>
+          <div className="mb-4">
+            <ToggleSwitch
+              label={t('create_wallet.confirmation_toggle_info_written_down')}
+              onToggle={(isToggled) => setUserConfirmed(isToggled)}
+            />
+          </div>
+          <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
+            {t('create_wallet.next_button')}
+          </rb.Button>
         </div>
-        <div className="mb-2">
-          <ToggleSwitch
-            label={t('create_wallet.confirmation_toggle_reveal_info')}
-            onToggle={(isToggled) => {
-              setRevealSensitiveInfo(isToggled)
-              setSensitiveInfoWasRevealed(true)
-            }}
-          />
-        </div>
-        <div className="mb-4">
-          <ToggleSwitch
-            label={t('create_wallet.confirmation_toggle_info_written_down')}
-            onToggle={(isToggled) => setUserConfirmed(isToggled)}
-          />
-        </div>
-        <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
-          {t('create_wallet.next_button')}
-        </rb.Button>
-      </div>
-    )
-  } else {
-    return (
-      <BackupConfirmation
-        parentStepSetter={childStepSetter}
-        createdWallet={createdWallet}
-        walletConfirmed={walletConfirmed}
-      />
-    )
-  }
+      ) : (
+        <BackupConfirmation
+          parentStepSetter={childStepSetter}
+          createdWallet={createdWallet}
+          walletConfirmed={walletConfirmed}
+          devMode={devMode}
+        />
+      )}
+    </>
+  )
 }
 
-export default function CreateWallet({ startWallet }) {
+export default function CreateWallet({ startWallet, devMode = false }) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
   const navigate = useNavigate()
@@ -288,7 +324,9 @@ export default function CreateWallet({ startWallet }) {
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
-      {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
+      {isCreated && (
+        <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} devMode={devMode} />
+      )}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
