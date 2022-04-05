@@ -39,7 +39,7 @@ const PreventLeavingPageByMistake = () => {
 }
 
 function escapeForUseInRegex(string) {
-  return string.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+  return string.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')
 }
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
