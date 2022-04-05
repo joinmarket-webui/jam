@@ -16,6 +16,9 @@ jest.mock('../libs/JmWalletApi', () => ({
 const NOOP = () => {}
 
 describe('<CreateWallet />', () => {
+  const testWalletName = 'wallet'
+  const testWalletPassword = 'correct horse battery staple'
+
   const setup = (props) => {
     const startWallet = props?.startWallet || NOOP
     const devMode = props?.devMode || false
@@ -30,18 +33,20 @@ describe('<CreateWallet />', () => {
   it('should render without errors', () => {
     act(setup)
 
-    expect(screen.getByText('create_wallet.title')).toBeInTheDocument()
-    expect(screen.getByLabelText('create_wallet.label_wallet_name')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name')).toBeInTheDocument()
-    expect(screen.getByLabelText('create_wallet.label_password')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('create_wallet.placeholder_password')).toBeInTheDocument()
-    expect(screen.getByText('create_wallet.button_create')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.title')).toBeVisible()
+    expect(screen.getByLabelText('create_wallet.label_wallet_name')).toBeVisible()
+    expect(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name')).toBeVisible()
+    expect(screen.getByLabelText('create_wallet.label_password')).toBeVisible()
+    expect(screen.getByPlaceholderText('create_wallet.placeholder_password')).toBeVisible()
+    expect(screen.getByLabelText('create_wallet.label_password_confirm')).toBeVisible()
+    expect(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm')).toBeVisible()
+    expect(screen.getByText('create_wallet.button_create')).toBeVisible()
   })
 
   it('should show validation messages to user if form is invalid', () => {
     act(setup)
 
-    expect(screen.getByText('create_wallet.button_create')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.button_create')).toBeVisible()
 
     act(() => {
       // click on the "create" button without filling the form
@@ -51,16 +56,38 @@ describe('<CreateWallet />', () => {
 
     expect(screen.getByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
     expect(screen.getByText('create_wallet.feedback_invalid_password')).toBeVisible()
+    expect(screen.getByText('create_wallet.feedback_invalid_password_confirm')).toBeVisible()
+  })
+
+  it('should not submit form if passwords do not match', () => {
+    act(setup)
+
+    expect(screen.getByPlaceholderText('create_wallet.placeholder_password')).toBeVisible()
+    expect(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm')).toBeVisible()
+    expect(screen.getByText('create_wallet.button_create')).toBeVisible()
+
+    act(() => {
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), '.*')
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), 'a_mismatching_input')
+    })
+
+    act(() => {
+      const createWalletButton = screen.getByText('create_wallet.button_create')
+      user.click(createWalletButton)
+    })
+
+    // form not sent (button still visible)
+    expect(screen.getByText('create_wallet.button_create')).toBeVisible()
+    expect(screen.getByText('create_wallet.feedback_invalid_password_confirm')).toBeVisible()
   })
 
   it('should advance to WalletCreationConfirmation after wallet is created', async () => {
-    const walletName = 'wallet'
-
     apiMock.postWalletCreate.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
-          walletname: `${walletName}.jmdat`,
+          walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
           seedphrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
         }),
@@ -68,12 +95,16 @@ describe('<CreateWallet />', () => {
 
     act(setup)
 
-    expect(screen.getByText('create_wallet.button_create')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.button_create')).toBeVisible()
     expect(screen.queryByText('create_wallet.title_wallet_created')).not.toBeInTheDocument()
 
+    act(() => {
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    })
+
     await act(async () => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), walletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), 'password')
       const createWalletButton = screen.getByText('create_wallet.button_create')
       user.click(createWalletButton)
 
@@ -81,17 +112,15 @@ describe('<CreateWallet />', () => {
     })
 
     expect(screen.queryByText('create_wallet.button_create')).not.toBeInTheDocument()
-    expect(screen.getByText('create_wallet.title_wallet_created')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.title_wallet_created')).toBeVisible()
   })
 
   it('should verify that "skip" button is NOT visible when not in development mode', async () => {
-    const walletName = 'wallet'
-
     apiMock.postWalletCreate.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
-          walletname: `${walletName}.jmdat`,
+          walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
           seedphrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
         }),
@@ -99,9 +128,13 @@ describe('<CreateWallet />', () => {
 
     act(() => setup({ devMode: false }))
 
+    act(() => {
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    })
+
     await act(async () => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), walletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), 'password')
       const createWalletButton = screen.getByText('create_wallet.button_create')
       user.click(createWalletButton)
 
@@ -118,18 +151,16 @@ describe('<CreateWallet />', () => {
     })
 
     expect(screen.queryByText('create_wallet.skip_button')).not.toBeInTheDocument()
-    expect(screen.getByText('create_wallet.back_button')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.back_button')).toBeVisible()
     expect(screen.getByText('create_wallet.confirmation_button_fund_wallet')).toBeDisabled()
   })
 
   it('should verify that "skip" button IS visible in development mode', async () => {
-    const walletName = 'wallet'
-
     apiMock.postWalletCreate.mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
-          walletname: `${walletName}.jmdat`,
+          walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
           seedphrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
         }),
@@ -137,9 +168,13 @@ describe('<CreateWallet />', () => {
 
     act(() => setup({ devMode: true }))
 
+    act(() => {
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    })
+
     await act(async () => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), walletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), 'password')
       const createWalletButton = screen.getByText('create_wallet.button_create')
       user.click(createWalletButton)
 
@@ -155,8 +190,8 @@ describe('<CreateWallet />', () => {
       user.click(nextButton)
     })
 
-    expect(screen.getByText('create_wallet.skip_button')).toBeInTheDocument()
-    expect(screen.getByText('create_wallet.back_button')).toBeInTheDocument()
+    expect(screen.getByText('create_wallet.skip_button')).toBeVisible()
+    expect(screen.getByText('create_wallet.back_button')).toBeVisible()
     expect(screen.getByText('create_wallet.confirmation_button_fund_wallet')).toBeDisabled()
   })
 })
