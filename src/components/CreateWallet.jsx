@@ -38,19 +38,32 @@ const PreventLeavingPageByMistake = () => {
   return <></>
 }
 
+function escapeForUseInRegex(string) {
+  return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+}
+
 const WalletCreationForm = ({ createWallet, isCreating }) => {
   const { t } = useTranslation()
   const [validated, setValidated] = useState(false)
+  const [passwordConfirmPattern, setPasswordConfirmPattern] = useState('')
+
+  const onPasswordChange = (e) => {
+    setPasswordConfirmPattern(escapeForUseInRegex(e.target.value))
+  }
 
   const onSubmit = (e) => {
     e.preventDefault()
 
     const form = e.currentTarget
-    const isValid = form.checkValidity()
+    const { wallet, password, passwordConfirm } = serialize(form)
+
+    // for safety, explicitly verify that passwords match!
+    const passwordsMatch = password === passwordConfirm
+
+    const isValid = form.checkValidity() && passwordsMatch
     setValidated(true)
 
     if (isValid) {
-      const { wallet, password } = serialize(form)
       createWallet(wallet, password)
     }
   }
@@ -80,11 +93,28 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
             placeholder={t('create_wallet.placeholder_password')}
             disabled={isCreating}
             autoComplete="new-password"
+            onChange={onPasswordChange}
             required
           />
           <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
           <rb.Form.Control.Feedback type="invalid">
             {t('create_wallet.feedback_invalid_password')}
+          </rb.Form.Control.Feedback>
+        </rb.Form.Group>
+        <rb.Form.Group className="mb-4" controlId="passwordConfirm">
+          <rb.Form.Label>{t('create_wallet.label_password_confirm')}</rb.Form.Label>
+          <rb.Form.Control
+            name="passwordConfirm"
+            type="password"
+            placeholder={t('create_wallet.placeholder_password_confirm')}
+            disabled={isCreating}
+            autoComplete="new-password"
+            pattern={passwordConfirmPattern}
+            required
+          />
+          <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback type="invalid">
+            {t('create_wallet.feedback_invalid_password_confirm')}
           </rb.Form.Control.Feedback>
         </rb.Form.Group>
         <rb.Button variant="dark" type="submit" disabled={isCreating}>
