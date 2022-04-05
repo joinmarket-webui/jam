@@ -38,8 +38,11 @@ const PreventLeavingPageByMistake = () => {
   return <></>
 }
 
-function escapeForUseInRegex(string) {
-  return string.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')
+// Function taken from MDN Javascript Regular expressions section.
+// See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+// (last check on 2022-04-05)
+function escapeForUseInFormInputPattern(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 const WalletCreationForm = ({ createWallet, isCreating }) => {
@@ -48,7 +51,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
   const [passwordConfirmPattern, setPasswordConfirmPattern] = useState('')
 
   const onPasswordChange = (e) => {
-    setPasswordConfirmPattern(escapeForUseInRegex(e.target.value))
+    setPasswordConfirmPattern(escapeForUseInFormInputPattern(e.target.value))
   }
 
   const onSubmit = (e) => {
