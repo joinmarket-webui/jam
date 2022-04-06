@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
+import { Formik } from 'formik'
 import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
@@ -38,100 +39,108 @@ const PreventLeavingPageByMistake = () => {
   return <></>
 }
 
-// Function taken from MDN Javascript Regular expressions section.
-// See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-// (last check on 2022-04-05)
-function escapeForUseInFormInputPattern(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 const WalletCreationForm = ({ createWallet, isCreating }) => {
   const { t } = useTranslation()
-  const [validated, setValidated] = useState(false)
-  const [passwordConfirmPattern, setPasswordConfirmPattern] = useState('')
 
-  const onPasswordChange = (e) => {
-    setPasswordConfirmPattern(escapeForUseInFormInputPattern(e.target.value))
+  const initialValues = { walletName: '', password: '', passwordConfirm: '' }
+  const validate = (values) => {
+    const errors = {}
+    if (!values.walletName) {
+      errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
+    }
+    if (!values.password) {
+      errors.password = t('create_wallet.feedback_invalid_password')
+    }
+    if (!values.passwordConfirm || values.password !== values.passwordConfirm) {
+      errors.passwordConfirm = t('create_wallet.feedback_invalid_password_confirm')
+    }
+    return errors
   }
 
-  const onSubmit = (e) => {
-    e.preventDefault()
+  const onSubmit = (values, { setSubmitting }) => {
+    const { walletName, password } = values
+    createWallet(walletName, password)
 
-    const form = e.currentTarget
-    const { wallet, password, passwordConfirm } = serialize(form)
-
-    // for safety, explicitly verify that passwords match!
-    const passwordsMatch = password === passwordConfirm
-
-    const isValid = form.checkValidity() && passwordsMatch
-    setValidated(true)
-
-    if (isValid) {
-      createWallet(wallet, password)
-    }
+    setSubmitting(false)
   }
 
   return (
-    <>
-      {isCreating && <PreventLeavingPageByMistake />}
-      <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-        <rb.Form.Group className="mb-4" controlId="walletName">
-          <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
-          <rb.Form.Control
-            name="wallet"
-            placeholder={t('create_wallet.placeholder_wallet_name')}
-            disabled={isCreating}
-            required
-          />
-          <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
-          <rb.Form.Control.Feedback type="invalid">
-            {t('create_wallet.feedback_invalid_wallet_name')}
-          </rb.Form.Control.Feedback>
-        </rb.Form.Group>
-        <rb.Form.Group className="mb-4" controlId="password">
-          <rb.Form.Label>{t('create_wallet.label_password')}</rb.Form.Label>
-          <rb.Form.Control
-            name="password"
-            type="password"
-            placeholder={t('create_wallet.placeholder_password')}
-            disabled={isCreating}
-            autoComplete="new-password"
-            onChange={onPasswordChange}
-            required
-          />
-          <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
-          <rb.Form.Control.Feedback type="invalid">
-            {t('create_wallet.feedback_invalid_password')}
-          </rb.Form.Control.Feedback>
-        </rb.Form.Group>
-        <rb.Form.Group className="mb-4" controlId="passwordConfirm">
-          <rb.Form.Label>{t('create_wallet.label_password_confirm')}</rb.Form.Label>
-          <rb.Form.Control
-            name="passwordConfirm"
-            type="password"
-            placeholder={t('create_wallet.placeholder_password_confirm')}
-            disabled={isCreating}
-            autoComplete="new-password"
-            pattern={passwordConfirmPattern}
-            required
-          />
-          <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
-          <rb.Form.Control.Feedback type="invalid">
-            {t('create_wallet.feedback_invalid_password_confirm')}
-          </rb.Form.Control.Feedback>
-        </rb.Form.Group>
-        <rb.Button variant="dark" type="submit" disabled={isCreating}>
-          {isCreating ? (
-            <div>
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              {t('create_wallet.button_creating')}
-            </div>
-          ) : (
-            t('create_wallet.button_create')
-          )}
-        </rb.Button>
-      </rb.Form>
-    </>
+    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+      {({ handleSubmit, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
+        <>
+          {(isSubmitting || isCreating) && <PreventLeavingPageByMistake />}
+          <rb.Form onSubmit={handleSubmit} noValidate>
+            <rb.Form.Group className="mb-4" controlId="walletName">
+              <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
+              <rb.Form.Control
+                name="walletName"
+                type="text"
+                placeholder={t('create_wallet.placeholder_wallet_name')}
+                disabled={isSubmitting || isCreating}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.walletName}
+                isValid={touched.walletName && !errors.walletName}
+                isInvalid={touched.walletName && errors.walletName}
+              />
+              <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
+              <rb.Form.Control.Feedback type="invalid">{errors.walletName}</rb.Form.Control.Feedback>
+            </rb.Form.Group>
+            <rb.Form.Group className="mb-4" controlId="password">
+              <rb.Form.Label>{t('create_wallet.label_password')}</rb.Form.Label>
+              <rb.Form.Control
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder={t('create_wallet.placeholder_password')}
+                disabled={isSubmitting || isCreating}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.password}
+                isValid={touched.password && !errors.password}
+                isInvalid={touched.password && errors.password}
+              />
+              <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
+              <rb.Form.Control.Feedback type="invalid">{errors.password}</rb.Form.Control.Feedback>
+            </rb.Form.Group>
+            <rb.Form.Group className="mb-4" controlId="passwordConfirm">
+              <rb.Form.Label>{t('create_wallet.label_password_confirm')}</rb.Form.Label>
+              <rb.Form.Control
+                name="passwordConfirm"
+                type="password"
+                autoComplete="new-password"
+                placeholder={t('create_wallet.placeholder_password_confirm')}
+                disabled={isSubmitting || isCreating}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.passwordConfirm}
+                isValid={touched.passwordConfirm && !errors.passwordConfirm}
+                isInvalid={touched.passwordConfirm && errors.passwordConfirm}
+              />
+              <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
+              <rb.Form.Control.Feedback type="invalid">{errors.passwordConfirm}</rb.Form.Control.Feedback>
+            </rb.Form.Group>
+            <rb.Button variant="dark" type="submit" disabled={isSubmitting || isCreating}>
+              {isCreating ? (
+                <div>
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="me-2"
+                  />
+                  {t('create_wallet.button_creating')}
+                </div>
+              ) : (
+                t('create_wallet.button_create')
+              )}
+            </rb.Button>
+          </rb.Form>
+        </>
+      )}
+    </Formik>
   )
 }
 
