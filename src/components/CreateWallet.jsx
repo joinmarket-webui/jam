@@ -39,7 +39,7 @@ const PreventLeavingPageByMistake = () => {
   return <></>
 }
 
-const WalletCreationForm = ({ createWallet, isCreating }) => {
+const WalletCreationForm = ({ createWallet }) => {
   const { t } = useTranslation()
 
   const initialValues = { walletName: '', password: '', passwordConfirm: '' }
@@ -59,16 +59,14 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
 
   const onSubmit = (values, { setSubmitting }) => {
     const { walletName, password } = values
-    createWallet(walletName, password)
-
-    setSubmitting(false)
+    createWallet(walletName, password, () => setSubmitting(false))
   }
 
   return (
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
       {({ handleSubmit, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
         <>
-          {(isSubmitting || isCreating) && <PreventLeavingPageByMistake />}
+          {isSubmitting && <PreventLeavingPageByMistake />}
           <rb.Form onSubmit={handleSubmit} noValidate>
             <rb.Form.Group className="mb-4" controlId="walletName">
               <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
@@ -76,7 +74,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
                 name="walletName"
                 type="text"
                 placeholder={t('create_wallet.placeholder_wallet_name')}
-                disabled={isSubmitting || isCreating}
+                disabled={isSubmitting}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.walletName}
@@ -93,7 +91,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
                 type="password"
                 autoComplete="new-password"
                 placeholder={t('create_wallet.placeholder_password')}
-                disabled={isSubmitting || isCreating}
+                disabled={isSubmitting}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.password}
@@ -110,7 +108,7 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
                 type="password"
                 autoComplete="new-password"
                 placeholder={t('create_wallet.placeholder_password_confirm')}
-                disabled={isSubmitting || isCreating}
+                disabled={isSubmitting}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 value={values.passwordConfirm}
@@ -120,8 +118,8 @@ const WalletCreationForm = ({ createWallet, isCreating }) => {
               <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
               <rb.Form.Control.Feedback type="invalid">{errors.passwordConfirm}</rb.Form.Control.Feedback>
             </rb.Form.Group>
-            <rb.Button variant="dark" type="submit" disabled={isSubmitting || isCreating}>
-              {isCreating ? (
+            <rb.Button variant="dark" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <div>
                   <rb.Spinner
                     as="span"
@@ -320,12 +318,10 @@ export default function CreateWallet({ startWallet, devMode = false }) {
   const navigate = useNavigate()
 
   const [alert, setAlert] = useState(null)
-  const [isCreating, setIsCreating] = useState(false)
   const [createdWallet, setCreatedWallet] = useState(null)
 
-  const createWallet = async (walletName, password) => {
+  const createWallet = async (walletName, password, onFinished) => {
     setAlert(null)
-    setIsCreating(true)
 
     try {
       const res = await Api.postWalletCreate({ walletname: walletName, password })
@@ -333,14 +329,15 @@ export default function CreateWallet({ startWallet, devMode = false }) {
       if (res.ok) {
         const { seedphrase, token, walletname: createdWalletName } = await res.json()
         setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
+        onFinished(true)
       } else {
         const { message } = await res.json()
         setAlert({ variant: 'danger', message })
+        onFinished(null, new Error(message))
       }
     } catch (e) {
       setAlert({ variant: 'danger', message: e.message })
-    } finally {
-      setIsCreating(false)
+      onFinished(null, e)
     }
   }
 
@@ -368,7 +365,7 @@ export default function CreateWallet({ startWallet, devMode = false }) {
         <PageTitle title={t('create_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {canCreate && <WalletCreationForm createWallet={createWallet} isCreating={isCreating} />}
+      {canCreate && <WalletCreationForm createWallet={createWallet} />}
       {isCreated && (
         <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} devMode={devMode} />
       )}
