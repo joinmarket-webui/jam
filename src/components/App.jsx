@@ -84,37 +84,50 @@ export default function App() {
       )}
       <Navbar />
       <rb.Container as="main" className="py-5">
-        {sessionConnectionError ? (
+        {sessionConnectionError && (
           <rb.Alert variant="danger">
             {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
           </rb.Alert>
-        ) : (
-          <Routes>
-            <Route element={<Layout />}>
-              <Route exact path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
-              <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
-              {currentWallet && (
-                <>
-                  <Route path="send" element={<Send />} />
-                  <Route path="earn" element={<Earn />} />
-                  <Route path="receive" element={<Receive />} />
-                  <Route path="settings" element={<Settings />} />
-                </>
-              )}
-            </Route>
-            {currentWallet && !settings.useAdvancedWalletMode && (
-              <Route element={<Layout variant="narrow" />}>
-                <Route path="wallet" element={<CurrentWalletMagic />} />
-              </Route>
-            )}
-            {currentWallet && settings.useAdvancedWalletMode && (
-              <Route element={<Layout variant="wide" />}>
-                <Route path="wallet" element={<CurrentWalletAdvanced />} />
-              </Route>
-            )}
-            <Route path="*" element={<Navigate to="/" replace={true} />} />
-          </Routes>
         )}
+        <Routes>
+          {/**
+           * This sections defines all routes that can be displayed, even if the connection
+           * to the backend is down, e.g. "create-wallet" shows the seed quiz and it is important
+           * that it stays visible in case the backend becomes unavailable.
+           */}
+          <Route element={<Layout />}>
+            <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
+          </Route>
+          {/**
+           * This section defines all routes that are displayed only if the backend is reachable.
+           */}
+          {!sessionConnectionError && (
+            <>
+              <Route element={<Layout />}>
+                <Route path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
+                {currentWallet && (
+                  <>
+                    <Route path="send" element={<Send />} />
+                    <Route path="earn" element={<Earn />} />
+                    <Route path="receive" element={<Receive />} />
+                    <Route path="settings" element={<Settings />} />
+                  </>
+                )}
+              </Route>
+              {currentWallet && !settings.useAdvancedWalletMode && (
+                <Route element={<Layout variant="narrow" />}>
+                  <Route path="wallet" element={<CurrentWalletMagic />} />
+                </Route>
+              )}
+              {currentWallet && settings.useAdvancedWalletMode && (
+                <Route element={<Layout variant="wide" />}>
+                  <Route path="wallet" element={<CurrentWalletAdvanced />} />
+                </Route>
+              )}
+              <Route path="*" element={<Navigate to="/" replace={true} />} />
+            </>
+          )}
+        </Routes>
       </rb.Container>
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2 px-4">

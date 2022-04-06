@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
@@ -7,17 +7,80 @@ import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
-import { SATS, BTC } from '../utils'
+import { SATS, BTC, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import languages from '../i18n/languages'
 
-export default function Settings() {
+function SeedModal({ show = false, onHide }) {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
-  const [seed, setSeed] = useState('')
-  const [showingSeed, setShowingSeed] = useState(false)
   const [revealSeed, setRevealSeed] = useState(false)
   const [seedError, setSeedError] = useState(false)
+  const [seed, setSeed] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadSeed = async () => {
+      setIsLoading(true)
+      try {
+        const { name: walletName, token } = currentWallet
+        const res = await Api.getWalletSeed({ walletName, token })
+        const { seedphrase } = await (res.ok ? res.json() : Api.Helper.throwError(res))
+
+        setIsLoading(false)
+        setSeed(seedphrase)
+      } catch (e) {
+        setIsLoading(false)
+        setSeedError(true)
+      }
+    }
+
+    if (show) {
+      loadSeed()
+    }
+  }, [show, currentWallet])
+
+  return (
+    <rb.Modal size="lg" show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
+      <rb.Modal.Header closeButton>
+        <rb.Modal.Title>{walletDisplayName(currentWallet.name)}</rb.Modal.Title>
+      </rb.Modal.Header>
+      <rb.Modal.Body>
+        <>
+          {isLoading && (
+            <div className="d-flex justify-content-center align-items-center">
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+            </div>
+          )}
+          {seedError && (
+            <div className="text-danger" style={{ marginLeft: '1rem' }}>
+              {t('settings.error_loading_seed_failed')}
+            </div>
+          )}
+          {seed && (
+            <>
+              <div className="mb-4">{t('settings.seed_modal_info_text')}</div>
+              <rb.Row className="justify-content-center align-items-center">
+                <rb.Col xs={12} md={10} className="mb-4">
+                  <Seedphrase seedphrase={seed} centered={true} isBlurred={!revealSeed} />
+                </rb.Col>
+              </rb.Row>
+              <div className="d-flex justify-content-center align-items-center">
+                <div className="mb-2">
+                  <ToggleSwitch label={t('settings.reveal_seed')} onToggle={(isToggled) => setRevealSeed(isToggled)} />
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      </rb.Modal.Body>
+    </rb.Modal>
+  )
+}
+
+export default function Settings() {
+  const { t } = useTranslation()
+  const [showingSeed, setShowingSeed] = useState(false)
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const { i18n } = useTranslation()
@@ -39,10 +102,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            settingsDispatch({ showBalance: !settings.showBalance })
-          }}
+          onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
         >
           <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" className="me-2" />
           {settings.showBalance ? t('settings.hide_balance') : t('settings.show_balance')}
@@ -53,10 +113,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            settingsDispatch({ unit: isSats ? BTC : SATS })
-          }}
+          onClick={() => settingsDispatch({ unit: isSats ? BTC : SATS })}
         >
           <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" className="me-2" />
           {isSats ? t('settings.use_btc') : t('settings.use_sats')}
@@ -67,10 +124,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])
-          }}
+          onClick={(e) => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
         >
           <Sprite
             symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]}
@@ -86,10 +140,7 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => {
-            e.preventDefault()
-            settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })
-          }}
+          onClick={(e) => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
         >
           <Sprite
             symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'}
@@ -129,48 +180,12 @@ export default function Settings() {
         <rb.Button
           variant="outline-dark"
           className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={async (e) => {
-            e.preventDefault()
-            setSeedError(false)
-            setRevealSeed(false)
-            if (!showingSeed) {
-              const { name: walletName, token } = currentWallet
-              const res = await Api.getWalletSeed({ walletName, token })
-              if (res.ok) {
-                const { seedphrase } = await res.json()
-                setSeed(seedphrase)
-                setShowingSeed(!showingSeed)
-              } else {
-                setSeedError(true)
-              }
-            } else {
-              setShowingSeed(!showingSeed)
-            }
-          }}
+          onClick={(e) => setShowingSeed(true)}
         >
           <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
           {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
         </rb.Button>
-        {seedError && (
-          <div className="text-danger" style={{ marginLeft: '1rem' }}>
-            {t('settings.error_loading_seed_failed')}
-          </div>
-        )}
-        {showingSeed && (
-          <div style={{ marginLeft: '1rem' }}>
-            <div className="mb-4">
-              <Seedphrase seedphrase={seed} isBlurred={!revealSeed} />
-            </div>
-            <div className="mb-2">
-              <ToggleSwitch
-                label={t('settings.reveal_seed')}
-                onToggle={(isToggled) => {
-                  setRevealSeed(isToggled)
-                }}
-              />
-            </div>
-          </div>
-        )}
+        {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
       </div>
     </div>
   )

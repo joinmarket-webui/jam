@@ -143,7 +143,8 @@
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
-    "error_loading_seed_failed": "Could not retrieve seed phrase."
+    "error_loading_seed_failed": "Could not retrieve seed phrase.",
+    "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!"
   },
   "send": {
     "loading": "Loading",

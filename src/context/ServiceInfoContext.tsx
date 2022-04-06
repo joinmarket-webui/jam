@@ -60,7 +60,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
 
     const refreshSession = () => {
       Api.getSession({ signal: abortCtrl.signal })
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, res.statusText)))
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data: JmSessionData) => {
           if (!abortCtrl.signal.aborted) {
             const {
