@@ -263,13 +263,17 @@ export default function Send() {
   }, [wallet, setWalletInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
-    const requestContext = { walletName: wallet.name, token: wallet.token }
-
     setAlert(null)
     setIsSending(true)
+
+    const requestContext = { walletName: wallet.name, token: wallet.token }
+
     let success = false
     try {
       const res = await Api.postDirectSend(requestContext, { mixdepth: account, destination, amount_sats })
+
+      setIsSending(false)
+
       if (res.ok) {
         const {
           txinfo: { outputs },
@@ -281,8 +285,7 @@ export default function Send() {
         })
         success = true
       } else {
-        const { message } = await res.json()
-
+        const message = await Api.Helper.extractErrorMessage(res)
         const displayMessage = await enhanceDirectPaymentErrorMessageIfNecessary(
           res.status,
           message,
@@ -291,19 +294,18 @@ export default function Send() {
         setAlert({ variant: 'danger', message: displayMessage })
       }
     } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
       setIsSending(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
 
     return success
   }
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
-    const requestContext = { walletName: wallet.name, token: wallet.token }
-
     setAlert(null)
     setIsSending(true)
+
+    const requestContext = { walletName: wallet.name, token: wallet.token }
     let success = false
     try {
       const res = await Api.postCoinjoin(requestContext, {
@@ -312,13 +314,16 @@ export default function Send() {
         amount_sats,
         counterparties,
       })
+
+      setIsSending(false)
+
       if (res.ok) {
         const data = await res.json()
         console.log(data)
         setAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
         success = true
       } else {
-        const { message } = await res.json()
+        const message = await Api.Helper.extractErrorMessage(res)
         const displayMessage = await enhanceTakerErrorMessageIfNecessary(
           requestContext,
           res.status,
@@ -329,9 +334,8 @@ export default function Send() {
         setAlert({ variant: 'danger', message: displayMessage })
       }
     } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
       setIsSending(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
 
     return success
