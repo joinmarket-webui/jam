@@ -43,7 +43,7 @@ function SeedModal({ show = false, onHide }) {
   return (
     <rb.Modal size="lg" show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
       <rb.Modal.Header closeButton>
-        <rb.Modal.Title>&lt;{walletDisplayName(currentWallet.name)}&gt;</rb.Modal.Title>
+        <rb.Modal.Title>{walletDisplayName(currentWallet.name)}</rb.Modal.Title>
       </rb.Modal.Header>
       <rb.Modal.Body>
         <>
