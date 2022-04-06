@@ -325,16 +325,11 @@ export default function CreateWallet({ startWallet, devMode = false }) {
 
     try {
       const res = await Api.postWalletCreate({ walletname: walletName, password })
+      const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
-      if (res.ok) {
-        const { seedphrase, token, walletname: createdWalletName } = await res.json()
-        setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
-        onFinished(true)
-      } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
-        onFinished(null, new Error(message))
-      }
+      const { seedphrase, token, walletname: createdWalletName } = body
+      setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
+      onFinished(true)
     } catch (e) {
       setAlert({ variant: 'danger', message: e.message })
       onFinished(null, e)
