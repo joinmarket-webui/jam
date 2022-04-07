@@ -63,6 +63,7 @@
     "regtest:down": "docker-compose --file docker/regtest/docker-compose.yml down",
     "regtest:logs:jmwalletd": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log",
     "regtest:logs:tumbler": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/TUMBLE.log",
+    "regtest:init": "./docker/regtest/init-setup.sh",
     "regtest:mining": "watch -n 30 ./docker/regtest/mine-block.sh",
     "regtest:tumble": "docker exec -it jm_regtest_joinmarket python tumbler.py funded.jmdat --addrcount=1 --minmakercount=1 --makercountrange=1 1 --timelambda=1 --wait-time=10 --liquiditywait=10"
   },
