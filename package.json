@@ -62,7 +62,8 @@
     "regtest:up": "docker-compose --file docker/regtest/docker-compose.yml up",
     "regtest:down": "docker-compose --file docker/regtest/docker-compose.yml down",
     "regtest:logs:jmwalletd": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log",
-    "regtest:logs:tumbler": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/TUMBLE.log"
+    "regtest:logs:tumbler": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/TUMBLE.log",
+    "regtest:mining": "watch -n 30 ./docker/regtest/mine-block.sh"
   },
   "eslintConfig": {
     "extends": [
