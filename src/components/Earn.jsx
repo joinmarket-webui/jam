@@ -133,11 +133,11 @@ export default function Earn() {
   }
 
   const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
-    const { name: walletName, token } = currentWallet
-
     setAlert(null)
     setIsSending(true)
     setIsWaitingMakerStart(false)
+
+    const { name: walletName, token } = currentWallet
     try {
       const res = await Api.postMakerStart(
         { walletName, token },
@@ -149,18 +149,17 @@ export default function Earn() {
         }
       )
 
-      if (res.ok) {
-        // There is no response data to check if maker got started:
-        // Wait for the websocket or session response!
-        setIsWaitingMakerStart(true)
-      } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
+      // There is no response data to check if maker got started:
+      // Wait for the websocket or session response!
+      if (!res.ok) {
+        await Api.Helper.throwError(res)
       }
-    } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
+
       setIsSending(false)
+      setIsWaitingMakerStart(true)
+    } catch (e) {
+      setIsSending(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
   }
 
@@ -208,26 +207,25 @@ export default function Earn() {
   }, [serviceInfo, isShowReport, t])
 
   const stopMakerService = async () => {
-    const { name: walletName, token } = currentWallet
-
     setAlert(null)
     setIsSending(true)
     setIsWaitingMakerStop(false)
+
+    const { name: walletName, token } = currentWallet
     try {
       const res = await Api.getMakerStop({ walletName, token })
 
-      if (res.ok) {
-        // There is no response data to check if maker got stopped:
-        // Wait for the websocket or session response!
-        setIsWaitingMakerStop(true)
-      } else {
-        const { message } = await res.json()
-        setAlert({ variant: 'danger', message })
+      // There is no response data to check if maker got stopped:
+      // Wait for the websocket or session response!
+      if (!res.ok) {
+        await Api.Helper.throwError(res)
       }
-    } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-    } finally {
+
       setIsSending(false)
+      setIsWaitingMakerStop(true)
+    } catch (e) {
+      setIsSending(false)
+      setAlert({ variant: 'danger', message: e.message })
     }
   }
 

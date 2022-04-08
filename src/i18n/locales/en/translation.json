@@ -83,12 +83,15 @@
     "subtitle_wallet_created": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",
     "feedback_valid": "Looks good!",
-    "label_wallet_name": "Wallet Name",
+    "label_wallet_name": "Wallet name",
     "placeholder_wallet_name": "Your Wallet...",
     "feedback_invalid_wallet_name": "Please set a wallet name.",
-    "label_password": "Password",
+    "label_password": "Password to unlock the wallet",
     "placeholder_password": "Choose a secure password...",
     "feedback_invalid_password": "Please set a password.",
+    "label_password_confirm": "Confirm password",
+    "placeholder_password_confirm": "Repeat the password...",
+    "feedback_invalid_password_confirm": "Given passwords do not match.",
     "button_create": "Create",
     "button_creating": "Creating",
     "alert_confirmation_failed": "Wallet confirmation failed.",
@@ -144,7 +147,8 @@
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
-    "error_loading_seed_failed": "Could not retrieve seed phrase."
+    "error_loading_seed_failed": "Could not retrieve seed phrase.",
+    "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!"
   },
   "send": {
     "loading": "Loading",

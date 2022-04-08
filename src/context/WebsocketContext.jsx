@@ -4,6 +4,7 @@ import { useCurrentWallet } from './WalletContext'
 
 const WEBSOCKET_RECONNECT_DELAY_STEP = 1_000
 const WEBSOCKET_RECONNECT_MAX_DELAY = 10_000
+const WEBSOCKET_ESTABLISH_CONNECTION_MAX_DURATION = 10_000
 
 // minimum amount of time in milliseconds the connection must stay open to be considered "healthy"
 const WEBSOCKET_CONNECTION_HEALTHY_DURATION = 1_000
@@ -27,23 +28,24 @@ const CJ_STATE_TAKER_RUNNING = 0
 const CJ_STATE_MAKER_RUNNING = 1
 const CJ_STATE_NONE_RUNNING = 2
 
+const NOOP = () => {}
+const logToDebugConsoleInDevMode = process.env.NODE_ENV === 'development' ? console.debug : NOOP
+
 const createWebSocket = () => {
   const { protocol, host } = window.location
   const scheme = protocol === 'https:' ? 'wss' : 'ws'
   const websocket = new WebSocket(`${scheme}://${host}${WEBSOCKET_ENDPOINT_PATH}`)
 
   websocket.onerror = (error) => {
-    console.error('websocket error', error)
+    console.error('[Websocket] error', error)
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    websocket.onopen = () => {
-      console.debug('websocket connection openend')
-    }
+  websocket.onopen = () => {
+    logToDebugConsoleInDevMode('[Websocket] connection openend')
+  }
 
-    websocket.onclose = () => {
-      console.debug('websocket connection closed')
-    }
+  websocket.onclose = (event) => {
+    logToDebugConsoleInDevMode('[Websocket] connection closed', event.code)
   }
 
   return websocket
@@ -84,9 +86,7 @@ const WebsocketProvider = ({ children }) => {
       setConnectionErrorCount(0)
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.debug('websocket healthy', isWebsocketHealthy)
-    }
+    logToDebugConsoleInDevMode('[Websocket] healthy', isWebsocketHealthy)
   }, [isWebsocketHealthy, setConnectionErrorCount])
 
   // reconnect handling in case the socket is closed
@@ -108,10 +108,14 @@ const WebsocketProvider = ({ children }) => {
       if (abortCtrl.signal.aborted) return
 
       setIsWebsocketHealthy(false)
+
       setConnectionErrorCount((prev) => {
-        const retryDelay = connectionRetryDelayLinear(prev + 1)
-        console.log(`Retrying to connect websocket in ${retryDelay}ms`)
+        const retryAttempt = prev + 1
+        const retryDelay = connectionRetryDelayLinear(retryAttempt)
+
+        console.debug(`[Websocket] ${new Date().toLocaleString()} ${retryAttempt}. retry to connect in ${retryDelay}ms`)
         retryDelayTimer = setTimeout(() => {
+          console.debug(`[Websocket] ${new Date().toLocaleString()} ${retryAttempt}. retry: Create socket..`)
           setWebsocket(createWebSocket())
         }, retryDelay)
         return prev + 1
@@ -127,6 +131,39 @@ const WebsocketProvider = ({ children }) => {
       abortCtrl.abort()
     }
   }, [websocket, setConnectionErrorCount])
+
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+    const forceCloseIfStillConnectingTimer = setTimeout(() => {
+      if (abortCtrl.signal.aborted) return
+      // Problem:
+      //   Some browsers will keep connecting longer than the retry delay, and if the service
+      //   comes back up in the meantime, the connection fails nonetheless...
+      //   A retry is only attempted, when the close listener is invoked.
+      //
+      // Solution:
+      //   If the socket is still `CONNECTING` after a certain duration.. force-close it!
+      //   e.g. this happens in Firefox after >10 attempts
+      //
+      // This ensures that the maximum amount of delay between retries is
+      // `WEBSOCKET_ESTABLISH_CONNECTION_MAX_DURATION + WEBSOCKET_RECONNECT_MAX_DELAY`:
+      // - WEBSOCKET_ESTABLISH_CONNECTION_MAX_DURATION to force-close a pending connection
+      // - WEBSOCKET_RECONNECT_MAX_DELAY to attempt the retry
+      const needsForceClose = websocket.readyState === WebSocket.CONNECTING
+      logToDebugConsoleInDevMode(
+        `[Websocket] ${new Date().toLocaleString()} Check if a force-close is needed..`,
+        needsForceClose
+      )
+      if (needsForceClose) {
+        websocket.close(1001, 'Force-close pending connection')
+      }
+    }, WEBSOCKET_ESTABLISH_CONNECTION_MAX_DURATION)
+
+    return () => {
+      clearTimeout(forceCloseIfStillConnectingTimer)
+      abortCtrl.abort()
+    }
+  }, [websocket])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
