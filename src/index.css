@@ -360,6 +360,8 @@ main {
 /* Cheatsheet Styles */
 .cheatsheet {
   height: auto;
+  /* page height - navbar height - some spacing*/
+  max-height: calc(100vh - 76px - 1rem);
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
   margin: 0px auto;
