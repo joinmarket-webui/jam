@@ -7,7 +7,7 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { useCurrentWalletInfo, useSetCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
+import { useCurrentWalletInfo, useReloadCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
@@ -159,7 +159,7 @@ export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const setWalletInfo = useSetCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const settings = useSettings()
 
@@ -172,7 +172,6 @@ export default function Send() {
     serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
   )
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
-  const [utxos, setUtxos] = useState(null)
   const [isSweep, setIsSweep] = useState(false)
 
   const initialDestination = null
@@ -231,19 +230,12 @@ export default function Send() {
     setAlert(null)
     setIsLoading(true)
 
+    const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => {
+      const message = err.message || t('send.error_loading_wallet_failed')
+      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+    })
+
     const requestContext = { walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal }
-
-    const loadingWalletInfoAndUtxos = Api.getWalletDisplay(requestContext)
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
-      .then((data) => {
-        setWalletInfo(data.walletinfo)
-        return data.walletinfo
-      })
-      .then((walletinfo) => Api.getWalletUtxos(requestContext))
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_wallet_failed'))))
-      .then((data) => setUtxos(data.utxos))
-      .catch((err) => !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message }))
-
     const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_min_makers_failed'))))
       .then((data) => {
@@ -260,7 +252,7 @@ export default function Send() {
     )
 
     return () => abortCtrl.abort()
-  }, [wallet, setWalletInfo, t])
+  }, [wallet, reloadCurrentWalletInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
@@ -371,11 +363,11 @@ export default function Send() {
   }
 
   const balanceBreakdown = (accountNumber) => {
-    if (!walletInfo || !walletInfo.accounts) {
+    if (!walletInfo || !walletInfo.data.display.walletinfo.accounts || !walletInfo.data.utxos.utxos) {
       return null
     }
 
-    const filtered = walletInfo.accounts.filter((account) => {
+    const filtered = walletInfo.data.display.walletinfo.accounts.filter((account) => {
       return parseInt(account.account, 10) === accountNumber
     })
 
@@ -383,7 +375,7 @@ export default function Send() {
       return null
     }
 
-    const utxosByAccount = (utxos || []).reduce((acc, utxo) => {
+    const utxosByAccount = walletInfo.data.utxos.utxos.reduce((acc, utxo) => {
       acc[utxo.mixdepth] = acc[utxo.mixdepth] || []
       acc[utxo.mixdepth].push(utxo)
       return acc
@@ -549,7 +541,7 @@ export default function Send() {
                 isInvalid={!isValidAccount(account)}
               >
                 {walletInfo &&
-                  walletInfo.accounts
+                  walletInfo.data.display.walletinfo.accounts
                     .sort((lhs, rhs) => lhs.account - rhs.account)
                     .map(({ account, account_balance: balance }) => (
                       <option key={account} value={account}>

@@ -42,7 +42,7 @@ interface AuthApiRequestContext extends ApiRequestContext {
   token: ApiToken
 }
 
-type WalletRequestContext = AuthApiRequestContext & WithWalletName
+export type WalletRequestContext = AuthApiRequestContext & WithWalletName
 
 interface ApiError {
   message: string

@@ -3,11 +3,10 @@ import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
-import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
-import * as Api from '../libs/JmWalletApi'
 
 const WalletHeader = ({ name, balance, unit, showBalance }) => {
   return (
@@ -67,28 +66,26 @@ export default function CurrentWalletMagic() {
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const setWalletInfo = useSetCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = currentWallet
 
     setAlert(null)
     setIsLoading(true)
 
-    Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet.error_loading_failed'))))
-      .then((data) => setWalletInfo(data.walletinfo))
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
       .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+        const message = err.message || t('current_wallet.error_loading_failed')
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
       })
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, setWalletInfo, t])
+  }, [currentWallet, reloadCurrentWalletInfo, t])
 
   return (
     <div className="privacy-levels">
@@ -117,7 +114,7 @@ export default function CurrentWalletMagic() {
           >
             <WalletHeader
               name={currentWallet.name}
-              balance={walletInfo.total_balance}
+              balance={walletInfo.data.display.walletinfo.total_balance}
               unit={settings.unit}
               showBalance={settings.showBalance}
             />
@@ -141,7 +138,7 @@ export default function CurrentWalletMagic() {
             <hr className="my-4" />
           </rb.Row>
           <rb.Row>
-            <PrivacyLevels accounts={walletInfo.accounts} />
+            <PrivacyLevels accounts={walletInfo.data.display.walletinfo.accounts} />
           </rb.Row>
           <rb.Row>
             <hr className="my-4" />

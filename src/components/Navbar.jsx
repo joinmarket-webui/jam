@@ -16,9 +16,13 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {walletInfo && walletInfo?.total_balance && unit ? (
+        {walletInfo && walletInfo?.data.display.walletinfo.total_balance && unit ? (
           <div className="text-body">
-            <Balance valueString={walletInfo.total_balance} convertToUnit={unit} showBalance={showBalance || false} />
+            <Balance
+              valueString={walletInfo.data.display.walletinfo.total_balance}
+              convertToUnit={unit}
+              showBalance={showBalance || false}
+            />
           </div>
         ) : (
           <div className="invisible">
