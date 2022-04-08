@@ -30,7 +30,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
 
   return (
     <rb.Offcanvas className="cheatsheet" show={show} onHide={onHide} placement="bottom">
-      <rb.Offcanvas.Header>
+      <rb.Offcanvas.Header closeButton>
         <rb.Stack>
           <rb.Offcanvas.Title>{t('cheatsheet.title')}</rb.Offcanvas.Title>
           <div className="small text-secondary">
