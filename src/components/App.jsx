@@ -35,6 +35,7 @@ export default function App() {
   const websocketState = useWebsocketState()
 
   const devMode = process.env.NODE_ENV === 'development'
+  const cheatsheetEnabled = devMode && currentWallet
 
   const startWallet = useCallback(
     (name, token) => {
@@ -149,7 +150,7 @@ export default function App() {
             </div>
           </div>
           <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center px-4">
-            {currentWallet && (
+            {cheatsheetEnabled && (
               <>
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
                 <rb.Nav.Item>
