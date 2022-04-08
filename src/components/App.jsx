@@ -132,8 +132,6 @@ export default function App() {
         </Routes>
       </rb.Container>
 
-      <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
-
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2 px-4">
           <div className="d-flex flex-1 order-2 order-md-0 flex-column justify-content-center align-items-center align-items-md-start">
@@ -151,18 +149,23 @@ export default function App() {
             </div>
           </div>
           <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center px-4">
-            <rb.Nav.Item>
-              <rb.Button
-                variant="link"
-                className="cheatsheet-link nav-link text-start border-0 px-2"
-                onClick={() => setShowCheatsheet(true)}
-              >
-                <div className="d-flex justify-content-center align-items-center">
-                  <Sprite symbol="file" width="24" height="24" />
-                  <div className="ps-0">{t('footer.cheatsheet')}</div>
-                </div>
-              </rb.Button>
-            </rb.Nav.Item>
+            {currentWallet && (
+              <>
+                <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
+                <rb.Nav.Item>
+                  <rb.Button
+                    variant="link"
+                    className="cheatsheet-link nav-link text-start border-0 px-2"
+                    onClick={() => setShowCheatsheet(true)}
+                  >
+                    <div className="d-flex justify-content-center align-items-center">
+                      <Sprite symbol="file" width="24" height="24" />
+                      <div className="ps-0">{t('footer.cheatsheet')}</div>
+                    </div>
+                  </rb.Button>
+                </rb.Nav.Item>
+              </>
+            )}
             <rb.Nav.Item>
               <a
                 href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
