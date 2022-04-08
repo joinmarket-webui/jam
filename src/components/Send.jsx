@@ -414,7 +414,7 @@ export default function Send() {
     if (!breakdown) return null
 
     return (
-      <div className="sweep-breakdown mt-1">
+      <div className="sweep-breakdown mt-2">
         <rb.Accordion flush>
           <rb.Accordion.Item eventKey="0">
             <rb.Accordion.Header>
@@ -422,7 +422,7 @@ export default function Send() {
                 {t('send.button_sweep_amount_breakdown')}
               </div>
             </rb.Accordion.Header>
-            <rb.Accordion.Body className="px-0">
+            <rb.Accordion.Body className="my-4 p-0">
               <table className="table table-sm">
                 <tbody>
                   <tr>
@@ -542,7 +542,7 @@ export default function Send() {
                     ))}
               </rb.Form.Select>
             </rb.Form.Group>
-            <rb.Form.Group className="mb-4" controlId="amount">
+            <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
               <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
               <div className="position-relative">
                 <rb.Form.Control
