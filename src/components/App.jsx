@@ -149,9 +149,9 @@ export default function App() {
               </Trans>
             </div>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center px-4">
+          <div className="d-flex order-1 flex-1 flex-grow-0 flex-column flex-sm-row justify-content-center align-items-center pt-2 pt-sm-0 px-4">
             {cheatsheetEnabled && (
-              <>
+              <div class="order-1 order-sm-0">
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
                 <rb.Nav.Item>
                   <rb.Button
@@ -165,48 +165,50 @@ export default function App() {
                     </div>
                   </rb.Button>
                 </rb.Nav.Item>
-              </>
+              </div>
             )}
-            <rb.Nav.Item>
-              <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.docs')}
-              </a>
-            </rb.Nav.Item>
-            <rb.Nav.Item>
-              <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui#-features"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.features')}
-              </a>
-            </rb.Nav.Item>
-            <rb.Nav.Item>
-              <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.github')}
-              </a>
-            </rb.Nav.Item>
-            <rb.Nav.Item>
-              <a
-                href="https://twitter.com/joinmarket"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.twitter')}
-              </a>
-            </rb.Nav.Item>
+            <div className="d-flex flex-row">
+              <rb.Nav.Item>
+                <a
+                  href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.docs')}
+                </a>
+              </rb.Nav.Item>
+              <rb.Nav.Item>
+                <a
+                  href="https://github.com/joinmarket-webui/joinmarket-webui#-features"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.features')}
+                </a>
+              </rb.Nav.Item>
+              <rb.Nav.Item>
+                <a
+                  href="https://github.com/joinmarket-webui/joinmarket-webui"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.github')}
+                </a>
+              </rb.Nav.Item>
+              <rb.Nav.Item>
+                <a
+                  href="https://twitter.com/joinmarket"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.twitter')}
+                </a>
+              </rb.Nav.Item>
+            </div>
           </div>
           <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
             <span className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}>•</span>
