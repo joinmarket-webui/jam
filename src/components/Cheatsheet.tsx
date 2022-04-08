@@ -64,7 +64,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             <h6>
               <Link to="/receive">Fund</Link> your wallet first.
             </h6>
-            <div className="small text-secondary">Deposit your coins - nothing new here.</div>
+            <div className="small text-secondary">Deposit your coins ‒ nothing new here.</div>
           </ListItem>
           <ListItem number={2}>
             <h6>
@@ -82,7 +82,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             <h6>
               Lock funds in a <Link to="/earn">fidelity bond</Link>. (advanced)
             </h6>
-            <div className="small text-secondary">Optional - but gives higher chances to be chosen.</div>
+            <div className="small text-secondary">Optional ‒ but gives higher chances to be chosen.</div>
           </ListItem>
           <ListItem number={5}>
             <h6>
@@ -92,15 +92,15 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           </ListItem>
           <ListItem number={6}>
             <h6>
-              Time to <Link to="/earn">earn</Link> again - YIELD!
+              Time to <Link to="/earn">earn</Link> again ‒ YIELD!
             </h6>
-            <div className="small text-secondary">Optional - by switching back and forth you add more noise.</div>
+            <div className="small text-secondary">Optional ‒ by switching back and forth you add more noise.</div>
           </ListItem>
           <ListItem number={7}>
             <h6>
               <Link to="/send">Sweep</Link> out your wallet completely.
             </h6>
-            <div className="small text-secondary">Your coins should be very private by now - move them out.</div>
+            <div className="small text-secondary">Your coins should be very private by now ‒ move them out.</div>
           </ListItem>
           <ListItem number={8}>
             <h6>
