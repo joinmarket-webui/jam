@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, PropsWithChildren } from 'react'
+import React, { createContext, useEffect, useState, useContext, PropsWithChildren } from 'react'
 
 import { getSession } from '../session'
 
@@ -57,6 +57,12 @@ const restoreWalletFromSession = (): CurrentWallet | null => {
 const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   const [currentWallet, setCurrentWallet] = useState(restoreWalletFromSession())
   const [currentWalletInfo, setCurrentWalletInfo] = useState<WalletInfo | null>(null)
+
+  useEffect(() => {
+    if (!currentWallet) {
+      setCurrentWalletInfo(null)
+    }
+  }, [currentWallet])
 
   return (
     <WalletContext.Provider value={{ currentWallet, setCurrentWallet, currentWalletInfo, setCurrentWalletInfo }}>
