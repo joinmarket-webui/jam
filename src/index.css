@@ -385,6 +385,9 @@ main {
 .cheatsheet .cheatsheet-list-item h6 {
   margin-bottom: 0.1rem;
 }
+.cheatsheet a {
+  color: inherit;
+}
 
 .cheatsheet-link.nav-link {
   color: var(--bs-gray-900);
