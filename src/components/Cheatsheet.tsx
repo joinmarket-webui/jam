@@ -1,6 +1,7 @@
 import React, { PropsWithChildren } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 
 interface CheatsheetProps {
   show: boolean
@@ -25,36 +26,40 @@ function ListItem({ number, children }: PropsWithChildren<NumberedProps>) {
 }
 
 export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
+  const { t } = useTranslation()
+
   return (
     <rb.Offcanvas className="cheatsheet" show={show} onHide={onHide} placement="bottom">
       <rb.Offcanvas.Header>
         <rb.Stack>
-          <rb.Offcanvas.Title>The Cheatsheet</rb.Offcanvas.Title>
+          <rb.Offcanvas.Title>{t('cheatsheet.title')}</rb.Offcanvas.Title>
           <div className="small text-secondary">
-            This is one valid way to add random noise to your coins by switching from{' '}
-            <a
-              href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#the-maker-role"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              earning as a maker
-            </a>{' '}
-            to{' '}
-            <a
-              href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#the-taker-role"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              sending as a taker
-            </a>{' '}
-            back and forth.{' '}
-            <a
-              href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#a-private-flow-through-joinmarket"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn more.
-            </a>
+            <Trans i18nKey="cheatsheet.description">
+              This is one valid way to add random noise to your coins by switching from{' '}
+              <a
+                href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#the-maker-role"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                earning as a maker
+              </a>{' '}
+              to{' '}
+              <a
+                href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#the-taker-role"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                sending as a taker
+              </a>{' '}
+              back and forth.{' '}
+              <a
+                href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#a-private-flow-through-joinmarket"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Learn more.
+              </a>
+            </Trans>
           </div>
         </rb.Stack>
       </rb.Offcanvas.Header>
@@ -62,51 +67,67 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
         <rb.Stack className="mb-4" gap={4}>
           <ListItem number={1}>
             <h6>
-              <Link to="/receive">Fund</Link> your wallet first.
+              <Trans i18nKey="cheatsheet.item_1.title">
+                <Link to="/receive">Fund</Link> your wallet first.
+              </Trans>
             </h6>
-            <div className="small text-secondary">Deposit your coins ‒ nothing new here.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_1.description')}</div>
           </ListItem>
           <ListItem number={2}>
             <h6>
-              <Link to="/send">Send</Link> first collaborative transaction to yourself.
+              <Trans i18nKey="cheatsheet.item_2.title">
+                <Link to="/send">Send</Link> first collaborative transaction to yourself.
+              </Trans>
             </h6>
-            <div className="small text-secondary">Sweep everything to your own wallet again, but privately.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
           </ListItem>
           <ListItem number={3}>
             <h6>
-              Provide liquidity and <Link to="/earn">earn</Link> yield.
+              <Trans i18nKey="cheatsheet.item_3.title">
+                Provide liquidity and <Link to="/earn">earn</Link> yield.
+              </Trans>
             </h6>
-            <div className="small text-secondary">The longer, the better. Time is money.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
           </ListItem>
           <ListItem number={4}>
             <h6>
-              Lock funds in a <Link to="/earn">fidelity bond</Link>. (advanced)
+              <Trans i18nKey="cheatsheet.item_4.title">
+                Lock funds in a <Link to="/earn">fidelity bond</Link>. (advanced)
+              </Trans>
             </h6>
-            <div className="small text-secondary">Optional ‒ but gives higher chances to be chosen.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
           </ListItem>
           <ListItem number={5}>
             <h6>
-              <Link to="/send">Consolidate</Link> your levels.
+              <Trans i18nKey="cheatsheet.item_5.title">
+                <Link to="/send">Consolidate</Link> your levels.
+              </Trans>
             </h6>
-            <div className="small text-secondary">Do a collabroative transaction from one level to another.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
           </ListItem>
           <ListItem number={6}>
             <h6>
-              Time to <Link to="/earn">earn</Link> again ‒ YIELD!
+              <Trans i18nKey="cheatsheet.item_6.title">
+                Time to <Link to="/earn">earn</Link> again ‒ YIELD!
+              </Trans>
             </h6>
-            <div className="small text-secondary">Optional ‒ by switching back and forth you add more noise.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_6.description')}</div>
           </ListItem>
           <ListItem number={7}>
             <h6>
-              <Link to="/send">Sweep</Link> out your wallet completely.
+              <Trans i18nKey="cheatsheet.item_7.title">
+                <Link to="/send">Sweep</Link> out your wallet completely.
+              </Trans>
             </h6>
-            <div className="small text-secondary">Your coins should be very private by now ‒ move them out.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_7.description')}</div>
           </ListItem>
           <ListItem number={8}>
             <h6>
-              Go to step one and <Link to="/receive">repeat</Link>.
+              <Trans i18nKey="cheatsheet.item_8.title">
+                Go to step one and <Link to="/receive">repeat</Link>.
+              </Trans>
             </h6>
-            <div className="small text-secondary">Now you know.</div>
+            <div className="small text-secondary">{t('cheatsheet.item_8.description')}</div>
           </ListItem>
         </rb.Stack>
       </rb.Offcanvas.Body>

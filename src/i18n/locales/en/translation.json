@@ -227,5 +227,41 @@
     "text_stopping": "Stopping",
     "button_show_report": "Show report",
     "button_hide_report": "Hide report"
+  },
+  "cheatsheet": {
+    "title": "The Cheatsheet",
+    "description": "This is one valid way to add random noise to your coins by switching from <2>earning as a maker</2> to <6>sending as a taker</6> back and forth. <10>Learn more.</10>",
+    "item_1": {
+      "title": "<0>Fund</0> your wallet first.",
+      "description": "Deposit your coins ‒ nothing new here."
+    },
+    "item_2": {
+      "title": "<0>Send</0> first collaborative transaction to yourself.",
+      "description": "Sweep everything to your own wallet again, but privately."
+    },
+    "item_3": {
+      "title": "Provide liquidity and <1>earn</1> yield.",
+      "description": "The longer, the better. Time is money."
+    },
+    "item_4": {
+      "title": "Lock funds in a <1>fidelity bond</1>. (advanced)",
+      "description": "Optional ‒ but gives higher chances to be chosen."
+    },
+    "item_5": {
+      "title": "<0>Consolidate</0> your levels.",
+      "description": "Do a collabroative transaction from one level to another."
+    },
+    "item_6": {
+      "title": "Time to <1>earn</1> again ‒ YIELD!",
+      "description": "Optional ‒ by switching back and forth you add more noise."
+    },
+    "item_7": {
+      "title": "<0>Sweep</0> out your wallet completely.",
+      "description": "Your coins should be very private by now ‒ move them out."
+    },
+    "item_8": {
+      "title": "Go to step one and <1>repeat</1>.",
+      "description": "Now you know."
+    }
   }
 }
