@@ -61,34 +61,29 @@ export default function Wallet({
     setIsUnlocking(true)
     try {
       const res = await Api.postWalletUnlock({ walletName }, { password })
-      const body = await res.json()
+      const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
       setIsUnlocking(false)
 
-      if (res.ok) {
-        const { walletname: unlockedWalletName, token } = body
-        startWallet(unlockedWalletName, token)
-        navigate('/wallet')
-      } else {
-        setAlert({
-          variant: 'danger',
-          message: body.message.replace('Wallet', walletName),
-        })
-      }
+      const { walletname: unlockedWalletName, token } = body
+      startWallet(unlockedWalletName, token)
+      navigate('/wallet')
     } catch (e) {
       setIsUnlocking(false)
-      setAlert({ variant: 'danger', message: e.message })
+
+      const message = e.message.replace('Wallet', walletName)
+      setAlert({ variant: 'danger', message })
     }
   }
 
   const lockWallet = async () => {
+    setAlert(null)
+    setIsLocking(true)
+
     try {
       const { name: walletName, token } = currentWallet
-      setAlert(null)
-      setIsLocking(true)
 
       const res = await Api.getWalletLock({ walletName, token })
-      const body = await res.json()
 
       setIsLocking(false)
 
@@ -100,6 +95,7 @@ export default function Wallet({
         stopWallet()
       }
 
+      const body = await res.json()
       if (res.ok) {
         const { walletname: lockedWalletName, already_locked } = body
 

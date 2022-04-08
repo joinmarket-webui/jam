@@ -20,20 +20,13 @@ const Utxo = ({ utxo, ...props }) => {
   const onClickFreeze = async (utxo) => {
     if (isSending) return
 
+    setIsSending(true)
+    setAlert(null)
+
     const { name: walletName, token } = currentWallet
 
-    setAlert(null)
-    setIsSending(true)
-
     await Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: !utxo.frozen })
-      .then(async (res) => {
-        if (res.ok) {
-          return true
-        } else {
-          const { message } = await res.json()
-          throw new Error(message || t('current_wallet_advanced.error_freeze_failed'))
-        }
-      })
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('current_wallet_advanced.error_freeze_failed'))))
       .then((_) => (utxo.frozen = !utxo.frozen))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
