@@ -41,7 +41,7 @@ const PrivacyLevels = ({ accounts, loading }) => {
   return (
     <div className="d-flex justify-content-center">
       <div className="d-flex flex-column align-items-start" style={{ gap: '1rem' }}>
-        {loading && [...new Array(5)].map((a, index) => <LoadingPrivacyLevel level={5} />)}
+        {loading && [...new Array(5)].map((a, index) => <LoadingPrivacyLevel key={index} level={5} />)}
         {!loading &&
           sortedAccounts.map(({ account, account_balance: balance, branches }) => (
             <PrivacyLevel
@@ -59,7 +59,7 @@ const PrivacyLevels = ({ accounts, loading }) => {
 
 const LoadingPrivacyLevel = ({ level }) => {
   const loadingShields = Array(level)
-    .fill('')
+    .fill()
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-filled-loading" width="24" height="30" />
     })
@@ -139,16 +139,6 @@ export default function CurrentWalletMagic() {
           </rb.Col>
         </rb.Row>
       )}
-      {/* {isLoading && ( */}
-      {/*   <rb.Row className="justify-content-center"> */}
-      {/*     <rb.Col className="flex-grow-0"> */}
-      {/*       <div className="d-flex justify-content-center align-items-center"> */}
-      {/*         <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" /> */}
-      {/*         {t('current_wallet.text_loading')} */}
-      {/*       </div> */}
-      {/*     </rb.Col> */}
-      {/*   </rb.Row> */}
-      {/* )} */}
       <>
         <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
           <WalletHeader

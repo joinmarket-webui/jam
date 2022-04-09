@@ -2,3 +2,19 @@
   margin-top: 1.5rem;
   height: 2.25rem;
 }
+
+.receive-placeholder-container {
+  height: 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.receive-placeholder {
+  height: 1.5rem;
+}
+
+.receive-placeholder-qr {
+  width: 215px; /* 13.4375rem */
+  height: 13.75rem;
+  margin: 1.25rem;
+}

@@ -102,16 +102,16 @@ export default function Receive() {
           <div className="d-flex justify-content-center">
             {address && <BitcoinQR address={address} sats={amount} />}
             {!address && (
-              <rb.Placeholder as="p" animation="wave" className="receive-placeholder-qr-container">
-                <rb.Placeholder xs={12} className="receive-placeholder-qr" />
+              <rb.Placeholder as="p" animation="wave" className="mb-0">
+                <rb.Placeholder xs={12} className={styles['receive-placeholder-qr']} />
               </rb.Placeholder>
             )}
           </div>
           <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
             {address && <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>}
             {!address && (
-              <rb.Placeholder as="p" animation="wave" className="receive-placeholder-container">
-                <rb.Placeholder xs={8} className="receive-placeholder" />
+              <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
+                <rb.Placeholder xs={8} className={styles['receive-placeholder']} />
               </rb.Placeholder>
             )}
             <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
