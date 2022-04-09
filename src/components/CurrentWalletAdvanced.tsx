@@ -10,7 +10,6 @@ import DisplayUTXOs from './DisplayUTXOs'
 // @ts-ignore
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
-import { LoadingAccounts } from './LoadingAccounts'
 
 type Utxos = any[]
 type Alert = { message: string; variant: string }
@@ -69,7 +68,15 @@ export default function CurrentWalletAdvanced() {
   return (
     <div>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {isLoading && <LoadingAccounts amount={5} />}
+      {isLoading && (
+        <div>
+          {[...new Array(5)].map((a, index) => (
+            <rb.Placeholder key={index} as="div" animation="wave" className="mb-1">
+              <rb.Placeholder xs={12} />
+            </rb.Placeholder>
+          ))}
+        </div>
+      )}
       {!isLoading && walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">

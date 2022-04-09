@@ -549,6 +549,10 @@ h2 {
   width: 80%;
 }
 
+.btn:disabled:hover {
+  cursor: not-allowed;
+}
+
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white);

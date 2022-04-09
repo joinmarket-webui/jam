@@ -8,46 +8,86 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import styles from './CurrentWalletMagic.module.css'
+import { ExtendedLink } from './ExtendedLink'
 
-const WalletHeader = ({ name, balance, unit, showBalance }) => {
+const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
     <div className="d-flex flex-column align-items-center">
-      <h6 className="text-secondary">{walletDisplayName(name)}</h6>
-      <h4>
-        <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
-      </h4>
+      {loading && (
+        <rb.Placeholder as="p" animation="wave" className="mb-0">
+          <rb.Placeholder className={styles['wallet-header-title']} />
+        </rb.Placeholder>
+      )}
+      {!loading && <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>}
+      {loading && (
+        <rb.Placeholder as="p" animation="wave" className="mb-0">
+          <rb.Placeholder className={styles['wallet-header-subtitle']} />
+        </rb.Placeholder>
+      )}
+      {!loading && (
+        <h2>
+          <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} loading={loading} />
+        </h2>
+      )}
     </div>
   )
 }
 
-const PrivacyLevels = ({ accounts }) => {
-  const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account)
-  const numAccounts = sortedAccounts.length
+const PrivacyLevels = ({ accounts, loading }) => {
+  const sortedAccounts = accounts?.sort((lhs, rhs) => lhs.account - rhs.account)
+  const numAccounts = sortedAccounts?.length
 
   return (
     <div className="d-flex justify-content-center">
       <div className="d-flex flex-column align-items-start" style={{ gap: '1rem' }}>
-        {sortedAccounts.map(({ account, account_balance: balance, branches }) => (
-          <PrivacyLevel key={account} numAccounts={numAccounts} level={parseInt(account)} balance={balance} />
-        ))}
+        {loading && [...new Array(5)].map((a, index) => <LoadingPrivacyLevel level={5} />)}
+        {!loading &&
+          sortedAccounts.map(({ account, account_balance: balance, branches }) => (
+            <PrivacyLevel
+              key={account}
+              numAccounts={numAccounts}
+              level={parseInt(account)}
+              balance={balance}
+              loading={loading}
+            />
+          ))}
       </div>
     </div>
   )
 }
 
-const PrivacyLevel = ({ numAccounts, level, balance }) => {
+const LoadingPrivacyLevel = ({ level }) => {
+  const loadingShields = Array(level)
+    .fill('')
+    .map((_, index) => {
+      return <Sprite key={index} symbol="shield-filled-loading" width="24" height="30" />
+    })
+
+  return (
+    <div className="d-flex align-items-center">
+      <div className="d-flex">{loadingShields}</div>
+      <div className="ps-2">
+        <Balance valueString={undefined} convertToUnit={undefined} showBalance={undefined} loading={true} />
+      </div>
+    </div>
+  )
+}
+
+const PrivacyLevel = ({ numAccounts, level, balance, loading }) => {
   const settings = useSettings()
 
   const filledShields = Array(level + 1)
-    .fill()
+    .fill('')
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-filled" width="24" height="30" />
     })
   const outlinedShields = Array(numAccounts - filledShields.length)
-    .fill()
+    .fill('')
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-outline" width="24" height="30" />
     })
+
   return (
     <div className="d-flex align-items-center">
       <div className={`d-flex privacy-level-${level}`}>
@@ -99,63 +139,64 @@ export default function CurrentWalletMagic() {
           </rb.Col>
         </rb.Row>
       )}
-      {isLoading && (
-        <rb.Row className="justify-content-center">
-          <rb.Col className="flex-grow-0">
-            <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              {t('current_wallet.text_loading')}
-            </div>
+      {/* {isLoading && ( */}
+      {/*   <rb.Row className="justify-content-center"> */}
+      {/*     <rb.Col className="flex-grow-0"> */}
+      {/*       <div className="d-flex justify-content-center align-items-center"> */}
+      {/*         <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" /> */}
+      {/*         {t('current_wallet.text_loading')} */}
+      {/*       </div> */}
+      {/*     </rb.Col> */}
+      {/*   </rb.Row> */}
+      {/* )} */}
+      <>
+        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
+          <WalletHeader
+            name={currentWallet?.name}
+            balance={walletInfo?.total_balance}
+            unit={settings.unit}
+            showBalance={settings.showBalance}
+            loading={isLoading}
+          />
+        </rb.Row>
+        <rb.Row className="mt-4">
+          <rb.Col>
+            {/* Always receive on first mixdepth. */}
+            <ExtendedLink
+              disabled={isLoading}
+              to="/receive"
+              state={{ account: 0 }}
+              className="btn btn-outline-dark w-100"
+            >
+              {t('current_wallet.button_deposit')}
+            </ExtendedLink>
+          </rb.Col>
+          <rb.Col>
+            {/* Todo: Withdrawing needs to factor in the privacy levels as well.
+          Depending on the mixdepth/account there will be different amounts available. */}
+            <ExtendedLink disabled={isLoading} to="/send" className="btn btn-outline-dark w-100">
+              {t('current_wallet.button_withdraw')}
+            </ExtendedLink>
           </rb.Col>
         </rb.Row>
-      )}
-      {!isLoading && currentWallet && walletInfo && (
-        <>
-          <rb.Row
-            onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
-            style={{ cursor: 'pointer' }}
-          >
-            <WalletHeader
-              name={currentWallet.name}
-              balance={walletInfo.total_balance}
-              unit={settings.unit}
-              showBalance={settings.showBalance}
-            />
-          </rb.Row>
-          <rb.Row className="mt-4">
-            <rb.Col>
-              {/* Always receive on first mixdepth. */}
-              <Link to="/receive" state={{ account: 0 }} className="btn btn-outline-dark w-100">
-                {t('current_wallet.button_deposit')}
-              </Link>
-            </rb.Col>
-            <rb.Col>
-              {/* Todo: Withdrawing needs to factor in the privacy levels as well.
-                Depending on the mixdepth/account there will be different amounts available. */}
-              <Link to="/send" className="btn btn-outline-dark w-100">
-                {t('current_wallet.button_withdraw')}
-              </Link>
-            </rb.Col>
-          </rb.Row>
-          <rb.Row>
-            <hr className="my-4" />
-          </rb.Row>
-          <rb.Row>
-            <PrivacyLevels accounts={walletInfo.accounts} />
-          </rb.Row>
-          <rb.Row>
-            <hr className="my-4" />
-          </rb.Row>
-          <rb.Row>
-            <Link to="/" className="btn btn-outline-dark">
-              <div className="d-flex justify-content-center align-items-center">
-                <Sprite symbol="wallet" width="24" height="24" />
-                <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
-              </div>
-            </Link>
-          </rb.Row>
-        </>
-      )}
+        <rb.Row>
+          <hr className="my-4" />
+        </rb.Row>
+        <rb.Row>
+          <PrivacyLevels accounts={walletInfo?.accounts} loading={isLoading} />
+        </rb.Row>
+        <rb.Row>
+          <hr className="my-4" />
+        </rb.Row>
+        <rb.Row>
+          <ExtendedLink disabled={isLoading} to="/" className="btn btn-outline-dark">
+            <div className="d-flex justify-content-center align-items-center">
+              <Sprite symbol="wallet" width="24" height="24" />
+              <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
+            </div>
+          </ExtendedLink>
+        </rb.Row>
+      </>
     </div>
   )
 }

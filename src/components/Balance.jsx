@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { BTC, SATS, btcToSats, satsToBtc } from '../utils'
 import Sprite from './Sprite'
+import * as rb from 'react-bootstrap'
+import styles from './Balance.module.css'
 
 const DISPLAY_MODE_BTC = 0
 const DISPLAY_MODE_SATS = 1
@@ -43,7 +45,15 @@ const formatSats = (value) => {
   return formatter.format(value)
 }
 
-const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
+const BalanceComponent = ({ symbol, value, symbolIsPrefix, loading }) => {
+  if (loading) {
+    return (
+      <rb.Placeholder as="p" animation="wave" className="mb-0">
+        <rb.Placeholder className={styles['balance-component-placeholder']} />
+      </rb.Placeholder>
+    )
+  }
+
   return (
     <span className="d-inline-flex align-items-center">
       {symbolIsPrefix && symbol}
@@ -66,14 +76,14 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
  * Hidden balances are masked with `*****`.
  */
-export default function Balance({ valueString, convertToUnit, showBalance = false }) {
+export default function Balance({ valueString, convertToUnit, showBalance = false, loading }) {
   const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
 
   useEffect(() => {
     setDisplayMode(getDisplayMode(convertToUnit, showBalance))
   }, [convertToUnit, showBalance])
 
-  if (displayMode === DISPLAY_MODE_HIDDEN) {
+  if (displayMode === DISPLAY_MODE_HIDDEN && !loading) {
     return (
       <BalanceComponent
         symbol={
@@ -87,9 +97,10 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
     )
   }
 
+  console.log({ valueString })
   if (typeof valueString !== 'string') {
     console.warn('<Balance /> component expects string input')
-    return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
+    return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} loading={loading} />
   }
 
   // Treat integers as sats.

@@ -10,6 +10,7 @@ import { useCurrentWallet } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
+import styles from './Receive.module.css'
 
 export default function Receive() {
   const { t } = useTranslation()
@@ -155,15 +156,18 @@ export default function Receive() {
           </rb.Card.Body>
         </rb.Card>
       </div>
-      <div className="mt-4">
-        <rb.Button
-          variant={`${settings.theme}`}
-          className="ps-0 border-0 d-flex align-items-center"
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          {t('receive.button_settings')}
-          <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
-        </rb.Button>
+      <div className={styles['settings-container']}>
+        {!isLoading && (
+          <rb.Button
+            variant={`${settings.theme}`}
+            className="ps-0 border-0 d-flex align-items-center"
+            onClick={() => setShowSettings(!showSettings)}
+            disabled={isLoading}
+          >
+            {t('receive.button_settings')}
+            <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
+          </rb.Button>
+        )}
       </div>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         {showSettings && (

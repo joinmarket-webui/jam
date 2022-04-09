@@ -123,12 +123,8 @@ input::-webkit-inner-spin-button {
   border-color: var(--bs-gray-dark) !important;
 }
 
-.input-loader {
+.send .input-loader {
   height: 3.5rem;
-}
-
-.text-loader {
-  height: 1.75rem;
 }
 
 .form-group-without-coinjoin-option {
