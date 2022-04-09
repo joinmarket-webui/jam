@@ -10,6 +10,7 @@ import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import './CreateWallet.css'
+import { routes } from '../constants/routes'
 
 const PreventLeavingPageByMistake = () => {
   // prompt users before refreshing or closing the page when this component is present.
@@ -369,7 +370,7 @@ export default function CreateWallet({ startWallet, devMode = false }) {
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
             Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletName) }}</strong> is active. You need
             to lock it first.
-            <Link to="/" className="alert-link">
+            <Link to={routes.home} className="alert-link">
               Go back
             </Link>
             .

@@ -8,6 +8,7 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import { routes } from '../constants/routes'
 
 const WalletHeader = ({ name, balance, unit, showBalance }) => {
   return (
@@ -125,14 +126,14 @@ export default function CurrentWalletMagic() {
           <rb.Row className="mt-4">
             <rb.Col>
               {/* Always receive on first mixdepth. */}
-              <Link to="/receive" state={{ account: 0 }} className="btn btn-outline-dark w-100">
+              <Link to={routes.receive} state={{ account: 0 }} className="btn btn-outline-dark w-100">
                 {t('current_wallet.button_deposit')}
               </Link>
             </rb.Col>
             <rb.Col>
               {/* Todo: Withdrawing needs to factor in the privacy levels as well.
                 Depending on the mixdepth/account there will be different amounts available. */}
-              <Link to="/send" className="btn btn-outline-dark w-100">
+              <Link to={routes.send} className="btn btn-outline-dark w-100">
                 {t('current_wallet.button_withdraw')}
               </Link>
             </rb.Col>
@@ -147,7 +148,7 @@ export default function CurrentWalletMagic() {
             <hr className="my-4" />
           </rb.Row>
           <rb.Row>
-            <Link to="/" className="btn btn-outline-dark">
+            <Link to={routes.home} className="btn btn-outline-dark">
               <div className="d-flex justify-content-center align-items-center">
                 <Sprite symbol="wallet" width="24" height="24" />
                 <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
