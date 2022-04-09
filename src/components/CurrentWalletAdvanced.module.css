@@ -1,3 +1,7 @@
-.currentWalletLoader {
-  height: 3.5rem;
+.current-wallet-placeholder-container {
+  margin-bottom: 0.375rem;
+}
+
+.current-wallet-placeholder {
+  height: 3.3rem;
 }

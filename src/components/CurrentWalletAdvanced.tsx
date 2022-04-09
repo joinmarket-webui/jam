@@ -10,6 +10,7 @@ import DisplayUTXOs from './DisplayUTXOs'
 // @ts-ignore
 import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
+import styles from './CurrentWalletAdvanced.module.css'
 
 type Utxos = any[]
 type Alert = { message: string; variant: string }
@@ -71,8 +72,13 @@ export default function CurrentWalletAdvanced() {
       {isLoading && (
         <div>
           {[...new Array(5)].map((a, index) => (
-            <rb.Placeholder key={index} as="div" animation="wave" className="mb-1">
-              <rb.Placeholder xs={12} />
+            <rb.Placeholder
+              key={index}
+              as="div"
+              animation="wave"
+              className={styles['current-wallet-placeholder-container']}
+            >
+              <rb.Placeholder xs={12} className={styles['current-wallet-placeholder']} />
             </rb.Placeholder>
           ))}
         </div>
@@ -91,7 +97,7 @@ export default function CurrentWalletAdvanced() {
           onClick={() => {
             setShowUTXO(!showUTXO)
           }}
-          className={isLoading ? 'mt-3 mb-3' : 'mb-3'}
+          className={isLoading ? 'mt-3 mb-3 pe-auto' : 'mb-3'}
         >
           {showUTXO ? t('current_wallet_advanced.button_hide_utxos') : t('current_wallet_advanced.button_show_utxos')}
         </rb.Button>

@@ -97,9 +97,8 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
     )
   }
 
-  console.log({ valueString })
   if (typeof valueString !== 'string') {
-    console.warn('<Balance /> component expects string input')
+    if (!loading) console.warn('<Balance /> component expects string input')
     return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} loading={loading} />
   }
 
