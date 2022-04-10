@@ -5,7 +5,7 @@ import { Trans, useTranslation } from 'react-i18next'
 
 interface CheatsheetProps {
   show: boolean
-  onHide(): () => void
+  onHide: () => void
 }
 
 type NumberedProps = {

@@ -151,7 +151,7 @@ export default function App() {
           </div>
           <div className="d-flex order-1 flex-1 flex-grow-0 flex-column flex-sm-row justify-content-center align-items-center pt-2 pt-sm-0 px-4">
             {cheatsheetEnabled && (
-              <div class="order-1 order-sm-0">
+              <div className="order-1 order-sm-0">
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
                 <rb.Nav.Item>
                   <rb.Button
