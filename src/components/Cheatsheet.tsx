@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
+import { routes } from '../constants/routes'
 
 interface CheatsheetProps {
   show: boolean
@@ -69,7 +70,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={1}>
             <h6>
               <Trans i18nKey="cheatsheet.item_1.title">
-                <Link to="/receive">Fund</Link> your wallet first.
+                <Link to={routes.receive}>Fund</Link> your wallet first.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_1.description')}</div>
@@ -77,7 +78,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={2}>
             <h6>
               <Trans i18nKey="cheatsheet.item_2.title">
-                <Link to="/send">Send</Link> first collaborative transaction to yourself.
+                <Link to={routes.send}>Send</Link> first collaborative transaction to yourself.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
@@ -85,7 +86,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={3}>
             <h6>
               <Trans i18nKey="cheatsheet.item_3.title">
-                Provide liquidity and <Link to="/earn">earn</Link> yield.
+                Provide liquidity and <Link to={routes.earn}>earn</Link> yield.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
@@ -93,7 +94,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={4} className="upcoming-feature">
             <h6>
               <Trans i18nKey="cheatsheet.item_4.title">
-                Lock funds in a <Link to="/earn">fidelity bond</Link>. (advanced)
+                Lock funds in a <Link to={routes.earn}>fidelity bond</Link>. (advanced)
               </Trans>
             </h6>
             <div className="small text-secondary">
@@ -106,7 +107,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={5}>
             <h6>
               <Trans i18nKey="cheatsheet.item_5.title">
-                <Link to="/send">Consolidate</Link> your levels.
+                <Link to={routes.send}>Consolidate</Link> your levels.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
@@ -114,7 +115,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={6}>
             <h6>
               <Trans i18nKey="cheatsheet.item_6.title">
-                Time to <Link to="/earn">earn</Link> again ‒ YIELD!
+                Time to <Link to={routes.earn}>earn</Link> again ‒ YIELD!
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_6.description')}</div>
@@ -122,7 +123,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={7}>
             <h6>
               <Trans i18nKey="cheatsheet.item_7.title">
-                <Link to="/send">Sweep</Link> out your wallet completely.
+                <Link to={routes.send}>Sweep</Link> out your wallet completely.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_7.description')}</div>
@@ -130,7 +131,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={8}>
             <h6>
               <Trans i18nKey="cheatsheet.item_8.title">
-                Go to step one and <Link to="/receive">repeat</Link>.
+                Go to step one and <Link to={routes.receive}>repeat</Link>.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_8.description')}</div>
