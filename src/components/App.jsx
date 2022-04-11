@@ -13,7 +13,7 @@ import Settings from './Settings'
 import Navbar from './Navbar'
 import Layout from './Layout'
 import Sprite from './Sprite'
-import { useSettings } from '../context/SettingsContext'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
 import { useSessionConnectionError } from '../context/ServiceInfoContext'
@@ -23,6 +23,9 @@ import Cheatsheet from './Cheatsheet'
 
 export default function App() {
   const { t } = useTranslation()
+  const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
+  const websocketState = useWebsocketState()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const setCurrentWalletInfo = useSetCurrentWalletInfo()
@@ -31,8 +34,6 @@ export default function App() {
   const [websocketConnected, setWebsocketConnected] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
-  const settings = useSettings()
-  const websocketState = useWebsocketState()
 
   const devMode = process.env.NODE_ENV === 'development'
   const cheatsheetEnabled = devMode && currentWallet
@@ -55,6 +56,19 @@ export default function App() {
   useEffect(() => {
     setWebsocketConnected(websocketState === WebSocket.OPEN)
   }, [websocketState])
+
+  useEffect(() => {
+    let timer
+    // show the cheatsheet once after the first wallet has been created
+    if (cheatsheetEnabled && settings.showCheatsheet) {
+      timer = setTimeout(() => {
+        setShowCheatsheet(true)
+        settingsDispatch({ showCheatsheet: false })
+      }, 1000)
+    }
+
+    return () => clearTimeout(timer)
+  }, [cheatsheetEnabled, settings, settingsDispatch])
 
   if (settings.showOnboarding === true) {
     return (
