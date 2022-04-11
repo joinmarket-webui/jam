@@ -4,6 +4,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
+import { routes } from '../constants/routes'
 
 const BranchEntry = ({ entry, ...props }) => {
   const settings = useSettings()
@@ -51,10 +52,10 @@ export default function DisplayAccounts({ accounts, ...props }) {
             </rb.Row>
           </rb.Accordion.Header>
           <rb.Accordion.Body>
-            <Link to="/send" state={{ account }} className="btn btn-outline-dark">
+            <Link to={routes.send} state={{ account }} className="btn btn-outline-dark">
               {t('current_wallet_advanced.account_button_send')}
             </Link>{' '}
-            <Link to="/receive" state={{ account }} className="btn btn-outline-dark">
+            <Link to={routes.receive} state={{ account }} className="btn btn-outline-dark">
               {t('current_wallet_advanced.account_button_receive')}
             </Link>
             {branches.map(({ balance, branch, entries }) => {
