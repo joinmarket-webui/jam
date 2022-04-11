@@ -10,15 +10,16 @@ interface CheatsheetProps {
 
 type NumberedProps = {
   number: number
+  className?: string
 }
 
 function Numbered({ number }: { number: number }) {
   return <div className="numbered">{number}</div>
 }
 
-function ListItem({ number, children }: PropsWithChildren<NumberedProps>) {
+function ListItem({ number, children, ...props }: PropsWithChildren<NumberedProps>) {
   return (
-    <rb.Stack className="cheatsheet-list-item" direction="horizontal" gap={3}>
+    <rb.Stack className={`cheatsheet-list-item ${props.className || ''}`} direction="horizontal" gap={3}>
       <Numbered number={number} />
       <rb.Stack gap={0}>{children}</rb.Stack>
     </rb.Stack>
@@ -89,13 +90,18 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
           </ListItem>
-          <ListItem number={4}>
+          <ListItem number={4} className="upcoming-feature">
             <h6>
               <Trans i18nKey="cheatsheet.item_4.title">
                 Lock funds in a <Link to="/earn">fidelity bond</Link>. (advanced)
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
+            <div className="small text-secondary">
+              {t('cheatsheet.item_4.description')}
+              <br />
+              {/* the following phrase is intentionally not translated because it will be removed soon */}
+              <strong>Feature not implemented yet. Coming soon!</strong>
+            </div>
           </ListItem>
           <ListItem number={5}>
             <h6>
