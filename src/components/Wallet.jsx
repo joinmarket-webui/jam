@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { serialize, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
+import { routes } from '../constants/routes'
 
 function ConfirmModal({ show = false, onHide, title, body, footer }) {
   return (
@@ -199,7 +200,7 @@ export default function Wallet({
                 <rb.Card.Title>
                   {isActive ? (
                     <span style={{ position: 'relative' }}>
-                      <Link className="wallet-name" to="/wallet">
+                      <Link className="wallet-name" to={routes.wallet}>
                         {walletDisplayName(name)}
                       </Link>
                       {makerRunning && <EarnIndicator isOn={true} />}
@@ -218,7 +219,7 @@ export default function Wallet({
               <div>
                 {showLockOptions ? (
                   <>
-                    <Link className="btn btn-outline-dark me-2" to="/wallet">
+                    <Link className="btn btn-outline-dark me-2" to={routes.wallet}>
                       {t('wallets.wallet_preview.button_open')}
                     </Link>
                     <rb.FormControl type="hidden" name="action" value="lock" />
