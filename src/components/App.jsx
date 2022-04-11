@@ -20,6 +20,7 @@ import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
+import { routes } from '../constants/routes'
 
 export default function App() {
   const { t } = useTranslation()
@@ -113,7 +114,7 @@ export default function App() {
            * that it stays visible in case the backend becomes unavailable.
            */}
           <Route element={<Layout />}>
-            <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
+            <Route path={routes.createWallet} element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
           </Route>
           {/**
            * This section defines all routes that are displayed only if the backend is reachable.
@@ -121,27 +122,27 @@ export default function App() {
           {!sessionConnectionError && (
             <>
               <Route element={<Layout />}>
-                <Route path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
+                <Route path={routes.home} element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
                 {currentWallet && (
                   <>
-                    <Route path="send" element={<Send />} />
-                    <Route path="earn" element={<Earn />} />
-                    <Route path="receive" element={<Receive />} />
-                    <Route path="settings" element={<Settings />} />
+                    <Route path={routes.send} element={<Send />} />
+                    <Route path={routes.earn} element={<Earn />} />
+                    <Route path={routes.receive} element={<Receive />} />
+                    <Route path={routes.settings} element={<Settings />} />
                   </>
                 )}
               </Route>
               {currentWallet && !settings.useAdvancedWalletMode && (
                 <Route element={<Layout variant="narrow" />}>
-                  <Route path="wallet" element={<CurrentWalletMagic />} />
+                  <Route path={routes.wallet} element={<CurrentWalletMagic />} />
                 </Route>
               )}
               {currentWallet && settings.useAdvancedWalletMode && (
                 <Route element={<Layout variant="wide" />}>
-                  <Route path="wallet" element={<CurrentWalletAdvanced />} />
+                  <Route path={routes.wallet} element={<CurrentWalletAdvanced />} />
                 </Route>
               )}
-              <Route path="*" element={<Navigate to="/" replace={true} />} />
+              <Route path="*" element={<Navigate to={routes.home} replace={true} />} />
             </>
           )}
         </Routes>
