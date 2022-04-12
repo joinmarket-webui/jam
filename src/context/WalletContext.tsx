@@ -122,7 +122,12 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
 
     const abortCtrl = new AbortController()
 
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => console.error(err))
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+      // If the auto-reloading on wallet change fails, the error can currently
+      // only be logged and cannot be displayed to the user satisfactorily.
+      // This might change in the future but is okay for now - components can
+      // always trigger a reload on demand and inform the user as they see fit.
+      .catch((err) => console.error(err))
 
     return () => {
       abortCtrl.abort()
