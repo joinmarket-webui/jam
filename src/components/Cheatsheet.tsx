@@ -78,63 +78,55 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={2}>
             <h6>
               <Trans i18nKey="cheatsheet.item_2.title">
-                <Link to={routes.send}>Send</Link> first collaborative transaction to yourself.
+                Send a <Link to={routes.send}>collaborative transaction</Link> to yourself.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
           </ListItem>
-          <ListItem number={3}>
+          <ListItem number={3} className="upcoming-feature">
             <h6>
               <Trans i18nKey="cheatsheet.item_3.title">
-                Provide liquidity and <Link to={routes.earn}>earn</Link> yield.
-              </Trans>
-            </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
-          </ListItem>
-          <ListItem number={4} className="upcoming-feature">
-            <h6>
-              <Trans i18nKey="cheatsheet.item_4.title">
-                Lock funds in a <Link to={routes.earn}>fidelity bond</Link>. (advanced)
+                Optional: Lock funds in a <Link to={routes.earn}>fidelity bond</Link>.
               </Trans>
             </h6>
             <div className="small text-secondary">
-              {t('cheatsheet.item_4.description')}
+              {t('cheatsheet.item_3.description')}
               <br />
               {/* the following phrase is intentionally not translated because it will be removed soon */}
               <strong>Feature not implemented yet. Coming soon!</strong>
             </div>
           </ListItem>
+          <ListItem number={4}>
+            <h6>
+              <Trans i18nKey="cheatsheet.item_4.title">
+                <Link to={routes.earn}>Provide liquidity</Link> and earn yield.
+              </Trans>
+            </h6>
+            <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
+          </ListItem>
           <ListItem number={5}>
             <h6>
               <Trans i18nKey="cheatsheet.item_5.title">
-                <Link to={routes.send}>Consolidate</Link> your levels.
+                Make use of <Link to={routes.send}>scheduled transactions</Link>.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
           </ListItem>
           <ListItem number={6}>
-            <h6>
-              <Trans i18nKey="cheatsheet.item_6.title">
-                Time to <Link to={routes.earn}>earn</Link> again ‒ YIELD!
+            <h6>{t('cheatsheet.item_6.title')}</h6>
+            <div className="small text-secondary">
+              <Trans i18nKey="cheatsheet.item_6.description">
+                Still confused?{' '}
+                <a
+                  href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#a-private-flow-through-joinmarket"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Dig into the documentation
+                </a>
+                .
               </Trans>
-            </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_6.description')}</div>
-          </ListItem>
-          <ListItem number={7}>
-            <h6>
-              <Trans i18nKey="cheatsheet.item_7.title">
-                <Link to={routes.send}>Sweep</Link> out your wallet completely.
-              </Trans>
-            </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_7.description')}</div>
-          </ListItem>
-          <ListItem number={8}>
-            <h6>
-              <Trans i18nKey="cheatsheet.item_8.title">
-                Go to step one and <Link to={routes.receive}>repeat</Link>.
-              </Trans>
-            </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_8.description')}</div>
+            </div>
           </ListItem>
         </rb.Stack>
       </rb.Offcanvas.Body>

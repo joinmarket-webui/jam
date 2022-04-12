@@ -230,38 +230,30 @@
   },
   "cheatsheet": {
     "title": "The Cheatsheet",
-    "description": "This is one valid way to add random noise to your coins by switching from <2>earning as a maker</2> to <6>sending as a taker</6> back and forth. <10>Learn more.</10>",
+    "description": "Follow the steps below to increase your financial privacy. It is advisable to switch from <2>earning as a maker</2> to <6>sending as a taker</6> back and forth. <10>Learn more.</10>",
     "item_1": {
-      "title": "<0>Fund</0> your wallet first.",
-      "description": "Deposit your coins ‒ nothing new here."
+      "title": "<0>Fund</0> your wallet.",
+      "description": "Deposit some funds yourself or receive it from others."
     },
     "item_2": {
-      "title": "<0>Send</0> first collaborative transaction to yourself.",
-      "description": "Sweep everything to your own wallet again, but privately."
+      "title": "Send a <1>collaborative transaction</1> to yourself.",
+      "description": "Collaborative transactions increase everyone's privacy."
     },
     "item_3": {
-      "title": "Provide liquidity and <1>earn</1> yield.",
-      "description": "The longer, the better. Time is money."
+      "title": "Optional: Lock funds in a <1>fidelity bond</1>.",
+      "description": "A fidelity bond increases your chances of selling liquidity substantially."
     },
     "item_4": {
-      "title": "Lock funds in a <1>fidelity bond</1>. (advanced)",
-      "description": "Optional ‒ but gives higher chances to be chosen."
+      "title": "<0>Provide liquidity</0> and earn yield.",
+      "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
-      "title": "<0>Consolidate</0> your levels.",
-      "description": "Do a collabroative transaction from one level to another."
+      "title": "Make use of <1>scheduled transactions</1>.",
+      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
     },
     "item_6": {
-      "title": "Time to <1>earn</1> again ‒ YIELD!",
-      "description": "Optional ‒ by switching back and forth you increase the privacy of all."
-    },
-    "item_7": {
-      "title": "<0>Sweep</0> out your wallet completely.",
-      "description": "Your coins should be more private by now ‒ move them out."
-    },
-    "item_8": {
-      "title": "Go to step one and <1>repeat</1>.",
-      "description": "Now you know."
+      "title": "Go to step one and repeat.",
+      "description": "Still confused? Dig into the <2>documentation</2>."
     }
   }
 }
