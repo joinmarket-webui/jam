@@ -58,7 +58,7 @@ input::-webkit-inner-spin-button {
   color: var(--bs-black);
   font-size: 0.8rem;
   height: 1rem;
-  padding-right: 0;
+  padding: 0;
   box-shadow: none;
 }
 
