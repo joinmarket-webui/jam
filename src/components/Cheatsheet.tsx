@@ -70,7 +70,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={1}>
             <h6>
               <Trans i18nKey="cheatsheet.item_1.title">
-                <Link to={routes.receive}>Fund</Link> your wallet first.
+                <Link to={routes.receive}>Fund</Link> your wallet.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_1.description')}</div>
