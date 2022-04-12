@@ -8,8 +8,7 @@ import DisplayAccountUTXOs from './DisplayAccountUTXOs'
 // @ts-ignore
 import DisplayUTXOs from './DisplayUTXOs'
 // @ts-ignore
-import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
-import * as Api from '../libs/JmWalletApi'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 
 type Utxos = any[]
 type Alert = { message: string; variant: string }
@@ -18,7 +17,7 @@ export default function CurrentWalletAdvanced() {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const setWalletInfo = useSetCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const [fidelityBonds, setFidelityBonds] = useState<Utxos | null>(null)
   const [utxos, setUtxos] = useState<Utxos | null>(null)
   const [showUTXO, setShowUTXO] = useState(false)
@@ -33,37 +32,28 @@ export default function CurrentWalletAdvanced() {
     }
 
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = currentWallet
-
-    const setUtxoData = (utxos: Utxos) => {
-      setUtxos(utxos)
-      setFidelityBonds(utxos.filter((utxo) => utxo.locktime))
-    }
 
     setAlert(null)
     setIsLoading(true)
 
-    const loadingWallet = Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet.error_loading_failed'))))
-      .then((data) => setWalletInfo(data.walletinfo))
-      .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
-      })
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+      .then((info) => {
+        if (info && !abortCtrl.signal.aborted) {
+          const unspentOutputs = info.data.utxos.utxos
+          setUtxos(unspentOutputs)
 
-    const loadingUtxos = Api.getWalletUtxos({ walletName, token, signal: abortCtrl.signal })
-      .then(
-        (res): Promise<{ utxos: Utxos }> =>
-          res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet_advanced.error_loading_utxos_failed'))
-      )
-      .then((data) => setUtxoData(data.utxos))
-      .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+          const lockedOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
+          setFidelityBonds(lockedOutputs)
+        }
       })
-
-    Promise.all([loadingWallet, loadingUtxos]).finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+      .catch((err) => {
+        const message = err.message || t('current_wallet.error_loading_failed')
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, setWalletInfo, t])
+  }, [currentWallet, reloadCurrentWalletInfo, t])
 
   return (
     <div>
@@ -78,7 +68,9 @@ export default function CurrentWalletAdvanced() {
           </rb.Col>
         </rb.Row>
       )}
-      {!isLoading && walletInfo && <DisplayAccounts accounts={walletInfo.accounts} className="mb-4" />}
+      {!isLoading && walletInfo && (
+        <DisplayAccounts accounts={walletInfo.data.display.walletinfo.accounts} className="mb-4" />
+      )}
       {!!fidelityBonds?.length && (
         <div className="mt-5 mb-3 pe-3">
           <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
