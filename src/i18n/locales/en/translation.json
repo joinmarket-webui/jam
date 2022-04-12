@@ -109,8 +109,8 @@
   },
   "current_wallet": {
     "text_loading": "Loading",
-    "button_deposit": "Deposit",
-    "button_withdraw": "Withdraw",
+    "button_deposit": "Receive",
+    "button_withdraw": "Send",
     "button_switch_wallet": "Switch wallet",
     "error_loading_failed": "Loading wallet failed."
   },
