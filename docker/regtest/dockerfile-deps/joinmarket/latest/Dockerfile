@@ -5,8 +5,8 @@ RUN apt-get update \
        curl build-essential automake pkg-config libtool python3-dev python3-pip python3-setuptools libltdl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ENV REPO https://github.com/JoinMarket-Org/joinmarket-clientserver
-ENV REPO_REF master
+ENV REPO https://github.com/dnlggr/joinmarket-clientserver
+ENV REPO_REF tumbler-tests
 
 WORKDIR /src
 RUN git clone "$REPO" . --depth=10 --branch "$REPO_REF" && git checkout "$REPO_REF"
