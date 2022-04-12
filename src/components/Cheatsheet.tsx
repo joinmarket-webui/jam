@@ -37,7 +37,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <rb.Offcanvas.Title>{t('cheatsheet.title')}</rb.Offcanvas.Title>
           <div className="small text-secondary">
             <Trans i18nKey="cheatsheet.description">
-              This is one valid way to add random noise to your coins by switching from{' '}
+              Follow the steps below to increase your financial privacy. It is advisable to switch from{' '}
               <a
                 href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#the-maker-role"
                 target="_blank"
