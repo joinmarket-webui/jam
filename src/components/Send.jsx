@@ -167,10 +167,10 @@ export default function Send() {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [isCoinjoin, setIsCoinjoin] = useState(false)
   const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(
     serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
   )
+  const [isCoinjoin, setIsCoinjoin] = useState(isCoinjoinOptionEnabled)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
 
@@ -410,7 +410,7 @@ export default function Send() {
     if (!breakdown) return null
 
     return (
-      <div className="sweep-breakdown mt-1">
+      <div className="sweep-breakdown mt-2">
         <rb.Accordion flush>
           <rb.Accordion.Item eventKey="0">
             <rb.Accordion.Header>
@@ -418,7 +418,7 @@ export default function Send() {
                 {t('send.button_sweep_amount_breakdown')}
               </div>
             </rb.Accordion.Header>
-            <rb.Accordion.Body className="px-0">
+            <rb.Accordion.Body className="my-4 p-0">
               <table className="table table-sm">
                 <tbody>
                   <tr>
@@ -501,12 +501,10 @@ export default function Send() {
           <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
           <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
-            <div className="mb-4 p-3 border border-1 rounded">
-              <small className="text-secondary">
-                {serviceInfo?.makerRunning && t('send.text_maker_running')}
-                {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
-              </small>
-            </div>
+            <rb.Alert variant="info" className="mb-4">
+              {serviceInfo?.makerRunning && t('send.text_maker_running')}
+              {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
+            </rb.Alert>
           </rb.Fade>
 
           {alert && (
@@ -516,19 +514,6 @@ export default function Send() {
           )}
 
           <rb.Form onSubmit={onSubmit} noValidate id="send-form">
-            <rb.Form.Group className="mb-4" controlId="destination">
-              <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
-              <rb.Form.Control
-                name="destination"
-                placeholder={t('send.placeholder_recipient')}
-                className="slashed-zeroes"
-                value={destination || ''}
-                required
-                onChange={(e) => setDestination(e.target.value)}
-                isInvalid={destination !== null && !isValidAddress(destination)}
-              />
-              <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
-            </rb.Form.Group>
             <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
               <rb.Form.Label>
                 {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
@@ -553,7 +538,7 @@ export default function Send() {
                     ))}
               </rb.Form.Select>
             </rb.Form.Group>
-            <rb.Form.Group className="mb-4" controlId="amount">
+            <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
               <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
               <div className="position-relative">
                 <rb.Form.Control
@@ -588,9 +573,26 @@ export default function Send() {
               </rb.Form.Control.Feedback>
               {isSweep && frozenOrLockedWarning()}
             </rb.Form.Group>
+            <rb.Form.Group className="mb-4" controlId="destination">
+              <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
+              <rb.Form.Control
+                name="destination"
+                placeholder={t('send.placeholder_recipient')}
+                className="slashed-zeroes"
+                value={destination || ''}
+                required
+                onChange={(e) => setDestination(e.target.value)}
+                isInvalid={destination !== null && !isValidAddress(destination)}
+              />
+              <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
+            </rb.Form.Group>
             {isCoinjoinOptionEnabled && (
               <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-                <ToggleSwitch label={t('send.toggle_coinjoin')} onToggle={(isToggled) => setIsCoinjoin(isToggled)} />
+                <ToggleSwitch
+                  label={t('send.toggle_coinjoin')}
+                  initialValue={isCoinjoin}
+                  onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+                />
               </rb.Form.Group>
             )}
           </rb.Form>

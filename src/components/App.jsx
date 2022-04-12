@@ -18,6 +18,7 @@ import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
+import Sprite from './Sprite'
 import { routes } from '../constants/routes'
 
 export default function App() {
@@ -186,7 +187,12 @@ export default function App() {
             </rb.Nav.Item>
           </div>
           <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-            <span className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}>•</span>
+            <span
+              className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}
+              data-testid="connection-indicator-icon"
+            >
+              <Sprite symbol="node" width="24px" height="24px" />
+            </span>
             <span className="text-secondary">
               {websocketConnected ? t('footer.connected') : t('footer.disconnected')}
             </span>
