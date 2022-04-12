@@ -20,7 +20,6 @@ import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
-import Sprite from './Sprite'
 import { routes } from '../constants/routes'
 
 export default function App() {
