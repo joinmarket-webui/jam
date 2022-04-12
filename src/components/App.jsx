@@ -15,7 +15,7 @@ import Layout from './Layout'
 import Sprite from './Sprite'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useWebsocketState } from '../context/WebsocketContext'
-import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
@@ -29,7 +29,6 @@ export default function App() {
   const websocketState = useWebsocketState()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
-  const setCurrentWalletInfo = useSetCurrentWalletInfo()
   const sessionConnectionError = useSessionConnectionError()
 
   const [websocketConnected, setWebsocketConnected] = useState()
@@ -50,7 +49,6 @@ export default function App() {
   const stopWallet = () => {
     clearSession()
     setCurrentWallet(null)
-    setCurrentWalletInfo(null)
   }
 
   // update the connection indicator based on the websocket connection state

@@ -26,6 +26,14 @@ type WithMixdepth = {
   mixdepth: Mixdepth
 }
 
+type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+type YYYY = `2${Digit}${Digit}${Digit}`
+type MM = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12'
+type Locktime = `${YYYY}-${MM}`
+type WithLocktime = {
+  locktime: Locktime
+}
+
 interface ApiRequestContext {
   signal?: AbortSignal
 }
@@ -34,7 +42,7 @@ interface AuthApiRequestContext extends ApiRequestContext {
   token: ApiToken
 }
 
-type WalletRequestContext = AuthApiRequestContext & WithWalletName
+export type WalletRequestContext = AuthApiRequestContext & WithWalletName
 
 interface ApiError {
   message: string
@@ -103,6 +111,13 @@ const getSession = async ({ signal }: ApiRequestContext) => {
 
 const getAddressNew = async ({ token, signal, walletName, mixdepth }: WalletRequestContext & WithMixdepth) => {
   return await fetch(`${basePath()}/v1/wallet/${walletName}/address/new/${mixdepth}`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
+const getAddressTimelockNew = async ({ token, signal, walletName, locktime }: WalletRequestContext & WithLocktime) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/address/timelock/new/${locktime}`, {
     headers: { ...Authorization(token) },
     signal,
   })
@@ -290,6 +305,7 @@ export {
   postDirectSend,
   postCoinjoin,
   getAddressNew,
+  getAddressTimelockNew,
   getWalletAll,
   postWalletCreate,
   getWalletDisplay,
