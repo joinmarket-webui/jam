@@ -224,6 +224,13 @@ const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext,
   })
 }
 
+const getTakerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/stop`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
 const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/yieldgen/report`, {
     signal,
@@ -258,6 +265,28 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
     signal,
   })
 }
+
+/* Fork-specific code and API endpoints - START */
+interface TumblerStartRequest {
+  destination: string
+}
+
+const postTumblerStart = async ({ token, signal, walletName }: WalletRequestContext, req: TumblerStartRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/tumbler/start`, {
+    method: 'POST',
+    headers: { ...Authorization(token) },
+    body: JSON.stringify(req),
+    signal,
+  })
+}
+
+const getTumblerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/tumbler/stop`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+/* Fork-specific - END */
 
 const Helper = (() => {
   const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
@@ -304,6 +333,7 @@ export {
   getSession,
   postDirectSend,
   postCoinjoin,
+  getTakerStop,
   getAddressNew,
   getAddressTimelockNew,
   getWalletAll,
@@ -317,4 +347,7 @@ export {
   postConfigGet,
   getWalletSeed,
   Helper,
+  // fork-specific API endpoints
+  postTumblerStart,
+  getTumblerStop,
 }
