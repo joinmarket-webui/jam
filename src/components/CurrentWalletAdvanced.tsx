@@ -38,13 +38,12 @@ export default function CurrentWalletAdvanced() {
 
     reloadCurrentWalletInfo({ signal: abortCtrl.signal })
       .then((info) => {
-        const setUtxoData = (utxos: Utxos) => {
-          setUtxos(utxos)
-          setFidelityBonds(utxos.filter((utxo) => utxo.locktime))
-        }
+        if (info && !abortCtrl.signal.aborted) {
+          const unspentOutputs = info.data.utxos.utxos
+          setUtxos(unspentOutputs)
 
-        if (info) {
-          setUtxoData(info.data.utxos.utxos)
+          const lockedOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
+          setFidelityBonds(lockedOutputs)
         }
       })
       .catch((err) => {
