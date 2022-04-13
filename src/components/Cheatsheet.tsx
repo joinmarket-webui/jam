@@ -78,7 +78,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={2}>
             <h6>
               <Trans i18nKey="cheatsheet.item_2.title">
-                Send a <Link to={routes.send}>collaborative transaction</Link> to yourself.
+                <Link to={routes.send}>Send</Link> a collaborative transaction to yourself.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
@@ -86,7 +86,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={3} className="upcoming-feature">
             <h6>
               <Trans i18nKey="cheatsheet.item_3.title">
-                Optional: Lock funds in a <Link to={routes.earn}>fidelity bond</Link>.
+                Optional: <Link to={routes.earn}>Lock</Link> funds in a fidelity bond.
               </Trans>
             </h6>
             <div className="small text-secondary">
@@ -99,7 +99,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={4}>
             <h6>
               <Trans i18nKey="cheatsheet.item_4.title">
-                <Link to={routes.earn}>Provide liquidity</Link> and earn yield.
+                <Link to={routes.earn}>Earn</Link> yield by providing liquidity.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
@@ -107,7 +107,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={5}>
             <h6>
               <Trans i18nKey="cheatsheet.item_5.title">
-                Make use of <Link to={routes.send}>scheduled transactions</Link>.
+                <Link to={routes.send}>Use</Link> scheduled transactions.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>

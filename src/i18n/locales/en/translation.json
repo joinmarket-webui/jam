@@ -236,19 +236,19 @@
       "description": "Deposit some funds yourself or receive it from others."
     },
     "item_2": {
-      "title": "Send a <1>collaborative transaction</1> to yourself.",
+      "title": "<0>Send</0> a collaborative transaction to yourself.",
       "description": "Collaborative transactions increase everyone's privacy."
     },
     "item_3": {
-      "title": "Optional: Lock funds in a <1>fidelity bond</1>.",
+      "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
       "description": "A fidelity bond increases your chances of selling liquidity substantially."
     },
     "item_4": {
-      "title": "<0>Provide liquidity</0> and earn yield.",
+      "title": "<0>Earn</0> yield by providing liquidity.",
       "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
-      "title": "Make use of <1>scheduled transactions</1>.",
+      "title": "<0>Use</0> scheduled transactions.",
       "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
     },
     "item_6": {
