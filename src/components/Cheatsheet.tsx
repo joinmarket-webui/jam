@@ -107,7 +107,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={5}>
             <h6>
               <Trans i18nKey="cheatsheet.item_5.title">
-                <Link to={routes.send}>Use</Link> scheduled transactions.
+                <Link to={routes.send}>Schedule</Link> transactions.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>

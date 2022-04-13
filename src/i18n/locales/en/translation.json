@@ -248,7 +248,7 @@
       "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
-      "title": "<0>Use</0> scheduled transactions.",
+      "title": "<0>Schedule</0> transactions.",
       "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
     },
     "item_6": {
