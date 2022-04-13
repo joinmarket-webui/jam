@@ -372,6 +372,21 @@ main {
   margin-bottom: auto;
 }
 
+.cheatsheet .cheatsheet-list-item {
+  align-items: start;
+}
+
+.cheatsheet .cheatsheet-list-item.upcoming-feature {
+  opacity: 0.25;
+}
+
+.cheatsheet .cheatsheet-list-item h6 {
+  margin-bottom: 0.1rem;
+}
+.cheatsheet a {
+  color: inherit;
+}
+
 .cheatsheet .numbered {
   display: flex;
   justify-content: center;
@@ -388,19 +403,8 @@ main {
   background-color: white;
 }
 
-.cheatsheet .cheatsheet-list-item h6 {
-  margin-bottom: 0.1rem;
-}
-.cheatsheet a {
-  color: inherit;
-}
-
 .cheatsheet-link.nav-link {
   color: var(--bs-gray-900);
-}
-
-.cheatsheet .cheatsheet-list-item.upcoming-feature {
-  opacity: 0.25;
 }
 
 :root[data-theme='dark'] .cheatsheet-link.nav-link {
