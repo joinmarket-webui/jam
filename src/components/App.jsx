@@ -21,6 +21,7 @@ import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
 import { routes } from '../constants/routes'
+import { isFeatureEnabled } from '../constants/featureFlags'
 
 export default function App() {
   const { t } = useTranslation()
@@ -35,8 +36,7 @@ export default function App() {
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
-  const devMode = process.env.NODE_ENV === 'development'
-  const cheatsheetEnabled = devMode && currentWallet
+  const cheatsheetEnabled = currentWallet && isFeatureEnabled('cheatsheet')
 
   const startWallet = useCallback(
     (name, token) => {
@@ -63,7 +63,7 @@ export default function App() {
       timer = setTimeout(() => {
         setShowCheatsheet(true)
         settingsDispatch({ showCheatsheet: false })
-      }, 1000)
+      }, 1_000)
     }
 
     return () => clearTimeout(timer)
@@ -112,7 +112,7 @@ export default function App() {
            * that it stays visible in case the backend becomes unavailable.
            */}
           <Route element={<Layout />}>
-            <Route path={routes.createWallet} element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
+            <Route path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
           </Route>
           {/**
            * This section defines all routes that are displayed only if the backend is reachable.
