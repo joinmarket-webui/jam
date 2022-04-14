@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -14,6 +14,7 @@ import * as Api from '../libs/JmWalletApi'
 import { btcToSats, SATS } from '../utils'
 import './Send.css'
 
+const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
@@ -41,7 +42,7 @@ const isValidNumCollaborators = (candidate, minNumCollaborators) => {
   return !isNaN(parsed) && parsed >= minNumCollaborators && parsed <= 99
 }
 
-const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators }) => {
+const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators, isEnabled = true }) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -84,6 +85,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
                   setUsesCustomNumCollaborators(false)
                   setNumCollaborators(number)
                 }}
+                disabled={!isEnabled}
               >
                 {number}
               </rb.Button>
@@ -109,6 +111,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
                 validateAndSetCustomNumCollaborators(parseInt(e.target.value, 10))
               }
             }}
+            disabled={!isEnabled}
           />
           {usesCustomNumCollaborators && (
             <rb.Form.Control.Feedback type="invalid">
@@ -167,10 +170,13 @@ export default function Send() {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [isCoinjoinOptionEnabled, setIsCoinjoinOptionEnabled] = useState(
-    serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
-  )
-  const [isCoinjoin, setIsCoinjoin] = useState(isCoinjoinOptionEnabled)
+
+  const isOperationEnabled = useCallback(() => {
+    return serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
+  }, [serviceInfo])
+
+  const [isSendingEnabled, setIsSendingEnabled] = useState(isOperationEnabled())
+  const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
 
@@ -195,13 +201,8 @@ export default function Send() {
   const [formIsValid, setFormIsValid] = useState(false)
 
   useEffect(() => {
-    const coinjoinOptionEnabled = serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
-    setIsCoinjoinOptionEnabled(coinjoinOptionEnabled)
-
-    if (!coinjoinOptionEnabled && isCoinjoin) {
-      setIsCoinjoin(false)
-    }
-  }, [serviceInfo, isCoinjoin])
+    setIsSendingEnabled(isOperationEnabled())
+  }, [isOperationEnabled])
 
   useEffect(() => {
     if (
@@ -336,6 +337,8 @@ export default function Send() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
+    if (!isSendingEnabled) return
+
     const form = e.currentTarget
     const isValid = formIsValid
 
@@ -356,7 +359,7 @@ export default function Send() {
         setAccount(initialAccount)
         setAmount(initialAmount)
         setNumCollaborators(initialNumCollaborators(minNumCollaborators))
-        setIsCoinjoin(false)
+        setIsCoinjoin(IS_COINJOIN_DEFAULT_VAL)
         form.reset()
       }
     }
@@ -500,7 +503,7 @@ export default function Send() {
         <div className="send">
           <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
-          <rb.Fade in={!isCoinjoinOptionEnabled} mountOnEnter={true} unmountOnExit={true}>
+          <rb.Fade in={!isSendingEnabled} mountOnEnter={true} unmountOnExit={true}>
             <rb.Alert variant="info" className="mb-4">
               {serviceInfo?.makerRunning && t('send.text_maker_running')}
               {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
@@ -524,6 +527,7 @@ export default function Send() {
                 required
                 className="slashed-zeroes"
                 isInvalid={!isValidAccount(account)}
+                disabled={!isSendingEnabled}
               >
                 {walletInfo &&
                   walletInfo.data.display.walletinfo.accounts
@@ -551,9 +555,14 @@ export default function Send() {
                   required
                   onChange={(e) => setAmount(parseInt(e.target.value, 10))}
                   isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
-                  disabled={isSweep}
+                  disabled={isSweep || !isSendingEnabled}
                 />
-                <rb.Button variant="outline-dark" className="button-sweep" onClick={() => setIsSweep(!isSweep)}>
+                <rb.Button
+                  variant="outline-dark"
+                  className="button-sweep"
+                  onClick={() => setIsSweep(!isSweep)}
+                  disabled={!isSendingEnabled}
+                >
                   {isSweep ? (
                     <div>{t('send.button_clear_sweep')}</div>
                   ) : (
@@ -583,30 +592,31 @@ export default function Send() {
                 required
                 onChange={(e) => setDestination(e.target.value)}
                 isInvalid={destination !== null && !isValidAddress(destination)}
+                disabled={!isSendingEnabled}
               />
               <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
             </rb.Form.Group>
-            {isCoinjoinOptionEnabled && (
-              <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-                <ToggleSwitch
-                  label={t('send.toggle_coinjoin')}
-                  initialValue={isCoinjoin}
-                  onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-                />
-              </rb.Form.Group>
-            )}
+            <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
+              <ToggleSwitch
+                label={t('send.toggle_coinjoin')}
+                initialValue={isCoinjoin}
+                onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+                isEnabled={isSendingEnabled}
+              />
+            </rb.Form.Group>
           </rb.Form>
           {isCoinjoin && (
             <CollaboratorsSelector
               numCollaborators={numCollaborators}
               setNumCollaborators={setNumCollaborators}
               minNumCollaborators={minNumCollaborators}
+              isEnabled={isSendingEnabled}
             />
           )}
           <rb.Button
             variant="dark"
             type="submit"
-            disabled={isSending || !formIsValid}
+            disabled={!isSendingEnabled || isSending || !formIsValid}
             className="mt-4"
             form="send-form"
           >
