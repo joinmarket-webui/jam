@@ -1,5 +1,4 @@
-import React from 'react'
-import { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { displayDate } from '../utils'
@@ -7,18 +6,24 @@ import Balance from './Balance'
 import Alert from './Alert'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 
 const Utxo = ({ utxo, ...props }) => {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
+  const serviceInfo = useServiceInfo()
 
   const [alert, setAlert] = useState(null)
   const [isSending, setIsSending] = useState(false)
 
+  const isOperationEnabled = useCallback(() => {
+    return serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
+  }, [serviceInfo])
+
   const onClickFreeze = async (utxo) => {
-    if (isSending) return
+    if (isSending || !isOperationEnabled()) return
 
     setIsSending(true)
     setAlert(null)
@@ -75,7 +80,7 @@ const Utxo = ({ utxo, ...props }) => {
                 <rb.Button
                   size="sm"
                   variant={utxo.frozen ? 'outline-warning' : 'outline-info'}
-                  disabled={isSending}
+                  disabled={isSending || !isOperationEnabled()}
                   onClick={() => onClickFreeze(utxo)}
                 >
                   {isSending && (
