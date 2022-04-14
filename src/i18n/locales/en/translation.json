@@ -18,6 +18,7 @@
     "warning_alert_title": "Warning",
     "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.",
     "warning_alert_button_ok": "Fine with me.",
+    "cheatsheet": "Cheatsheet",
     "docs": "Docs",
     "features": "Features",
     "github": "GitHub",
@@ -226,5 +227,33 @@
     "text_stopping": "Stopping",
     "button_show_report": "Show report",
     "button_hide_report": "Hide report"
+  },
+  "cheatsheet": {
+    "title": "The Cheatsheet",
+    "description": "Follow the steps below to increase your financial privacy. It is advisable to switch from <2>earning as a maker</2> to <6>sending as a taker</6> back and forth. <10>Learn more.</10>",
+    "item_1": {
+      "title": "<0>Fund</0> your wallet.",
+      "description": "Deposit some funds yourself or receive it from others."
+    },
+    "item_2": {
+      "title": "<0>Send</0> a collaborative transaction to yourself.",
+      "description": "Collaborative transactions increase everyone's privacy."
+    },
+    "item_3": {
+      "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
+      "description": "A fidelity bond increases your chances of selling liquidity substantially."
+    },
+    "item_4": {
+      "title": "<0>Earn</0> yield by providing liquidity.",
+      "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
+    },
+    "item_5": {
+      "title": "<0>Schedule</0> transactions.",
+      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
+    },
+    "item_6": {
+      "title": "Go to step one and repeat.",
+      "description": "Still confused? Dig into the <2>documentation</2>."
+    }
   }
 }

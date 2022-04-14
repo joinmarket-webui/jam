@@ -2,6 +2,7 @@ import React from 'react'
 import user from '@testing-library/user-event'
 import { render, screen, waitFor, waitForElementToBeRemoved } from '../testUtils'
 import { act } from 'react-dom/test-utils'
+import { __testSetFeatureEnabled } from '../constants/featureFlags'
 
 import * as apiMock from '../libs/JmWalletApi'
 
@@ -21,8 +22,7 @@ describe('<CreateWallet />', () => {
 
   const setup = (props) => {
     const startWallet = props?.startWallet || NOOP
-    const devMode = props?.devMode || false
-    render(<CreateWallet startWallet={startWallet} devMode={devMode} />)
+    render(<CreateWallet startWallet={startWallet} />)
   }
 
   beforeEach(() => {
@@ -114,7 +114,7 @@ describe('<CreateWallet />', () => {
     expect(screen.queryByText('create_wallet.button_create')).not.toBeInTheDocument()
   })
 
-  it('should verify that "skip" button is NOT visible when not in development mode', async () => {
+  it('should verify that "skip" button is NOT visible by default (feature is disabled)', async () => {
     apiMock.postWalletCreate.mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -125,7 +125,7 @@ describe('<CreateWallet />', () => {
         }),
     })
 
-    act(() => setup({ devMode: false }))
+    act(setup)
 
     act(() => {
       user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
@@ -154,7 +154,9 @@ describe('<CreateWallet />', () => {
     expect(screen.getByText('create_wallet.confirmation_button_fund_wallet')).toBeDisabled()
   })
 
-  it('should verify that "skip" button IS visible in development mode', async () => {
+  it('should verify that "skip" button IS visible when feature is enabled', async () => {
+    __testSetFeatureEnabled('skipWalletBackupConfirmation', true)
+
     apiMock.postWalletCreate.mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -165,7 +167,7 @@ describe('<CreateWallet />', () => {
         }),
     })
 
-    act(() => setup({ devMode: true }))
+    act(setup)
 
     act(() => {
       user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)

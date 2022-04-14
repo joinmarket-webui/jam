@@ -166,7 +166,7 @@ export default function Navbar() {
                     <span>{t('navbar.menu')}</span>
                   </rb.Navbar.Toggle>
                 </div>
-                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                <rb.Navbar.Offcanvas className={`navbar-offcanvas navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
@@ -212,7 +212,7 @@ export default function Navbar() {
                     <span>{t('navbar.menu_mobile')}</span>
                   </rb.Navbar.Toggle>
                 </div>
-                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                <rb.Navbar.Offcanvas className={`navbar-offcanvas navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
