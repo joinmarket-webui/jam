@@ -62,7 +62,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   }
 
   return (
-    <rb.Form noValidate className="collaborators-selector">
+    <rb.Form noValidate className="collaborators-selector" disabled={!isEnabled}>
       <rb.Form.Group>
         <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
         <div className="mb-2">
@@ -516,7 +516,13 @@ export default function Send() {
             </rb.Alert>
           )}
 
-          <rb.Form onSubmit={onSubmit} noValidate id="send-form">
+          <rb.Form
+            id="send-form"
+            onSubmit={onSubmit}
+            noValidate
+            disabled={!isSendingEnabled}
+            className={`${!isSendingEnabled ? 'blurred' : ''}`}
+          >
             <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
               <rb.Form.Label>
                 {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
