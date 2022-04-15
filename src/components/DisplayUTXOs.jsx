@@ -22,8 +22,12 @@ const Utxo = ({ utxo, ...props }) => {
     return serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
   }, [serviceInfo])
 
+  const isUnfreezeEnabled = !utxo.locktime || new Date(utxo.locktime).getTime() < Date.now()
+  const showFreezeActionButton = !utxo.frozen || isUnfreezeEnabled
+
   const onClickFreeze = async (utxo) => {
     if (isSending || !isOperationEnabled()) return
+    if (utxo.frozen && !isUnfreezeEnabled) return
 
     setIsSending(true)
     setAlert(null)
@@ -76,28 +80,30 @@ const Utxo = ({ utxo, ...props }) => {
               <div>
                 <small className="text-secondary">{utxo.confirmations} Confirmations</small>
               </div>
-              <div>
-                <rb.Button
-                  size="sm"
-                  variant={utxo.frozen ? 'outline-warning' : 'outline-info'}
-                  disabled={isSending || !isOperationEnabled()}
-                  onClick={() => onClickFreeze(utxo)}
-                >
-                  {isSending && (
-                    <rb.Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="ms-1 me-2"
-                    />
-                  )}
-                  {utxo.frozen
-                    ? t('current_wallet_advanced.button_unfreeze')
-                    : t('current_wallet_advanced.button_freeze')}
-                </rb.Button>
-              </div>
+              {showFreezeActionButton && (
+                <div>
+                  <rb.Button
+                    size="sm"
+                    variant={utxo.frozen ? 'outline-warning' : 'outline-info'}
+                    disabled={isSending || !isOperationEnabled()}
+                    onClick={() => onClickFreeze(utxo)}
+                  >
+                    {isSending && (
+                      <rb.Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="ms-1 me-2"
+                      />
+                    )}
+                    {utxo.frozen
+                      ? t('current_wallet_advanced.button_unfreeze')
+                      : t('current_wallet_advanced.button_freeze')}
+                  </rb.Button>
+                </div>
+              )}
             </rb.Stack>
           </rb.Col>
           {alert && (
