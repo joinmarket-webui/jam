@@ -1,4 +1,3 @@
-export const ACCOUNTS = [0, 1, 2, 3, 4]
 export const BTC = 'BTC'
 export const SATS = 'sats'
 
