@@ -42,7 +42,7 @@ const isValidNumCollaborators = (candidate, minNumCollaborators) => {
   return !isNaN(parsed) && parsed >= minNumCollaborators && parsed <= 99
 }
 
-const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators, isEnabled = true }) => {
+const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators, disabled = false }) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -62,7 +62,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   }
 
   return (
-    <rb.Form noValidate className="collaborators-selector" disabled={!isEnabled}>
+    <rb.Form noValidate className="collaborators-selector" disabled={disabled}>
       <rb.Form.Group>
         <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
         <div className="mb-2">
@@ -85,7 +85,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
                   setUsesCustomNumCollaborators(false)
                   setNumCollaborators(number)
                 }}
-                disabled={!isEnabled}
+                disabled={disabled}
               >
                 {number}
               </rb.Button>
@@ -111,7 +111,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
                 validateAndSetCustomNumCollaborators(parseInt(e.target.value, 10))
               }
             }}
-            disabled={!isEnabled}
+            disabled={disabled}
           />
           {usesCustomNumCollaborators && (
             <rb.Form.Control.Feedback type="invalid">
@@ -607,7 +607,7 @@ export default function Send() {
                 label={t('send.toggle_coinjoin')}
                 initialValue={isCoinjoin}
                 onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-                isEnabled={isSendingEnabled}
+                disabled={!isSendingEnabled}
               />
             </rb.Form.Group>
           </rb.Form>
@@ -616,7 +616,7 @@ export default function Send() {
               numCollaborators={numCollaborators}
               setNumCollaborators={setNumCollaborators}
               minNumCollaborators={minNumCollaborators}
-              isEnabled={isSendingEnabled}
+              disabled={!isSendingEnabled}
             />
           )}
           <rb.Button
