@@ -155,7 +155,7 @@ const WebsocketProvider = ({ children }) => {
         needsForceClose
       )
       if (needsForceClose) {
-        websocket.close(1001, 'Force-close pending connection')
+        websocket.close(1000, 'Force-close pending connection')
       }
     }, WEBSOCKET_ESTABLISH_CONNECTION_MAX_DURATION)
 
