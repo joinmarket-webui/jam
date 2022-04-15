@@ -19,15 +19,18 @@ const Utxo = ({ utxo, ...props }) => {
   const [isSending, setIsSending] = useState(false)
 
   const isOperationEnabled = useCallback(() => {
-    return serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
+    const noServiceIsRunning = serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
+
+    const isUnfreezeEnabled = !utxo.locktime || new Date(utxo.locktime).getTime() < Date.now()
+    const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
+
+    return noServiceIsRunning && allowedToExecute
   }, [serviceInfo])
 
-  const isUnfreezeEnabled = !utxo.locktime || new Date(utxo.locktime).getTime() < Date.now()
-  const showFreezeActionButton = !utxo.frozen || isUnfreezeEnabled
+  const showFreezeActionButton = isOperationEnabled()
 
   const onClickFreeze = async (utxo) => {
     if (isSending || !isOperationEnabled()) return
-    if (utxo.frozen && !isUnfreezeEnabled) return
 
     setIsSending(true)
     setAlert(null)
@@ -85,7 +88,7 @@ const Utxo = ({ utxo, ...props }) => {
                   <rb.Button
                     size="sm"
                     variant={utxo.frozen ? 'outline-warning' : 'outline-info'}
-                    disabled={isSending || !isOperationEnabled()}
+                    disabled={isSending}
                     onClick={() => onClickFreeze(utxo)}
                   >
                     {isSending && (
