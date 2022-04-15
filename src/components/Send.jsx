@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react'
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import PageTitle from './PageTitle'
@@ -12,6 +12,7 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 import { btcToSats, SATS } from '../utils'
+import { routes } from '../constants/routes'
 import './Send.css'
 
 const IS_COINJOIN_DEFAULT_VAL = true
@@ -505,7 +506,12 @@ export default function Send() {
 
           <rb.Fade in={!isSendingEnabled} mountOnEnter={true} unmountOnExit={true}>
             <rb.Alert variant="info" className="mb-4">
-              {serviceInfo?.makerRunning && t('send.text_maker_running')}
+              {serviceInfo?.makerRunning && (
+                <Trans i18nKey="send.text_maker_running">
+                  <Link to={routes.earn}>Earn</Link> is active. Stop the service in order to send collaborative
+                  transactions.
+                </Trans>
+              )}
               {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
             </rb.Alert>
           </rb.Fade>

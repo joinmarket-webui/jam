@@ -486,6 +486,9 @@ h2 {
   background-color: var(--bs-gray-800);
   border-color: var(--bs-gray-900);
 }
+.alert-info a {
+  color: inherit;
+}
 
 .modal-header {
   background-color: var(--bs-gray-800);

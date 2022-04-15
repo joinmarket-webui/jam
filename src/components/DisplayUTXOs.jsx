@@ -25,7 +25,7 @@ const Utxo = ({ utxo, ...props }) => {
     const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
 
     return noServiceIsRunning && allowedToExecute
-  }, [serviceInfo])
+  }, [utxo, serviceInfo])
 
   const showFreezeActionButton = isOperationEnabled()
 

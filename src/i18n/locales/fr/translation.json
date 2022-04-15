@@ -69,7 +69,7 @@
       "button_unlocking": "Déverrouillage ",
       "feedback_missing_password": "Veuillez définir un mot de passe de portefeuille.",
       "modal_lock_wallet_title": "Confirmez le verrouillage",
-      "modal_lock_wallet_maker_running_text": "Générer est actif. Le verrouillage du porte-monnaie arrêtera le service.",
+      "modal_lock_wallet_maker_running_text": "<0>Générer</0> est actif. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "Une transaction collaborative est actuellement en cours. Le verrouillage du porte-monnaie arrêtera le service.",
       "modal_lock_wallet_alternative_action_text": "Vous pouvez également fermer la fenêtre pour vous déconnecter.",
       "modal_lock_wallet_button_confirm": "Oui, verrouiller le porte-monnaie",
