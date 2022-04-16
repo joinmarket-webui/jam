@@ -7,6 +7,7 @@ const initialSettings = {
   showBalance: false,
   unit: BTC,
   showOnboarding: true,
+  showCheatsheet: true,
   useAdvancedWalletMode: false,
 }
 

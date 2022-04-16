@@ -100,7 +100,7 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
 
   if (typeof valueString !== 'string') {
     if (!loading) console.warn('<Balance /> component expects string input')
-    return <BalanceComponent symbol={undefined} value={undefined} symbolIsPrefix={false} loading={loading} />
+    return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} loading={loading} />
   }
 
   // Treat integers as sats.

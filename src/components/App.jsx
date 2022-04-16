@@ -12,26 +12,31 @@ import CurrentWalletAdvanced from './CurrentWalletAdvanced'
 import Settings from './Settings'
 import Navbar from './Navbar'
 import Layout from './Layout'
-import { useSettings } from '../context/SettingsContext'
+import Sprite from './Sprite'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useWebsocketState } from '../context/WebsocketContext'
-import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
+import Cheatsheet from './Cheatsheet'
+import { routes } from '../constants/routes'
+import { isFeatureEnabled } from '../constants/featureFlags'
 
 export default function App() {
   const { t } = useTranslation()
+  const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
+  const websocketState = useWebsocketState()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
-  const setCurrentWalletInfo = useSetCurrentWalletInfo()
   const sessionConnectionError = useSessionConnectionError()
 
   const [websocketConnected, setWebsocketConnected] = useState()
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
-  const settings = useSettings()
-  const websocketState = useWebsocketState()
+  const [showCheatsheet, setShowCheatsheet] = useState(false)
 
-  const devMode = process.env.NODE_ENV === 'development'
+  const cheatsheetEnabled = currentWallet && isFeatureEnabled('cheatsheet')
 
   const startWallet = useCallback(
     (name, token) => {
@@ -44,13 +49,25 @@ export default function App() {
   const stopWallet = () => {
     clearSession()
     setCurrentWallet(null)
-    setCurrentWalletInfo(null)
   }
 
   // update the connection indicator based on the websocket connection state
   useEffect(() => {
     setWebsocketConnected(websocketState === WebSocket.OPEN)
   }, [websocketState])
+
+  useEffect(() => {
+    let timer
+    // show the cheatsheet once after the first wallet has been created
+    if (cheatsheetEnabled && settings.showCheatsheet) {
+      timer = setTimeout(() => {
+        setShowCheatsheet(true)
+        settingsDispatch({ showCheatsheet: false })
+      }, 1_000)
+    }
+
+    return () => clearTimeout(timer)
+  }, [cheatsheetEnabled, settings, settingsDispatch])
 
   if (settings.showOnboarding === true) {
     return (
@@ -95,7 +112,7 @@ export default function App() {
            * that it stays visible in case the backend becomes unavailable.
            */}
           <Route element={<Layout />}>
-            <Route path="create-wallet" element={<CreateWallet startWallet={startWallet} devMode={devMode} />} />
+            <Route path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
           </Route>
           {/**
            * This section defines all routes that are displayed only if the backend is reachable.
@@ -103,31 +120,32 @@ export default function App() {
           {!sessionConnectionError && (
             <>
               <Route element={<Layout />}>
-                <Route path="/" element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
+                <Route path={routes.home} element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
                 {currentWallet && (
                   <>
-                    <Route path="send" element={<Send />} />
-                    <Route path="earn" element={<Earn />} />
-                    <Route path="receive" element={<Receive />} />
-                    <Route path="settings" element={<Settings />} />
+                    <Route path={routes.send} element={<Send />} />
+                    <Route path={routes.earn} element={<Earn />} />
+                    <Route path={routes.receive} element={<Receive />} />
+                    <Route path={routes.settings} element={<Settings />} />
                   </>
                 )}
               </Route>
               {currentWallet && !settings.useAdvancedWalletMode && (
                 <Route element={<Layout variant="narrow" />}>
-                  <Route path="wallet" element={<CurrentWalletMagic />} />
+                  <Route path={routes.wallet} element={<CurrentWalletMagic />} />
                 </Route>
               )}
               {currentWallet && settings.useAdvancedWalletMode && (
                 <Route element={<Layout variant="wide" />}>
-                  <Route path="wallet" element={<CurrentWalletAdvanced />} />
+                  <Route path={routes.wallet} element={<CurrentWalletAdvanced />} />
                 </Route>
               )}
-              <Route path="*" element={<Navigate to="/" replace={true} />} />
+              <Route path="*" element={<Navigate to={routes.home} replace={true} />} />
             </>
           )}
         </Routes>
       </rb.Container>
+
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2 px-4">
           <div className="d-flex flex-1 order-2 order-md-0 flex-column justify-content-center align-items-center align-items-md-start">
@@ -144,50 +162,74 @@ export default function App() {
               </Trans>
             </div>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center px-4">
-            <rb.Nav.Item>
-              <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.docs')}
-              </a>
-            </rb.Nav.Item>
-            <rb.Nav.Item>
-              <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui#-features"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.features')}
-              </a>
-            </rb.Nav.Item>
-            <rb.Nav.Item>
-              <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.github')}
-              </a>
-            </rb.Nav.Item>
-            <rb.Nav.Item>
-              <a
-                href="https://twitter.com/joinmarket"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nav-link text-secondary px-2"
-              >
-                {t('footer.twitter')}
-              </a>
-            </rb.Nav.Item>
+          <div className="d-flex order-1 flex-1 flex-grow-0 flex-column flex-sm-row justify-content-center align-items-center pt-2 pt-sm-0 px-4">
+            {cheatsheetEnabled && (
+              <div className="order-1 order-sm-0">
+                <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
+                <rb.Nav.Item>
+                  <rb.Button
+                    variant="link"
+                    className="cheatsheet-link nav-link text-start border-0 px-2"
+                    onClick={() => setShowCheatsheet(true)}
+                  >
+                    <div className="d-flex justify-content-center align-items-center">
+                      <Sprite symbol="file" width="24" height="24" />
+                      <div className="ps-0">{t('footer.cheatsheet')}</div>
+                    </div>
+                  </rb.Button>
+                </rb.Nav.Item>
+              </div>
+            )}
+            <div className="d-flex flex-row">
+              <rb.Nav.Item>
+                <a
+                  href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.docs')}
+                </a>
+              </rb.Nav.Item>
+              <rb.Nav.Item>
+                <a
+                  href="https://github.com/joinmarket-webui/joinmarket-webui#-features"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.features')}
+                </a>
+              </rb.Nav.Item>
+              <rb.Nav.Item>
+                <a
+                  href="https://github.com/joinmarket-webui/joinmarket-webui"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.github')}
+                </a>
+              </rb.Nav.Item>
+              <rb.Nav.Item>
+                <a
+                  href="https://twitter.com/joinmarket"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nav-link text-secondary px-2"
+                >
+                  {t('footer.twitter')}
+                </a>
+              </rb.Nav.Item>
+            </div>
           </div>
           <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-            <span className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}>•</span>
+            <span
+              className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}
+              data-testid="connection-indicator-icon"
+            >
+              <Sprite symbol="node" width="24px" height="24px" />
+            </span>
             <span className="text-secondary">
               {websocketConnected ? t('footer.connected') : t('footer.disconnected')}
             </span>

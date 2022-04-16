@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
-import { useCurrentWallet, useCurrentWalletInfo, useSetCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
-import * as Api from '../libs/JmWalletApi'
 import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
+import { routes } from '../constants/routes'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
@@ -107,28 +106,26 @@ export default function CurrentWalletMagic() {
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const setWalletInfo = useSetCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = currentWallet
 
     setAlert(null)
     setIsLoading(true)
 
-    Api.getWalletDisplay({ walletName, token, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('current_wallet.error_loading_failed'))))
-      .then((data) => setWalletInfo(data.walletinfo))
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
       .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+        const message = err.message || t('current_wallet.error_loading_failed')
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
       })
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, setWalletInfo, t])
+  }, [currentWallet, reloadCurrentWalletInfo, t])
 
   return (
     <div className="privacy-levels">
@@ -143,7 +140,7 @@ export default function CurrentWalletMagic() {
         <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
           <WalletHeader
             name={currentWallet?.name}
-            balance={walletInfo?.total_balance}
+            balance={walletInfo?.data.display.walletinfo.total_balance}
             unit={settings.unit}
             showBalance={settings.showBalance}
             loading={isLoading}
@@ -154,7 +151,7 @@ export default function CurrentWalletMagic() {
             {/* Always receive on first mixdepth. */}
             <ExtendedLink
               disabled={isLoading}
-              to="/receive"
+              to={routes.receive}
               state={{ account: 0 }}
               className="btn btn-outline-dark w-100"
             >
@@ -164,7 +161,7 @@ export default function CurrentWalletMagic() {
           <rb.Col>
             {/* Todo: Withdrawing needs to factor in the privacy levels as well.
           Depending on the mixdepth/account there will be different amounts available. */}
-            <ExtendedLink disabled={isLoading} to="/send" className="btn btn-outline-dark w-100">
+            <ExtendedLink disabled={isLoading} to={routes.send} className="btn btn-outline-dark w-100">
               {t('current_wallet.button_withdraw')}
             </ExtendedLink>
           </rb.Col>
@@ -173,13 +170,13 @@ export default function CurrentWalletMagic() {
           <hr className="my-4" />
         </rb.Row>
         <rb.Row>
-          <PrivacyLevels accounts={walletInfo?.accounts} loading={isLoading} />
+          <PrivacyLevels accounts={walletInfo?.data.display.walletinfo.accounts} loading={isLoading} />
         </rb.Row>
         <rb.Row>
           <hr className="my-4" />
         </rb.Row>
         <rb.Row>
-          <ExtendedLink disabled={isLoading} to="/" className="btn btn-outline-dark">
+          <ExtendedLink disabled={isLoading} to={routes.home} className="btn btn-outline-dark">
             <div className="d-flex justify-content-center align-items-center">
               <Sprite symbol="wallet" width="24" height="24" />
               <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>

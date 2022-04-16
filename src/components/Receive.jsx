@@ -100,9 +100,9 @@ export default function Receive() {
       <div className="qr-container">
         <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
           <div className="d-flex justify-content-center">
-            {address && <BitcoinQR address={address} sats={amount} />}
-            {!address && (
-              <rb.Placeholder as="p" animation="wave" className="mb-0">
+            {!isLoading && address && <BitcoinQR address={address} sats={amount} />}
+            {(isLoading || !address) && (
+              <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-qr-container']}>
                 <rb.Placeholder xs={12} className={styles['receive-placeholder-qr']} />
               </rb.Placeholder>
             )}

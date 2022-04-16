@@ -9,6 +9,7 @@ import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
+import { routes } from '../constants/routes'
 
 const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   return (
@@ -16,9 +17,13 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {walletInfo && walletInfo?.total_balance && unit ? (
+        {walletInfo && walletInfo?.data.display.walletinfo.total_balance && unit ? (
           <div className="text-body">
-            <Balance valueString={walletInfo.total_balance} convertToUnit={unit} showBalance={showBalance || false} />
+            <Balance
+              valueString={walletInfo.data.display.walletinfo.total_balance}
+              convertToUnit={unit}
+              showBalance={showBalance || false}
+            />
           </div>
         ) : (
           <Balance value="0.00000000" unit="BTC" showBalance={false} loading={true} />
@@ -34,7 +39,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
     <rb.Nav className="justify-content-center align-items-stretch">
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
-          to="/send"
+          to={routes.send}
           onClick={onClick}
           className={({ isActive }) =>
             'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
@@ -45,7 +50,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
-          to="/receive"
+          to={routes.receive}
           onClick={onClick}
           className={({ isActive }) =>
             'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
@@ -56,7 +61,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
-          to="/earn"
+          to={routes.earn}
           onClick={onClick}
           className={({ isActive }) =>
             'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
@@ -87,7 +92,7 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
       )}
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
-          to="/settings"
+          to={routes.settings}
           onClick={onClick}
           className={({ isActive }) =>
             'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
@@ -99,7 +104,7 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
-          to="/"
+          to={routes.home}
           onClick={onClick}
           className={({ isActive }) =>
             'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
@@ -147,7 +152,7 @@ export default function Navbar() {
             {!currentWallet ? (
               <>
                 <Link
-                  to="/"
+                  to={routes.home}
                   className="navbar-brand nav-link d-flex align-items-center ps-0 ps-sm-2 ps-xl-0"
                   style={{ height: height }}
                 >
@@ -159,7 +164,7 @@ export default function Navbar() {
                     <span>{t('navbar.menu')}</span>
                   </rb.Navbar.Toggle>
                 </div>
-                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                <rb.Navbar.Offcanvas className={`navbar-offcanvas navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
@@ -167,7 +172,7 @@ export default function Navbar() {
                     <rb.Nav className="ms-auto">
                       <rb.Nav.Item>
                         <Link
-                          to="/create-wallet"
+                          to={routes.createWallet}
                           onClick={() => isExpanded && setIsExpanded(false)}
                           className="nav-link"
                         >
@@ -183,7 +188,7 @@ export default function Navbar() {
                 <rb.Nav className="d-flex flex-1 align-items-stretch">
                   <rb.Nav.Item className="d-flex align-items-stretch">
                     <NavLink
-                      to="/wallet"
+                      to={routes.wallet}
                       style={{ height: height }}
                       className={({ isActive }) =>
                         'leading-nav-link nav-link d-flex align-items-center' + (isActive ? ' active' : '')
@@ -205,7 +210,7 @@ export default function Navbar() {
                     <span>{t('navbar.menu_mobile')}</span>
                   </rb.Navbar.Toggle>
                 </div>
-                <rb.Navbar.Offcanvas className={`navbar-${settings.theme}`} placement="end">
+                <rb.Navbar.Offcanvas className={`navbar-offcanvas navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>

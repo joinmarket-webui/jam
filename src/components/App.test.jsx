@@ -68,8 +68,8 @@ describe('<App />', () => {
       render(<App />)
     })
 
-    expect(screen.getByText('•').classList.contains('text-danger')).toBe(true)
-    expect(screen.getByText('•').classList.contains('text-success')).toBe(false)
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-danger')).toBe(true)
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(false)
     expect(screen.getByText('footer.disconnected')).toBeInTheDocument()
     expect(screen.queryByText('footer.connected')).not.toBeInTheDocument()
 
@@ -77,7 +77,7 @@ describe('<App />', () => {
 
     expect(screen.queryByText('footer.disconnected')).not.toBeInTheDocument()
     expect(screen.getByText('footer.connected')).toBeInTheDocument()
-    expect(screen.getByText('•').classList.contains('text-success')).toBe(true)
-    expect(screen.getByText('•').classList.contains('text-danger')).toBe(false)
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(true)
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-danger')).toBe(false)
   })
 })

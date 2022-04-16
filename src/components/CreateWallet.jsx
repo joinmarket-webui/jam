@@ -10,6 +10,8 @@ import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import './CreateWallet.css'
+import { routes } from '../constants/routes'
+import { isFeatureEnabled } from '../constants/featureFlags'
 
 const PreventLeavingPageByMistake = () => {
   // prompt users before refreshing or closing the page when this component is present.
@@ -172,13 +174,13 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
   )
 }
 
-const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, devMode }) => {
+const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
   const seedphrase = createdWallet.seedphrase.split(' ')
 
   const { t } = useTranslation()
   const [seedBackup, setSeedBackup] = useState(false)
   const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
-  const [showSkipButton] = useState(devMode)
+  const [showSkipButton] = useState(isFeatureEnabled('skipWalletBackupConfirmation'))
 
   useEffect(() => {
     setSeedBackup(seedWordConfirmations.every((wordConfirmed) => wordConfirmed))
@@ -249,7 +251,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter, 
   )
 }
 
-const WalletCreationConfirmation = ({ createdWallet, walletConfirmed, devMode }) => {
+const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
   const { t } = useTranslation()
   const [userConfirmed, setUserConfirmed] = useState(false)
   const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
@@ -305,14 +307,13 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed, devMode })
           parentStepSetter={childStepSetter}
           createdWallet={createdWallet}
           walletConfirmed={walletConfirmed}
-          devMode={devMode}
         />
       )}
     </>
   )
 }
 
-export default function CreateWallet({ startWallet, devMode = false }) {
+export default function CreateWallet({ startWallet }) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
   const navigate = useNavigate()
@@ -361,15 +362,13 @@ export default function CreateWallet({ startWallet, devMode = false }) {
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {canCreate && <WalletCreationForm createWallet={createWallet} />}
-      {isCreated && (
-        <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} devMode={devMode} />
-      )}
+      {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
             Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletName) }}</strong> is active. You need
             to lock it first.
-            <Link to="/" className="alert-link">
+            <Link to={routes.home} className="alert-link">
               Go back
             </Link>
             .

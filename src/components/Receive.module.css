@@ -13,8 +13,14 @@
   height: 1.5rem;
 }
 
+.receive-placeholder-qr-container {
+  width: 13.5rem;
+  margin-bottom: 0;
+}
+
 .receive-placeholder-qr {
-  width: 215px; /* 13.4375rem */
+  width: 13.5rem;
   height: 13.75rem;
-  margin: 1.25rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
 }

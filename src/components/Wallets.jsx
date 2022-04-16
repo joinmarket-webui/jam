@@ -9,6 +9,7 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import { routes } from '../constants/routes'
 
 function arrayEquals(a, b) {
   return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
@@ -105,7 +106,7 @@ export default function Wallets({ startWallet, stopWallet }) {
       )}
       <div className="d-flex justify-content-center">
         <Link
-          to="/create-wallet"
+          to={routes.createWallet}
           className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
         >
           {t('wallets.button_new_wallet')}

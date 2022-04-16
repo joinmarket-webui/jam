@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useReducer, useState, useEffect } from 'react'
 // @ts-ignore
-import { useCurrentWallet, useSetCurrentWallet, useSetCurrentWalletInfo } from './WalletContext'
+import { useCurrentWallet, useSetCurrentWallet } from './WalletContext'
 // @ts-ignore
 import { useWebsocket, CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from './WebsocketContext'
 import { clearSession } from '../session'
@@ -35,7 +35,6 @@ const ServiceInfoContext = createContext<ServiceInfoContextEntry | undefined>(un
 const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
-  const setCurrentWalletInfo = useSetCurrentWalletInfo()
   const websocket = useWebsocket()
 
   const [serviceInfo, dispatchServiceInfo] = useReducer(
@@ -51,9 +50,8 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
       // as the connection might be down shortly and auth information
       // is still valid most of the time.
       setCurrentWallet(null)
-      setCurrentWalletInfo(null)
     }
-  }, [connectionError, setCurrentWallet, setCurrentWalletInfo])
+  }, [connectionError, setCurrentWallet])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -77,7 +75,6 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
             if (shouldResetState) {
               setCurrentWallet(null)
-              setCurrentWalletInfo(null)
               clearSession()
             }
           }
@@ -95,7 +92,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [dispatchServiceInfo, setConnectionError, currentWallet, setCurrentWallet, setCurrentWalletInfo])
+  }, [dispatchServiceInfo, setConnectionError, currentWallet, setCurrentWallet])
 
   // update maker/taker indicator based on websocket data
   const onWebsocketMessage = useCallback(
