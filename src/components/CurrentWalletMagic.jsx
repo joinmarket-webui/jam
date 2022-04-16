@@ -58,7 +58,7 @@ const PrivacyLevels = ({ accounts, loading }) => {
 
 const LoadingPrivacyLevel = ({ level }) => {
   const loadingShields = Array(level)
-    .fill()
+    .fill('')
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-filled-loading" width="24" height="30" />
     })

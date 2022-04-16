@@ -93,7 +93,6 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
         }
         value={'*****'}
         symbolIsPrefix={false}
-        loading={false}
       />
     )
   }
@@ -112,31 +111,15 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
   const satSymbol = <Sprite symbol="sats" width="1.2em" height="1.2em" />
 
   if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
-    return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueString)} symbolIsPrefix={true} loading={false} />
+    return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueString)} symbolIsPrefix={true} />
   if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
-    return (
-      <BalanceComponent symbol={satSymbol} value={formatSats(valueString)} symbolIsPrefix={false} loading={false} />
-    )
+    return <BalanceComponent symbol={satSymbol} value={formatSats(valueString)} symbolIsPrefix={false} />
 
   if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
-    return (
-      <BalanceComponent
-        symbol={satSymbol}
-        value={formatSats(btcToSats(valueString))}
-        symbolIsPrefix={false}
-        loading={false}
-      />
-    )
+    return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(valueString))} symbolIsPrefix={false} />
   if (valueIsSats && displayMode === DISPLAY_MODE_BTC)
-    return (
-      <BalanceComponent
-        symbol={btcSymbol}
-        value={formatBtc(satsToBtc(valueString))}
-        symbolIsPrefix={true}
-        loading={false}
-      />
-    )
+    return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
 
   console.warn('<Balance /> component cannot determine balance format')
-  return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} loading={false} />
+  return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
 }
