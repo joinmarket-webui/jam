@@ -456,7 +456,7 @@ export default function Send() {
                   <a
                     href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     frozen
                   </a>
@@ -464,7 +464,7 @@ export default function Send() {
                   <a
                     href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     time-locked
                   </a>
@@ -475,7 +475,7 @@ export default function Send() {
                   <a
                     href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     JoinMarket documentation
                   </a>
