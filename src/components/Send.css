@@ -125,6 +125,7 @@ input::-webkit-inner-spin-button {
 
 .send .input-loader {
   height: 3.5rem;
+  border-radius: 0.25rem;
 }
 
 .form-group-without-coinjoin-option {
