@@ -34,23 +34,26 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
 }
 
 const PrivacyLevels = ({ accounts, loading }) => {
-  const sortedAccounts = accounts?.sort((lhs, rhs) => lhs.account - rhs.account)
-  const numAccounts = sortedAccounts?.length
+  const numPrivacyLevelsPalceholders = 5
+  const sortedAccounts = (accounts || []).sort((lhs, rhs) => lhs.account - rhs.account)
+  const numAccounts = sortedAccounts.length
 
   return (
     <div className="d-flex justify-content-center">
       <div className="d-flex flex-column align-items-start" style={{ gap: '1rem' }}>
-        {loading && [...new Array(5)].map((a, index) => <LoadingPrivacyLevel key={index} level={5} />)}
-        {!loading &&
-          sortedAccounts.map(({ account, account_balance: balance, branches }) => (
-            <PrivacyLevel
-              key={account}
-              numAccounts={numAccounts}
-              level={parseInt(account)}
-              balance={balance}
-              loading={loading}
-            />
-          ))}
+        {loading
+          ? Array(numPrivacyLevelsPalceholders)
+              .fill('')
+              .map((_, index) => <LoadingPrivacyLevel key={index} level={numPrivacyLevelsPalceholders} />)
+          : sortedAccounts.map(({ account, account_balance: balance }) => (
+              <PrivacyLevel
+                key={account}
+                numAccounts={numAccounts}
+                level={parseInt(account)}
+                balance={balance}
+                loading={loading}
+              />
+            ))}
       </div>
     </div>
   )
