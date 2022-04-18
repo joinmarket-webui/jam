@@ -514,25 +514,6 @@ export default function Send() {
         )}
 
         <rb.Form onSubmit={onSubmit} noValidate id="send-form">
-          <rb.Form.Group className="mb-4" controlId="destination">
-            <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
-            {isLoading ? (
-              <rb.Placeholder as="p" animation="wave">
-                <rb.Placeholder xs={12} className="input-loader" />
-              </rb.Placeholder>
-            ) : (
-              <rb.Form.Control
-                name="destination"
-                placeholder={t('send.placeholder_recipient')}
-                className="slashed-zeroes"
-                value={destination || ''}
-                required
-                onChange={(e) => setDestination(e.target.value)}
-                isInvalid={destination !== null && !isValidAddress(destination)}
-              />
-            )}
-            <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
-          </rb.Form.Group>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
               {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
@@ -563,10 +544,7 @@ export default function Send() {
               </rb.Form.Select>
             )}
           </rb.Form.Group>
-          <rb.Form.Group
-            className={isCoinjoinOptionEnabled ? 'mb-4' : 'form-group-without-coinjoin-option'}
-            controlId="amount"
-          >
+          <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
             <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
             <div className="position-relative">
               {isLoading ? (
@@ -608,6 +586,25 @@ export default function Send() {
               {t('send.feedback_invalid_amount')}
             </rb.Form.Control.Feedback>
             {isSweep && frozenOrLockedWarning()}
+          </rb.Form.Group>
+          <rb.Form.Group className="mb-4" controlId="destination">
+            <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
+            {isLoading ? (
+              <rb.Placeholder as="p" animation="wave">
+                <rb.Placeholder xs={12} className="input-loader" />
+              </rb.Placeholder>
+            ) : (
+              <rb.Form.Control
+                name="destination"
+                placeholder={t('send.placeholder_recipient')}
+                className="slashed-zeroes"
+                value={destination || ''}
+                required
+                onChange={(e) => setDestination(e.target.value)}
+                isInvalid={destination !== null && !isValidAddress(destination)}
+              />
+            )}
+            <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
           </rb.Form.Group>
           {isCoinjoinOptionEnabled && (
             <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
