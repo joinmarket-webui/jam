@@ -78,7 +78,7 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
 
   if (loading) {
     return (
-      <rb.Placeholder as="p" animation="wave" className="mb-0">
+      <rb.Placeholder as="div" animation="wave">
         <rb.Placeholder
           data-testid="balance-component-placeholder"
           className={styles['balance-component-placeholder']}

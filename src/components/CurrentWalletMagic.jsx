@@ -14,13 +14,13 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
     <div className="d-flex flex-column align-items-center">
       {loading && (
-        <rb.Placeholder as="p" animation="wave" className="mb-0">
+        <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder className={styles['wallet-header-title']} />
         </rb.Placeholder>
       )}
       {!loading && <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>}
       {loading && (
-        <rb.Placeholder as="p" animation="wave" className="mb-0">
+        <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder className={styles['wallet-header-subtitle']} />
         </rb.Placeholder>
       )}

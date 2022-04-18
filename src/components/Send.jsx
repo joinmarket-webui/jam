@@ -519,7 +519,7 @@ export default function Send() {
               {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
             </rb.Form.Label>
             {isLoading ? (
-              <rb.Placeholder as="p" animation="wave">
+              <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder xs={12} className="input-loader" />
               </rb.Placeholder>
             ) : (
@@ -548,7 +548,7 @@ export default function Send() {
             <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
             <div className="position-relative">
               {isLoading ? (
-                <rb.Placeholder as="p" animation="wave">
+                <rb.Placeholder as="div" animation="wave">
                   <rb.Placeholder xs={12} className="input-loader" />
                 </rb.Placeholder>
               ) : (
@@ -590,7 +590,7 @@ export default function Send() {
           <rb.Form.Group className="mb-4" controlId="destination">
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
             {isLoading ? (
-              <rb.Placeholder as="p" animation="wave">
+              <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder xs={12} className="input-loader" />
               </rb.Placeholder>
             ) : (
