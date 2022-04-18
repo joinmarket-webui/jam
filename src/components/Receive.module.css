@@ -1,6 +1,5 @@
 .settings-container {
   margin-top: 1.5rem;
-  height: 2.25rem;
 }
 
 .receive-placeholder-container {
@@ -20,13 +19,17 @@
 }
 
 .receive-placeholder-qr-container {
-  width: 13.5rem;
-  margin-bottom: 0;
+  width: 16.25rem;
 }
 
 .receive-placeholder-qr {
-  width: 13.5rem;
+  width: 13.75rem;
   height: 13.75rem;
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
+  margin: 1.25rem;
+}
+
+:root[data-theme='dark'] .receive-placeholder-qr {
+  width: 16.25rem;
+  height: 16.25rem;
+  margin: 0;
 }

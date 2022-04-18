@@ -42,6 +42,8 @@ export default function Receive() {
         .catch((err) => {
           !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
         })
+        // show the loader a little longer to avoid flickering
+        .then((_) => new Promise((r) => setTimeout(r, 200)))
         .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
     }
 
@@ -102,8 +104,8 @@ export default function Receive() {
           <div className={styles['qr-container']}>
             {!isLoading && address && <BitcoinQR address={address} sats={amount} />}
             {(isLoading || !address) && (
-              <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-qr-container']}>
-                <rb.Placeholder xs={12} className={styles['receive-placeholder-qr']} />
+              <rb.Placeholder as="div" animation="wave" className={styles['receive-placeholder-qr-container']}>
+                <rb.Placeholder className={styles['receive-placeholder-qr']} />
               </rb.Placeholder>
             )}
           </div>
@@ -111,7 +113,7 @@ export default function Receive() {
             {address && <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>}
             {!address && (
               <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
-                <rb.Placeholder xs={8} className={styles['receive-placeholder']} />
+                <rb.Placeholder xs={12} sm={10} md={8} className={styles['receive-placeholder']} />
               </rb.Placeholder>
             )}
             <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
@@ -129,7 +131,7 @@ export default function Receive() {
                     }
                   )
                 }}
-                disabled={!address}
+                disabled={!address || isLoading}
               >
                 {showAddressCopiedConfirmation ? (
                   <>
@@ -157,17 +159,14 @@ export default function Receive() {
         </rb.Card>
       </div>
       <div className={styles['settings-container']}>
-        {!isLoading && (
-          <rb.Button
-            variant={`${settings.theme}`}
-            className="ps-0 border-0 d-flex align-items-center"
-            onClick={() => setShowSettings(!showSettings)}
-            disabled={isLoading}
-          >
-            {t('receive.button_settings')}
-            <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
-          </rb.Button>
-        )}
+        <rb.Button
+          variant={`${settings.theme}`}
+          className="ps-0 border-0 d-flex align-items-center"
+          onClick={() => setShowSettings(!showSettings)}
+        >
+          {t('receive.button_settings')}
+          <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
+        </rb.Button>
       </div>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         {showSettings && (
@@ -179,6 +178,7 @@ export default function Receive() {
                   defaultValue={account}
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
                   required
+                  disabled={isLoading}
                 >
                   {ACCOUNTS.map((val) => (
                     <option key={val} value={val}>
@@ -198,6 +198,7 @@ export default function Receive() {
                 value={amount}
                 min={0}
                 onChange={(e) => setAmount(e.target.value)}
+                disabled={isLoading}
               />
               <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
             </rb.Form.Group>
