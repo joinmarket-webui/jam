@@ -97,4 +97,21 @@
         <path stroke="currentColor" d="M5.5 19.5L18.5 19.5L18.5 12.5C18.5 11.9696 18.2893 11.4609 17.9142 11.0858C17.5391 10.7107 17.0304 10.5 16.5 10.5L13.5 10.5L13.5 7C13.5 6.60217 13.342 6.22064 13.0607 5.93934C12.7794 5.65804 12.3978 5.5 12 5.5C11.6022 5.5 11.2206 5.65804 10.9393 5.93934C10.658 6.22064 10.5 6.60217 10.5 7L10.5 10.5L7.5 10.5C6.96957 10.5 6.46086 10.7107 6.08579 11.0858C5.71071 11.4609 5.5 11.9696 5.5 12.5L5.5 19.5Z"/>
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M16 19L16 18M18 13.5L6 13.5L18 13.5ZM8 19L8 17L8 19ZM10.5 19L10.5 15.5L10.5 19Z"/>
     </symbol>
+    <symbol id="node" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" d="M13.5 7l3.5 3.5M7 13.5l3.5 3.5M10.5 7L7 10.5M17 13.5L13.5 17"/>
+        <circle cx="12" cy="5.5" r="2"/>
+        <circle cx="12" cy="18.5" r="2"/>
+        <circle cx="5.5" cy="12" r="2"/>
+        <circle cx="18.5" cy="12" r="2"/>
+        <circle cx="12" cy="5.5" r=".5"/>
+        <circle cx="12" cy="18.5" r=".5"/>
+        <circle cx="5.5" cy="12" r=".5"/>
+        <circle cx="18.5" cy="12" r=".5"/>
+    </symbol>
+    <symbol id="receive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15.747V18a1 1 0 001 1h12a1 1 0 001-1v-2.253M12.202 13.5V5M15.546 11.15l-3.344 3.266-3.344-3.266"/>
+    </symbol>
+    <symbol id="send" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15.747V18a1 1 0 001 1h12a1 1 0 001-1v-2.253M12.202 5.917v8.5M15.546 8.267L12.202 5 8.858 8.267"/>
+    </symbol>
 </svg>

@@ -99,7 +99,7 @@ export default function Receive() {
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <div className="qr-container">
         <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
-          <div className="d-flex justify-content-center">
+          <div className={styles['qr-container']}>
             {!isLoading && address && <BitcoinQR address={address} sats={amount} />}
             {(isLoading || !address) && (
               <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-qr-container']}>

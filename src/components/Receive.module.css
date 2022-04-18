@@ -13,6 +13,12 @@
   height: 1.5rem;
 }
 
+.qr-container {
+  display: flex;
+  justify-content: center;
+  min-height: 16.25rem;
+}
+
 .receive-placeholder-qr-container {
   width: 13.5rem;
   margin-bottom: 0;
