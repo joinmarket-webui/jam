@@ -207,7 +207,7 @@ export default function Receive() {
         <hr />
         <rb.Button variant="outline-dark" type="submit" disabled={isLoading} className="mt-2" style={{ width: '100%' }}>
           {isLoading ? (
-            <div>
+            <div className="d-flex justify-content-center align-items-center">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('receive.text_getting_address')}
             </div>

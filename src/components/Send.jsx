@@ -625,7 +625,7 @@ export default function Send() {
         )}
         <rb.Button variant="dark" type="submit" disabled={isSending || !formIsValid} className="mt-4" form="send-form">
           {isSending ? (
-            <div>
+            <div className="d-flex justify-content-center align-items-center">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('send.text_sending')}
             </div>
