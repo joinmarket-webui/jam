@@ -70,7 +70,7 @@ const LoadingPrivacyLevel = ({ level }) => {
     <div className="d-flex align-items-center">
       <div className="d-flex">{loadingShields}</div>
       <div className="ps-2">
-        <Balance valueString={undefined} convertToUnit={undefined} showBalance={undefined} loading={true} />
+        <Balance loading={true} />
       </div>
     </div>
   )

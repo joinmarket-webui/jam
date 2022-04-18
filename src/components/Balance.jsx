@@ -45,15 +45,7 @@ const formatSats = (value) => {
   return formatter.format(value)
 }
 
-const BalanceComponent = ({ symbol, value, symbolIsPrefix, loading }) => {
-  if (loading) {
-    return (
-      <rb.Placeholder as="p" animation="wave" className="mb-0">
-        <rb.Placeholder className={styles['balance-component-placeholder']} />
-      </rb.Placeholder>
-    )
-  }
-
+const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
   return (
     <span className="d-inline-flex align-items-center">
       {symbolIsPrefix && symbol}
@@ -75,15 +67,27 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix, loading }) => {
  * Possible options are `BTC` and `SATS` from `src/utils.js`
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
  * Hidden balances are masked with `*****`.
+ * @param {loading}: A loading flag that renders a placeholder while true.
  */
-export default function Balance({ valueString, convertToUnit, showBalance = false, loading }) {
+export default function Balance({ valueString, convertToUnit, showBalance = false, loading = false }) {
   const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
 
   useEffect(() => {
     setDisplayMode(getDisplayMode(convertToUnit, showBalance))
   }, [convertToUnit, showBalance])
 
-  if (displayMode === DISPLAY_MODE_HIDDEN && !loading) {
+  if (loading) {
+    return (
+      <rb.Placeholder as="p" animation="wave" className="mb-0">
+        <rb.Placeholder
+          data-testid="balance-component-placeholder"
+          className={styles['balance-component-placeholder']}
+        />
+      </rb.Placeholder>
+    )
+  }
+
+  if (displayMode === DISPLAY_MODE_HIDDEN) {
     return (
       <BalanceComponent
         symbol={
@@ -98,8 +102,8 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
   }
 
   if (typeof valueString !== 'string') {
-    if (!loading) console.warn('<Balance /> component expects string input')
-    return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} loading={loading} />
+    console.warn('<Balance /> component expects string input')
+    return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
   }
 
   // Treat integers as sats.

@@ -5,6 +5,11 @@ import { BTC, SATS } from '../utils'
 import Balance from './Balance'
 
 describe('<Balance />', () => {
+  it('should renderplaceholder while loading', () => {
+    render(<Balance loading={true} />)
+    expect(screen.getByTestId('balance-component-placeholder')).toBeInTheDocument()
+  })
+
   it('should render BTC using satscomma formatting', () => {
     render(<Balance valueString={'123.456'} convertToUnit={BTC} showBalance={true} />)
     expect(screen.getByText(`123.45 600 000`)).toBeInTheDocument()
