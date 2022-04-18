@@ -611,7 +611,11 @@ export default function Send() {
           </rb.Form.Group>
           {isCoinjoinOptionEnabled && (
             <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-              <ToggleSwitch label={t('send.toggle_coinjoin')} onToggle={(isToggled) => setIsCoinjoin(isToggled)} />
+              <ToggleSwitch
+                label={t('send.toggle_coinjoin')}
+                initialValue={isCoinjoin}
+                onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+              />
             </rb.Form.Group>
           )}
         </rb.Form>
