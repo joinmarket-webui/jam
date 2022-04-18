@@ -1,0 +1,32 @@
+.settings-container {
+  margin-top: 1.5rem;
+  height: 2.25rem;
+}
+
+.receive-placeholder-container {
+  height: 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.receive-placeholder {
+  height: 1.5rem;
+}
+
+.qr-container {
+  display: flex;
+  justify-content: center;
+  min-height: 16.25rem;
+}
+
+.receive-placeholder-qr-container {
+  width: 13.5rem;
+  margin-bottom: 0;
+}
+
+.receive-placeholder-qr {
+  width: 13.5rem;
+  height: 13.75rem;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
