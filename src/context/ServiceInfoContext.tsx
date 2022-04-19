@@ -56,31 +56,40 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   useEffect(() => {
     const abortCtrl = new AbortController()
 
+    const resetWalletAndClearSession = () => {
+      setCurrentWallet(null)
+      clearSession()
+    }
+
     const refreshSession = () => {
-      Api.getSession({ signal: abortCtrl.signal })
+      Api.getSession({ token: currentWallet?.token, signal: abortCtrl.signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data: JmSessionData) => {
-          if (!abortCtrl.signal.aborted) {
-            const {
-              session: sessionActive,
-              maker_running: makerRunning,
-              coinjoin_in_process: coinjoinInProgress,
-              wallet_name: walletNameOrNoneString,
-            } = data
-            const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
+          if (abortCtrl.signal.aborted) return
 
-            dispatchServiceInfo({ sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName })
-            setConnectionError(undefined)
+          const {
+            session: sessionActive,
+            maker_running: makerRunning,
+            coinjoin_in_process: coinjoinInProgress,
+            wallet_name: walletNameOrNoneString,
+          } = data
+          const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
 
-            const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
-            if (shouldResetState) {
-              setCurrentWallet(null)
-              clearSession()
-            }
+          dispatchServiceInfo({ sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName })
+          setConnectionError(undefined)
+
+          const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
+          if (shouldResetState) {
+            resetWalletAndClearSession()
           }
         })
         .catch((err) => {
-          if (!abortCtrl.signal.aborted) {
+          if (abortCtrl.signal.aborted) return
+
+          const shouldResetState = err instanceof Api.JmApiError && err.response.status === 401
+          if (shouldResetState) {
+            resetWalletAndClearSession()
+          } else {
             setConnectionError(err)
           }
         })

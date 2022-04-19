@@ -105,8 +105,11 @@ const Authorization = (token: ApiToken) => {
   return { 'x-jm-authorization': `Bearer ${token}` }
 }
 
-const getSession = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${basePath()}/v1/session`, { signal })
+const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {
+  return await fetch(`${basePath()}/v1/session`, {
+    headers: token ? { ...Authorization(token) } : undefined,
+    signal,
+  })
 }
 
 const getAddressNew = async ({ token, signal, walletName, mixdepth }: WalletRequestContext & WithMixdepth) => {
@@ -259,6 +262,15 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
   })
 }
 
+export class JmApiError extends Error {
+  public response: Response
+
+  constructor(message: string, response: Response) {
+    super(message)
+    this.response = response
+  }
+}
+
 const Helper = (() => {
   const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
     try {
@@ -289,7 +301,7 @@ const Helper = (() => {
   }
 
   const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
-    throw new Error(await extractErrorMessage(response, fallbackReason))
+    throw new JmApiError(await extractErrorMessage(response, fallbackReason), response)
   }
 
   return {
