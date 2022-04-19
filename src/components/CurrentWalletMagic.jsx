@@ -15,18 +15,18 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
     <div className="d-flex flex-column align-items-center">
       {loading && (
         <rb.Placeholder as="div" animation="wave">
-          <rb.Placeholder className={styles['wallet-header-title']} />
+          <rb.Placeholder className={styles['wallet-header-title-placeholder']} />
         </rb.Placeholder>
       )}
       {!loading && <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>}
       {loading && (
         <rb.Placeholder as="div" animation="wave">
-          <rb.Placeholder className={styles['wallet-header-subtitle']} />
+          <rb.Placeholder className={styles['wallet-header-subtitle-placeholder']} />
         </rb.Placeholder>
       )}
       {!loading && (
         <h2>
-          <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} loading={loading} />
+          <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
         </h2>
       )}
     </div>
@@ -76,7 +76,7 @@ const LoadingPrivacyLevel = ({ level }) => {
   )
 }
 
-const PrivacyLevel = ({ numAccounts, level, balance, loading }) => {
+const PrivacyLevel = ({ numAccounts, level, balance }) => {
   const settings = useSettings()
 
   const filledShields = Array(level + 1)
