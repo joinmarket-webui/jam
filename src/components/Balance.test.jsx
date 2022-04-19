@@ -5,7 +5,7 @@ import { BTC, SATS } from '../utils'
 import Balance from './Balance'
 
 describe('<Balance />', () => {
-  it('should renderplaceholder while loading', () => {
+  it('should render placeholder while loading', () => {
     render(<Balance loading={true} />)
     expect(screen.getByTestId('balance-component-placeholder')).toBeInTheDocument()
   })
