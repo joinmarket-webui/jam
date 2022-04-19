@@ -4,9 +4,8 @@ import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { BitcoinQR } from './BitcoinQR'
-import { ACCOUNTS } from '../utils'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
@@ -17,6 +16,7 @@ export default function Receive() {
   const location = useLocation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
+  const walletInfo = useCurrentWalletInfo()
   const addressCopyFallbackInputRef = useRef()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -24,6 +24,7 @@ export default function Receive() {
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
+  const [accounts, setAccounts] = useState([])
   const [addressCount, setAddressCount] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [addressCopiedFlag, setAddressCopiedFlag] = useState(0)
@@ -31,26 +32,29 @@ export default function Receive() {
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const fetchAddress = async (accountNr) => {
-      const { name: walletName, token } = currentWallet
+    const { name: walletName, token } = currentWallet
 
-      setAlert(null)
-      setIsLoading(true)
-      Api.getAddressNew({ walletName, mixdepth: accountNr, token, signal: abortCtrl.signal })
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
-        .then((data) => setAddress(data.address))
-        .catch((err) => {
-          !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
-        })
-        .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
-    }
-
-    if (ACCOUNTS.includes(account)) {
-      fetchAddress(account)
-    }
+    setAlert(null)
+    setIsLoading(true)
+    Api.getAddressNew({ walletName, mixdepth: account, token, signal: abortCtrl.signal })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
+      .then((data) => setAddress(data.address))
+      .catch((err) => {
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [account, currentWallet, addressCount, t])
+
+  useEffect(() => {
+    // `walletInfo` will be populated at least once (when wallet is unlocked).
+    // This data *might* be outdated and it can be argued that it should be actively reloaded.
+    // However, creating a new account (e.g. by providing custom options to run scheduled transactions)
+    // is a rather rare event. Revisit this behaviour when necessary.
+    const accountNumbers = walletInfo ? walletInfo.data.display.walletinfo.accounts.map((it) => it.account) : []
+    setAccounts(accountNumbers)
+  }, [walletInfo])
 
   useEffect(() => {
     if (addressCopiedFlag < 1) return
@@ -179,8 +183,9 @@ export default function Receive() {
                   defaultValue={account}
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
                   required
+                  disabled={accounts.length === 0}
                 >
-                  {ACCOUNTS.map((val) => (
+                  {accounts.map((val) => (
                     <option key={val} value={val}>
                       {t('receive.account_selector_option_dev_mode', { number: val })}
                     </option>
