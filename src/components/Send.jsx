@@ -172,11 +172,10 @@ export default function Send() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
 
-  const isOperationEnabled = useCallback(() => {
-    return serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
+  const isOperationDisabled = useCallback(() => {
+    return !serviceInfo || serviceInfo.makerRunning || serviceInfo.coinjoinInProgress
   }, [serviceInfo])
 
-  const [isSendingEnabled, setIsSendingEnabled] = useState(isOperationEnabled())
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
@@ -200,10 +199,6 @@ export default function Send() {
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
-
-  useEffect(() => {
-    setIsSendingEnabled(isOperationEnabled())
-  }, [isOperationEnabled])
 
   useEffect(() => {
     if (
@@ -338,7 +333,7 @@ export default function Send() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (!isSendingEnabled) return
+    if (isOperationDisabled()) return
 
     const form = e.currentTarget
     const isValid = formIsValid
@@ -497,7 +492,7 @@ export default function Send() {
     <>
       <div className="send">
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
-        <rb.Fade in={!isLoading && !isSendingEnabled} mountOnEnter={true} unmountOnExit={true}>
+        <rb.Fade in={serviceInfo && isOperationDisabled()} mountOnEnter={true} unmountOnExit={true}>
           <rb.Alert variant="info" className="mb-4">
             <>
               {serviceInfo?.makerRunning && (
@@ -517,7 +512,7 @@ export default function Send() {
           </rb.Alert>
         )}
 
-        <rb.Form id="send-form" onSubmit={onSubmit} noValidate disabled={!isLoading && !isSendingEnabled}>
+        <rb.Form id="send-form" onSubmit={onSubmit} noValidate disabled={!isLoading && isOperationDisabled()}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
               {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
@@ -533,7 +528,7 @@ export default function Send() {
                 required
                 className="slashed-zeroes"
                 isInvalid={!isValidAccount(account)}
-                disabled={!isSendingEnabled}
+                disabled={isOperationDisabled()}
               >
                 {walletInfo &&
                   walletInfo.data.display.walletinfo.accounts
@@ -568,13 +563,13 @@ export default function Send() {
                     required
                     onChange={(e) => setAmount(parseInt(e.target.value, 10))}
                     isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
-                    disabled={isSweep || !isSendingEnabled}
+                    disabled={isSweep || isOperationDisabled()}
                   />
                   <rb.Button
                     variant="outline-dark"
                     className="button-sweep"
                     onClick={() => setIsSweep(!isSweep)}
-                    disabled={!isSendingEnabled}
+                    disabled={isOperationDisabled()}
                   >
                     {isSweep ? (
                       <div>{t('send.button_clear_sweep')}</div>
@@ -612,7 +607,7 @@ export default function Send() {
                 required
                 onChange={(e) => setDestination(e.target.value)}
                 isInvalid={destination !== null && !isValidAddress(destination)}
-                disabled={!isSendingEnabled}
+                disabled={isOperationDisabled()}
               />
             )}
             <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
@@ -622,7 +617,7 @@ export default function Send() {
               label={t('send.toggle_coinjoin')}
               initialValue={isCoinjoin}
               onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-              disabled={!isSendingEnabled}
+              disabled={isOperationDisabled()}
             />
           </rb.Form.Group>
         </rb.Form>
@@ -631,13 +626,13 @@ export default function Send() {
             numCollaborators={numCollaborators}
             setNumCollaborators={setNumCollaborators}
             minNumCollaborators={minNumCollaborators}
-            disabled={!isLoading && !isSendingEnabled}
+            disabled={!isLoading && isOperationDisabled()}
           />
         )}
         <rb.Button
           variant="dark"
           type="submit"
-          disabled={!isSendingEnabled || isSending || !formIsValid}
+          disabled={isOperationDisabled() || isSending || !formIsValid}
           className="mt-4"
           form="send-form"
         >
