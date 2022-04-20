@@ -139,3 +139,7 @@ input::-webkit-inner-spin-button {
   height: 3.5rem;
   border-radius: 0.25rem;
 }
+
+.send a.unstyled {
+  text-decoration: none !important;
+}

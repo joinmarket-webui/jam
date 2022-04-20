@@ -500,30 +500,31 @@ export default function Send() {
   return (
     <>
       <div
-        className={`send ${serviceInfo?.makerRunning && 'maker-running'} ${
-          serviceInfo?.coinjoinInProgress && 'taker-running'
+        className={`send ${serviceInfo?.makerRunning ? 'maker-running' : ''} ${
+          serviceInfo?.coinjoinInProgress ? 'taker-running' : ''
         }`}
       >
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
         <rb.Fade in={isOperationDisabled()} mountOnEnter={true} unmountOnExit={true}>
-          <rb.Alert variant="info" className="mb-4">
-            <>
-              {serviceInfo?.makerRunning && (
-                <rb.Row className="align-items-center">
-                  <rb.Col>
-                    <Trans i18nKey="send.text_maker_running">
-                      <Link to={routes.earn}>Earn</Link> is active. Stop the service in order to send collaborative
-                      transactions.
-                    </Trans>
-                  </rb.Col>
-                  <rb.Col xs="auto">
-                    <Sprite symbol="caret-right" width="24px" height="24px" />
-                  </rb.Col>
-                </rb.Row>
-              )}
-              {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
-            </>
-          </rb.Alert>
+          <>
+            {serviceInfo?.makerRunning && (
+              <Link to={routes.earn} className="unstyled">
+                <rb.Alert variant="info" className="mb-4">
+                  <rb.Row className="align-items-center">
+                    <rb.Col>{t('send.text_maker_running')}</rb.Col>
+                    <rb.Col xs="auto">
+                      <Sprite symbol="caret-right" width="24px" height="24px" />
+                    </rb.Col>
+                  </rb.Row>
+                </rb.Alert>
+              </Link>
+            )}
+            {serviceInfo?.coinjoinInProgress && (
+              <rb.Alert variant="info" className="mb-4">
+                {t('send.text_coinjoin_already_running')}
+              </rb.Alert>
+            )}
+          </>
         </rb.Fade>
 
         {alert && (
