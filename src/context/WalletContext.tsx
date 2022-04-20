@@ -144,7 +144,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
 const useCurrentWallet = () => {
   const context = useContext(WalletContext)
   if (context === undefined) {
-    throw new Error('useWallet must be used within a WalletProvider')
+    throw new Error('useCurrentWallet must be used within a WalletProvider')
   }
   return context.currentWallet
 }
@@ -152,7 +152,7 @@ const useCurrentWallet = () => {
 const useSetCurrentWallet = () => {
   const context = useContext(WalletContext)
   if (context === undefined) {
-    throw new Error('useSetWallet must be used within a WalletProvider')
+    throw new Error('useSetCurrentWallet must be used within a WalletProvider')
   }
   return context.setCurrentWallet
 }
@@ -168,7 +168,7 @@ const useCurrentWalletInfo = () => {
 const useReloadCurrentWalletInfo = () => {
   const context = useContext(WalletContext)
   if (context === undefined) {
-    throw new Error('reloadCurrentWalletInfo must be used within a WalletProvider')
+    throw new Error('useReloadCurrentWalletInfo must be used within a WalletProvider')
   }
   return context.reloadCurrentWalletInfo
 }

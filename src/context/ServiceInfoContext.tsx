@@ -27,6 +27,7 @@ type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag
 
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
+  reloadServiceInfo: ({ signal }: { signal: AbortSignal }) => Promise<ServiceInfo>
   connectionError?: Error
 }
 
@@ -53,23 +54,22 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
     }
   }, [connectionError, setCurrentWallet])
 
-  useEffect(() => {
-    const abortCtrl = new AbortController()
-
-    const refreshSession = () => {
-      Api.getSession({ signal: abortCtrl.signal })
+  const reloadServiceInfo = useCallback(
+    ({ signal }: { signal: AbortSignal }) => {
+      return Api.getSession({ signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data: JmSessionData) => {
-          if (!abortCtrl.signal.aborted) {
-            const {
-              session: sessionActive,
-              maker_running: makerRunning,
-              coinjoin_in_process: coinjoinInProgress,
-              wallet_name: walletNameOrNoneString,
-            } = data
-            const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
+          const {
+            session: sessionActive,
+            maker_running: makerRunning,
+            coinjoin_in_process: coinjoinInProgress,
+            wallet_name: walletNameOrNoneString,
+          } = data
+          const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
 
-            dispatchServiceInfo({ sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName })
+          const info: ServiceInfo = { sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName }
+          if (!signal.aborted) {
+            dispatchServiceInfo(info)
             setConnectionError(undefined)
 
             const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
@@ -78,45 +78,61 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
               clearSession()
             }
           }
+          return info
         })
         .catch((err) => {
-          if (!abortCtrl.signal.aborted) {
+          if (!signal.aborted) {
             setConnectionError(err)
           }
+          throw err
         })
+    },
+    [currentWallet, setCurrentWallet]
+  )
+
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    const refreshSession = () => {
+      reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => console.error(err))
     }
 
     refreshSession()
+
     const interval = setInterval(refreshSession, SESSION_REQUEST_INTERVAL)
     return () => {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [dispatchServiceInfo, setConnectionError, currentWallet, setCurrentWallet])
+  }, [reloadServiceInfo])
 
   // update maker/taker indicator based on websocket data
-  const onWebsocketMessage = useCallback(
-    (message) => {
-      const data = JSON.parse(message?.data)
+  const onWebsocketMessage = useCallback((message) => {
+    const data = JSON.parse(message?.data)
 
-      // update the maker/taker indicator according to `coinjoin_state` property
-      if (data && typeof data.coinjoin_state === 'number') {
-        dispatchServiceInfo({ coinjoinInProgress: data.coinjoin_state === CJ_STATE_TAKER_RUNNING })
-        dispatchServiceInfo({ makerRunning: data.coinjoin_state === CJ_STATE_MAKER_RUNNING })
-      }
-    },
-    [dispatchServiceInfo]
-  )
+    // update the maker/taker indicator according to `coinjoin_state` property
+    if (data && typeof data.coinjoin_state === 'number') {
+      dispatchServiceInfo({
+        coinjoinInProgress: data.coinjoin_state === CJ_STATE_TAKER_RUNNING,
+        makerRunning: data.coinjoin_state === CJ_STATE_MAKER_RUNNING,
+      })
+    }
+  }, [])
 
   useEffect(() => {
     if (!websocket) return
 
-    websocket.addEventListener('message', onWebsocketMessage)
+    const abortCtrl = new AbortController()
+    websocket.addEventListener('message', onWebsocketMessage, { signal: abortCtrl.signal })
 
-    return () => websocket && websocket.removeEventListener('message', onWebsocketMessage)
+    return () => abortCtrl.abort()
   }, [websocket, onWebsocketMessage])
 
-  return <ServiceInfoContext.Provider value={{ serviceInfo, connectionError }}>{children}</ServiceInfoContext.Provider>
+  return (
+    <ServiceInfoContext.Provider value={{ serviceInfo, reloadServiceInfo, connectionError }}>
+      {children}
+    </ServiceInfoContext.Provider>
+  )
 }
 
 const useServiceInfo = () => {
@@ -125,6 +141,13 @@ const useServiceInfo = () => {
     throw new Error('useServiceInfo must be used within a ServiceInfoProvider')
   }
   return context.serviceInfo
+}
+const useReloadServiceInfo = () => {
+  const context = useContext(ServiceInfoContext)
+  if (context === undefined) {
+    throw new Error('useReloadServiceInfo must be used within a ServiceInfoProvider')
+  }
+  return context.reloadServiceInfo
 }
 
 const useSessionConnectionError = () => {
@@ -135,4 +158,4 @@ const useSessionConnectionError = () => {
   return context.connectionError
 }
 
-export { ServiceInfoContext, ServiceInfoProvider, useServiceInfo, useSessionConnectionError }
+export { ServiceInfoContext, ServiceInfoProvider, useServiceInfo, useReloadServiceInfo, useSessionConnectionError }
