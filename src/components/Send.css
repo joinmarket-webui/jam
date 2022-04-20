@@ -25,9 +25,9 @@ input::-webkit-inner-spin-button {
   padding: 0.2rem 0.5rem;
 }
 
-/* TODO: should this style be applied globaly to all disabled forms? */
-.send form[disabled],
-.send form[disabled] ~ button[type='submit']:disabled {
+.send .blurred,
+.send form.blurred ~ .collaborators-selector,
+.send form.blurred ~ button[type='submit'] {
   filter: blur(2px);
 }
 

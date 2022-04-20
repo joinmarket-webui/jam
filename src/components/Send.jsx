@@ -173,7 +173,7 @@ export default function Send() {
   const [isSending, setIsSending] = useState(false)
 
   const isOperationDisabled = useCallback(() => {
-    return !serviceInfo || serviceInfo.makerRunning || serviceInfo.coinjoinInProgress
+    return serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress)
   }, [serviceInfo])
 
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
@@ -512,7 +512,7 @@ export default function Send() {
           </rb.Alert>
         )}
 
-        <rb.Form id="send-form" onSubmit={onSubmit} noValidate disabled={!isLoading && isOperationDisabled()}>
+        <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={isOperationDisabled() ? 'blurred' : ''}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
               {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
@@ -626,7 +626,7 @@ export default function Send() {
             numCollaborators={numCollaborators}
             setNumCollaborators={setNumCollaborators}
             minNumCollaborators={minNumCollaborators}
-            disabled={!isLoading && isOperationDisabled()}
+            disabled={isOperationDisabled()}
           />
         )}
         <rb.Button
