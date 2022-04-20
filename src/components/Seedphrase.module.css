@@ -1,16 +1,16 @@
-.seedphrase {
+.container {
   gap: 0.3rem;
 }
 
-.seedword-index {
-  width: 2ch;
-}
-
-.seedphrase > div {
+.item {
   background-color: rgba(244, 244, 244, 1);
   width: 9rem;
 }
 
-:root[data-theme='dark'] .seedphrase > div {
+.item-index {
+  width: 2ch;
+}
+
+:root[data-theme='dark'] .item {
   background-color: var(--bs-gray-800);
 }

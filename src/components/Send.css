@@ -31,12 +31,6 @@ input::-webkit-inner-spin-button {
   filter: blur(2px);
 }
 
-.send.taker-running form,
-.send.taker-running .collaborators-selector,
-.send.taker-running button[type='submit'] {
-  filter: blur(2px);
-}
-
 :root[data-theme='dark'] .send form .button-sweep {
   color: var(--bs-gray-800);
 }
