@@ -8,7 +8,7 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useCurrentWalletInfo, useReloadCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
-import { useServiceInfo } from '../context/ServiceInfoContext'
+import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
 import { btcToSats, SATS } from '../utils'
@@ -165,6 +165,7 @@ export default function Send() {
   const walletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
+  const reloadServiceInfo = useReloadServiceInfo()
   const settings = useSettings()
 
   const location = useLocation()
@@ -227,6 +228,14 @@ export default function Send() {
     setAlert(null)
     setIsLoading(true)
 
+    // reloading service info is important, is it must be known as soon as possible
+    // if the operation is even allowed, i.e. if no other service is running
+    const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
+      // reusing "wallet failed" message here is okay, as session info also contains wallet information
+      const message = err.message || t('send.error_loading_wallet_failed')
+      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+    })
+
     const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => {
       const message = err.message || t('send.error_loading_wallet_failed')
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
@@ -244,12 +253,12 @@ export default function Send() {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
+    Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
       () => !abortCtrl.signal.aborted && setIsLoading(false)
     )
 
     return () => abortCtrl.abort()
-  }, [wallet, reloadCurrentWalletInfo, t])
+  }, [wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
