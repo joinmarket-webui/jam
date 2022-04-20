@@ -31,9 +31,6 @@ input::-webkit-inner-spin-button {
   filter: blur(2px);
 }
 
-/* figma design would like to have the values shown when a taker operation
-   is running - since we do not support this by now, lets blur the
-   forms in the meantime, just like when a maker is running. */
 .send.taker-running form,
 .send.taker-running .collaborators-selector,
 .send.taker-running button[type='submit'] {
