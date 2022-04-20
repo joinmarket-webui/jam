@@ -26,7 +26,7 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
             />
           </div>
         ) : (
-          <Balance value="0.00000000" unit="BTC" showBalance={false} loading={true} />
+          <Balance loading={true} />
         )}
       </div>
     </div>

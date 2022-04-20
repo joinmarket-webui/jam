@@ -456,7 +456,7 @@ export default function Send() {
                   <a
                     href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     frozen
                   </a>
@@ -464,7 +464,7 @@ export default function Send() {
                   <a
                     href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     time-locked
                   </a>
@@ -475,7 +475,7 @@ export default function Send() {
                   <a
                     href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                   >
                     JoinMarket documentation
                   </a>
@@ -514,31 +514,12 @@ export default function Send() {
         )}
 
         <rb.Form onSubmit={onSubmit} noValidate id="send-form">
-          <rb.Form.Group className="mb-4" controlId="destination">
-            <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
-            {isLoading ? (
-              <rb.Placeholder as="p" animation="wave">
-                <rb.Placeholder xs={12} className="input-loader" />
-              </rb.Placeholder>
-            ) : (
-              <rb.Form.Control
-                name="destination"
-                placeholder={t('send.placeholder_recipient')}
-                className="slashed-zeroes"
-                value={destination || ''}
-                required
-                onChange={(e) => setDestination(e.target.value)}
-                isInvalid={destination !== null && !isValidAddress(destination)}
-              />
-            )}
-            <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
-          </rb.Form.Group>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
               {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
             </rb.Form.Label>
             {isLoading ? (
-              <rb.Placeholder as="p" animation="wave">
+              <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder xs={12} className="input-loader" />
               </rb.Placeholder>
             ) : (
@@ -563,14 +544,11 @@ export default function Send() {
               </rb.Form.Select>
             )}
           </rb.Form.Group>
-          <rb.Form.Group
-            className={isCoinjoinOptionEnabled ? 'mb-4' : 'form-group-without-coinjoin-option'}
-            controlId="amount"
-          >
+          <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
             <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
             <div className="position-relative">
               {isLoading ? (
-                <rb.Placeholder as="p" animation="wave">
+                <rb.Placeholder as="div" animation="wave">
                   <rb.Placeholder xs={12} className="input-loader" />
                 </rb.Placeholder>
               ) : (
@@ -609,9 +587,32 @@ export default function Send() {
             </rb.Form.Control.Feedback>
             {isSweep && frozenOrLockedWarning()}
           </rb.Form.Group>
+          <rb.Form.Group className="mb-4" controlId="destination">
+            <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
+            {isLoading ? (
+              <rb.Placeholder as="div" animation="wave">
+                <rb.Placeholder xs={12} className="input-loader" />
+              </rb.Placeholder>
+            ) : (
+              <rb.Form.Control
+                name="destination"
+                placeholder={t('send.placeholder_recipient')}
+                className="slashed-zeroes"
+                value={destination || ''}
+                required
+                onChange={(e) => setDestination(e.target.value)}
+                isInvalid={destination !== null && !isValidAddress(destination)}
+              />
+            )}
+            <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
+          </rb.Form.Group>
           {isCoinjoinOptionEnabled && (
             <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-              <ToggleSwitch label={t('send.toggle_coinjoin')} onToggle={(isToggled) => setIsCoinjoin(isToggled)} />
+              <ToggleSwitch
+                label={t('send.toggle_coinjoin')}
+                initialValue={isCoinjoin}
+                onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+              />
             </rb.Form.Group>
           )}
         </rb.Form>
@@ -624,7 +625,7 @@ export default function Send() {
         )}
         <rb.Button variant="dark" type="submit" disabled={isSending || !formIsValid} className="mt-4" form="send-form">
           {isSending ? (
-            <div>
+            <div className="d-flex justify-content-center align-items-center">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('send.text_sending')}
             </div>
