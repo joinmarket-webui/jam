@@ -499,9 +499,13 @@ export default function Send() {
 
   return (
     <>
-      <div className="send">
+      <div
+        className={`send ${serviceInfo?.makerRunning && 'maker-running'} ${
+          serviceInfo?.coinjoinInProgress && 'taker-running'
+        }`}
+      >
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
-        <rb.Fade in={serviceInfo && isOperationDisabled()} mountOnEnter={true} unmountOnExit={true}>
+        <rb.Fade in={isOperationDisabled()} mountOnEnter={true} unmountOnExit={true}>
           <rb.Alert variant="info" className="mb-4">
             <>
               {serviceInfo?.makerRunning && (
@@ -528,7 +532,7 @@ export default function Send() {
           </rb.Alert>
         )}
 
-        <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={isOperationDisabled() ? 'blurred' : ''}>
+        <rb.Form id="send-form" onSubmit={onSubmit} noValidate>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
               {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
@@ -633,7 +637,7 @@ export default function Send() {
               label={t('send.toggle_coinjoin')}
               initialValue={isCoinjoin}
               onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-              disabled={isOperationDisabled()}
+              disabled={isLoading || isOperationDisabled()}
             />
           </rb.Form.Group>
         </rb.Form>
@@ -642,7 +646,7 @@ export default function Send() {
             numCollaborators={numCollaborators}
             setNumCollaborators={setNumCollaborators}
             minNumCollaborators={minNumCollaborators}
-            disabled={isOperationDisabled()}
+            disabled={isLoading || isOperationDisabled()}
           />
         )}
         <rb.Button
