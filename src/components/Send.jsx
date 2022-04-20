@@ -509,7 +509,7 @@ export default function Send() {
           <rb.Alert variant="info" className="mb-4">
             <>
               {serviceInfo?.makerRunning && (
-                <rb.Row>
+                <rb.Row className="align-items-center">
                   <rb.Col>
                     <Trans i18nKey="send.text_maker_running">
                       <Link to={routes.earn}>Earn</Link> is active. Stop the service in order to send collaborative
