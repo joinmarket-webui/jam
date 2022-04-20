@@ -54,7 +54,7 @@ We will try to at least comment on your pull request within a couple of days. We
 Some things that will increase the chance that your pull request is accepted:
 
 - Make sure the changes work well and cover edge cases.
-- Make sure your code is formatted. This should happen automatically using a Git commit-hook. If not, see [docs/DEVELOPING.md](docs/DEVELOPING.md) for more details.
+- Make sure your code is formatted. This should happen automatically using a Git commit-hook. If not, see [docs/developing.md](docs/developing.md) for more details.
 - Write a meaningful pull request description message.
 
 If your pull request is accepted, a maintainer will squash it into master.
