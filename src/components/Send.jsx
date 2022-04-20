@@ -505,10 +505,17 @@ export default function Send() {
           <rb.Alert variant="info" className="mb-4">
             <>
               {serviceInfo?.makerRunning && (
-                <Trans i18nKey="send.text_maker_running">
-                  <Link to={routes.earn}>Earn</Link> is active. Stop the service in order to send collaborative
-                  transactions.
-                </Trans>
+                <rb.Row>
+                  <rb.Col>
+                    <Trans i18nKey="send.text_maker_running">
+                      <Link to={routes.earn}>Earn</Link> is active. Stop the service in order to send collaborative
+                      transactions.
+                    </Trans>
+                  </rb.Col>
+                  <rb.Col xs="auto">
+                    <Sprite symbol="caret-right" width="24px" height="24px" />
+                  </rb.Col>
+                </rb.Row>
               )}
               {serviceInfo?.coinjoinInProgress && t('send.text_coinjoin_already_running')}
             </>
@@ -646,7 +653,7 @@ export default function Send() {
           form="send-form"
         >
           {isSending ? (
-            <div>
+            <div className="d-flex justify-content-center align-items-center">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('send.text_sending')}
             </div>
