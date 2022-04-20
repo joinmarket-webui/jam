@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { BTC, SATS, btcToSats, satsToBtc } from '../utils'
 import Sprite from './Sprite'
+import * as rb from 'react-bootstrap'
+import styles from './Balance.module.css'
 
 const DISPLAY_MODE_BTC = 0
 const DISPLAY_MODE_SATS = 1
@@ -65,13 +67,25 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
  * Possible options are `BTC` and `SATS` from `src/utils.js`
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
  * Hidden balances are masked with `*****`.
+ * @param {loading}: A loading flag that renders a placeholder while true.
  */
-export default function Balance({ valueString, convertToUnit, showBalance = false }) {
+export default function Balance({ valueString, convertToUnit, showBalance = false, loading = false }) {
   const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
 
   useEffect(() => {
     setDisplayMode(getDisplayMode(convertToUnit, showBalance))
   }, [convertToUnit, showBalance])
+
+  if (loading) {
+    return (
+      <rb.Placeholder as="div" animation="wave">
+        <rb.Placeholder
+          data-testid="balance-component-placeholder"
+          className={styles['balance-component-placeholder']}
+        />
+      </rb.Placeholder>
+    )
+  }
 
   if (displayMode === DISPLAY_MODE_HIDDEN) {
     return (
@@ -89,7 +103,7 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
 
   if (typeof valueString !== 'string') {
     console.warn('<Balance /> component expects string input')
-    return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
+    return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
   }
 
   // Treat integers as sats.

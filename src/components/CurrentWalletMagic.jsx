@@ -1,35 +1,76 @@
 import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
+import styles from './CurrentWalletMagic.module.css'
+import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
 
-const WalletHeader = ({ name, balance, unit, showBalance }) => {
+const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
     <div className="d-flex flex-column align-items-center">
-      <h6 className="text-secondary">{walletDisplayName(name)}</h6>
-      <h4>
-        <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
-      </h4>
+      {loading && (
+        <rb.Placeholder as="div" animation="wave">
+          <rb.Placeholder className={styles['wallet-header-title-placeholder']} />
+        </rb.Placeholder>
+      )}
+      {!loading && <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>}
+      {loading && (
+        <rb.Placeholder as="div" animation="wave">
+          <rb.Placeholder className={styles['wallet-header-subtitle-placeholder']} />
+        </rb.Placeholder>
+      )}
+      {!loading && (
+        <h2>
+          <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
+        </h2>
+      )}
     </div>
   )
 }
 
-const PrivacyLevels = ({ accounts }) => {
-  const sortedAccounts = accounts.sort((lhs, rhs) => lhs.account - rhs.account)
+const PrivacyLevels = ({ accounts, loading }) => {
+  const numPrivacyLevelsPalceholders = 5
+  const sortedAccounts = (accounts || []).sort((lhs, rhs) => lhs.account - rhs.account)
   const numAccounts = sortedAccounts.length
 
   return (
     <div className="d-flex justify-content-center">
       <div className="d-flex flex-column align-items-start" style={{ gap: '1rem' }}>
-        {sortedAccounts.map(({ account, account_balance: balance, branches }) => (
-          <PrivacyLevel key={account} numAccounts={numAccounts} level={parseInt(account)} balance={balance} />
-        ))}
+        {loading
+          ? Array(numPrivacyLevelsPalceholders)
+              .fill('')
+              .map((_, index) => <LoadingPrivacyLevel key={index} level={numPrivacyLevelsPalceholders} />)
+          : sortedAccounts.map(({ account, account_balance: balance }) => (
+              <PrivacyLevel
+                key={account}
+                numAccounts={numAccounts}
+                level={parseInt(account)}
+                balance={balance}
+                loading={loading}
+              />
+            ))}
+      </div>
+    </div>
+  )
+}
+
+const LoadingPrivacyLevel = ({ level }) => {
+  const loadingShields = Array(level)
+    .fill('')
+    .map((_, index) => {
+      return <Sprite key={index} symbol="shield-filled-loading" width="24" height="30" />
+    })
+
+  return (
+    <div className="d-flex align-items-center">
+      <div className="d-flex">{loadingShields}</div>
+      <div className="ps-2">
+        <Balance loading={true} />
       </div>
     </div>
   )
@@ -39,15 +80,16 @@ const PrivacyLevel = ({ numAccounts, level, balance }) => {
   const settings = useSettings()
 
   const filledShields = Array(level + 1)
-    .fill()
+    .fill('')
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-filled" width="24" height="30" />
     })
   const outlinedShields = Array(numAccounts - filledShields.length)
-    .fill()
+    .fill('')
     .map((_, index) => {
       return <Sprite key={index} symbol="shield-outline" width="24" height="30" />
     })
+
   return (
     <div className="d-flex align-items-center">
       <div className={`d-flex privacy-level-${level}`}>
@@ -97,69 +139,60 @@ export default function CurrentWalletMagic() {
           </rb.Col>
         </rb.Row>
       )}
-      {isLoading && (
-        <rb.Row className="justify-content-center">
-          <rb.Col className="flex-grow-0">
-            <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              {t('current_wallet.text_loading')}
-            </div>
+      <>
+        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
+          <WalletHeader
+            name={currentWallet?.name}
+            balance={walletInfo?.data.display.walletinfo.total_balance}
+            unit={settings.unit}
+            showBalance={settings.showBalance}
+            loading={isLoading}
+          />
+        </rb.Row>
+        <rb.Row className="mt-4">
+          <rb.Col>
+            {/* Todo: Withdrawing needs to factor in the privacy levels as well.
+              Depending on the mixdepth/account there will be different amounts available. */}
+            <ExtendedLink to={routes.send} className="btn btn-outline-dark w-100" disabled={isLoading}>
+              <div className="d-flex justify-content-center align-items-center">
+                <Sprite symbol="send" width="24" height="24" />
+                <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
+              </div>
+            </ExtendedLink>
+          </rb.Col>
+          <rb.Col>
+            {/* Always receive on first mixdepth. */}
+            <ExtendedLink
+              to={routes.receive}
+              state={{ account: 0 }}
+              className="btn btn-outline-dark w-100"
+              disabled={isLoading}
+            >
+              <div className="d-flex justify-content-center align-items-center">
+                <Sprite symbol="receive" width="24" height="24" />
+                <div className="ps-1">{t('current_wallet.button_deposit')}</div>
+              </div>
+            </ExtendedLink>
           </rb.Col>
         </rb.Row>
-      )}
-      {!isLoading && currentWallet && walletInfo && (
-        <>
-          <rb.Row
-            onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
-            style={{ cursor: 'pointer' }}
-          >
-            <WalletHeader
-              name={currentWallet.name}
-              balance={walletInfo.data.display.walletinfo.total_balance}
-              unit={settings.unit}
-              showBalance={settings.showBalance}
-            />
-          </rb.Row>
-          <rb.Row className="mt-4">
-            <rb.Col>
-              {/* Todo: Withdrawing needs to factor in the privacy levels as well.
-                Depending on the mixdepth/account there will be different amounts available. */}
-              <Link to={routes.send} className="btn btn-outline-dark w-100">
-                <div className="d-flex justify-content-center align-items-center">
-                  <Sprite symbol="send" width="24" height="24" />
-                  <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
-                </div>
-              </Link>
-            </rb.Col>
-            <rb.Col>
-              {/* Always receive on first mixdepth. */}
-              <Link to={routes.receive} state={{ account: 0 }} className="btn btn-outline-dark w-100">
-                <div className="d-flex justify-content-center align-items-center">
-                  <Sprite symbol="receive" width="24" height="24" />
-                  <div className="ps-1">{t('current_wallet.button_deposit')}</div>
-                </div>
-              </Link>
-            </rb.Col>
-          </rb.Row>
-          <rb.Row>
-            <hr className="my-4" />
-          </rb.Row>
-          <rb.Row>
-            <PrivacyLevels accounts={walletInfo.data.display.walletinfo.accounts} />
-          </rb.Row>
-          <rb.Row>
-            <hr className="my-4" />
-          </rb.Row>
-          <rb.Row>
-            <Link to={routes.home} className="btn btn-outline-dark">
-              <div className="d-flex justify-content-center align-items-center">
-                <Sprite symbol="wallet" width="24" height="24" />
-                <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
-              </div>
-            </Link>
-          </rb.Row>
-        </>
-      )}
+        <rb.Row>
+          <hr className="my-4" />
+        </rb.Row>
+        <rb.Row>
+          <PrivacyLevels accounts={walletInfo?.data.display.walletinfo.accounts} loading={isLoading} />
+        </rb.Row>
+        <rb.Row>
+          <hr className="my-4" />
+        </rb.Row>
+        <rb.Row>
+          <ExtendedLink disabled={isLoading} to={routes.home} className="btn btn-outline-dark">
+            <div className="d-flex justify-content-center align-items-center">
+              <Sprite symbol="wallet" width="24" height="24" />
+              <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
+            </div>
+          </ExtendedLink>
+        </rb.Row>
+      </>
     </div>
   )
 }

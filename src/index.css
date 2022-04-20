@@ -593,6 +593,10 @@ h2 {
   width: 80%;
 }
 
+.btn:disabled:hover {
+  cursor: not-allowed;
+}
+
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white);
@@ -601,6 +605,10 @@ h2 {
   --bs-body-bg: var(--bs-gray-900);
   --bs-gray-dark: #16191c;
   --bs-black: #000;
+}
+
+.placeholder {
+  background-color: #e9ecef;
 }
 
 :root[data-theme='dark'] * {

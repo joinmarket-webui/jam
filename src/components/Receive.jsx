@@ -4,18 +4,19 @@ import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { BitcoinQR } from './BitcoinQR'
-import { ACCOUNTS } from '../utils'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
+import styles from './Receive.module.css'
 
 export default function Receive() {
   const { t } = useTranslation()
   const location = useLocation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
+  const walletInfo = useCurrentWalletInfo()
   const addressCopyFallbackInputRef = useRef()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -23,6 +24,7 @@ export default function Receive() {
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
+  const [accounts, setAccounts] = useState([])
   const [addressCount, setAddressCount] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [addressCopiedFlag, setAddressCopiedFlag] = useState(0)
@@ -30,26 +32,32 @@ export default function Receive() {
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const fetchAddress = async (accountNr) => {
-      const { name: walletName, token } = currentWallet
+    const { name: walletName, token } = currentWallet
 
-      setAlert(null)
-      setIsLoading(true)
-      Api.getAddressNew({ walletName, mixdepth: accountNr, token, signal: abortCtrl.signal })
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
-        .then((data) => setAddress(data.address))
-        .catch((err) => {
-          !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
-        })
-        .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
-    }
+    setAlert(null)
+    setIsLoading(true)
 
-    if (ACCOUNTS.includes(account)) {
-      fetchAddress(account)
-    }
+    Api.getAddressNew({ walletName, mixdepth: account, token, signal: abortCtrl.signal })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
+      .then((data) => setAddress(data.address))
+      .catch((err) => {
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
+      // show the loader a little longer to avoid flickering
+      .then((_) => new Promise((r) => setTimeout(r, 200)))
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [account, currentWallet, addressCount, t])
+
+  useEffect(() => {
+    // `walletInfo` will be populated at least once (when wallet is unlocked).
+    // This data *might* be outdated and it can be argued that it should be actively reloaded.
+    // However, creating a new account (e.g. by providing custom options to run scheduled transactions)
+    // is a rather rare event. Revisit this behaviour when necessary.
+    const accountNumbers = walletInfo ? walletInfo.data.display.walletinfo.accounts.map((it) => it.account) : []
+    setAccounts(accountNumbers)
+  }, [walletInfo])
 
   useEffect(() => {
     if (addressCopiedFlag < 1) return
@@ -96,57 +104,66 @@ export default function Receive() {
     <div className="receive">
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {address && (
-        <div className="qr-container">
-          <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
-            <div className="d-flex justify-content-center">
-              <BitcoinQR address={address} sats={amount} />
-            </div>
-            <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
-              <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>
-              <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
-                <rb.Button
-                  variant="outline-dark"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="left"
-                  onClick={() => {
-                    copyToClipboard(address, addressCopyFallbackInputRef.current).then(
-                      () => {
-                        setAddressCopiedFlag(addressCopiedFlag + 1)
-                      },
-                      (e) => {
-                        setAlert({ variant: 'warning', message: e.message })
-                      }
-                    )
-                  }}
-                >
-                  {showAddressCopiedConfirmation ? (
-                    <>
-                      {t('receive.text_copy_address_confirmed')}
-                      <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
-                    </>
-                  ) : (
-                    t('receive.button_copy_address')
-                  )}
-                </rb.Button>
+      <div className="qr-container">
+        <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
+          <div className={styles['qr-container']}>
+            {!isLoading && address && <BitcoinQR address={address} sats={amount} />}
+            {(isLoading || !address) && (
+              <rb.Placeholder as="div" animation="wave" className={styles['receive-placeholder-qr-container']}>
+                <rb.Placeholder className={styles['receive-placeholder-qr']} />
+              </rb.Placeholder>
+            )}
+          </div>
+          <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
+            {address && <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>}
+            {!address && (
+              <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
+                <rb.Placeholder xs={12} sm={10} md={8} className={styles['receive-placeholder']} />
+              </rb.Placeholder>
+            )}
+            <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
+              <rb.Button
+                variant="outline-dark"
+                data-bs-toggle="tooltip"
+                data-bs-placement="left"
+                onClick={() => {
+                  copyToClipboard(address, addressCopyFallbackInputRef.current).then(
+                    () => {
+                      setAddressCopiedFlag(addressCopiedFlag + 1)
+                    },
+                    (e) => {
+                      setAlert({ variant: 'warning', message: e.message })
+                    }
+                  )
+                }}
+                disabled={!address || isLoading}
+              >
+                {showAddressCopiedConfirmation ? (
+                  <>
+                    {t('receive.text_copy_address_confirmed')}
+                    <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
+                  </>
+                ) : (
+                  t('receive.button_copy_address')
+                )}
+              </rb.Button>
 
-                <input
-                  readOnly
-                  aria-hidden
-                  ref={addressCopyFallbackInputRef}
-                  value={address}
-                  style={{
-                    position: 'absolute',
-                    left: '-9999px',
-                    top: '-9999px',
-                  }}
-                />
-              </div>
-            </rb.Card.Body>
-          </rb.Card>
-        </div>
-      )}
-      <div className="mt-4">
+              <input
+                readOnly
+                aria-hidden
+                ref={addressCopyFallbackInputRef}
+                value={address}
+                style={{
+                  position: 'absolute',
+                  left: '-9999px',
+                  top: '-9999px',
+                }}
+              />
+            </div>
+          </rb.Card.Body>
+        </rb.Card>
+      </div>
+      <div className={styles['settings-container']}>
         <rb.Button
           variant={`${settings.theme}`}
           className="ps-0 border-0 d-flex align-items-center"
@@ -166,8 +183,9 @@ export default function Receive() {
                   defaultValue={account}
                   onChange={(e) => setAccount(parseInt(e.target.value, 10))}
                   required
+                  disabled={isLoading || accounts.length === 0}
                 >
-                  {ACCOUNTS.map((val) => (
+                  {accounts.map((val) => (
                     <option key={val} value={val}>
                       {t('receive.account_selector_option_dev_mode', { number: val })}
                     </option>
@@ -185,6 +203,7 @@ export default function Receive() {
                 value={amount}
                 min={0}
                 onChange={(e) => setAmount(e.target.value)}
+                disabled={isLoading}
               />
               <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
             </rb.Form.Group>
@@ -193,7 +212,7 @@ export default function Receive() {
         <hr />
         <rb.Button variant="outline-dark" type="submit" disabled={isLoading} className="mt-2" style={{ width: '100%' }}>
           {isLoading ? (
-            <div>
+            <div className="d-flex justify-content-center align-items-center">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('receive.text_getting_address')}
             </div>

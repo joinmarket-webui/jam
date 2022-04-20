@@ -128,3 +128,8 @@ input::-webkit-inner-spin-button {
   background-color: var(--bs-gray-dark);
   border-color: var(--bs-gray-dark) !important;
 }
+
+.send .input-loader {
+  height: 3.5rem;
+  border-radius: 0.25rem;
+}
