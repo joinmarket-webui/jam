@@ -9,9 +9,9 @@ import ToggleSwitch from './ToggleSwitch'
 import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
-import './CreateWallet.css'
 import { routes } from '../constants/routes'
 import { isFeatureEnabled } from '../constants/featureFlags'
+import styles from './CreateWallet.module.css'
 
 const PreventLeavingPageByMistake = () => {
   // prompt users before refreshing or closing the page when this component is present.
@@ -82,6 +82,7 @@ const WalletCreationForm = ({ createWallet }) => {
                 value={values.walletName}
                 isValid={touched.walletName && !errors.walletName}
                 isInvalid={touched.walletName && errors.walletName}
+                className={styles.input}
               />
               <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
               <rb.Form.Control.Feedback type="invalid">{errors.walletName}</rb.Form.Control.Feedback>
@@ -99,6 +100,7 @@ const WalletCreationForm = ({ createWallet }) => {
                 value={values.password}
                 isValid={touched.password && !errors.password}
                 isInvalid={touched.password && errors.password}
+                className={styles.input}
               />
               <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
               <rb.Form.Control.Feedback type="invalid">{errors.password}</rb.Form.Control.Feedback>
@@ -116,11 +118,12 @@ const WalletCreationForm = ({ createWallet }) => {
                 value={values.passwordConfirm}
                 isValid={touched.passwordConfirm && !errors.passwordConfirm}
                 isInvalid={touched.passwordConfirm && errors.passwordConfirm}
+                className={styles.input}
               />
               <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
               <rb.Form.Control.Feedback type="invalid">{errors.passwordConfirm}</rb.Form.Control.Feedback>
             </rb.Form.Group>
-            <rb.Button variant="dark" type="submit" disabled={isSubmitting}>
+            <rb.Button variant="dark" className={styles.button} type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <div>
                   <rb.Spinner
@@ -157,7 +160,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
 
   return (
     <rb.InputGroup>
-      <rb.InputGroup.Text className="seedword-index-backup">{number}.</rb.InputGroup.Text>
+      <rb.InputGroup.Text className={styles['seedword-index-backup']}>{number}.</rb.InputGroup.Text>
       <rb.FormControl
         type="text"
         placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${number}`}
@@ -165,6 +168,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
         onChange={(e) => {
           setEnteredWord(e.target.value)
         }}
+        className={styles.input}
         disabled={isValid}
         isInvalid={!isValid && enteredWord.length > 0}
         isValid={isValid}
@@ -226,7 +230,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
       </rb.Form>
       {seedBackup && <div className="text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>}
 
-      <rb.Button variant="dark" onClick={() => walletConfirmed()} disabled={!seedBackup}>
+      <rb.Button variant="dark" className={styles.button} onClick={() => walletConfirmed()} disabled={!seedBackup}>
         {t('create_wallet.confirmation_button_fund_wallet')}
       </rb.Button>
 
@@ -234,6 +238,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
         <rb.Button
           variant="outline-dark"
           disabled={seedBackup}
+          className={styles.button}
           onClick={() => {
             parentStepSetter()
           }}
@@ -242,7 +247,12 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
         </rb.Button>
 
         {showSkipButton && (
-          <rb.Button variant="outline-dark" onClick={() => walletConfirmed()} disabled={seedBackup}>
+          <rb.Button
+            variant="outline-dark"
+            className={styles.button}
+            onClick={() => walletConfirmed()}
+            disabled={seedBackup}
+          >
             {t('create_wallet.skip_button')}
           </rb.Button>
         )}
@@ -298,7 +308,12 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
               onToggle={(isToggled) => setUserConfirmed(isToggled)}
             />
           </div>
-          <rb.Button variant="dark" disabled={!sensitiveInfoWasRevealed || !userConfirmed} onClick={() => setStep(1)}>
+          <rb.Button
+            variant="dark"
+            disabled={!sensitiveInfoWasRevealed || !userConfirmed}
+            className={styles['button']}
+            onClick={() => setStep(1)}
+          >
             {t('create_wallet.next_button')}
           </rb.Button>
         </div>
