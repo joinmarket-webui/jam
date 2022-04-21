@@ -34,12 +34,6 @@ describe('<App />', () => {
     // Wallets screen
     expect(screen.getByText('wallets.title')).toBeInTheDocument()
     expect(screen.getByText('wallets.button_new_wallet')).toBeInTheDocument()
-
-    // footer
-    expect(screen.getByText('footer.docs')).toBeInTheDocument()
-    expect(screen.getByText('footer.features')).toBeInTheDocument()
-    expect(screen.getByText('footer.github')).toBeInTheDocument()
-    expect(screen.getByText('footer.twitter')).toBeInTheDocument()
   })
 
   it('should display a modal with alpha warning information', () => {
