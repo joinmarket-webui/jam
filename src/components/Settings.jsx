@@ -187,6 +187,22 @@ export default function Settings() {
         </rb.Button>
         {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
       </div>
+
+      <br />
+
+      <div>
+        <a
+          href="https://github.com/joinmarket-webui/joinmarket-webui"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="link-dark"
+        >
+          <div className="d-flex align-items-center">
+            <Sprite symbol="github" width="24" height="24" className="me-2 p-1" />
+            {t('footer.github')}
+          </div>
+        </a>
+      </div>
     </div>
   )
 }

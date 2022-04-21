@@ -180,48 +180,6 @@ export default function App() {
                 </rb.Nav.Item>
               </div>
             )}
-            <div className="d-flex flex-row">
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.docs')}
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/joinmarket-webui/joinmarket-webui#-features"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.features')}
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/joinmarket-webui/joinmarket-webui"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.github')}
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://twitter.com/joinmarket"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.twitter')}
-                </a>
-              </rb.Nav.Item>
-            </div>
           </div>
           <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
             <span
