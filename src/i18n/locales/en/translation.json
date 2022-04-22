@@ -146,7 +146,8 @@
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "github": "GitHub",
-    "telegram": "Telegram"
+    "telegram": "Telegram",
+    "jm_twitter": "JoinMarket Twitter"
   },
   "send": {
     "loading": "Loading",
