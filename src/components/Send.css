@@ -25,6 +25,18 @@ input::-webkit-inner-spin-button {
   padding: 0.2rem 0.5rem;
 }
 
+.send.maker-running form,
+.send.maker-running .collaborators-selector,
+.send.maker-running button[type='submit'] {
+  filter: blur(2px);
+}
+
+.send.taker-running form,
+.send.taker-running .collaborators-selector,
+.send.taker-running button[type='submit'] {
+  filter: blur(2px);
+}
+
 :root[data-theme='dark'] .send form .button-sweep {
   color: var(--bs-gray-800);
 }
@@ -125,8 +137,9 @@ input::-webkit-inner-spin-button {
 
 .send .input-loader {
   height: 3.5rem;
+  border-radius: 0.25rem;
 }
 
-.form-group-without-coinjoin-option {
-  margin-bottom: 3.25rem;
+.send a.unstyled {
+  text-decoration: none !important;
 }

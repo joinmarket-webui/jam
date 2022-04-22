@@ -39,10 +39,21 @@
   transition-duration: 300ms;
 }
 
-.peer:checked ~ .toggle-switch {
-  background-color: rgba(39, 174, 96, 1);
+.peer ~ .toggle-switch {
   transition-duration: 300ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.peer:checked:not(:disabled) ~ .toggle-switch {
+  background-color: rgba(39, 174, 96, 1);
+}
+
+.peer:checked:disabled ~ .toggle-switch {
+  background-color: rgba(39, 174, 96, 0.25);
+}
+
+.peer:not(:checked):disabled ~ .toggle-switch {
+  background-color: rgba(222, 222, 222, 0.5);
 }
 
 .peer:checked ~ .toggle-switch:after {
