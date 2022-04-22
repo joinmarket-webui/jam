@@ -190,13 +190,13 @@ export default function Settings() {
           >
             <div className="d-flex align-items-center">
               <Sprite symbol="github" width="24" height="24" className="me-2 p-1" />
-              {t('footer.github')}
+              {t('settings.github')}
             </div>
           </a>
           <a href="https://t.me/JoinMarketWebUI" target="_blank" rel="noopener noreferrer" className="link-dark">
             <div className="d-flex align-items-center">
               <Sprite symbol="telegram" width="24" height="24" className="me-2 p-1" />
-              {t('footer.telegram')}
+              {t('settings.telegram')}
             </div>
           </a>
         </div>

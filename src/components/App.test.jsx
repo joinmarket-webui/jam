@@ -64,13 +64,9 @@ describe('<App />', () => {
 
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-danger')).toBe(true)
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(false)
-    expect(screen.getByText('footer.disconnected')).toBeInTheDocument()
-    expect(screen.queryByText('footer.connected')).not.toBeInTheDocument()
 
     await global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.connected
 
-    expect(screen.queryByText('footer.disconnected')).not.toBeInTheDocument()
-    expect(screen.getByText('footer.connected')).toBeInTheDocument()
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(true)
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-danger')).toBe(false)
   })
