@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, forwardRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
