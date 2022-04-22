@@ -197,7 +197,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="d-flex align-items-center text-secondary"
               >
-                <Sprite symbol="telegram" width="18px" height="18px" className="" />
+                <Sprite symbol="telegram" width="18px" height="18px" />
               </a>
             </div>
             <div className="d-flex text-secondary">|</div>
