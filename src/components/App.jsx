@@ -189,7 +189,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="d-flex align-items-center text-secondary"
               >
-                <Sprite symbol="github" width="18px" height="18px" className="" />
+                <Sprite symbol="github" width="18px" height="18px" />
               </a>
               <a
                 href="https://t.me/JoinMarketWebUI"
