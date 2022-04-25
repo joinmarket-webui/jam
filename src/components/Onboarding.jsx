@@ -49,7 +49,7 @@ export default function Onboarding() {
     return (
       <div>
         <div className="d-flex justify-content-center">
-          <Sprite symbol="logo" width="8rem" height="8rem" className="mb-4" />
+          <Sprite symbol="logo" width="128px" height="128px" className="mb-4" />
         </div>
         <h1 className="text-center">{t('onboarding.splashscreen_title')}</h1>
         <h2 className="text-center fw-normal text-secondary mb-5">{t('onboarding.splashscreen_subtitle')}</h2>
