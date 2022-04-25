@@ -19,5 +19,7 @@ describe('<Settings />', () => {
     expect(screen.queryByText(/settings.use_(dark|light)_theme/)).toBeInTheDocument()
     expect(screen.queryByText(/settings.use_(normal|dev)_mode/)).toBeInTheDocument()
     expect(screen.queryByText(/English/)).toBeInTheDocument()
+    expect(screen.queryByText(/settings.github/)).toBeInTheDocument()
+    expect(screen.queryByText(/settings.telegram/)).toBeInTheDocument()
   })
 })

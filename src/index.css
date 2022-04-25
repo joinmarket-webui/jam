@@ -688,3 +688,7 @@ h2 {
 :root[data-theme='dark'] .form-control:disabled::placeholder {
   color: var(--bs-gray-600);
 }
+
+:root[data-theme='dark'] .link-dark {
+  color: var(--bs-white);
+}

@@ -147,8 +147,8 @@ export default function App() {
       </rb.Container>
 
       <rb.Nav as="footer" className="border-top py-2">
-        <rb.Container fluid="xl" className="d-flex flex-column flex-md-row justify-content-center py-2 px-4">
-          <div className="d-flex flex-1 order-2 order-md-0 flex-column justify-content-center align-items-center align-items-md-start">
+        <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
+          <div className="d-flex flex-1 order-0 justify-content-start align-items-center">
             <div className="warning-hint text-start text-secondary d-none d-md-block">
               <Trans i18nKey="footer.warning">
                 This is pre-alpha software.
@@ -162,7 +162,7 @@ export default function App() {
               </Trans>
             </div>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 flex-column flex-sm-row justify-content-center align-items-center pt-2 pt-sm-0 px-4">
+          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center pt-0 px-4">
             {cheatsheetEnabled && (
               <div className="order-1 order-sm-0">
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
@@ -180,59 +180,45 @@ export default function App() {
                 </rb.Nav.Item>
               </div>
             )}
-            <div className="d-flex flex-row">
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/joinmarket-webui/joinmarket-webui/wiki"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.docs')}
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/joinmarket-webui/joinmarket-webui#-features"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.features')}
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://github.com/joinmarket-webui/joinmarket-webui"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.github')}
-                </a>
-              </rb.Nav.Item>
-              <rb.Nav.Item>
-                <a
-                  href="https://twitter.com/joinmarket"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nav-link text-secondary px-2"
-                >
-                  {t('footer.twitter')}
-                </a>
-              </rb.Nav.Item>
-            </div>
           </div>
-          <div className="d-flex order-0 order-md-2 flex-1 justify-content-center justify-content-md-end align-items-center">
-            <span
-              className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}
-              data-testid="connection-indicator-icon"
-            >
-              <Sprite symbol="node" width="24px" height="24px" />
-            </span>
-            <span className="text-secondary">
-              {websocketConnected ? t('footer.connected') : t('footer.disconnected')}
-            </span>
+          <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
+            <div className="d-flex gap-2 pe-2">
+              <a
+                href="https://github.com/joinmarket-webui/joinmarket-webui"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="d-flex align-items-center text-secondary"
+              >
+                <Sprite symbol="github" width="18px" height="18px" />
+              </a>
+              <a
+                href="https://t.me/JoinMarketWebUI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="d-flex align-items-center text-secondary"
+              >
+                <Sprite symbol="telegram" width="18px" height="18px" />
+              </a>
+            </div>
+            <div className="d-flex text-secondary">|</div>
+            <div className="d-flex">
+              <rb.OverlayTrigger
+                delay={{ hide: 300, show: 200 }}
+                placement="top"
+                overlay={(props) => (
+                  <rb.Tooltip {...props}>
+                    {websocketConnected ? t('footer.connected') : t('footer.disconnected')}
+                  </rb.Tooltip>
+                )}
+              >
+                <span
+                  className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}
+                  data-testid="connection-indicator-icon"
+                >
+                  <Sprite symbol="node" width="24px" height="24px" />
+                </span>
+              </rb.OverlayTrigger>
+            </div>
           </div>
         </rb.Container>
       </rb.Nav>

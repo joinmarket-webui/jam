@@ -98,94 +98,114 @@ export default function Settings() {
   return (
     <div>
       <PageTitle title={t('settings.title')} />
-      <div style={{ marginLeft: '-.75rem' }}>
-        <rb.Button
-          variant="outline-dark"
-          className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
-        >
-          <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" className="me-2" />
-          {settings.showBalance ? t('settings.hide_balance') : t('settings.show_balance')}
-        </rb.Button>
+      <div className="d-flex flex-column gap-4">
+        <div style={{ marginLeft: '-.75rem' }} className="d-flex flex-column gap-2">
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 d-inline-flex align-items-center"
+            onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
+          >
+            <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" className="me-2" />
+            {settings.showBalance ? t('settings.hide_balance') : t('settings.show_balance')}
+          </rb.Button>
 
-        <br />
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 d-inline-flex align-items-center"
+            onClick={() => settingsDispatch({ unit: isSats ? BTC : SATS })}
+          >
+            <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" className="me-2" />
+            {isSats ? t('settings.use_btc') : t('settings.use_sats')}
+          </rb.Button>
 
-        <rb.Button
-          variant="outline-dark"
-          className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={() => settingsDispatch({ unit: isSats ? BTC : SATS })}
-        >
-          <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" className="me-2" />
-          {isSats ? t('settings.use_btc') : t('settings.use_sats')}
-        </rb.Button>
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 d-inline-flex align-items-center"
+            onClick={(e) => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
+          >
+            <Sprite
+              symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]}
+              width="24"
+              height="24"
+              className="me-2"
+            />
+            {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
+          </rb.Button>
 
-        <br />
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 d-inline-flex align-items-center"
+            onClick={(e) => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
+          >
+            <Sprite
+              symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'}
+              width="24"
+              height="24"
+              className="me-2"
+            />
+            {settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}
+          </rb.Button>
 
-        <rb.Button
-          variant="outline-dark"
-          className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
-        >
-          <Sprite
-            symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]}
-            width="24"
-            height="24"
-            className="me-2"
-          />
-          {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
-        </rb.Button>
+          <rb.Dropdown>
+            <rb.Dropdown.Toggle variant="outline-dark" className="border-0 d-inline-flex align-items-center">
+              <Sprite symbol="globe" width="24" height="24" className="me-2" />
+              {languages.find((lng) => lng.key === (i18n.resolvedLanguage || i18n.language))?.description ||
+                languages[0].description}
+            </rb.Dropdown.Toggle>
 
-        <br />
+            <rb.Dropdown.Menu variant={settings.theme === 'light' ? 'light' : 'dark'}>
+              {languages.map((lng, index) => {
+                return (
+                  <rb.Dropdown.Item key={index} onClick={() => i18n.changeLanguage(lng.key)}>
+                    {lng.description}
+                  </rb.Dropdown.Item>
+                )
+              })}
+              <rb.Dropdown.Item
+                href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
+                rel="noopener noreferrer"
+              >
+                {t('settings.text_help_translate')}
+              </rb.Dropdown.Item>
+            </rb.Dropdown.Menu>
+          </rb.Dropdown>
 
-        <rb.Button
-          variant="outline-dark"
-          className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
-        >
-          <Sprite
-            symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'}
-            width="24"
-            height="24"
-            className="me-2"
-          />
-          {settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}
-        </rb.Button>
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 mb-2 d-inline-flex align-items-center"
+            onClick={(e) => setShowingSeed(true)}
+          >
+            <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
+            {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
+          </rb.Button>
+          {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
+        </div>
 
-        <br />
-
-        <rb.Dropdown>
-          <rb.Dropdown.Toggle variant="outline-dark" className="border-0 mb-2 d-inline-flex align-items-center">
-            <Sprite symbol="globe" width="24" height="24" className="me-2" />
-            {languages.find((lng) => lng.key === (i18n.resolvedLanguage || i18n.language))?.description ||
-              languages[0].description}
-          </rb.Dropdown.Toggle>
-
-          <rb.Dropdown.Menu variant={settings.theme === 'light' ? 'light' : 'dark'}>
-            {languages.map((lng, index) => {
-              return (
-                <rb.Dropdown.Item key={index} onClick={() => i18n.changeLanguage(lng.key)}>
-                  {lng.description}
-                </rb.Dropdown.Item>
-              )
-            })}
-            <rb.Dropdown.Item
-              href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
-              rel="noopener noreferrer"
-            >
-              {t('settings.text_help_translate')}
-            </rb.Dropdown.Item>
-          </rb.Dropdown.Menu>
-        </rb.Dropdown>
-
-        <rb.Button
-          variant="outline-dark"
-          className="border-0 mb-2 d-inline-flex align-items-center"
-          onClick={(e) => setShowingSeed(true)}
-        >
-          <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
-          {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
-        </rb.Button>
-        {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
+        <div className="d-flex flex-column gap-3">
+          <a
+            href="https://github.com/joinmarket-webui/joinmarket-webui"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="link-dark"
+          >
+            <div className="d-flex align-items-center">
+              <Sprite symbol="github" width="24" height="24" className="me-2 p-1" />
+              {t('settings.github')}
+            </div>
+          </a>
+          <a href="https://t.me/JoinMarketWebUI" target="_blank" rel="noopener noreferrer" className="link-dark">
+            <div className="d-flex align-items-center">
+              <Sprite symbol="telegram" width="24" height="24" className="me-2 p-1" />
+              {t('settings.telegram')}
+            </div>
+          </a>
+          <a href="https://twitter.com/joinmarket" target="_blank" rel="noopener noreferrer" className="link-dark">
+            <div className="d-flex align-items-center">
+              <Sprite symbol="twitter" width="24" height="24" className="me-2 p-1" />
+              {t('settings.jm_twitter')}
+            </div>
+          </a>
+        </div>
       </div>
     </div>
   )
