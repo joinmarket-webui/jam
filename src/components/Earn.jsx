@@ -4,11 +4,12 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
-import { useServiceInfo } from '../context/ServiceInfoContext'
+import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import * as Api from '../libs/JmWalletApi'
+import styles from './Earn.module.css'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
@@ -78,8 +79,10 @@ export default function Earn() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const serviceInfo = useServiceInfo()
+  const reloadServiceInfo = useReloadServiceInfo()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isWaiting, setIsWaiting] = useState(false)
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
@@ -162,6 +165,20 @@ export default function Earn() {
       setAlert({ variant: 'danger', message: e.message })
     }
   }
+
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    setIsLoading(true)
+
+    reloadServiceInfo({ signal: abortCtrl.signal })
+      .catch((err) => {
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+
+    return () => abortCtrl.abort()
+  }, [currentWallet, reloadServiceInfo])
 
   useEffect(() => {
     setAlert(null)
@@ -271,6 +288,7 @@ export default function Earn() {
                         label={t('earn.toggle_rel_offer')}
                         initialValue={isRelOffer}
                         onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
+                        disabled={isLoading}
                       />
                     </rb.Form.Group>
                   )}
@@ -284,17 +302,23 @@ export default function Earn() {
                       <div className="mb-2">
                         <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
                       </div>
-                      <rb.Form.Control
-                        type="number"
-                        name="feeRel"
-                        value={factorToPercentage(feeRel)}
-                        className="slashed-zeroes"
-                        min={feeRelPercentageMin}
-                        max={feeRelPercentageMax}
-                        step={feeRelPercentageStep}
-                        required
-                        onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
-                      />
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.Form.Control
+                          type="number"
+                          name="feeRel"
+                          value={factorToPercentage(feeRel)}
+                          className="slashed-zeroes"
+                          min={feeRelPercentageMin}
+                          max={feeRelPercentageMax}
+                          step={feeRelPercentageStep}
+                          required
+                          onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
+                        />
+                      )}
                       <rb.Form.Control.Feedback type="invalid">
                         {t('feedback_invalid_rel_fee', {
                           feeRelPercentageMin: `${feeRelPercentageMin}%`,
@@ -308,16 +332,22 @@ export default function Earn() {
                       <div className="mb-2">
                         <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
                       </div>
-                      <rb.Form.Control
-                        type="number"
-                        name="feeAbs"
-                        value={feeAbs}
-                        className="slashed-zeroes"
-                        min={0}
-                        step={1}
-                        required
-                        onChange={(e) => setAndPersistFeeAbs(e.target.value)}
-                      />
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.Form.Control
+                          type="number"
+                          name="feeAbs"
+                          value={feeAbs}
+                          className="slashed-zeroes"
+                          min={0}
+                          step={1}
+                          required
+                          onChange={(e) => setAndPersistFeeAbs(e.target.value)}
+                        />
+                      )}
                       <rb.Form.Control.Feedback type="invalid">
                         {t('earn.feedback_invalid_abs_fee')}
                       </rb.Form.Control.Feedback>
@@ -326,16 +356,22 @@ export default function Earn() {
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="minsize">
                       <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
-                      <rb.Form.Control
-                        type="number"
-                        name="minsize"
-                        value={minsize}
-                        className="slashed-zeroes"
-                        min={0}
-                        step={1000}
-                        required
-                        onChange={(e) => setAndPersistMinsize(e.target.value)}
-                      />
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.Form.Control
+                          type="number"
+                          name="minsize"
+                          value={minsize}
+                          className="slashed-zeroes"
+                          min={0}
+                          step={1000}
+                          required
+                          onChange={(e) => setAndPersistMinsize(e.target.value)}
+                        />
+                      )}
                       <rb.Form.Control.Feedback type="invalid">
                         {t('earn.feedback_invalid_min_amount')}
                       </rb.Form.Control.Feedback>
@@ -344,7 +380,7 @@ export default function Earn() {
                 </>
               )}
 
-              <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
+              <rb.Button variant="dark" type="submit" disabled={isLoading || isSending || isWaiting}>
                 {isSending ? (
                   <>
                     <rb.Spinner
