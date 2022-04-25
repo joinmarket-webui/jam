@@ -2,10 +2,21 @@ import React from 'react'
 import { render, screen } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
+import * as apiMock from '../libs/JmWalletApi'
 
 import App from './App'
 
+jest.mock('../libs/JmWalletApi', () => ({
+  ...jest.requireActual('../libs/JmWalletApi'),
+  getSession: jest.fn(),
+}))
+
 describe('<App />', () => {
+  beforeEach(() => {
+    const neverResolvingPromise = new Promise(() => {})
+    apiMock.getSession.mockReturnValue(neverResolvingPromise)
+  })
+
   it('should display Onboarding screen initially', () => {
     render(<App />)
 

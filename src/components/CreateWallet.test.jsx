@@ -1,6 +1,6 @@
 import React from 'react'
 import user from '@testing-library/user-event'
-import { render, screen, waitFor, waitForElementToBeRemoved } from '../testUtils'
+import { render, screen, waitFor } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import { __testSetFeatureEnabled } from '../constants/featureFlags'
 
