@@ -14,7 +14,7 @@ jest.mock('../libs/JmWalletApi', () => ({
 describe('<App />', () => {
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
-    apiMock.getSession.mockReturnValue(neverResolvingPromise)
+    apiMock.getSession.mockResolvedValue(neverResolvingPromise)
   })
 
   it('should display Onboarding screen initially', () => {
