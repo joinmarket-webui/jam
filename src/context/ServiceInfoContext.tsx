@@ -45,8 +45,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const [connectionError, setConnectionError] = useState<Error>()
 
   useEffect(() => {
-    const shouldResetState = connectionError != null
-    if (shouldResetState) {
+    if (connectionError) {
       // Just reset the wallet info, not the session storage (token),
       // as the connection might be down shortly and auth information
       // is still valid most of the time.
@@ -77,8 +76,8 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             dispatchServiceInfo(info)
             setConnectionError(undefined)
 
-            const shouldResetState = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
-            if (shouldResetState) {
+            const activeWalletChanged = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
+            if (activeWalletChanged) {
               resetWalletAndClearSession()
             }
           }
@@ -86,8 +85,8 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
         })
         .catch((err) => {
           if (!signal.aborted) {
-            const shouldResetState = err instanceof Api.JmApiError && err.response.status === 401
-            if (shouldResetState) {
+            const isUnauthorized = err instanceof Api.JmApiError && err.response.status === 401
+            if (isUnauthorized) {
               resetWalletAndClearSession()
             } else {
               setConnectionError(err)
