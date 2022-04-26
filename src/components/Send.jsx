@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect, useCallback, useContext } from 'react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -157,6 +157,17 @@ const enhanceTakerErrorMessageIfNecessary = async (
   }
 
   return errorMessage
+}
+
+function SweepAccordionToggle({ eventKey }) {
+  const { t } = useTranslation()
+  return (
+    <button type="button" className={styles['accordion-button']} onClick={rb.useAccordionButton(eventKey)}>
+      <div className="d-flex align-items-center justify-content-end w-100">
+        {t('send.button_sweep_amount_breakdown')}
+      </div>
+    </button>
+  )
 }
 
 export default function Send() {
@@ -421,11 +432,7 @@ export default function Send() {
       <div className={`${styles['sweep-breakdown']} mt-2`}>
         <rb.Accordion flush>
           <rb.Accordion.Item eventKey="0">
-            <rb.Accordion.Header>
-              <div className="d-flex align-items-center justify-content-end w-100">
-                {t('send.button_sweep_amount_breakdown')}
-              </div>
-            </rb.Accordion.Header>
+            <SweepAccordionToggle eventKey="0" />
             <rb.Accordion.Body className="my-4 p-0">
               <table className={`${styles['sweep-breakdown-table']} table table-sm`}>
                 <tbody>

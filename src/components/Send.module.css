@@ -134,8 +134,9 @@ input[type='number'] {
   text-decoration: none;
 }
 
-/* Is this being used anywhere? */
 .accordion-button {
+  border: none;
+  width: 100%;
   background-color: transparent;
   color: var(--bs-black);
   font-size: 0.8rem;
@@ -144,12 +145,10 @@ input[type='number'] {
   box-shadow: none;
 }
 
-/* Is this being used anywhere? */
 .accordion-button:hover {
   text-decoration: underline;
 }
 
-/* Is this being used anywhere? */
 .accordion-button::after {
   width: 0rem;
   height: 0rem;
