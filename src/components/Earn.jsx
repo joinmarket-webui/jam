@@ -14,6 +14,8 @@ import styles from './Earn.module.css'
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
+const SUBMIT_BUTTON_ENABLE_DELAY_IN_MS = 2_000
+
 const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -85,6 +87,7 @@ export default function Earn() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isWaiting, setIsWaiting] = useState(false)
+  const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(isLoading || isSending || isWaiting)
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
@@ -138,7 +141,7 @@ export default function Earn() {
   const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
     setAlert(null)
     setIsSending(true)
-    setIsWaitingMakerStart(false)
+    setIsWaitingMakerStart(true)
 
     const { name: walletName, token } = currentWallet
     try {
@@ -159,14 +162,61 @@ export default function Earn() {
       }
 
       setIsSending(false)
-      setIsWaitingMakerStart(true)
     } catch (e) {
+      setIsWaitingMakerStart(false)
       setIsSending(false)
       setAlert({ variant: 'danger', message: e.message })
     }
   }
 
+  const stopMakerService = async () => {
+    setAlert(null)
+    setIsSending(true)
+    setIsWaitingMakerStop(true)
+
+    const { name: walletName, token } = currentWallet
+    try {
+      const res = await Api.getMakerStop({ walletName, token })
+
+      // There is no response data to check if maker got stopped:
+      // Wait for the websocket or session response!
+      if (!res.ok) {
+        await Api.Helper.throwError(res)
+      }
+
+      setIsSending(false)
+    } catch (e) {
+      setIsWaitingMakerStop(false)
+      setIsSending(false)
+      setAlert({ variant: 'danger', message: e.message })
+    }
+  }
+
+  const onSubmit = async (e) => {
+    e.preventDefault()
+
+    if (isSubmitButtonDisabled) {
+      return
+    }
+
+    const form = e.currentTarget
+    const isValid = form.checkValidity()
+    setValidated(true)
+
+    if (isValid) {
+      if (serviceInfo?.makerRunning === false) {
+        await startMakerService(feeAbs, feeRel, offertype, minsize)
+      } else {
+        await stopMakerService()
+      }
+    }
+  }
+
+  const isRelOffer = offertype === OFFERTYPE_REL
+
   useEffect(() => {
+    if (isSending) return
+
     const abortCtrl = new AbortController()
 
     setIsLoading(true)
@@ -178,7 +228,30 @@ export default function Earn() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, reloadServiceInfo])
+  }, [currentWallet, isSending, reloadServiceInfo])
+
+  useEffect(() => {
+    const isOperationInProgress = isLoading || isSending || isWaiting
+
+    if (isOperationInProgress) {
+      setIsSubmitButtonDisabled(true)
+      return
+    }
+
+    const abortCtrl = new AbortController()
+    // In order to prevent observed state mismatch, re-enabling the submit button is delayed shortly.
+    // Even though the API states the maker as started or stopped, it seems this is reported prematurely.
+    // There is currently no way to know for sure - adding a delay at least migitages the problem.
+    const timer = setTimeout(
+      () => !abortCtrl.signal.aborted && setIsSubmitButtonDisabled(false),
+      SUBMIT_BUTTON_ENABLE_DELAY_IN_MS
+    )
+
+    return () => {
+      clearTimeout(timer)
+      abortCtrl.abort()
+    }
+  }, [isLoading, isSending, isWaiting])
 
   useEffect(() => {
     setAlert(null)
@@ -222,51 +295,6 @@ export default function Earn() {
 
     return () => abortCtrl.abort()
   }, [serviceInfo, isShowReport, t])
-
-  const stopMakerService = async () => {
-    setAlert(null)
-    setIsSending(true)
-    setIsWaitingMakerStop(false)
-
-    const { name: walletName, token } = currentWallet
-    try {
-      const res = await Api.getMakerStop({ walletName, token })
-
-      // There is no response data to check if maker got stopped:
-      // Wait for the websocket or session response!
-      if (!res.ok) {
-        await Api.Helper.throwError(res)
-      }
-
-      setIsSending(false)
-      setIsWaitingMakerStop(true)
-    } catch (e) {
-      setIsSending(false)
-      setAlert({ variant: 'danger', message: e.message })
-    }
-  }
-
-  const onSubmit = async (e) => {
-    e.preventDefault()
-
-    if (isLoading || isSending || isWaiting) {
-      return
-    }
-
-    const form = e.currentTarget
-    const isValid = form.checkValidity()
-    setValidated(true)
-
-    if (isValid) {
-      if (serviceInfo?.makerRunning === false) {
-        await startMakerService(feeAbs, feeRel, offertype, minsize)
-      } else {
-        await stopMakerService()
-      }
-    }
-  }
-
-  const isRelOffer = offertype === OFFERTYPE_REL
 
   return (
     <div className="earn">
@@ -384,7 +412,7 @@ export default function Earn() {
                 </>
               )}
 
-              <rb.Button variant="dark" type="submit" disabled={isLoading || isSending || isWaiting}>
+              <rb.Button variant="dark" type="submit" disabled={isSubmitButtonDisabled}>
                 {isSending || isWaiting ? (
                   <>
                     <rb.Spinner
