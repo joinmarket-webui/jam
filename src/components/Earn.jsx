@@ -4,14 +4,21 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
-import { useServiceInfo } from '../context/ServiceInfoContext'
+import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import * as Api from '../libs/JmWalletApi'
+import styles from './Earn.module.css'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
+
+// In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
+// Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
+// There is currently no way to know for sure - adding a delay at least mitigates the problem.
+// 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
+const MAKER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
   const { t } = useTranslation()
@@ -78,10 +85,11 @@ export default function Earn() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const serviceInfo = useServiceInfo()
+  const reloadServiceInfo = useReloadServiceInfo()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [isWaiting, setIsWaiting] = useState(false)
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
@@ -132,53 +140,115 @@ export default function Earn() {
     window.localStorage.setItem('jm-minsize', value)
   }
 
-  const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
-    setAlert(null)
+  const startMakerService = (cjfee_a, cjfee_r, ordertype, minsize) => {
     setIsSending(true)
-    setIsWaitingMakerStart(false)
+    setIsWaitingMakerStart(true)
+    setAlert({ variant: 'success', message: t('earn.alert_starting') })
 
     const { name: walletName, token } = currentWallet
-    try {
-      const res = await Api.postMakerStart(
-        { walletName, token },
-        {
-          cjfee_a,
-          cjfee_r,
-          ordertype,
-          minsize,
-        }
-      )
+    const data = {
+      cjfee_a,
+      cjfee_r,
+      ordertype,
+      minsize,
+    }
 
-      // There is no response data to check if maker got started:
-      // Wait for the websocket or session response!
-      if (!res.ok) {
-        await Api.Helper.throwError(res)
+    // There is no response data to check if maker got started:
+    // Wait for the websocket or session response!
+    Api.postMakerStart({ walletName, token }, data)
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+      // show the loader a little longer to avoid flickering
+      .then((_) => new Promise((r) => setTimeout(r, 200)))
+      .catch((e) => {
+        setIsWaitingMakerStart(false)
+        setAlert({ variant: 'danger', message: e.message })
+      })
+      .finally(() => setIsSending(false))
+  }
+
+  const stopMakerService = () => {
+    setIsSending(true)
+    setIsWaitingMakerStop(true)
+    setAlert({ variant: 'success', message: t('earn.alert_stopping') })
+
+    const { name: walletName, token } = currentWallet
+
+    // There is no response data to check if maker got stopped:
+    // Wait for the websocket or session response!
+    Api.getMakerStop({ walletName, token })
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+      .then((_) => new Promise((r) => setTimeout(r, MAKER_STOP_RESPONSE_DELAY_MS)))
+      .catch((e) => {
+        setIsWaitingMakerStop(false)
+        setAlert({ variant: 'danger', message: e.message })
+      })
+      .finally(() => setIsSending(false))
+  }
+
+  const onSubmit = async (e) => {
+    e.preventDefault()
+
+    if (isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop) {
+      return
+    }
+
+    const form = e.currentTarget
+    const isValid = form.checkValidity()
+    setValidated(true)
+
+    if (isValid) {
+      if (serviceInfo?.makerRunning === false) {
+        await startMakerService(feeAbs, feeRel, offertype, minsize)
+      } else {
+        await stopMakerService()
       }
-
-      setIsSending(false)
-      setIsWaitingMakerStart(true)
-    } catch (e) {
-      setIsSending(false)
-      setAlert({ variant: 'danger', message: e.message })
     }
   }
 
+  const isRelOffer = offertype === OFFERTYPE_REL
+
   useEffect(() => {
-    setAlert(null)
+    if (isSending) return
+
+    const abortCtrl = new AbortController()
+
+    setIsLoading(true)
+
+    reloadServiceInfo({ signal: abortCtrl.signal })
+      .catch((err) => {
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+
+    return () => abortCtrl.abort()
+  }, [currentWallet, isSending, reloadServiceInfo])
+
+  useEffect(() => {
+    if (isSending) return
+
     const makerRunning = serviceInfo?.makerRunning
 
     const waitingForMakerToStart = isWaitingMakerStart && !makerRunning
     setIsWaitingMakerStart(waitingForMakerToStart)
-    waitingForMakerToStart && setAlert({ variant: 'success', message: t('earn.alert_starting') })
 
     const waitingForMakerToStop = isWaitingMakerStop && makerRunning
     setIsWaitingMakerStop(waitingForMakerToStop)
-    waitingForMakerToStop && setAlert({ variant: 'success', message: t('earn.alert_stopping') })
 
     const waiting = waitingForMakerToStart || waitingForMakerToStop
-    setIsWaiting(waiting)
-    !waiting && makerRunning && setAlert({ variant: 'success', message: t('earn.alert_running') })
-  }, [serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
+
+    setAlert((current) => {
+      if (!waiting && makerRunning) {
+        return { variant: 'success', message: t('earn.alert_running') }
+      }
+
+      // preserve possibly existing error messages
+      if (current && current.variant === 'danger') {
+        return current
+      }
+
+      return null
+    })
+  }, [isSending, serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
 
   useEffect(() => {
     if (!isShowReport) return
@@ -206,47 +276,6 @@ export default function Earn() {
     return () => abortCtrl.abort()
   }, [serviceInfo, isShowReport, t])
 
-  const stopMakerService = async () => {
-    setAlert(null)
-    setIsSending(true)
-    setIsWaitingMakerStop(false)
-
-    const { name: walletName, token } = currentWallet
-    try {
-      const res = await Api.getMakerStop({ walletName, token })
-
-      // There is no response data to check if maker got stopped:
-      // Wait for the websocket or session response!
-      if (!res.ok) {
-        await Api.Helper.throwError(res)
-      }
-
-      setIsSending(false)
-      setIsWaitingMakerStop(true)
-    } catch (e) {
-      setIsSending(false)
-      setAlert({ variant: 'danger', message: e.message })
-    }
-  }
-
-  const onSubmit = async (e) => {
-    e.preventDefault()
-
-    const form = e.currentTarget
-    const isValid = form.checkValidity()
-    setValidated(true)
-
-    if (isValid) {
-      if (serviceInfo?.makerRunning === false) {
-        await startMakerService(feeAbs, feeRel, offertype, minsize)
-      } else {
-        await stopMakerService()
-      }
-    }
-  }
-
-  const isRelOffer = offertype === OFFERTYPE_REL
-
   return (
     <div className="earn">
       <rb.Row>
@@ -263,7 +292,7 @@ export default function Earn() {
 
           {!serviceInfo?.coinjoinInProgress && (
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-              {!serviceInfo?.makerRunning && !isWaiting && (
+              {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
                 <>
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="offertype">
@@ -271,6 +300,7 @@ export default function Earn() {
                         label={t('earn.toggle_rel_offer')}
                         initialValue={isRelOffer}
                         onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
+                        disabled={isLoading}
                       />
                     </rb.Form.Group>
                   )}
@@ -284,17 +314,23 @@ export default function Earn() {
                       <div className="mb-2">
                         <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
                       </div>
-                      <rb.Form.Control
-                        type="number"
-                        name="feeRel"
-                        value={factorToPercentage(feeRel)}
-                        className="slashed-zeroes"
-                        min={feeRelPercentageMin}
-                        max={feeRelPercentageMax}
-                        step={feeRelPercentageStep}
-                        required
-                        onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
-                      />
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.Form.Control
+                          type="number"
+                          name="feeRel"
+                          value={factorToPercentage(feeRel)}
+                          className="slashed-zeroes"
+                          min={feeRelPercentageMin}
+                          max={feeRelPercentageMax}
+                          step={feeRelPercentageStep}
+                          required
+                          onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
+                        />
+                      )}
                       <rb.Form.Control.Feedback type="invalid">
                         {t('feedback_invalid_rel_fee', {
                           feeRelPercentageMin: `${feeRelPercentageMin}%`,
@@ -308,16 +344,22 @@ export default function Earn() {
                       <div className="mb-2">
                         <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
                       </div>
-                      <rb.Form.Control
-                        type="number"
-                        name="feeAbs"
-                        value={feeAbs}
-                        className="slashed-zeroes"
-                        min={0}
-                        step={1}
-                        required
-                        onChange={(e) => setAndPersistFeeAbs(e.target.value)}
-                      />
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.Form.Control
+                          type="number"
+                          name="feeAbs"
+                          value={feeAbs}
+                          className="slashed-zeroes"
+                          min={0}
+                          step={1}
+                          required
+                          onChange={(e) => setAndPersistFeeAbs(e.target.value)}
+                        />
+                      )}
                       <rb.Form.Control.Feedback type="invalid">
                         {t('earn.feedback_invalid_abs_fee')}
                       </rb.Form.Control.Feedback>
@@ -326,16 +368,22 @@ export default function Earn() {
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="minsize">
                       <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
-                      <rb.Form.Control
-                        type="number"
-                        name="minsize"
-                        value={minsize}
-                        className="slashed-zeroes"
-                        min={0}
-                        step={1000}
-                        required
-                        onChange={(e) => setAndPersistMinsize(e.target.value)}
-                      />
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.Form.Control
+                          type="number"
+                          name="minsize"
+                          value={minsize}
+                          className="slashed-zeroes"
+                          min={0}
+                          step={1000}
+                          required
+                          onChange={(e) => setAndPersistMinsize(e.target.value)}
+                        />
+                      )}
                       <rb.Form.Control.Feedback type="invalid">
                         {t('earn.feedback_invalid_min_amount')}
                       </rb.Form.Control.Feedback>
@@ -344,9 +392,13 @@ export default function Earn() {
                 </>
               )}
 
-              <rb.Button variant="dark" type="submit" disabled={isSending || isWaiting}>
-                {isSending ? (
-                  <>
+              <rb.Button
+                variant="dark"
+                type="submit"
+                disabled={isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop}
+              >
+                <div className="d-flex justify-content-center align-items-center">
+                  {(isSending || isWaitingMakerStart || isWaitingMakerStop) && (
                     <rb.Spinner
                       as="span"
                       animation="border"
@@ -355,13 +407,16 @@ export default function Earn() {
                       aria-hidden="true"
                       className="me-2"
                     />
-                    {serviceInfo?.makerRunning === true ? t('earn.text_stopping') : t('earn.text_starting')}
-                  </>
-                ) : serviceInfo?.makerRunning === true ? (
-                  t('earn.button_stop')
-                ) : (
-                  t('earn.button_start')
-                )}
+                  )}
+                  {isWaitingMakerStart || isWaitingMakerStop ? (
+                    <>
+                      {isWaitingMakerStart && t('earn.text_starting')}
+                      {isWaitingMakerStop && t('earn.text_stopping')}
+                    </>
+                  ) : (
+                    <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
+                  )}
+                </div>
               </rb.Button>
             </rb.Form>
           )}

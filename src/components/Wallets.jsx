@@ -5,7 +5,7 @@ import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
 import { useCurrentWallet } from '../context/WalletContext'
-import { useServiceInfo } from '../context/ServiceInfoContext'
+import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
@@ -27,8 +27,9 @@ export default function Wallets({ startWallet, stopWallet }) {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const serviceInfo = useServiceInfo()
+  const reloadServiceInfo = useReloadServiceInfo()
   const [walletList, setWalletList] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [alert, setAlert] = useState(null)
 
   useEffect(() => {
@@ -44,7 +45,12 @@ export default function Wallets({ startWallet, stopWallet }) {
     const abortCtrl = new AbortController()
 
     setIsLoading(true)
-    Api.getWalletAll({ signal: abortCtrl.signal })
+    const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
+      const message = err.message || t('wallets.error_loading_failed')
+      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+    })
+
+    const loadingWallets = Api.getWalletAll({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
       .then((data) => {
         if (!abortCtrl.signal.aborted) {
@@ -66,10 +72,11 @@ export default function Wallets({ startWallet, stopWallet }) {
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+
+    Promise.all([loadingServiceInfo, loadingWallets]).finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, t])
+  }, [currentWallet, reloadServiceInfo, t])
 
   return (
     <div className="wallets">

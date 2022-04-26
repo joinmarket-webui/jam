@@ -19,11 +19,13 @@ describe('<Wallets />', () => {
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
-    apiMock.getSession.mockResolvedValueOnce(neverResolvingPromise)
+    apiMock.getSession.mockResolvedValue(neverResolvingPromise)
   })
 
   it('should render without errors', () => {
-    apiMock.getWalletAll.mockResolvedValueOnce(new Promise((r) => setTimeout(r, 1_000)))
+    const neverResolvingPromise = new Promise(() => {})
+    apiMock.getSession.mockResolvedValueOnce(neverResolvingPromise)
+    apiMock.getWalletAll.mockResolvedValueOnce(neverResolvingPromise)
 
     act(setup)
 
@@ -33,6 +35,9 @@ describe('<Wallets />', () => {
   })
 
   it('should display error message when loading wallets fails', async () => {
+    apiMock.getSession.mockResolvedValueOnce({
+      ok: false,
+    })
     apiMock.getWalletAll.mockResolvedValueOnce({
       ok: false,
     })
@@ -49,6 +54,16 @@ describe('<Wallets />', () => {
   })
 
   it('should display big call-to-action button if no wallet has been created yet', async () => {
+    apiMock.getSession.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          session: false,
+          maker_running: false,
+          coinjoin_in_process: false,
+          wallet_name: 'None',
+        }),
+    })
     apiMock.getWalletAll.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ wallets: [] }),
@@ -71,6 +86,16 @@ describe('<Wallets />', () => {
   })
 
   it('should display login for available wallets', async () => {
+    apiMock.getSession.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          session: false,
+          maker_running: false,
+          coinjoin_in_process: false,
+          wallet_name: 'None',
+        }),
+    })
     apiMock.getWalletAll.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ wallets: ['wallet0.jmdat', 'wallet1.jmdat'] }),
