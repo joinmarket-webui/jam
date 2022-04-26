@@ -14,7 +14,7 @@ import styles from './Earn.module.css'
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-const SUBMIT_BUTTON_ENABLE_DELAY_IN_MS = 2_000
+const MITIGATE_MAKER_STATE_CORRUPTION_DELAY_MS = 2_000
 
 const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
   const { t } = useTranslation()
@@ -87,7 +87,6 @@ export default function Earn() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isWaiting, setIsWaiting] = useState(false)
-  const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(isLoading || isSending || isWaiting)
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
@@ -139,7 +138,6 @@ export default function Earn() {
   }
 
   const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
-    setAlert(null)
     setIsSending(true)
     setIsWaitingMakerStart(true)
 
@@ -169,33 +167,32 @@ export default function Earn() {
     }
   }
 
-  const stopMakerService = async () => {
-    setAlert(null)
+  const stopMakerService = () => {
     setIsSending(true)
     setIsWaitingMakerStop(true)
 
     const { name: walletName, token } = currentWallet
-    try {
-      const res = await Api.getMakerStop({ walletName, token })
 
-      // There is no response data to check if maker got stopped:
-      // Wait for the websocket or session response!
-      if (!res.ok) {
-        await Api.Helper.throwError(res)
-      }
-
-      setIsSending(false)
-    } catch (e) {
-      setIsWaitingMakerStop(false)
-      setIsSending(false)
-      setAlert({ variant: 'danger', message: e.message })
-    }
+    // There is no response data to check if maker got stopped:
+    // Wait for the websocket or session response!
+    Api.getMakerStop({ walletName, token })
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+      // In order to prevent observed state mismatch, the response is delayed shortly.
+      // Even though the API states the maker as started or stopped, it seems this is reported prematurely.
+      // There is currently no way to know for sure - adding a delay at least migitages the problem.
+      .then((_) => new Promise((r) => setTimeout(r, MITIGATE_MAKER_STATE_CORRUPTION_DELAY_MS)))
+      .then((_) => setIsSending(false))
+      .catch((e) => {
+        setIsWaitingMakerStop(false)
+        setIsSending(false)
+        setAlert({ variant: 'danger', message: e.message })
+      })
   }
 
   const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (isSubmitButtonDisabled) {
+    if (isLoading || isSending || isWaiting) {
       return
     }
 
@@ -231,29 +228,8 @@ export default function Earn() {
   }, [currentWallet, isSending, reloadServiceInfo])
 
   useEffect(() => {
-    const isOperationInProgress = isLoading || isSending || isWaiting
+    if (isSending) return
 
-    if (isOperationInProgress) {
-      setIsSubmitButtonDisabled(true)
-      return
-    }
-
-    const abortCtrl = new AbortController()
-    // In order to prevent observed state mismatch, re-enabling the submit button is delayed shortly.
-    // Even though the API states the maker as started or stopped, it seems this is reported prematurely.
-    // There is currently no way to know for sure - adding a delay at least migitages the problem.
-    const timer = setTimeout(
-      () => !abortCtrl.signal.aborted && setIsSubmitButtonDisabled(false),
-      SUBMIT_BUTTON_ENABLE_DELAY_IN_MS
-    )
-
-    return () => {
-      clearTimeout(timer)
-      abortCtrl.abort()
-    }
-  }, [isLoading, isSending, isWaiting])
-
-  useEffect(() => {
     setAlert(null)
     const makerRunning = serviceInfo?.makerRunning
 
@@ -268,7 +244,7 @@ export default function Earn() {
     const waiting = waitingForMakerToStart || waitingForMakerToStop
     setIsWaiting(waiting)
     !waiting && makerRunning && setAlert({ variant: 'success', message: t('earn.alert_running') })
-  }, [serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
+  }, [isSending, serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
 
   useEffect(() => {
     if (!isShowReport) return
@@ -312,7 +288,7 @@ export default function Earn() {
 
           {!serviceInfo?.coinjoinInProgress && (
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-              {!serviceInfo?.makerRunning && !isWaiting && (
+              {!serviceInfo?.makerRunning && !isWaitingMakerStop && (
                 <>
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="offertype">
@@ -412,9 +388,9 @@ export default function Earn() {
                 </>
               )}
 
-              <rb.Button variant="dark" type="submit" disabled={isSubmitButtonDisabled}>
-                {isSending || isWaiting ? (
-                  <>
+              <rb.Button variant="dark" type="submit" disabled={isLoading || isSending || isWaiting}>
+                <div className="d-flex justify-content-center align-items-center">
+                  {(isSending || isWaiting) && (
                     <rb.Spinner
                       as="span"
                       animation="border"
@@ -423,13 +399,16 @@ export default function Earn() {
                       aria-hidden="true"
                       className="me-2"
                     />
-                    {serviceInfo?.makerRunning === true ? t('earn.text_stopping') : t('earn.text_starting')}
-                  </>
-                ) : serviceInfo?.makerRunning === true ? (
-                  t('earn.button_stop')
-                ) : (
-                  t('earn.button_start')
-                )}
+                  )}
+                  {isWaitingMakerStart || isWaitingMakerStop ? (
+                    <>
+                      {isWaitingMakerStart && t('earn.text_starting')}
+                      {isWaitingMakerStop && t('earn.text_stopping')}
+                    </>
+                  ) : (
+                    <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
+                  )}
+                </div>
               </rb.Button>
             </rb.Form>
           )}
