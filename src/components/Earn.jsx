@@ -249,6 +249,10 @@ export default function Earn() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
+    if (isLoading || isSending || isWaiting) {
+      return
+    }
+
     const form = e.currentTarget
     const isValid = form.checkValidity()
     setValidated(true)
@@ -381,7 +385,7 @@ export default function Earn() {
               )}
 
               <rb.Button variant="dark" type="submit" disabled={isLoading || isSending || isWaiting}>
-                {isSending ? (
+                {isSending || isWaiting ? (
                   <>
                     <rb.Spinner
                       as="span"
