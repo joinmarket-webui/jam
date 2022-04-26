@@ -90,7 +90,6 @@ export default function Earn() {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [isWaiting, setIsWaiting] = useState(false)
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
@@ -160,12 +159,11 @@ export default function Earn() {
       .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
       // show the loader a little longer to avoid flickering
       .then((_) => new Promise((r) => setTimeout(r, 200)))
-      .then((_) => setIsSending(false))
       .catch((e) => {
         setIsWaitingMakerStart(false)
-        setIsSending(false)
         setAlert({ variant: 'danger', message: e.message })
       })
+      .finally(() => setIsSending(false))
   }
 
   const stopMakerService = () => {
@@ -180,18 +178,17 @@ export default function Earn() {
     Api.getMakerStop({ walletName, token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
       .then((_) => new Promise((r) => setTimeout(r, MAKER_STOP_RESPONSE_DELAY_MS)))
-      .then((_) => setIsSending(false))
       .catch((e) => {
         setIsWaitingMakerStop(false)
-        setIsSending(false)
         setAlert({ variant: 'danger', message: e.message })
       })
+      .finally(() => setIsSending(false))
   }
 
   const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (isLoading || isSending || isWaiting) {
+    if (isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop) {
       return
     }
 
@@ -238,7 +235,6 @@ export default function Earn() {
     setIsWaitingMakerStop(waitingForMakerToStop)
 
     const waiting = waitingForMakerToStart || waitingForMakerToStop
-    setIsWaiting(waiting)
 
     setAlert((current) => {
       if (!waiting && makerRunning) {
@@ -296,7 +292,7 @@ export default function Earn() {
 
           {!serviceInfo?.coinjoinInProgress && (
             <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-              {!serviceInfo?.makerRunning && !isWaitingMakerStop && (
+              {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
                 <>
                   {settings.useAdvancedWalletMode && (
                     <rb.Form.Group className="mb-3" controlId="offertype">
@@ -396,9 +392,13 @@ export default function Earn() {
                 </>
               )}
 
-              <rb.Button variant="dark" type="submit" disabled={isLoading || isSending || isWaiting}>
+              <rb.Button
+                variant="dark"
+                type="submit"
+                disabled={isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop}
+              >
                 <div className="d-flex justify-content-center align-items-center">
-                  {(isSending || isWaiting) && (
+                  {(isSending || isWaitingMakerStart || isWaitingMakerStop) && (
                     <rb.Spinner
                       as="span"
                       animation="border"
