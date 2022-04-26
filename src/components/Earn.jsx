@@ -137,39 +137,37 @@ export default function Earn() {
     window.localStorage.setItem('jm-minsize', value)
   }
 
-  const startMakerService = async (cjfee_a, cjfee_r, ordertype, minsize) => {
+  const startMakerService = (cjfee_a, cjfee_r, ordertype, minsize) => {
     setIsSending(true)
     setIsWaitingMakerStart(true)
+    setAlert({ variant: 'success', message: t('earn.alert_starting') })
 
     const { name: walletName, token } = currentWallet
-    try {
-      const res = await Api.postMakerStart(
-        { walletName, token },
-        {
-          cjfee_a,
-          cjfee_r,
-          ordertype,
-          minsize,
-        }
-      )
-
-      // There is no response data to check if maker got started:
-      // Wait for the websocket or session response!
-      if (!res.ok) {
-        await Api.Helper.throwError(res)
-      }
-
-      setIsSending(false)
-    } catch (e) {
-      setIsWaitingMakerStart(false)
-      setIsSending(false)
-      setAlert({ variant: 'danger', message: e.message })
+    const data = {
+      cjfee_a,
+      cjfee_r,
+      ordertype,
+      minsize,
     }
+
+    // There is no response data to check if maker got started:
+    // Wait for the websocket or session response!
+    Api.postMakerStart({ walletName, token }, data)
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+      // show the loader a little longer to avoid flickering
+      .then((_) => new Promise((r) => setTimeout(r, 200)))
+      .then((_) => setIsSending(false))
+      .catch((e) => {
+        setIsWaitingMakerStart(false)
+        setIsSending(false)
+        setAlert({ variant: 'danger', message: e.message })
+      })
   }
 
   const stopMakerService = () => {
     setIsSending(true)
     setIsWaitingMakerStop(true)
+    setAlert({ variant: 'success', message: t('earn.alert_stopping') })
 
     const { name: walletName, token } = currentWallet
 
@@ -230,20 +228,29 @@ export default function Earn() {
   useEffect(() => {
     if (isSending) return
 
-    setAlert(null)
     const makerRunning = serviceInfo?.makerRunning
 
     const waitingForMakerToStart = isWaitingMakerStart && !makerRunning
     setIsWaitingMakerStart(waitingForMakerToStart)
-    waitingForMakerToStart && setAlert({ variant: 'success', message: t('earn.alert_starting') })
 
     const waitingForMakerToStop = isWaitingMakerStop && makerRunning
     setIsWaitingMakerStop(waitingForMakerToStop)
-    waitingForMakerToStop && setAlert({ variant: 'success', message: t('earn.alert_stopping') })
 
     const waiting = waitingForMakerToStart || waitingForMakerToStop
     setIsWaiting(waiting)
-    !waiting && makerRunning && setAlert({ variant: 'success', message: t('earn.alert_running') })
+
+    setAlert((current) => {
+      if (!waiting && makerRunning) {
+        return { variant: 'success', message: t('earn.alert_running') }
+      }
+
+      // preserve possibly existing error messages
+      if (current && current.variant === 'danger') {
+        return current
+      }
+
+      return null
+    })
   }, [isSending, serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
 
   useEffect(() => {
