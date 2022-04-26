@@ -14,9 +14,9 @@ import styles from './Earn.module.css'
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-// In order to prevent observed state mismatch, the 'maker stop' response is delayed shortly.
-// Even though the API states the maker as started or stopped, it seems this is reported prematurely.
-// There is currently no way to know for sure - adding a delay at least migitages the problem.
+// In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
+// Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
+// There is currently no way to know for sure - adding a delay at least mitigates the problem.
 // 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
 const MAKER_STOP_RESPONSE_DELAY_MS = 2_000
 
