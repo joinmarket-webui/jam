@@ -14,7 +14,11 @@ import styles from './Earn.module.css'
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-const MITIGATE_MAKER_STATE_CORRUPTION_DELAY_MS = 2_000
+// In order to prevent observed state mismatch, the 'maker stop' response is delayed shortly.
+// Even though the API states the maker as started or stopped, it seems this is reported prematurely.
+// There is currently no way to know for sure - adding a delay at least migitages the problem.
+// 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
+const MAKER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
   const { t } = useTranslation()
@@ -175,10 +179,7 @@ export default function Earn() {
     // Wait for the websocket or session response!
     Api.getMakerStop({ walletName, token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
-      // In order to prevent observed state mismatch, the response is delayed shortly.
-      // Even though the API states the maker as started or stopped, it seems this is reported prematurely.
-      // There is currently no way to know for sure - adding a delay at least migitages the problem.
-      .then((_) => new Promise((r) => setTimeout(r, MITIGATE_MAKER_STATE_CORRUPTION_DELAY_MS)))
+      .then((_) => new Promise((r) => setTimeout(r, MAKER_STOP_RESPONSE_DELAY_MS)))
       .then((_) => setIsSending(false))
       .catch((e) => {
         setIsWaitingMakerStop(false)
