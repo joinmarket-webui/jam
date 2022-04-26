@@ -26,10 +26,10 @@ input[type='number'] {
 }
 
 :root[data-theme='dark'] .button-sweep {
-  color: var(--bs-gray-800);
+  color: var(--bs-gray-800) !important;
 }
 :root[data-theme='dark'] .button-sweep:hover {
-  color: var(--bs-white);
+  color: var(--bs-white) !important;
 }
 
 .button-sweep-item {
@@ -66,17 +66,17 @@ input[type='number'] {
   box-shadow: none;
 }
 
-.sweep-breakdoown-anchor {
+.sweep-breakdown-anchor {
   font-size: 0.8rem;
   color: var(--bs-black);
 }
 
-:root[data-theme='dark'] .sweep-breakdoown-anchor {
-  color: var(--bs-white);
+:root[data-theme='dark'] .sweep-breakdown-anchor {
+  color: var(--bs-white) !important;
 }
 
 :root[data-theme='dark'] .sweep-breakdoown-paragraph {
-  color: var(--bs-white);
+  color: var(--bs-white) !important;
 }
 
 .select {
@@ -139,6 +139,8 @@ input[type='number'] {
   width: 100%;
   background-color: transparent;
   color: var(--bs-black);
+  display: flex;
+  justify-content: flex-end;
   font-size: 0.8rem;
   height: 1rem;
   padding: 0;
@@ -153,4 +155,8 @@ input[type='number'] {
   width: 0rem;
   height: 0rem;
   background-image: none;
+}
+
+:root[data-theme='dark'] .accordion-button {
+  color: var(--bs-white);
 }

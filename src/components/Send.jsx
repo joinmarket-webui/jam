@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useContext } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -163,9 +163,7 @@ function SweepAccordionToggle({ eventKey }) {
   const { t } = useTranslation()
   return (
     <button type="button" className={styles['accordion-button']} onClick={rb.useAccordionButton(eventKey)}>
-      <div className="d-flex align-items-center justify-content-end w-100">
-        {t('send.button_sweep_amount_breakdown')}
-      </div>
+      {t('send.button_sweep_amount_breakdown')}
     </button>
   )
 }

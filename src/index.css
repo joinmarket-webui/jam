@@ -468,25 +468,6 @@ main {
   opacity: 100%;
 }
 
-.sweep-breakdown .accordion-button {
-  background-color: transparent;
-  color: var(--bs-black);
-  font-size: 0.8rem;
-  height: 1rem;
-  padding: 0;
-  box-shadow: none;
-}
-
-.sweep-breakdown .accordion-button:hover {
-  text-decoration: underline;
-}
-
-.sweep-breakdown .accordion-button::after {
-  width: 0rem;
-  height: 0rem;
-  background-image: none;
-}
-
 /* Boostrap overrides */
 
 h2 {
