@@ -13,6 +13,12 @@ Start the regtest environment with:
 npm run regtest:up
 ```
 
+Once the regtest environment is up and running you can start Jam with:
+
+```sh
+npm start
+```
+
 ### Stop
 
 ```sh
