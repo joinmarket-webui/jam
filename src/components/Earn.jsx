@@ -96,27 +96,11 @@ const factorToPercentage = (val, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
-const persistOffertype = (value) => {
-  window.localStorage.setItem('jm-offertype', value)
-}
-
-const persistFeeRel = (value) => {
-  window.localStorage.setItem('jm-feeRel', value)
-}
-
-const persistFeeAbs = (value) => {
-  window.localStorage.setItem('jm-feeAbs', value)
-}
-
-const persistMinsize = (value) => {
-  window.localStorage.setItem('jm-minsize', value)
-}
-
 const persistFormValues = (values) => {
-  persistOffertype(values.offertype)
-  persistFeeRel(values.feeRel)
-  persistFeeAbs(values.feeAbs)
-  persistMinsize(values.minsize)
+  window.localStorage.setItem('jm-offertype', values.offertype)
+  window.localStorage.setItem('jm-feeRel', values.feeRel)
+  window.localStorage.setItem('jm-feeAbs', values.feeAbs)
+  window.localStorage.setItem('jm-minsize', values.minsize)
 }
 
 export default function Earn() {
