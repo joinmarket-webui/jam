@@ -1,5 +1,6 @@
 import React from 'react'
 import { useEffect, useState } from 'react'
+import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
@@ -13,6 +14,7 @@ import styles from './Earn.module.css'
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
+const OFFERTYPES = [OFFERTYPE_REL, OFFERTYPE_ABS]
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -80,13 +82,49 @@ const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
   )
 }
 
+const percentageToFactor = (val, precision = 6) => {
+  // Value cannot just be divided
+  // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
+  // but: ✓ Number((0.0027 / 100).toFixed(6)) = 0.000027
+  return Number((val / 100).toFixed(precision))
+}
+
+const factorToPercentage = (val, precision = 6) => {
+  // Value cannot just be divided
+  // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
+  // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
+  return Number((val * 100).toFixed(precision))
+}
+
+const persistOffertype = (value) => {
+  window.localStorage.setItem('jm-offertype', value)
+}
+
+const persistFeeRel = (value) => {
+  window.localStorage.setItem('jm-feeRel', value)
+}
+
+const persistFeeAbs = (value) => {
+  window.localStorage.setItem('jm-feeAbs', value)
+}
+
+const persistMinsize = (value) => {
+  window.localStorage.setItem('jm-minsize', value)
+}
+
+const persistFormValues = (values) => {
+  persistOffertype(values.offertype)
+  persistFeeRel(values.feeRel)
+  persistFeeAbs(values.feeAbs)
+  persistMinsize(values.minsize)
+}
+
 export default function Earn() {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
-  const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
@@ -94,56 +132,11 @@ export default function Earn() {
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isReportLoading, setIsReportLoading] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
-  const [offertype, setOffertype] = useState(
-    (settings.useAdvancedWalletMode && window.localStorage.getItem('jm-offertype')) || OFFERTYPE_REL
-  )
-  const [feeRel, setFeeRel] = useState(parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.000_3)
-  const [feeAbs, setFeeAbs] = useState(parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250)
-  const [minsize, setMinsize] = useState(parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100_000)
   const [yieldgenReportLines, setYieldgenReportLines] = useState([])
-
-  const feeRelPercentageMin = 0.0
-  const feeRelPercentageMax = 10.0
-  const feeRelPercentageStep = 0.0001
-
-  const percentageToFactor = (val, precision = 6) => {
-    // Value cannot just be divided
-    // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
-    // but: ✓ Number((0.0027 / 100).toFixed(6)) = 0.000027
-    return Number((val / 100).toFixed(precision))
-  }
-
-  const factorToPercentage = (val, precision = 6) => {
-    // Value cannot just be divided
-    // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
-    // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
-    return Number((val * 100).toFixed(precision))
-  }
-
-  const setAndPersistOffertype = (value) => {
-    setOffertype(value)
-    window.localStorage.setItem('jm-offertype', value)
-  }
-
-  const setAndPersistFeeRel = (value) => {
-    setFeeRel(value)
-    window.localStorage.setItem('jm-feeRel', value)
-  }
-
-  const setAndPersistFeeAbs = (value) => {
-    setFeeAbs(value)
-    window.localStorage.setItem('jm-feeAbs', value)
-  }
-
-  const setAndPersistMinsize = (value) => {
-    setMinsize(value)
-    window.localStorage.setItem('jm-minsize', value)
-  }
 
   const startMakerService = (cjfee_a, cjfee_r, ordertype, minsize) => {
     setIsSending(true)
     setIsWaitingMakerStart(true)
-    setAlert({ variant: 'success', message: t('earn.alert_starting') })
 
     const { name: walletName, token } = currentWallet
     const data = {
@@ -155,57 +148,36 @@ export default function Earn() {
 
     // There is no response data to check if maker got started:
     // Wait for the websocket or session response!
-    Api.postMakerStart({ walletName, token }, data)
-      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
-      // show the loader a little longer to avoid flickering
-      .then((_) => new Promise((r) => setTimeout(r, 200)))
-      .catch((e) => {
-        setIsWaitingMakerStart(false)
-        setAlert({ variant: 'danger', message: e.message })
-      })
-      .finally(() => setIsSending(false))
+    return (
+      Api.postMakerStart({ walletName, token }, data)
+        .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+        // show the loader a little longer to avoid flickering
+        .then((_) => new Promise((r) => setTimeout(r, 200)))
+        .catch((e) => {
+          setIsWaitingMakerStart(false)
+          throw e
+        })
+        .finally(() => setIsSending(false))
+    )
   }
 
   const stopMakerService = () => {
     setIsSending(true)
     setIsWaitingMakerStop(true)
-    setAlert({ variant: 'success', message: t('earn.alert_stopping') })
 
     const { name: walletName, token } = currentWallet
 
     // There is no response data to check if maker got stopped:
     // Wait for the websocket or session response!
-    Api.getMakerStop({ walletName, token })
+    return Api.getMakerStop({ walletName, token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
       .then((_) => new Promise((r) => setTimeout(r, MAKER_STOP_RESPONSE_DELAY_MS)))
       .catch((e) => {
         setIsWaitingMakerStop(false)
-        setAlert({ variant: 'danger', message: e.message })
+        throw e
       })
       .finally(() => setIsSending(false))
   }
-
-  const onSubmit = async (e) => {
-    e.preventDefault()
-
-    if (isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop) {
-      return
-    }
-
-    const form = e.currentTarget
-    const isValid = form.checkValidity()
-    setValidated(true)
-
-    if (isValid) {
-      if (serviceInfo?.makerRunning === false) {
-        await startMakerService(feeAbs, feeRel, offertype, minsize)
-      } else {
-        await stopMakerService()
-      }
-    }
-  }
-
-  const isRelOffer = offertype === OFFERTYPE_REL
 
   useEffect(() => {
     if (isSending) return
@@ -276,6 +248,59 @@ export default function Earn() {
     return () => abortCtrl.abort()
   }, [serviceInfo, isShowReport, t])
 
+  const feeRelMin = 0.0
+  const feeRelMax = 0.1 // 10%
+  const feeRelPercentageStep = 0.0001
+
+  const initialValues = {
+    offertype: (settings.useAdvancedWalletMode && window.localStorage.getItem('jm-offertype')) || OFFERTYPE_REL,
+    feeRel: parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.000_3,
+    feeAbs: parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250,
+    minsize: parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100_000,
+  }
+
+  const validate = (values) => {
+    const errors = {}
+    if (!OFFERTYPES.includes(values.offertype)) {
+      // currently no need for translation, this should never occur -> input is controlled by toggle
+      errors.offertype = `Offertype must be one of ${OFFERTYPES.join(',')}`
+    }
+    if (!(values.feeRel >= feeRelMin && values.feeRel <= feeRelMax)) {
+      errors.feeRel = t('earn.feedback_invalid_rel_fee', {
+        feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
+        feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
+      })
+    }
+    if (values.feeAbs < 0) {
+      errors.minsize = t('earn.feedback_invalid_abs_fee')
+    }
+    if (values.minsize < 0) {
+      errors.minsize = t('earn.feedback_invalid_min_amount')
+    }
+    return errors
+  }
+
+  const onSubmit = (values, { setSubmitting }) => {
+    if (isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop) {
+      setSubmitting(false)
+      return
+    }
+
+    if (serviceInfo?.makerRunning === true) {
+      setAlert({ variant: 'success', message: t('earn.alert_stopping') })
+      stopMakerService()
+        .catch((e) => setAlert({ variant: 'danger', message: e.message }))
+        .finally(() => setSubmitting(false))
+    } else {
+      persistFormValues(values)
+
+      setAlert({ variant: 'success', message: t('earn.alert_starting') })
+      startMakerService(values.feeAbs, values.feeRel, values.offertype, values.minsize)
+        .catch((e) => setAlert({ variant: 'danger', message: e.message }))
+        .finally(() => setSubmitting(false))
+    }
+  }
+
   return (
     <div className="earn">
       <rb.Row>
@@ -291,134 +316,142 @@ export default function Earn() {
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
           {!serviceInfo?.coinjoinInProgress && (
-            <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-              {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
-                <>
-                  {settings.useAdvancedWalletMode && (
-                    <rb.Form.Group className="mb-3" controlId="offertype">
-                      <ToggleSwitch
-                        label={t('earn.toggle_rel_offer')}
-                        initialValue={isRelOffer}
-                        onToggle={(isToggled) => setAndPersistOffertype(isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS)}
-                        disabled={isLoading}
-                      />
-                    </rb.Form.Group>
-                  )}
-                  {isRelOffer ? (
-                    <rb.Form.Group className="mb-3" controlId="feeRel">
-                      <rb.Form.Label className="mb-0">
-                        {t('earn.label_rel_fee', {
-                          fee: feeRel !== '' ? `(${factorToPercentage(feeRel)}%)` : '',
-                        })}
-                      </rb.Form.Label>
-                      <div className="mb-2">
-                        <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
-                      </div>
-                      {isLoading ? (
-                        <rb.Placeholder as="div" animation="wave">
-                          <rb.Placeholder xs={12} className={styles['input-loader']} />
-                        </rb.Placeholder>
-                      ) : (
-                        <rb.Form.Control
-                          type="number"
-                          name="feeRel"
-                          value={factorToPercentage(feeRel)}
-                          className="slashed-zeroes"
-                          min={feeRelPercentageMin}
-                          max={feeRelPercentageMax}
-                          step={feeRelPercentageStep}
-                          required
-                          onChange={(e) => setAndPersistFeeRel(percentageToFactor(e.target.value))}
-                        />
-                      )}
-                      <rb.Form.Control.Feedback type="invalid">
-                        {t('feedback_invalid_rel_fee', {
-                          feeRelPercentageMin: `${feeRelPercentageMin}%`,
-                          feeRelPercentageMax: `${feeRelPercentageMax}%`,
-                        })}
-                      </rb.Form.Control.Feedback>
-                    </rb.Form.Group>
-                  ) : (
-                    <rb.Form.Group className="mb-3" controlId="feeAbs">
-                      <rb.Form.Label className="mb-0">{t('earn.label_abs_fee')}</rb.Form.Label>
-                      <div className="mb-2">
-                        <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
-                      </div>
-                      {isLoading ? (
-                        <rb.Placeholder as="div" animation="wave">
-                          <rb.Placeholder xs={12} className={styles['input-loader']} />
-                        </rb.Placeholder>
-                      ) : (
-                        <rb.Form.Control
-                          type="number"
-                          name="feeAbs"
-                          value={feeAbs}
-                          className="slashed-zeroes"
-                          min={0}
-                          step={1}
-                          required
-                          onChange={(e) => setAndPersistFeeAbs(e.target.value)}
-                        />
-                      )}
-                      <rb.Form.Control.Feedback type="invalid">
-                        {t('earn.feedback_invalid_abs_fee')}
-                      </rb.Form.Control.Feedback>
-                    </rb.Form.Group>
-                  )}
-                  {settings.useAdvancedWalletMode && (
-                    <rb.Form.Group className="mb-3" controlId="minsize">
-                      <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
-                      {isLoading ? (
-                        <rb.Placeholder as="div" animation="wave">
-                          <rb.Placeholder xs={12} className={styles['input-loader']} />
-                        </rb.Placeholder>
-                      ) : (
-                        <rb.Form.Control
-                          type="number"
-                          name="minsize"
-                          value={minsize}
-                          className="slashed-zeroes"
-                          min={0}
-                          step={1000}
-                          required
-                          onChange={(e) => setAndPersistMinsize(e.target.value)}
-                        />
-                      )}
-                      <rb.Form.Control.Feedback type="invalid">
-                        {t('earn.feedback_invalid_min_amount')}
-                      </rb.Form.Control.Feedback>
-                    </rb.Form.Group>
-                  )}
-                </>
-              )}
-
-              <rb.Button
-                variant="dark"
-                type="submit"
-                disabled={isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop}
-              >
-                <div className="d-flex justify-content-center align-items-center">
-                  {(isSending || isWaitingMakerStart || isWaitingMakerStop) && (
-                    <rb.Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-2"
-                    />
-                  )}
-                  {isWaitingMakerStart || isWaitingMakerStop ? (
+            <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+              {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
+                <rb.Form onSubmit={handleSubmit} noValidate>
+                  {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
                     <>
-                      {isWaitingMakerStart && t('earn.text_starting')}
-                      {isWaitingMakerStop && t('earn.text_stopping')}
+                      {settings.useAdvancedWalletMode && (
+                        <rb.Form.Group className="mb-3" controlId="offertype">
+                          <ToggleSwitch
+                            label={t('earn.toggle_rel_offer')}
+                            initialValue={values.offertype === OFFERTYPE_REL}
+                            onToggle={(isToggled) =>
+                              setFieldValue('offertype', isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS, true)
+                            }
+                            disabled={isLoading || isSubmitting}
+                          />
+                        </rb.Form.Group>
+                      )}
+                      {values.offertype === OFFERTYPE_REL ? (
+                        <rb.Form.Group className="mb-3" controlId="feeRel">
+                          <rb.Form.Label className="mb-0">
+                            {t('earn.label_rel_fee', {
+                              fee: values.feeRel !== '' ? `(${factorToPercentage(values.feeRel)}%)` : '',
+                            })}
+                          </rb.Form.Label>
+                          <div className="mb-2">
+                            <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
+                          </div>
+                          {isLoading ? (
+                            <rb.Placeholder as="div" animation="wave">
+                              <rb.Placeholder xs={12} className={styles['input-loader']} />
+                            </rb.Placeholder>
+                          ) : (
+                            <rb.Form.Control
+                              className="slashed-zeroes"
+                              type="number"
+                              name="feeRel"
+                              disabled={isSubmitting}
+                              onChange={(e) => {
+                                const value = e.target.value || ''
+                                setFieldValue('feeRel', value && percentageToFactor(e.target.value), true)
+                              }}
+                              onBlur={handleBlur}
+                              value={factorToPercentage(values.feeRel)}
+                              isValid={touched.feeRel && !errors.feeRel}
+                              isInvalid={touched.feeRel && errors.feeRel}
+                              min={0}
+                              step={feeRelPercentageStep}
+                            />
+                          )}
+                          <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
+                        </rb.Form.Group>
+                      ) : (
+                        <rb.Form.Group className="mb-3" controlId="feeAbs">
+                          <rb.Form.Label className="mb-0">{t('earn.label_abs_fee')}</rb.Form.Label>
+                          <div className="mb-2">
+                            <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
+                          </div>
+                          {isLoading ? (
+                            <rb.Placeholder as="div" animation="wave">
+                              <rb.Placeholder xs={12} className={styles['input-loader']} />
+                            </rb.Placeholder>
+                          ) : (
+                            <rb.Form.Control
+                              className="slashed-zeroes"
+                              type="number"
+                              name="feeAbs"
+                              value={values.feeAbs}
+                              disabled={isSubmitting}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              isValid={touched.feeAbs && !errors.feeAbs}
+                              isInvalid={touched.feeAbs && errors.feeAbs}
+                              min={0}
+                              step={1}
+                            />
+                          )}
+                          <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
+                        </rb.Form.Group>
+                      )}
+                      {settings.useAdvancedWalletMode && (
+                        <rb.Form.Group className="mb-3" controlId="minsize">
+                          <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
+                          {isLoading ? (
+                            <rb.Placeholder as="div" animation="wave">
+                              <rb.Placeholder xs={12} className={styles['input-loader']} />
+                            </rb.Placeholder>
+                          ) : (
+                            <rb.Form.Control
+                              className="slashed-zeroes"
+                              type="number"
+                              name="minsize"
+                              value={values.minsize}
+                              disabled={isSubmitting}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              isValid={touched.minsize && !errors.minsize}
+                              isInvalid={touched.minsize && errors.minsize}
+                              min={0}
+                              step={1000}
+                            />
+                          )}
+                          <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
+                        </rb.Form.Group>
+                      )}
                     </>
-                  ) : (
-                    <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
                   )}
-                </div>
-              </rb.Button>
-            </rb.Form>
+
+                  <rb.Button
+                    variant="dark"
+                    type="submit"
+                    disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
+                  >
+                    <div className="d-flex justify-content-center align-items-center">
+                      {(isWaitingMakerStart || isWaitingMakerStop) && (
+                        <rb.Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                          className="me-2"
+                        />
+                      )}
+                      {isWaitingMakerStart || isWaitingMakerStop ? (
+                        <>
+                          {isWaitingMakerStart && t('earn.text_starting')}
+                          {isWaitingMakerStop && t('earn.text_stopping')}
+                        </>
+                      ) : (
+                        <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
+                      )}
+                    </div>
+                  </rb.Button>
+                </rb.Form>
+              )}
+            </Formik>
           )}
         </rb.Col>
       </rb.Row>
