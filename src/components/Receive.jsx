@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -7,9 +7,9 @@ import { BitcoinQR } from './BitcoinQR'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
-import { copyToClipboard } from '../utils'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
+import { CopyButtonWithConfirmation } from './CopyButton'
 import styles from './Receive.module.css'
 
 export default function Receive() {
@@ -18,7 +18,6 @@ export default function Receive() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const addressCopyFallbackInputRef = useRef()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -28,8 +27,6 @@ export default function Receive() {
   const [accounts, setAccounts] = useState([])
   const [addressCount, setAddressCount] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
-  const [addressCopiedFlag, setAddressCopiedFlag] = useState(0)
-  const [showAddressCopiedConfirmation, setShowAddressCopiedConfirmation] = useState(false)
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -59,17 +56,6 @@ export default function Receive() {
     const accountNumbers = walletInfo ? walletInfo.data.display.walletinfo.accounts.map((it) => it.account) : []
     setAccounts(accountNumbers)
   }, [walletInfo])
-
-  useEffect(() => {
-    if (addressCopiedFlag < 1) return
-
-    setShowAddressCopiedConfirmation(true)
-    const timer = setTimeout(() => {
-      setShowAddressCopiedConfirmation(false)
-    }, 1500)
-
-    return () => clearTimeout(timer)
-  }, [addressCopiedFlag])
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -105,46 +91,11 @@ export default function Receive() {
               </rb.Placeholder>
             )}
             <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
-              <rb.Button
-                variant="outline-dark"
-                data-bs-toggle="tooltip"
-                data-bs-placement="left"
-                onClick={() => {
-                  copyToClipboard(
-                    address,
-                    addressCopyFallbackInputRef.current,
-                    t('receive.error_copy_address_failed')
-                  ).then(
-                    () => {
-                      setAddressCopiedFlag(addressCopiedFlag + 1)
-                    },
-                    (e) => {
-                      setAlert({ variant: 'warning', message: e.message })
-                    }
-                  )
-                }}
-                disabled={!address || isLoading}
-              >
-                {showAddressCopiedConfirmation ? (
-                  <>
-                    {t('receive.text_copy_address_confirmed')}
-                    <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
-                  </>
-                ) : (
-                  t('receive.button_copy_address')
-                )}
-              </rb.Button>
-
-              <input
-                readOnly
-                aria-hidden
-                ref={addressCopyFallbackInputRef}
+              <CopyButtonWithConfirmation
                 value={address}
-                style={{
-                  position: 'absolute',
-                  left: '-9999px',
-                  top: '-9999px',
-                }}
+                text={t('receive.button_copy_address')}
+                successText={t('receive.text_copy_address_confirmed')}
+                disabled={!address || isLoading}
               />
             </div>
           </rb.Card.Body>
