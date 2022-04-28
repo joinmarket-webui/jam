@@ -126,6 +126,7 @@ export default function Earn() {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const [alert, setAlert] = useState(null)
+  const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
@@ -208,17 +209,13 @@ export default function Earn() {
 
     const waiting = waitingForMakerToStart || waitingForMakerToStop
 
-    setAlert((current) => {
+    setServiceInfoAlert((current) => {
       if (!waiting && makerRunning) {
         return { variant: 'success', message: t('earn.alert_running') }
+      } else if (!waiting) {
+        return null
       }
-
-      // preserve possibly existing error messages
-      if (current && current.variant === 'danger') {
-        return current
-      }
-
-      return null
+      return current
     })
   }, [isSending, serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
 
@@ -280,24 +277,29 @@ export default function Earn() {
     return errors
   }
 
-  const onSubmit = (values, { setSubmitting }) => {
+  const onSubmit = async (values, { setSubmitting }) => {
     if (isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop) {
       setSubmitting(false)
       return
     }
 
-    if (serviceInfo?.makerRunning === true) {
-      setAlert({ variant: 'success', message: t('earn.alert_stopping') })
-      stopMakerService()
-        .catch((e) => setAlert({ variant: 'danger', message: e.message }))
-        .finally(() => setSubmitting(false))
-    } else {
-      persistFormValues(values)
+    setAlert(null)
 
-      setAlert({ variant: 'success', message: t('earn.alert_starting') })
-      startMakerService(values.feeAbs, values.feeRel, values.offertype, values.minsize)
-        .catch((e) => setAlert({ variant: 'danger', message: e.message }))
-        .finally(() => setSubmitting(false))
+    try {
+      if (serviceInfo?.makerRunning === true) {
+        setServiceInfoAlert({ variant: 'success', message: t('earn.alert_stopping') })
+        await stopMakerService()
+      } else {
+        persistFormValues(values)
+
+        setServiceInfoAlert({ variant: 'success', message: t('earn.alert_starting') })
+        await startMakerService(values.feeAbs, values.feeRel, values.offertype, values.minsize)
+      }
+    } catch (e) {
+      setServiceInfoAlert(null)
+      setAlert({ variant: 'danger', message: e.message })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -314,6 +316,8 @@ export default function Earn() {
           </rb.Fade>
 
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+
+          {serviceInfoAlert && <rb.Alert variant={serviceInfoAlert.variant}>{serviceInfoAlert.message}</rb.Alert>}
 
           {!serviceInfo?.coinjoinInProgress && (
             <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
