@@ -34,6 +34,7 @@ export function CopyButtonWithConfirmation({
   text,
   successText = text,
   successTextTimeout = 1_500,
+  ...props
 }: CopyButtonWithConfirmationProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
   const [valueCopiedFlag, setValueCopiedFlag] = useState(0)
@@ -58,6 +59,7 @@ export function CopyButtonWithConfirmation({
         onSuccess && onSuccess()
       }}
       onError={onError}
+      {...props}
     >
       {showValueCopiedConfirmation ? (
         <div className="d-flex justify-content-center align-items-center">

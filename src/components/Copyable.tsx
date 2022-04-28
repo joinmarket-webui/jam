@@ -20,13 +20,13 @@ export function Copyable({
 
   return (
     <>
-      <div
+      <button
         className={className}
         {...props}
         onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
       >
         {children}
-      </div>
+      </button>
       <input
         readOnly
         aria-hidden
