@@ -7,6 +7,7 @@ import { BitcoinQR } from './BitcoinQR'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
+import { copyToClipboard } from '../utils'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import styles from './Receive.module.css'
@@ -70,24 +71,6 @@ export default function Receive() {
     return () => clearTimeout(timer)
   }, [addressCopiedFlag])
 
-  const copyToClipboard = (text, fallbackInputField) => {
-    const copyToClipboardFallback = (inputField) =>
-      new Promise((resolve, reject) => {
-        inputField.select()
-        const success = document.execCommand && document.execCommand('copy')
-        inputField.blur()
-        success ? resolve(success) : reject(new Error(t('receive.error_copy_address_failed')))
-      })
-
-    // `navigator.clipboard` might not be available, e.g. on sites served over plain `http`.
-    if (!navigator.clipboard) {
-      return copyToClipboardFallback(fallbackInputField)
-    }
-
-    // might not work on iOS.
-    return navigator.clipboard.writeText(text).catch(() => copyToClipboardFallback(fallbackInputField))
-  }
-
   const onSubmit = (e) => {
     e.preventDefault()
 
@@ -127,7 +110,11 @@ export default function Receive() {
                 data-bs-toggle="tooltip"
                 data-bs-placement="left"
                 onClick={() => {
-                  copyToClipboard(address, addressCopyFallbackInputRef.current).then(
+                  copyToClipboard(
+                    address,
+                    addressCopyFallbackInputRef.current,
+                    t('receive.error_copy_address_failed')
+                  ).then(
                     () => {
                       setAddressCopiedFlag(addressCopiedFlag + 1)
                     },
