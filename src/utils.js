@@ -12,7 +12,7 @@ export const btcToSats = (value) => Math.round(parseFloat(value) * 100000000)
 export const satsToBtc = (value) => parseInt(value, 10) / 100000000
 
 export const copyToClipboard = (text, fallbackInputField, errorMessage) => {
-  const copyToClipboardFallback = (inputField) =>
+  const copyToClipboardFallback = (inputField, errorMessage = 'Cannot copy value to clipboard') =>
     new Promise((resolve, reject) => {
       inputField.select()
       const success = document.execCommand && document.execCommand('copy')
@@ -26,5 +26,5 @@ export const copyToClipboard = (text, fallbackInputField, errorMessage) => {
   }
 
   // might not work on iOS.
-  return navigator.clipboard.writeText(text).catch(() => copyToClipboardFallback(fallbackInputField))
+  return navigator.clipboard.writeText(text).catch(() => copyToClipboardFallback(fallbackInputField, errorMessage))
 }
