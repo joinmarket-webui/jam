@@ -269,7 +269,7 @@ export default function Earn() {
       })
     }
     if (values.feeAbs < 0) {
-      errors.minsize = t('earn.feedback_invalid_abs_fee')
+      errors.feeAbs = t('earn.feedback_invalid_abs_fee')
     }
     if (values.minsize < 0) {
       errors.minsize = t('earn.feedback_invalid_min_amount')
