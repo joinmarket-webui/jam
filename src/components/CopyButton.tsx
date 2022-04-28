@@ -50,25 +50,23 @@ export function CopyButtonWithConfirmation({
   }, [valueCopiedFlag, successTextTimeout])
 
   return (
-    <>
-      <CopyButton
-        className="btn btn-outline-dark"
-        value={value}
-        onSuccess={() => {
-          setValueCopiedFlag((current) => current + 1)
-          onSuccess && onSuccess()
-        }}
-        onError={onError}
-      >
-        {showValueCopiedConfirmation ? (
-          <div className="d-flex justify-content-center align-items-center">
-            {successText}
-            <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
-          </div>
-        ) : (
-          <>{text}</>
-        )}
-      </CopyButton>
-    </>
+    <CopyButton
+      className="btn btn-outline-dark"
+      value={value}
+      onSuccess={() => {
+        setValueCopiedFlag((current) => current + 1)
+        onSuccess && onSuccess()
+      }}
+      onError={onError}
+    >
+      {showValueCopiedConfirmation ? (
+        <div className="d-flex justify-content-center align-items-center">
+          {successText}
+          <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
+        </div>
+      ) : (
+        <>{text}</>
+      )}
+    </CopyButton>
   )
 }

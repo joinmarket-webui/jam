@@ -1,6 +1,4 @@
 import React, { PropsWithChildren, useRef } from 'react'
-
-// @ts-ignore
 import { copyToClipboard } from '../utils'
 
 export interface CopyableProps {
@@ -25,7 +23,7 @@ export function Copyable({
       <div
         className={className}
         {...props}
-        onClick={() => copyToClipboard(value, valueFallbackInputRef.current).then(onSuccess, onError)}
+        onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
       >
         {children}
       </div>
