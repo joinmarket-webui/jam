@@ -96,12 +96,28 @@ const factorToPercentage = (val, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
-const persistFormValues = (values) => {
-  window.localStorage.setItem('jm-offertype', values.offertype)
-  window.localStorage.setItem('jm-feeRel', values.feeRel)
-  window.localStorage.setItem('jm-feeAbs', values.feeAbs)
-  window.localStorage.setItem('jm-minsize', values.minsize)
+const LOCAL_STORAGE_FORM_INPUT_KEYS = {
+  offertype: 'jm-offertype',
+  feeRel: 'jm-feeRel',
+  feeAbs: 'jm-feeAbs',
+  minsize: 'jm-minsize',
 }
+
+const persistFormValues = (values) => {
+  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.offertype, values.offertype)
+  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeRel, values.feeRel)
+  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeAbs, values.feeAbs)
+  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.minsize, values.minsize)
+}
+
+const initialFormValues = (settings) => ({
+  offertype:
+    (settings.useAdvancedWalletMode && window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.offertype)) ||
+    OFFERTYPE_REL,
+  feeRel: parseFloat(window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeRel)) || 0.000_3,
+  feeAbs: parseInt(window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeAbs), 10) || 250,
+  minsize: parseInt(window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.minsize), 10) || 100_000,
+})
 
 export default function Earn() {
   const { t } = useTranslation()
@@ -233,12 +249,7 @@ export default function Earn() {
   const feeRelMax = 0.1 // 10%
   const feeRelPercentageStep = 0.0001
 
-  const initialValues = {
-    offertype: (settings.useAdvancedWalletMode && window.localStorage.getItem('jm-offertype')) || OFFERTYPE_REL,
-    feeRel: parseFloat(window.localStorage.getItem('jm-feeRel')) || 0.000_3,
-    feeAbs: parseInt(window.localStorage.getItem('jm-feeAbs'), 10) || 250,
-    minsize: parseInt(window.localStorage.getItem('jm-minsize'), 10) || 100_000,
-  }
+  const initialValues = initialFormValues(settings)
 
   const validate = (values) => {
     const errors = {}
