@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { PropsWithChildren } from 'react'
 import { useState, useEffect } from 'react'
 import Sprite from './Sprite'
-import Copyable from './Copyable'
+import { CopyableProps, Copyable } from './Copyable'
 
-export function CopyButton({ value, onSuccess, onError, children, ...props }) {
+interface CopyButtonProps extends CopyableProps {}
+
+export function CopyButton({ value, onSuccess, onError, children, ...props }: PropsWithChildren<CopyButtonProps>) {
   return (
     <Copyable
       value={value}
@@ -19,14 +21,20 @@ export function CopyButton({ value, onSuccess, onError, children, ...props }) {
   )
 }
 
+interface CopyButtonWithConfirmationProps extends CopyButtonProps {
+  text: string
+  successText: string
+  successTextTimeout: number
+}
+
 export function CopyButtonWithConfirmation({
   value,
-  text,
   onSuccess,
   onError,
+  text,
   successText = text,
   successTextTimeout = 1_500,
-}) {
+}: CopyButtonWithConfirmationProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
   const [valueCopiedFlag, setValueCopiedFlag] = useState(0)
 
