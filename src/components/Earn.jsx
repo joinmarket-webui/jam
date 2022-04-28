@@ -246,7 +246,7 @@ export default function Earn() {
       // currently no need for translation, this should never occur -> input is controlled by toggle
       errors.offertype = `Offertype must be one of ${OFFERTYPES.join(',')}`
     }
-    if (!(values.feeRel >= feeRelMin && values.feeRel <= feeRelMax)) {
+    if (values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
       errors.feeRel = t('earn.feedback_invalid_rel_fee', {
         feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
         feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
