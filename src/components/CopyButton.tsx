@@ -1,17 +1,50 @@
-import React, { PropsWithChildren } from 'react'
-import { useState, useEffect } from 'react'
+import React, { PropsWithChildren, useState, useEffect, useRef } from 'react'
+import { copyToClipboard } from '../utils'
 import Sprite from './Sprite'
-import { CopyableProps, Copyable } from './Copyable'
+
+interface CopyableProps {
+  value: string
+  onSuccess?: () => void
+  onError?: (e: Error) => void
+  className?: string
+}
+
+function Copyable({ value, onError, onSuccess, className, children, ...props }: PropsWithChildren<CopyableProps>) {
+  const valueFallbackInputRef = useRef(null)
+
+  return (
+    <>
+      <button
+        className={className}
+        {...props}
+        onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
+      >
+        {children}
+      </button>
+      <input
+        readOnly
+        aria-hidden
+        ref={valueFallbackInputRef}
+        value={value}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: '-9999px',
+        }}
+      />
+    </>
+  )
+}
 
 interface CopyButtonProps extends CopyableProps {}
 
 export function CopyButton({ value, onSuccess, onError, children, ...props }: PropsWithChildren<CopyButtonProps>) {
   return (
     <Copyable
-      value={value}
-      onSuccess={onSuccess}
-      onError={onError}
       className="btn"
+      value={value}
+      onError={onError}
+      onSuccess={onSuccess}
       data-bs-toggle="tooltip"
       data-bs-placement="left"
       {...props}
@@ -54,11 +87,11 @@ export function CopyButtonWithConfirmation({
     <CopyButton
       className="btn btn-outline-dark"
       value={value}
+      onError={onError}
       onSuccess={() => {
         setValueCopiedFlag((current) => current + 1)
         onSuccess && onSuccess()
       }}
-      onError={onError}
       {...props}
     >
       {showValueCopiedConfirmation ? (
