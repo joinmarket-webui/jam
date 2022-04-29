@@ -46,10 +46,10 @@ export default function App() {
     [setCurrentWallet]
   )
 
-  const stopWallet = () => {
+  const stopWallet = useCallback(() => {
     clearSession()
     setCurrentWallet(null)
-  }
+  }, [setCurrentWallet])
 
   // update the connection indicator based on the websocket connection state
   useEffect(() => {

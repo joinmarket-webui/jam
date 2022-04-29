@@ -125,7 +125,7 @@ const WalletCreationForm = ({ createWallet }) => {
             </rb.Form.Group>
             <rb.Button variant="dark" className={styles.button} type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
-                <div>
+                <div className="d-flex justify-content-center align-items-center">
                   <rb.Spinner
                     as="span"
                     animation="border"
