@@ -12,15 +12,56 @@ import ToggleSwitch from './ToggleSwitch'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
 
-const OFFERTYPE_REL = 'sw0reloffer'
-const OFFERTYPE_ABS = 'sw0absoffer'
-const OFFERTYPES = [OFFERTYPE_REL, OFFERTYPE_ABS]
-
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
 // There is currently no way to know for sure - adding a delay at least mitigates the problem.
 // 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
 const MAKER_STOP_RESPONSE_DELAY_MS = 2_000
+
+const OFFERTYPE_REL = 'sw0reloffer'
+const OFFERTYPE_ABS = 'sw0absoffer'
+
+const isRelativeOffer = (offertype) => offertype === OFFERTYPE_REL
+const isAbsoluteOffer = (offertype) => offertype === OFFERTYPE_ABS
+
+const FORM_INPUT_LOCAL_STORAGE_KEYS = {
+  offertype: 'jm-offertype',
+  feeRel: 'jm-feeRel',
+  feeAbs: 'jm-feeAbs',
+  minsize: 'jm-minsize',
+}
+
+const FORM_INPUT_DEFAULT_VALUES = {
+  offertype: OFFERTYPE_REL,
+  feeRel: 0.000_3,
+  feeAbs: 250,
+  minsize: 100_000,
+}
+
+const persistFormValues = (values) => {
+  window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype, values.offertype)
+  window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize, values.minsize)
+
+  if (isRelativeOffer(values.offertype)) {
+    window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeRel, values.feeRel)
+  }
+  if (isAbsoluteOffer(values.offertype)) {
+    window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeAbs, values.feeAbs)
+  }
+}
+
+const initialFormValues = (settings) => ({
+  offertype:
+    (settings.useAdvancedWalletMode && window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype)) ||
+    FORM_INPUT_DEFAULT_VALUES.offertype,
+  feeRel:
+    parseFloat(window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeRel)) || FORM_INPUT_DEFAULT_VALUES.feeRel,
+  feeAbs:
+    parseInt(window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeAbs), 10) || FORM_INPUT_DEFAULT_VALUES.feeAbs,
+  minsize:
+    parseInt(window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize), 10) ||
+    FORM_INPUT_DEFAULT_VALUES.minsize,
+})
 
 const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
   const { t } = useTranslation()
@@ -96,29 +137,6 @@ const factorToPercentage = (val, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
-const LOCAL_STORAGE_FORM_INPUT_KEYS = {
-  offertype: 'jm-offertype',
-  feeRel: 'jm-feeRel',
-  feeAbs: 'jm-feeAbs',
-  minsize: 'jm-minsize',
-}
-
-const persistFormValues = (values) => {
-  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.offertype, values.offertype)
-  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeRel, values.feeRel)
-  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeAbs, values.feeAbs)
-  window.localStorage.setItem(LOCAL_STORAGE_FORM_INPUT_KEYS.minsize, values.minsize)
-}
-
-const initialFormValues = (settings) => ({
-  offertype:
-    (settings.useAdvancedWalletMode && window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.offertype)) ||
-    OFFERTYPE_REL,
-  feeRel: parseFloat(window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeRel)) || 0.000_3,
-  feeAbs: parseInt(window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.feeAbs), 10) || 250,
-  minsize: parseInt(window.localStorage.getItem(LOCAL_STORAGE_FORM_INPUT_KEYS.minsize), 10) || 100_000,
-})
-
 export default function Earn() {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -135,16 +153,16 @@ export default function Earn() {
   const [isShowReport, setIsShowReport] = useState(false)
   const [yieldgenReportLines, setYieldgenReportLines] = useState([])
 
-  const startMakerService = (cjfee_a, cjfee_r, ordertype, minsize) => {
+  const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
     setIsSending(true)
     setIsWaitingMakerStart(true)
 
     const { name: walletName, token } = currentWallet
     const data = {
-      cjfee_a,
-      cjfee_r,
       ordertype,
       minsize,
+      cjfee_a,
+      cjfee_r,
     }
 
     // There is no response data to check if maker got started:
@@ -253,22 +271,33 @@ export default function Earn() {
 
   const validate = (values) => {
     const errors = {}
-    if (!OFFERTYPES.includes(values.offertype)) {
+    const isRelOffer = isRelativeOffer(values.offertype)
+    const isAbsOffer = isAbsoluteOffer(values.offertype)
+
+    if (!isRelOffer && !isAbsOffer) {
       // currently no need for translation, this should never occur -> input is controlled by toggle
-      errors.offertype = `Offertype must be one of ${OFFERTYPES.join(',')}`
+      errors.offertype = 'Offertype is not supported'
     }
-    if (values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
-      errors.feeRel = t('earn.feedback_invalid_rel_fee', {
-        feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
-        feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
-      })
+
+    if (isRelOffer) {
+      if (values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
+        errors.feeRel = t('earn.feedback_invalid_rel_fee', {
+          feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
+          feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
+        })
+      }
     }
-    if (values.feeAbs < 0) {
-      errors.feeAbs = t('earn.feedback_invalid_abs_fee')
+
+    if (isAbsOffer) {
+      if (values.feeAbs < 0) {
+        errors.feeAbs = t('earn.feedback_invalid_abs_fee')
+      }
     }
+
     if (values.minsize < 0) {
       errors.minsize = t('earn.feedback_invalid_min_amount')
     }
+
     return errors
   }
 
@@ -288,7 +317,12 @@ export default function Earn() {
         persistFormValues(values)
 
         setServiceInfoAlert({ variant: 'success', message: t('earn.alert_starting') })
-        await startMakerService(values.feeAbs, values.feeRel, values.offertype, values.minsize)
+
+        // both fee properties need to be provided.
+        // prevent providing an invalid value by setting the ignored prop to zero
+        const feeAbs = isAbsoluteOffer(values.offertype) ? values.feeAbs : 0
+        const feeRel = isRelativeOffer(values.offertype) ? values.feeRel : 0
+        await startMakerService(values.offertype, values.minsize, feeAbs, feeRel)
       }
     } catch (e) {
       setServiceInfoAlert(null)
@@ -324,7 +358,7 @@ export default function Earn() {
                         <rb.Form.Group className="mb-3" controlId="offertype">
                           <ToggleSwitch
                             label={t('earn.toggle_rel_offer')}
-                            initialValue={values.offertype === OFFERTYPE_REL}
+                            initialValue={isRelativeOffer(values.offertype)}
                             onToggle={(isToggled) =>
                               setFieldValue('offertype', isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS, true)
                             }
