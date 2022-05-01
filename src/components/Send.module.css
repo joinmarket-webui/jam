@@ -105,7 +105,7 @@ input[type='number'] {
 }
 
 :root[data-theme='dark'] .selected-dark {
-  background-color: var(--bs-gray-dark);
+  background-color: var(--bs-gray-dark) !important;
   border-color: var(--bs-gray-dark) !important;
 }
 
