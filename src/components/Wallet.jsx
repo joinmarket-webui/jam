@@ -40,18 +40,12 @@ function ConfirmLockModal({ show = false, body, onHide, onConfirm }) {
 const WalletLockForm = ({ walletName, lockWallet }) => {
   const { t } = useTranslation()
 
-  const initialValues = {}
-  const validate = (values) => {
-    const errors = {}
-    return errors
-  }
-
-  const onSubmit = (values, { setSubmitting }) => {
-    lockWallet(walletName, { confirmed: false }).finally(() => setSubmitting(false))
-  }
+  const onSubmit = useCallback(async () => {
+    await lockWallet(walletName, { confirmed: false })
+  }, [walletName, lockWallet])
 
   return (
-    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+    <Formik initialValues={{}} validate={() => ({})} onSubmit={onSubmit}>
       {({ handleSubmit, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate>
           <Link className="btn btn-outline-dark me-2" to={routes.wallet}>
@@ -87,10 +81,13 @@ const WalletUnlockForm = ({ walletName, unlockWallet }) => {
     return errors
   }
 
-  const onSubmit = (values, { setSubmitting }) => {
-    const { password } = values
-    unlockWallet(walletName, password).finally(() => setSubmitting(false))
-  }
+  const onSubmit = useCallback(
+    async (values) => {
+      const { password } = values
+      await unlockWallet(walletName, password)
+    },
+    [walletName, unlockWallet]
+  )
 
   return (
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit} validateOnBlur={false}>
@@ -190,14 +187,14 @@ export default function Wallet({
         setAlert({
           variant: 'warning',
           dismissible: false,
-          message: !currentWallet
-            ? // locking without active wallet
-              t('wallets.wallet_preview.alert_wallet_already_locked', {
-                walletName: walletDisplayName(lockableWalletName),
-              })
-            : // locking another wallet while active one is still unlocked
+          message: currentWallet
+            ? // locking another wallet while active one is still unlocked
               t('wallets.wallet_preview.alert_other_wallet_unlocked', {
                 walletName: walletDisplayName(currentWallet.name),
+              })
+            : // locking without active wallet
+              t('wallets.wallet_preview.alert_wallet_already_locked', {
+                walletName: walletDisplayName(lockableWalletName),
               }),
         })
         return
@@ -265,12 +262,12 @@ export default function Wallet({
     }
   }, [currentWallet])
 
-  const onLockConfirmed = useCallback(() => {
+  const onLockConfirmed = useCallback(async () => {
     if (!currentWallet) return
 
     setShowLockConfirmModal(false)
-    lockWallet(currentWallet.name, { confirmed: true })
-  }, [currentWallet])
+    await lockWallet(currentWallet.name, { confirmed: true })
+  }, [currentWallet, lockWallet])
 
   const showLockOptions = isActive && hasToken
   const showUnlockOptions = noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress)
