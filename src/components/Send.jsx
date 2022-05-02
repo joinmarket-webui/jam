@@ -182,7 +182,7 @@ export default function Send() {
 
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
-  // TODO: It is not obvious when to clear this data, might be better to display this as "toast"
+  const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
   const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
 
   const [isLoading, setIsLoading] = useState(true)
@@ -190,8 +190,17 @@ export default function Send() {
   const [isOperationDisabled, setIsOperationDisabled] = useState(false)
 
   useEffect(() => {
-    const serviceRunning = serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress)
-    setIsOperationDisabled(serviceRunning)
+    const coinjoinInProgress = serviceInfo && serviceInfo.coinjoinInProgress
+    const makerRunning = serviceInfo && serviceInfo.makerRunning
+    setIsOperationDisabled(makerRunning || coinjoinInProgress)
+
+    setWaitForTakerToFinish(coinjoinInProgress)
+    setTakerStartedInfoAlert((current) => {
+      if (current !== null && !coinjoinInProgress) {
+        return null
+      }
+      return current
+    })
   }, [serviceInfo])
 
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
@@ -275,7 +284,9 @@ export default function Send() {
   }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
+    if (waitForTakerToFinish) return
     if (waitForUtxosToBeSpent.length > 0) return
+
     const abortCtrl = new AbortController()
 
     setAlert(null)
@@ -311,12 +322,11 @@ export default function Send() {
     )
 
     return () => abortCtrl.abort()
-  }, [waitForUtxosToBeSpent, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
+  }, [waitForTakerToFinish, waitForUtxosToBeSpent, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
     setPaymentSuccessfulInfoAlert(null)
-    setTakerStartedInfoAlert(null)
     setIsSending(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -357,8 +367,6 @@ export default function Send() {
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
     setAlert(null)
-    setPaymentSuccessfulInfoAlert(null)
-    setTakerStartedInfoAlert(null)
     setIsSending(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -374,7 +382,10 @@ export default function Send() {
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setTakerStartedInfoAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
+        setTakerStartedInfoAlert({
+          variant: 'success',
+          message: t('send.alert_coinjoin_started'),
+        })
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -425,9 +436,6 @@ export default function Send() {
         setIsSweep(false)
 
         form.reset()
-
-        // preserve selected "account"
-        setAccount(account)
       }
     }
   }
