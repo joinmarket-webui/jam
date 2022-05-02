@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -181,14 +181,17 @@ export default function Send() {
   const [alert, setAlert] = useState(null)
 
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   // TODO: It is not obvious when to clear this data, might be better to display this as "toast"
   const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
+
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
+  const [isOperationDisabled, setIsOperationDisabled] = useState(false)
 
-  const isOperationDisabled = useCallback(() => {
-    return serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress)
+  useEffect(() => {
+    const serviceRunning = serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress)
+    setIsOperationDisabled(serviceRunning)
   }, [serviceInfo])
 
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
@@ -397,7 +400,7 @@ export default function Send() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (isOperationDisabled()) return
+    if (isOperationDisabled) return
 
     const form = e.currentTarget
     const isValid = formIsValid
@@ -563,7 +566,7 @@ export default function Send() {
         }`}
       >
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
-        <rb.Fade in={isOperationDisabled()} mountOnEnter={true} unmountOnExit={true}>
+        <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
           <>
             {serviceInfo?.makerRunning && (
               <Link to={routes.earn} className={styles.unstyled}>
@@ -614,7 +617,7 @@ export default function Send() {
                 required
                 className={`${styles['select']} slashed-zeroes`}
                 isInvalid={!isValidAccount(account)}
-                disabled={isOperationDisabled()}
+                disabled={isOperationDisabled}
               >
                 {walletInfo &&
                   walletInfo.data.display.walletinfo.accounts
@@ -649,13 +652,13 @@ export default function Send() {
                     required
                     onChange={(e) => setAmount(parseInt(e.target.value, 10))}
                     isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
-                    disabled={isSweep || isOperationDisabled()}
+                    disabled={isSweep || isOperationDisabled}
                   />
                   <rb.Button
                     variant="outline-dark"
                     className={styles['button-sweep']}
                     onClick={() => setIsSweep(!isSweep)}
-                    disabled={isOperationDisabled()}
+                    disabled={isOperationDisabled}
                   >
                     {isSweep ? (
                       <div className={styles['button-sweep-item']}>{t('send.button_clear_sweep')}</div>
@@ -693,7 +696,7 @@ export default function Send() {
                 required
                 onChange={(e) => setDestination(e.target.value)}
                 isInvalid={destination !== null && !isValidAddress(destination)}
-                disabled={isOperationDisabled()}
+                disabled={isOperationDisabled}
               />
             )}
             <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
@@ -703,7 +706,7 @@ export default function Send() {
               label={t('send.toggle_coinjoin')}
               initialValue={isCoinjoin}
               onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-              disabled={isLoading || isOperationDisabled()}
+              disabled={isLoading || isOperationDisabled}
             />
           </rb.Form.Group>
         </rb.Form>
@@ -712,13 +715,13 @@ export default function Send() {
             numCollaborators={numCollaborators}
             setNumCollaborators={setNumCollaborators}
             minNumCollaborators={minNumCollaborators}
-            disabled={isLoading || isOperationDisabled()}
+            disabled={isLoading || isOperationDisabled}
           />
         )}
         <rb.Button
           variant="dark"
           type="submit"
-          disabled={isOperationDisabled() || isLoading || isSending || !formIsValid}
+          disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
           form="send-form"
         >
