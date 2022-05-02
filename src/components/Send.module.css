@@ -1,0 +1,162 @@
+.input {
+  height: 3.5rem;
+  width: 100%;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.button-sweep {
+  width: 6rem;
+  height: 2rem;
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translate(0%, -50%);
+  padding: 0.2rem 0.5rem !important;
+}
+
+:root[data-theme='dark'] .button-sweep {
+  color: var(--bs-gray-800) !important;
+}
+:root[data-theme='dark'] .button-sweep:hover {
+  color: var(--bs-white) !important;
+}
+
+.button-sweep-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding-right: 0.2rem;
+  font-size: 0.9rem;
+}
+
+.sweep-breakdown {
+  font-size: 0.8rem;
+}
+
+.sweep-breakdown-table {
+  color: var(--bs-black);
+}
+
+:root[data-theme='dark'] .sweep-breakdown-table {
+  color: var(--bs-white);
+}
+
+.balance-col {
+  text-align: right;
+}
+
+.accordion-button {
+  background-color: transparent;
+  color: var(--bs-black);
+  font-size: 0.8rem;
+  height: 1rem;
+  padding: 0;
+  box-shadow: none;
+}
+
+.sweep-breakdown-anchor {
+  font-size: 0.8rem;
+  color: var(--bs-black);
+}
+
+:root[data-theme='dark'] .sweep-breakdown-anchor {
+  color: var(--bs-white) !important;
+}
+
+:root[data-theme='dark'] .sweep-breakdoown-paragraph {
+  color: var(--bs-white) !important;
+}
+
+.select {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.button {
+  height: 3rem;
+  width: 100%;
+}
+
+.collaborators-selector-button {
+  min-width: 6rem;
+  flex: 1;
+}
+
+.collaborators-selector-input {
+  min-width: 6rem;
+  flex: 1;
+}
+
+:root[data-theme='dark'] .collaborators-selector-input {
+  background-color: var(--bs-gray-800);
+  color: var(--bs-white);
+}
+
+:root[data-theme='dark'] .selected-dark {
+  background-color: var(--bs-gray-dark) !important;
+  border-color: var(--bs-gray-dark) !important;
+}
+
+.collaborators-selector-flex {
+  gap: 0.5rem;
+}
+
+.input-loader {
+  height: 3.5rem;
+  border-radius: 0.25rem;
+}
+
+.maker-running .maker-running-form {
+  filter: blur(2px);
+}
+
+.maker-running .collaborators-selector {
+  filter: blur(2px);
+}
+
+.maker-running .send-button {
+  filter: blur(2px);
+}
+
+.unstyled {
+  text-decoration: none;
+}
+
+.accordion-button {
+  border: none;
+  width: 100%;
+  background-color: transparent;
+  color: var(--bs-black);
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.8rem;
+  height: 1rem;
+  padding: 0;
+  box-shadow: none;
+}
+
+.accordion-button:hover {
+  text-decoration: underline;
+}
+
+.accordion-button::after {
+  width: 0rem;
+  height: 0rem;
+  background-image: none;
+}
+
+:root[data-theme='dark'] .accordion-button {
+  color: var(--bs-white);
+}

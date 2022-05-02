@@ -1,9 +1,9 @@
-.create-wallet form input {
+.input {
   height: 3.5rem;
   width: 100%;
 }
 
-.create-wallet button {
+.button {
   height: 3rem;
   width: 100%;
 }
