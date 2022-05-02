@@ -179,7 +179,10 @@ export default function Send() {
 
   const location = useLocation()
   const [alert, setAlert] = useState(null)
-  const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
+
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
+  // TODO: It is not obvious when to clear this data, might be better to display this as "toast"
+  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
@@ -240,33 +243,35 @@ export default function Send() {
 
     setIsLoading(true)
     const abortCtrl = new AbortController()
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-      .then((data) => {
-        if (abortCtrl.signal.aborted) return
 
-        const outputs = data.data.utxos.utxos.map((it) => it.utxo)
-        const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
-        setWaitForUtxosToBeSpent([...utxosStillPresent])
-        if (utxosStillPresent === 0) {
+    const timer = setTimeout(() => {
+      if (abortCtrl.signal.aborted) return
+
+      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+        .then((data) => {
+          if (abortCtrl.signal.aborted) return
+
+          const outputs = data.data.utxos.utxos.map((it) => it.utxo)
+          const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
+          setWaitForUtxosToBeSpent([...utxosStillPresent])
+          setIsLoading(utxosStillPresent.length > 0)
+        })
+        .catch((err) => {
+          if (abortCtrl.signal.aborted) return
+
+          const message = err.message || t('send.error_loading_wallet_failed')
+          setAlert({ variant: 'danger', message })
           setIsLoading(false)
-          return
-        }
-      })
-      .catch((err) => {
-        if (abortCtrl.signal.aborted) return
-
-        const message = err.message || t('send.error_loading_wallet_failed')
-        setAlert({ variant: 'danger', message })
-        setIsLoading(false)
-      })
+        })
+    }, 200)
 
     return () => {
       abortCtrl.abort()
+      clearTimeout(timer)
     }
   }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    // if (isSending) return
     if (waitForUtxosToBeSpent.length > 0) return
     const abortCtrl = new AbortController()
 
@@ -307,6 +312,8 @@ export default function Send() {
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
+    setPaymentSuccessfulInfoAlert(null)
+    setTakerStartedInfoAlert(null)
     setIsSending(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -320,7 +327,7 @@ export default function Send() {
           txinfo: { outputs, inputs },
         } = await res.json()
         const output = outputs.find((o) => o.address === destination)
-        setServiceInfoAlert({
+        setPaymentSuccessfulInfoAlert({
           variant: 'success',
           message: t('send.alert_payment_successful', { amount: output.value_sats, address: output.address }),
         })
@@ -347,6 +354,8 @@ export default function Send() {
 
   const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
     setAlert(null)
+    setPaymentSuccessfulInfoAlert(null)
+    setTakerStartedInfoAlert(null)
     setIsSending(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -362,7 +371,7 @@ export default function Send() {
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setServiceInfoAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
+        setTakerStartedInfoAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -407,11 +416,15 @@ export default function Send() {
 
       if (success) {
         setDestination(initialDestination)
-        setAccount(initialAccount)
         setAmount(initialAmount)
         setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(IS_COINJOIN_DEFAULT_VAL)
+        setIsSweep(false)
+
         form.reset()
+
+        // preserve selected "account"
+        setAccount(account)
       }
     }
   }
@@ -578,7 +591,12 @@ export default function Send() {
           </rb.Alert>
         )}
 
-        {serviceInfoAlert && <rb.Alert variant={serviceInfoAlert.variant}>{serviceInfoAlert.message}</rb.Alert>}
+        {paymentSuccessfulInfoAlert && (
+          <rb.Alert variant={paymentSuccessfulInfoAlert.variant}>{paymentSuccessfulInfoAlert.message}</rb.Alert>
+        )}
+        {takerStartedInfoAlert && (
+          <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
+        )}
 
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['maker-running-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
@@ -700,7 +718,7 @@ export default function Send() {
         <rb.Button
           variant="dark"
           type="submit"
-          disabled={isOperationDisabled() || isSending || !formIsValid}
+          disabled={isOperationDisabled() || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
           form="send-form"
         >
