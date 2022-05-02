@@ -179,8 +179,10 @@ export default function Send() {
 
   const location = useLocation()
   const [alert, setAlert] = useState(null)
+  const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
 
   const isOperationDisabled = useCallback(() => {
     return serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress)
@@ -232,6 +234,40 @@ export default function Send() {
   }, [isSweep])
 
   useEffect(() => {
+    if (waitForUtxosToBeSpent.length === 0) {
+      return
+    }
+
+    setIsLoading(true)
+    const abortCtrl = new AbortController()
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+      .then((data) => {
+        if (abortCtrl.signal.aborted) return
+
+        const outputs = data.data.utxos.utxos.map((it) => it.utxo)
+        const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
+        setWaitForUtxosToBeSpent([...utxosStillPresent])
+        if (utxosStillPresent === 0) {
+          setIsLoading(false)
+          return
+        }
+      })
+      .catch((err) => {
+        if (abortCtrl.signal.aborted) return
+
+        const message = err.message || t('send.error_loading_wallet_failed')
+        setAlert({ variant: 'danger', message })
+        setIsLoading(false)
+      })
+
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
+
+  useEffect(() => {
+    // if (isSending) return
+    if (waitForUtxosToBeSpent.length > 0) return
     const abortCtrl = new AbortController()
 
     setAlert(null)
@@ -267,7 +303,7 @@ export default function Send() {
     )
 
     return () => abortCtrl.abort()
-  }, [wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
+  }, [waitForUtxosToBeSpent, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
@@ -279,17 +315,16 @@ export default function Send() {
     try {
       const res = await Api.postDirectSend(requestContext, { mixdepth: account, destination, amount_sats })
 
-      setIsSending(false)
-
       if (res.ok) {
         const {
-          txinfo: { outputs },
+          txinfo: { outputs, inputs },
         } = await res.json()
         const output = outputs.find((o) => o.address === destination)
-        setAlert({
+        setServiceInfoAlert({
           variant: 'success',
           message: t('send.alert_payment_successful', { amount: output.value_sats, address: output.address }),
         })
+        setWaitForUtxosToBeSpent(inputs.map((it) => it.outpoint))
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -300,6 +335,8 @@ export default function Send() {
         )
         setAlert({ variant: 'danger', message: displayMessage })
       }
+
+      setIsSending(false)
     } catch (e) {
       setIsSending(false)
       setAlert({ variant: 'danger', message: e.message })
@@ -322,12 +359,10 @@ export default function Send() {
         counterparties,
       })
 
-      setIsSending(false)
-
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
+        setServiceInfoAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -340,6 +375,8 @@ export default function Send() {
 
         setAlert({ variant: 'danger', message: displayMessage })
       }
+
+      setIsSending(false)
     } catch (e) {
       setIsSending(false)
       setAlert({ variant: 'danger', message: e.message })
@@ -540,6 +577,8 @@ export default function Send() {
             {alert.message}
           </rb.Alert>
         )}
+
+        {serviceInfoAlert && <rb.Alert variant={serviceInfoAlert.variant}>{serviceInfoAlert.message}</rb.Alert>}
 
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['maker-running-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
