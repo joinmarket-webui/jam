@@ -37,7 +37,7 @@ function ConfirmLockModal({ show = false, body, onHide, onConfirm }) {
   return <ConfirmModal show={show} onHide={onHide} title={title} body={body} footer={footer} />
 }
 
-const WalletLockForm = ({ lockWallet }) => {
+const WalletLockForm = ({ walletName, lockWallet }) => {
   const { t } = useTranslation()
 
   const initialValues = {}
@@ -47,7 +47,7 @@ const WalletLockForm = ({ lockWallet }) => {
   }
 
   const onSubmit = (values, { setSubmitting }) => {
-    lockWallet({ confirmed: false }).finally(() => setSubmitting(false))
+    lockWallet(walletName, { confirmed: false }).finally(() => setSubmitting(false))
   }
 
   return (
@@ -151,20 +151,6 @@ export default function Wallet({
 
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const serviceRunningInfoText =
-      (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
-      (coinjoinInProgress && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text'))
-
-    setConfirmLockBody(
-      <>
-        {serviceRunningInfoText}
-        {serviceRunningInfoText ? ' ' : ''}
-        {t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}
-      </>
-    )
-  }, [makerRunning, coinjoinInProgress, t])
-
   const unlockWallet = useCallback(
     async (walletName, password) => {
       if (currentWallet) {
@@ -198,7 +184,25 @@ export default function Wallet({
   )
 
   const lockWallet = useCallback(
-    async ({ confirmed }) => {
+    async (lockableWalletName, { confirmed = false }) => {
+      if (!currentWallet || currentWallet.name !== lockableWalletName) {
+        // in theory this might never happen. buttons triggering this action should only be rendered for the active wallet.
+        setAlert({
+          variant: 'warning',
+          dismissible: false,
+          message: !currentWallet
+            ? // locking without active wallet
+              t('wallets.wallet_preview.alert_wallet_already_locked', {
+                walletName: walletDisplayName(lockableWalletName),
+              })
+            : // locking another wallet while active one is still unlocked
+              t('wallets.wallet_preview.alert_other_wallet_unlocked', {
+                walletName: walletDisplayName(currentWallet.name),
+              }),
+        })
+        return
+      }
+
       const needsLockConfirmation = !confirmed && (coinjoinInProgress || makerRunning)
       if (needsLockConfirmation) {
         setShowLockConfirmModal(true)
@@ -241,6 +245,33 @@ export default function Wallet({
     [currentWallet, coinjoinInProgress, makerRunning, setAlert, stopWallet, t]
   )
 
+  useEffect(() => {
+    const serviceRunningInfoText =
+      (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
+      (coinjoinInProgress && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text'))
+
+    setConfirmLockBody(
+      <>
+        {serviceRunningInfoText}
+        {serviceRunningInfoText ? ' ' : ''}
+        {t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}
+      </>
+    )
+  }, [makerRunning, coinjoinInProgress, t])
+
+  useEffect(() => {
+    if (!currentWallet) {
+      setShowLockConfirmModal(false)
+    }
+  }, [currentWallet])
+
+  const onLockConfirmed = useCallback(() => {
+    if (!currentWallet) return
+
+    setShowLockConfirmModal(false)
+    lockWallet(currentWallet.name, { confirmed: true })
+  }, [currentWallet])
+
   const showLockOptions = isActive && hasToken
   const showUnlockOptions = noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress)
 
@@ -249,10 +280,7 @@ export default function Wallet({
       <ConfirmLockModal
         show={showLockConfirmModal}
         body={confirmLockBody}
-        onConfirm={() => {
-          setShowLockConfirmModal(false)
-          lockWallet({ confirmed: true })
-        }}
+        onConfirm={onLockConfirmed}
         onHide={() => {
           setShowLockConfirmModal(false)
         }}
@@ -282,7 +310,7 @@ export default function Wallet({
             </div>
             <div>
               {showLockOptions ? (
-                <WalletLockForm lockWallet={lockWallet} />
+                <WalletLockForm walletName={name} lockWallet={lockWallet} />
               ) : (
                 showUnlockOptions && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />
               )}

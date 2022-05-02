@@ -132,6 +132,7 @@ describe('<Wallet />', () => {
     expect(mockedNavigate).not.toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'danger',
+      dismissible: false,
       message: apiErrorMessage.replace('Wallet', dummyWalletName),
     })
   })
@@ -176,8 +177,8 @@ describe('<Wallet />', () => {
     expect(mockStopWallet).toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'success',
-      message: `wallets.wallet_preview.alert_wallet_locked_successfully`,
       dismissible: false,
+      message: `wallets.wallet_preview.alert_wallet_locked_successfully`,
     })
   })
 
@@ -213,6 +214,7 @@ describe('<Wallet />', () => {
     expect(mockStopWallet).not.toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'danger',
+      dismissible: false,
       message: apiErrorMessage,
     })
   })
@@ -249,6 +251,7 @@ describe('<Wallet />', () => {
     expect(mockStopWallet).toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'danger',
+      dismissible: false,
       message: apiErrorMessage,
     })
   })
