@@ -1,8 +1,6 @@
 export const BTC = 'BTC'
 export const SATS = 'sats'
 
-export const serialize = (form) => Object.fromEntries(new FormData(form).entries())
-
 export const walletDisplayName = (name) => name.replace('.jmdat', '')
 
 export const displayDate = (string) => new Date(string).toLocaleString()
