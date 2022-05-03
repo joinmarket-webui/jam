@@ -183,7 +183,6 @@ export default function Wallet({
   const lockWallet = useCallback(
     async (lockableWalletName, { confirmed = false }) => {
       if (!currentWallet || currentWallet.name !== lockableWalletName) {
-        // in theory this might never happen. buttons triggering this action should only be rendered for the active wallet.
         setAlert({
           variant: 'warning',
           dismissible: false,
