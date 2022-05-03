@@ -272,9 +272,13 @@ export default function Send() {
         .catch((err) => {
           if (abortCtrl.signal.aborted) return
 
+          // Stop waiting for wallet synchronization on errors, but inform
+          // the user that loading the wallet info failed
+          setWaitForUtxosToBeSpent([])
+          setIsLoading(false)
+
           const message = err.message || t('send.error_loading_wallet_failed')
           setAlert({ variant: 'danger', message })
-          setIsLoading(false)
         })
     }, initialDelayInMs)
 
