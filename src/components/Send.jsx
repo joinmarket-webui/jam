@@ -195,12 +195,7 @@ export default function Send() {
     setIsOperationDisabled(makerRunning || coinjoinInProgress)
 
     setWaitForTakerToFinish(coinjoinInProgress)
-    setTakerStartedInfoAlert((current) => {
-      if (current !== null && !coinjoinInProgress) {
-        return null
-      }
-      return current
-    })
+    setTakerStartedInfoAlert((current) => (coinjoinInProgress ? current : null))
   }, [serviceInfo])
 
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
@@ -248,14 +243,20 @@ export default function Send() {
     }
   }, [isSweep])
 
+  // This callback is responsible for updating the `isLoading` flag while the
+  // wallet is synchronizing. The wallet needs some time after a tx is sent
+  // to reflect the changes internally. In order to show the actual balance,
+  // all outputs in `waitForUtxosToBeSpent` must have been removed from the
+  // wallet's utxo set.
   useEffect(() => {
-    if (waitForUtxosToBeSpent.length === 0) {
-      return
-    }
+    if (waitForUtxosToBeSpent.length === 0) return
 
     setIsLoading(true)
     const abortCtrl = new AbortController()
 
+    // Delaying the poll requests gives the wallet some time to synchronize
+    // the utxo set and reduces amount of http requests
+    const initialDelayInMs = 250
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
@@ -275,7 +276,7 @@ export default function Send() {
           setAlert({ variant: 'danger', message })
           setIsLoading(false)
         })
-    }, 200)
+    }, initialDelayInMs)
 
     return () => {
       abortCtrl.abort()
