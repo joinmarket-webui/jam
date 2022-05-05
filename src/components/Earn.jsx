@@ -301,9 +301,8 @@ export default function Earn() {
     return errors
   }
 
-  const onSubmit = async (values, { setSubmitting }) => {
+  const onSubmit = async (values) => {
     if (isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop) {
-      setSubmitting(false)
       return
     }
 
@@ -327,8 +326,6 @@ export default function Earn() {
     } catch (e) {
       setServiceInfoAlert(null)
       setAlert({ variant: 'danger', message: e.message })
-    } finally {
-      setSubmitting(false)
     }
   }
 

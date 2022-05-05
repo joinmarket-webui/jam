@@ -81,11 +81,14 @@ describe('<Wallet />', () => {
     expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
 
-    await act(async () => {
+    act(() => {
       user.type(
         screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'),
         'correct horse battery staple'
       )
+    })
+
+    await act(async () => {
       const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
       user.click(unlockWalletButton)
 
@@ -110,11 +113,14 @@ describe('<Wallet />', () => {
     expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
 
-    await act(async () => {
+    act(() => {
       user.type(
         screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'),
         'correct horse battery staple'
       )
+    })
+
+    await act(async () => {
       const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
       user.click(unlockWalletButton)
 
@@ -126,6 +132,7 @@ describe('<Wallet />', () => {
     expect(mockedNavigate).not.toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'danger',
+      dismissible: false,
       message: apiErrorMessage.replace('Wallet', dummyWalletName),
     })
   })
@@ -170,8 +177,8 @@ describe('<Wallet />', () => {
     expect(mockStopWallet).toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'success',
-      message: `wallets.wallet_preview.alert_wallet_locked_successfully`,
       dismissible: false,
+      message: `wallets.wallet_preview.alert_wallet_locked_successfully`,
     })
   })
 
@@ -207,6 +214,7 @@ describe('<Wallet />', () => {
     expect(mockStopWallet).not.toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'danger',
+      dismissible: false,
       message: apiErrorMessage,
     })
   })
@@ -243,6 +251,7 @@ describe('<Wallet />', () => {
     expect(mockStopWallet).toHaveBeenCalled()
     expect(mockSetAlert).toHaveBeenCalledWith({
       variant: 'danger',
+      dismissible: false,
       message: apiErrorMessage,
     })
   })
@@ -299,7 +308,7 @@ describe('<Wallet />', () => {
       expect(screen.queryByText('wallets.wallet_preview.modal_lock_wallet_title')).not.toBeInTheDocument()
       expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
-      act(() => {
+      await act(async () => {
         // click on the "lock" button
         const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
         user.click(lockWalletButton)
@@ -320,7 +329,7 @@ describe('<Wallet />', () => {
 
       expect(mockStopWallet).not.toHaveBeenCalled()
 
-      act(() => {
+      await act(async () => {
         const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
         user.click(lockWalletButton)
       })

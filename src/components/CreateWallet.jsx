@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -59,10 +59,13 @@ const WalletCreationForm = ({ createWallet }) => {
     return errors
   }
 
-  const onSubmit = (values, { setSubmitting }) => {
-    const { walletName, password } = values
-    createWallet(walletName, password, () => setSubmitting(false))
-  }
+  const onSubmit = useCallback(
+    async (values) => {
+      const { walletName, password } = values
+      await createWallet(walletName, password)
+    },
+    [createWallet]
+  )
 
   return (
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
@@ -125,7 +128,7 @@ const WalletCreationForm = ({ createWallet }) => {
             </rb.Form.Group>
             <rb.Button variant="dark" className={styles.button} type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
-                <div>
+                <div className="d-flex justify-content-center align-items-center">
                   <rb.Spinner
                     as="span"
                     animation="border"
@@ -336,21 +339,22 @@ export default function CreateWallet({ startWallet }) {
   const [alert, setAlert] = useState(null)
   const [createdWallet, setCreatedWallet] = useState(null)
 
-  const createWallet = async (walletName, password, onFinished) => {
-    setAlert(null)
+  const createWallet = useCallback(
+    async (walletName, password) => {
+      setAlert(null)
 
-    try {
-      const res = await Api.postWalletCreate({ walletname: walletName, password })
-      const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
+      try {
+        const res = await Api.postWalletCreate({ walletname: walletName, password })
+        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
-      const { seedphrase, token, walletname: createdWalletName } = body
-      setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
-      onFinished(true)
-    } catch (e) {
-      setAlert({ variant: 'danger', message: e.message })
-      onFinished(null, e)
-    }
-  }
+        const { seedphrase, token, walletname: createdWalletName } = body
+        setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
+      } catch (e) {
+        setAlert({ variant: 'danger', message: e.message })
+      }
+    },
+    [setAlert, setCreatedWallet]
+  )
 
   const walletConfirmed = () => {
     if (createdWallet.name && createdWallet.token) {
