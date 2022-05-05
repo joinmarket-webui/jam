@@ -1,13 +1,34 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+// @ts-ignore
 import Balance from './Balance'
+// @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 
-const BranchEntry = ({ entry, ...props }) => {
+interface Branch {
+  branch: string // string of 'type', 'derivation', 'xpub' with tab as seperator, e.g. "external addresses\tm/84'/1'/0'/0\ttpubDE..."
+  balance: string // in btc, e.g.	"150.00000000"
+  entries: BranchEntry[]
+}
+
+interface BranchEntry {
+  hd_path: string // e.g.	"m/84'/1'/0'/0/0"
+  address: string // e.g.	"bcrt1q9z4gzzqsks27p0jt40uhhc2gpl2e52gxk5982v"
+  amount: string // in btc, e.g.	"150.00000000"
+  status: string // e.g. "new",	"used", etc.
+  label: string
+  extradata: string
+}
+
+interface DisplayBranchEntryProps extends rb.CardProps {
+  entry: BranchEntry
+}
+
+const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
   const settings = useSettings()
 
-  const { address, amount, hd_path: hdPath, labels, status } = entry
+  const { address, amount, hd_path: hdPath, label, status } = entry
 
   return (
     <rb.Card {...props}>
@@ -20,7 +41,7 @@ const BranchEntry = ({ entry, ...props }) => {
             <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
           <rb.Col xs={'auto'}>
-            <code className="text-break">{address}</code> {labels && <span className="badge bg-info">{labels}</span>}
+            <code className="text-break">{address}</code> {label && <span className="badge bg-info">{label}</span>}
             {status && <span className="badge bg-info">{status}</span>}
           </rb.Col>
         </rb.Row>
@@ -29,7 +50,11 @@ const BranchEntry = ({ entry, ...props }) => {
   )
 }
 
-export default function DisplayBranch({ branch }) {
+interface DisplayBranchProps {
+  branch: Branch
+}
+
+export default function DisplayBranch({ branch }: DisplayBranchProps) {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -56,7 +81,7 @@ export default function DisplayBranch({ branch }) {
         </rb.Col>
       </rb.Row>
       {entries.map((entry, index) => (
-        <BranchEntry
+        <DisplayBranchEntry
           key={entry.address}
           entry={entry}
           className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
