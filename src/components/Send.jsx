@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -179,11 +179,23 @@ export default function Send() {
 
   const location = useLocation()
   const [alert, setAlert] = useState(null)
+
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
+  const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
+  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
+
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
+  const [isOperationDisabled, setIsOperationDisabled] = useState(false)
 
-  const isOperationDisabled = useCallback(() => {
-    return serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress)
+  useEffect(() => {
+    const coinjoinInProgress = serviceInfo && serviceInfo.coinjoinInProgress
+    const makerRunning = serviceInfo && serviceInfo.makerRunning
+    setIsOperationDisabled(makerRunning || coinjoinInProgress)
+
+    setWaitForTakerToFinish(coinjoinInProgress)
+    setTakerStartedInfoAlert((current) => (coinjoinInProgress ? current : null))
   }, [serviceInfo])
 
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
@@ -231,7 +243,55 @@ export default function Send() {
     }
   }, [isSweep])
 
+  // This callback is responsible for updating the `isLoading` flag while the
+  // wallet is synchronizing. The wallet needs some time after a tx is sent
+  // to reflect the changes internally. In order to show the actual balance,
+  // all outputs in `waitForUtxosToBeSpent` must have been removed from the
+  // wallet's utxo set.
   useEffect(() => {
+    if (waitForUtxosToBeSpent.length === 0) return
+
+    setIsLoading(true)
+    const abortCtrl = new AbortController()
+
+    // Delaying the poll requests gives the wallet some time to synchronize
+    // the utxo set and reduces amount of http requests
+    const initialDelayInMs = 250
+    const timer = setTimeout(() => {
+      if (abortCtrl.signal.aborted) return
+
+      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+        .then((data) => {
+          if (abortCtrl.signal.aborted) return
+
+          const outputs = data.data.utxos.utxos.map((it) => it.utxo)
+          const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
+          setWaitForUtxosToBeSpent([...utxosStillPresent])
+          setIsLoading(utxosStillPresent.length > 0)
+        })
+        .catch((err) => {
+          if (abortCtrl.signal.aborted) return
+
+          // Stop waiting for wallet synchronization on errors, but inform
+          // the user that loading the wallet info failed
+          setWaitForUtxosToBeSpent([])
+          setIsLoading(false)
+
+          const message = err.message || t('send.error_loading_wallet_failed')
+          setAlert({ variant: 'danger', message })
+        })
+    }, initialDelayInMs)
+
+    return () => {
+      abortCtrl.abort()
+      clearTimeout(timer)
+    }
+  }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
+
+  useEffect(() => {
+    if (waitForTakerToFinish) return
+    if (waitForUtxosToBeSpent.length > 0) return
+
     const abortCtrl = new AbortController()
 
     setAlert(null)
@@ -267,10 +327,11 @@ export default function Send() {
     )
 
     return () => abortCtrl.abort()
-  }, [wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
+  }, [waitForTakerToFinish, waitForUtxosToBeSpent, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
+    setPaymentSuccessfulInfoAlert(null)
     setIsSending(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -279,17 +340,16 @@ export default function Send() {
     try {
       const res = await Api.postDirectSend(requestContext, { mixdepth: account, destination, amount_sats })
 
-      setIsSending(false)
-
       if (res.ok) {
         const {
-          txinfo: { outputs },
+          txinfo: { outputs, inputs },
         } = await res.json()
         const output = outputs.find((o) => o.address === destination)
-        setAlert({
+        setPaymentSuccessfulInfoAlert({
           variant: 'success',
           message: t('send.alert_payment_successful', { amount: output.value_sats, address: output.address }),
         })
+        setWaitForUtxosToBeSpent(inputs.map((it) => it.outpoint))
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -300,6 +360,8 @@ export default function Send() {
         )
         setAlert({ variant: 'danger', message: displayMessage })
       }
+
+      setIsSending(false)
     } catch (e) {
       setIsSending(false)
       setAlert({ variant: 'danger', message: e.message })
@@ -322,12 +384,13 @@ export default function Send() {
         counterparties,
       })
 
-      setIsSending(false)
-
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setAlert({ variant: 'success', message: t('send.alert_coinjoin_started') })
+        setTakerStartedInfoAlert({
+          variant: 'success',
+          message: t('send.alert_coinjoin_started'),
+        })
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -340,6 +403,8 @@ export default function Send() {
 
         setAlert({ variant: 'danger', message: displayMessage })
       }
+
+      setIsSending(false)
     } catch (e) {
       setIsSending(false)
       setAlert({ variant: 'danger', message: e.message })
@@ -351,7 +416,7 @@ export default function Send() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (isOperationDisabled()) return
+    if (isOperationDisabled) return
 
     const form = e.currentTarget
     const isValid = formIsValid
@@ -370,10 +435,11 @@ export default function Send() {
 
       if (success) {
         setDestination(initialDestination)
-        setAccount(initialAccount)
         setAmount(initialAmount)
         setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(IS_COINJOIN_DEFAULT_VAL)
+        setIsSweep(false)
+
         form.reset()
       }
     }
@@ -513,7 +579,7 @@ export default function Send() {
         }`}
       >
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
-        <rb.Fade in={isOperationDisabled()} mountOnEnter={true} unmountOnExit={true}>
+        <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
           <>
             {serviceInfo?.makerRunning && (
               <Link to={routes.earn} className={styles.unstyled}>
@@ -541,6 +607,13 @@ export default function Send() {
           </rb.Alert>
         )}
 
+        {paymentSuccessfulInfoAlert && (
+          <rb.Alert variant={paymentSuccessfulInfoAlert.variant}>{paymentSuccessfulInfoAlert.message}</rb.Alert>
+        )}
+        {takerStartedInfoAlert && (
+          <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
+        )}
+
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['maker-running-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
@@ -557,7 +630,7 @@ export default function Send() {
                 required
                 className={`${styles['select']} slashed-zeroes`}
                 isInvalid={!isValidAccount(account)}
-                disabled={isOperationDisabled()}
+                disabled={isOperationDisabled}
               >
                 {walletInfo &&
                   walletInfo.data.display.walletinfo.accounts
@@ -592,13 +665,13 @@ export default function Send() {
                     required
                     onChange={(e) => setAmount(parseInt(e.target.value, 10))}
                     isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
-                    disabled={isSweep || isOperationDisabled()}
+                    disabled={isSweep || isOperationDisabled}
                   />
                   <rb.Button
                     variant="outline-dark"
                     className={styles['button-sweep']}
                     onClick={() => setIsSweep(!isSweep)}
-                    disabled={isOperationDisabled()}
+                    disabled={isOperationDisabled}
                   >
                     {isSweep ? (
                       <div className={styles['button-sweep-item']}>{t('send.button_clear_sweep')}</div>
@@ -636,7 +709,7 @@ export default function Send() {
                 required
                 onChange={(e) => setDestination(e.target.value)}
                 isInvalid={destination !== null && !isValidAddress(destination)}
-                disabled={isOperationDisabled()}
+                disabled={isOperationDisabled}
               />
             )}
             <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
@@ -646,7 +719,7 @@ export default function Send() {
               label={t('send.toggle_coinjoin')}
               initialValue={isCoinjoin}
               onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-              disabled={isLoading || isOperationDisabled()}
+              disabled={isLoading || isOperationDisabled}
             />
           </rb.Form.Group>
         </rb.Form>
@@ -655,13 +728,13 @@ export default function Send() {
             numCollaborators={numCollaborators}
             setNumCollaborators={setNumCollaborators}
             minNumCollaborators={minNumCollaborators}
-            disabled={isLoading || isOperationDisabled()}
+            disabled={isLoading || isOperationDisabled}
           />
         )}
         <rb.Button
           variant="dark"
           type="submit"
-          disabled={isOperationDisabled() || isSending || !formIsValid}
+          disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
           form="send-form"
         >
