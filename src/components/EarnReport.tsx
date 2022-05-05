@@ -1,12 +1,17 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
+// @ts-ignore
+import { useSettings } from '../context/SettingsContext'
 import styles from './EarnReport.module.css'
 
-const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }) => {
+interface YielgenReportTableProps {
+  lines: string[]
+  maxAmountOfRows?: number
+}
+
+const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -69,10 +74,10 @@ const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }) => {
 
 export function EarnReport() {
   const { t } = useTranslation()
-  const [alert, setAlert] = useState(null)
+  const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [yieldgenReportLines, setYieldgenReportLines] = useState([])
+  const [yieldgenReportLines, setYieldgenReportLines] = useState<string[] | null>(null)
 
   useEffect(() => {
     setIsLoading(true)
@@ -83,7 +88,7 @@ export function EarnReport() {
       .then((res) => {
         if (res.ok) return res.json()
         // 404 is returned till the maker is started at least once
-        if (res.status === 404) return {}
+        if (res.status === 404) return { yigen_data: [] }
         return Api.Helper.throwError(res, t('earn.error_loading_report_failed'))
       })
       .then((data) => {
@@ -107,31 +112,33 @@ export function EarnReport() {
 
   return (
     <div className="earn-report">
-      {!isInitialized ? (
+      {!isInitialized && isLoading ? (
         Array(5)
           .fill('')
           .map((_, index) => {
             return (
               <rb.Placeholder key={index} as="div" animation="wave">
-                <rb.Placeholder xs={12} />
+                <rb.Placeholder xs={12} className={styles['report-line-placeholder']} />
               </rb.Placeholder>
             )
           })
       ) : (
         <>
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-          <rb.Row>
-            <rb.Col className="mb-3">
-              <YieldgenReportTable lines={yieldgenReportLines} />
-            </rb.Col>
-          </rb.Row>
+          {yieldgenReportLines && (
+            <rb.Row>
+              <rb.Col className="mb-3">
+                <YieldgenReportTable lines={yieldgenReportLines} />
+              </rb.Col>
+            </rb.Row>
+          )}
         </>
       )}
     </div>
   )
 }
 
-export function EarnReportOverlay({ show, onHide }) {
+export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const { t } = useTranslation()
 
   return (

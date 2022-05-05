@@ -3,3 +3,8 @@
   height: 100vh !important;
   z-index: 1100 !important;
 }
+
+.report-line-placeholder {
+  height: 2.625rem;
+  margin: 1px 0;
+}
