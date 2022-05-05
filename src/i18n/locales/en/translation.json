@@ -1,4 +1,7 @@
 {
+  "global": {
+    "back": "Back"
+  },
   "navbar": {
     "title": "Jam",
     "button_create_wallet": "Create Wallet",

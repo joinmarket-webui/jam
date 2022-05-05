@@ -1,0 +1,14 @@
+.accounts-overlay {
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1100 !important;
+}
+
+.accounts-overlay-header {
+  background-color: var(--bs-gray-200);
+}
+
+:root[data-theme='dark'] .accounts-overlay-header {
+  background-color: var(--bs-gray-800);
+  color: var(--bs-white);
+}

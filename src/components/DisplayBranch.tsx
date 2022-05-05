@@ -6,7 +6,7 @@ import Balance from './Balance'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 
-interface Branch {
+export interface Branch {
   branch: string // string of 'type', 'derivation', 'xpub' with tab as seperator, e.g. "external addresses\tm/84'/1'/0'/0\ttpubDE..."
   balance: string // in btc, e.g.	"150.00000000"
   entries: BranchEntry[]
