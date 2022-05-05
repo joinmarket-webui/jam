@@ -104,8 +104,8 @@ input[type='number'] {
   color: var(--bs-white);
 }
 
-:root[data-theme='dark'] .selected-dark {
-  background-color: var(--bs-gray-dark) !important;
+:root[data-theme='dark'] .collaborators-selector .selected-dark {
+  background-color: var(--bs-gray-dark);
   border-color: var(--bs-gray-dark) !important;
 }
 
