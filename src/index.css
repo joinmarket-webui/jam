@@ -502,6 +502,10 @@ h2 {
     center/1em auto no-repeat;
 }
 
+.placeholder {
+  background-color: var(--bs-gray-400);
+}
+
 /* Privacy Level Styles */
 
 .privacy-level-4 {
@@ -605,10 +609,6 @@ h2 {
   --bs-body-bg: var(--bs-gray-900);
   --bs-gray-dark: #16191c;
   --bs-black: #000;
-}
-
-.placeholder {
-  background-color: #e9ecef;
 }
 
 :root[data-theme='dark'] * {
