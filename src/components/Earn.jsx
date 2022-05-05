@@ -9,6 +9,7 @@ import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoCont
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
+import { EarnReportOverlay } from './EarnReport'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
 
@@ -63,66 +64,6 @@ const initialFormValues = (settings) => ({
     FORM_INPUT_DEFAULT_VALUES.minsize,
 })
 
-const YieldgenReport = ({ lines, maxAmountOfRows = 25 }) => {
-  const { t } = useTranslation()
-  const settings = useSettings()
-
-  const empty = !lines || lines.length < 2
-  const headers = empty ? [] : lines[0].split(',')
-
-  const linesWithoutHeader = empty
-    ? []
-    : lines
-        .slice(1, lines.length)
-        .map((line) => line.split(','))
-        .reverse()
-
-  const visibleLines = linesWithoutHeader.slice(0, maxAmountOfRows)
-
-  return (
-    <div className="mt-2 mb-3">
-      {empty && <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>}
-      {!empty && (
-        <>
-          <rb.Table striped bordered hover variant={settings.theme} responsive>
-            <thead>
-              <tr>
-                {headers.map((name, index) => (
-                  <th key={`header_${index}`}>{name}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {visibleLines.map((line, trIndex) => (
-                <tr key={`tr_${trIndex}`}>
-                  {line.map((val, tdIndex) => (
-                    <td key={`td_${tdIndex}`}>{val}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                {headers.map((name, index) => (
-                  <th key={`footer_${index}`}>{name}</th>
-                ))}
-              </tr>
-            </tfoot>
-          </rb.Table>
-          <div className="mt-1 d-flex justify-content-end">
-            <small>
-              {t('earn.text_report_length', {
-                visibleLines: visibleLines.length,
-                linesWithoutHeader: linesWithoutHeader.length,
-              })}
-            </small>
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
 const percentageToFactor = (val, precision = 6) => {
   // Value cannot just be divided
   // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
@@ -149,9 +90,7 @@ export default function Earn() {
   const [isSending, setIsSending] = useState(false)
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
-  const [isReportLoading, setIsReportLoading] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
-  const [yieldgenReportLines, setYieldgenReportLines] = useState([])
 
   const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
     setIsSending(true)
@@ -236,32 +175,6 @@ export default function Earn() {
       return current
     })
   }, [isSending, serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
-
-  useEffect(() => {
-    if (!isShowReport) return
-
-    const abortCtrl = new AbortController()
-    setIsReportLoading(true)
-
-    Api.getYieldgenReport({ signal: abortCtrl.signal })
-      .then((res) => {
-        if (res.ok) return res.json()
-        // 404 is returned till the maker is started at least once
-        if (res.status === 404) return {}
-        return Api.Helper.throwError(res, t('earn.error_loading_report_failed'))
-      })
-      .then((data) => setYieldgenReportLines(data.yigen_data))
-      .catch((err) => {
-        console.log(`Error while loading yield generator`, err)
-      })
-      // show the loader a little longer to avoid flickering
-      .then((_) => new Promise((r) => setTimeout(r, 200)))
-      .finally(() => {
-        !abortCtrl.signal.aborted && setIsReportLoading(false)
-      })
-
-    return () => abortCtrl.abort()
-  }, [serviceInfo, isShowReport, t])
 
   const feeRelMin = 0.0
   const feeRelMax = 0.1 // 10%
@@ -487,36 +400,22 @@ export default function Earn() {
       </rb.Row>
 
       {settings.useAdvancedWalletMode && (
-        <rb.Row className="mt-5 mb-3">
-          <rb.Col>
-            <rb.Button
-              variant="outline-dark"
-              className="border-0 mb-2 d-inline-flex align-items-center"
-              onClick={(e) => {
-                e.preventDefault()
-                setIsShowReport(!isShowReport)
-              }}
-            >
-              <Sprite symbol={isShowReport ? 'hide' : 'show'} width="24" height="24" className="me-2" />
-              {isShowReport ? t('earn.button_hide_report') : t('earn.button_show_report')}
-              {isReportLoading && (
-                <rb.Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                  className="ms-2 me-1"
-                />
-              )}
-            </rb.Button>
-          </rb.Col>
-          <rb.Fade in={isShowReport} mountOnEnter={true} unmountOnExit={true}>
-            <rb.Col md={12}>
-              <YieldgenReport lines={yieldgenReportLines} />
+        <>
+          <rb.Row className="mt-5 mb-3">
+            <rb.Col className="d-flex justify-content-center">
+              <rb.Button
+                variant="outline-dark"
+                className="border-0 mb-2 d-inline-flex align-items-center"
+                onClick={() => setIsShowReport(true)}
+              >
+                <Sprite symbol="show" width="24" height="24" className="me-2" />
+                {t('earn.button_show_report')}
+              </rb.Button>
             </rb.Col>
-          </rb.Fade>
-        </rb.Row>
+          </rb.Row>
+
+          <EarnReportOverlay show={isShowReport} onHide={() => setIsShowReport(false)} />
+        </>
       )}
     </div>
   )
