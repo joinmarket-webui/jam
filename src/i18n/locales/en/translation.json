@@ -225,7 +225,9 @@
     "text_starting": "Starting",
     "text_stopping": "Stopping",
     "button_show_report": "Show report",
-    "button_hide_report": "Hide report"
+    "report": {
+      "title": "Report"
+    }
   },
   "cheatsheet": {
     "title": "The Cheatsheet",
