@@ -38,6 +38,7 @@ export default function App() {
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
   const cheatsheetEnabled = currentWallet && isFeatureEnabled('cheatsheet')
+  const scheduleEnabled = currentWallet && isFeatureEnabled('schedule')
 
   const startWallet = useCallback(
     (name, token) => {
@@ -124,7 +125,7 @@ export default function App() {
                 <Route path={routes.home} element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
                 {currentWallet && (
                   <>
-                    <Route path={routes.jam} element={<Jam />} />
+                    {scheduleEnabled && <Route path={routes.jam} element={<Jam />} />}
                     <Route path={routes.send} element={<Send />} />
                     <Route path={routes.earn} element={<Earn />} />
                     <Route path={routes.receive} element={<Receive />} />

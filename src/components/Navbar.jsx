@@ -10,6 +10,7 @@ import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
+import { isFeatureEnabled } from '../constants/featureFlags'
 
 const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   return (
@@ -35,19 +36,24 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
 
 const CenterNav = ({ makerRunning, onClick }) => {
   const { t } = useTranslation()
+
+  const scheduleEnabled = isFeatureEnabled('schedule')
+
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
-      <rb.Nav.Item className="d-flex align-items-stretch">
-        <NavLink
-          to={routes.jam}
-          onClick={onClick}
-          className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
-          }
-        >
-          {t('Jam')}
-        </NavLink>
-      </rb.Nav.Item>
+      {scheduleEnabled && (
+        <rb.Nav.Item className="d-flex align-items-stretch">
+          <NavLink
+            to={routes.jam}
+            onClick={onClick}
+            className={({ isActive }) =>
+              'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+            }
+          >
+            {t('Jam')}
+          </NavLink>
+        </rb.Nav.Item>
+      )}
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.send}
