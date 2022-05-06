@@ -4,6 +4,7 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import Wallets from './Wallets'
 import CreateWallet from './CreateWallet'
+import Jam from './Jam'
 import Send from './Send'
 import Earn from './Earn'
 import Receive from './Receive'
@@ -123,6 +124,7 @@ export default function App() {
                 <Route path={routes.home} element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
                 {currentWallet && (
                   <>
+                    <Route path={routes.jam} element={<Jam />} />
                     <Route path={routes.send} element={<Send />} />
                     <Route path={routes.earn} element={<Earn />} />
                     <Route path={routes.receive} element={<Receive />} />

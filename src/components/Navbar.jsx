@@ -39,6 +39,17 @@ const CenterNav = ({ makerRunning, onClick }) => {
     <rb.Nav className="justify-content-center align-items-stretch">
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
+          to={routes.jam}
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          {t('Jam')}
+        </NavLink>
+      </rb.Nav.Item>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
           to={routes.send}
           onClick={onClick}
           className={({ isActive }) =>
