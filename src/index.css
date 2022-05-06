@@ -283,6 +283,10 @@ main {
   -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
 }
 
+.unstyled {
+  text-decoration: none;
+}
+
 /* Navbar Styles */
 
 #mainNav .nav-link {
@@ -479,6 +483,10 @@ h2 {
 .btn:focus:not(:focus-visible) {
   outline: 0;
   box-shadow: none;
+}
+
+.btn-link {
+  color: currentColor;
 }
 
 .alert-info {

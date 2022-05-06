@@ -582,7 +582,7 @@ export default function Send() {
         <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
           <>
             {serviceInfo?.makerRunning && (
-              <Link to={routes.earn} className={styles.unstyled}>
+              <Link to={routes.earn} className="unstyled">
                 <rb.Alert variant="info" className="mb-4">
                   <rb.Row className="align-items-center">
                     <rb.Col>{t('send.text_maker_running')}</rb.Col>

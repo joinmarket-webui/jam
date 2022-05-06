@@ -130,10 +130,6 @@ input[type='number'] {
   filter: blur(2px);
 }
 
-.unstyled {
-  text-decoration: none;
-}
-
 .accordion-button {
   border: none;
   width: 100%;

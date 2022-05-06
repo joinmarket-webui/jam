@@ -50,22 +50,30 @@ export default function DisplayAccountsOverlay({ accounts, show, onHide }: Displ
       <rb.Offcanvas.Header className={styles['accounts-overlay-header']}>
         <rb.Row className="w-100">
           <rb.Col className="d-flex justify-content-start">
-            <div className="btn d-inline-flex align-items-center" onClick={() => onHide()}>
+            <rb.Button variant="link" className="unstyled d-inline-flex align-items-center" onClick={() => onHide()}>
               <Sprite symbol="arrow-left" width="24" height="24" />
               <span className="mx-2">{t('global.back')}</span>
-            </div>
+            </rb.Button>
           </rb.Col>
           <rb.Col className="d-flex justify-content-center">
             <rb.Offcanvas.Title className="d-inline-flex justify-content-center align-items-center">
-              <div className="btn" onClick={() => previousAccount()}>
+              <rb.Button
+                variant="link"
+                className="unstyled d-inline-flex align-items-center"
+                onClick={() => previousAccount()}
+              >
                 <Sprite symbol="caret-left" width="24" height="24" />
-              </div>
+              </rb.Button>
               <div className="mx-2">
                 {t('current_wallet_advanced.account')} {account.account}
               </div>
-              <div className="btn" onClick={() => nextAccount()}>
+              <rb.Button
+                variant="link"
+                className="unstyled d-inline-flex align-items-center"
+                onClick={() => nextAccount()}
+              >
                 <Sprite symbol="caret-right" width="24" height="24" />
-              </div>
+              </rb.Button>
             </rb.Offcanvas.Title>
           </rb.Col>
           <rb.Col className="d-flex justify-content-end">
