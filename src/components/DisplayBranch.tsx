@@ -5,50 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Balance from './Balance'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
-
-export interface Branch {
-  branch: string // string of 'type', 'derivation', 'xpub' with tab as seperator, e.g. "external addresses\tm/84'/1'/0'/0\ttpubDE..."
-  balance: string // in btc, e.g.	"150.00000000"
-  entries: BranchEntry[]
-}
-
-interface BranchEntry {
-  hd_path: string // e.g.	"m/84'/1'/0'/0/0"
-  address: string // e.g.	"bcrt1q9z4gzzqsks27p0jt40uhhc2gpl2e52gxk5982v"
-  amount: string // in btc, e.g.	"150.00000000"
-  status: string // e.g. "new",	"used", etc.
-  label: string
-  extradata: string
-}
-
-interface DisplayBranchEntryProps extends rb.CardProps {
-  entry: BranchEntry
-}
-
-const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
-  const settings = useSettings()
-
-  const { address, amount, hd_path: hdPath, label, status } = entry
-
-  return (
-    <rb.Card {...props}>
-      <rb.Card.Body>
-        <rb.Row key={address}>
-          <rb.Col xs={'auto'}>
-            <code className="text-break">{hdPath}</code>
-          </rb.Col>
-          <rb.Col lg={{ order: 'last' }} className="d-flex align-items-center justify-content-end">
-            <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
-          </rb.Col>
-          <rb.Col xs={'auto'}>
-            <code className="text-break">{address}</code> {label && <span className="badge bg-info">{label}</span>}
-            {status && <span className="badge bg-info">{status}</span>}
-          </rb.Col>
-        </rb.Row>
-      </rb.Card.Body>
-    </rb.Card>
-  )
-}
+import { Branch, BranchEntry } from '../global/types'
 
 interface DisplayBranchProps {
   branch: Branch
@@ -90,5 +47,34 @@ export default function DisplayBranch({ branch }: DisplayBranchProps) {
         />
       ))}
     </article>
+  )
+}
+
+interface DisplayBranchEntryProps extends rb.CardProps {
+  entry: BranchEntry
+}
+
+const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
+  const settings = useSettings()
+
+  const { address, amount, hd_path: hdPath, label, status } = entry
+
+  return (
+    <rb.Card {...props}>
+      <rb.Card.Body>
+        <rb.Row key={address}>
+          <rb.Col xs={'auto'}>
+            <code className="text-break">{hdPath}</code>
+          </rb.Col>
+          <rb.Col lg={{ order: 'last' }} className="d-flex align-items-center justify-content-end">
+            <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+          </rb.Col>
+          <rb.Col xs={'auto'}>
+            <code className="text-break">{address}</code> {label && <span className="badge bg-info">{label}</span>}
+            {status && <span className="badge bg-info">{status}</span>}
+          </rb.Col>
+        </rb.Row>
+      </rb.Card.Body>
+    </rb.Card>
   )
 }

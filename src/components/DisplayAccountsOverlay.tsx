@@ -1,19 +1,14 @@
 import React, { useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import DisplayBranch, { Branch } from './DisplayBranch'
+import DisplayBranch from './DisplayBranch'
 // @ts-ignore
 import Balance from './Balance'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import styles from './DisplayAccountsOverlay.module.css'
 import Sprite from './Sprite'
-
-interface Account {
-  account: string // e.g. "0", "1", etc.
-  account_balance: string // balance in btc, e.g. "148.88887469"
-  branches: Branch[]
-}
+import { Account } from '../global/types'
 
 interface DisplayAccountsProps extends rb.OffcanvasProps {
   accounts: Account[]
