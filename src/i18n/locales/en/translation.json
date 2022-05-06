@@ -256,7 +256,7 @@
     }
   },
   "schedule": {
-    "title": "Jam Schedule",
+    "title": "Jam Schedule (Experimental)",
     "subtitle": "Jam can schedule and autoamtically execute multiple collaborative transactions over a longer period of time. When finished, your funds will be detached from their history.",
     "error_starting_schedule_failed": "Starting the schedule failed.",
     "error_stopping_schedule_failed": "Stopping the schedule failed.",
