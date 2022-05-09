@@ -64,8 +64,8 @@ export default function DisplayAccountsOverlay({ accounts, show, onHide }: Displ
               >
                 <Sprite symbol="caret-left" width="24" height="24" />
               </rb.Button>
-              <div className="mx-2">
-                {t('current_wallet_advanced.account')} {account.account}
+              <div className={`${styles['accounts-overlay-header-title']}`}>
+                {t('current_wallet_advanced.account')} <span className="mx-1">{account.account}</span>
               </div>
               <rb.Button
                 variant="link"

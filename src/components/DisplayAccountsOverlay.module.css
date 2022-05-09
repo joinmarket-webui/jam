@@ -8,6 +8,13 @@
   background-color: var(--bs-gray-200);
 }
 
+.accounts-overlay-header-title {
+  display: inline-flex;
+  justify-content: space-between;
+  width: 8ch;
+  margin: 0 0.5rem;
+}
+
 :root[data-theme='dark'] .accounts-overlay-header {
   background-color: var(--bs-gray-800);
   color: var(--bs-white);
