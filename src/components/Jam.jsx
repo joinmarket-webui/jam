@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { Formik } from 'formik'
+import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
@@ -11,6 +11,18 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
+
+const ValuesListener = ({ handler }) => {
+  const { values } = useFormikContext()
+
+  useEffect(() => {
+    if (values.dest1 !== '' && values.dest2 !== '' && values.dest3 !== '') {
+      handler()
+    }
+  }, [values])
+
+  return null
+}
 
 export default function Jam() {
   const { t } = useTranslation()
@@ -216,38 +228,41 @@ export default function Jam() {
           handleBlur,
           handleChange,
           setFieldValue,
+          validateForm,
           isValid,
           dirty,
           touched,
           errors,
         }) => (
-          <rb.Form onSubmit={handleSubmit} noValidate>
-            {!collaborativeOperationRunning && (
-              <>
-                <rb.Form.Group className="mb-4" controlId="offertype">
-                  <ToggleSwitch
-                    label={t('schedule.toggle_internal_destination_title')}
-                    subtitle={t('schedule.toggle_internal_destination_title', { account: INTERNAL_DEST_ACCOUNT })}
-                    initialValue={destinationIsInternal}
-                    onToggle={async (isToggled) => {
-                      setDestinationIsInternal(isToggled)
+          <>
+            <ValuesListener handler={validateForm} />
+            <rb.Form onSubmit={handleSubmit} noValidate>
+              {!collaborativeOperationRunning && (
+                <>
+                  <rb.Form.Group className="mb-4" controlId="offertype">
+                    <ToggleSwitch
+                      label={t('schedule.toggle_internal_destination_title')}
+                      subtitle={t('schedule.toggle_internal_destination_title', { account: INTERNAL_DEST_ACCOUNT })}
+                      initialValue={destinationIsInternal}
+                      onToggle={async (isToggled) => {
+                        setDestinationIsInternal(isToggled)
 
-                      if (isToggled) {
-                        const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
-                        await setFieldValue('dest1', newAddresses[0], true)
-                        await setFieldValue('dest2', newAddresses[1], true)
-                        await setFieldValue('dest3', newAddresses[2], true)
-                      } else {
-                        await setFieldValue('dest1', '', false)
-                        await setFieldValue('dest2', '', false)
-                        await setFieldValue('dest3', '', false)
-                      }
-                    }}
-                    disabled={isSubmitting}
-                  />
-                </rb.Form.Group>
-                {/* Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged. */}
-                {/*process.env.NODE_ENV === 'development' && (
+                        if (isToggled) {
+                          const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
+                          setFieldValue('dest1', newAddresses[0], true)
+                          setFieldValue('dest2', newAddresses[1], true)
+                          setFieldValue('dest3', newAddresses[2], true)
+                        } else {
+                          setFieldValue('dest1', '', false)
+                          setFieldValue('dest2', '', false)
+                          setFieldValue('dest3', '', false)
+                        }
+                      }}
+                      disabled={isSubmitting}
+                    />
+                  </rb.Form.Group>
+                  {/* Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged. */}
+                  {/*process.env.NODE_ENV === 'development' && (
                   <rb.Form.Group className="mb-4" controlId="offertype">
                     <ToggleSwitch
                       label={'Use insecure testing settings'}
@@ -260,43 +275,44 @@ export default function Jam() {
                     />
                   </rb.Form.Group>
                 )*/}
-              </>
-            )}
-            {!collaborativeOperationRunning &&
-              !destinationIsInternal &&
-              [1, 2, 3].map((i) => {
-                return (
-                  <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>
-                    <rb.Form.Label>{t('schedule.label_destination_input', { destination: i })}</rb.Form.Label>
-                    {!wallet || !walletInfo || isLoading ? (
-                      <rb.Placeholder as="div" animation="wave">
-                        <rb.Placeholder xs={12} className={styles['input-loader']} />
-                      </rb.Placeholder>
-                    ) : (
-                      <rb.Form.Control
-                        name={`dest${i}`}
-                        value={values[`dest${i}`]}
-                        placeholder={t('schedule.placeholder_destination_input')}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        isInvalid={touched[`dest${i}`] && !!errors[`dest${i}`]}
-                        className={`${styles.input} slashed-zeroes`}
-                      />
-                    )}
-                  </rb.Form.Group>
-                )
-              })}
-            <rb.Button
-              className={styles.submit}
-              variant="dark"
-              type="submit"
-              disabled={!collaborativeOperationRunning && (isSubmitting || !isValid || !dirty)}
-            >
-              <div className="d-flex justify-content-center align-items-center">
-                {collaborativeOperationRunning ? t('schedule.button_stop') : t('schedule.button_start')}
-              </div>
-            </rb.Button>
-          </rb.Form>
+                </>
+              )}
+              {!collaborativeOperationRunning &&
+                !destinationIsInternal &&
+                [1, 2, 3].map((i) => {
+                  return (
+                    <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>
+                      <rb.Form.Label>{t('schedule.label_destination_input', { destination: i })}</rb.Form.Label>
+                      {!wallet || !walletInfo || isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.Form.Control
+                          name={`dest${i}`}
+                          value={values[`dest${i}`]}
+                          placeholder={t('schedule.placeholder_destination_input')}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          isInvalid={touched[`dest${i}`] && !!errors[`dest${i}`]}
+                          className={`${styles.input} slashed-zeroes`}
+                        />
+                      )}
+                    </rb.Form.Group>
+                  )
+                })}
+              <rb.Button
+                className={styles.submit}
+                variant="dark"
+                type="submit"
+                disabled={!collaborativeOperationRunning && (isSubmitting || !isValid || !dirty)}
+              >
+                <div className="d-flex justify-content-center align-items-center">
+                  {collaborativeOperationRunning ? t('schedule.button_stop') : t('schedule.button_start')}
+                </div>
+              </rb.Button>
+            </rb.Form>
+          </>
         )}
       </Formik>
     </>
