@@ -100,6 +100,7 @@ export default function Jam() {
     }
 
     setAlert(null)
+    setIsLoading(true)
 
     const destinations = [values.dest1, values.dest2, values.dest3]
 
@@ -125,6 +126,8 @@ export default function Jam() {
     try {
       const res = await Api.postTumblerStart({ walletName: wallet.name, token: wallet.token }, body)
 
+      setIsLoading(false)
+
       if (!res.ok) {
         await Api.Helper.throwError(res, t('schedule.error_starting_schedule_failed'))
       }
@@ -141,9 +144,12 @@ export default function Jam() {
     }
 
     setAlert(null)
+    setIsLoading(true)
 
     try {
       const res = await Api.getTumblerStop({ walletName: wallet.name, token: wallet.token })
+
+      setIsLoading(false)
 
       if (!res.ok) {
         await Api.Helper.throwError(res, t('schedule.error_stopping_schedule_failed'))
