@@ -99,6 +99,8 @@ export default function Jam() {
       return
     }
 
+    setAlert(null)
+
     const destinations = [values.dest1, values.dest2, values.dest3]
 
     const body = { destination_addresses: destinations }
@@ -137,6 +139,8 @@ export default function Jam() {
     if (!collaborativeOperationRunning) {
       return
     }
+
+    setAlert(null)
 
     try {
       const res = await Api.getTumblerStop({ walletName: wallet.name, token: wallet.token })
