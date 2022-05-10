@@ -71,10 +71,15 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
  */
 export default function Balance({ valueString, convertToUnit, showBalance = false, loading = false }) {
   const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
+  const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
 
   useEffect(() => {
-    setDisplayMode(getDisplayMode(convertToUnit, showBalance))
-  }, [convertToUnit, showBalance])
+    setIsBalanceVisible(showBalance)
+  }, [showBalance])
+
+  useEffect(() => {
+    setDisplayMode(getDisplayMode(convertToUnit, isBalanceVisible))
+  }, [convertToUnit, isBalanceVisible])
 
   if (loading) {
     return (
@@ -87,43 +92,64 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
     )
   }
 
-  if (displayMode === DISPLAY_MODE_HIDDEN) {
-    return (
-      <BalanceComponent
-        symbol={
-          <span className="d-inline-flex align-items-center text-muted">
-            <Sprite symbol="hide" width="1.2em" height="1.2em" className="ps-1" />
-          </span>
-        }
-        value={'*****'}
-        symbolIsPrefix={false}
-      />
-    )
+  const handleOnClick = (e) => {
+    if (showBalance === true) return
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    setIsBalanceVisible((current) => !current)
   }
 
-  if (typeof valueString !== 'string') {
-    console.warn('<Balance /> component expects string input')
-    return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
+  const balanceComponent = (() => {
+    if (displayMode === DISPLAY_MODE_HIDDEN) {
+      return (
+        <BalanceComponent
+          symbol={
+            <span className="d-inline-flex align-items-center text-muted">
+              <Sprite symbol="hide" width="1.2em" height="1.2em" className="ps-1" />
+            </span>
+          }
+          value={'*****'}
+          symbolIsPrefix={false}
+        />
+      )
+    }
+
+    if (typeof valueString !== 'string') {
+      console.warn('<Balance /> component expects string input')
+      return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
+    }
+
+    // Treat integers as sats.
+    const valueIsSats = valueString === Number.parseInt(valueString).toString()
+    // Treat decimal numbers as btc.
+    const valueIsBtc = !valueIsSats && !Number.isNaN(Number.parseFloat(valueString)) && valueString.indexOf('.') > -1
+
+    const btcSymbol = <span style={{ paddingRight: '0.1em' }}>{'\u20BF'}</span>
+    const satSymbol = <Sprite symbol="sats" width="1.2em" height="1.2em" />
+
+    if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
+      return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueString)} symbolIsPrefix={true} />
+    if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
+      return <BalanceComponent symbol={satSymbol} value={formatSats(valueString)} symbolIsPrefix={false} />
+
+    if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
+      return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(valueString))} symbolIsPrefix={false} />
+    if (valueIsSats && displayMode === DISPLAY_MODE_BTC)
+      return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
+
+    console.warn('<Balance /> component cannot determine balance format')
+    return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
+  })()
+
+  if (showBalance === true) {
+    return <>{balanceComponent}</>
   }
 
-  // Treat integers as sats.
-  const valueIsSats = valueString === Number.parseInt(valueString).toString()
-  // Treat decimal numbers as btc.
-  const valueIsBtc = !valueIsSats && !Number.isNaN(Number.parseFloat(valueString)) && valueString.indexOf('.') > -1
-
-  const btcSymbol = <span style={{ paddingRight: '0.1em' }}>{'\u20BF'}</span>
-  const satSymbol = <Sprite symbol="sats" width="1.2em" height="1.2em" />
-
-  if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
-    return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueString)} symbolIsPrefix={true} />
-  if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
-    return <BalanceComponent symbol={satSymbol} value={formatSats(valueString)} symbolIsPrefix={false} />
-
-  if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
-    return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(valueString))} symbolIsPrefix={false} />
-  if (valueIsSats && displayMode === DISPLAY_MODE_BTC)
-    return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
-
-  console.warn('<Balance /> component cannot determine balance format')
-  return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
+  return (
+    <span onClick={handleOnClick} style={{ cursor: 'pointer' }}>
+      {balanceComponent}
+    </span>
+  )
 }
