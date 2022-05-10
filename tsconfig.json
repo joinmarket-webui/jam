@@ -6,7 +6,6 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "jsx": "react-jsx",
-    "skipLibCheck": true,
-    "allowJs": true
+    "skipLibCheck": true
   }
 }
