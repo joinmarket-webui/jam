@@ -19,7 +19,7 @@ const ValuesListener = ({ handler }) => {
     if (values.dest1 !== '' && values.dest2 !== '' && values.dest3 !== '') {
       handler()
     }
-  }, [values])
+  }, [values, handler])
 
   return null
 }
