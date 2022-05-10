@@ -26,7 +26,8 @@ export default function Jam() {
   const [destinationIsInternal, setDestinationIsInternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
 
-  const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
+  // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
+  // const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
   // Todo: Discuss if we should hardcode this or let the user pick an account.
   const INTERNAL_DEST_ACCOUNT = 0
@@ -90,32 +91,33 @@ export default function Jam() {
 
     const body = { destination_addresses: destinations }
 
-    if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings) {
-      body.tumbler_options = {
-        addrcount: 3,
-        minmakercount: 1,
-        makercountrange: [1, 1],
-        mixdepthcount: 3,
-        mintxcount: 2,
-        txcountparams: [1, 1],
-        timelambda: 0.1,
-        stage1_timelambda_increase: 1.0,
-        liquiditywait: 10,
-        waittime: 1.0,
-        mixdepthsrc: 0,
-      }
-    }
-    console.log(body)
+    // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
+    // if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings) {
+    //   body.tumbler_options = {
+    //     addrcount: 3,
+    //     minmakercount: 1,
+    //     makercountrange: [1, 1],
+    //     mixdepthcount: 3,
+    //     mintxcount: 2,
+    //     txcountparams: [1, 1],
+    //     timelambda: 0.1,
+    //     stage1_timelambda_increase: 1.0,
+    //     liquiditywait: 10,
+    //     waittime: 1.0,
+    //     mixdepthsrc: 0,
+    //   }
+    // }
 
     try {
       const res = await Api.postTumblerStart({ walletName: wallet.name, token: wallet.token }, body)
 
-      if (res.ok) {
-        setCollaborativeOperationRunning(true)
+      if (!res.ok) {
+        await Api.Helper.throwError(res, t('schedule.error_starting_schedule_failed'))
       }
+
+      setCollaborativeOperationRunning(true)
     } catch (err) {
-      const message = err.message || t('schedule.error_starting_schedule_failed')
-      setAlert({ variant: 'danger', message })
+      setAlert({ variant: 'danger', message: err.message })
     }
   }
 
@@ -127,12 +129,13 @@ export default function Jam() {
     try {
       const res = await Api.getTumblerStop({ walletName: wallet.name, token: wallet.token })
 
-      if (res.ok) {
-        setCollaborativeOperationRunning(false)
+      if (!res.ok) {
+        await Api.Helper.throwError(res, t('schedule.error_stopping_schedule_failed'))
       }
+
+      setCollaborativeOperationRunning(false)
     } catch (err) {
-      const message = err.message || t('schedule.error_stopping_schedule_failed')
-      setAlert({ variant: 'danger', message })
+      setAlert({ variant: 'danger', message: err.message })
     }
   }
 
@@ -243,7 +246,8 @@ export default function Jam() {
                     disabled={isSubmitting}
                   />
                 </rb.Form.Group>
-                {process.env.NODE_ENV === 'development' && (
+                {/* Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged. */}
+                {/*process.env.NODE_ENV === 'development' && (
                   <rb.Form.Group className="mb-4" controlId="offertype">
                     <ToggleSwitch
                       label={'Use insecure testing settings'}
@@ -251,11 +255,11 @@ export default function Jam() {
                         "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
                       }
                       initialValue={useInsecureTestingSettings}
-                      onToggle={async (isToggled) => setUseInsecureTestingSettings(isToggled)}
+                      onToggle={(isToggled) => setUseInsecureTestingSettings(isToggled)}
                       disabled={isSubmitting}
                     />
                   </rb.Form.Group>
-                )}
+                )*/}
               </>
             )}
             {!collaborativeOperationRunning &&
