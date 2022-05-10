@@ -7,6 +7,7 @@ import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
 import { routes } from '../constants/routes'
+import styles from './Wallet.module.css'
 
 function ConfirmModal({ show = false, onHide, title, body, footer }) {
   return (
@@ -283,8 +284,8 @@ export default function Wallet({
       />
       <rb.Card {...props}>
         <rb.Card.Body>
-          <div className="d-flex justify-content-between align-items-center flex-wrap">
-            <div className="py-1">
+          <div className="w-100 d-flex justify-content-between align-items-center flex-wrap py-1">
+            <div>
               <rb.Card.Title>
                 {isActive ? (
                   <span style={{ position: 'relative' }}>
@@ -298,19 +299,21 @@ export default function Wallet({
                   <>{walletDisplayName(name)}</>
                 )}
               </rb.Card.Title>
+
               {isActive ? (
                 <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
               ) : (
                 <span className="text-muted">{t('wallets.wallet_preview.wallet_inactive')}</span>
               )}
             </div>
-            <div>
-              {showLockOptions ? (
-                <WalletLockForm walletName={name} lockWallet={lockWallet} />
-              ) : (
-                showUnlockOptions && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />
-              )}
-            </div>
+
+            {showLockOptions ? (
+              <WalletLockForm walletName={name} lockWallet={lockWallet} />
+            ) : (
+              <div className={`w-100 mt-3 mt-md-0 ${styles['wallet-password-input']}`}>
+                {showUnlockOptions && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />}
+              </div>
+            )}
           </div>
         </rb.Card.Body>
       </rb.Card>
