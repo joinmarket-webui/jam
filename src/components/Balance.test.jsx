@@ -119,7 +119,7 @@ describe('<Balance />', () => {
     expect(screen.getByText(`43000`)).toBeInTheDocument()
   })
 
-  it('should toggle visibility of initially hidden balance on click', () => {
+  it('should toggle visibility of initially hidden balance on click by default', () => {
     render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={false} />)
     expect(screen.queryByText(`21`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
@@ -139,13 +139,46 @@ describe('<Balance />', () => {
     expect(screen.getByText(`*****`)).toBeInTheDocument()
   })
 
-  it('should NOT toggle visibility of initially visible balance on click', () => {
+  it('should NOT toggle visibility of initially hidden balance on click when disabled via flag', () => {
+    render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={false} enableVisibilityToggle={false} />)
+    expect(screen.queryByText(`21`)).not.toBeInTheDocument()
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
+
+    act(() => {
+      user.click(screen.getByText(`*****`))
+    })
+
+    expect(screen.queryByText(`21`)).not.toBeInTheDocument()
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
+  })
+
+  it('should NOT toggle visibility of initially visible balance on click by default', () => {
     render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={true} />)
     expect(screen.getByText(`21`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
 
     act(() => {
       user.click(screen.getByText(`21`))
+    })
+
+    expect(screen.getByText(`21`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+  })
+
+  it('should toggle visibility of initially visible balance on click when enabled via flag', () => {
+    render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={true} enableVisibilityToggle={true} />)
+    expect(screen.getByText(`21`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+
+    act(() => {
+      user.click(screen.getByText(`21`))
+    })
+
+    expect(screen.queryByText(`21`)).not.toBeInTheDocument()
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
+
+    act(() => {
+      user.click(screen.getByText(`*****`))
     })
 
     expect(screen.getByText(`21`)).toBeInTheDocument()

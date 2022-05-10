@@ -68,8 +68,15 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
  * Hidden balances are masked with `*****`.
  * @param {loading}: A loading flag that renders a placeholder while true.
+ * @param {enableVisibilityToggle}: A flag that controls whether the balance can mask/unmask when clicked
  */
-export default function Balance({ valueString, convertToUnit, showBalance = false, loading = false }) {
+export default function Balance({
+  valueString,
+  convertToUnit,
+  showBalance = false,
+  loading = false,
+  enableVisibilityToggle = !showBalance,
+}) {
   const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
 
@@ -92,9 +99,7 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
     )
   }
 
-  const handleOnClick = (e) => {
-    if (showBalance === true) return
-
+  const toggleVisibility = (e) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -143,12 +148,12 @@ export default function Balance({ valueString, convertToUnit, showBalance = fals
     return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
   })()
 
-  if (showBalance === true) {
+  if (!enableVisibilityToggle) {
     return <>{balanceComponent}</>
   }
 
   return (
-    <span onClick={handleOnClick} style={{ cursor: 'pointer' }}>
+    <span onClick={toggleVisibility} style={{ cursor: 'pointer' }}>
       {balanceComponent}
     </span>
   )

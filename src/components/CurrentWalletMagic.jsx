@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { useSettings } from '../context/SettingsContext'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
@@ -26,7 +26,12 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
       )}
       {!loading && (
         <h2>
-          <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
+          <Balance
+            valueString={balance}
+            convertToUnit={unit}
+            showBalance={showBalance || false}
+            enableVisibilityToggle={false}
+          />
         </h2>
       )}
     </div>
@@ -106,6 +111,7 @@ const PrivacyLevel = ({ numAccounts, level, balance }) => {
 export default function CurrentWalletMagic() {
   const { t } = useTranslation()
   const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
@@ -139,7 +145,7 @@ export default function CurrentWalletMagic() {
         </rb.Row>
       )}
       <>
-        <rb.Row>
+        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
           <WalletHeader
             name={currentWallet?.name}
             balance={walletInfo?.data.display.walletinfo.total_balance}
