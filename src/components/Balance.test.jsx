@@ -1,4 +1,6 @@
 import React from 'react'
+import { act } from 'react-dom/test-utils'
+import user from '@testing-library/user-event'
 import { render, screen } from '../testUtils'
 import { BTC, SATS } from '../utils'
 
@@ -115,5 +117,38 @@ describe('<Balance />', () => {
   it('should render a number SATS value as fallback', () => {
     render(<Balance valueString={43000} convertToUnit={SATS} showBalance={true} />)
     expect(screen.getByText(`43000`)).toBeInTheDocument()
+  })
+
+  it('should toggle visibility of initially hidden balance on click', () => {
+    render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={false} />)
+    expect(screen.queryByText(`21`)).not.toBeInTheDocument()
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
+
+    act(() => {
+      user.click(screen.getByText(`*****`))
+    })
+
+    expect(screen.getByText(`21`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+
+    act(() => {
+      user.click(screen.getByText(`21`))
+    })
+
+    expect(screen.queryByText(`21`)).not.toBeInTheDocument()
+    expect(screen.getByText(`*****`)).toBeInTheDocument()
+  })
+
+  it('should NOT toggle visibility of initially visible balance on click', () => {
+    render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={true} />)
+    expect(screen.getByText(`21`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
+
+    act(() => {
+      user.click(screen.getByText(`21`))
+    })
+
+    expect(screen.getByText(`21`)).toBeInTheDocument()
+    expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
   })
 })
