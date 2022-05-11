@@ -252,7 +252,7 @@ export default function Jam() {
                   <rb.Form.Group className="mb-4" controlId="offertype">
                     <ToggleSwitch
                       label={t('schedule.toggle_internal_destination_title')}
-                      subtitle={t('schedule.toggle_internal_destination_title', { account: INTERNAL_DEST_ACCOUNT })}
+                      subtitle={t('schedule.toggle_internal_destination_subtitle', { account: INTERNAL_DEST_ACCOUNT })}
                       initialValue={destinationIsExternal}
                       onToggle={async (isToggled) => {
                         setDestinationIsExternal(isToggled)
