@@ -256,5 +256,21 @@
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
+  },
+  "schedule": {
+    "title": "Jam Schedule (Experimental)",
+    "subtitle": "Jam can schedule and autoamtically execute multiple collaborative transactions over a longer period of time. When finished, your funds will be detached from their history.",
+    "error_starting_schedule_failed": "Starting the schedule failed.",
+    "error_stopping_schedule_failed": "Stopping the schedule failed.",
+    "complete_wallet_title": "Complete Wallet",
+    "complete_wallet_subtitle": "This will use all of your non-frozen funds.",
+    "description_destination_addresses": "To keep your funds private, they will be randomly split up accross three destination addresses. These could be coming from your cold storage or be deposit addresses of an exchange. Instead, you can also choose to keep your funds in Jam.",
+    "error_invalid_destionation_address": "Please enter valid a destination address.",
+    "toggle_internal_destination_title": "Keep funds in Jam",
+    "toggle_internal_destination_subtitle": "Use destination addresses from account {{ account }} in your wallet.",
+    "label_destination_input": "Destination {{ destination }}",
+    "placeholder_destination_input": "Enter destination address...",
+    "button_start": "Start Schedule",
+    "button_stop": "Stop Schedule"
   }
 }

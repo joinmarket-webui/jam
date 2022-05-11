@@ -19,7 +19,8 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --unmatured --blocks 3
 
 # fund wallet in secondary joinmarket container
-. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 3
+# this will get more coins than the primary one in order to successfully run the tumbler.py script
+. "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 50
 
 # make block rewards spendable
 . "$script_dir/mine-block.sh" 110 &>/dev/null
