@@ -257,7 +257,7 @@ export default function Jam() {
                       onToggle={async (isToggled) => {
                         setDestinationIsExternal(isToggled)
 
-                        if (isToggled) {
+                        if (!isToggled) {
                           const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
                           setFieldValue('dest1', newAddresses[0], true)
                           setFieldValue('dest2', newAddresses[1], true)
