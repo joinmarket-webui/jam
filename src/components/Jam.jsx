@@ -313,6 +313,7 @@ export default function Jam() {
                     </rb.Form.Group>
                   )
                 })}
+              <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
               <rb.Button
                 className={styles.submit}
                 variant="dark"

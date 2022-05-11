@@ -270,6 +270,7 @@
     "toggle_internal_destination_subtitle": "Specify destination addresses to send funds to an external wallet.",
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
+    "description_fees": "The scheduler will pay all occurring fees automatically.",
     "button_start": "Start Scheduler",
     "button_stop": "Stop Scheduler"
   }
