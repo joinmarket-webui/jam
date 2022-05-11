@@ -11,6 +11,7 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
+import ScheduleProgress from './ScheduleProgress'
 
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
@@ -160,6 +161,8 @@ export default function Jam() {
       setAlert({ variant: 'danger', message: err.message })
     }
   }
+
+  return <ScheduleProgress />
 
   return (
     <>
