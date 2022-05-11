@@ -259,7 +259,7 @@
   },
   "scheduler": {
     "title": "Jam Scheduler (Experimental)",
-    "subtitle": "Execute multiple transactions using random amounts and time intervals to break surveillance heuristics. Every scheduled transaction is a collaborative transaction.",
+    "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of your funds. Every scheduled transaction is a collaborative transaction. The scheduler will use all available funds that aren't frozen.",
     "error_starting_schedule_failed": "Starting the scheduler failed.",
     "error_stopping_schedule_failed": "Stopping the scheduler failed.",
     "complete_wallet_title": "Complete Wallet",
