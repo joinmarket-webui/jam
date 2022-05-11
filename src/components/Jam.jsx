@@ -38,6 +38,7 @@ export default function Jam() {
   const [isLoading, setIsLoading] = useState(true)
   const [destinationIsInternal, setDestinationIsInternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
+  const [schedule, setSchedule] = useState(null)
 
   // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
   // const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
@@ -72,6 +73,25 @@ export default function Jam() {
 
     setCollaborativeOperationRunning(coinjoinInProgress || makerRunning)
   }, [serviceInfo])
+
+  useEffect(() => {
+    if (!collaborativeOperationRunning) {
+      return
+    }
+
+    setAlert(null)
+    setIsLoading(true)
+
+    return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((data) => {
+        setSchedule(data.schedule)
+      })
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => setIsLoading(false))
+  }, [collaborativeOperationRunning, wallet])
 
   const getNewAddresses = (count, mixdepth) => {
     const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
@@ -162,20 +182,14 @@ export default function Jam() {
     }
   }
 
-  return <ScheduleProgress />
-
   return (
     <>
       <PageTitle title={t('schedule.title')} subtitle={t('schedule.subtitle')} />
-      <rb.Fade in={collaborativeOperationRunning} mountOnEnter={true} unmountOnExit={true}>
-        <>
-          {collaborativeOperationRunning && (
-            <rb.Alert variant="info" className="mb-4">
-              {t('send.text_coinjoin_already_running')}
-            </rb.Alert>
-          )}
-        </>
-      </rb.Fade>
+      {collaborativeOperationRunning && schedule && (
+        <div className="mb-4">
+          <ScheduleProgress schedule={schedule} />
+        </div>
+      )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {!collaborativeOperationRunning && (
         <>
