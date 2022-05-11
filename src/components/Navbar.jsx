@@ -36,7 +36,6 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
 
 const CenterNav = ({ makerRunning, onClick }) => {
   const { t } = useTranslation()
-  const settings = useSettings()
   const serviceInfo = useServiceInfo()
 
   const scheduleEnabled = isFeatureEnabled('schedule')
