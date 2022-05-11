@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -36,35 +36,19 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
 
 const CenterNav = ({ makerRunning, onClick }) => {
   const { t } = useTranslation()
+  const settings = useSettings()
+  const serviceInfo = useServiceInfo()
 
   const scheduleEnabled = isFeatureEnabled('schedule')
+  const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
+
+  useEffect(() => {
+    const coinjoinInProgress = serviceInfo && serviceInfo.coinjoinInProgress
+    setCollaborativeOperationRunning(coinjoinInProgress)
+  }, [serviceInfo])
 
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
-      {scheduleEnabled && (
-        <rb.Nav.Item className="d-flex align-items-stretch">
-          <NavLink
-            to={routes.jam}
-            onClick={onClick}
-            className={({ isActive }) =>
-              'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
-            }
-          >
-            {t('Jam')}
-          </NavLink>
-        </rb.Nav.Item>
-      )}
-      <rb.Nav.Item className="d-flex align-items-stretch">
-        <NavLink
-          to={routes.send}
-          onClick={onClick}
-          className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
-          }
-        >
-          {t('navbar.tab_send')}
-        </NavLink>
-      </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.receive}
@@ -76,6 +60,22 @@ const CenterNav = ({ makerRunning, onClick }) => {
           {t('navbar.tab_receive')}
         </NavLink>
       </rb.Nav.Item>
+      {scheduleEnabled && (
+        <rb.Nav.Item className="d-flex align-items-stretch">
+          <NavLink
+            to={routes.jam}
+            onClick={onClick}
+            className={({ isActive }) =>
+              'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+            }
+          >
+            <div className="d-flex align-items-start">
+              {t('Jam')}
+              <EarnIndicator isOn={collaborativeOperationRunning} />
+            </div>
+          </NavLink>
+        </rb.Nav.Item>
+      )}
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.earn}
@@ -88,6 +88,17 @@ const CenterNav = ({ makerRunning, onClick }) => {
             {t('navbar.tab_earn')}
             <EarnIndicator isOn={makerRunning} />
           </div>
+        </NavLink>
+      </rb.Nav.Item>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to={routes.send}
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          {t('navbar.tab_send')}
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>
