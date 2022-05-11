@@ -129,7 +129,7 @@ export default function Jam() {
       setIsLoading(false)
 
       if (!res.ok) {
-        await Api.Helper.throwError(res, t('schedule.error_starting_schedule_failed'))
+        await Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))
       }
 
       setCollaborativeOperationRunning(true)
@@ -152,7 +152,7 @@ export default function Jam() {
       setIsLoading(false)
 
       if (!res.ok) {
-        await Api.Helper.throwError(res, t('schedule.error_stopping_schedule_failed'))
+        await Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))
       }
 
       setCollaborativeOperationRunning(false)
@@ -163,7 +163,7 @@ export default function Jam() {
 
   return (
     <>
-      <PageTitle title={t('schedule.title')} subtitle={t('schedule.subtitle')} />
+      <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       <rb.Fade in={collaborativeOperationRunning} mountOnEnter={true} unmountOnExit={true}>
         <>
           {collaborativeOperationRunning && (
@@ -180,8 +180,10 @@ export default function Jam() {
             <div className="d-flex align-items-center gap-2">
               <Sprite symbol="checkmark" width="25" height="25" className="text-secondary" />
               <div className="d-flex flex-column">
-                <div>{t('schedule.complete_wallet_title')}</div>
-                <div className={`text-secondary ${styles['small-text']}`}>{t('schedule.complete_wallet_subtitle')}</div>
+                <div>{t('scheduler.complete_wallet_title')}</div>
+                <div className={`text-secondary ${styles['small-text']}`}>
+                  {t('scheduler.complete_wallet_subtitle')}
+                </div>
               </div>
             </div>
             {!wallet || !walletInfo || isLoading ? (
@@ -195,7 +197,7 @@ export default function Jam() {
               />
             )}
           </div>
-          <p className="text-secondary mb-4">{t('schedule.description_destination_addresses')}</p>
+          <p className="text-secondary mb-4">{t('scheduler.description_destination_addresses')}</p>
         </>
       )}
       <Formik
@@ -212,13 +214,13 @@ export default function Jam() {
           }
 
           if (!isValidAddress(values.dest1)) {
-            errors.dest1 = t('schedule.error_invalid_destionation_address')
+            errors.dest1 = t('scheduler.error_invalid_destionation_address')
           }
           if (!isValidAddress(values.dest2)) {
-            errors.dest2 = t('schedule.error_invalid_destionation_address')
+            errors.dest2 = t('scheduler.error_invalid_destionation_address')
           }
           if (!isValidAddress(values.dest3)) {
-            errors.dest3 = t('schedule.error_invalid_destionation_address')
+            errors.dest3 = t('scheduler.error_invalid_destionation_address')
           }
 
           return errors
@@ -251,8 +253,8 @@ export default function Jam() {
                 <>
                   <rb.Form.Group className="mb-4" controlId="offertype">
                     <ToggleSwitch
-                      label={t('schedule.toggle_internal_destination_title')}
-                      subtitle={t('schedule.toggle_internal_destination_subtitle', { account: INTERNAL_DEST_ACCOUNT })}
+                      label={t('scheduler.toggle_internal_destination_title')}
+                      subtitle={t('scheduler.toggle_internal_destination_subtitle', { account: INTERNAL_DEST_ACCOUNT })}
                       initialValue={destinationIsExternal}
                       onToggle={async (isToggled) => {
                         setDestinationIsExternal(isToggled)
@@ -292,7 +294,7 @@ export default function Jam() {
                 [1, 2, 3].map((i) => {
                   return (
                     <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>
-                      <rb.Form.Label>{t('schedule.label_destination_input', { destination: i })}</rb.Form.Label>
+                      <rb.Form.Label>{t('scheduler.label_destination_input', { destination: i })}</rb.Form.Label>
                       {!wallet || !walletInfo || isLoading ? (
                         <rb.Placeholder as="div" animation="wave">
                           <rb.Placeholder xs={12} className={styles['input-loader']} />
@@ -301,7 +303,7 @@ export default function Jam() {
                         <rb.Form.Control
                           name={`dest${i}`}
                           value={values[`dest${i}`]}
-                          placeholder={t('schedule.placeholder_destination_input')}
+                          placeholder={t('scheduler.placeholder_destination_input')}
                           onChange={handleChange}
                           onBlur={handleBlur}
                           isInvalid={touched[`dest${i}`] && !!errors[`dest${i}`]}
@@ -318,7 +320,7 @@ export default function Jam() {
                 disabled={!collaborativeOperationRunning && (isSubmitting || !isValid || !dirty)}
               >
                 <div className="d-flex justify-content-center align-items-center">
-                  {collaborativeOperationRunning ? t('schedule.button_stop') : t('schedule.button_start')}
+                  {collaborativeOperationRunning ? t('scheduler.button_stop') : t('scheduler.button_start')}
                 </div>
               </rb.Button>
             </rb.Form>

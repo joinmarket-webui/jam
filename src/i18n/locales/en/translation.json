@@ -257,7 +257,7 @@
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
   },
-  "schedule": {
+  "scheduler": {
     "title": "Jam Scheduler (Experimental)",
     "subtitle": "Execute multiple transactions using random amounts and time intervals to break surveillance heuristics. Every scheduled transaction is a collaborative transaction.",
     "error_starting_schedule_failed": "Starting the scheduler failed.",
