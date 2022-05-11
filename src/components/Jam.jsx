@@ -35,7 +35,7 @@ export default function Jam() {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [destinationIsInternal, setDestinationIsInternal] = useState(false)
+  const [destinationIsExternal, setdestinationIsExternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
 
   // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
@@ -253,9 +253,9 @@ export default function Jam() {
                     <ToggleSwitch
                       label={t('schedule.toggle_internal_destination_title')}
                       subtitle={t('schedule.toggle_internal_destination_title', { account: INTERNAL_DEST_ACCOUNT })}
-                      initialValue={destinationIsInternal}
+                      initialValue={destinationIsExternal}
                       onToggle={async (isToggled) => {
-                        setDestinationIsInternal(isToggled)
+                        setdestinationIsExternal(isToggled)
 
                         if (isToggled) {
                           const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
@@ -288,7 +288,7 @@ export default function Jam() {
                 </>
               )}
               {!collaborativeOperationRunning &&
-                !destinationIsInternal &&
+                destinationIsExternal &&
                 [1, 2, 3].map((i) => {
                   return (
                     <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>

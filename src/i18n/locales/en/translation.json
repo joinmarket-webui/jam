@@ -266,7 +266,7 @@
     "complete_wallet_subtitle": "This will use all of your non-frozen funds.",
     "description_destination_addresses": "To keep your funds private, they will be randomly split up accross three destination addresses. These could be coming from your cold storage or be deposit addresses of an exchange. Instead, you can also choose to keep your funds in Jam.",
     "error_invalid_destionation_address": "Please enter valid a destination address.",
-    "toggle_internal_destination_title": "Keep funds in Jam",
+    "toggle_internal_destination_title": "Send to external wallet",
     "toggle_internal_destination_subtitle": "Use destination addresses from account {{ account }} in your wallet.",
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
