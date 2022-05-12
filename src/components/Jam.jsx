@@ -95,7 +95,7 @@ export default function Jam() {
   }
 
   const startSchedule = async (values) => {
-    if (collaborativeOperationRunning) {
+    if (isLoading || collaborativeOperationRunning) {
       return
     }
 
@@ -126,8 +126,6 @@ export default function Jam() {
     try {
       const res = await Api.postTumblerStart({ walletName: wallet.name, token: wallet.token }, body)
 
-      setIsLoading(false)
-
       if (!res.ok) {
         await Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))
       }
@@ -135,11 +133,13 @@ export default function Jam() {
       setCollaborativeOperationRunning(true)
     } catch (err) {
       setAlert({ variant: 'danger', message: err.message })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const stopSchedule = async () => {
-    if (!collaborativeOperationRunning) {
+    if (isLoading || !collaborativeOperationRunning) {
       return
     }
 
@@ -149,8 +149,6 @@ export default function Jam() {
     try {
       const res = await Api.getTumblerStop({ walletName: wallet.name, token: wallet.token })
 
-      setIsLoading(false)
-
       if (!res.ok) {
         await Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))
       }
@@ -158,6 +156,8 @@ export default function Jam() {
       setCollaborativeOperationRunning(false)
     } catch (err) {
       setAlert({ variant: 'danger', message: err.message })
+    } finally {
+      setIsLoading(false)
     }
   }
 
