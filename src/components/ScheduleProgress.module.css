@@ -1,90 +1,113 @@
-.text {
-  font-size: 0.8rem;
-}
+.schedule-progress {
+  --progress-bar-height: 0.3rem;
+  --progress-upcoming-step-size: 0.8rem;
+  --progress-completed-step-size: 1.4rem;
 
-.progress {
+  --progress-track-color: var(--bs-gray-300);
+  --progress-step-upcoming-color: var(--bs-gray-300);
+  --progress-step-completed-color: rgba(39, 174, 96, 1);
+  --progress-step-active-color: rgba(39, 174, 96, 1);
+
+  --progress-bar-corner-radius: calc(
+    var(--progress-upcoming-step-size) + ((var(--progress-bar-height) - var(--progress-upcoming-step-size)) / 2)
+  );
+
   position: relative;
-  display: flex;
 }
 
+.progress-container {
+  display: flex;
+  position: relative;
+  min-height: var(--progress-completed-step-size);
+  top: calc((var(--progress-completed-step-size) - var(--progress-bar-height)) / 2);
+}
+
+/* progress bar background */
 .progress-track {
   position: absolute;
   width: 100%;
-  height: 1.4rem;
-  background-color: var(--bs-gray-300);
-  border-radius: 0.8rem;
+  height: var(--progress-bar-height);
+  background-color: var(--progress-track-color);
+  border-radius: var(--progress-bar-corner-radius);
   z-index: -1;
+  top: 0rem;
 }
 
+/* step marker container */
 .progress-step {
-  top: 0.3rem;
   position: relative;
   display: flex;
-  flex-direction: column;
 }
 
+/* step marker future */
 .progress-step:before {
   content: '';
-  width: 0.8rem;
-  height: 0.8rem;
-  background: white;
+  position: relative;
+  top: calc((var(--progress-bar-height) - var(--progress-upcoming-step-size)) / 2);
+  left: calc(0rem - ((var(--progress-bar-height) - var(--progress-upcoming-step-size)) / 2));
+  width: var(--progress-upcoming-step-size);
+  height: var(--progress-upcoming-step-size);
+  background: var(--progress-step-upcoming-color);
   border-radius: 100%;
-  color: transparent;
   margin: 0 0 0 auto;
-  transform: translateX(-0.3rem);
 }
 
+/* step marker active */
 .progress-step.is-active:before {
-  background: rgba(39, 174, 96, 1);
+  background: var(--progress-step-active-color);
   animation: pulse 2s infinite;
 }
 
+/* step marker complete */
 .progress-step.is-complete:before {
   content: '\2713';
-  color: white;
+  top: calc(0rem - ((var(--progress-completed-step-size) - var(--progress-bar-height)) / 2));
+  left: calc(
+    (0rem - ((var(--progress-bar-height) - var(--progress-upcoming-step-size)) / 2)) +
+      ((var(--progress-completed-step-size) - var(--progress-upcoming-step-size)) / 2)
+  );
+  color: var(--progress-step-upcoming-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.8rem;
-  height: 1.8rem;
-  transform: translate(0.2rem, -0.5rem);
-  background: rgba(39, 174, 96, 1);
+  width: var(--progress-completed-step-size);
+  height: var(--progress-completed-step-size);
+  background: var(--progress-step-completed-color);
 }
 
-.progress-step.is-active:after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  border-radius: 0 0.8rem 0.8rem 0;
-  height: 1.4rem;
-  top: -0.3rem;
-  background: rgba(39, 174, 96, 0.4);
-  z-index: -1;
-  animation: nextStep 1s;
-  display: flex;
-  justify-content: start;
-}
-
-.progress-step.is-first.is-active:after {
-  border-radius: 0.8rem;
-}
-
+/* progress bar */
 .progress-step.is-complete:after {
   content: '';
   position: absolute;
   width: 100%;
-  height: 1.4rem;
+  height: var(--progress-bar-height);
   background: rgba(39, 174, 96, 0.4);
   z-index: -1;
-  top: -0.3rem;
 }
 
-.progress-step.is-first.is-complete:after {
-  border-radius: 0.8rem 0 0 0.8rem;
+/* progress bar left end */
+.progress-step.is-complete.is-first:after {
+  border-radius: var(--progress-bar-corner-radius) 0 0 var(--progress-bar-corner-radius);
+}
+
+.progress-step.is-active.is-first:after {
+  border-radius: var(--progress-bar-corner-radius);
+}
+
+/* progress bar tip */
+.progress-step.is-active:after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  border-radius: 0 var(--progress-bar-corner-radius) var(--progress-bar-corner-radius) 0;
+  height: var(--progress-bar-height);
+  background: rgba(39, 174, 96, 0.4);
+  z-index: -1;
+  animation: nextStep 1s;
 }
 
 .progress-step.is-last.is-complete:after {
-  border-radius: 0 0.8rem 0.8rem 0;
+  border-radius: 0 var(--progress-bar-corner-radius) var(--progress-bar-corner-radius) 0;
 }
 
 @keyframes pulse {
@@ -106,4 +129,8 @@
   100% {
     width: 100%;
   }
+}
+
+.text-small {
+  font-size: 0.8rem;
 }
