@@ -257,20 +257,21 @@
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
   },
-  "schedule": {
-    "title": "Jam Schedule (Experimental)",
-    "subtitle": "Jam can schedule and autoamtically execute multiple collaborative transactions over a longer period of time. When finished, your funds will be detached from their history.",
-    "error_starting_schedule_failed": "Starting the schedule failed.",
-    "error_stopping_schedule_failed": "Stopping the schedule failed.",
+  "scheduler": {
+    "title": "Jam Scheduler (Experimental)",
+    "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of your funds. Every scheduled transaction is a collaborative transaction. The scheduler will use all available funds that aren't frozen.",
+    "error_starting_schedule_failed": "Starting the scheduler failed.",
+    "error_stopping_schedule_failed": "Stopping the scheduler failed.",
     "complete_wallet_title": "Complete Wallet",
     "complete_wallet_subtitle": "This will use all of your non-frozen funds.",
-    "description_destination_addresses": "To keep your funds private, they will be randomly split up accross three destination addresses. These could be coming from your cold storage or be deposit addresses of an exchange. Instead, you can also choose to keep your funds in Jam.",
+    "description_destination_addresses": "You can choose to send your funds to an external wallet after completion automatically. However, this feature requires you to provide multiple destination addresses to preserve your privacy.",
     "error_invalid_destionation_address": "Please enter valid a destination address.",
-    "toggle_internal_destination_title": "Keep funds in Jam",
-    "toggle_internal_destination_subtitle": "Use destination addresses from account {{ account }} in your wallet.",
+    "toggle_internal_destination_title": "Send to external wallet",
+    "toggle_internal_destination_subtitle": "Specify destination addresses to send funds to an external wallet.",
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
-    "button_start": "Start Schedule",
-    "button_stop": "Stop Schedule"
+    "description_fees": "The scheduler will pay all occurring fees automatically.",
+    "button_start": "Start Scheduler",
+    "button_stop": "Stop Scheduler"
   }
 }

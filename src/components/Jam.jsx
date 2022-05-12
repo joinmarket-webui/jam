@@ -36,7 +36,7 @@ export default function Jam() {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [destinationIsInternal, setDestinationIsInternal] = useState(false)
+  const [destinationIsExternal, setDestinationIsExternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
 
@@ -150,7 +150,7 @@ export default function Jam() {
       setIsLoading(false)
 
       if (!res.ok) {
-        await Api.Helper.throwError(res, t('schedule.error_starting_schedule_failed'))
+        await Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))
       }
 
       setCollaborativeOperationRunning(true)
@@ -173,7 +173,7 @@ export default function Jam() {
       setIsLoading(false)
 
       if (!res.ok) {
-        await Api.Helper.throwError(res, t('schedule.error_stopping_schedule_failed'))
+        await Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))
       }
 
       setCollaborativeOperationRunning(false)
@@ -184,21 +184,31 @@ export default function Jam() {
 
   return (
     <>
-      <PageTitle title={t('schedule.title')} subtitle={t('schedule.subtitle')} />
-      {collaborativeOperationRunning && schedule && (
-        <div className="mb-4">
-          <ScheduleProgress schedule={schedule} />
+      <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
+      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      {collaborativeOperationRunning && (
+        <div>
+          {!schedule ? (
+            <rb.Placeholder as="div" animation="wave">
+              <rb.Placeholder xs={12} className={styles['input-loader']} />
+            </rb.Placeholder>
+          ) : (
+            <div className="mb-4">
+              <ScheduleProgress schedule={schedule} />
+            </div>
+          )}
         </div>
       )}
-      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {!collaborativeOperationRunning && (
         <>
           <div className="d-flex align-items-center justify-content-between mb-4">
             <div className="d-flex align-items-center gap-2">
               <Sprite symbol="checkmark" width="25" height="25" className="text-secondary" />
               <div className="d-flex flex-column">
-                <div>{t('schedule.complete_wallet_title')}</div>
-                <div className={`text-secondary ${styles['small-text']}`}>{t('schedule.complete_wallet_subtitle')}</div>
+                <div>{t('scheduler.complete_wallet_title')}</div>
+                <div className={`text-secondary ${styles['small-text']}`}>
+                  {t('scheduler.complete_wallet_subtitle')}
+                </div>
               </div>
             </div>
             {!wallet || !walletInfo || isLoading ? (
@@ -212,84 +222,94 @@ export default function Jam() {
               />
             )}
           </div>
-          <p className="text-secondary mb-4">{t('schedule.description_destination_addresses')}</p>
+          <p className="text-secondary mb-4">{t('scheduler.description_destination_addresses')}</p>
         </>
       )}
-      <Formik
-        initialValues={{ dest1: '', dest2: '', dest3: '' }}
-        validate={(values) => {
-          if (collaborativeOperationRunning) {
-            return {}
-          }
+      {!walletInfo ? (
+        <rb.Placeholder as="div" animation="wave">
+          <rb.Placeholder xs={12} className={styles['input-loader']} />
+        </rb.Placeholder>
+      ) : (
+        <Formik
+          initialValues={getNewAddresses(3, INTERNAL_DEST_ACCOUNT).reduce(
+            (obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }),
+            {}
+          )}
+          validate={(values) => {
+            if (collaborativeOperationRunning) {
+              return {}
+            }
 
-          const errors = {}
+            const errors = {}
 
-          const isValidAddress = (candidate) => {
-            return typeof candidate !== 'undefined' && candidate !== ''
-          }
+            const isValidAddress = (candidate) => {
+              return typeof candidate !== 'undefined' && candidate !== ''
+            }
 
-          if (!isValidAddress(values.dest1)) {
-            errors.dest1 = t('schedule.error_invalid_destionation_address')
-          }
-          if (!isValidAddress(values.dest2)) {
-            errors.dest2 = t('schedule.error_invalid_destionation_address')
-          }
-          if (!isValidAddress(values.dest3)) {
-            errors.dest3 = t('schedule.error_invalid_destionation_address')
-          }
+            if (!isValidAddress(values.dest1)) {
+              errors.dest1 = t('scheduler.error_invalid_destionation_address')
+            }
+            if (!isValidAddress(values.dest2)) {
+              errors.dest2 = t('scheduler.error_invalid_destionation_address')
+            }
+            if (!isValidAddress(values.dest3)) {
+              errors.dest3 = t('scheduler.error_invalid_destionation_address')
+            }
 
-          return errors
-        }}
-        onSubmit={async (values) => {
-          if (collaborativeOperationRunning) {
-            await stopSchedule()
-          } else {
-            await startSchedule(values)
-          }
-        }}
-      >
-        {({
-          values,
-          isSubmitting,
-          handleSubmit,
-          handleBlur,
-          handleChange,
-          setFieldValue,
-          validateForm,
-          isValid,
-          dirty,
-          touched,
-          errors,
-        }) => (
-          <>
-            <ValuesListener handler={validateForm} />
-            <rb.Form onSubmit={handleSubmit} noValidate>
-              {!collaborativeOperationRunning && (
-                <>
-                  <rb.Form.Group className="mb-4" controlId="offertype">
-                    <ToggleSwitch
-                      label={t('schedule.toggle_internal_destination_title')}
-                      subtitle={t('schedule.toggle_internal_destination_title', { account: INTERNAL_DEST_ACCOUNT })}
-                      initialValue={destinationIsInternal}
-                      onToggle={async (isToggled) => {
-                        setDestinationIsInternal(isToggled)
+            return errors
+          }}
+          onSubmit={async (values) => {
+            if (collaborativeOperationRunning) {
+              await stopSchedule()
+            } else {
+              await startSchedule(values)
+            }
+          }}
+        >
+          {({
+            values,
+            isSubmitting,
+            handleSubmit,
+            handleBlur,
+            handleChange,
+            setFieldValue,
+            validateForm,
+            isValid,
+            dirty,
+            touched,
+            errors,
+          }) => (
+            <>
+              <ValuesListener handler={validateForm} />
+              <rb.Form onSubmit={handleSubmit} noValidate>
+                {!collaborativeOperationRunning && (
+                  <>
+                    <rb.Form.Group className="mb-4" controlId="offertype">
+                      <ToggleSwitch
+                        label={t('scheduler.toggle_internal_destination_title')}
+                        subtitle={t('scheduler.toggle_internal_destination_subtitle', {
+                          account: INTERNAL_DEST_ACCOUNT,
+                        })}
+                        initialValue={destinationIsExternal}
+                        onToggle={async (isToggled) => {
+                          setDestinationIsExternal(isToggled)
 
-                        if (isToggled) {
-                          const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
-                          setFieldValue('dest1', newAddresses[0], true)
-                          setFieldValue('dest2', newAddresses[1], true)
-                          setFieldValue('dest3', newAddresses[2], true)
-                        } else {
-                          setFieldValue('dest1', '', false)
-                          setFieldValue('dest2', '', false)
-                          setFieldValue('dest3', '', false)
-                        }
-                      }}
-                      disabled={isSubmitting}
-                    />
-                  </rb.Form.Group>
-                  {/* Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged. */}
-                  {/*process.env.NODE_ENV === 'development' && (
+                          if (!isToggled) {
+                            const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
+                            setFieldValue('dest1', newAddresses[0], true)
+                            setFieldValue('dest2', newAddresses[1], true)
+                            setFieldValue('dest3', newAddresses[2], true)
+                          } else {
+                            setFieldValue('dest1', '', false)
+                            setFieldValue('dest2', '', false)
+                            setFieldValue('dest3', '', false)
+                          }
+                        }}
+                        disabled={isSubmitting}
+                      />
+                    </rb.Form.Group>
+                    {/* Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged. */}
+                    {/*process.env.NODE_ENV === 'development' && (
                   <rb.Form.Group className="mb-4" controlId="offertype">
                     <ToggleSwitch
                       label={'Use insecure testing settings'}
@@ -302,46 +322,50 @@ export default function Jam() {
                     />
                   </rb.Form.Group>
                 )*/}
-                </>
-              )}
-              {!collaborativeOperationRunning &&
-                !destinationIsInternal &&
-                [1, 2, 3].map((i) => {
-                  return (
-                    <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>
-                      <rb.Form.Label>{t('schedule.label_destination_input', { destination: i })}</rb.Form.Label>
-                      {!wallet || !walletInfo || isLoading ? (
-                        <rb.Placeholder as="div" animation="wave">
-                          <rb.Placeholder xs={12} className={styles['input-loader']} />
-                        </rb.Placeholder>
-                      ) : (
-                        <rb.Form.Control
-                          name={`dest${i}`}
-                          value={values[`dest${i}`]}
-                          placeholder={t('schedule.placeholder_destination_input')}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          isInvalid={touched[`dest${i}`] && !!errors[`dest${i}`]}
-                          className={`${styles.input} slashed-zeroes`}
-                        />
-                      )}
-                    </rb.Form.Group>
-                  )
-                })}
-              <rb.Button
-                className={styles.submit}
-                variant="dark"
-                type="submit"
-                disabled={!collaborativeOperationRunning && (isSubmitting || !isValid || !dirty)}
-              >
-                <div className="d-flex justify-content-center align-items-center">
-                  {collaborativeOperationRunning ? t('schedule.button_stop') : t('schedule.button_start')}
-                </div>
-              </rb.Button>
-            </rb.Form>
-          </>
-        )}
-      </Formik>
+                  </>
+                )}
+                {!collaborativeOperationRunning &&
+                  destinationIsExternal &&
+                  [1, 2, 3].map((i) => {
+                    return (
+                      <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>
+                        <rb.Form.Label>{t('scheduler.label_destination_input', { destination: i })}</rb.Form.Label>
+                        {!wallet || !walletInfo || isLoading ? (
+                          <rb.Placeholder as="div" animation="wave">
+                            <rb.Placeholder xs={12} className={styles['input-loader']} />
+                          </rb.Placeholder>
+                        ) : (
+                          <rb.Form.Control
+                            name={`dest${i}`}
+                            value={values[`dest${i}`]}
+                            placeholder={t('scheduler.placeholder_destination_input')}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            isInvalid={touched[`dest${i}`] && !!errors[`dest${i}`]}
+                            className={`${styles.input} slashed-zeroes`}
+                          />
+                        )}
+                      </rb.Form.Group>
+                    )
+                  })}
+                {!collaborativeOperationRunning && (
+                  <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
+                )}
+                <rb.Button
+                  className={styles.submit}
+                  variant="dark"
+                  type="submit"
+                  disabled={!collaborativeOperationRunning && (isSubmitting || isLoading || !isValid)}
+                >
+                  <div className="d-flex justify-content-center align-items-center">
+                    {collaborativeOperationRunning ? t('scheduler.button_stop') : t('scheduler.button_start')}
+                  </div>
+                </rb.Button>
+              </rb.Form>
+            </>
+          )}
+        </Formik>
+      )}
     </>
   )
 }
