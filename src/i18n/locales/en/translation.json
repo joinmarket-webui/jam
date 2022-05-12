@@ -272,6 +272,10 @@
     "placeholder_destination_input": "Enter destination address...",
     "description_fees": "The scheduler will pay all occurring fees automatically.",
     "button_start": "Start Scheduler",
-    "button_stop": "Stop Scheduler"
+    "button_stop": "Stop Scheduler",
+    "progress_tldr": "Currently running a schedule of <1>{{ length}}</1> transactions over <3>{{ time }}</3> hours.",
+    "progress_description": "This time estimate does not take into account the time spent talking to counterparties and waiting for transactions to get confirmed on the time chain. It is a lower bound estimate. The actual time for processing the whole schedule will likely be longer.",
+    "progress_current_state": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> to process...",
+    "progress_done": "All transactions completed successfully. The scheduler will stop soon."
   }
 }

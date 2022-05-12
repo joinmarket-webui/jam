@@ -1,5 +1,6 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
+import { Trans, useTranslation } from 'react-i18next'
 import styles from './ScheduleProgress.module.css'
 
 const scheduleToSteps = (schedule) => {
@@ -55,6 +56,8 @@ const scheduleToSteps = (schedule) => {
 }
 
 const ScheduleProgress = ({ schedule }) => {
+  const { t } = useTranslation()
+
   const steps = scheduleToSteps(schedule)
 
   const stepsJsx = steps.txs.map((step, i) => {
@@ -83,14 +86,12 @@ const ScheduleProgress = ({ schedule }) => {
     <div className="d-flex flex-column gap-3">
       <div>
         <p className="mb-1">
-          Currently running a schedule of <strong>{steps.txs.length}</strong> transactions over{' '}
-          <strong>{Math.ceil(steps.totalWaitTime / 60 / 60)}</strong> hours.
+          <Trans i18nKey="scheduler.progress_tldr">
+            Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
+            <strong>{{ time: Math.ceil(steps.totalWaitTime / 60 / 60) }}</strong> hours.
+          </Trans>
         </p>
-        <p className={['text-secondary', styles['text-small']].join(' ')}>
-          This time estimate does not take into account the time spent talking to counterparties and waiting for
-          transactions to get confirmed on the time chain. It is a lower bound estimate. The actual time for processing
-          the whole schedule will likely be longer.
-        </p>
+        <p className={['text-secondary', styles['text-small']].join(' ')}>{t('scheduler.progress_description')}</p>
       </div>
       <div className={styles['schedule-progress']}>
         <div className={styles['progress-container']}>
@@ -111,8 +112,10 @@ const ScheduleProgress = ({ schedule }) => {
                   aria-hidden="true"
                   className="ms-1 me-2"
                 />
-                Waiting for transaction <strong>{steps.completedTxs + 1}</strong> of <strong>{steps.txs.length}</strong>{' '}
-                to process...
+                <Trans i18nKey="scheduler.progress_current_state">
+                  Waiting for transaction <strong>{{ current: steps.completedTxs + 1 }}</strong> of
+                  <strong>{{ total: steps.txs.length }}</strong> to process...
+                </Trans>
               </div>
             </>
           ) : (
@@ -125,7 +128,7 @@ const ScheduleProgress = ({ schedule }) => {
                 aria-hidden="true"
                 className="ms-1 me-2"
               />
-              All transactions completed successfully. The scheduler will stop soon.
+              {t('scheduler.progress_done')}
             </div>
           )}
         </div>
