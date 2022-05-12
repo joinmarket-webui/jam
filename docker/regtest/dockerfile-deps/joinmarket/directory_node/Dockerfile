@@ -26,10 +26,6 @@ COPY default.cfg "${CONFIG}"
 COPY autostart /root/
 COPY supervisor-conf/*.conf /etc/supervisor/conf.d/
 
-# this is important because tor is very finicky about permissions
-# see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/68c64e135dabafca8ed78202ace1ced1884684be/docs/onion-message-channels.md#joinmarket-specific-configuration
-#RUN chmod 700 /root/.joinmarket/hidden_service_dir
-
 RUN cd /src/scripts \
     && (python wallet-tool.py generate || true) \
     && cp "${CONFIG}" "${DEFAULT_CONFIG}"
