@@ -82,7 +82,10 @@ export default function Jam() {
       return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token, signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data) => {
-          !signal.aborted && setSchedule(data.schedule)
+          if (!signal.aborted) {
+            process.env.NODE_ENV === 'development' && console.log(data.schedule)
+            setSchedule(data.schedule)
+          }
         })
         .catch((err) => {
           if (err.response.status === 404) {
