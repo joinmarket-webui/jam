@@ -47,7 +47,7 @@ export default function Jam() {
   // Todo: Discuss if we should hardcode this or let the user pick an account.
   const INTERNAL_DEST_ACCOUNT = 0
   // Interval in milliseconds between requests to reload the schedule.
-  const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 15_000 : 60_000
+  const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
 
   useEffect(() => {
     const abortCtrl = new AbortController()
