@@ -88,7 +88,7 @@ export default function Jam() {
           }
         })
         .catch((err) => {
-          if (err.response.status === 404) {
+          if (err.response?.status === 404) {
             // Not finding a schedule is not an error.
             // It means a single collaborative transaction is running.
             // Those have no schedule.
