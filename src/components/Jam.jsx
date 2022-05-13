@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
@@ -41,10 +41,13 @@ export default function Jam() {
   const [schedule, setSchedule] = useState(null)
 
   // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
-  // const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
+  const deactivateTestingToggle = false
+  const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
   // Todo: Discuss if we should hardcode this or let the user pick an account.
   const INTERNAL_DEST_ACCOUNT = 0
+  // Interval in milliseconds between requests to reload the schedule.
+  const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 3_000 : 60_000
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -74,26 +77,41 @@ export default function Jam() {
     setCollaborativeOperationRunning(coinjoinInProgress || makerRunning)
   }, [serviceInfo])
 
+  const reloadSchedule = useCallback(
+    ({ signal }) => {
+      return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token })
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+        .then((data) => {
+          setSchedule(data.schedule)
+        })
+        .catch((err) => {
+          // Not finding a schedule is not an error.
+          // It means a single colalborative transaction is running.
+          // Those have no schedule.
+        })
+    },
+    [wallet]
+  )
+
   useEffect(() => {
     if (!collaborativeOperationRunning) {
       return
     }
 
-    setAlert(null)
-    setIsLoading(true)
+    const abortCtrl = new AbortController()
 
-    return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((data) => {
-        setSchedule(data.schedule)
-      })
-      .catch((err) => {
-        // Not finding a schedule is not an error.
-        // It means a single colalborative transaction is running.
-        // Those have no schedule.
-      })
-      .finally(() => setIsLoading(false))
-  }, [collaborativeOperationRunning, wallet])
+    const load = () => {
+      reloadSchedule({ signal: abortCtrl.signal }).catch((err) => console.error(err))
+    }
+
+    load()
+
+    const interval = setInterval(load, SCHEDULE_REQUEST_INTERVAL)
+    return () => {
+      clearInterval(interval)
+      abortCtrl.abort()
+    }
+  }, [collaborativeOperationRunning, reloadSchedule, SCHEDULE_REQUEST_INTERVAL])
 
   const getNewAddresses = (count, mixdepth) => {
     const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
@@ -129,22 +147,21 @@ export default function Jam() {
 
     const body = { destination_addresses: destinations }
 
-    // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
-    // if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings) {
-    //   body.tumbler_options = {
-    //     addrcount: 3,
-    //     minmakercount: 1,
-    //     makercountrange: [1, 1],
-    //     mixdepthcount: 3,
-    //     mintxcount: 2,
-    //     txcountparams: [1, 1],
-    //     timelambda: 0.1,
-    //     stage1_timelambda_increase: 1.0,
-    //     liquiditywait: 10,
-    //     waittime: 1.0,
-    //     mixdepthsrc: 0,
-    //   }
-    // }
+    if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings && !deactivateTestingToggle) {
+      body.tumbler_options = {
+        addrcount: 3,
+        minmakercount: 1,
+        makercountrange: [1, 1],
+        mixdepthcount: 3,
+        mintxcount: 2,
+        txcountparams: [1, 1],
+        timelambda: 0.1,
+        stage1_timelambda_increase: 1.0,
+        liquiditywait: 10,
+        waittime: 1.0,
+        mixdepthsrc: 0,
+      }
+    }
 
     try {
       const res = await Api.postTumblerStart({ walletName: wallet.name, token: wallet.token }, body)
@@ -310,20 +327,19 @@ export default function Jam() {
                             disabled={isSubmitting}
                           />
                         </rb.Form.Group>
-                        {/* Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged. */}
-                        {/*process.env.NODE_ENV === 'development' && (
-                  <rb.Form.Group className="mb-4" controlId="offertype">
-                    <ToggleSwitch
-                      label={'Use insecure testing settings'}
-                      subtitle={
-                        "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
-                      }
-                      initialValue={useInsecureTestingSettings}
-                      onToggle={(isToggled) => setUseInsecureTestingSettings(isToggled)}
-                      disabled={isSubmitting}
-                    />
-                  </rb.Form.Group>
-                )*/}
+                        {process.env.NODE_ENV === 'development' && !deactivateTestingToggle && (
+                          <rb.Form.Group className="mb-4" controlId="offertype">
+                            <ToggleSwitch
+                              label={'Use insecure testing settings'}
+                              subtitle={
+                                "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
+                              }
+                              initialValue={useInsecureTestingSettings}
+                              onToggle={(isToggled) => setUseInsecureTestingSettings(isToggled)}
+                              disabled={isSubmitting}
+                            />
+                          </rb.Form.Group>
+                        )}
                       </>
                     )}
                     {!collaborativeOperationRunning &&

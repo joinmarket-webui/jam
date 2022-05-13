@@ -86,10 +86,17 @@ const ScheduleProgress = ({ schedule }) => {
     <div className="d-flex flex-column gap-3">
       <div>
         <p className="mb-1">
-          <Trans i18nKey="scheduler.progress_tldr">
-            Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
-            <strong>{{ time: Math.ceil(steps.totalWaitTime / 60 / 60) }}</strong> hours.
-          </Trans>
+          {Math.ceil(steps.totalWaitTime / 60 / 60) === 1 ? (
+            <Trans i18nKey="scheduler.progress_tldr_one_hour">
+              Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
+              <strong>{{ hour: Math.ceil(steps.totalWaitTime / 60 / 60) }}</strong> hours.
+            </Trans>
+          ) : (
+            <Trans i18nKey="scheduler.progress_tldr_multiple_hours">
+              Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
+              <strong>{{ hours: Math.ceil(steps.totalWaitTime / 60 / 60) }}</strong> hours.
+            </Trans>
+          )}
         </p>
         <p className={['text-secondary', styles['text-small']].join(' ')}>{t('scheduler.progress_description')}</p>
       </div>
