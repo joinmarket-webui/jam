@@ -79,7 +79,7 @@ export default function Jam() {
 
   const reloadSchedule = useCallback(
     ({ signal }) => {
-      return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token })
+      return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token, signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data) => {
           setSchedule(data.schedule)
