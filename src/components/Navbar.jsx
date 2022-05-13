@@ -4,7 +4,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
+import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
@@ -34,17 +34,10 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   )
 }
 
-const CenterNav = ({ makerRunning, onClick }) => {
+const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
   const { t } = useTranslation()
-  const serviceInfo = useServiceInfo()
 
   const scheduleEnabled = isFeatureEnabled('schedule')
-  const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
-
-  useEffect(() => {
-    const coinjoinInProgress = serviceInfo && serviceInfo.coinjoinInProgress
-    setCollaborativeOperationRunning(coinjoinInProgress)
-  }, [serviceInfo])
 
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
@@ -70,7 +63,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
           >
             <div className="d-flex align-items-start">
               {t('Jam')}
-              <EarnIndicator isOn={collaborativeOperationRunning} />
+              <TabActivityIndicator isOn={cjRunning} />
             </div>
           </NavLink>
         </rb.Nav.Item>
@@ -85,7 +78,7 @@ const CenterNav = ({ makerRunning, onClick }) => {
         >
           <div className="d-flex align-items-start">
             {t('navbar.tab_earn')}
-            <EarnIndicator isOn={makerRunning} />
+            <TabActivityIndicator isOn={makerRunning} />
           </div>
         </NavLink>
       </rb.Nav.Item>
@@ -242,7 +235,11 @@ export default function Navbar() {
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
-                    <CenterNav makerRunning={serviceInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
+                    <CenterNav
+                      makerRunning={serviceInfo?.makerRunning}
+                      cjRunning={serviceInfo?.coinjoinInProgress}
+                      onClick={() => setIsExpanded(!isExpanded)}
+                    />
                     <TrailingNav
                       coinjoinInProgess={serviceInfo?.coinjoinInProgress}
                       onClick={() => setIsExpanded(!isExpanded)}
@@ -250,7 +247,7 @@ export default function Navbar() {
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
-                  <CenterNav makerRunning={serviceInfo?.makerRunning} />
+                  <CenterNav makerRunning={serviceInfo?.makerRunning} cjRunning={serviceInfo?.coinjoinInProgress} />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">

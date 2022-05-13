@@ -5,7 +5,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
-import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
+import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { routes } from '../constants/routes'
 import styles from './Wallet.module.css'
 
@@ -292,7 +292,7 @@ export default function Wallet({
                     <Link className="wallet-name" to={routes.wallet}>
                       {walletDisplayName(name)}
                     </Link>
-                    {makerRunning && <EarnIndicator isOn={true} />}
+                    {makerRunning && <TabActivityIndicator isOn={true} />}
                     {coinjoinInProgress && <JoiningIndicator isOn={true} className="text-success" />}
                   </span>
                 ) : (
