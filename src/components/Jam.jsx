@@ -82,7 +82,7 @@ export default function Jam() {
       return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token, signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data) => {
-          setSchedule(data.schedule)
+          !signal.aborted && setSchedule(data.schedule)
         })
         .catch((err) => {
           // Not finding a schedule is not an error.
