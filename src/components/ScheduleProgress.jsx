@@ -87,12 +87,12 @@ const ScheduleProgress = ({ schedule }) => {
       <div>
         <p className="mb-1">
           {Math.ceil(steps.totalWaitTime / 60 / 60) === 1 ? (
-            <Trans i18nKey="scheduler.progress_tldr_one_hour">
+            <Trans i18nKey="scheduler.progress_tldr_seconds">
               Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
-              <strong>{{ hour: Math.ceil(steps.totalWaitTime / 60 / 60) }}</strong> hours.
+              <strong>{{ seconds: Math.ceil(steps.totalWaitTime) }}</strong> seconds.
             </Trans>
           ) : (
-            <Trans i18nKey="scheduler.progress_tldr_multiple_hours">
+            <Trans i18nKey="scheduler.progress_tldr_hours">
               Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
               <strong>{{ hours: Math.ceil(steps.totalWaitTime / 60 / 60) }}</strong> hours.
             </Trans>
