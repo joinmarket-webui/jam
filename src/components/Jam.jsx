@@ -86,7 +86,7 @@ export default function Jam() {
         })
         .catch((err) => {
           // Not finding a schedule is not an error.
-          // It means a single colalborative transaction is running.
+          // It means a single collaborative transaction is running.
           // Those have no schedule.
         })
     },
