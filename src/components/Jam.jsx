@@ -88,7 +88,9 @@ export default function Jam() {
         setSchedule(data.schedule)
       })
       .catch((err) => {
-        setAlert({ variant: 'danger', message: err.message })
+        // Not finding a schedule is not an error.
+        // It means a single colalborative transaction is running.
+        // Those have no schedule.
       })
       .finally(() => setIsLoading(false))
   }, [collaborativeOperationRunning, wallet])
@@ -196,6 +198,11 @@ export default function Jam() {
             <div className="mb-4">
               <ScheduleProgress schedule={schedule} />
             </div>
+          )}
+          {collaborativeOperationRunning && !schedule && (
+            <rb.Alert variant="info" className="mb-4">
+              {t('send.text_coinjoin_already_running')}
+            </rb.Alert>
           )}
           {!collaborativeOperationRunning && wallet && walletInfo && (
             <>
