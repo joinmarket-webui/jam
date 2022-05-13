@@ -85,12 +85,18 @@ export default function Jam() {
           !signal.aborted && setSchedule(data.schedule)
         })
         .catch((err) => {
-          // Not finding a schedule is not an error.
-          // It means a single collaborative transaction is running.
-          // Those have no schedule.
+          if (err.response.status === 404) {
+            // Not finding a schedule is not an error.
+            // It means a single collaborative transaction is running.
+            // Those have no schedule.
+            return
+          }
+
+          const message = err.message || t('scheduler.error_loading_schedule_failed')
+          !signal.aborted && setAlert({ variant: 'danger', message })
         })
     },
-    [wallet]
+    [wallet, t]
   )
 
   useEffect(() => {
