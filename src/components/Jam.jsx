@@ -151,7 +151,7 @@ export default function Jam() {
       body.tumbler_options = {
         addrcount: 3,
         minmakercount: 1,
-        makercountrange: [1, 1],
+        makercountrange: [1, 0],
         mixdepthcount: 3,
         mintxcount: 2,
         txcountparams: [1, 1],
