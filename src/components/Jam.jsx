@@ -41,7 +41,7 @@ export default function Jam() {
   const [schedule, setSchedule] = useState(null)
 
   // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
-  const deactivateTestingToggle = false
+  const deactivateTestingToggle = true
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
   // Todo: Discuss if we should hardcode this or let the user pick an account.
