@@ -180,4 +180,5 @@ export {
   useSetCurrentWallet,
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
+  BranchEntry,
 }

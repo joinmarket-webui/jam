@@ -92,6 +92,34 @@ interface ConfigSetRequest {
   field: string
 }
 
+interface StartTumblerRequest {
+  destination_addresses: BitcoinAddress[]
+  tumbler_options?: TumblerOptions
+}
+
+interface TumblerOptions {
+  mixdepthsrc?: number
+  restart?: boolean
+  schedulefile?: string
+  addrcount?: number
+  makercountrange?: number[]
+  minmakercount?: number
+  mixdepthcount?: number
+  txcountparams?: number[]
+  mintxcount?: number
+  donateamount?: number
+  timelambda?: number
+  stage1_timelambda_increase?: number
+  waittime?: number
+  mincjamount?: number
+  liquiditywait?: number
+  maxbroadcasts?: number
+  maxcreatetx?: number
+  amtmixdepths?: number
+  rounding_chance?: number
+  rounding_sigfig_weights?: number[]
+}
+
 /**
  * Construct a bearer authorization header object for the given token.
  *
@@ -248,6 +276,29 @@ const postFreeze = async (
   })
 }
 
+const postTumblerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartTumblerRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
+    method: 'POST',
+    headers: { ...Authorization(token) },
+    body: JSON.stringify({ ...req }),
+    signal,
+  })
+}
+
+const getTumblerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/stop`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
+const getTumblerSchedule = async ({ token, signal, walletName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
 /**
  * Get the value of a specific config setting. Note that values are always returned as string.
  *
@@ -328,5 +379,8 @@ export {
   postFreeze,
   postConfigGet,
   getWalletSeed,
+  postTumblerStart,
+  getTumblerStop,
+  getTumblerSchedule,
   Helper,
 }
