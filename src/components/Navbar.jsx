@@ -6,22 +6,22 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
+import { useBalanceDetails, useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
 import { isFeatureEnabled } from '../constants/featureFlags'
 
-const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
+const WalletPreview = ({ wallet, totalBalance, unit, showBalance }) => {
   return (
     <div className="d-flex align-items-center">
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {walletInfo && walletInfo?.data.display.walletinfo.total_balance && unit ? (
+        {totalBalance && unit ? (
           <div className="text-body">
             <Balance
-              valueString={walletInfo.data.display.walletinfo.total_balance}
+              valueString={totalBalance}
               convertToUnit={unit}
               showBalance={showBalance || false}
               enableVisibilityToggle={false}
@@ -143,7 +143,7 @@ export default function Navbar() {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
-  const currentWalletInfo = useCurrentWalletInfo()
+  const { totalBalance } = useBalanceDetails()
 
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
@@ -218,7 +218,7 @@ export default function Navbar() {
                       <>
                         <WalletPreview
                           wallet={currentWallet}
-                          walletInfo={currentWalletInfo}
+                          totalBalance={totalBalance}
                           showBalance={settings.showBalance}
                           unit={settings.unit}
                         />
