@@ -78,7 +78,7 @@ interface Account {
 
 interface Branch {
   branch: string
-  balance: string
+  balance: BalanceString
   entries: BranchEntry[]
 }
 
@@ -219,7 +219,7 @@ const useReloadCurrentWalletInfo = () => {
   return context.reloadCurrentWalletInfo
 }
 
-const parseTotalBalanceString = (rawTotalBalance: BalanceString): BalanceDetails => {
+export const parseTotalBalanceString = (rawTotalBalance: BalanceString): BalanceDetails => {
   const indexOfFirstWhitespace = rawTotalBalance.indexOf(' ')
 
   if (indexOfFirstWhitespace < 0) {
