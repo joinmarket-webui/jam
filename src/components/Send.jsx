@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import { useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
@@ -176,31 +175,30 @@ export default function Send() {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const settings = useSettings()
-
   const location = useLocation()
+
+  const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
+  const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
+  const waitForTakerToFinish = useMemo(() => isCoinjoinInProgress, [isCoinjoinInProgress])
+  const isOperationDisabled = useMemo(
+    () => isCoinjoinInProgress || isMakerRunning,
+    [isCoinjoinInProgress, isMakerRunning]
+  )
+
   const [alert, setAlert] = useState(null)
-
-  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
-  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
-  const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
-  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
-
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [isOperationDisabled, setIsOperationDisabled] = useState(false)
-
-  useEffect(() => {
-    const coinjoinInProgress = serviceInfo && serviceInfo.coinjoinInProgress
-    const makerRunning = serviceInfo && serviceInfo.makerRunning
-    setIsOperationDisabled(makerRunning || coinjoinInProgress)
-
-    setWaitForTakerToFinish(coinjoinInProgress)
-    setTakerStartedInfoAlert((current) => (coinjoinInProgress ? current : null))
-  }, [serviceInfo])
-
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
+
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
+  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
+
+  useEffect(() => {
+    setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
+  }, [isCoinjoinInProgress])
 
   const initialDestination = null
   const initialAccount = 0
@@ -574,14 +572,12 @@ export default function Send() {
   return (
     <>
       <div
-        className={`${serviceInfo?.makerRunning ? styles['maker-running'] : ''} ${
-          serviceInfo?.coinjoinInProgress ? 'taker-running' : ''
-        }`}
+        className={`${isMakerRunning ? styles['maker-running'] : ''} ${isCoinjoinInProgress ? 'taker-running' : ''}`}
       >
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
         <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
           <>
-            {serviceInfo?.makerRunning && (
+            {isMakerRunning && (
               <Link to={routes.earn} className={styles.unstyled}>
                 <rb.Alert variant="info" className="mb-4">
                   <rb.Row className="align-items-center">
@@ -593,7 +589,7 @@ export default function Send() {
                 </rb.Alert>
               </Link>
             )}
-            {serviceInfo?.coinjoinInProgress && (
+            {isCoinjoinInProgress && (
               <rb.Alert variant="info" className="mb-4">
                 {t('send.text_coinjoin_already_running')}
               </rb.Alert>
