@@ -22,7 +22,12 @@ type BalanceDetailsSupport = BalanceDetails & {
    * @description available balance (same as `availableBalance`) manually calculated
    * @deprecated this value must be used till backend v0.9.7 is released, and then be removed.
    */
-  calculatedAvailableBalance: number | null // in sats
+  calculatedAvailableBalanceInSats: number | null // in sats
+  /**
+   * @description frozen or locked balance manually calculated
+   * @deprecated this value must be used till backend v0.9.7 is released, and then be removed.
+   */
+  calculatedFrozenOrLockedBalanceInSats: number | null // in sats
 }
 
 type AccountBalanceDetails = BalanceDetailsSupport & {
@@ -244,7 +249,7 @@ const parseTotalBalanceString = (rawTotalBalance: BalanceString): BalanceDetails
 /**
  * @deprecated this is necessary for backend version <= v0.9.6; remove afterwards
  */
-const calculatedFrozenOrLockedBalanceInSats = (accountNumber: number, utxos: Utxos) => {
+const calculateFrozenOrLockedBalance = (accountNumber: number, utxos: Utxos) => {
   const accountUtxos = utxos.filter((it) => it.mixdepth === accountNumber)
   const frozenOrLockedUtxos = accountUtxos.filter((utxo) => utxo.frozen || utxo.locktime)
   return frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
@@ -253,9 +258,10 @@ const calculatedFrozenOrLockedBalanceInSats = (accountNumber: number, utxos: Utx
 const EMPTY_BALANCE_DETAILS = {
   totalBalance: null,
   availableBalance: null,
-  calculatedAvailableBalance: null,
   accountBalances: null,
-}
+  calculatedAvailableBalanceInSats: null,
+  calculatedFrozenOrLockedBalanceInSats: null,
+} as WalletBalanceDetails
 
 const useBalanceDetails = (): WalletBalanceDetails => {
   const currentWalletInfo = useCurrentWalletInfo()
@@ -282,17 +288,19 @@ const useBalanceDetails = (): WalletBalanceDetails => {
       const calculatedAvailableBalanceByAccount = Object.fromEntries(
         Object.entries(utxosByAccount).map(([account, utxos]) => {
           const accountNumber = parseInt(account, 10)
-          return [account, calculatedFrozenOrLockedBalanceInSats(accountNumber, utxos)]
+          return [account, calculateFrozenOrLockedBalance(accountNumber, utxos)]
         })
       )
 
       const accountsBalanceDetails = accounts.map(({ account, account_balance }) => {
         const accountBalanceDetails = parseTotalBalanceString(account_balance)
 
-        const accountFrozenOrLockedCalculated = calculatedAvailableBalanceByAccount[account]
+        const accountFrozenOrLockedCalculated = calculatedAvailableBalanceByAccount[account] || 0
         return {
           ...accountBalanceDetails,
-          calculatedAvailableBalance: btcToSats(accountBalanceDetails.totalBalance!) - accountFrozenOrLockedCalculated,
+          calculatedAvailableBalanceInSats:
+            btcToSats(accountBalanceDetails.totalBalance!) - accountFrozenOrLockedCalculated,
+          calculatedFrozenOrLockedBalanceInSats: accountFrozenOrLockedCalculated,
           accountIndex: parseInt(account, 10),
         } as AccountBalanceDetails
       })
@@ -304,8 +312,10 @@ const useBalanceDetails = (): WalletBalanceDetails => {
 
       return {
         ...walletBalanceDetails,
-        calculatedAvailableBalance: btcToSats(walletBalanceDetails.totalBalance!) - walletFrozenOrLockedCalculated,
         accountBalances: accountsBalanceDetails,
+        calculatedAvailableBalanceInSats:
+          btcToSats(walletBalanceDetails.totalBalance!) - walletFrozenOrLockedCalculated,
+        calculatedFrozenOrLockedBalanceInSats: walletFrozenOrLockedCalculated,
       }
     } catch (e) {
       console.warn('"useBalanceDetails" hook cannot determine balance format', e)

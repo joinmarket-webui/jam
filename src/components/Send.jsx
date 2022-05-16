@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -7,18 +7,13 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import {
-  useCurrentWalletInfo,
-  useReloadCurrentWalletInfo,
-  useCurrentWallet,
-  useBalanceDetails,
-} from '../context/WalletContext'
+import { useReloadCurrentWalletInfo, useCurrentWallet, useBalanceDetails } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
-import { btcToSats, SATS } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
+import { SATS } from '../utils'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -176,8 +171,7 @@ function SweepAccordionToggle({ eventKey }) {
 export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
-  const walletInfo = useCurrentWalletInfo()
-  const { accountBalances } = useBalanceDetails()
+
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
@@ -227,6 +221,15 @@ export default function Send() {
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
+
+  const { accountBalances } = useBalanceDetails()
+  const accountBalanceOrNull = useMemo(() => {
+    const eligibleAccountBalances = accountBalances && accountBalances.filter((it) => it.accountIndex === account)
+
+    if (!eligibleAccountBalances || eligibleAccountBalances.length !== 1) return null
+
+    return eligibleAccountBalances[0]
+  }, [accountBalances, account])
 
   useEffect(() => {
     if (
@@ -451,52 +454,19 @@ export default function Send() {
     }
   }
 
-  const balanceBreakdown = (accountNumber) => {
-    if (!walletInfo || !walletInfo.data.display.walletinfo.accounts || !walletInfo.data.utxos.utxos) {
-      return null
-    }
-
-    const filtered = walletInfo.data.display.walletinfo.accounts.filter((account) => {
-      return parseInt(account.account, 10) === accountNumber
-    })
-
-    if (filtered.length !== 1) {
-      return null
-    }
-
-    const utxosByAccount = walletInfo.data.utxos.utxos.reduce((acc, utxo) => {
-      acc[utxo.mixdepth] = acc[utxo.mixdepth] || []
-      acc[utxo.mixdepth].push(utxo)
-      return acc
-    }, {})
-    const accountUtxos = utxosByAccount[accountNumber] || []
-    const frozenOrLockedUtxos = accountUtxos.filter((utxo) => utxo.frozen || utxo.locktime)
-    const balanceFrozenOrLocked = frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
-
-    return {
-      totalBalance: 0, // TODO: btcToSats(filtered[0].account_balance),
-      frozenOrLockedBalance: balanceFrozenOrLocked,
-    }
-  }
-
   const amountFieldValue = () => {
     if (amount === null || Number.isNaN(amount)) return ''
 
     if (isSweep) {
-      const breakdown = balanceBreakdown(account)
-
-      if (!breakdown) return ''
-
-      return breakdown.totalBalance - breakdown.frozenOrLockedBalance
+      if (!accountBalanceOrNull) return ''
+      return `${accountBalanceOrNull.calculatedAvailableBalanceInSats}`
     }
 
     return amount
   }
 
   const frozenOrLockedWarning = () => {
-    const breakdown = balanceBreakdown(account)
-
-    if (!breakdown) return null
+    if (!accountBalanceOrNull) return null
 
     return (
       <div className={`${styles['sweep-breakdown']} mt-2`}>
@@ -510,7 +480,7 @@ export default function Send() {
                     <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
                     <td className={styles['balance-col']}>
                       <Balance
-                        valueString={breakdown.totalBalance.toString()}
+                        valueString={accountBalanceOrNull.totalBalance}
                         convertToUnit={SATS}
                         showBalance={true}
                       />
@@ -520,7 +490,7 @@ export default function Send() {
                     <td>{t('send.sweep_amount_breakdown_frozen_balance')}</td>
                     <td className={styles['balance-col']}>
                       <Balance
-                        valueString={breakdown.frozenOrLockedBalance.toString()}
+                        valueString={accountBalanceOrNull.calculatedFrozenOrLockedBalanceInSats.toString()}
                         convertToUnit={SATS}
                         showBalance={true}
                       />
@@ -641,12 +611,12 @@ export default function Send() {
                 {accountBalances &&
                   accountBalances
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
-                    .map(({ accountIndex, availableBalance, totalBalance }) => (
+                    .map(({ accountIndex, totalBalance }) => (
                       <option key={accountIndex} value={accountIndex}>
                         {settings.useAdvancedWalletMode
                           ? t('send.account_selector_option_dev_mode', { number: accountIndex })
                           : t('send.account_selector_option', { number: accountIndex })}{' '}
-                        {settings.showBalance && `(\u20BF${availableBalance} [\u20BF${totalBalance}])`}
+                        {settings.showBalance && `(\u20BF${totalBalance})`}
                       </option>
                     ))}
               </rb.Form.Select>
