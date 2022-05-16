@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useCallback, useState, useContext, Pro
 
 import { getSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
+import { btcToSats } from '../utils'
 
 interface CurrentWallet {
   name: string
@@ -10,20 +11,44 @@ interface CurrentWallet {
 
 interface BalanceDetails {
   totalBalance: string | null
+  /**
+   * @description available balance (total - frozen - locked); this value is incorrect for backend versions <= 0.9.6
+   */
   availableBalance: string | null
 }
 
-type AccountBalanceDetails = BalanceDetails & {
+type BalanceDetailsSupport = BalanceDetails & {
+  /**
+   * @description available balance (same as `availableBalance`) manually calculated
+   * @deprecated this value must be used till backend v0.9.7 is released, and then be removed.
+   */
+  calculatedAvailableBalance: number | null // in sats
+}
+
+type AccountBalanceDetails = BalanceDetailsSupport & {
   accountIndex: number
 }
 
-type WalletBalanceDetails = BalanceDetails & {
+type WalletBalanceDetails = BalanceDetailsSupport & {
   accountBalances: AccountBalanceDetails[] | null
 }
 
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
-
-type Utxos = any[]
+type Utxo = {
+  address: string
+  path: string
+  label: string
+  value: number // in sats
+  tries: number
+  tries_remaining: number
+  external: boolean
+  mixdepth: number
+  confirmations: number
+  frozen: boolean
+  utxo: string
+  locktime?: string
+}
+type Utxos = Utxo[]
 interface UtxosResponse {
   utxos: Utxos
 }
@@ -216,9 +241,19 @@ const parseTotalBalanceString = (rawTotalBalance: BalanceString): BalanceDetails
   }
 }
 
+/**
+ * @deprecated this is necessary for backend version <= v0.9.6; remove afterwards
+ */
+const calculatedFrozenOrLockedBalanceInSats = (accountNumber: number, utxos: Utxos) => {
+  const accountUtxos = utxos.filter((it) => it.mixdepth === accountNumber)
+  const frozenOrLockedUtxos = accountUtxos.filter((utxo) => utxo.frozen || utxo.locktime)
+  return frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
+}
+
 const EMPTY_BALANCE_DETAILS = {
   totalBalance: null,
   availableBalance: null,
+  calculatedAvailableBalance: null,
   accountBalances: null,
 }
 
@@ -233,17 +268,45 @@ const useBalanceDetails = (): WalletBalanceDetails => {
     // raw value is either "<total_and_available_balance>" or "<available_balance> (<total_balance>)"
     const rawTotalBalance = currentWalletInfo.data.display.walletinfo.total_balance
     const accounts = currentWalletInfo.data.display.walletinfo.accounts
+    const utxos = currentWalletInfo.data.utxos.utxos
+
     try {
       const walletBalanceDetails = parseTotalBalanceString(rawTotalBalance)
+      const utxosByAccount = utxos.reduce((acc, utxo) => {
+        const key = `${utxo.mixdepth}`
+        acc[key] = acc[key] || []
+        acc[key].push(utxo)
+        return acc
+      }, {} as { [key: string]: Utxos })
+
+      const calculatedAvailableBalanceByAccount = Object.fromEntries(
+        Object.entries(utxosByAccount).map(([account, utxos]) => {
+          const accountNumber = parseInt(account, 10)
+          return [account, calculatedFrozenOrLockedBalanceInSats(accountNumber, utxos)]
+        })
+      )
+
       const accountsBalanceDetails = accounts.map(({ account, account_balance }) => {
         const accountBalanceDetails = parseTotalBalanceString(account_balance)
+
+        const accountFrozenOrLockedCalculated = calculatedAvailableBalanceByAccount[account]
         return {
           ...accountBalanceDetails,
+          calculatedAvailableBalance: btcToSats(accountBalanceDetails.totalBalance!) - accountFrozenOrLockedCalculated,
           accountIndex: parseInt(account, 10),
         } as AccountBalanceDetails
       })
 
-      return { ...walletBalanceDetails, accountBalances: accountsBalanceDetails }
+      const walletFrozenOrLockedCalculated = Object.values(calculatedAvailableBalanceByAccount).reduce(
+        (acc, frozenOrLockedSats) => acc + frozenOrLockedSats,
+        0
+      )
+
+      return {
+        ...walletBalanceDetails,
+        calculatedAvailableBalance: btcToSats(walletBalanceDetails.totalBalance!) - walletFrozenOrLockedCalculated,
+        accountBalances: accountsBalanceDetails,
+      }
     } catch (e) {
       console.warn('"useBalanceDetails" hook cannot determine balance format', e)
       return EMPTY_BALANCE_DETAILS
