@@ -99,11 +99,7 @@ export default function Jam() {
       }
     }
 
-    const destinationAddressFormMap = destinationAddresses.reduce(
-      (obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }),
-      {}
-    )
-    return { ...destinationAddressFormMap }
+    return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
   }, [destinationIsExternal, getNewAddresses])
 
   useEffect(() => {
