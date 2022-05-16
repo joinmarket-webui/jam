@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
@@ -12,6 +12,21 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+
+const SCHEDULE_PRECONDITIONS = {
+  MIN_NUMBER_OF_UTXOS: 3,
+  MIN_AMOUNT_UTXO_WITH_RETRIES_LEFT: 1,
+  // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
+  MIN_UTXO_CONFIRMATIONS: 5,
+}
+
+const filterUtxosEligibleForScheduler = (utxos) => {
+  return utxos
+    .filter((it) => !it.frozen)
+    .filter((it) => !it.locktime)
+    .filter((it) => it.confirmations >= SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS)
+    .filter((it) => it.tries_remaining > 0)
+}
 
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
@@ -39,6 +54,18 @@ export default function Jam() {
   const [destinationIsExternal, setDestinationIsExternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
+
+  const eligibleUtxos = useMemo(() => {
+    if (!walletInfo) return null
+
+    const utxos = walletInfo.data.utxos.utxos || []
+    return filterUtxosEligibleForScheduler(utxos)
+  }, [walletInfo])
+
+  const isUtxosPreconditionFulfilled = useMemo(
+    () => (eligibleUtxos ? eligibleUtxos.length >= SCHEDULE_PRECONDITIONS.MIN_UTXO_AMOUNT : false),
+    [eligibleUtxos]
+  )
 
   // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
   const deactivateTestingToggle = true
@@ -145,7 +172,7 @@ export default function Jam() {
   }
 
   const startSchedule = async (values) => {
-    if (isLoading || collaborativeOperationRunning) {
+    if (isLoading || collaborativeOperationRunning || !isUtxosPreconditionFulfilled) {
       return
     }
 
@@ -214,6 +241,15 @@ export default function Jam() {
     <>
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+
+      <rb.Fade in={!isLoading && !collaborativeOperationRunning} mountOnEnter={true} unmountOnExit={true}>
+        <rb.Alert variant="warning" className="mb-4">
+          {isUtxosPreconditionFulfilled
+            ? t('send.text_utxo_precondition_fulfilled')
+            : t('send.text_utxo_precondition_not_fulfilled')}
+        </rb.Alert>
+      </rb.Fade>
+
       {isLoading ? (
         <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder xs={12} className={styles['input-loader']} />
@@ -376,7 +412,11 @@ export default function Jam() {
                       className={styles.submit}
                       variant="dark"
                       type="submit"
-                      disabled={!collaborativeOperationRunning && (isSubmitting || isLoading || !isValid)}
+                      disabled={
+                        isSubmitting ||
+                        isLoading ||
+                        (!collaborativeOperationRunning && (!isValid || !isUtxosPreconditionFulfilled))
+                      }
                     >
                       <div className="d-flex justify-content-center align-items-center">
                         {collaborativeOperationRunning ? t('scheduler.button_stop') : t('scheduler.button_start')}
