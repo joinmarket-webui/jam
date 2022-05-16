@@ -24,6 +24,7 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
               valueString={walletInfo.data.display.walletinfo.total_balance}
               convertToUnit={unit}
               showBalance={showBalance || false}
+              enableVisibilityToggle={false}
             />
           </div>
         ) : (
