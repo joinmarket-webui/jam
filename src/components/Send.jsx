@@ -414,7 +414,7 @@ export default function Send() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (isOperationDisabled) return
+    if (isLoading || isOperationDisabled) return
 
     const form = e.currentTarget
     const isValid = formIsValid
@@ -728,7 +728,7 @@ export default function Send() {
           />
         )}
         <rb.Button
-          variant="dark"
+          variant={isCoinjoin ? 'dark' : 'danger'}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
@@ -739,8 +739,10 @@ export default function Send() {
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('send.text_sending')}
             </div>
-          ) : (
+          ) : isCoinjoin ? (
             t('send.button_send')
+          ) : (
+            t('send.button_send_without_improved_privacy')
           )}
         </rb.Button>
       </div>

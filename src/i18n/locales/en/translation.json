@@ -177,6 +177,7 @@
     "feedback_invalid_amount": "Please provide a valid amount.",
     "toggle_coinjoin": "Send as collaborative transaction for improved privacy",
     "button_send": "Send",
+    "button_send_without_improved_privacy": "Send – without improved privacy",
     "text_sending": "Sending",
     "button_sweep": "Sweep",
     "button_clear_sweep": "Clear",
