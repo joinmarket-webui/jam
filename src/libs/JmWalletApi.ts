@@ -276,11 +276,14 @@ const postFreeze = async (
   })
 }
 
-const postSchedulerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartSchedulerRequest) => {
+const postSchedulerStart = async (
+  { token, signal, walletName }: WalletRequestContext,
+  { destination_addresses, scheduler_options }: StartSchedulerRequest
+) => {
   return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    body: JSON.stringify({ ...req }),
+    body: JSON.stringify({ destination_addresses: destination_addresses, tumbler_options: scheduler_options }),
     signal,
   })
 }
