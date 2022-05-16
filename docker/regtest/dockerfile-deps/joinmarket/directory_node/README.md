@@ -1,5 +1,3 @@
-
-
 Starts a staging joinmarket directory node that you can point to in your regtest configurations.
 
 - start-dn.py taken from https://github.com/JoinMarket-Org/custom-scripts/blob/e3c5fb548c704fc56cdaa869705797955a9821dd/start-dn.py
