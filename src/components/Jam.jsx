@@ -43,7 +43,7 @@ export default function Jam() {
   const reloadServiceInfo = useReloadServiceInfo()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const { availableBalance } = useBalanceDetails()
+  const { calculatedAvailableBalanceInSats } = useBalanceDetails()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -270,7 +270,7 @@ export default function Jam() {
                 </div>
                 <>
                   <Balance
-                    valueString={availableBalance}
+                    valueString={`${calculatedAvailableBalanceInSats}`}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />
