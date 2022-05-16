@@ -13,6 +13,14 @@ interface BalanceDetails {
   availableBalance: string | null
 }
 
+type AccountBalanceDetails = BalanceDetails & {
+  accountIndex: number
+}
+
+type WalletBalanceDetails = BalanceDetails & {
+  accountBalances: AccountBalanceDetails[] | null
+}
+
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
 
 type Utxos = any[]
@@ -24,17 +32,17 @@ interface WalletDisplayResponse {
 }
 
 // caution: raw value is either "<total_and_available_balance>" or "<available_balance> (<total_balance>)"
-type TotalBalanceString = string
+type BalanceString = string
 
 interface WalletDisplayInfo {
   wallet_name: string
-  total_balance: TotalBalanceString
+  total_balance: BalanceString
   accounts: Account[]
 }
 
 interface Account {
   account: string
-  account_balance: string
+  account_balance: BalanceString
   branches: Branch[]
 }
 
@@ -181,12 +189,7 @@ const useReloadCurrentWalletInfo = () => {
   return context.reloadCurrentWalletInfo
 }
 
-const EMPTY_BALANCE_DETAILS = {
-  totalBalance: null,
-  availableBalance: null,
-}
-
-const parseTotalBalanceString = (rawTotalBalance: TotalBalanceString) => {
+const parseTotalBalanceString = (rawTotalBalance: BalanceString): BalanceDetails => {
   const indexOfFirstWhitespace = rawTotalBalance.indexOf(' ')
   if (indexOfFirstWhitespace > 0) {
     const indexOfOpenBracket = rawTotalBalance.indexOf('(')
@@ -210,7 +213,13 @@ const parseTotalBalanceString = (rawTotalBalance: TotalBalanceString) => {
   }
 }
 
-const useBalanceDetails = (): BalanceDetails => {
+const EMPTY_BALANCE_DETAILS = {
+  totalBalance: null,
+  availableBalance: null,
+  accountBalances: null,
+}
+
+const useBalanceDetails = (): WalletBalanceDetails => {
   const currentWalletInfo = useCurrentWalletInfo()
 
   const balanceDetails = useMemo(() => {
@@ -220,9 +229,18 @@ const useBalanceDetails = (): BalanceDetails => {
 
     // raw value is either "<total_and_available_balance>" or "<available_balance> (<total_balance>)"
     const rawTotalBalance = currentWalletInfo.data.display.walletinfo.total_balance
-
+    const accounts = currentWalletInfo.data.display.walletinfo.accounts
     try {
-      return parseTotalBalanceString(rawTotalBalance)
+      const walletBalanceDetails = parseTotalBalanceString(rawTotalBalance)
+      const accountsBalanceDetails = accounts.map(({ account, account_balance }) => {
+        const accountBalanceDetails = parseTotalBalanceString(account_balance)
+        return {
+          ...accountBalanceDetails,
+          accountIndex: parseInt(account, 10),
+        } as AccountBalanceDetails
+      })
+
+      return { ...walletBalanceDetails, accountBalances: accountsBalanceDetails }
     } catch (e) {
       console.warn('"useBalanceDetails" hook cannot determine balance format', e)
       return EMPTY_BALANCE_DETAILS
