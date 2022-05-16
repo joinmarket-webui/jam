@@ -64,13 +64,13 @@ jmenv['hidden_service_dir']="${hsdirEscapedSafe}"
 hsdirUnsafe=$(sed "s/^.*/${hsdirEscapedUnsafe}/g" <<< '')
 hsdirSafe=$(sed "s/^.*/${hsdirEscapedSafe}/g" <<< '')
 
-mkdir --parents "${hsdirUnsafe}"
-rm --recursive --force "${hsdirSafe}"
-cp --recursive "${hsdirUnsafe}" "${hsdirSafe}"
-chown root:root --recursive "${hsdirSafe}"
+mkdir -p "${hsdirUnsafe}"
+rm -rf "${hsdirSafe}"
+cp -R "${hsdirUnsafe}" "${hsdirSafe}"
+chown root:root -R "${hsdirSafe}"
 # this is important because tor is very finicky about permissions
 # see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/68c64e135dabafca8ed78202ace1ced1884684be/docs/onion-message-channels.md#joinmarket-specific-configuration
-chmod 600 --recursive "${hsdirSafe}"
+chmod 600 -R "${hsdirSafe}"
 # ---------- Hidden Service Directory - End
 
 # For every env variable JM_FOO=BAR, replace the default configuration value of 'foo' by 'BAR'

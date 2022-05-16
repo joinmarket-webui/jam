@@ -61,9 +61,9 @@
     "regtest:clear": "docker-compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml down --volumes --remove-orphans",
     "regtest:up": "./docker/regtest/prepare-setup.sh && docker-compose --env-file docker/regtest/.env.generated --file docker/regtest/docker-compose.yml up",
     "regtest:down": "docker-compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml down",
-    "regtest:logs:jmwalletd": "docker exec --tty jm_regtest_joinmarket tail --follow /root/.joinmarket/logs/jmwalletd_stdout.log",
-    "regtest:logs:schedule": "docker exec --tty jm_regtest_joinmarket tail --follow /root/.joinmarket/logs/TUMBLE.schedule",
-    "regtest:logs:directory_node": "docker exec --tty jm_regtest_joinmarket_directory_node tail --follow --lines 200 /root/.joinmarket/logs/directory_node_stdout.log",
+    "regtest:logs:jmwalletd": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log",
+    "regtest:logs:schedule": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/TUMBLE.schedule",
+    "regtest:logs:directory_node": "docker exec -t jm_regtest_joinmarket_directory_node tail -f /root/.joinmarket/logs/directory_node_stdout.log -n 200",
     "regtest:init": "./docker/regtest/init-setup.sh",
     "regtest:mine": "watch -n 10 ./docker/regtest/mine-block.sh"
   },

@@ -42,14 +42,14 @@ ONION_ADDRESS_PREFIX="${PREFIX_CHARS:$RANDOM_PREFIX_CHAR_INDEX:1}"
 
 echo "Will use prefix: ${ONION_ADDRESS_PREFIX}"
 
-mkdir --parents "$TARGETDIR"
-mkdir --parents "$WORKDIR"
+mkdir -p "$TARGETDIR"
+mkdir -p "$WORKDIR"
 
 # download "vanitygen" repo if necessary
 if ! [ -d "${VANITYTORGEN_REPO_DIR}" ]; then
     git clone "${VANITYTORGEN_REPO_URL}" "${VANITYTORGEN_REPO_DIR}" --branch "${VANITYTORGEN_REPO_BRANCH}" \
         && git --work-tree="${VANITYTORGEN_REPO_DIR}" --git-dir="${VANITYTORGEN_REPO_DIR}/.git" checkout "$VANITYTORGEN_REPO_REF" \
-        && rm --recursive --force "${VANITYTORGEN_REPO_DIR}/.git"
+        && rm -rf "${VANITYTORGEN_REPO_DIR}/.git"
 fi
 
 # build and run "vanitygen" docker container
