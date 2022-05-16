@@ -5,7 +5,12 @@ import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import {
+  useBalanceDetails,
+  useCurrentWallet,
+  useCurrentWalletInfo,
+  useReloadCurrentWalletInfo,
+} from '../context/WalletContext'
 import styles from './Jam.module.css'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -38,6 +43,7 @@ export default function Jam() {
   const reloadServiceInfo = useReloadServiceInfo()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
+  const { availableBalance } = useBalanceDetails()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -263,11 +269,8 @@ export default function Jam() {
                   </div>
                 </div>
                 <>
-                  {
-                    // Todo: Subtract frozen or locked UTXOs from amount shown.
-                  }
                   <Balance
-                    valueString={walletInfo.data.display.walletinfo.total_balance}
+                    valueString={availableBalance}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />
