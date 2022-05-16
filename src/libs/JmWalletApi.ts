@@ -92,12 +92,12 @@ interface ConfigSetRequest {
   field: string
 }
 
-interface StartTumblerRequest {
+interface StartSchedulerRequest {
   destination_addresses: BitcoinAddress[]
-  tumbler_options?: TumblerOptions
+  scheduler_options?: SchedulerOptions
 }
 
-interface TumblerOptions {
+interface SchedulerOptions {
   mixdepthsrc?: number
   restart?: boolean
   schedulefile?: string
@@ -276,23 +276,26 @@ const postFreeze = async (
   })
 }
 
-const postTumblerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartTumblerRequest) => {
+const postSchedulerStart = async (
+  { token, signal, walletName }: WalletRequestContext,
+  { destination_addresses, scheduler_options }: StartSchedulerRequest
+) => {
   return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    body: JSON.stringify({ ...req }),
+    body: JSON.stringify({ destination_addresses: destination_addresses, tumbler_options: scheduler_options }),
     signal,
   })
 }
 
-const getTumblerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
+const getSchedulerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/stop`, {
     headers: { ...Authorization(token) },
     signal,
   })
 }
 
-const getTumblerSchedule = async ({ token, signal, walletName }: WalletRequestContext) => {
+const getSchedule = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
     headers: { ...Authorization(token) },
     signal,
@@ -379,8 +382,8 @@ export {
   postFreeze,
   postConfigGet,
   getWalletSeed,
-  postTumblerStart,
-  getTumblerStop,
-  getTumblerSchedule,
+  postSchedulerStart,
+  getSchedulerStop,
+  getSchedule,
   Helper,
 }
