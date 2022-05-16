@@ -14,7 +14,7 @@ interface BalanceDetails {
   /**
    * @description available balance (total - frozen - locked); this value is incorrect for backend versions <= 0.9.6
    */
-  availableBalance: string | null
+  availableBalanceDontUseYet: string | null
 }
 
 type BalanceDetailsSupport = BalanceDetails & {
@@ -227,7 +227,7 @@ export const parseTotalBalanceString = (rawTotalBalance: BalanceString): Balance
     // as the available balance is not returned in the raw string
     return {
       totalBalance: rawTotalBalance,
-      availableBalance: rawTotalBalance,
+      availableBalanceDontUseYet: rawTotalBalance,
     }
   }
 
@@ -242,7 +242,7 @@ export const parseTotalBalanceString = (rawTotalBalance: BalanceString): Balance
 
   return {
     totalBalance,
-    availableBalance,
+    availableBalanceDontUseYet: availableBalance,
   }
 }
 
@@ -257,7 +257,7 @@ const calculateFrozenOrLockedBalance = (accountNumber: number, utxos: Utxos) => 
 
 const EMPTY_BALANCE_DETAILS = {
   totalBalance: null,
-  availableBalance: null,
+  availableBalanceDontUseYet: null,
   accountBalances: null,
   calculatedAvailableBalanceInSats: null,
   calculatedFrozenOrLockedBalanceInSats: null,
