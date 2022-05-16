@@ -63,7 +63,7 @@ export default function Jam() {
   }, [walletInfo])
 
   const isUtxosPreconditionFulfilled = useMemo(
-    () => (eligibleUtxos ? eligibleUtxos.length >= SCHEDULE_PRECONDITIONS.MIN_UTXO_AMOUNT : false),
+    () => (eligibleUtxos ? eligibleUtxos.length >= SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS : false),
     [eligibleUtxos]
   )
 
@@ -242,14 +242,6 @@ export default function Jam() {
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-      <rb.Fade in={!isLoading && !collaborativeOperationRunning} mountOnEnter={true} unmountOnExit={true}>
-        <rb.Alert variant="warning" className="mb-4">
-          {isUtxosPreconditionFulfilled
-            ? t('send.text_utxo_precondition_fulfilled')
-            : t('send.text_utxo_precondition_not_fulfilled')}
-        </rb.Alert>
-      </rb.Fade>
-
       {isLoading ? (
         <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder xs={12} className={styles['input-loader']} />
@@ -266,6 +258,15 @@ export default function Jam() {
               {t('send.text_coinjoin_already_running')}
             </rb.Alert>
           )}
+          <rb.Fade
+            in={!collaborativeOperationRunning && !isUtxosPreconditionFulfilled}
+            mountOnEnter={true}
+            unmountOnExit={true}
+          >
+            <rb.Alert variant="warning" className="mb-4">
+              {t('send.text_utxo_precondition_not_fulfilled')}
+            </rb.Alert>
+          </rb.Fade>
           {!collaborativeOperationRunning && wallet && walletInfo && (
             <>
               <div className="d-flex align-items-center justify-content-between mb-4">
