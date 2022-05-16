@@ -13,7 +13,6 @@ services:
       ENSURE_WALLET: 1
       jm_rpc_wallet_file: jm_primary
       jm_minimum_makers: 1
-      jm_taker_utxo_age: 1
       jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
@@ -52,7 +51,6 @@ services:
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_secondary
       jm_minimum_makers: 1
-      jm_taker_utxo_age: 1
       jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
