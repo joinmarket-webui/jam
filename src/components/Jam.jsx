@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
@@ -12,6 +12,12 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+
+// Todo: Discuss if we should hardcode this or let the user pick an account.
+const INTERNAL_DEST_ACCOUNT = 0
+// Interval in milliseconds between requests to reload the schedule.
+const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
+const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
@@ -40,15 +46,61 @@ export default function Jam() {
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
 
+  const getNewAddresses = useCallback(
+    (count, mixdepth) => {
+      if (!walletInfo) {
+        throw new Error('Wallet info is not available.')
+      }
+      const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
+        return branch.branch.split('\t')[0] === 'external addresses'
+      })
+
+      const newAddresses = []
+
+      externalBranch.entries.every((entry) => {
+        if (entry.status === 'new') {
+          newAddresses.push(entry.address)
+        }
+
+        if (newAddresses.length >= count) {
+          return false
+        }
+
+        return true
+      })
+
+      if (newAddresses.length !== count) {
+        throw new Error(`Cannot find requested amount of addresses: found ${newAddresses.length} of ${count}`)
+      }
+
+      return newAddresses
+    },
+    [walletInfo]
+  )
+
   // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
   const deactivateTestingToggle = true
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
-  // Todo: Discuss if we should hardcode this or let the user pick an account.
-  const INTERNAL_DEST_ACCOUNT = 0
-  // Interval in milliseconds between requests to reload the schedule.
-  const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
-  const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
+  const initialFormValues = useMemo(() => {
+    const addressCount = 3
+
+    let destinationAddresses = []
+    if (destinationIsExternal) {
+      // prefill with empty addresses
+      destinationAddresses = Array(addressCount).fill('')
+    } else {
+      try {
+        // prefill with addresses marked as "new"
+        destinationAddresses = getNewAddresses(addressCount, INTERNAL_DEST_ACCOUNT)
+      } catch (e) {
+        // on error initialize with empty addresses - form validation will do the rest
+        destinationAddresses = Array(addressCount).fill('')
+      }
+    }
+
+    return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
+  }, [destinationIsExternal, getNewAddresses])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -121,29 +173,7 @@ export default function Jam() {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [collaborativeOperationRunning, reloadSchedule, SCHEDULE_REQUEST_INTERVAL])
-
-  const getNewAddresses = (count, mixdepth) => {
-    const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
-      return branch.branch.split('\t')[0] === 'external addresses'
-    })
-
-    const newAddresses = []
-
-    externalBranch.entries.every((entry) => {
-      if (entry.status === 'new') {
-        newAddresses.push(entry.address)
-      }
-
-      if (newAddresses.length >= count) {
-        return false
-      }
-
-      return true
-    })
-
-    return newAddresses
-  }
+  }, [collaborativeOperationRunning, reloadSchedule])
 
   const startSchedule = async (values) => {
     if (isLoading || collaborativeOperationRunning) {
@@ -249,10 +279,7 @@ export default function Jam() {
           {((!collaborativeOperationRunning && walletInfo && serviceInfo) ||
             (collaborativeOperationRunning && schedule)) && (
             <Formik
-              initialValues={getNewAddresses(3, INTERNAL_DEST_ACCOUNT).reduce(
-                (obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }),
-                {}
-              )}
+              initialValues={initialFormValues}
               validate={(values) => {
                 if (collaborativeOperationRunning) {
                   return {}
@@ -310,8 +337,6 @@ export default function Jam() {
                             })}
                             initialValue={destinationIsExternal}
                             onToggle={async (isToggled) => {
-                              setDestinationIsExternal(isToggled)
-
                               if (!isToggled) {
                                 const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
                                 setFieldValue('dest1', newAddresses[0], true)
@@ -322,6 +347,8 @@ export default function Jam() {
                                 setFieldValue('dest2', '', false)
                                 setFieldValue('dest3', '', false)
                               }
+
+                              setDestinationIsExternal(isToggled)
                             }}
                             disabled={isSubmitting}
                           />
