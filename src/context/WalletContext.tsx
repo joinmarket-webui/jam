@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren } from 'react'
+import React, { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useMemo } from 'react'
 
 import { getSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
@@ -6,6 +6,11 @@ import * as Api from '../libs/JmWalletApi'
 interface CurrentWallet {
   name: string
   token: string
+}
+
+interface BalanceDetails {
+  totalBalance: string | null
+  availableBalance: string | null
 }
 
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
@@ -18,9 +23,12 @@ interface WalletDisplayResponse {
   walletinfo: WalletDisplayInfo
 }
 
+// caution: raw value is either "<total_and_available_balance>" or "<available_balance> (<total_balance>)"
+type TotalBalanceString = string
+
 interface WalletDisplayInfo {
   wallet_name: string
-  total_balance: string
+  total_balance: TotalBalanceString
   accounts: Account[]
 }
 
@@ -173,6 +181,57 @@ const useReloadCurrentWalletInfo = () => {
   return context.reloadCurrentWalletInfo
 }
 
+const EMPTY_BALANCE_DETAILS = {
+  totalBalance: null,
+  availableBalance: null,
+}
+
+const parseTotalBalanceString = (rawTotalBalance: TotalBalanceString) => {
+  const indexOfFirstWhitespace = rawTotalBalance.indexOf(' ')
+  if (indexOfFirstWhitespace > 0) {
+    const indexOfOpenBracket = rawTotalBalance.indexOf('(')
+    const indexOfCloseBracket = rawTotalBalance.indexOf(')')
+    if (indexOfOpenBracket < indexOfFirstWhitespace || indexOfCloseBracket < indexOfOpenBracket + 1) {
+      throw new Error('Unknown format of TotalBalanceString')
+    }
+
+    const availableBalance = rawTotalBalance.substring(0, indexOfFirstWhitespace)
+    const totalBalance = rawTotalBalance.substring(indexOfOpenBracket + 1, indexOfCloseBracket)
+
+    return {
+      totalBalance,
+      availableBalance,
+    }
+  }
+
+  return {
+    totalBalance: rawTotalBalance,
+    availableBalance: rawTotalBalance,
+  }
+}
+
+const useBalanceDetails = (): BalanceDetails => {
+  const currentWalletInfo = useCurrentWalletInfo()
+
+  const balanceDetails = useMemo(() => {
+    if (!currentWalletInfo) {
+      return EMPTY_BALANCE_DETAILS
+    }
+
+    // raw value is either "<total_and_available_balance>" or "<available_balance> (<total_balance>)"
+    const rawTotalBalance = currentWalletInfo.data.display.walletinfo.total_balance
+
+    try {
+      return parseTotalBalanceString(rawTotalBalance)
+    } catch (e) {
+      console.warn('"useBalanceDetails" hook cannot determine balance format', e)
+      return EMPTY_BALANCE_DETAILS
+    }
+  }, [currentWalletInfo])
+
+  return balanceDetails
+}
+
 export {
   WalletContext,
   WalletProvider,
@@ -180,5 +239,6 @@ export {
   useSetCurrentWallet,
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
+  useBalanceDetails,
   BranchEntry,
 }
