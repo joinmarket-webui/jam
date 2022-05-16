@@ -15,4 +15,4 @@ e.g. in a docker-compose setup:
       jm_directory_nodes: jamobvon3jdgjnvuxur7vpdr6hzwrxhu5li3pnannfrrrupg5sb6ouyd.onion:5222
     volumes:
       - "./my-hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
-
+```
