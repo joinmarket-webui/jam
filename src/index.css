@@ -532,6 +532,9 @@ h2 {
   border-top: 1px solid rgba(222, 222, 222, 1);
   opacity: 1;
 }
+:root[data-theme='dark'] .privacy-levels hr {
+  border-color: var(--bs-gray-800);
+}
 
 .privacy-levels .btn.btn-outline-dark {
   padding: 0.25rem;
@@ -611,12 +614,12 @@ h2 {
   --bs-black: #000;
 }
 
-:root[data-theme='dark'] * {
+:root[data-theme='dark'] .border-top,
+:root[data-theme='dark'] .border-bottom,
+:root[data-theme='dark'] .border-left,
+:root[data-theme='dark'] .border-right,
+:root[data-theme='dark'] .border {
   border-color: var(--bs-gray-800) !important;
-}
-
-:root[data-theme='dark'] a.nav-link {
-  border-color: transparent !important;
 }
 
 :root[data-theme='dark'] a.nav-link.active {
@@ -640,6 +643,7 @@ h2 {
 
 :root[data-theme='dark'] .accordion-item {
   background: transparent !important;
+  border-color: var(--bs-gray-800) !important;
 }
 
 :root[data-theme='dark'] .accordion-button,
@@ -675,8 +679,18 @@ h2 {
   background-color: var(--bs-gray-900);
 }
 
+:root[data-theme='dark'] .modal-header,
+:root[data-theme='dark'] .modal-footer {
+  border-color: var(--bs-gray-800) !important;
+}
+
 :root[data-theme='dark'] .modal-header .btn-close {
   background-color: var(--bs-gray-900) !important;
+}
+
+:root[data-theme='dark'] .table,
+:root[data-theme='dark'] .table > :not(:first-child) {
+  border-color: var(--bs-gray-800) !important;
 }
 
 :root[data-theme='dark'] .form-control:disabled,

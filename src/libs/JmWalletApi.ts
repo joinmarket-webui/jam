@@ -92,6 +92,34 @@ interface ConfigSetRequest {
   field: string
 }
 
+interface StartSchedulerRequest {
+  destination_addresses: BitcoinAddress[]
+  scheduler_options?: SchedulerOptions
+}
+
+interface SchedulerOptions {
+  mixdepthsrc?: number
+  restart?: boolean
+  schedulefile?: string
+  addrcount?: number
+  makercountrange?: number[]
+  minmakercount?: number
+  mixdepthcount?: number
+  txcountparams?: number[]
+  mintxcount?: number
+  donateamount?: number
+  timelambda?: number
+  stage1_timelambda_increase?: number
+  waittime?: number
+  mincjamount?: number
+  liquiditywait?: number
+  maxbroadcasts?: number
+  maxcreatetx?: number
+  amtmixdepths?: number
+  rounding_chance?: number
+  rounding_sigfig_weights?: number[]
+}
+
 /**
  * Construct a bearer authorization header object for the given token.
  *
@@ -248,6 +276,32 @@ const postFreeze = async (
   })
 }
 
+const postSchedulerStart = async (
+  { token, signal, walletName }: WalletRequestContext,
+  { destination_addresses, scheduler_options }: StartSchedulerRequest
+) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
+    method: 'POST',
+    headers: { ...Authorization(token) },
+    body: JSON.stringify({ destination_addresses: destination_addresses, tumbler_options: scheduler_options }),
+    signal,
+  })
+}
+
+const getSchedulerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/stop`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
+const getSchedule = async ({ token, signal, walletName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
+    headers: { ...Authorization(token) },
+    signal,
+  })
+}
+
 /**
  * Get the value of a specific config setting. Note that values are always returned as string.
  *
@@ -328,5 +382,8 @@ export {
   postFreeze,
   postConfigGet,
   getWalletSeed,
+  postSchedulerStart,
+  getSchedulerStop,
+  getSchedule,
   Helper,
 }

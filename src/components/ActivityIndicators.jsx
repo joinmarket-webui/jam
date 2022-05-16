@@ -19,7 +19,7 @@ export function JoiningIndicator({ isOn, size = 30, className, ...props }) {
   )
 }
 
-export function EarnIndicator({ isOn }) {
+export function TabActivityIndicator({ isOn }) {
   return (
     <span className="earn-indicator">
       <ActivityIndicator isOn={isOn} />

@@ -61,7 +61,10 @@
     "regtest:clear": "docker-compose --file docker/regtest/docker-compose.yml down --volumes --remove-orphans",
     "regtest:up": "docker-compose --file docker/regtest/docker-compose.yml up",
     "regtest:down": "docker-compose --file docker/regtest/docker-compose.yml down",
-    "regtest:logs:jmwalletd": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log"
+    "regtest:logs:jmwalletd": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/jmwalletd_stdout.log",
+    "regtest:logs:schedule": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/TUMBLE.schedule",
+    "regtest:init": "./docker/regtest/init-setup.sh",
+    "regtest:mine": "watch -n 10 ./docker/regtest/mine-block.sh"
   },
   "eslintConfig": {
     "extends": [
