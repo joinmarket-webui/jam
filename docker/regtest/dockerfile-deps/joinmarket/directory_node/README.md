@@ -5,7 +5,6 @@ Starts a staging joinmarket directory node that you can point to in your regtest
 - start-dn.py taken from https://github.com/JoinMarket-Org/custom-scripts/blob/e3c5fb548c704fc56cdaa869705797955a9821dd/start-dn.py
   (might already be in master - last check on 2022-05-11)
 
-
 You must mount the directory specified in `hidden_service_dir`, which contains hostname, public and private key, 
 and provide the correct onion hostname via `directory_nodes` yourself!
 
