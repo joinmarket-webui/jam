@@ -48,6 +48,7 @@ export default function Jam() {
   const INTERNAL_DEST_ACCOUNT = 0
   // Interval in milliseconds between requests to reload the schedule.
   const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
+  const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -79,7 +80,7 @@ export default function Jam() {
 
   const reloadSchedule = useCallback(
     ({ signal }) => {
-      return Api.getTumblerSchedule({ walletName: wallet.name, token: wallet.token, signal })
+      return Api.getSchedule({ walletName: wallet.name, token: wallet.token, signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data) => {
           if (!signal.aborted) {
@@ -157,7 +158,7 @@ export default function Jam() {
     const body = { destination_addresses: destinations }
 
     if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings && !deactivateTestingToggle) {
-      body.tumbler_options = {
+      body.scheduler_options = {
         addrcount: 3,
         minmakercount: 1,
         makercountrange: [1, 0],
@@ -172,19 +173,13 @@ export default function Jam() {
       }
     }
 
-    try {
-      const res = await Api.postTumblerStart({ walletName: wallet.name, token: wallet.token }, body)
-
-      if (!res.ok) {
-        await Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))
-      }
-
-      setCollaborativeOperationRunning(true)
-    } catch (err) {
-      setAlert({ variant: 'danger', message: err.message })
-    } finally {
-      setIsLoading(false)
-    }
+    return Api.postSchedulerStart({ walletName: wallet.name, token: wallet.token }, body)
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
+      .then((_) => setCollaborativeOperationRunning(true))
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => setIsLoading(false))
   }
 
   const stopSchedule = async () => {
@@ -195,19 +190,14 @@ export default function Jam() {
     setAlert(null)
     setIsLoading(true)
 
-    try {
-      const res = await Api.getTumblerStop({ walletName: wallet.name, token: wallet.token })
-
-      if (!res.ok) {
-        await Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))
-      }
-
-      setCollaborativeOperationRunning(false)
-    } catch (err) {
-      setAlert({ variant: 'danger', message: err.message })
-    } finally {
-      setIsLoading(false)
-    }
+    return Api.getSchedulerStop({ walletName: wallet.name, token: wallet.token })
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
+      .then((_) => setCollaborativeOperationRunning(false))
+      .then((_) => new Promise((r) => setTimeout(r, SCHEDULER_STOP_RESPONSE_DELAY_MS)))
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => setIsLoading(false))
   }
 
   return (
