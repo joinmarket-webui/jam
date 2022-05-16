@@ -32,7 +32,7 @@ interface WalletDisplayResponse {
 }
 
 // caution: raw value is either "<total_and_available_balance>" or "<available_balance> (<total_balance>)"
-type BalanceString = string
+type BalanceString = `${number}.${string} (${number}.${string})` | `${number}.${string}`
 
 interface WalletDisplayInfo {
   wallet_name: string
@@ -191,25 +191,28 @@ const useReloadCurrentWalletInfo = () => {
 
 const parseTotalBalanceString = (rawTotalBalance: BalanceString): BalanceDetails => {
   const indexOfFirstWhitespace = rawTotalBalance.indexOf(' ')
-  if (indexOfFirstWhitespace > 0) {
-    const indexOfOpenBracket = rawTotalBalance.indexOf('(')
-    const indexOfCloseBracket = rawTotalBalance.indexOf(')')
-    if (indexOfOpenBracket < indexOfFirstWhitespace || indexOfCloseBracket < indexOfOpenBracket + 1) {
-      throw new Error('Unknown format of TotalBalanceString')
-    }
 
-    const availableBalance = rawTotalBalance.substring(0, indexOfFirstWhitespace)
-    const totalBalance = rawTotalBalance.substring(indexOfOpenBracket + 1, indexOfCloseBracket)
-
+  if (indexOfFirstWhitespace < 0) {
+    // backend server version <=v0.9.6 will have an invalid "available balance"
+    // as the available balance is not returned in the raw string
     return {
-      totalBalance,
-      availableBalance,
+      totalBalance: rawTotalBalance,
+      availableBalance: rawTotalBalance,
     }
   }
 
+  const indexOfOpenBracket = rawTotalBalance.indexOf('(')
+  const indexOfCloseBracket = rawTotalBalance.indexOf(')')
+  if (indexOfOpenBracket < indexOfFirstWhitespace || indexOfCloseBracket <= indexOfOpenBracket + 1) {
+    throw new Error('Unknown format of TotalBalanceString')
+  }
+
+  const availableBalance = rawTotalBalance.substring(0, indexOfFirstWhitespace)
+  const totalBalance = rawTotalBalance.substring(indexOfOpenBracket + 1, indexOfCloseBracket)
+
   return {
-    totalBalance: rawTotalBalance,
-    availableBalance: rawTotalBalance,
+    totalBalance,
+    availableBalance,
   }
 }
 

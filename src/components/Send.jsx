@@ -7,7 +7,12 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { useCurrentWalletInfo, useReloadCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
+import {
+  useCurrentWalletInfo,
+  useReloadCurrentWalletInfo,
+  useCurrentWallet,
+  useBalanceDetails,
+} from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
@@ -172,6 +177,7 @@ export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
+  const { accountBalances } = useBalanceDetails()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
@@ -468,7 +474,7 @@ export default function Send() {
     const balanceFrozenOrLocked = frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
 
     return {
-      totalBalance: btcToSats(filtered[0].account_balance),
+      totalBalance: 0, // TODO: btcToSats(filtered[0].account_balance),
       frozenOrLockedBalance: balanceFrozenOrLocked,
     }
   }
@@ -632,15 +638,15 @@ export default function Send() {
                 isInvalid={!isValidAccount(account)}
                 disabled={isOperationDisabled}
               >
-                {walletInfo &&
-                  walletInfo.data.display.walletinfo.accounts
-                    .sort((lhs, rhs) => lhs.account - rhs.account)
-                    .map(({ account, account_balance: balance }) => (
-                      <option key={account} value={account}>
+                {accountBalances &&
+                  accountBalances
+                    .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+                    .map(({ accountIndex, availableBalance, totalBalance }) => (
+                      <option key={accountIndex} value={accountIndex}>
                         {settings.useAdvancedWalletMode
-                          ? t('send.account_selector_option_dev_mode', { number: account })
-                          : t('send.account_selector_option', { number: account })}{' '}
-                        {settings.showBalance && `(\u20BF${balance})`}
+                          ? t('send.account_selector_option_dev_mode', { number: accountIndex })
+                          : t('send.account_selector_option', { number: accountIndex })}{' '}
+                        {settings.showBalance && `(\u20BF${availableBalance} [\u20BF${totalBalance}])`}
                       </option>
                     ))}
               </rb.Form.Select>
