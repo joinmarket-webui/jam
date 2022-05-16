@@ -12,8 +12,8 @@ services:
       READY_FILE: /root/.nbxplorer/btc_fully_synched
       ENSURE_WALLET: 1
       jm_rpc_wallet_file: jm_primary
-      jm_max_cj_fee_abs: 300000 # taken from jam production image
-      jm_max_cj_fee_rel: 0.0003 # taken from jam production image
+      jm_max_cj_fee_abs: 42000000 # 0.42 btc
+      jm_max_cj_fee_rel: 0.1337 # 13.37%
       jm_minimum_makers: 1
       jm_taker_utxo_age: 1
       jm_taker_utxo_retries: 10
@@ -63,8 +63,8 @@ services:
       APP_USER: joinmarket
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_secondary
-      jm_max_cj_fee_abs: 300000 # taken from jam production image
-      jm_max_cj_fee_rel: 0.0003 # taken from jam production image
+      jm_max_cj_fee_abs: 42000000 # 0.42 btc
+      jm_max_cj_fee_rel: 0.1337 # 13.37%
       jm_minimum_makers: 1
       jm_taker_utxo_age: 1
       jm_taker_utxo_retries: 10
