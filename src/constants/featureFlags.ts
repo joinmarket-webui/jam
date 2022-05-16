@@ -1,6 +1,7 @@
 interface FeatureFlags {
   skipWalletBackupConfirmation: boolean
   cheatsheet: boolean
+  schedule: boolean
 }
 
 const devMode = process.env.NODE_ENV === 'development'
@@ -8,6 +9,7 @@ const devMode = process.env.NODE_ENV === 'development'
 const featureFlags: FeatureFlags = {
   skipWalletBackupConfirmation: devMode,
   cheatsheet: devMode,
+  schedule: devMode,
 }
 
 type FeatureFlag = keyof FeatureFlags

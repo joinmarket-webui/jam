@@ -1,0 +1,5 @@
+@media (min-width: 768px) {
+  .wallet-password-input {
+    max-width: 350px;
+  }
+}
