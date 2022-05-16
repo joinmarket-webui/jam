@@ -70,7 +70,7 @@ cp --recursive "${hsdirUnsafe}" "${hsdirSafe}"
 chown root:root --recursive "${hsdirSafe}"
 # this is important because tor is very finicky about permissions
 # see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/68c64e135dabafca8ed78202ace1ced1884684be/docs/onion-message-channels.md#joinmarket-specific-configuration
-chmod 700 --recursive "${hsdirSafe}"
+chmod 600 --recursive "${hsdirSafe}"
 # ---------- Hidden Service Directory - End
 
 # For every env variable JM_FOO=BAR, replace the default configuration value of 'foo' by 'BAR'
