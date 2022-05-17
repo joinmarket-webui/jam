@@ -26,7 +26,12 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
       )}
       {!loading && (
         <h2>
-          <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
+          <Balance
+            valueString={balance}
+            convertToUnit={unit}
+            showBalance={showBalance || false}
+            enableVisibilityToggle={false}
+          />
         </h2>
       )}
     </div>
