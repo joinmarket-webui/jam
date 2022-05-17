@@ -152,7 +152,7 @@
   "send": {
     "loading": "Loading",
     "title": "Send bitcoin",
-    "subtitle": "Collaborative transactions increase the privacy of yourself and others.",
+    "subtitle": "Collaborative transactions improve the privacy of yourself and others.",
     "label_num_collaborators": "Number of collaborators: {{ numCollaborators }}",
     "input_num_collaborators_placeholder": "Other",
     "description_num_collaborators": "A higher number is better for privacy, but also increases the fee.",
