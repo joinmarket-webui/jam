@@ -20,8 +20,9 @@ const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_00
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const SCHEDULE_PRECONDITIONS = {
-  MIN_NUMBER_OF_UTXOS: 3,
-  MIN_AMOUNT_UTXO_WITH_RETRIES_LEFT: 1,
+  MIN_NUMBER_OF_UTXOS: 3, // min amount of utxos available
+  MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES: 1, // i.e 1 utxo must exist with retries available
+  MIN_OVERALL_REMAINING_RETRIES: 1, // the amount of overall retries possible e.g. if `2`: one utxo with 2 retries or 2 utxo with 1 retry each
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
   MIN_UTXO_CONFIRMATIONS: 5,
 }
@@ -68,10 +69,24 @@ export default function Jam() {
     return filterUtxosEligibleForScheduler(utxos)
   }, [walletInfo])
 
-  const isUtxosPreconditionFulfilled = useMemo(
-    () => (eligibleUtxos ? eligibleUtxos.length >= SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS : false),
-    [eligibleUtxos]
-  )
+  const isUtxosPreconditionFulfilled = useMemo(() => {
+    if (!eligibleUtxos) return false
+
+    if (eligibleUtxos.length < SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS) {
+      return false
+    }
+    const utxosWithRetriesRemaining = eligibleUtxos.filter((it) => it.tries_remaining > 0)
+    if (utxosWithRetriesRemaining.length < SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES) {
+      return false
+    }
+
+    const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
+    if (overallRetriesRemaining < SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES) {
+      return false
+    }
+
+    return true
+  }, [eligibleUtxos])
 
   const getNewAddresses = useCallback(
     (count, mixdepth) => {
