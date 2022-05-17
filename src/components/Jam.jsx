@@ -27,14 +27,6 @@ const SCHEDULE_PRECONDITIONS = {
   MIN_UTXO_CONFIRMATIONS: 5,
 }
 
-const filterUtxosEligibleForScheduler = (utxos) => {
-  return utxos
-    .filter((it) => !it.frozen)
-    .filter((it) => !it.locktime)
-    .filter((it) => it.confirmations >= SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS)
-    .filter((it) => it.tries_remaining > 0)
-}
-
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
 
@@ -47,34 +39,69 @@ const ValuesListener = ({ handler }) => {
   return null
 }
 
-const useSchedulerPreconditionsFulfilled = (walletInfoOrNull) => {
+const DEFAULT_PRECONDITION_SUMMARY = {
+  isFulfilled: false,
+  numberOfMissingUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
+  numberOfMissingUtxosWithRetriesRemaining: SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES,
+  amountOfMissingConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS,
+  amountOfMissingOverallRetries: SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
+}
+
+const useSchedulerPreconditionSummary = (walletInfoOrNull) => {
   const eligibleUtxos = useMemo(() => {
     if (!walletInfoOrNull) return []
 
     const utxos = walletInfoOrNull.data.utxos.utxos || []
-    return filterUtxosEligibleForScheduler(utxos)
+    return utxos.filter((it) => !it.frozen).filter((it) => !it.locktime)
   }, [walletInfoOrNull])
 
-  const isPreconditionFulfilled = useMemo(() => {
-    if (!eligibleUtxos) return false
+  const [summary, setSummary] = useState(DEFAULT_PRECONDITION_SUMMARY)
 
-    if (eligibleUtxos.length < SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS) {
-      return false
+  useEffect(() => {
+    if (!eligibleUtxos) {
+      setSummary(DEFAULT_PRECONDITION_SUMMARY)
+      return
     }
+
+    const numberOfMissingUtxos = Math.max(0, SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS - eligibleUtxos.length)
+
     const utxosWithRetriesRemaining = eligibleUtxos.filter((it) => it.tries_remaining > 0)
-    if (utxosWithRetriesRemaining.length < SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES) {
-      return false
-    }
+    const numberOfMissingUtxosWithRetriesRemaining = Math.max(
+      0,
+      SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES - utxosWithRetriesRemaining
+    )
 
     const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
-    if (overallRetriesRemaining < SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES) {
-      return false
-    }
+    const amountOfMissingOverallRetries = Math.max(
+      0,
+      SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
+    )
 
-    return true
+    const utxoMinConfirmation =
+      eligibleUtxos.length === 0
+        ? 0
+        : eligibleUtxos.reduce((acc, utxo) => Math.min(acc, utxo.confirmations), Number.MAX_SAFE_INTEGER)
+    const amountOfMissingConfirmations = Math.max(
+      0,
+      SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS - utxoMinConfirmation
+    )
+
+    const isFullfilled =
+      numberOfMissingUtxos === 0 &&
+      numberOfMissingUtxosWithRetriesRemaining === 0 &&
+      amountOfMissingOverallRetries === 0 &&
+      amountOfMissingConfirmations === 0
+
+    setSummary({
+      isFullfilled,
+      numberOfMissingUtxos,
+      numberOfMissingUtxosWithRetriesRemaining,
+      amountOfMissingConfirmations,
+      amountOfMissingOverallRetries,
+    })
   }, [eligibleUtxos])
 
-  return isPreconditionFulfilled
+  return summary
 }
 
 export default function Jam() {
@@ -92,7 +119,11 @@ export default function Jam() {
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
 
-  const isSchedulerPreconditionsFulfilled = useSchedulerPreconditionsFulfilled(walletInfo)
+  const schedulerPreconditionSummary = useSchedulerPreconditionSummary(walletInfo)
+  const isSchedulerPreconditionsFulfilled = useMemo(
+    () => schedulerPreconditionSummary.isFulfilled,
+    [schedulerPreconditionSummary]
+  )
 
   const getNewAddresses = useCallback(
     (count, mixdepth) => {
@@ -305,12 +336,64 @@ export default function Jam() {
             unmountOnExit={true}
           >
             <rb.Alert variant="warning" className="mb-4">
-              <Trans i18nKey="scheduler.precondition.error_precondition_not_fulfilled">
-                Starting the scheduler requires a minimum of{' '}
-                <strong>{{ minUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction outputs
-                (UTXOs) with at least{' '}
-                <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS }}</strong> confirmations.
-              </Trans>
+              <p>
+                <Trans i18nKey="scheduler.precondition.error_precondition_not_fulfilled">
+                  Starting the scheduler requires a minimum of{' '}
+                  <strong>{{ minUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction
+                  outputs (UTXOs) with at least{' '}
+                  <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS }}</strong> confirmations.
+                </Trans>
+              </p>
+              {schedulerPreconditionSummary.numberOfMissingUtxos > 0 && (
+                <p>
+                  <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
+                    Add at least{' '}
+                    <strong>{{ numberOfMissingUtxos: schedulerPreconditionSummary.numberOfMissingUtxos }}</strong>{' '}
+                    output(s) (UTXOs).
+                  </Trans>
+                </p>
+              )}
+              {schedulerPreconditionSummary.amountOfMissingConfirmations > 0 && (
+                <p>
+                  <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
+                    Wait for at least{' '}
+                    <strong>
+                      {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
+                    </strong>{' '}
+                    more block(s).
+                  </Trans>
+                </p>
+              )}
+              {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
+                schedulerPreconditionSummary.numberOfMissingUtxosWithRetriesRemaining > 0 && (
+                  <p>
+                    <Trans i18nKey="scheduler.precondition.hint_missing_utxos_with_retries">
+                      Add at least{' '}
+                      <strong>
+                        {{
+                          numberOfMissingUtxosWithRetriesRemaining:
+                            schedulerPreconditionSummary.numberOfMissingUtxosWithRetriesRemaining,
+                        }}
+                      </strong>{' '}
+                      more outputs for the retry mechanism to work properly.
+                    </Trans>
+                  </p>
+                )}
+              {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
+                schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
+                  <p>
+                    <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
+                      Missing at least{' '}
+                      <strong>
+                        {{ amountOfMissingOverallRetries: schedulerPreconditionSummary.amountOfMissingOverallRetries }}
+                      </strong>{' '}
+                      retries to safely start the scheduler. Add at least one more output.
+                    </Trans>
+                  </p>
+                )}
+              <p className="mb-0">
+                <pre>{JSON.stringify(schedulerPreconditionSummary, null, 2)}</pre>
+              </p>
             </rb.Alert>
           </rb.Fade>
           {!collaborativeOperationRunning && wallet && walletInfo && (
