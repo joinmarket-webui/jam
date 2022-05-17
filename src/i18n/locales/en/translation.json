@@ -203,7 +203,7 @@
   },
   "earn": {
     "title": "Earn",
-    "subtitle": "By providing liquidity to the market, you improve the privacy of yourself and others. Your sats always remain under your control and never leave your wallet. Your sats always remain under your control and never leave your wallet.",
+    "subtitle": "By providing liquidity to the market, you improve the privacy of yourself and others. Your sats always remain under your control and never leave your wallet.",
     "market_explainer": "You can choose how much you want to charge for your offer. Note that you participate and compete in an open market. There are no guarantees that other market participants will take you up on your offer. Being chosen for a collaborative transaction can take time and is not guaranteed. Low fees increase your chances.",
     "alert_empty_report": "The report is empty.",
     "text_report_length": "Showing {{ visibleLines }} of {{ linesWithoutHeader }} entries",
