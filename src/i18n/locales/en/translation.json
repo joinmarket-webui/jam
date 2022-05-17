@@ -178,6 +178,7 @@
     "toggle_coinjoin": "Send as collaborative transaction",
     "toggle_coinjoin_subtitle": "Collaborative transactions improve the privacy of yourself and others.",
     "button_send": "Send",
+    "button_send_without_improved_privacy": "Send without privacy improvement",
     "text_sending": "Sending",
     "button_sweep": "Sweep",
     "button_clear_sweep": "Clear",
