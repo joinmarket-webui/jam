@@ -317,7 +317,16 @@ export default function Earn() {
                         </rb.Form.Group>
                       ) : (
                         <rb.Form.Group className="mb-3" controlId="feeAbs">
-                          <rb.Form.Label className="mb-0">{t('earn.label_abs_fee')}</rb.Form.Label>
+                          <rb.Form.Label className="mb-0">
+                            {t('earn.label_abs_fee', {
+                              fee:
+                                '(' +
+                                (values.feeAbs == '' ? 0 : values.feeAbs) +
+                                ' ' +
+                                (values.feeAbs == 1 ? 'sat' : 'sats') +
+                                ')',
+                            })}
+                          </rb.Form.Label>
                           <div className="mb-2">
                             <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
                           </div>
