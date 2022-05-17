@@ -261,7 +261,7 @@ export default function Earn() {
           {!serviceInfo?.coinjoinInProgress &&
             !serviceInfo?.makerRunning &&
             !isWaitingMakerStart &&
-            !isWaitingMakerStop && <p className="text-secondary">{t('earn.market_explainer')}</p>}
+            !isWaitingMakerStop && <p className="text-secondary mb-4">{t('earn.market_explainer')}</p>}
 
           {!serviceInfo?.coinjoinInProgress && (
             <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
