@@ -48,7 +48,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
   return (
     <rb.Accordion {...props}>
       {Object.values(accounts).map(({ account, account_balance: rawAccountBalance, branches }) => {
-        const balance = parseTotalBalanceFromRawStringOrEmpty(rawAccountBalance, `account ${account}`)
+        const accountBalance = parseTotalBalanceFromRawStringOrEmpty(rawAccountBalance, `account ${account}`)
 
         return (
           <rb.Accordion.Item key={account} eventKey={account}>
@@ -60,7 +60,11 @@ export default function DisplayAccounts({ accounts, ...props }) {
                   </h5>
                 </rb.Col>
                 <rb.Col className="d-flex align-items-center justify-content-end">
-                  <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+                  <Balance
+                    valueString={accountBalance}
+                    convertToUnit={settings.unit}
+                    showBalance={settings.showBalance}
+                  />
                 </rb.Col>
               </rb.Row>
             </rb.Accordion.Header>
@@ -71,9 +75,9 @@ export default function DisplayAccounts({ accounts, ...props }) {
               <Link to={routes.receive} state={{ account }} className="btn btn-outline-dark">
                 {t('current_wallet_advanced.account_button_receive')}
               </Link>
-              {branches.map(({ balance: rawBalanceString, branch, entries }) => {
+              {branches.map(({ balance: rawBranchBalanceString, branch, entries }) => {
                 const [type, derivation, xpub] = branch.split('\t')
-                const balance = parseTotalBalanceFromRawStringOrEmpty(rawBalanceString, `branch ${branch}`)
+                const branchBalance = parseTotalBalanceFromRawStringOrEmpty(rawBranchBalanceString, `branch ${branch}`)
 
                 return (
                   <article key={derivation}>
@@ -89,7 +93,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
                         <Balance
-                          valueString={balance}
+                          valueString={branchBalance}
                           convertToUnit={settings.unit}
                           showBalance={settings.showBalance}
                         />
