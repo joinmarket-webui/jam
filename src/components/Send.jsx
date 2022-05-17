@@ -642,7 +642,7 @@ export default function Send() {
                           : t('send.account_selector_option', { number: account })}{' '}
                         {settings.showBalance
                           ? settings.unit === 'sats'
-                            ? `(${formatSats(balance * 100000000)} sats)`
+                            ? `(${formatSats(btcToSats(balance))} sats)`
                             : `(\u20BF${formatBtc(balance)})`
                           : ''}
                       </option>
