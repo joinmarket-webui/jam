@@ -258,6 +258,11 @@ export default function Earn() {
 
           {serviceInfoAlert && <rb.Alert variant={serviceInfoAlert.variant}>{serviceInfoAlert.message}</rb.Alert>}
 
+          {!serviceInfo?.coinjoinInProgress &&
+            !serviceInfo?.makerRunning &&
+            !isWaitingMakerStart &&
+            !isWaitingMakerStop && <p className="text-secondary mb-4">{t('earn.market_explainer')}</p>}
+
           {!serviceInfo?.coinjoinInProgress && (
             <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
               {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
@@ -312,7 +317,16 @@ export default function Earn() {
                         </rb.Form.Group>
                       ) : (
                         <rb.Form.Group className="mb-3" controlId="feeAbs">
-                          <rb.Form.Label className="mb-0">{t('earn.label_abs_fee')}</rb.Form.Label>
+                          <rb.Form.Label className="mb-0">
+                            {t('earn.label_abs_fee', {
+                              fee:
+                                '(' +
+                                (values.feeAbs === '' ? 0 : values.feeAbs) +
+                                ' ' +
+                                (values.feeAbs === 1 ? 'sat' : 'sats') +
+                                ')',
+                            })}
+                          </rb.Form.Label>
                           <div className="mb-2">
                             <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
                           </div>
