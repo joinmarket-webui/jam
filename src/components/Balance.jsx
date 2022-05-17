@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BTC, SATS, btcToSats, satsToBtc } from '../utils'
+import { BTC, SATS, btcToSats, satsToBtc, formatBtc, formatSats } from '../utils'
 import Sprite from './Sprite'
 import * as rb from 'react-bootstrap'
 import styles from './Balance.module.css'
@@ -8,41 +8,11 @@ const DISPLAY_MODE_BTC = 0
 const DISPLAY_MODE_SATS = 1
 const DISPLAY_MODE_HIDDEN = 2
 
-const decimalPoint = '\u002E'
-const nbHalfSpace = '\u202F'
-
 const getDisplayMode = (unit, showBalance) => {
   if (showBalance && unit === SATS) return DISPLAY_MODE_SATS
   if (showBalance && unit === BTC) return DISPLAY_MODE_BTC
 
   return DISPLAY_MODE_HIDDEN
-}
-
-const formatBtc = (value) => {
-  const formatter = new Intl.NumberFormat('en-US', {
-    minimumIntegerDigits: 1,
-    minimumFractionDigits: 8,
-  })
-
-  const numberString = formatter.format(value)
-
-  const [integerPart, fractionalPart] = numberString.split(decimalPoint)
-
-  const formattedFractionalPart = fractionalPart
-    .split('')
-    .map((char, idx) => (idx === 2 || idx === 5 ? `${nbHalfSpace}${char}` : char))
-    .join('')
-
-  return integerPart + decimalPoint + formattedFractionalPart
-}
-
-const formatSats = (value) => {
-  const formatter = new Intl.NumberFormat('en-US', {
-    minimumIntegerDigits: 1,
-    minimumFractionDigits: 0,
-  })
-
-  return formatter.format(value)
 }
 
 const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {

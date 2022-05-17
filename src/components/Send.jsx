@@ -11,7 +11,7 @@ import { useCurrentWalletInfo, useReloadCurrentWalletInfo, useCurrentWallet } fr
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import * as Api from '../libs/JmWalletApi'
-import { btcToSats, SATS } from '../utils'
+import { btcToSats, SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
 
@@ -640,7 +640,11 @@ export default function Send() {
                         {settings.useAdvancedWalletMode
                           ? t('send.account_selector_option_dev_mode', { number: account })
                           : t('send.account_selector_option', { number: account })}{' '}
-                        {settings.showBalance && `(\u20BF${balance})`}
+                        {settings.showBalance
+                          ? settings.unit === 'sats'
+                            ? `(${formatSats(balance * 100000000)} sats)`
+                            : `(\u20BF${formatBtc(balance)})`
+                          : ''}
                       </option>
                     ))}
               </rb.Form.Select>
