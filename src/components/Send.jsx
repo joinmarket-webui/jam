@@ -717,6 +717,7 @@ export default function Send() {
           <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
             <ToggleSwitch
               label={t('send.toggle_coinjoin')}
+              subtitle={t('send.toggle_coinjoin_subtitle')}
               initialValue={isCoinjoin}
               onToggle={(isToggled) => setIsCoinjoin(isToggled)}
               disabled={isLoading || isOperationDisabled}
