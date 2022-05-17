@@ -6,11 +6,12 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
-import { useBalanceDetails, useCurrentWallet } from '../context/WalletContext'
+import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
 import { isFeatureEnabled } from '../constants/featureFlags'
+import { useBalanceDetails } from '../hooks/BalanceDetails'
 
 const WalletPreview = ({ wallet, totalBalance, unit, showBalance }) => {
   return (

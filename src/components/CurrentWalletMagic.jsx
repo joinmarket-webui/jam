@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
-import { useBalanceDetails, useCurrentWallet, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWallet, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
 import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
+import { useBalanceDetails } from '../hooks/BalanceDetails'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (

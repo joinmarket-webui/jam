@@ -5,18 +5,14 @@ import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import {
-  useBalanceDetails,
-  useCurrentWallet,
-  useCurrentWalletInfo,
-  useReloadCurrentWalletInfo,
-} from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import styles from './Jam.module.css'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+import { useBalanceDetails } from '../hooks/BalanceDetails'
 
 // Todo: Discuss if we should hardcode this or let the user pick an account.
 const INTERNAL_DEST_ACCOUNT = 0
