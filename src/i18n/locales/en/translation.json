@@ -279,6 +279,6 @@
     "progress_current_state": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> to process...",
     "progress_done": "All transactions completed successfully. The scheduler will stop soon.",
     "error_loading_schedule_failed": "Loading schedule progress failed.",
-    "error_address_reuse": "Reusing addresses has negative implications such as diminished privacy and reduced security. It is highly discouraged and therefore prevented."
+    "error_address_reuse": "Reusing addresses is prohibited. Make sure to use unique and unused addresses."
   }
 }
