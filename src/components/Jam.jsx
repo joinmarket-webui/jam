@@ -47,29 +47,15 @@ const ValuesListener = ({ handler }) => {
   return null
 }
 
-export default function Jam() {
-  const { t } = useTranslation()
-  const settings = useSettings()
-  const serviceInfo = useServiceInfo()
-  const reloadServiceInfo = useReloadServiceInfo()
-  const wallet = useCurrentWallet()
-  const walletInfo = useCurrentWalletInfo()
-  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-
-  const [alert, setAlert] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [destinationIsExternal, setDestinationIsExternal] = useState(false)
-  const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
-  const [schedule, setSchedule] = useState(null)
-
+const useSchedulerPreconditionsFulfilled = (walletInfoOrNull) => {
   const eligibleUtxos = useMemo(() => {
-    if (!walletInfo) return null
+    if (!walletInfoOrNull) return []
 
-    const utxos = walletInfo.data.utxos.utxos || []
+    const utxos = walletInfoOrNull.data.utxos.utxos || []
     return filterUtxosEligibleForScheduler(utxos)
-  }, [walletInfo])
+  }, [walletInfoOrNull])
 
-  const isUtxosPreconditionFulfilled = useMemo(() => {
+  const isPreconditionFulfilled = useMemo(() => {
     if (!eligibleUtxos) return false
 
     if (eligibleUtxos.length < SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS) {
@@ -87,6 +73,26 @@ export default function Jam() {
 
     return true
   }, [eligibleUtxos])
+
+  return isPreconditionFulfilled
+}
+
+export default function Jam() {
+  const { t } = useTranslation()
+  const settings = useSettings()
+  const serviceInfo = useServiceInfo()
+  const reloadServiceInfo = useReloadServiceInfo()
+  const wallet = useCurrentWallet()
+  const walletInfo = useCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+
+  const [alert, setAlert] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [destinationIsExternal, setDestinationIsExternal] = useState(false)
+  const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
+  const [schedule, setSchedule] = useState(null)
+
+  const isSchedulerPreconditionsFulfilled = useSchedulerPreconditionsFulfilled(walletInfo)
 
   const getNewAddresses = useCallback(
     (count, mixdepth) => {
@@ -218,7 +224,7 @@ export default function Jam() {
   }, [collaborativeOperationRunning, reloadSchedule])
 
   const startSchedule = async (values) => {
-    if (isLoading || collaborativeOperationRunning || !isUtxosPreconditionFulfilled) {
+    if (isLoading || collaborativeOperationRunning || !isSchedulerPreconditionsFulfilled) {
       return
     }
 
@@ -294,7 +300,7 @@ export default function Jam() {
             </rb.Alert>
           )}
           <rb.Fade
-            in={!collaborativeOperationRunning && !isUtxosPreconditionFulfilled}
+            in={!collaborativeOperationRunning && !isSchedulerPreconditionsFulfilled}
             mountOnEnter={true}
             unmountOnExit={true}
           >
@@ -448,7 +454,7 @@ export default function Jam() {
                       disabled={
                         isSubmitting ||
                         isLoading ||
-                        (!collaborativeOperationRunning && (!isValid || !isUtxosPreconditionFulfilled))
+                        (!collaborativeOperationRunning && (!isValid || !isSchedulerPreconditionsFulfilled))
                       }
                     >
                       <div className="d-flex justify-content-center align-items-center">
