@@ -59,11 +59,10 @@ export const parseTotalBalanceString = (rawTotalBalance: BalanceString): Balance
 }
 
 /**
- * @deprecated this is necessary for backend version <= v0.9.6; remove afterwards
+ * @deprecated this is necessary for backend version <= v0.9.6;
  */
-const calculateFrozenOrLockedBalance = (accountNumber: number, utxos: Utxos) => {
-  const accountUtxos = utxos.filter((it) => it.mixdepth === accountNumber)
-  const frozenOrLockedUtxos = accountUtxos.filter((utxo) => utxo.frozen || utxo.locktime)
+const calculateFrozenOrLockedBalance = (utxos: Utxos) => {
+  const frozenOrLockedUtxos = utxos.filter((utxo) => utxo.frozen || utxo.locktime)
   return frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
 }
 
@@ -96,17 +95,16 @@ const useBalanceSummary = (): WalletBalanceSummary => {
         return acc
       }, {} as { [key: string]: Utxos })
 
-      const calculatedAvailableBalanceByAccount = Object.fromEntries(
+      const frozenOrLockedCalculatedByAccount = Object.fromEntries(
         Object.entries(utxosByAccount).map(([account, utxos]) => {
-          const accountNumber = parseInt(account, 10)
-          return [account, calculateFrozenOrLockedBalance(accountNumber, utxos)]
+          return [account, calculateFrozenOrLockedBalance(utxos)]
         })
       )
 
       const accountsBalanceSummary = accounts.map(({ account, account_balance }) => {
         const accountBalanceSummary = parseTotalBalanceString(account_balance)
 
-        const accountFrozenOrLockedCalculated = calculatedAvailableBalanceByAccount[account] || 0
+        const accountFrozenOrLockedCalculated = frozenOrLockedCalculatedByAccount[account] || 0
         return {
           ...accountBalanceSummary,
           calculatedAvailableBalanceInSats:
@@ -116,7 +114,7 @@ const useBalanceSummary = (): WalletBalanceSummary => {
         } as AccountBalanceSummary
       })
 
-      const walletFrozenOrLockedCalculated = Object.values(calculatedAvailableBalanceByAccount).reduce(
+      const walletFrozenOrLockedCalculated = Object.values(frozenOrLockedCalculatedByAccount).reduce(
         (acc, frozenOrLockedSats) => acc + frozenOrLockedSats,
         0
       )
