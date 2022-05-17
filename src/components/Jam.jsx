@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
@@ -305,7 +305,12 @@ export default function Jam() {
             unmountOnExit={true}
           >
             <rb.Alert variant="warning" className="mb-4">
-              {t('send.text_utxo_precondition_not_fulfilled')}
+              <Trans i18nKey="scheduler.precondition.error_precondition_not_fulfilled">
+                Starting the scheduler requires a minimum of{' '}
+                <strong>{{ minUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction outputs
+                (UTXOs) with at least{' '}
+                <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS }}</strong> confirmations.
+              </Trans>
             </rb.Alert>
           </rb.Fade>
           {!collaborativeOperationRunning && wallet && walletInfo && (
