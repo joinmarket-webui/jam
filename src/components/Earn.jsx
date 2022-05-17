@@ -321,9 +321,9 @@ export default function Earn() {
                             {t('earn.label_abs_fee', {
                               fee:
                                 '(' +
-                                (values.feeAbs == '' ? 0 : values.feeAbs) +
+                                (values.feeAbs === '' ? 0 : values.feeAbs) +
                                 ' ' +
-                                (values.feeAbs == 1 ? 'sat' : 'sats') +
+                                (values.feeAbs === 1 ? 'sat' : 'sats') +
                                 ')',
                             })}
                           </rb.Form.Label>
