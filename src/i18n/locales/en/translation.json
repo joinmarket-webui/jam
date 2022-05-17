@@ -202,8 +202,9 @@
     "text_getting_address": "Getting new address"
   },
   "earn": {
-    "title": "Earn bitcoin",
-    "subtitle": "By making your bitcoin available for others, you help them improve their privacy and can also earn a yield.",
+    "title": "Earn",
+    "subtitle": "By providing liquidity for others, you improve your privacy and theirs. Your sats always remain under your control and never leave your wallet.",
+    "market_explainer": "You can choose how much you want to charge for your offer. Note that you participate and compete in an open market. There are no guarantees that other market participants will take you up on your offer. Being chosen for a collaborative transaction can take time and is not guaranteed. Low fees and fidelity bonds increase your chances.",
     "alert_empty_report": "The report is empty.",
     "text_report_length": "Showing {{ visibleLines }} of {{ linesWithoutHeader }} entries",
     "error_loading_report_failed": "Failed to load yield generator report.",
@@ -213,7 +214,7 @@
     "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
     "toggle_rel_offer": "Relative offer",
     "label_rel_fee": "Relative fee {{ fee }}",
-    "description_rel_fee": "As a percentage of the amounts you help others with improved privacy.",
+    "description_rel_fee": "The fee to charge others, as a percentage of the transaction amount.",
     "feedback_invalid_rel_fee": "Please provide a relative fee between {{feeRelPercentageMin}} and {{feeRelPercentageMax}}.",
     "label_abs_fee": "Absolute fee in sats",
     "description_abs_fee": "An absolute amount you get for helping others to improve their privacy.",
