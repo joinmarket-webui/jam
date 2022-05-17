@@ -258,6 +258,11 @@ export default function Earn() {
 
           {serviceInfoAlert && <rb.Alert variant={serviceInfoAlert.variant}>{serviceInfoAlert.message}</rb.Alert>}
 
+          {!serviceInfo?.coinjoinInProgress &&
+            !serviceInfo?.makerRunning &&
+            !isWaitingMakerStart &&
+            !isWaitingMakerStop && <p className="text-secondary">{t('earn.market_explainer')}</p>}
+
           {!serviceInfo?.coinjoinInProgress && (
             <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
               {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
