@@ -11,7 +11,7 @@ import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInf
 import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
 import { isFeatureEnabled } from '../constants/featureFlags'
-import { useBalanceDetails } from '../hooks/BalanceDetails'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 
 const WalletPreview = ({ wallet, totalBalance, unit, showBalance }) => {
   return (
@@ -144,7 +144,7 @@ export default function Navbar() {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
-  const { totalBalance } = useBalanceDetails()
+  const { totalBalance } = useBalanceSummary()
 
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()

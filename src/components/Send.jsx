@@ -10,7 +10,7 @@ import Balance from './Balance'
 import { useReloadCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
-import { useBalanceDetails } from '../hooks/BalanceDetails'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
@@ -223,7 +223,7 @@ export default function Send() {
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
 
-  const { accountBalances } = useBalanceDetails()
+  const { accountBalances } = useBalanceSummary()
   const accountBalanceOrNull = useMemo(() => {
     const eligibleAccountBalances = accountBalances && accountBalances.filter((it) => it.accountIndex === account)
 

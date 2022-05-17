@@ -12,7 +12,7 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
-import { useBalanceDetails } from '../hooks/BalanceDetails'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 
 // Todo: Discuss if we should hardcode this or let the user pick an account.
 const INTERNAL_DEST_ACCOUNT = 0
@@ -39,7 +39,7 @@ export default function Jam() {
   const reloadServiceInfo = useReloadServiceInfo()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const { calculatedAvailableBalanceInSats } = useBalanceDetails()
+  const { calculatedAvailableBalanceInSats } = useBalanceSummary()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)

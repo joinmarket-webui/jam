@@ -9,7 +9,7 @@ import { walletDisplayName } from '../utils'
 import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
-import { useBalanceDetails } from '../hooks/BalanceDetails'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
@@ -114,7 +114,7 @@ export default function CurrentWalletMagic() {
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
-  const { totalBalance, accountBalances } = useBalanceDetails()
+  const { totalBalance, accountBalances } = useBalanceSummary()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)

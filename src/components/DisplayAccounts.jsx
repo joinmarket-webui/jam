@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { routes } from '../constants/routes'
-import { parseTotalBalanceString } from '../hooks/BalanceDetails'
+import { parseTotalBalanceString } from '../hooks/BalanceSummary'
 
 const BranchEntry = ({ entry, ...props }) => {
   const settings = useSettings()
