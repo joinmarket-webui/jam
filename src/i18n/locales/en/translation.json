@@ -211,7 +211,7 @@
     "error_loading_report_failed": "Failed to load earnings report.",
     "alert_starting": "Service is starting.",
     "alert_stopping": "Service is stopping.",
-    "alert_running": "Service is running.",
+    "alert_running": "Earning sats...",
     "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
     "toggle_rel_offer": "Relative offer",
     "label_rel_fee": "Relative fee {{ fee }}",
