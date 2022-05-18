@@ -30,5 +30,69 @@ describe('BalanceSummary', () => {
 
     expect(balanceSummary).toBeDefined()
     expect(balanceSummary.totalBalance).toBeNull()
+    expect(balanceSummary.availableBalanceDontUseYet).toBeNull()
+    expect(balanceSummary.calculatedAvailableBalanceInSats).toBeNull()
+    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBeNull()
+    expect(balanceSummary.accountBalances).toBeNull()
+  })
+
+  it('should handle new format', () => {
+    const data = {}
+
+    act(() => {
+      Object.assign(
+        data,
+        setup({
+          data: {
+            utxos: {
+              utxos: [],
+            },
+            display: {
+              walletinfo: {
+                wallet_name: 'test.jmdat',
+                total_balance: '1.00000001',
+                accounts: [],
+              },
+            },
+          },
+        })
+      )
+    })
+
+    const balanceSummary = data as WalletBalanceSummary
+
+    expect(balanceSummary).toBeDefined()
+    expect(balanceSummary.totalBalance).toBe('1.00000001')
+    expect(balanceSummary.availableBalanceDontUseYet).toBe('1.00000001')
+  })
+
+  it('should handle new format if total and available balance differ', () => {
+    const data = {}
+
+    act(() => {
+      Object.assign(
+        data,
+        setup({
+          data: {
+            utxos: {
+              utxos: [],
+            },
+            display: {
+              walletinfo: {
+                wallet_name: 'test.jmdat',
+                total_balance: '0.00000001 (1.0000002)',
+                accounts: [],
+              },
+            },
+          },
+        })
+      )
+    })
+
+    const balanceSummary = data as WalletBalanceSummary
+
+    expect(balanceSummary).toBeDefined()
+    expect(balanceSummary.totalBalance).toBe('1.0000002')
+    expect(balanceSummary.availableBalanceDontUseYet).toBe('0.00000001')
   })
 })
