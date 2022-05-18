@@ -71,7 +71,7 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
     const utxosWithRetriesRemaining = eligibleUtxos.filter((it) => it.tries_remaining > 0)
     const numberOfMissingUtxosWithRetriesRemaining = Math.max(
       0,
-      SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES - utxosWithRetriesRemaining
+      SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES - utxosWithRetriesRemaining.length
     )
 
     const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
@@ -89,14 +89,14 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
       SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS - utxoMinConfirmation
     )
 
-    const isFullfilled =
+    const isFulfilled =
       numberOfMissingUtxos === 0 &&
       numberOfMissingUtxosWithRetriesRemaining === 0 &&
       amountOfMissingOverallRetries === 0 &&
       amountOfMissingConfirmations === 0
 
     setSummary({
-      isFullfilled,
+      isFulfilled,
       numberOfMissingUtxos,
       numberOfMissingUtxosWithRetriesRemaining,
       amountOfMissingConfirmations,
@@ -343,16 +343,17 @@ export default function Jam() {
                 <Trans i18nKey="scheduler.precondition.error_precondition_not_fulfilled">
                   Starting the scheduler requires a minimum of{' '}
                   <strong>{{ minUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction
-                  outputs (UTXOs) with at least{' '}
-                  <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS }}</strong> confirmations.
+                  output(s) with at least{' '}
+                  <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS }}</strong>{' '}
+                  confirmation(s).
                 </Trans>
               </p>
               {schedulerPreconditionSummary.numberOfMissingUtxos > 0 && (
                 <p>
                   <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
-                    Add at least{' '}
+                    Fund your wallet with at least{' '}
                     <strong>{{ numberOfMissingUtxos: schedulerPreconditionSummary.numberOfMissingUtxos }}</strong>{' '}
-                    output(s) (UTXOs).
+                    additional output(s).
                   </Trans>
                 </p>
               )}
@@ -394,9 +395,7 @@ export default function Jam() {
                     </Trans>
                   </p>
                 )}
-              <p className="mb-0">
-                <pre>{JSON.stringify(schedulerPreconditionSummary, null, 2)}</pre>
-              </p>
+              <pre>{JSON.stringify(schedulerPreconditionSummary, null, 2)}</pre>
             </rb.Alert>
           </rb.Fade>
           {!collaborativeOperationRunning && wallet && walletInfo && (
