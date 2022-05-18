@@ -341,10 +341,17 @@ export default function Jam() {
                             initialValue={destinationIsExternal}
                             onToggle={async (isToggled) => {
                               if (!isToggled) {
-                                const newAddresses = getNewAddresses(INTERNAL_DEST_ACCOUNTS)
-                                setFieldValue('dest1', newAddresses[0], true)
-                                setFieldValue('dest2', newAddresses[1], true)
-                                setFieldValue('dest3', newAddresses[2], true)
+                                try {
+                                  const newAddresses = getNewAddresses(INTERNAL_DEST_ACCOUNTS)
+                                  setFieldValue('dest1', newAddresses[0], true)
+                                  setFieldValue('dest2', newAddresses[1], true)
+                                  setFieldValue('dest3', newAddresses[2], true)
+                                } catch {
+                                  console.error('Could not get internal addresses.')
+                                  setFieldValue('dest1', '', true)
+                                  setFieldValue('dest2', '', true)
+                                  setFieldValue('dest3', '', true)
+                                }
                               } else {
                                 setFieldValue('dest1', '', false)
                                 setFieldValue('dest2', '', false)
