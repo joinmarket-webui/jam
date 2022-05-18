@@ -300,6 +300,15 @@ export default function Jam() {
                   errors.dest3 = t('scheduler.error_invalid_destionation_address')
                 }
 
+                const validAddresses = Array(3)
+                  .fill('')
+                  .map((_, index) => values[`dest${index + 1}`])
+                  .filter((it) => isValidAddress(it))
+                const uniqueValidAddresses = [...new Set(validAddresses)]
+                if (validAddresses.length !== uniqueValidAddresses.length) {
+                  errors.addressReuse = t('scheduler.error_address_reuse')
+                }
+
                 return errors
               }}
               onSubmit={async (values) => {
@@ -385,6 +394,7 @@ export default function Jam() {
                           </rb.Form.Group>
                         )
                       })}
+                    {errors && errors.addressReuse && <rb.Alert variant="danger">{errors.addressReuse}</rb.Alert>}
                     {!collaborativeOperationRunning && (
                       <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
                     )}
