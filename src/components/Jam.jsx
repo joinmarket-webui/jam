@@ -14,8 +14,10 @@ import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
 
-// Todo: Discuss if we should hardcode this or let the user pick an account.
-const INTERNAL_DEST_ACCOUNT = 0
+// When running the scheduler with internal destination addresses, the funds
+// will end up on those 3 mixdepths (one UTXO each).
+// Length of this array must be 3 for now.
+const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
 // Interval in milliseconds between requests to reload the schedule.
 const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
@@ -48,34 +50,28 @@ export default function Jam() {
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
 
-  const getNewAddresses = useCallback(
-    (count, mixdepth) => {
+  // Returns one fresh address for each requested mixdepth.
+  const getNewAddressesForAccounts = useCallback(
+    (mixdepths) => {
+      if (mixdepths.length !== 3) {
+        throw new Error('Can only handle 3 destination addresses for now.')
+      }
       if (!walletInfo) {
         throw new Error('Wallet info is not available.')
       }
-      const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
-        return branch.branch.split('\t')[0] === 'external addresses'
-      })
+      return mixdepths.map((mixdepth) => {
+        const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
+          return branch.branch.split('\t')[0] === 'external addresses'
+        })
 
-      const newAddresses = []
+        const newEntry = externalBranch.entries.find((entry) => entry.status === 'new')
 
-      externalBranch.entries.every((entry) => {
-        if (entry.status === 'new') {
-          newAddresses.push(entry.address)
+        if (!newEntry) {
+          throw new Error(`Cannot find a fresh address in mixdepth ${mixdepth}`)
         }
 
-        if (newAddresses.length >= count) {
-          return false
-        }
-
-        return true
+        return newEntry.address
       })
-
-      if (newAddresses.length !== count) {
-        throw new Error(`Cannot find requested amount of addresses: found ${newAddresses.length} of ${count}`)
-      }
-
-      return newAddresses
     },
     [walletInfo]
   )
@@ -94,7 +90,7 @@ export default function Jam() {
     } else {
       try {
         // prefill with addresses marked as "new"
-        destinationAddresses = getNewAddresses(addressCount, INTERNAL_DEST_ACCOUNT)
+        destinationAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
       } catch (e) {
         // on error initialize with empty addresses - form validation will do the rest
         destinationAddresses = Array(addressCount).fill('')
@@ -102,7 +98,7 @@ export default function Jam() {
     }
 
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
-  }, [destinationIsExternal, getNewAddresses])
+  }, [destinationIsExternal, getNewAddressesForAccounts])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -340,16 +336,21 @@ export default function Jam() {
                         <rb.Form.Group className="mb-4" controlId="offertype">
                           <ToggleSwitch
                             label={t('scheduler.toggle_internal_destination_title')}
-                            subtitle={t('scheduler.toggle_internal_destination_subtitle', {
-                              account: INTERNAL_DEST_ACCOUNT,
-                            })}
+                            subtitle={t('scheduler.toggle_internal_destination_subtitle')}
                             initialValue={destinationIsExternal}
                             onToggle={async (isToggled) => {
                               if (!isToggled) {
-                                const newAddresses = getNewAddresses(3, INTERNAL_DEST_ACCOUNT)
-                                setFieldValue('dest1', newAddresses[0], true)
-                                setFieldValue('dest2', newAddresses[1], true)
-                                setFieldValue('dest3', newAddresses[2], true)
+                                try {
+                                  const newAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
+                                  setFieldValue('dest1', newAddresses[0], true)
+                                  setFieldValue('dest2', newAddresses[1], true)
+                                  setFieldValue('dest3', newAddresses[2], true)
+                                } catch (e) {
+                                  console.error('Could not get internal addresses.', e)
+                                  setFieldValue('dest1', '', true)
+                                  setFieldValue('dest2', '', true)
+                                  setFieldValue('dest3', '', true)
+                                }
                               } else {
                                 setFieldValue('dest1', '', false)
                                 setFieldValue('dest2', '', false)
