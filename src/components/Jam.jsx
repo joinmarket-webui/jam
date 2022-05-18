@@ -346,8 +346,8 @@ export default function Jam() {
                                   setFieldValue('dest1', newAddresses[0], true)
                                   setFieldValue('dest2', newAddresses[1], true)
                                   setFieldValue('dest3', newAddresses[2], true)
-                                } catch {
-                                  console.error('Could not get internal addresses.')
+                                } catch (e) {
+                                  console.error('Could not get internal addresses.', e)
                                   setFieldValue('dest1', '', true)
                                   setFieldValue('dest2', '', true)
                                   setFieldValue('dest3', '', true)
