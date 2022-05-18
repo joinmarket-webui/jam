@@ -20,7 +20,7 @@ const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_00
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const SCHEDULE_PRECONDITIONS = {
-  MIN_NUMBER_OF_UTXOS: 3, // min amount of utxos available
+  MIN_NUMBER_OF_UTXOS: 1, // min amount of utxos available
   MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
   MIN_UTXO_CONFIRMATIONS: 5, // at least one utxo needs X confirmations
