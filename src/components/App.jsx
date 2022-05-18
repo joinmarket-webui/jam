@@ -186,7 +186,7 @@ export default function App() {
             )}
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
-            <div className="warning-hint text-start text-secondary d-none d-md-block gap-1 pe-1">
+            <div className="warning-hint text-start text-secondary d-none d-md-block pe-1">
               <a
                 href="https://github.com/joinmarket-webui/joinmarket-webui/tags"
                 target="_blank"
