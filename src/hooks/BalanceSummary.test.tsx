@@ -1,8 +1,7 @@
 import React from 'react'
-import { render, screen, waitForElementToBeRemoved } from '../testUtils'
+import { render } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
-import * as apiMock from '../libs/JmWalletApi'
 import { useBalanceSummary, WalletBalanceSummary } from './BalanceSummary'
 import { WalletInfo } from '../context/WalletContext'
 
