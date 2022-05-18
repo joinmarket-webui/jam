@@ -19,7 +19,8 @@ const INTERNAL_DEST_ACCOUNT = 0
 const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
-const SCHEDULE_PRECONDITIONS = {
+const SCHEDULER_START_ACCOUNT = 0
+const SCHEDULER_PRECONDITIONS = {
   MIN_NUMBER_OF_UTXOS: 1, // min amount of utxos available
   MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
@@ -40,9 +41,9 @@ const ValuesListener = ({ handler }) => {
 
 const DEFAULT_PRECONDITION_SUMMARY = {
   isFulfilled: false,
-  numberOfMissingUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
-  amountOfMissingConfirmations: SCHEDULE_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
-  amountOfMissingOverallRetries: SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
+  numberOfMissingUtxos: SCHEDULER_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
+  amountOfMissingConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+  amountOfMissingOverallRetries: SCHEDULER_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
 }
 
 const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) => {
@@ -64,19 +65,19 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
       return
     }
 
-    const numberOfMissingUtxos = Math.max(0, SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS - eligibleUtxos.length)
+    const numberOfMissingUtxos = Math.max(0, SCHEDULER_PRECONDITIONS.MIN_NUMBER_OF_UTXOS - eligibleUtxos.length)
 
     const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
     const amountOfMissingOverallRetries = Math.max(
       0,
-      SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
+      SCHEDULER_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
     )
 
     const maxConfirmations =
       eligibleUtxos.length === 0 ? 0 : eligibleUtxos.reduce((acc, utxo) => Math.max(acc, utxo.confirmations), 0)
     const amountOfMissingConfirmations = Math.max(
       0,
-      SCHEDULE_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO - maxConfirmations
+      SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO - maxConfirmations
     )
 
     const isFulfilled =
@@ -108,7 +109,7 @@ export default function Jam() {
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
 
-  const schedulerPreconditionSummary = useSchedulerPreconditionSummary(walletInfo, INTERNAL_DEST_ACCOUNT)
+  const schedulerPreconditionSummary = useSchedulerPreconditionSummary(walletInfo, SCHEDULER_START_ACCOUNT)
   const isSchedulerPreconditionsFulfilled = useMemo(
     () => schedulerPreconditionSummary.isFulfilled,
     [schedulerPreconditionSummary]
@@ -328,9 +329,9 @@ export default function Jam() {
               <p>
                 <Trans i18nKey="scheduler.precondition.error_precondition_not_fulfilled">
                   Starting the scheduler requires a minimum of{' '}
-                  <strong>{{ minUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction
+                  <strong>{{ minUtxos: SCHEDULER_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction
                   output(s), one of which with at least{' '}
-                  <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
+                  <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
                   confirmation(s).
                 </Trans>
               </p>
