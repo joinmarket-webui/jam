@@ -49,7 +49,7 @@ export default function Jam() {
   const [schedule, setSchedule] = useState(null)
 
   // Returns one fresh address for each requested mixdepth.
-  const getNewAddresses = useCallback(
+  const getNewAddressesForAccounts = useCallback(
     (mixdepths) => {
       if (mixdepths.length !== 3) {
         throw new Error('Can only handle 3 destination addresses for now.')
@@ -88,7 +88,7 @@ export default function Jam() {
     } else {
       try {
         // prefill with addresses marked as "new"
-        destinationAddresses = getNewAddresses(INTERNAL_DEST_ACCOUNTS)
+        destinationAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
       } catch (e) {
         // on error initialize with empty addresses - form validation will do the rest
         destinationAddresses = Array(addressCount).fill('')
@@ -96,7 +96,7 @@ export default function Jam() {
     }
 
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
-  }, [destinationIsExternal, getNewAddresses])
+  }, [destinationIsExternal, getNewAddressesForAccounts])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -342,7 +342,7 @@ export default function Jam() {
                             onToggle={async (isToggled) => {
                               if (!isToggled) {
                                 try {
-                                  const newAddresses = getNewAddresses(INTERNAL_DEST_ACCOUNTS)
+                                  const newAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
                                   setFieldValue('dest1', newAddresses[0], true)
                                   setFieldValue('dest2', newAddresses[1], true)
                                   setFieldValue('dest3', newAddresses[2], true)
