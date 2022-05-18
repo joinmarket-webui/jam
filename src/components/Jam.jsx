@@ -23,7 +23,7 @@ const SCHEDULE_PRECONDITIONS = {
   MIN_NUMBER_OF_UTXOS: 3, // min amount of utxos available
   MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
-  MIN_UTXO_CONFIRMATIONS: 5, // one utxo needs 5 confirmations
+  MIN_UTXO_CONFIRMATIONS: 5, // at least one utxo needs X confirmations
 }
 
 const ValuesListener = ({ handler }) => {
@@ -72,14 +72,9 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
       SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
     )
 
-    const utxoMinConfirmation =
-      eligibleUtxos.length === 0
-        ? 0
-        : eligibleUtxos.reduce((acc, utxo) => Math.min(acc, utxo.confirmations), Number.MAX_SAFE_INTEGER)
-    const amountOfMissingConfirmations = Math.max(
-      0,
-      SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS - utxoMinConfirmation
-    )
+    const maxConfirmations =
+      eligibleUtxos.length === 0 ? 0 : eligibleUtxos.reduce((acc, utxo) => Math.max(acc, utxo.confirmations), 0)
+    const amountOfMissingConfirmations = Math.max(0, SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS - maxConfirmations)
 
     const isFulfilled =
       numberOfMissingUtxos === 0 && amountOfMissingOverallRetries === 0 && amountOfMissingConfirmations === 0
