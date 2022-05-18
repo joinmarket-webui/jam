@@ -23,7 +23,7 @@ const SCHEDULE_PRECONDITIONS = {
   MIN_NUMBER_OF_UTXOS: 1, // min amount of utxos available
   MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
-  MIN_UTXO_CONFIRMATIONS: 5, // at least one utxo needs X confirmations
+  MIN_CONFIRMATIONS_OF_SINGLE_UTXO: 5, // at least one utxo needs X confirmations
 }
 
 const ValuesListener = ({ handler }) => {
@@ -41,7 +41,7 @@ const ValuesListener = ({ handler }) => {
 const DEFAULT_PRECONDITION_SUMMARY = {
   isFulfilled: false,
   numberOfMissingUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
-  amountOfMissingConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS,
+  amountOfMissingConfirmations: SCHEDULE_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
   amountOfMissingOverallRetries: SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
 }
 
@@ -74,7 +74,10 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
 
     const maxConfirmations =
       eligibleUtxos.length === 0 ? 0 : eligibleUtxos.reduce((acc, utxo) => Math.max(acc, utxo.confirmations), 0)
-    const amountOfMissingConfirmations = Math.max(0, SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS - maxConfirmations)
+    const amountOfMissingConfirmations = Math.max(
+      0,
+      SCHEDULE_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO - maxConfirmations
+    )
 
     const isFulfilled =
       numberOfMissingUtxos === 0 && amountOfMissingOverallRetries === 0 && amountOfMissingConfirmations === 0
@@ -326,8 +329,8 @@ export default function Jam() {
                 <Trans i18nKey="scheduler.precondition.error_precondition_not_fulfilled">
                   Starting the scheduler requires a minimum of{' '}
                   <strong>{{ minUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction
-                  output(s) with at least{' '}
-                  <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS }}</strong>{' '}
+                  output(s), one of which with at least{' '}
+                  <strong>{{ minConfirmations: SCHEDULE_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
                   confirmation(s).
                 </Trans>
               </p>
@@ -359,7 +362,7 @@ export default function Jam() {
                       <strong>
                         {{ amountOfMissingOverallRetries: schedulerPreconditionSummary.amountOfMissingOverallRetries }}
                       </strong>{' '}
-                      retries to safely start the scheduler. Add at least one more output.
+                      retries to safely start the scheduler. Fund your wallet with one more output.
                     </Trans>
                   </p>
                 )}
