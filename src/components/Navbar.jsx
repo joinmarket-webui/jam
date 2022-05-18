@@ -6,7 +6,7 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
@@ -144,7 +144,8 @@ export default function Navbar() {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
-  const { totalBalance } = useBalanceSummary()
+  const currentWalletInfo = useCurrentWalletInfo()
+  const { totalBalance } = useBalanceSummary(currentWalletInfo)
 
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()

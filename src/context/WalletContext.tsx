@@ -61,7 +61,7 @@ interface BranchEntry {
   extradata: string
 }
 
-interface WalletInfo {
+export interface WalletInfo {
   data: {
     utxos: UtxosResponse
     display: WalletDisplayResponse

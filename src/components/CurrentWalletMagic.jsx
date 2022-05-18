@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
-import { useCurrentWallet, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
@@ -114,7 +114,8 @@ export default function CurrentWalletMagic() {
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
-  const { totalBalance, accountBalances } = useBalanceSummary()
+  const currentWalletInfo = useCurrentWalletInfo()
+  const { totalBalance, accountBalances } = useBalanceSummary(currentWalletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)

@@ -6,7 +6,7 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { useReloadCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
+import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
@@ -171,6 +171,7 @@ function SweepAccordionToggle({ eventKey }) {
 export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
+  const walletInfo = useCurrentWalletInfo()
 
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
@@ -221,7 +222,7 @@ export default function Send() {
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
 
-  const { accountBalances } = useBalanceSummary()
+  const { accountBalances } = useBalanceSummary(walletInfo)
   const accountBalanceOrNull = useMemo(() => {
     const eligibleAccountBalances = accountBalances && accountBalances.filter((it) => it.accountIndex === account)
 

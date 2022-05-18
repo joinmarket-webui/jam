@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { btcToSats } from '../utils'
-import { useCurrentWalletInfo, BalanceString, Utxos } from '../context/WalletContext'
+import { WalletInfo, BalanceString, Utxos } from '../context/WalletContext'
 
 interface BalanceSummary {
   totalBalance: string | null
@@ -27,7 +27,7 @@ type AccountBalanceSummary = BalanceSummarySupport & {
   accountIndex: number
 }
 
-type WalletBalanceSummary = BalanceSummarySupport & {
+export type WalletBalanceSummary = BalanceSummarySupport & {
   accountBalances: AccountBalanceSummary[] | null
 }
 
@@ -74,9 +74,7 @@ const EMPTY_BALANCE_DETAILS = {
   calculatedFrozenOrLockedBalanceInSats: null,
 } as WalletBalanceSummary
 
-const useBalanceSummary = (): WalletBalanceSummary => {
-  const currentWalletInfo = useCurrentWalletInfo()
-
+const useBalanceSummary = (currentWalletInfo: WalletInfo | null): WalletBalanceSummary => {
   const balanceSummary = useMemo(() => {
     if (!currentWalletInfo) {
       return EMPTY_BALANCE_DETAILS

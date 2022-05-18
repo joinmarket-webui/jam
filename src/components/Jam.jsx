@@ -41,7 +41,7 @@ export default function Jam() {
   const reloadServiceInfo = useReloadServiceInfo()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const { calculatedAvailableBalanceInSats } = useBalanceSummary()
+  const { calculatedAvailableBalanceInSats } = useBalanceSummary(walletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
