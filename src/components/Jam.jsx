@@ -6,6 +6,7 @@ import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './Jam.module.css'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -186,7 +187,7 @@ export default function Jam() {
     const body = { destination_addresses: destinations }
 
     // Make sure schedule testing is really only used in dev mode.
-    if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings) {
+    if (isDebugFeatureEnabled('insecureScheduleTesting') && useInsecureTestingSettings) {
       body.tumbler_options = {
         addrcount: 3,
         minmakercount: 1,
@@ -361,7 +362,7 @@ export default function Jam() {
                             disabled={isSubmitting}
                           />
                         </rb.Form.Group>
-                        {process.env.NODE_ENV === 'development' && (
+                        {isDebugFeatureEnabled('insecureScheduleTesting') && (
                           <rb.Form.Group className="mb-4" controlId="offertype">
                             <ToggleSwitch
                               label={'Use insecure testing settings'}

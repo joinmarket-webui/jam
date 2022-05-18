@@ -22,7 +22,7 @@ import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
 import { routes } from '../constants/routes'
-import { isFeatureEnabled } from '../constants/featureFlags'
+import { isFeatureEnabled } from '../constants/features'
 
 export default function App() {
   const { t } = useTranslation()
