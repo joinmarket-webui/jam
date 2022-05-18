@@ -187,7 +187,7 @@ export default function Jam() {
 
     // Make sure schedule testing is really only used in dev mode.
     if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings) {
-      body.scheduler_options = {
+      body.tumbler_options = {
         addrcount: 3,
         minmakercount: 1,
         makercountrange: [1, 0],
