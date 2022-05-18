@@ -78,8 +78,6 @@ export default function Jam() {
     [walletInfo]
   )
 
-  // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
-  const deactivateTestingToggle = true
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
   const initialFormValues = useMemo(() => {
@@ -187,7 +185,8 @@ export default function Jam() {
 
     const body = { destination_addresses: destinations }
 
-    if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings && !deactivateTestingToggle) {
+    // Make sure schedule testing is really only used in dev mode.
+    if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings) {
       body.scheduler_options = {
         addrcount: 3,
         minmakercount: 1,
@@ -362,7 +361,7 @@ export default function Jam() {
                             disabled={isSubmitting}
                           />
                         </rb.Form.Group>
-                        {process.env.NODE_ENV === 'development' && !deactivateTestingToggle && (
+                        {process.env.NODE_ENV === 'development' && (
                           <rb.Form.Group className="mb-4" controlId="offertype">
                             <ToggleSwitch
                               label={'Use insecure testing settings'}
