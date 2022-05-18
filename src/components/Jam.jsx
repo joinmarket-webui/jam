@@ -47,13 +47,16 @@ const DEFAULT_PRECONDITION_SUMMARY = {
   amountOfMissingOverallRetries: SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
 }
 
-const useSchedulerPreconditionSummary = (walletInfoOrNull) => {
+const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) => {
   const eligibleUtxos = useMemo(() => {
     if (!walletInfoOrNull) return []
 
     const utxos = walletInfoOrNull.data.utxos.utxos || []
-    return utxos.filter((it) => !it.frozen).filter((it) => !it.locktime)
-  }, [walletInfoOrNull])
+    return utxos
+      .filter((it) => it.mixdepth === startAccountIndex)
+      .filter((it) => !it.frozen)
+      .filter((it) => !it.locktime)
+  }, [walletInfoOrNull, startAccountIndex])
 
   const [summary, setSummary] = useState(DEFAULT_PRECONDITION_SUMMARY)
 
@@ -119,7 +122,7 @@ export default function Jam() {
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
 
-  const schedulerPreconditionSummary = useSchedulerPreconditionSummary(walletInfo)
+  const schedulerPreconditionSummary = useSchedulerPreconditionSummary(walletInfo, INTERNAL_DEST_ACCOUNT)
   const isSchedulerPreconditionsFulfilled = useMemo(
     () => schedulerPreconditionSummary.isFulfilled,
     [schedulerPreconditionSummary]
