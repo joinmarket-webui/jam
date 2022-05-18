@@ -21,10 +21,9 @@ const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const SCHEDULE_PRECONDITIONS = {
   MIN_NUMBER_OF_UTXOS: 3, // min amount of utxos available
-  MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES: 1, // i.e 1 utxo must exist with retries available
-  MIN_OVERALL_REMAINING_RETRIES: 1, // the amount of overall retries possible e.g. if `2`: one utxo with 2 retries or 2 utxo with 1 retry each
+  MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
-  MIN_UTXO_CONFIRMATIONS: 5,
+  MIN_UTXO_CONFIRMATIONS: 5, // one utxo needs 5 confirmations
 }
 
 const ValuesListener = ({ handler }) => {
@@ -42,7 +41,6 @@ const ValuesListener = ({ handler }) => {
 const DEFAULT_PRECONDITION_SUMMARY = {
   isFulfilled: false,
   numberOfMissingUtxos: SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
-  numberOfMissingUtxosWithRetriesRemaining: SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES,
   amountOfMissingConfirmations: SCHEDULE_PRECONDITIONS.MIN_UTXO_CONFIRMATIONS,
   amountOfMissingOverallRetries: SCHEDULE_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
 }
@@ -68,12 +66,6 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
 
     const numberOfMissingUtxos = Math.max(0, SCHEDULE_PRECONDITIONS.MIN_NUMBER_OF_UTXOS - eligibleUtxos.length)
 
-    const utxosWithRetriesRemaining = eligibleUtxos.filter((it) => it.tries_remaining > 0)
-    const numberOfMissingUtxosWithRetriesRemaining = Math.max(
-      0,
-      SCHEDULE_PRECONDITIONS.MIN_AMOUNT_OF_UTXOS_WITH_REMAINING_RETRIES - utxosWithRetriesRemaining.length
-    )
-
     const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
     const amountOfMissingOverallRetries = Math.max(
       0,
@@ -90,15 +82,11 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
     )
 
     const isFulfilled =
-      numberOfMissingUtxos === 0 &&
-      numberOfMissingUtxosWithRetriesRemaining === 0 &&
-      amountOfMissingOverallRetries === 0 &&
-      amountOfMissingConfirmations === 0
+      numberOfMissingUtxos === 0 && amountOfMissingOverallRetries === 0 && amountOfMissingConfirmations === 0
 
     setSummary({
       isFulfilled,
       numberOfMissingUtxos,
-      numberOfMissingUtxosWithRetriesRemaining,
       amountOfMissingConfirmations,
       amountOfMissingOverallRetries,
     })
@@ -368,21 +356,6 @@ export default function Jam() {
                   </Trans>
                 </p>
               )}
-              {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
-                schedulerPreconditionSummary.numberOfMissingUtxosWithRetriesRemaining > 0 && (
-                  <p>
-                    <Trans i18nKey="scheduler.precondition.hint_missing_utxos_with_retries">
-                      Add at least{' '}
-                      <strong>
-                        {{
-                          numberOfMissingUtxosWithRetriesRemaining:
-                            schedulerPreconditionSummary.numberOfMissingUtxosWithRetriesRemaining,
-                        }}
-                      </strong>{' '}
-                      more outputs for the retry mechanism to work properly.
-                    </Trans>
-                  </p>
-                )}
               {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
                 schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
                   <p>
