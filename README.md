@@ -76,7 +76,7 @@ We're aiming for a more stable version to be available as a one-click app instal
 - [x] Spending from the wallet
 - [x] Spending from the wallet via collaborative transactions
 - [x] Running the yield generator
-- [ ] Scheduled transactions
+- [x] Scheduled transactions
 - [ ] Support for fidelity bonds
 - [ ] [TBD](https://github.com/orgs/joinmarket-webui/projects/1/views/7)
 
