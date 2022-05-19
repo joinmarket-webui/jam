@@ -18,7 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * rearrange order of tabs ([#258](https://github.com/joinmarket-webui/joinmarket-webui/issues/258)) ([8f527d7](https://github.com/joinmarket-webui/joinmarket-webui/commit/8f527d7be83c9326e6583fa14888be84a37ecfff))
 * reload wallet data after send  ([#236](https://github.com/joinmarket-webui/joinmarket-webui/issues/236)) ([edd5818](https://github.com/joinmarket-webui/joinmarket-webui/commit/edd5818b824276dd54a03d45103c810502e496bc))
 * scheduled transactions prototype ([#242](https://github.com/joinmarket-webui/joinmarket-webui/issues/242)) ([0e1d0a8](https://github.com/joinmarket-webui/joinmarket-webui/commit/0e1d0a8a692633459f53edf156c1e4446db62852))
-* simple progress report for scheduled transactions ([#262](https://github.com/joinmarket-webui/joinmarket-webui/issues/262)) ([bb44afc](https://github.com/joinmarket-webui/joinmarket-webui/commit/bb44afc84829e6ca00a3fcc3d5ca474467ab2240))
 * simple progress report for scheduled transactions ([#262](https://github.com/joinmarket-webui/joinmarket-webui/issues/262)) ([0e3b7b8](https://github.com/joinmarket-webui/joinmarket-webui/commit/0e3b7b8b9416331bda7837fc5bb39b6d9ba3e869))
 * split up scheduler destination addresses over 3 mixdepths ([#283](https://github.com/joinmarket-webui/joinmarket-webui/issues/283)) ([471cbc7](https://github.com/joinmarket-webui/joinmarket-webui/commit/471cbc7e985c2521f9053e950067c781649666b9))
 
