@@ -323,7 +323,7 @@ export default function Jam() {
           >
             <rb.Alert variant="warning" className="mb-4">
               <>
-                {schedulerPreconditionSummary.numberOfMissingUtxos > 0 && (
+                {schedulerPreconditionSummary.numberOfMissingUtxos > 0 ? (
                   <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
                     To run the scheduler you need at least one UTXO with{' '}
                     <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
@@ -331,20 +331,17 @@ export default function Jam() {
                     <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
                     blocks.
                   </Trans>
-                )}
-                {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
-                  schedulerPreconditionSummary.amountOfMissingConfirmations > 0 && (
-                    <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
-                      The scheduler requires one of your UTXOs to have{' '}
-                      <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-                      or more confirmations. Wait for{' '}
-                      <strong>
-                        {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
-                      </strong>{' '}
-                      more block(s).
-                    </Trans>
-                  )}
-                {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
+                ) : schedulerPreconditionSummary.amountOfMissingConfirmations > 0 ? (
+                  <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
+                    The scheduler requires one of your UTXOs to have{' '}
+                    <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong> or
+                    more confirmations. Wait for{' '}
+                    <strong>
+                      {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
+                    </strong>{' '}
+                    more block(s).
+                  </Trans>
+                ) : (
                   schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
                     <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
                       You've tried running the scheduler unsuccessfully to many times in a row. For security reasons,
@@ -358,7 +355,8 @@ export default function Jam() {
                       </a>{' '}
                       for more information on this.
                     </Trans>
-                  )}
+                  )
+                )}
               </>
             </rb.Alert>
           </rb.Fade>
