@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * add cheatsheet ([#211](https://github.com/joinmarket-webui/joinmarket-webui/issues/211)) ([825f725](https://github.com/joinmarket-webui/joinmarket-webui/commit/825f725053f4c11a696929516cc48f40ffc1aee5))
 * add French translation ([#216](https://github.com/joinmarket-webui/joinmarket-webui/issues/216)) ([69fcbaf](https://github.com/joinmarket-webui/joinmarket-webui/commit/69fcbaff42af41f7723fd46d318009e969a5ed12))
-* add tagline to splash & improve intro copy ([#280](https://github.com/joinmarket-webui/joinmarket-webui/issues/280)) ([479dbfc](https://github.com/joinmarket-webui/joinmarket-webui/commit/479dbfcec710cb128886e5784958353c0632a793))
 * confirm password on Create Wallet screen ([#210](https://github.com/joinmarket-webui/joinmarket-webui/issues/210)) ([0c019db](https://github.com/joinmarket-webui/joinmarket-webui/commit/0c019db742e19efda1dab1f81f857d286c3ca1b5))
 * **footer:** show Jam version ([#281](https://github.com/joinmarket-webui/joinmarket-webui/issues/281)) ([3c886f3](https://github.com/joinmarket-webui/joinmarket-webui/commit/3c886f3e05f81377f6a4b06e2ada6a020b6ce2aa))
 * improve copy of receive/jam/earn/send screens ([#277](https://github.com/joinmarket-webui/joinmarket-webui/issues/277)) ([02c3106](https://github.com/joinmarket-webui/joinmarket-webui/commit/02c310603bf7a01bdc36c8aa81eb55860a344d84))
