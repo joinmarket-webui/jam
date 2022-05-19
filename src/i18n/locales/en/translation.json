@@ -286,7 +286,7 @@
     "precondition": {
       "hint_missing_utxos": "To run the scheduler you need at least one UTXO with <2>{{ minConfirmations }}</2> confirmations. Fund your wallet and wait for <6>{{ minConfirmations }}</6> blocks.",
       "hint_missing_confirmations": "The scheduler requires one of your UTXOs to have <2>{{ minConfirmations }}</2> or more confirmations. Wait for <6>{{ amountOfMissingConfirmations }}</6> more block(s).",
-      "hint_missing_overall_retries": "You've tried running the scheduler unsuccessfully to many times in a row. For security reasons, you need a fresh UTXO to try again. See <2>the docs</2> for more information on this."
+      "hint_missing_overall_retries": "You've tried running the scheduler unsuccessfully too many times in a row. For security reasons, you need a fresh UTXO to try again. See <2>the docs</2> for more information."
     }
   }
 }

@@ -350,7 +350,7 @@ export default function Jam() {
                 ) : (
                   schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
                     <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
-                      You've tried running the scheduler unsuccessfully to many times in a row. For security reasons,
+                      You've tried running the scheduler unsuccessfully too many times in a row. For security reasons,
                       you need a fresh UTXO to try again. See{' '}
                       <a
                         href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
@@ -359,7 +359,7 @@ export default function Jam() {
                       >
                         the docs
                       </a>{' '}
-                      for more information on this.
+                      for more information.
                     </Trans>
                   )
                 )}
