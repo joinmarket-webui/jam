@@ -1,13 +1,11 @@
 interface Features {
   skipWalletBackupConfirmation: boolean
-  cheatsheet: boolean
 }
 
 const devMode = process.env.NODE_ENV === 'development'
 
 const features: Features = {
   skipWalletBackupConfirmation: devMode,
-  cheatsheet: devMode,
 }
 
 type Feature = keyof Features
