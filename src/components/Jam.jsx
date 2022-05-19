@@ -24,9 +24,9 @@ const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 const SCHEDULER_START_ACCOUNT = 0
 const SCHEDULER_PRECONDITIONS = {
   MIN_NUMBER_OF_UTXOS: 1, // min amount of utxos available
-  MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
   MIN_CONFIRMATIONS_OF_SINGLE_UTXO: 5, // at least one utxo needs X confirmations
+  MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
 }
 
 const ValuesListener = ({ handler }) => {
@@ -322,47 +322,44 @@ export default function Jam() {
             unmountOnExit={true}
           >
             <rb.Alert variant="warning" className="mb-4">
-              <p>
-                <Trans i18nKey="scheduler.precondition.error_precondition_not_fulfilled">
-                  Starting the scheduler requires a minimum of{' '}
-                  <strong>{{ minUtxos: SCHEDULER_PRECONDITIONS.MIN_NUMBER_OF_UTXOS }}</strong> unspent transaction
-                  output(s), one of which with at least{' '}
-                  <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-                  confirmation(s).
-                </Trans>
-              </p>
-              {schedulerPreconditionSummary.numberOfMissingUtxos > 0 && (
-                <p>
+              <>
+                {schedulerPreconditionSummary.numberOfMissingUtxos > 0 && (
                   <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
-                    Fund your wallet with at least{' '}
-                    <strong>{{ numberOfMissingUtxos: schedulerPreconditionSummary.numberOfMissingUtxos }}</strong>{' '}
-                    additional output(s).
+                    To run the scheduler you need at least one UTXO with{' '}
+                    <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
+                    confirmations. Fund your wallet and wait for{' '}
+                    <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
+                    blocks.
                   </Trans>
-                </p>
-              )}
-              {schedulerPreconditionSummary.amountOfMissingConfirmations > 0 && (
-                <p>
-                  <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
-                    Wait for at least{' '}
-                    <strong>
-                      {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
-                    </strong>{' '}
-                    more block(s).
-                  </Trans>
-                </p>
-              )}
-              {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
-                schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
-                  <p>
-                    <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
-                      Missing at least{' '}
-                      <strong>
-                        {{ amountOfMissingOverallRetries: schedulerPreconditionSummary.amountOfMissingOverallRetries }}
-                      </strong>{' '}
-                      retries to safely start the scheduler. Fund your wallet with one more output.
-                    </Trans>
-                  </p>
                 )}
+                {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
+                  schedulerPreconditionSummary.amountOfMissingConfirmations > 0 && (
+                    <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
+                      The scheduler requires one of your UTXOs to have{' '}
+                      <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
+                      or more confirmations. Wait for{' '}
+                      <strong>
+                        {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
+                      </strong>{' '}
+                      more block(s).
+                    </Trans>
+                  )}
+                {schedulerPreconditionSummary.numberOfMissingUtxos === 0 &&
+                  schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
+                    <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
+                      You've tried running the scheduler unsuccessfully to many times in a row. For security reasons,
+                      you need a fresh UTXO to try again. See{' '}
+                      <a
+                        href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        the docs
+                      </a>{' '}
+                      for more information on this.
+                    </Trans>
+                  )}
+              </>
             </rb.Alert>
           </rb.Fade>
           {!collaborativeOperationRunning && wallet && walletInfo && (
