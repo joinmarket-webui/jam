@@ -22,7 +22,6 @@ import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
 import { routes } from '../constants/routes'
-import { isFeatureEnabled } from '../constants/features'
 import packageInfo from '../../package.json'
 
 export default function App() {
@@ -38,7 +37,7 @@ export default function App() {
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
-  const cheatsheetEnabled = currentWallet && isFeatureEnabled('cheatsheet')
+  const cheatsheetEnabled = currentWallet
 
   const startWallet = useCallback(
     (name, token) => {
