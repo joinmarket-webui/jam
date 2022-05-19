@@ -3,7 +3,7 @@ import { render } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
 import { useBalanceSummary, WalletBalanceSummary } from './BalanceSummary'
-import { WalletInfo } from '../context/WalletContext'
+import { WalletInfo, Utxo } from '../context/WalletContext'
 
 function setup(walletInfo: WalletInfo | null) {
   const returnVal: unknown = {}
@@ -36,7 +36,7 @@ describe('BalanceSummary', () => {
     expect(balanceSummary.accountBalances).toBeNull()
   })
 
-  it('should handle new format', () => {
+  it('should handle <=v0.9.6 balance format', () => {
     const data = {}
 
     act(() => {
@@ -66,7 +66,7 @@ describe('BalanceSummary', () => {
     expect(balanceSummary.availableBalanceDontUseYet).toBe('1.00000001')
   })
 
-  it('should handle new format if total and available balance differ', () => {
+  it('should handle >v0.9.6 balance format if total and available balance differ', () => {
     const data = {}
 
     act(() => {
@@ -96,7 +96,7 @@ describe('BalanceSummary', () => {
     expect(balanceSummary.availableBalanceDontUseYet).toBe('0.00000001')
   })
 
-  it('should populate properties calculated from utxo data', () => {
+  it('should populate balance properties calculated from utxo data', () => {
     const data = {}
 
     act(() => {
@@ -107,46 +107,22 @@ describe('BalanceSummary', () => {
             utxos: {
               utxos: [
                 {
-                  address: '1',
-                  path: '1',
-                  label: '1',
                   value: 1,
-                  tries: 0,
-                  tries_remaining: 0,
-                  external: false,
                   mixdepth: 0,
-                  confirmations: 0,
                   frozen: false,
-                  utxo: '1',
-                  locktime: undefined,
-                },
+                } as Utxo,
                 {
-                  address: '2',
-                  path: '2',
-                  label: '2 - locked',
                   value: 2,
-                  tries: 0,
-                  tries_remaining: 0,
-                  external: false,
                   mixdepth: 0,
-                  confirmations: 0,
                   frozen: false,
-                  utxo: '2',
                   locktime: '2099-12',
-                },
+                } as Utxo,
                 {
-                  address: '3',
-                  path: '3',
-                  label: '3 - frozen',
                   value: 3,
-                  tries: 0,
-                  tries_remaining: 0,
-                  external: false,
                   mixdepth: 0,
                   confirmations: 0,
                   frozen: true,
-                  utxo: '3',
-                },
+                } as Utxo,
               ],
             },
             display: {

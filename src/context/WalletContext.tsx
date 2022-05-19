@@ -9,7 +9,7 @@ interface CurrentWallet {
 }
 
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
-type Utxo = {
+export type Utxo = {
   address: string
   path: string
   label: string
