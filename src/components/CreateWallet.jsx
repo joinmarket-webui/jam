@@ -10,7 +10,7 @@ import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
-import { isFeatureEnabled } from '../constants/featureFlags'
+import { isFeatureEnabled } from '../constants/features'
 import styles from './CreateWallet.module.css'
 
 const PreventLeavingPageByMistake = () => {

@@ -6,6 +6,7 @@ import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './Jam.module.css'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -74,8 +75,6 @@ export default function Jam() {
     [walletInfo]
   )
 
-  // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
-  const deactivateTestingToggle = true
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
   const initialFormValues = useMemo(() => {
@@ -183,8 +182,9 @@ export default function Jam() {
 
     const body = { destination_addresses: destinations }
 
-    if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings && !deactivateTestingToggle) {
-      body.scheduler_options = {
+    // Make sure schedule testing is really only used in dev mode.
+    if (isDebugFeatureEnabled('insecureScheduleTesting') && useInsecureTestingSettings) {
+      body.tumbler_options = {
         addrcount: 3,
         minmakercount: 1,
         makercountrange: [1, 0],
@@ -363,7 +363,7 @@ export default function Jam() {
                             disabled={isSubmitting}
                           />
                         </rb.Form.Group>
-                        {process.env.NODE_ENV === 'development' && !deactivateTestingToggle && (
+                        {isDebugFeatureEnabled('insecureScheduleTesting') && (
                           <rb.Form.Group className="mb-4" controlId="offertype">
                             <ToggleSwitch
                               label={'Use insecure testing settings'}

@@ -94,10 +94,10 @@ interface ConfigSetRequest {
 
 interface StartSchedulerRequest {
   destination_addresses: BitcoinAddress[]
-  scheduler_options?: SchedulerOptions
+  tumbler_options?: TumblerOptions
 }
 
-interface SchedulerOptions {
+interface TumblerOptions {
   mixdepthsrc?: number
   restart?: boolean
   schedulefile?: string
@@ -276,14 +276,11 @@ const postFreeze = async (
   })
 }
 
-const postSchedulerStart = async (
-  { token, signal, walletName }: WalletRequestContext,
-  { destination_addresses, scheduler_options }: StartSchedulerRequest
-) => {
+const postSchedulerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartSchedulerRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${walletName}/taker/schedule`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    body: JSON.stringify({ destination_addresses: destination_addresses, tumbler_options: scheduler_options }),
+    body: JSON.stringify({ ...req }),
     signal,
   })
 }
