@@ -31,7 +31,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
   const { t } = useTranslation()
 
   return (
-    <rb.Offcanvas className="cheatsheet" show={show} onHide={onHide} placement="bottom">
+    <rb.Offcanvas className="cheatsheet" show={show} onHide={onHide} placement="bottom" onClick={onHide}>
       <rb.Offcanvas.Header closeButton>
         <rb.Stack>
           <rb.Offcanvas.Title>{t('cheatsheet.title')}</rb.Offcanvas.Title>
