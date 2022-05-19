@@ -33,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * reload session info on Earn and Wallets screen ([#231](https://github.com/joinmarket-webui/joinmarket-webui/issues/231)) ([df34272](https://github.com/joinmarket-webui/joinmarket-webui/commit/df342722c45d9c0184031a566e54fb31acae9685))
 * Remove skip button quiz screen ([#198](https://github.com/joinmarket-webui/joinmarket-webui/issues/198)) ([6c5e149](https://github.com/joinmarket-webui/joinmarket-webui/commit/6c5e149516454e1008aebf5f5cef74da9309f5f6))
 * reset wallet when token became invalid ([#223](https://github.com/joinmarket-webui/joinmarket-webui/issues/223)) ([70ffc99](https://github.com/joinmarket-webui/joinmarket-webui/commit/70ffc990402df242cf5c1fcc30308762ca918b8f))
-* use `1000` as websocket close code ([#219](https://github.com/joinmarket-webui/joinmarket-webui/issues/219)) ([6e3ebf0](https://github.com/joinmarket-webui/joinmarket-webui/commit/6e3ebf019b9fc5cb8a4df5a47da3ddcb22804dba))
 
 ### [0.0.5](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.4...v0.0.5) (2022-03-29)
 
