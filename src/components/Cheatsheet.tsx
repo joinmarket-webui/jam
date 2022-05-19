@@ -78,7 +78,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={2}>
             <h6>
               <Trans i18nKey="cheatsheet.item_2.title">
-                <Link to={routes.send}>Send</Link> a collaborative transaction to yourself.
+                <Link to={routes.jam}>Schedule</Link> transactions.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
@@ -105,17 +105,9 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
           </ListItem>
           <ListItem number={5}>
-            <h6>
-              <Trans i18nKey="cheatsheet.item_5.title">
-                <Link to={routes.jam}>Schedule</Link> transactions.
-              </Trans>
-            </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
-          </ListItem>
-          <ListItem number={6}>
-            <h6>{t('cheatsheet.item_6.title')}</h6>
+            <h6>{t('cheatsheet.item_5.title')}</h6>
             <div className="small text-secondary">
-              <Trans i18nKey="cheatsheet.item_6.description">
+              <Trans i18nKey="cheatsheet.item_5.description">
                 Still confused?{' '}
                 <a
                   href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#a-private-flow-through-joinmarket"

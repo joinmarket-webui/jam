@@ -240,8 +240,8 @@
       "description": "Deposit some funds yourself or receive it from others."
     },
     "item_2": {
-      "title": "<0>Send</0> a collaborative transaction to yourself.",
-      "description": "Collaborative transactions increase everyone's privacy."
+      "title": "<0>Schedule</0> transactions.",
+      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
     },
     "item_3": {
       "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
@@ -252,10 +252,6 @@
       "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
-      "title": "<0>Schedule</0> transactions.",
-      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
-    },
-    "item_6": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
