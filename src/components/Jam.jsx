@@ -363,7 +363,6 @@ export default function Jam() {
                     </Trans>
                   </p>
                 )}
-              <pre>{JSON.stringify(schedulerPreconditionSummary, null, 2)}</pre>
             </rb.Alert>
           </rb.Fade>
           {!collaborativeOperationRunning && wallet && walletInfo && (
