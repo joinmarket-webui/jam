@@ -23,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 
-* delay scheduler start/stop ([#264](https://github.com/joinmarket-webui/joinmarket-webui/issues/264)) ([d2dab2c](https://github.com/joinmarket-webui/joinmarket-webui/commit/d2dab2cc4dddd9c1836eea628f91ae57da820cbd))
 * do not hide CreateWallet component on connection errors ([#199](https://github.com/joinmarket-webui/joinmarket-webui/issues/199)) ([963dc49](https://github.com/joinmarket-webui/joinmarket-webui/commit/963dc49e723072d91f91649610e3f733bef358d1))
 * do not prefill addresses after form validation fails ([#266](https://github.com/joinmarket-webui/joinmarket-webui/issues/266)) ([5764fc5](https://github.com/joinmarket-webui/joinmarket-webui/commit/5764fc5e840e9b392aa813d95a8aa1dd521b5bd9))
 * force-close pending websockets connections ([#200](https://github.com/joinmarket-webui/joinmarket-webui/issues/200)) ([33b35f7](https://github.com/joinmarket-webui/joinmarket-webui/commit/33b35f7ba9bd0f97c115172ea5918bb06d308422))
