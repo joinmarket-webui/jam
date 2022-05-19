@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 * do not hide CreateWallet component on connection errors ([#199](https://github.com/joinmarket-webui/joinmarket-webui/issues/199)) ([963dc49](https://github.com/joinmarket-webui/joinmarket-webui/commit/963dc49e723072d91f91649610e3f733bef358d1))
-* do not prefill addresses after form validation fails ([#266](https://github.com/joinmarket-webui/joinmarket-webui/issues/266)) ([5764fc5](https://github.com/joinmarket-webui/joinmarket-webui/commit/5764fc5e840e9b392aa813d95a8aa1dd521b5bd9))
 * force-close pending websockets connections ([#200](https://github.com/joinmarket-webui/joinmarket-webui/issues/200)) ([33b35f7](https://github.com/joinmarket-webui/joinmarket-webui/commit/33b35f7ba9bd0f97c115172ea5918bb06d308422))
 * link to dev docs on contributing page ([#224](https://github.com/joinmarket-webui/joinmarket-webui/issues/224)) ([ef23b4b](https://github.com/joinmarket-webui/joinmarket-webui/commit/ef23b4b0850c2fa1d28a0ae9b56f2f53293b296f))
 * possible reference error in catch clause ([#265](https://github.com/joinmarket-webui/joinmarket-webui/issues/265)) ([2526eac](https://github.com/joinmarket-webui/joinmarket-webui/commit/2526eacf3b67307ece0a86a442094377df8c77c5))
