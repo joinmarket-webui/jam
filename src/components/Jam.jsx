@@ -334,8 +334,14 @@ export default function Jam() {
                 ) : schedulerPreconditionSummary.amountOfMissingConfirmations > 0 ? (
                   <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
                     The scheduler requires one of your UTXOs to have{' '}
-                    <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong> or
-                    more confirmations. Wait for{' '}
+                    <strong>
+                      {{
+                        /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
+                           (which is essential for parameterized translations to work). */
+                        minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+                      }}
+                    </strong>{' '}
+                    or more confirmations. Wait for{' '}
                     <strong>
                       {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
                     </strong>{' '}
