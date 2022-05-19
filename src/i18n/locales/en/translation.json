@@ -240,8 +240,8 @@
       "description": "Deposit some funds yourself or receive it from others."
     },
     "item_2": {
-      "title": "<0>Send</0> a collaborative transaction to yourself.",
-      "description": "Collaborative transactions increase everyone's privacy."
+      "title": "<0>Schedule</0> transactions.",
+      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
     },
     "item_3": {
       "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
@@ -252,10 +252,6 @@
       "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
-      "title": "<0>Schedule</0> transactions.",
-      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
-    },
-    "item_6": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
@@ -282,6 +278,11 @@
     "progress_current_state": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> to process...",
     "progress_done": "All transactions completed successfully. The scheduler will stop soon.",
     "error_loading_schedule_failed": "Loading schedule progress failed.",
-    "error_address_reuse": "Reusing addresses is prohibited. Make sure to use unique and unused addresses."
+    "error_address_reuse": "Reusing addresses is prohibited. Make sure to use unique and unused addresses.",
+    "precondition": {
+      "hint_missing_utxos": "To run the scheduler you need at least one UTXO with <2>{{ minConfirmations }}</2> confirmations. Fund your wallet and wait for <6>{{ minConfirmations }}</6> blocks.",
+      "hint_missing_confirmations": "The scheduler requires one of your UTXOs to have <2>{{ minConfirmations }}</2> or more confirmations. Wait for <6>{{ amountOfMissingConfirmations }}</6> more block(s).",
+      "hint_missing_overall_retries": "You've tried running the scheduler unsuccessfully too many times in a row. For security reasons, you need a fresh UTXO to try again. See <2>the docs</2> for more information."
+    }
   }
 }

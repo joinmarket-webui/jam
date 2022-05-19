@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './Jam.module.css'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -22,6 +23,14 @@ const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
 const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
+const SCHEDULER_START_ACCOUNT = 0
+const SCHEDULER_PRECONDITIONS = {
+  MIN_NUMBER_OF_UTXOS: 1, // min amount of utxos available
+  // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
+  MIN_CONFIRMATIONS_OF_SINGLE_UTXO: 5, // at least one utxo needs X confirmations
+  MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
+}
+
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
 
@@ -32,6 +41,61 @@ const ValuesListener = ({ handler }) => {
   }, [values, handler])
 
   return null
+}
+
+const DEFAULT_PRECONDITION_SUMMARY = {
+  isFulfilled: false,
+  numberOfMissingUtxos: SCHEDULER_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
+  amountOfMissingConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+  amountOfMissingOverallRetries: SCHEDULER_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
+}
+
+const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) => {
+  const eligibleUtxos = useMemo(() => {
+    if (!walletInfoOrNull) return []
+
+    const utxos = walletInfoOrNull.data.utxos.utxos || []
+    return utxos
+      .filter((it) => it.mixdepth === startAccountIndex)
+      .filter((it) => !it.frozen)
+      .filter((it) => !it.locktime)
+  }, [walletInfoOrNull, startAccountIndex])
+
+  const [summary, setSummary] = useState(DEFAULT_PRECONDITION_SUMMARY)
+
+  useEffect(() => {
+    if (!eligibleUtxos) {
+      setSummary(DEFAULT_PRECONDITION_SUMMARY)
+      return
+    }
+
+    const numberOfMissingUtxos = Math.max(0, SCHEDULER_PRECONDITIONS.MIN_NUMBER_OF_UTXOS - eligibleUtxos.length)
+
+    const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
+    const amountOfMissingOverallRetries = Math.max(
+      0,
+      SCHEDULER_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
+    )
+
+    const maxConfirmations =
+      eligibleUtxos.length === 0 ? 0 : eligibleUtxos.reduce((acc, utxo) => Math.max(acc, utxo.confirmations), 0)
+    const amountOfMissingConfirmations = Math.max(
+      0,
+      SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO - maxConfirmations
+    )
+
+    const isFulfilled =
+      numberOfMissingUtxos === 0 && amountOfMissingOverallRetries === 0 && amountOfMissingConfirmations === 0
+
+    setSummary({
+      isFulfilled,
+      numberOfMissingUtxos,
+      amountOfMissingConfirmations,
+      amountOfMissingOverallRetries,
+    })
+  }, [eligibleUtxos])
+
+  return summary
 }
 
 export default function Jam() {
@@ -49,6 +113,12 @@ export default function Jam() {
   const [destinationIsExternal, setDestinationIsExternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
   const [schedule, setSchedule] = useState(null)
+
+  const schedulerPreconditionSummary = useSchedulerPreconditionSummary(walletInfo, SCHEDULER_START_ACCOUNT)
+  const isSchedulerPreconditionsFulfilled = useMemo(
+    () => schedulerPreconditionSummary.isFulfilled,
+    [schedulerPreconditionSummary]
+  )
 
   // Returns one fresh address for each requested mixdepth.
   const getNewAddressesForAccounts = useCallback(
@@ -76,8 +146,6 @@ export default function Jam() {
     [walletInfo]
   )
 
-  // Todo: Testing toggle is deactivated until https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1260 is merged.
-  const deactivateTestingToggle = true
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
   const initialFormValues = useMemo(() => {
@@ -174,7 +242,7 @@ export default function Jam() {
   }, [collaborativeOperationRunning, reloadSchedule])
 
   const startSchedule = async (values) => {
-    if (isLoading || collaborativeOperationRunning) {
+    if (isLoading || collaborativeOperationRunning || !isSchedulerPreconditionsFulfilled) {
       return
     }
 
@@ -185,8 +253,9 @@ export default function Jam() {
 
     const body = { destination_addresses: destinations }
 
-    if (process.env.NODE_ENV === 'development' && useInsecureTestingSettings && !deactivateTestingToggle) {
-      body.scheduler_options = {
+    // Make sure schedule testing is really only used in dev mode.
+    if (isDebugFeatureEnabled('insecureScheduleTesting') && useInsecureTestingSettings) {
+      body.tumbler_options = {
         addrcount: 3,
         minmakercount: 1,
         makercountrange: [1, 0],
@@ -232,6 +301,7 @@ export default function Jam() {
     <>
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+
       {isLoading ? (
         <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder xs={12} className={styles['input-loader']} />
@@ -248,6 +318,56 @@ export default function Jam() {
               {t('send.text_coinjoin_already_running')}
             </rb.Alert>
           )}
+          <rb.Fade
+            in={!collaborativeOperationRunning && !isSchedulerPreconditionsFulfilled}
+            mountOnEnter={true}
+            unmountOnExit={true}
+          >
+            <rb.Alert variant="warning" className="mb-4">
+              <>
+                {schedulerPreconditionSummary.numberOfMissingUtxos > 0 ? (
+                  <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
+                    To run the scheduler you need at least one UTXO with{' '}
+                    <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
+                    confirmations. Fund your wallet and wait for{' '}
+                    <strong>{{ minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
+                    blocks.
+                  </Trans>
+                ) : schedulerPreconditionSummary.amountOfMissingConfirmations > 0 ? (
+                  <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
+                    The scheduler requires one of your UTXOs to have{' '}
+                    <strong>
+                      {{
+                        /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
+                           (which is essential for parameterized translations to work). */
+                        minConfirmations: SCHEDULER_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+                      }}
+                    </strong>{' '}
+                    or more confirmations. Wait for{' '}
+                    <strong>
+                      {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
+                    </strong>{' '}
+                    more block(s).
+                  </Trans>
+                ) : (
+                  schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
+                    <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
+                      You've tried running the scheduler unsuccessfully too many times in a row. For security reasons,
+                      you need a fresh UTXO to try again. See{' '}
+                      <a
+                        href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        the docs
+                      </a>{' '}
+                      for more information.
+                    </Trans>
+                  )
+                )}
+              </>
+            </rb.Alert>
+          </rb.Fade>
           {!collaborativeOperationRunning && wallet && walletInfo && (
             <>
               <div className="d-flex align-items-center justify-content-between mb-4">
@@ -362,7 +482,7 @@ export default function Jam() {
                             disabled={isSubmitting}
                           />
                         </rb.Form.Group>
-                        {process.env.NODE_ENV === 'development' && !deactivateTestingToggle && (
+                        {isDebugFeatureEnabled('insecureScheduleTesting') && (
                           <rb.Form.Group className="mb-4" controlId="offertype">
                             <ToggleSwitch
                               label={'Use insecure testing settings'}
@@ -403,7 +523,11 @@ export default function Jam() {
                       className={styles.submit}
                       variant="dark"
                       type="submit"
-                      disabled={!collaborativeOperationRunning && (isSubmitting || isLoading || !isValid)}
+                      disabled={
+                        isSubmitting ||
+                        isLoading ||
+                        (!collaborativeOperationRunning && (!isValid || !isSchedulerPreconditionsFulfilled))
+                      }
                     >
                       <div className="d-flex justify-content-center align-items-center">
                         {collaborativeOperationRunning ? t('scheduler.button_stop') : t('scheduler.button_start')}

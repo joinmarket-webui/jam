@@ -22,7 +22,6 @@ import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
 import { routes } from '../constants/routes'
-import { isFeatureEnabled } from '../constants/featureFlags'
 import packageInfo from '../../package.json'
 
 export default function App() {
@@ -38,8 +37,7 @@ export default function App() {
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
-  const cheatsheetEnabled = currentWallet && isFeatureEnabled('cheatsheet')
-  const scheduleEnabled = currentWallet && isFeatureEnabled('schedule')
+  const cheatsheetEnabled = currentWallet
 
   const startWallet = useCallback(
     (name, token) => {
@@ -126,7 +124,7 @@ export default function App() {
                 <Route path={routes.home} element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
                 {currentWallet && (
                   <>
-                    {scheduleEnabled && <Route path={routes.jam} element={<Jam />} />}
+                    <Route path={routes.jam} element={<Jam />} />
                     <Route path={routes.send} element={<Send />} />
                     <Route path={routes.earn} element={<Earn />} />
                     <Route path={routes.receive} element={<Receive />} />
