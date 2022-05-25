@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import DisplayBranch from './DisplayBranch'
@@ -12,21 +12,27 @@ import { Account } from '../global/types'
 
 interface DisplayAccountsProps extends rb.OffcanvasProps {
   accounts: Account[]
+  selectedAccountIndex?: number
 }
 
-export default function DisplayAccountsOverlay({ accounts, show, onHide }: DisplayAccountsProps) {
+export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, show, onHide }: DisplayAccountsProps) {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const [account, setAccount] = useState<Account | null>(accounts[0] || null)
+  const [accountIndex, setAccountIndex] = useState<number>(selectedAccountIndex)
+  const account = useMemo(() => accounts[accountIndex], [accounts, accountIndex])
+
+  useEffect(() => {
+    setAccountIndex(selectedAccountIndex)
+  }, [selectedAccountIndex])
 
   const nextAccount = () => {
-    const currentIndex = account === null ? -1 : accounts.indexOf(account)
-    setAccount(currentIndex + 1 >= accounts.length ? accounts[0] : accounts[currentIndex + 1])
+    const currentIndex = account === null ? 0 : accounts.indexOf(account)
+    setAccountIndex(currentIndex + 1 >= accounts.length ? 0 : currentIndex + 1)
   }
   const previousAccount = () => {
-    const currentIndex = account === null ? -1 : accounts.indexOf(account)
-    setAccount(currentIndex - 1 < 0 ? accounts[accounts.length - 1] : accounts[currentIndex - 1])
+    const currentIndex = account === null ? 0 : accounts.indexOf(account)
+    setAccountIndex(currentIndex - 1 < 0 ? accounts.length - 1 : currentIndex - 1)
   }
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -49,13 +55,13 @@ export default function DisplayAccountsOverlay({ accounts, show, onHide }: Displ
     >
       <rb.Offcanvas.Header className={styles['accounts-overlay-header']}>
         <rb.Row className="w-100">
-          <rb.Col className="d-flex justify-content-start">
+          <rb.Col className="d-flex align-items-center justify-content-start">
             <rb.Button variant="link" className="unstyled d-inline-flex align-items-center" onClick={() => onHide()}>
               <Sprite symbol="arrow-left" width="24" height="24" />
               <span className="mx-2">{t('global.back')}</span>
             </rb.Button>
           </rb.Col>
-          <rb.Col className="d-flex justify-content-center">
+          <rb.Col className="d-flex align-items-center justify-content-center">
             <rb.Offcanvas.Title className="d-inline-flex justify-content-center align-items-center">
               <rb.Button
                 variant="link"
@@ -65,7 +71,7 @@ export default function DisplayAccountsOverlay({ accounts, show, onHide }: Displ
                 <Sprite symbol="caret-left" width="24" height="24" />
               </rb.Button>
               <div className={`${styles['accounts-overlay-header-title']}`}>
-                {t('current_wallet_advanced.account')} <span className="mx-1">{account.account}</span>
+                {t('current_wallet_advanced.account')} <span className="ml-1">{account.account}</span>
               </div>
               <rb.Button
                 variant="link"
@@ -76,7 +82,7 @@ export default function DisplayAccountsOverlay({ accounts, show, onHide }: Displ
               </rb.Button>
             </rb.Offcanvas.Title>
           </rb.Col>
-          <rb.Col className="d-flex justify-content-end">
+          <rb.Col className="d-flex align-items-center justify-content-end">
             <Balance
               valueString={account.account_balance}
               convertToUnit={settings.unit}

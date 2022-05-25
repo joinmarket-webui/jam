@@ -1,18 +1,15 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Balance from './Balance'
 import DisplayBranch from './DisplayBranch'
-import DisplayAccountsOverlay from './DisplayAccountsOverlay'
 import { useSettings } from '../context/SettingsContext'
 import { routes } from '../constants/routes'
 
 export default function DisplayAccounts({ accounts, ...props }) {
   const { t } = useTranslation()
   const settings = useSettings()
-
-  const [isOverlayShown, setIsOverlayShown] = useState(true)
 
   return (
     <>
@@ -53,8 +50,6 @@ export default function DisplayAccounts({ accounts, ...props }) {
           )
         })}
       </rb.Accordion>
-
-      <DisplayAccountsOverlay accounts={accounts} show={isOverlayShown} onHide={() => setIsOverlayShown(false)} />
     </>
   )
 }
