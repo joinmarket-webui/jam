@@ -11,9 +11,9 @@ import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoCont
 import { useSettings } from '../context/SettingsContext'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
+import { btcToSats, SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
-import { SATS } from '../utils'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -617,7 +617,10 @@ export default function Send() {
                         {settings.useAdvancedWalletMode
                           ? t('send.account_selector_option_dev_mode', { number: accountIndex })
                           : t('send.account_selector_option', { number: accountIndex })}{' '}
-                        {settings.showBalance && `(\u20BF${totalBalance})`}
+                        {settings.showBalance &&
+                          (settings.unit === 'sats'
+                            ? `(${formatSats(btcToSats(totalBalance))} sats)`
+                            : `(\u20BF${formatBtc(totalBalance)})`)}
                       </option>
                     ))}
               </rb.Form.Select>
