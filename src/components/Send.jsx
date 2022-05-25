@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import { useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
@@ -7,9 +6,10 @@ import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { useCurrentWalletInfo, useReloadCurrentWalletInfo, useCurrentWallet } from '../context/WalletContext'
+import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
 import { btcToSats, SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
@@ -172,35 +172,35 @@ export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
+
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const settings = useSettings()
-
   const location = useLocation()
+
+  const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
+  const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
+  const waitForTakerToFinish = useMemo(() => isCoinjoinInProgress, [isCoinjoinInProgress])
+  const isOperationDisabled = useMemo(
+    () => isCoinjoinInProgress || isMakerRunning,
+    [isCoinjoinInProgress, isMakerRunning]
+  )
+
   const [alert, setAlert] = useState(null)
-
-  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
-  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
-  const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
-  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
-
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
-  const [isOperationDisabled, setIsOperationDisabled] = useState(false)
-
-  useEffect(() => {
-    const coinjoinInProgress = serviceInfo && serviceInfo.coinjoinInProgress
-    const makerRunning = serviceInfo && serviceInfo.makerRunning
-    setIsOperationDisabled(makerRunning || coinjoinInProgress)
-
-    setWaitForTakerToFinish(coinjoinInProgress)
-    setTakerStartedInfoAlert((current) => (coinjoinInProgress ? current : null))
-  }, [serviceInfo])
-
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
+
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
+  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
+
+  useEffect(() => {
+    setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
+  }, [isCoinjoinInProgress])
 
   const initialDestination = null
   const initialAccount = 0
@@ -221,6 +221,18 @@ export default function Send() {
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
+
+  const balanceSummary = useBalanceSummary(walletInfo)
+  const accountBalanceOrNull = useMemo(() => {
+    const eligibleAccountBalances =
+      balanceSummary && balanceSummary.accountBalances.filter((it) => it.accountIndex === account)
+
+    if (!eligibleAccountBalances || eligibleAccountBalances.length !== 1) {
+      return null
+    }
+
+    return eligibleAccountBalances[0]
+  }, [balanceSummary, account])
 
   useEffect(() => {
     if (
@@ -416,7 +428,7 @@ export default function Send() {
   const onSubmit = async (e) => {
     e.preventDefault()
 
-    if (isOperationDisabled) return
+    if (isLoading || isOperationDisabled) return
 
     const form = e.currentTarget
     const isValid = formIsValid
@@ -445,52 +457,19 @@ export default function Send() {
     }
   }
 
-  const balanceBreakdown = (accountNumber) => {
-    if (!walletInfo || !walletInfo.data.display.walletinfo.accounts || !walletInfo.data.utxos.utxos) {
-      return null
-    }
-
-    const filtered = walletInfo.data.display.walletinfo.accounts.filter((account) => {
-      return parseInt(account.account, 10) === accountNumber
-    })
-
-    if (filtered.length !== 1) {
-      return null
-    }
-
-    const utxosByAccount = walletInfo.data.utxos.utxos.reduce((acc, utxo) => {
-      acc[utxo.mixdepth] = acc[utxo.mixdepth] || []
-      acc[utxo.mixdepth].push(utxo)
-      return acc
-    }, {})
-    const accountUtxos = utxosByAccount[accountNumber] || []
-    const frozenOrLockedUtxos = accountUtxos.filter((utxo) => utxo.frozen || utxo.locktime)
-    const balanceFrozenOrLocked = frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
-
-    return {
-      totalBalance: btcToSats(filtered[0].account_balance),
-      frozenOrLockedBalance: balanceFrozenOrLocked,
-    }
-  }
-
   const amountFieldValue = () => {
     if (amount === null || Number.isNaN(amount)) return ''
 
     if (isSweep) {
-      const breakdown = balanceBreakdown(account)
-
-      if (!breakdown) return ''
-
-      return breakdown.totalBalance - breakdown.frozenOrLockedBalance
+      if (!accountBalanceOrNull) return ''
+      return `${accountBalanceOrNull.calculatedAvailableBalanceInSats}`
     }
 
     return amount
   }
 
   const frozenOrLockedWarning = () => {
-    const breakdown = balanceBreakdown(account)
-
-    if (!breakdown) return null
+    if (!accountBalanceOrNull) return null
 
     return (
       <div className={`${styles['sweep-breakdown']} mt-2`}>
@@ -504,7 +483,7 @@ export default function Send() {
                     <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
                     <td className={styles['balance-col']}>
                       <Balance
-                        valueString={breakdown.totalBalance.toString()}
+                        valueString={accountBalanceOrNull.totalBalance}
                         convertToUnit={SATS}
                         showBalance={true}
                       />
@@ -514,7 +493,7 @@ export default function Send() {
                     <td>{t('send.sweep_amount_breakdown_frozen_balance')}</td>
                     <td className={styles['balance-col']}>
                       <Balance
-                        valueString={breakdown.frozenOrLockedBalance.toString()}
+                        valueString={accountBalanceOrNull.calculatedFrozenOrLockedBalanceInSats.toString()}
                         convertToUnit={SATS}
                         showBalance={true}
                       />
@@ -574,14 +553,12 @@ export default function Send() {
   return (
     <>
       <div
-        className={`${serviceInfo?.makerRunning ? styles['maker-running'] : ''} ${
-          serviceInfo?.coinjoinInProgress ? 'taker-running' : ''
-        }`}
+        className={`${isMakerRunning ? styles['maker-running'] : ''} ${isCoinjoinInProgress ? 'taker-running' : ''}`}
       >
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
         <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
           <>
-            {serviceInfo?.makerRunning && (
+            {isMakerRunning && (
               <Link to={routes.earn} className={styles.unstyled}>
                 <rb.Alert variant="info" className="mb-4">
                   <rb.Row className="align-items-center">
@@ -593,7 +570,7 @@ export default function Send() {
                 </rb.Alert>
               </Link>
             )}
-            {serviceInfo?.coinjoinInProgress && (
+            {isCoinjoinInProgress && (
               <rb.Alert variant="info" className="mb-4">
                 {t('send.text_coinjoin_already_running')}
               </rb.Alert>
@@ -632,19 +609,18 @@ export default function Send() {
                 isInvalid={!isValidAccount(account)}
                 disabled={isOperationDisabled}
               >
-                {walletInfo &&
-                  walletInfo.data.display.walletinfo.accounts
-                    .sort((lhs, rhs) => lhs.account - rhs.account)
-                    .map(({ account, account_balance: balance }) => (
-                      <option key={account} value={account}>
+                {balanceSummary &&
+                  balanceSummary.accountBalances
+                    .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+                    .map(({ accountIndex, totalBalance }) => (
+                      <option key={accountIndex} value={accountIndex}>
                         {settings.useAdvancedWalletMode
-                          ? t('send.account_selector_option_dev_mode', { number: account })
-                          : t('send.account_selector_option', { number: account })}{' '}
-                        {settings.showBalance
-                          ? settings.unit === 'sats'
-                            ? `(${formatSats(btcToSats(balance))} sats)`
-                            : `(\u20BF${formatBtc(balance)})`
-                          : ''}
+                          ? t('send.account_selector_option_dev_mode', { number: accountIndex })
+                          : t('send.account_selector_option', { number: accountIndex })}{' '}
+                        {settings.showBalance &&
+                          (settings.unit === 'sats'
+                            ? `(${formatSats(btcToSats(totalBalance))} sats)`
+                            : `(\u20BF${formatBtc(totalBalance)})`)}
                       </option>
                     ))}
               </rb.Form.Select>
@@ -721,6 +697,7 @@ export default function Send() {
           <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
             <ToggleSwitch
               label={t('send.toggle_coinjoin')}
+              subtitle={t('send.toggle_coinjoin_subtitle')}
               initialValue={isCoinjoin}
               onToggle={(isToggled) => setIsCoinjoin(isToggled)}
               disabled={isLoading || isOperationDisabled}
@@ -736,7 +713,7 @@ export default function Send() {
           />
         )}
         <rb.Button
-          variant="dark"
+          variant={isCoinjoin ? 'dark' : 'danger'}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
@@ -747,8 +724,10 @@ export default function Send() {
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('send.text_sending')}
             </div>
-          ) : (
+          ) : isCoinjoin ? (
             t('send.button_send')
+          ) : (
+            t('send.button_send_without_improved_privacy')
           )}
         </rb.Button>
       </div>

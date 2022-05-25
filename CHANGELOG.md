@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.0.6](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.5...v0.0.6) (2022-05-19)
+
+#### Added
+
+* add cheatsheet ([#211](https://github.com/joinmarket-webui/joinmarket-webui/issues/211)) ([825f725](https://github.com/joinmarket-webui/joinmarket-webui/commit/825f725053f4c11a696929516cc48f40ffc1aee5))
+* add French translation ([#216](https://github.com/joinmarket-webui/joinmarket-webui/issues/216)) ([69fcbaf](https://github.com/joinmarket-webui/joinmarket-webui/commit/69fcbaff42af41f7723fd46d318009e969a5ed12))
+* confirm password on Create Wallet screen ([#210](https://github.com/joinmarket-webui/joinmarket-webui/issues/210)) ([0c019db](https://github.com/joinmarket-webui/joinmarket-webui/commit/0c019db742e19efda1dab1f81f857d286c3ca1b5))
+* **footer:** show Jam version ([#281](https://github.com/joinmarket-webui/joinmarket-webui/issues/281)) ([3c886f3](https://github.com/joinmarket-webui/joinmarket-webui/commit/3c886f3e05f81377f6a4b06e2ada6a020b6ce2aa))
+* Individual balance toggle ([#247](https://github.com/joinmarket-webui/joinmarket-webui/issues/247)) ([e6c4cc1](https://github.com/joinmarket-webui/joinmarket-webui/commit/e6c4cc1c59925a630d0595148025ce784f3641ce))
+* prevent address reuse on Jam screen ([#272](https://github.com/joinmarket-webui/joinmarket-webui/issues/272)) ([c05b431](https://github.com/joinmarket-webui/joinmarket-webui/commit/c05b431191f49718f63032d3b0fc10ee8991596d))
+* rearrange order of tabs ([#258](https://github.com/joinmarket-webui/joinmarket-webui/issues/258)) ([8f527d7](https://github.com/joinmarket-webui/joinmarket-webui/commit/8f527d7be83c9326e6583fa14888be84a37ecfff))
+* reload wallet data after send  ([#236](https://github.com/joinmarket-webui/joinmarket-webui/issues/236)) ([edd5818](https://github.com/joinmarket-webui/joinmarket-webui/commit/edd5818b824276dd54a03d45103c810502e496bc))
+* scheduled transactions prototype ([#242](https://github.com/joinmarket-webui/joinmarket-webui/issues/242)) ([0e1d0a8](https://github.com/joinmarket-webui/joinmarket-webui/commit/0e1d0a8a692633459f53edf156c1e4446db62852))
+* simple progress report for scheduled transactions ([#262](https://github.com/joinmarket-webui/joinmarket-webui/issues/262)) ([0e3b7b8](https://github.com/joinmarket-webui/joinmarket-webui/commit/0e3b7b8b9416331bda7837fc5bb39b6d9ba3e869))
+* split up scheduler destination addresses over 3 mixdepths ([#283](https://github.com/joinmarket-webui/joinmarket-webui/issues/283)) ([471cbc7](https://github.com/joinmarket-webui/joinmarket-webui/commit/471cbc7e985c2521f9053e950067c781649666b9))
+
+#### Fixed
+
+* do not hide CreateWallet component on connection errors ([#199](https://github.com/joinmarket-webui/joinmarket-webui/issues/199)) ([963dc49](https://github.com/joinmarket-webui/joinmarket-webui/commit/963dc49e723072d91f91649610e3f733bef358d1))
+* force-close pending websockets connections ([#200](https://github.com/joinmarket-webui/joinmarket-webui/issues/200)) ([33b35f7](https://github.com/joinmarket-webui/joinmarket-webui/commit/33b35f7ba9bd0f97c115172ea5918bb06d308422))
+* link to dev docs on contributing page ([#224](https://github.com/joinmarket-webui/joinmarket-webui/issues/224)) ([ef23b4b](https://github.com/joinmarket-webui/joinmarket-webui/commit/ef23b4b0850c2fa1d28a0ae9b56f2f53293b296f))
+* possible reference error in catch clause ([#265](https://github.com/joinmarket-webui/joinmarket-webui/issues/265)) ([2526eac](https://github.com/joinmarket-webui/joinmarket-webui/commit/2526eacf3b67307ece0a86a442094377df8c77c5))
+* prevent operations when maker/taker service is running ([#218](https://github.com/joinmarket-webui/joinmarket-webui/issues/218)) ([035dd80](https://github.com/joinmarket-webui/joinmarket-webui/commit/035dd8034ab5a45ef377a17877b343132cdf933f))
+* prevent starting scheduler when utxo preconditions are not met ([#263](https://github.com/joinmarket-webui/joinmarket-webui/issues/263)) ([a500b02](https://github.com/joinmarket-webui/joinmarket-webui/commit/a500b02f9bb1c11681a8ae8c532b77dfb18add6a))
+* prevent starting/stopping scheduler while data is loading ([#260](https://github.com/joinmarket-webui/joinmarket-webui/issues/260)) ([593981d](https://github.com/joinmarket-webui/joinmarket-webui/commit/593981dfd3d823ad02f09bbb683a652027b5383e))
+* reload session info on Earn and Wallets screen ([#231](https://github.com/joinmarket-webui/joinmarket-webui/issues/231)) ([df34272](https://github.com/joinmarket-webui/joinmarket-webui/commit/df342722c45d9c0184031a566e54fb31acae9685))
+* Remove skip button quiz screen ([#198](https://github.com/joinmarket-webui/joinmarket-webui/issues/198)) ([6c5e149](https://github.com/joinmarket-webui/joinmarket-webui/commit/6c5e149516454e1008aebf5f5cef74da9309f5f6))
+* reset wallet when token became invalid ([#223](https://github.com/joinmarket-webui/joinmarket-webui/issues/223)) ([70ffc99](https://github.com/joinmarket-webui/joinmarket-webui/commit/70ffc990402df242cf5c1fcc30308762ca918b8f))
+
 ### [0.0.5](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.4...v0.0.5) (2022-03-29)
 
 #### Added

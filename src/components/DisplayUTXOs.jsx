@@ -83,27 +83,34 @@ const Utxo = ({ utxo, ...props }) => {
               <div>
                 <small className="text-secondary">{utxo.confirmations} Confirmations</small>
               </div>
+              <div>
+                <small className={utxo.tries === 0 ? `text-secondary` : `text-warning`}>
+                  {utxo.tries_remaining} of {utxo.tries + utxo.tries_remaining} attempts remaining
+                </small>
+              </div>
               {showFreezeActionButton && (
-                <div>
+                <div className="mt-1">
                   <rb.Button
                     size="sm"
                     variant={utxo.frozen ? 'outline-warning' : 'outline-info'}
                     disabled={isSending}
                     onClick={() => onClickFreeze(utxo)}
                   >
-                    {isSending && (
-                      <rb.Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                        className="ms-1 me-2"
-                      />
-                    )}
-                    {utxo.frozen
-                      ? t('current_wallet_advanced.button_unfreeze')
-                      : t('current_wallet_advanced.button_freeze')}
+                    <div className="d-flex justify-content-center align-items-center">
+                      {isSending && (
+                        <rb.Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                          className="ms-1 me-2"
+                        />
+                      )}
+                      {utxo.frozen
+                        ? t('current_wallet_advanced.button_unfreeze')
+                        : t('current_wallet_advanced.button_freeze')}
+                    </div>
                   </rb.Button>
                 </div>
               )}

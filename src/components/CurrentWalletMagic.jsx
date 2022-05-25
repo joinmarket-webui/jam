@@ -9,6 +9,7 @@ import { walletDisplayName } from '../utils'
 import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
@@ -38,10 +39,10 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   )
 }
 
-const PrivacyLevels = ({ accounts, loading }) => {
+const PrivacyLevels = ({ accountBalances, loading }) => {
   const numPrivacyLevelsPalceholders = 5
-  const sortedAccounts = (accounts || []).sort((lhs, rhs) => lhs.account - rhs.account)
-  const numAccounts = sortedAccounts.length
+  const sortedAccountBalances = (accountBalances || []).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  const numAccounts = sortedAccountBalances.length
 
   return (
     <div className="d-flex justify-content-center">
@@ -50,12 +51,12 @@ const PrivacyLevels = ({ accounts, loading }) => {
           ? Array(numPrivacyLevelsPalceholders)
               .fill('')
               .map((_, index) => <LoadingPrivacyLevel key={index} level={numPrivacyLevelsPalceholders} />)
-          : sortedAccounts.map(({ account, account_balance: balance }) => (
+          : sortedAccountBalances.map(({ accountIndex, totalBalance }) => (
               <PrivacyLevel
-                key={account}
+                key={accountIndex}
                 numAccounts={numAccounts}
-                level={parseInt(account)}
-                balance={balance}
+                level={accountIndex}
+                balance={totalBalance}
                 loading={loading}
               />
             ))}
@@ -113,7 +114,8 @@ export default function CurrentWalletMagic() {
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
-  const walletInfo = useCurrentWalletInfo()
+  const currentWalletInfo = useCurrentWalletInfo()
+  const balanceSummary = useBalanceSummary(currentWalletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -148,7 +150,7 @@ export default function CurrentWalletMagic() {
         <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
           <WalletHeader
             name={currentWallet?.name}
-            balance={walletInfo?.data.display.walletinfo.total_balance}
+            balance={balanceSummary?.totalBalance}
             unit={settings.unit}
             showBalance={settings.showBalance}
             loading={isLoading}
@@ -184,7 +186,7 @@ export default function CurrentWalletMagic() {
           <hr className="my-4" />
         </rb.Row>
         <rb.Row>
-          <PrivacyLevels accounts={walletInfo?.data.display.walletinfo.accounts} loading={isLoading} />
+          <PrivacyLevels accountBalances={balanceSummary?.accountBalances} loading={isLoading} />
         </rb.Row>
         <rb.Row>
           <hr className="my-4" />
