@@ -9,43 +9,65 @@ interface CurrentWallet {
 }
 
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
+export type Utxo = {
+  address: string
+  path: string
+  label: string
+  value: number // in sats
+  tries: number
+  tries_remaining: number
+  external: boolean
+  mixdepth: number
+  confirmations: number
+  frozen: boolean
+  utxo: string
+  locktime?: string
+}
 
-type Utxos = any[]
+export type Utxos = Utxo[]
+
 interface UtxosResponse {
   utxos: Utxos
 }
+
 interface WalletDisplayResponse {
   walletinfo: WalletDisplayInfo
 }
 
+export type BalanceString = `${number}.${string}`
+
 interface WalletDisplayInfo {
   wallet_name: string
-  total_balance: string
+  total_balance: BalanceString
+  available_balance: BalanceString
   accounts: Account[]
 }
 
 interface Account {
   account: string
-  account_balance: string
+  account_balance: BalanceString
+  available_balance: BalanceString
   branches: Branch[]
 }
 
 interface Branch {
   branch: string
-  balance: string
+  balance: BalanceString
+  available_balance: BalanceString
   entries: BranchEntry[]
 }
 
 interface BranchEntry {
   hd_path: string
   address: string
-  amount: string
+  amount: BalanceString
+  available_balance: BalanceString
   status: string
   label: string
   extradata: string
 }
 
-interface WalletInfo {
+export interface WalletInfo {
   data: {
     utxos: UtxosResponse
     display: WalletDisplayResponse
@@ -180,4 +202,5 @@ export {
   useSetCurrentWallet,
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
+  BranchEntry,
 }

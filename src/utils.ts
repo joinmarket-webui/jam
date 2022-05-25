@@ -42,3 +42,33 @@ export const copyToClipboard = (
       }
     })
 }
+
+export const formatBtc = (value: number) => {
+  const decimalPoint = '\u002E'
+  const nbHalfSpace = '\u202F'
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    minimumIntegerDigits: 1,
+    minimumFractionDigits: 8,
+  })
+
+  const numberString = formatter.format(value)
+
+  const [integerPart, fractionalPart] = numberString.split(decimalPoint)
+
+  const formattedFractionalPart = fractionalPart
+    .split('')
+    .map((char, idx) => (idx === 2 || idx === 5 ? `${nbHalfSpace}${char}` : char))
+    .join('')
+
+  return integerPart + decimalPoint + formattedFractionalPart
+}
+
+export const formatSats = (value: number) => {
+  const formatter = new Intl.NumberFormat('en-US', {
+    minimumIntegerDigits: 1,
+    minimumFractionDigits: 0,
+  })
+
+  return formatter.format(value)
+}

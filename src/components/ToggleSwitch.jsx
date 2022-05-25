@@ -1,7 +1,13 @@
 import React from 'react'
 import styles from './ToggleSwitch.module.css'
 
-export default function ToggleSwitch({ label, onToggle, initialValue = false, disabled = false }) {
+export default function ToggleSwitch({
+  label,
+  subtitle = undefined,
+  onToggle,
+  initialValue = false,
+  disabled = false,
+}) {
   const onClick = (e) => {
     onToggle(e.target.checked)
   }
@@ -16,7 +22,10 @@ export default function ToggleSwitch({ label, onToggle, initialValue = false, di
         disabled={disabled}
       />
       <span className={styles['toggle-switch']}></span>
-      {label}
+      <div className="d-flex flex-column gap-0">
+        <div>{label}</div>
+        {subtitle && <div className={`${styles['subtitle']} text-secondary`}>{subtitle}</div>}
+      </div>
     </label>
   )
 }

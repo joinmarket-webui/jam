@@ -4,6 +4,7 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import Wallets from './Wallets'
 import CreateWallet from './CreateWallet'
+import Jam from './Jam'
 import Send from './Send'
 import Earn from './Earn'
 import Receive from './Receive'
@@ -21,7 +22,7 @@ import { setSession, clearSession } from '../session'
 import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
 import { routes } from '../constants/routes'
-import { isFeatureEnabled } from '../constants/featureFlags'
+import packageInfo from '../../package.json'
 
 export default function App() {
   const { t } = useTranslation()
@@ -36,7 +37,7 @@ export default function App() {
   const [showAlphaWarning, setShowAlphaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
-  const cheatsheetEnabled = currentWallet && isFeatureEnabled('cheatsheet')
+  const cheatsheetEnabled = currentWallet
 
   const startWallet = useCallback(
     (name, token) => {
@@ -123,6 +124,7 @@ export default function App() {
                 <Route path={routes.home} element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
                 {currentWallet && (
                   <>
+                    <Route path={routes.jam} element={<Jam />} />
                     <Route path={routes.send} element={<Send />} />
                     <Route path={routes.earn} element={<Earn />} />
                     <Route path={routes.receive} element={<Receive />} />
@@ -182,6 +184,17 @@ export default function App() {
             )}
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
+            <div className="warning-hint text-start text-secondary d-none d-md-block pe-1">
+              <a
+                href="https://github.com/joinmarket-webui/joinmarket-webui/tags"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="d-flex align-items-center text-secondary"
+              >
+                {' '}
+                v{packageInfo.version}
+              </a>
+            </div>
             <div className="d-flex gap-2 pe-2">
               <a
                 href="https://github.com/joinmarket-webui/joinmarket-webui"

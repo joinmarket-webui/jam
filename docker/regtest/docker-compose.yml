@@ -12,11 +12,7 @@ services:
       READY_FILE: /root/.nbxplorer/btc_fully_synched
       ENSURE_WALLET: 1
       jm_rpc_wallet_file: jm_primary
-      jm_max_cj_fee_abs: 42000000 # 0.42 btc
-      jm_max_cj_fee_rel: 0.1337 # 13.37%
       jm_minimum_makers: 1
-      jm_taker_utxo_age: 1
-      jm_taker_utxo_retries: 10
       jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
@@ -24,6 +20,14 @@ services:
       jm_rpc_port: 43782
       jm_rpc_user: joinmarket
       jm_rpc_password: joinmarket
+      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      jm_socks5: "false" # will _not_ connect to local irc over tor
+      jm_socks5_host: tor
+      jm_socks5_port: 9050
+      jm_tor_control_host: tor
+      jm_tor_control_port: 9051
+      jm_onion_socks5_host: tor
+      jm_onion_socks5_port: 9050
     expose:
       - 8080  # payjoin server
       - 62601 # obwatch
@@ -39,6 +43,7 @@ services:
       - "nbxplorer_datadir:/root/.nbxplorer"
     depends_on:
       - bitcoind
+      - tor
       - nbxplorer
       - irc
 
@@ -54,11 +59,7 @@ services:
       APP_USER: joinmarket
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_secondary
-      jm_max_cj_fee_abs: 42000000 # 0.42 btc
-      jm_max_cj_fee_rel: 0.1337 # 13.37%
       jm_minimum_makers: 1
-      jm_taker_utxo_age: 1
-      jm_taker_utxo_retries: 10
       jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
@@ -66,7 +67,7 @@ services:
       jm_rpc_port: 43782
       jm_rpc_user: joinmarket2
       jm_rpc_password: joinmarket2
-      # showcase exemplary tor environment vars
+      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
       jm_socks5: "false" # will _not_ connect to local irc over tor
       jm_socks5_host: tor
       jm_socks5_port: 9050
@@ -91,9 +92,24 @@ services:
       - "tor_datadir:/home/tor/.tor"
     depends_on:
       - bitcoind
-      - irc
       - nbxplorer
       - tor
+      - irc
+
+  joinmarket_directory_node:
+    container_name: jm_regtest_joinmarket_directory_node
+    build:
+      context: ./dockerfile-deps/joinmarket/directory_node
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      jm_hidden_service_dir: \/root\/.joinmarket\/hidden_service_dir
+      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      jm_blockchain_source: regtest
+      jm_network: testnet
+    volumes:
+      - "joinmarket_directory_node_datadir:/root/.joinmarket"
+      - "./out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
 
   irc:
     container_name: jm_regtest_irc
@@ -217,6 +233,7 @@ volumes:
   nbxplorer_datadir:
   joinmarket_datadir:
   joinmarket2_datadir:
+  joinmarket_directory_node_datadir:
   irc_datadir:
   tor_datadir:
   tor_torrcdir:

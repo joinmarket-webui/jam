@@ -4,25 +4,27 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { EarnIndicator, JoiningIndicator } from './ActivityIndicators'
+import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 
-const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
+const WalletPreview = ({ wallet, totalBalance, unit, showBalance }) => {
   return (
     <div className="d-flex align-items-center">
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {walletInfo && walletInfo?.data.display.walletinfo.total_balance && unit ? (
+        {totalBalance && unit ? (
           <div className="text-body">
             <Balance
-              valueString={walletInfo.data.display.walletinfo.total_balance}
+              valueString={totalBalance}
               convertToUnit={unit}
               showBalance={showBalance || false}
+              enableVisibilityToggle={false}
             />
           </div>
         ) : (
@@ -33,21 +35,11 @@ const WalletPreview = ({ wallet, walletInfo, unit, showBalance }) => {
   )
 }
 
-const CenterNav = ({ makerRunning, onClick }) => {
+const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
   const { t } = useTranslation()
+
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
-      <rb.Nav.Item className="d-flex align-items-stretch">
-        <NavLink
-          to={routes.send}
-          onClick={onClick}
-          className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
-          }
-        >
-          {t('navbar.tab_send')}
-        </NavLink>
-      </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.receive}
@@ -61,6 +53,20 @@ const CenterNav = ({ makerRunning, onClick }) => {
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
+          to={routes.jam}
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          <div className="d-flex align-items-start">
+            {t('Jam')}
+            <TabActivityIndicator isOn={cjRunning} />
+          </div>
+        </NavLink>
+      </rb.Nav.Item>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
           to={routes.earn}
           onClick={onClick}
           className={({ isActive }) =>
@@ -69,8 +75,19 @@ const CenterNav = ({ makerRunning, onClick }) => {
         >
           <div className="d-flex align-items-start">
             {t('navbar.tab_earn')}
-            <EarnIndicator isOn={makerRunning} />
+            <TabActivityIndicator isOn={makerRunning} />
           </div>
+        </NavLink>
+      </rb.Nav.Item>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to={routes.send}
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          {t('navbar.tab_send')}
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>
@@ -123,6 +140,7 @@ export default function Navbar() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
+  const balanceSummary = useBalanceSummary(currentWalletInfo)
 
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
@@ -197,7 +215,7 @@ export default function Navbar() {
                       <>
                         <WalletPreview
                           wallet={currentWallet}
-                          walletInfo={currentWalletInfo}
+                          totalBalance={balanceSummary?.totalBalance}
                           showBalance={settings.showBalance}
                           unit={settings.unit}
                         />
@@ -215,7 +233,11 @@ export default function Navbar() {
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
-                    <CenterNav makerRunning={serviceInfo?.makerRunning} onClick={() => setIsExpanded(!isExpanded)} />
+                    <CenterNav
+                      makerRunning={serviceInfo?.makerRunning}
+                      cjRunning={serviceInfo?.coinjoinInProgress}
+                      onClick={() => setIsExpanded(!isExpanded)}
+                    />
                     <TrailingNav
                       coinjoinInProgess={serviceInfo?.coinjoinInProgress}
                       onClick={() => setIsExpanded(!isExpanded)}
@@ -223,7 +245,7 @@ export default function Navbar() {
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
-                  <CenterNav makerRunning={serviceInfo?.makerRunning} />
+                  <CenterNav makerRunning={serviceInfo?.makerRunning} cjRunning={serviceInfo?.coinjoinInProgress} />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">

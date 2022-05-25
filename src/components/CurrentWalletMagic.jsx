@@ -9,6 +9,7 @@ import { walletDisplayName } from '../utils'
 import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
@@ -26,17 +27,22 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
       )}
       {!loading && (
         <h2>
-          <Balance valueString={balance} convertToUnit={unit} showBalance={showBalance || false} />
+          <Balance
+            valueString={balance}
+            convertToUnit={unit}
+            showBalance={showBalance || false}
+            enableVisibilityToggle={false}
+          />
         </h2>
       )}
     </div>
   )
 }
 
-const PrivacyLevels = ({ accounts, loading }) => {
+const PrivacyLevels = ({ accountBalances, loading }) => {
   const numPrivacyLevelsPalceholders = 5
-  const sortedAccounts = (accounts || []).sort((lhs, rhs) => lhs.account - rhs.account)
-  const numAccounts = sortedAccounts.length
+  const sortedAccountBalances = (accountBalances || []).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  const numAccounts = sortedAccountBalances.length
 
   return (
     <div className="d-flex justify-content-center">
@@ -45,12 +51,12 @@ const PrivacyLevels = ({ accounts, loading }) => {
           ? Array(numPrivacyLevelsPalceholders)
               .fill('')
               .map((_, index) => <LoadingPrivacyLevel key={index} level={numPrivacyLevelsPalceholders} />)
-          : sortedAccounts.map(({ account, account_balance: balance }) => (
+          : sortedAccountBalances.map(({ accountIndex, totalBalance }) => (
               <PrivacyLevel
-                key={account}
+                key={accountIndex}
                 numAccounts={numAccounts}
-                level={parseInt(account)}
-                balance={balance}
+                level={accountIndex}
+                balance={totalBalance}
                 loading={loading}
               />
             ))}
@@ -108,7 +114,8 @@ export default function CurrentWalletMagic() {
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
-  const walletInfo = useCurrentWalletInfo()
+  const currentWalletInfo = useCurrentWalletInfo()
+  const balanceSummary = useBalanceSummary(currentWalletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -143,23 +150,13 @@ export default function CurrentWalletMagic() {
         <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
           <WalletHeader
             name={currentWallet?.name}
-            balance={walletInfo?.data.display.walletinfo.total_balance}
+            balance={balanceSummary?.totalBalance}
             unit={settings.unit}
             showBalance={settings.showBalance}
             loading={isLoading}
           />
         </rb.Row>
         <rb.Row className="mt-4">
-          <rb.Col>
-            {/* Todo: Withdrawing needs to factor in the privacy levels as well.
-              Depending on the mixdepth/account there will be different amounts available. */}
-            <ExtendedLink to={routes.send} className="btn btn-outline-dark w-100" disabled={isLoading}>
-              <div className="d-flex justify-content-center align-items-center">
-                <Sprite symbol="send" width="24" height="24" />
-                <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
-              </div>
-            </ExtendedLink>
-          </rb.Col>
           <rb.Col>
             {/* Always receive on first mixdepth. */}
             <ExtendedLink
@@ -174,12 +171,22 @@ export default function CurrentWalletMagic() {
               </div>
             </ExtendedLink>
           </rb.Col>
+          <rb.Col>
+            {/* Todo: Withdrawing needs to factor in the privacy levels as well.
+              Depending on the mixdepth/account there will be different amounts available. */}
+            <ExtendedLink to={routes.send} className="btn btn-outline-dark w-100" disabled={isLoading}>
+              <div className="d-flex justify-content-center align-items-center">
+                <Sprite symbol="send" width="24" height="24" />
+                <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
+              </div>
+            </ExtendedLink>
+          </rb.Col>
         </rb.Row>
         <rb.Row>
           <hr className="my-4" />
         </rb.Row>
         <rb.Row>
-          <PrivacyLevels accounts={walletInfo?.data.display.walletinfo.accounts} loading={isLoading} />
+          <PrivacyLevels accountBalances={balanceSummary?.accountBalances} loading={isLoading} />
         </rb.Row>
         <rb.Row>
           <hr className="my-4" />
