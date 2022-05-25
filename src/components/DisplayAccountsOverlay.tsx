@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import DisplayBranch from './DisplayBranch'
+import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
 // @ts-ignore
 import Balance from './Balance'
 // @ts-ignore
@@ -95,10 +95,21 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
           </rb.Col>
         </rb.Row>
       </rb.Offcanvas.Header>
-      <rb.Offcanvas.Body>
-        {account.branches.map((branch) => (
-          <DisplayBranch key={branch.branch} branch={branch} />
-        ))}
+      <rb.Offcanvas.Body className={styles['offcanvas-body']}>
+        <rb.Accordion defaultActiveKey={`0`} flush>
+          {account.branches.map((branch, index) => (
+            <rb.Accordion.Item className={styles['accordion-item']} key={branch.branch} eventKey={`${index}`}>
+              <rb.Accordion.Header>
+                <div className="w-100">
+                  <DisplayBranchHeader branch={branch} />
+                </div>
+              </rb.Accordion.Header>
+              <rb.Accordion.Body className={styles['accordion-body']}>
+                <DisplayBranchBody branch={branch} />
+              </rb.Accordion.Body>
+            </rb.Accordion.Item>
+          ))}
+        </rb.Accordion>
       </rb.Offcanvas.Body>
     </rb.Offcanvas>
   )

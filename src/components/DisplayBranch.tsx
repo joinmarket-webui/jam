@@ -39,30 +39,45 @@ interface DisplayBranchProps {
   branch: Branch
 }
 
-export default function DisplayBranch({ branch }: DisplayBranchProps) {
+export function DisplayBranchHeader({ branch }: DisplayBranchProps) {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const { balance, branch: detailsString, entries } = branch
+  const { balance, branch: detailsString } = branch
+  const [type, derivation] = detailsString.split('\t')
+  return (
+    <rb.Row className="w-100">
+      <rb.Col>
+        <h6 className={styles['branch-title']}>
+          {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}
+          {type === 'internal addresses' && <>{t('current_wallet_advanced.account_heading_internal_addresses')}</>}
+          {!['internal addresses', 'external addresses'].includes(type) && <>{type}</>}
+        </h6>
+        <code className="text-secondary text-break">{derivation}</code>
+      </rb.Col>
+      <rb.Col className="d-flex align-items-center justify-content-end">
+        <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+      </rb.Col>
+    </rb.Row>
+  )
+}
+
+export function DisplayBranchBody({ branch }: DisplayBranchProps) {
+  const { branch: detailsString, entries } = branch
   const [type, derivation, xpub] = detailsString.split('\t')
   return (
-    <article>
-      <rb.Row className="mt-4 pe-3">
-        <rb.Col xs="auto">
-          <h6 className={styles['branch-title']}>
-            {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}
-            {type === 'internal addresses' && <>{t('current_wallet_advanced.account_heading_internal_addresses')}</>}
-            {!['internal addresses', 'external addresses'].includes(type) && <>{type}</>}
-          </h6>
-          <code className="text-secondary text-break">{derivation}</code>
-        </rb.Col>
-        <rb.Col className="d-flex align-items-center justify-content-end">
-          <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
-        </rb.Col>
-      </rb.Row>
+    <>
       <rb.Row className="p-3">
-        <rb.Col xs="auto">
-          <code className="text-secondary text-break">{xpub}</code>
+        <rb.Col>
+          {xpub ? (
+            <>
+              <code className="text-secondary text-break">{xpub}</code>
+            </>
+          ) : (
+            <>
+              <rb.Alert variant="warning">xpub not available.</rb.Alert>
+            </>
+          )}
         </rb.Col>
       </rb.Row>
       {entries.map((entry, index) => (
@@ -74,6 +89,15 @@ export default function DisplayBranch({ branch }: DisplayBranchProps) {
           }`}
         />
       ))}
+    </>
+  )
+}
+
+export default function DisplayBranch({ branch }: DisplayBranchProps) {
+  return (
+    <article>
+      <DisplayBranchHeader branch={branch} />
+      <DisplayBranchBody branch={branch} />
     </article>
   )
 }
