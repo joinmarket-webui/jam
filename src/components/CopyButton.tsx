@@ -55,9 +55,9 @@ export function CopyButton({ value, onSuccess, onError, children, ...props }: Pr
 }
 
 interface CopyButtonWithConfirmationProps extends CopyButtonProps {
-  text: string
-  successText: string
-  successTextTimeout: number
+  text: React.ReactNode | string
+  successText?: React.ReactNode | string
+  successTextTimeout?: number
 }
 
 export function CopyButtonWithConfirmation({
@@ -94,14 +94,16 @@ export function CopyButtonWithConfirmation({
       }}
       {...props}
     >
-      {showValueCopiedConfirmation ? (
-        <div className="d-flex justify-content-center align-items-center">
-          {successText}
-          <Sprite color="green" symbol="checkmark" className="ms-1" width="20" height="20" />
-        </div>
-      ) : (
-        <>{text}</>
-      )}
+      <div className="d-flex justify-content-center align-items-center">
+        {showValueCopiedConfirmation ? (
+          <>
+            {successText}
+            <Sprite color="green" symbol="checkmark" className="ms-1" width="24" height="24" />
+          </>
+        ) : (
+          <>{text}</>
+        )}
+      </div>
     </CopyButton>
   )
 }

@@ -1,3 +1,20 @@
 .branch-title {
   margin-bottom: 0;
 }
+
+.address-copy-button {
+  text-align: left !important;
+  padding: 0 !important;
+}
+
+.sprite-copy {
+  visibility: hidden;
+}
+
+.address-copy-button:hover .sprite-copy {
+  visibility: visible;
+  opacity: 0.5;
+}
+.address-copy-button .sprite-copy:hover {
+  opacity: 1;
+}

@@ -7,6 +7,8 @@ import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { Branch, BranchEntry } from '../global/types'
 import styles from './DisplayBranch.module.css'
+import { CopyButtonWithConfirmation } from './CopyButton'
+import Sprite from './Sprite'
 
 const toHdPathIndex = (hdPath: string) => {
   const indexOfLastSeparator = hdPath.lastIndexOf('/')
@@ -85,7 +87,22 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
             <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
           <rb.Col xs={{ span: 12 }} lg={{ span: 'auto' }}>
-            <code className="text-break">{address}</code> {label && <span className="badge bg-info">{label}</span>}
+            <CopyButtonWithConfirmation
+              className={`btn ${styles['address-copy-button']}`}
+              text={
+                <>
+                  <code className="text-break">{address}</code>
+                  <Sprite className={`ms-1 ${styles['sprite-copy']}`} symbol="copy" width="24" height="24" />
+                </>
+              }
+              successText={
+                <>
+                  <code className="text-break">{address}</code>
+                </>
+              }
+              value={address}
+            />
+            {label && <span className="badge bg-info">{label}</span>}
             {status && <span className="badge bg-info">{status}</span>}
           </rb.Col>
         </rb.Row>
