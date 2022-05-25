@@ -61,7 +61,11 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
               <span className="mx-2">{t('global.back')}</span>
             </rb.Button>
           </rb.Col>
-          <rb.Col className="d-flex align-items-center justify-content-center">
+          <rb.Col
+            className="d-flex align-items-center justify-content-center"
+            xs={{ order: 'last', span: 12 }}
+            sm={{ order: 2, span: 'auto' }}
+          >
             <rb.Offcanvas.Title className="d-inline-flex justify-content-center align-items-center">
               <rb.Button
                 variant="link"
@@ -82,7 +86,7 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
               </rb.Button>
             </rb.Offcanvas.Title>
           </rb.Col>
-          <rb.Col className="d-flex align-items-center justify-content-end">
+          <rb.Col className="d-flex align-items-center justify-content-end" sm={{ order: 'last' }}>
             <Balance
               valueString={account.account_balance}
               convertToUnit={settings.unit}

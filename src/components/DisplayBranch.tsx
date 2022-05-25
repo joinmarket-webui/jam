@@ -69,7 +69,7 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
           <rb.Col lg={{ order: 'last' }} className="d-flex align-items-center justify-content-end">
             <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
-          <rb.Col xs={'auto'}>
+          <rb.Col xs={{ span: 12 }} lg={{ span: 'auto' }}>
             <code className="text-break">{address}</code> {label && <span className="badge bg-info">{label}</span>}
             {status && <span className="badge bg-info">{status}</span>}
           </rb.Col>
