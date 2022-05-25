@@ -30,7 +30,7 @@ describe('BalanceSummary', () => {
 
     expect(balanceSummary).toBeDefined()
     expect(balanceSummary.totalBalance).toBeNull()
-    expect(balanceSummary.availableBalanceDontUseYet).toBeNull()
+    expect(balanceSummary.availableBalance).toBeNull()
     expect(balanceSummary.calculatedAvailableBalanceInSats).toBeNull()
     expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBeNull()
     expect(balanceSummary.accountBalances).toBeNull()
@@ -50,7 +50,8 @@ describe('BalanceSummary', () => {
             display: {
               walletinfo: {
                 wallet_name: 'test.jmdat',
-                total_balance: '1.00000001',
+                total_balance: '2.00000000',
+                available_balance: '1.00000000',
                 accounts: [],
               },
             },
@@ -62,38 +63,8 @@ describe('BalanceSummary', () => {
     const balanceSummary = data as WalletBalanceSummary
 
     expect(balanceSummary).toBeDefined()
-    expect(balanceSummary.totalBalance).toBe('1.00000001')
-    expect(balanceSummary.availableBalanceDontUseYet).toBe('1.00000001')
-  })
-
-  it('should handle >v0.9.6 balance format if total and available balance differ', () => {
-    const data = {}
-
-    act(() => {
-      Object.assign(
-        data,
-        setup({
-          data: {
-            utxos: {
-              utxos: [],
-            },
-            display: {
-              walletinfo: {
-                wallet_name: 'test.jmdat',
-                total_balance: '0.00000001 (1.0000002)',
-                accounts: [],
-              },
-            },
-          },
-        })
-      )
-    })
-
-    const balanceSummary = data as WalletBalanceSummary
-
-    expect(balanceSummary).toBeDefined()
-    expect(balanceSummary.totalBalance).toBe('1.0000002')
-    expect(balanceSummary.availableBalanceDontUseYet).toBe('0.00000001')
+    expect(balanceSummary.totalBalance).toBe('2.00000000')
+    expect(balanceSummary.availableBalance).toBe('1.00000000')
   })
 
   it('should populate balance properties calculated from utxo data', () => {
@@ -128,7 +99,8 @@ describe('BalanceSummary', () => {
             display: {
               walletinfo: {
                 wallet_name: 'test.jmdat',
-                total_balance: '0.00000001 (0.00000006)',
+                total_balance: '0.00000006',
+                available_balance: '0.00000001',
                 accounts: [],
               },
             },
@@ -141,7 +113,7 @@ describe('BalanceSummary', () => {
 
     expect(balanceSummary).toBeDefined()
     expect(balanceSummary.totalBalance).toBe('0.00000006')
-    expect(balanceSummary.availableBalanceDontUseYet).toBe('0.00000001')
+    expect(balanceSummary.availableBalance).toBe('0.00000001')
     expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(1)
     expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(5)
     expect(balanceSummary.accountBalances).toEqual([])
@@ -166,7 +138,7 @@ describe('BalanceSummary', () => {
                   mixdepth: 2,
                 } as Utxo,
                 {
-                  value: 1,
+                  value: 11111111,
                   mixdepth: 2,
                   frozen: true,
                 } as Utxo,
@@ -181,26 +153,31 @@ describe('BalanceSummary', () => {
             display: {
               walletinfo: {
                 wallet_name: 'test.jmdat',
-                total_balance: '3.33333333 (6.66666667)',
+                total_balance: '6.66666666',
+                available_balance: '3.22222222',
                 accounts: [
                   {
                     account: '0',
                     account_balance: '0.00000000',
+                    available_balance: '0.00000000',
                     branches: [],
                   },
                   {
                     account: '1',
                     account_balance: '1.11111111',
+                    available_balance: '1.11111111',
                     branches: [],
                   },
                   {
                     account: '2',
-                    account_balance: '2.22222222 (2.22222223)',
+                    account_balance: '2.22222222',
+                    available_balance: '2.11111111',
                     branches: [],
                   },
                   {
                     account: '3',
-                    account_balance: '0.00000000 (3.33333333)',
+                    account_balance: '3.33333333',
+                    available_balance: '0.00000000',
                     branches: [],
                   },
                 ],
@@ -214,10 +191,10 @@ describe('BalanceSummary', () => {
     const balanceSummary = data as WalletBalanceSummary
 
     expect(balanceSummary).toBeDefined()
-    expect(balanceSummary.totalBalance).toBe('6.66666667')
-    expect(balanceSummary.availableBalanceDontUseYet).toBe('3.33333333')
-    expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(333333333)
-    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(333333334)
+    expect(balanceSummary.totalBalance).toBe('6.66666666')
+    expect(balanceSummary.availableBalance).toBe('3.22222222')
+    expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(322222222)
+    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(344444444)
     expect(balanceSummary.accountBalances).toHaveLength(4)
 
     const accountSummaryByIndex = (accountIndex: number) =>
@@ -226,28 +203,28 @@ describe('BalanceSummary', () => {
     const account0 = accountSummaryByIndex(0)
     expect(account0.accountIndex).toBe(0)
     expect(account0.totalBalance).toBe('0.00000000')
-    expect(account0.availableBalanceDontUseYet).toBe('0.00000000')
+    expect(account0.availableBalance).toBe('0.00000000')
     expect(account0.calculatedAvailableBalanceInSats).toBe(0)
     expect(account0.calculatedFrozenOrLockedBalanceInSats).toBe(0)
 
     const account1 = accountSummaryByIndex(1)
     expect(account1.accountIndex).toBe(1)
     expect(account1.totalBalance).toBe('1.11111111')
-    expect(account1.availableBalanceDontUseYet).toBe('1.11111111')
+    expect(account1.availableBalance).toBe('1.11111111')
     expect(account1.calculatedAvailableBalanceInSats).toBe(111111111)
     expect(account1.calculatedFrozenOrLockedBalanceInSats).toBe(0)
 
     const account2 = accountSummaryByIndex(2)
     expect(account2.accountIndex).toBe(2)
-    expect(account2.totalBalance).toBe('2.22222223')
-    expect(account2.availableBalanceDontUseYet).toBe('2.22222222')
-    expect(account2.calculatedAvailableBalanceInSats).toBe(222222222)
-    expect(account2.calculatedFrozenOrLockedBalanceInSats).toBe(1)
+    expect(account2.totalBalance).toBe('2.22222222')
+    expect(account2.availableBalance).toBe('2.11111111')
+    expect(account2.calculatedAvailableBalanceInSats).toBe(211111111)
+    expect(account2.calculatedFrozenOrLockedBalanceInSats).toBe(11111111)
 
     const account3 = accountSummaryByIndex(3)
     expect(account3.accountIndex).toBe(3)
     expect(account3.totalBalance).toBe('3.33333333')
-    expect(account3.availableBalanceDontUseYet).toBe('0.00000000')
+    expect(account3.availableBalance).toBe('0.00000000')
     expect(account3.calculatedAvailableBalanceInSats).toBe(0)
     expect(account3.calculatedFrozenOrLockedBalanceInSats).toBe(333333333)
   })

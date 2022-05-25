@@ -23,39 +23,45 @@ export type Utxo = {
   utxo: string
   locktime?: string
 }
+
 export type Utxos = Utxo[]
+
 interface UtxosResponse {
   utxos: Utxos
 }
+
 interface WalletDisplayResponse {
   walletinfo: WalletDisplayInfo
 }
 
-// caution: raw value is either "<total_and_available_balance>" or "<available_balance> (<total_balance>)"
-export type BalanceString = `${number}.${string} (${number}.${string})` | `${number}.${string}`
+export type BalanceString = `${number}.${string}`
 
 interface WalletDisplayInfo {
   wallet_name: string
   total_balance: BalanceString
+  available_balance: BalanceString
   accounts: Account[]
 }
 
 interface Account {
   account: string
   account_balance: BalanceString
+  available_balance: BalanceString
   branches: Branch[]
 }
 
 interface Branch {
   branch: string
   balance: BalanceString
+  available_balance: BalanceString
   entries: BranchEntry[]
 }
 
 interface BranchEntry {
   hd_path: string
   address: string
-  amount: string
+  amount: BalanceString
+  available_balance: BalanceString
   status: string
   label: string
   extradata: string

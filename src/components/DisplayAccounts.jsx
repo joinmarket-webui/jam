@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { routes } from '../constants/routes'
-import { parseTotalBalanceString } from '../hooks/BalanceSummary'
 
 const BranchEntry = ({ entry, ...props }) => {
   const settings = useSettings()
@@ -36,20 +35,9 @@ export default function DisplayAccounts({ accounts, ...props }) {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const parseTotalBalanceFromRawStringOrEmpty = (rawBalanceString, source) => {
-    try {
-      return parseTotalBalanceString(rawBalanceString).totalBalance
-    } catch (e) {
-      console.warn(`cannot determine balance format for ${source}`)
-      return ''
-    }
-  }
-
   return (
     <rb.Accordion {...props}>
-      {Object.values(accounts).map(({ account, account_balance: rawAccountBalance, branches }) => {
-        const accountBalance = parseTotalBalanceFromRawStringOrEmpty(rawAccountBalance, `account ${account}`)
-
+      {Object.values(accounts).map(({ account, account_balance, branches }) => {
         return (
           <rb.Accordion.Item key={account} eventKey={account}>
             <rb.Accordion.Header>
@@ -61,7 +49,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                 </rb.Col>
                 <rb.Col className="d-flex align-items-center justify-content-end">
                   <Balance
-                    valueString={accountBalance}
+                    valueString={account_balance}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />
@@ -75,9 +63,8 @@ export default function DisplayAccounts({ accounts, ...props }) {
               <Link to={routes.receive} state={{ account }} className="btn btn-outline-dark">
                 {t('current_wallet_advanced.account_button_receive')}
               </Link>
-              {branches.map(({ balance: rawBranchBalanceString, branch, entries }) => {
+              {branches.map(({ balance, branch, entries }) => {
                 const [type, derivation, xpub] = branch.split('\t')
-                const branchBalance = parseTotalBalanceFromRawStringOrEmpty(rawBranchBalanceString, `branch ${branch}`)
 
                 return (
                   <article key={derivation}>
@@ -93,7 +80,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                       </rb.Col>
                       <rb.Col className="d-flex align-items-center justify-content-end">
                         <Balance
-                          valueString={branchBalance}
+                          valueString={balance}
                           convertToUnit={settings.unit}
                           showBalance={settings.showBalance}
                         />
