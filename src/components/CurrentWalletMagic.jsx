@@ -115,7 +115,7 @@ export default function CurrentWalletMagic() {
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
-  const { totalBalance, accountBalances } = useBalanceSummary(currentWalletInfo)
+  const balanceSummary = useBalanceSummary(currentWalletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -150,7 +150,7 @@ export default function CurrentWalletMagic() {
         <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
           <WalletHeader
             name={currentWallet?.name}
-            balance={totalBalance}
+            balance={balanceSummary?.totalBalance}
             unit={settings.unit}
             showBalance={settings.showBalance}
             loading={isLoading}
@@ -186,7 +186,7 @@ export default function CurrentWalletMagic() {
           <hr className="my-4" />
         </rb.Row>
         <rb.Row>
-          <PrivacyLevels accountBalances={accountBalances} loading={isLoading} />
+          <PrivacyLevels accountBalances={balanceSummary?.accountBalances} loading={isLoading} />
         </rb.Row>
         <rb.Row>
           <hr className="my-4" />

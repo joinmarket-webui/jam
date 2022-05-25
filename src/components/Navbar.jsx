@@ -140,7 +140,7 @@ export default function Navbar() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
-  const { totalBalance } = useBalanceSummary(currentWalletInfo)
+  const balanceSummary = useBalanceSummary(currentWalletInfo)
 
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
@@ -215,7 +215,7 @@ export default function Navbar() {
                       <>
                         <WalletPreview
                           wallet={currentWallet}
-                          totalBalance={totalBalance}
+                          totalBalance={balanceSummary?.totalBalance}
                           showBalance={settings.showBalance}
                           unit={settings.unit}
                         />

@@ -3,7 +3,7 @@ import { btcToSats } from '../utils'
 import { WalletInfo, BalanceString, Utxos } from '../context/WalletContext'
 
 interface BalanceSummary {
-  totalBalance: BalanceString | null
+  totalBalance: BalanceString
   /**
    * @since clientserver v0.9.7
    * @description available balance (total - frozen - locked)
@@ -14,7 +14,7 @@ interface BalanceSummary {
    *
    *   Please use {@link BalanceSummarySupport.calculatedAvailableBalanceInSats}) if applicable.
    */
-  availableBalance: BalanceString | null
+  availableBalance: BalanceString
 }
 
 type BalanceSummarySupport = BalanceSummary & {
@@ -22,11 +22,11 @@ type BalanceSummarySupport = BalanceSummary & {
    * @description Manually calculated available balance in sats.
    *   Same as {@link BalanceSummary.availableBalance} except address reuse is taken into account.
    */
-  calculatedAvailableBalanceInSats: number | null
+  calculatedAvailableBalanceInSats: number
   /**
    * @description Manually calculated frozen or locked balance in sats.
    */
-  calculatedFrozenOrLockedBalanceInSats: number | null
+  calculatedFrozenOrLockedBalanceInSats: number
 }
 
 type AccountBalanceSummary = BalanceSummarySupport & {
@@ -34,7 +34,7 @@ type AccountBalanceSummary = BalanceSummarySupport & {
 }
 
 export type WalletBalanceSummary = BalanceSummarySupport & {
-  accountBalances: AccountBalanceSummary[] | null
+  accountBalances: AccountBalanceSummary[]
 }
 
 const calculateFrozenOrLockedBalance = (utxos: Utxos) => {
@@ -42,18 +42,10 @@ const calculateFrozenOrLockedBalance = (utxos: Utxos) => {
   return frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
 }
 
-const EMPTY_BALANCE_DETAILS = {
-  totalBalance: null,
-  availableBalance: null,
-  accountBalances: null,
-  calculatedAvailableBalanceInSats: null,
-  calculatedFrozenOrLockedBalanceInSats: null,
-} as WalletBalanceSummary
-
-const useBalanceSummary = (currentWalletInfo: WalletInfo | null): WalletBalanceSummary => {
+const useBalanceSummary = (currentWalletInfo: WalletInfo | null): WalletBalanceSummary | null => {
   const balanceSummary = useMemo(() => {
     if (!currentWalletInfo) {
-      return EMPTY_BALANCE_DETAILS
+      return null
     }
 
     const accounts = currentWalletInfo.data.display.walletinfo.accounts
@@ -110,7 +102,7 @@ const useBalanceSummary = (currentWalletInfo: WalletInfo | null): WalletBalanceS
       }
     } catch (e) {
       console.warn('"useBalanceSummary" hook cannot determine balance format', e)
-      return EMPTY_BALANCE_DETAILS
+      return null
     }
   }, [currentWalletInfo])
 

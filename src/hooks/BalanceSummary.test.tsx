@@ -6,10 +6,9 @@ import { useBalanceSummary, WalletBalanceSummary } from './BalanceSummary'
 import { WalletInfo, Utxo } from '../context/WalletContext'
 
 function setup(walletInfo: WalletInfo | null) {
-  const returnVal: unknown = {}
+  const returnVal: { data: WalletBalanceSummary | null | undefined } = { data: undefined }
   const TestComponent: React.FunctionComponent = () => {
-    const val = useBalanceSummary(walletInfo)
-    Object.assign(returnVal, val)
+    returnVal.data = useBalanceSummary(walletInfo)
     return <></>
   }
 
@@ -20,185 +19,163 @@ function setup(walletInfo: WalletInfo | null) {
 
 describe('BalanceSummary', () => {
   it('should handle missing wallet info without errors', () => {
-    const data = {}
+    let balanceSummary: WalletBalanceSummary | null | undefined
 
     act(() => {
-      Object.assign(data, setup(null))
+      balanceSummary = setup(null).data
     })
 
-    const balanceSummary = data as WalletBalanceSummary
-
-    expect(balanceSummary).toBeDefined()
-    expect(balanceSummary.totalBalance).toBeNull()
-    expect(balanceSummary.availableBalance).toBeNull()
-    expect(balanceSummary.calculatedAvailableBalanceInSats).toBeNull()
-    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBeNull()
-    expect(balanceSummary.accountBalances).toBeNull()
+    expect(balanceSummary).toBeNull()
   })
 
   it('should handle <=v0.9.6 balance format', () => {
-    const data = {}
+    let balanceSummary: WalletBalanceSummary | null | undefined
 
     act(() => {
-      Object.assign(
-        data,
-        setup({
-          data: {
-            utxos: {
-              utxos: [],
-            },
-            display: {
-              walletinfo: {
-                wallet_name: 'test.jmdat',
-                total_balance: '2.00000000',
-                available_balance: '1.00000000',
-                accounts: [],
-              },
+      balanceSummary = setup({
+        data: {
+          utxos: {
+            utxos: [],
+          },
+          display: {
+            walletinfo: {
+              wallet_name: 'test.jmdat',
+              total_balance: '2.00000000',
+              available_balance: '1.00000000',
+              accounts: [],
             },
           },
-        })
-      )
+        },
+      }).data
     })
 
-    const balanceSummary = data as WalletBalanceSummary
-
-    expect(balanceSummary).toBeDefined()
-    expect(balanceSummary.totalBalance).toBe('2.00000000')
-    expect(balanceSummary.availableBalance).toBe('1.00000000')
+    expect(balanceSummary).not.toBeNull()
+    expect(balanceSummary!.totalBalance).toBe('2.00000000')
+    expect(balanceSummary!.availableBalance).toBe('1.00000000')
   })
 
   it('should populate balance properties calculated from utxo data', () => {
-    const data = {}
+    let balanceSummary: WalletBalanceSummary | null | undefined
 
     act(() => {
-      Object.assign(
-        data,
-        setup({
-          data: {
-            utxos: {
-              utxos: [
-                {
-                  value: 1,
-                  mixdepth: 0,
-                  frozen: false,
-                } as Utxo,
-                {
-                  value: 2,
-                  mixdepth: 0,
-                  frozen: false,
-                  locktime: '2099-12',
-                } as Utxo,
-                {
-                  value: 3,
-                  mixdepth: 0,
-                  confirmations: 0,
-                  frozen: true,
-                } as Utxo,
-              ],
-            },
-            display: {
-              walletinfo: {
-                wallet_name: 'test.jmdat',
-                total_balance: '0.00000006',
-                available_balance: '0.00000001',
-                accounts: [],
-              },
+      balanceSummary = setup({
+        data: {
+          utxos: {
+            utxos: [
+              {
+                value: 1,
+                mixdepth: 0,
+                frozen: false,
+              } as Utxo,
+              {
+                value: 2,
+                mixdepth: 0,
+                frozen: false,
+                locktime: '2099-12',
+              } as Utxo,
+              {
+                value: 3,
+                mixdepth: 0,
+                confirmations: 0,
+                frozen: true,
+              } as Utxo,
+            ],
+          },
+          display: {
+            walletinfo: {
+              wallet_name: 'test.jmdat',
+              total_balance: '0.00000006',
+              available_balance: '0.00000001',
+              accounts: [],
             },
           },
-        })
-      )
+        },
+      }).data
     })
 
-    const balanceSummary = data as WalletBalanceSummary
-
-    expect(balanceSummary).toBeDefined()
-    expect(balanceSummary.totalBalance).toBe('0.00000006')
-    expect(balanceSummary.availableBalance).toBe('0.00000001')
-    expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(1)
-    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(5)
-    expect(balanceSummary.accountBalances).toEqual([])
+    expect(balanceSummary).not.toBeNull()
+    expect(balanceSummary!.totalBalance).toBe('0.00000006')
+    expect(balanceSummary!.availableBalance).toBe('0.00000001')
+    expect(balanceSummary!.calculatedAvailableBalanceInSats).toBe(1)
+    expect(balanceSummary!.calculatedFrozenOrLockedBalanceInSats).toBe(5)
+    expect(balanceSummary!.accountBalances).toEqual([])
   })
 
   it('should populate account balance data', () => {
-    const data = {}
+    let balanceSummary: WalletBalanceSummary | null | undefined
 
     act(() => {
-      Object.assign(
-        data,
-        setup({
-          data: {
-            utxos: {
-              utxos: [
+      balanceSummary = setup({
+        data: {
+          utxos: {
+            utxos: [
+              {
+                value: 111111111,
+                mixdepth: 1,
+              } as Utxo,
+              {
+                value: 222222222,
+                mixdepth: 2,
+              } as Utxo,
+              {
+                value: 11111111,
+                mixdepth: 2,
+                frozen: true,
+              } as Utxo,
+              {
+                value: 333333333,
+                mixdepth: 3,
+                confirmations: 0,
+                frozen: true,
+              } as Utxo,
+            ],
+          },
+          display: {
+            walletinfo: {
+              wallet_name: 'test.jmdat',
+              total_balance: '6.66666666',
+              available_balance: '3.22222222',
+              accounts: [
                 {
-                  value: 111111111,
-                  mixdepth: 1,
-                } as Utxo,
+                  account: '0',
+                  account_balance: '0.00000000',
+                  available_balance: '0.00000000',
+                  branches: [],
+                },
                 {
-                  value: 222222222,
-                  mixdepth: 2,
-                } as Utxo,
+                  account: '1',
+                  account_balance: '1.11111111',
+                  available_balance: '1.11111111',
+                  branches: [],
+                },
                 {
-                  value: 11111111,
-                  mixdepth: 2,
-                  frozen: true,
-                } as Utxo,
+                  account: '2',
+                  account_balance: '2.22222222',
+                  available_balance: '2.11111111',
+                  branches: [],
+                },
                 {
-                  value: 333333333,
-                  mixdepth: 3,
-                  confirmations: 0,
-                  frozen: true,
-                } as Utxo,
+                  account: '3',
+                  account_balance: '3.33333333',
+                  available_balance: '0.00000000',
+                  branches: [],
+                },
               ],
             },
-            display: {
-              walletinfo: {
-                wallet_name: 'test.jmdat',
-                total_balance: '6.66666666',
-                available_balance: '3.22222222',
-                accounts: [
-                  {
-                    account: '0',
-                    account_balance: '0.00000000',
-                    available_balance: '0.00000000',
-                    branches: [],
-                  },
-                  {
-                    account: '1',
-                    account_balance: '1.11111111',
-                    available_balance: '1.11111111',
-                    branches: [],
-                  },
-                  {
-                    account: '2',
-                    account_balance: '2.22222222',
-                    available_balance: '2.11111111',
-                    branches: [],
-                  },
-                  {
-                    account: '3',
-                    account_balance: '3.33333333',
-                    available_balance: '0.00000000',
-                    branches: [],
-                  },
-                ],
-              },
-            },
           },
-        })
-      )
+        },
+      }).data
     })
 
-    const balanceSummary = data as WalletBalanceSummary
-
-    expect(balanceSummary).toBeDefined()
-    expect(balanceSummary.totalBalance).toBe('6.66666666')
-    expect(balanceSummary.availableBalance).toBe('3.22222222')
-    expect(balanceSummary.calculatedAvailableBalanceInSats).toBe(322222222)
-    expect(balanceSummary.calculatedFrozenOrLockedBalanceInSats).toBe(344444444)
-    expect(balanceSummary.accountBalances).toHaveLength(4)
+    expect(balanceSummary).not.toBeNull()
+    expect(balanceSummary!.totalBalance).toBe('6.66666666')
+    expect(balanceSummary!.availableBalance).toBe('3.22222222')
+    expect(balanceSummary!.calculatedAvailableBalanceInSats).toBe(322222222)
+    expect(balanceSummary!.calculatedFrozenOrLockedBalanceInSats).toBe(344444444)
+    expect(balanceSummary!.accountBalances).toHaveLength(4)
 
     const accountSummaryByIndex = (accountIndex: number) =>
-      balanceSummary.accountBalances!.filter((it) => it.accountIndex === accountIndex).reduce((_, obj) => obj)
+      balanceSummary!.accountBalances!.filter((it) => it.accountIndex === accountIndex).reduce((_, obj) => obj)
 
     const account0 = accountSummaryByIndex(0)
     expect(account0.accountIndex).toBe(0)

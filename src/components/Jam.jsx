@@ -105,7 +105,7 @@ export default function Jam() {
   const reloadServiceInfo = useReloadServiceInfo()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const { calculatedAvailableBalanceInSats } = useBalanceSummary(walletInfo)
+  const balanceSummary = useBalanceSummary(walletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -368,7 +368,7 @@ export default function Jam() {
               </>
             </rb.Alert>
           </rb.Fade>
-          {!collaborativeOperationRunning && wallet && walletInfo && (
+          {!collaborativeOperationRunning && balanceSummary && (
             <>
               <div className="d-flex align-items-center justify-content-between mb-4">
                 <div className="d-flex align-items-center gap-2">
@@ -382,7 +382,7 @@ export default function Jam() {
                 </div>
                 <>
                   <Balance
-                    valueString={`${calculatedAvailableBalanceInSats}`}
+                    valueString={`${balanceSummary.calculatedAvailableBalanceInSats}`}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />
