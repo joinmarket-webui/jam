@@ -19,6 +19,22 @@ const toHdPathIndex = (hdPath: string) => {
   return hdPath.substring(indexOfLastSeparator + 1, hdPath.length)
 }
 
+const toSimpleStatus = (value: string) => {
+  const indexOfBracket = value.indexOf('[')
+  if (indexOfBracket === -1) {
+    return value
+  }
+
+  return value.substring(0, indexOfBracket).trim()
+}
+
+const toLabelNode = (simpleStatus: string): React.ReactNode => {
+  if (simpleStatus === 'new') return <rb.Badge bg="success">{simpleStatus}</rb.Badge>
+  if (simpleStatus === 'used') return <rb.Badge bg="secondary">{simpleStatus}</rb.Badge>
+
+  return <rb.Badge bg="info">{simpleStatus}</rb.Badge>
+}
+
 interface DisplayBranchProps {
   branch: Branch
 }
@@ -69,24 +85,30 @@ interface DisplayBranchEntryProps extends rb.CardProps {
 const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
   const settings = useSettings()
 
-  const { address, amount, hd_path: hdPath, label, status } = entry
+  const { address, amount, hd_path: hdPath, label, status: rawStatus } = entry
 
   const hdPathIndex = toHdPathIndex(hdPath)
+  const status = toSimpleStatus(rawStatus)
+  const statusNode = toLabelNode(status)
 
   return (
     <rb.Card {...props}>
       <rb.Card.Body>
         <rb.Row key={address}>
-          <rb.Col xs={'auto'}>
+          <rb.Col xs={{ span: 6, order: 1 }} lg={{ span: 'auto' }}>
             <code className="text-break">
               <span className="text-secondary">…/</span>
               {hdPathIndex}
             </code>
           </rb.Col>
-          <rb.Col lg={{ order: 'last' }} className="d-flex align-items-center justify-content-end">
+          <rb.Col
+            xs={{ span: 6, order: 2 }}
+            lg={{ span: 'auto', order: 3 }}
+            className="d-flex align-items-center justify-content-end"
+          >
             <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
-          <rb.Col xs={{ span: 12 }} lg={{ span: 'auto' }}>
+          <rb.Col xs={{ span: 12, order: 3 }} sm={{ span: 10 }} lg={{ span: true, order: 2 }}>
             <CopyButtonWithConfirmation
               className={`btn ${styles['address-copy-button']}`}
               text={
@@ -103,7 +125,14 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
               value={address}
             />
             {label && <span className="badge bg-info">{label}</span>}
-            {status && <span className="badge bg-info">{status}</span>}
+          </rb.Col>
+          <rb.Col
+            xs={{ span: 12, order: 4 }}
+            sm={{ span: 2 }}
+            lg={{ order: 'last', span: 1 }}
+            className="d-flex align-items-end justify-content-end"
+          >
+            <>{statusNode}</>
           </rb.Col>
         </rb.Row>
       </rb.Card.Body>
