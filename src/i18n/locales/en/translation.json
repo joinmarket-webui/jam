@@ -129,8 +129,8 @@
     "button_unfreeze": "unfreeze",
     "account_button_send": "Send",
     "account_button_receive": "Receive",
-    "account_heading_external_addresses": "External Addresses",
-    "account_heading_internal_addresses": "Internal Addresses"
+    "account_heading_external_addresses": "External Addresses for deposits",
+    "account_heading_internal_addresses": "Addresses for internal deposits"
   },
   "settings": {
     "title": "Settings",

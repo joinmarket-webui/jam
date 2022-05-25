@@ -6,6 +6,7 @@ import Balance from './Balance'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import { Branch, BranchEntry } from '../global/types'
+import styles from './DisplayBranch.module.css'
 
 interface DisplayBranchProps {
   branch: Branch
@@ -20,10 +21,13 @@ export default function DisplayBranch({ branch }: DisplayBranchProps) {
   return (
     <article>
       <rb.Row className="mt-4 pe-3">
-        <rb.Col>
-          {type === 'external addresses' && <h6>{t('current_wallet_advanced.account_heading_external_addresses')}</h6>}
-          {type === 'internal addresses' && <h6>{t('current_wallet_advanced.account_heading_internal_addresses')}</h6>}
-          {!['internal addresses', 'external addresses'].includes(type) && <h6>{type}</h6>}
+        <rb.Col xs="auto">
+          <h6 className={styles['branch-title']}>
+            {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}
+            {type === 'internal addresses' && <>{t('current_wallet_advanced.account_heading_internal_addresses')}</>}
+            {!['internal addresses', 'external addresses'].includes(type) && <>{type}</>}
+          </h6>
+          <code className="text-secondary text-break">{derivation}</code>
         </rb.Col>
         <rb.Col className="d-flex align-items-center justify-content-end">
           <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
@@ -31,10 +35,7 @@ export default function DisplayBranch({ branch }: DisplayBranchProps) {
       </rb.Row>
       <rb.Row className="p-3">
         <rb.Col xs="auto">
-          <code className="text-break">{derivation}</code>
-        </rb.Col>
-        <rb.Col xs="auto">
-          <code className="text-break">{xpub}</code>
+          <code className="text-secondary text-break">{xpub}</code>
         </rb.Col>
       </rb.Row>
       {entries.map((entry, index) => (
