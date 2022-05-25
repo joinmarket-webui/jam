@@ -8,7 +8,7 @@ import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import styles from './DisplayAccountsOverlay.module.css'
 import Sprite from './Sprite'
-import { Account } from '../global/types'
+import { Account } from '../context/WalletContext'
 
 interface DisplayAccountsProps extends rb.OffcanvasProps {
   accounts: Account[]

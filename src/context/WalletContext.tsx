@@ -8,12 +8,14 @@ interface CurrentWallet {
   token: string
 }
 
+export type Satoshi = number
+
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
 export type Utxo = {
   address: string
   path: string
   label: string
-  value: number // in sats
+  value: Satoshi
   tries: number
   tries_remaining: number
   external: boolean
@@ -43,21 +45,21 @@ interface WalletDisplayInfo {
   accounts: Account[]
 }
 
-interface Account {
+export interface Account {
   account: string
   account_balance: BalanceString
   available_balance: BalanceString
   branches: Branch[]
 }
 
-interface Branch {
+export interface Branch {
   branch: string
   balance: BalanceString
   available_balance: BalanceString
   entries: BranchEntry[]
 }
 
-interface BranchEntry {
+export interface BranchEntry {
   hd_path: string
   address: string
   amount: BalanceString
@@ -202,5 +204,4 @@ export {
   useSetCurrentWallet,
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
-  BranchEntry,
 }

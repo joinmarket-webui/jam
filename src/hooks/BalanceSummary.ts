@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { btcToSats } from '../utils'
-import { WalletInfo, BalanceString, Utxos } from '../context/WalletContext'
+import { WalletInfo, Satoshi, BalanceString, Utxos } from '../context/WalletContext'
 
 interface BalanceSummary {
   totalBalance: BalanceString
@@ -22,11 +22,11 @@ type BalanceSummarySupport = BalanceSummary & {
    * @description Manually calculated available balance in sats.
    *   Same as {@link BalanceSummary.availableBalance} except address reuse is taken into account.
    */
-  calculatedAvailableBalanceInSats: number
+  calculatedAvailableBalanceInSats: Satoshi
   /**
    * @description Manually calculated frozen or locked balance in sats.
    */
-  calculatedFrozenOrLockedBalanceInSats: number
+  calculatedFrozenOrLockedBalanceInSats: Satoshi
 }
 
 type AccountBalanceSummary = BalanceSummarySupport & {

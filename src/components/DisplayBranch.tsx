@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Balance from './Balance'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
-import { Branch, BranchEntry } from '../global/types'
+import { Branch, BranchEntry } from '../context/WalletContext'
 import styles from './DisplayBranch.module.css'
 import { CopyButtonWithConfirmation } from './CopyButton'
 import Sprite from './Sprite'
@@ -64,7 +64,7 @@ export function DisplayBranchHeader({ branch }: DisplayBranchProps) {
 
 export function DisplayBranchBody({ branch }: DisplayBranchProps) {
   const { branch: detailsString, entries } = branch
-  const [type, derivation, xpub] = detailsString.split('\t')
+  const xpub: string | undefined = detailsString.split('\t')[2]
   return (
     <>
       <rb.Row className="p-3">
