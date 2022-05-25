@@ -8,6 +8,15 @@ import { useSettings } from '../context/SettingsContext'
 import { Branch, BranchEntry } from '../global/types'
 import styles from './DisplayBranch.module.css'
 
+const toHdPathIndex = (hdPath: string) => {
+  const indexOfLastSeparator = hdPath.lastIndexOf('/')
+  if (indexOfLastSeparator === -1 || indexOfLastSeparator === hdPath.length - 1) {
+    return hdPath
+  }
+
+  return hdPath.substring(indexOfLastSeparator + 1, hdPath.length)
+}
+
 interface DisplayBranchProps {
   branch: Branch
 }
@@ -60,12 +69,17 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
 
   const { address, amount, hd_path: hdPath, label, status } = entry
 
+  const hdPathIndex = toHdPathIndex(hdPath)
+
   return (
     <rb.Card {...props}>
       <rb.Card.Body>
         <rb.Row key={address}>
           <rb.Col xs={'auto'}>
-            <code className="text-break">{hdPath}</code>
+            <code className="text-break">
+              <span className="text-secondary">…/</span>
+              {hdPathIndex}
+            </code>
           </rb.Col>
           <rb.Col lg={{ order: 'last' }} className="d-flex align-items-center justify-content-end">
             <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
