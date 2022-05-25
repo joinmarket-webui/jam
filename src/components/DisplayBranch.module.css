@@ -9,12 +9,18 @@
 
 .sprite-copy {
   visibility: hidden;
+  color: var(--bs-black);
+}
+
+:root[data-theme='dark'] .sprite-copy {
+  color: var(--bs-white);
 }
 
 .address-copy-button:hover .sprite-copy {
   visibility: visible;
   opacity: 0.5;
 }
+
 .address-copy-button .sprite-copy:hover {
   opacity: 1;
 }
