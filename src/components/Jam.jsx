@@ -13,6 +13,7 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 
 // When running the scheduler with internal destination addresses, the funds
 // will end up on those 3 mixdepths (one UTXO each).
@@ -104,6 +105,7 @@ export default function Jam() {
   const reloadServiceInfo = useReloadServiceInfo()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
+  const balanceSummary = useBalanceSummary(walletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -366,7 +368,7 @@ export default function Jam() {
               </>
             </rb.Alert>
           </rb.Fade>
-          {!collaborativeOperationRunning && wallet && walletInfo && (
+          {!collaborativeOperationRunning && balanceSummary && (
             <>
               <div className="d-flex align-items-center justify-content-between mb-4">
                 <div className="d-flex align-items-center gap-2">
@@ -379,11 +381,8 @@ export default function Jam() {
                   </div>
                 </div>
                 <>
-                  {
-                    // Todo: Subtract frozen or locked UTXOs from amount shown.
-                  }
                   <Balance
-                    valueString={walletInfo.data.display.walletinfo.total_balance}
+                    valueString={`${balanceSummary.calculatedAvailableBalanceInSats}`}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />
