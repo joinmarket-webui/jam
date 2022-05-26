@@ -81,7 +81,7 @@ function SeedModal({ show = false, onHide }) {
   )
 }
 
-export default function Settings() {
+export default function Settings({ stopWallet }) {
   const { t } = useTranslation()
   const [showingSeed, setShowingSeed] = useState(false)
   const settings = useSettings()
@@ -167,6 +167,11 @@ export default function Settings() {
 
         <h2 className="mb-0">{t('settings.section_title_wallet')}</h2>
         <div className={styles['settings-group-container']}>
+          <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => stopWallet()}>
+            <Sprite symbol="exit" width="24" height="24" />
+            {t('settings.button_exit_wallet')}
+          </rb.Button>
+
           <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
             <Sprite symbol="mnemonic" width="24" height="24" />
             {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
