@@ -1,4 +1,5 @@
 .settings .settings-btn {
+  width: 100%;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;

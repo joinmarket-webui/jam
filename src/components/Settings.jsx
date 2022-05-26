@@ -100,7 +100,7 @@ export default function Settings() {
     <div className={styles.settings}>
       <PageTitle title={t('settings.title')} />
       <div className="d-flex flex-column gap-4">
-        <div style={{ marginLeft: '-.75rem' }} className="d-flex flex-column gap-2 mb-2">
+        <div style={{ margin: '-.75rem' }} className="d-flex flex-column gap-2 mb-2">
           <rb.Button
             variant="outline-dark"
             className={styles['settings-btn']}
