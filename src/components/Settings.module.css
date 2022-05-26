@@ -12,3 +12,11 @@
   min-width: 24px;
   min-height: 24px;
 }
+
+.settings-group-container {
+  margin: -0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}

@@ -131,6 +131,8 @@
   },
   "settings": {
     "title": "Settings",
+    "section_title_wallet": "Wallet",
+    "section_title_community": "Community",
     "show_balance": "Show Balance",
     "hide_balance": "Hide Balance",
     "use_sats": "Display amounts in sats",

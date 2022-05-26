@@ -100,7 +100,7 @@ export default function Settings() {
     <div className={styles.settings}>
       <PageTitle title={t('settings.title')} />
       <div className="d-flex flex-column gap-4">
-        <div style={{ margin: '-.75rem' }} className="d-flex flex-column gap-2 mb-2">
+        <div className={styles['settings-group-container']}>
           <rb.Button
             variant="outline-dark"
             className={styles['settings-btn']}
@@ -160,7 +160,10 @@ export default function Settings() {
               </rb.Dropdown.Item>
             </rb.Dropdown.Menu>
           </rb.Dropdown>
+        </div>
 
+        <h2 className="mb-0">{t('settings.section_title_wallet')}</h2>
+        <div className={styles['settings-group-container']}>
           <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
             <Sprite symbol="mnemonic" width="24" height="24" />
             {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
@@ -168,6 +171,7 @@ export default function Settings() {
           {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
         </div>
 
+        <h2 className="mb-0">{t('settings.section_title_community')}</h2>
         <div className="d-flex flex-column gap-3">
           <a
             href="https://github.com/joinmarket-webui/joinmarket-webui"
