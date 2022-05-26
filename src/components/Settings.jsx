@@ -154,6 +154,7 @@ export default function Settings() {
               })}
               <rb.Dropdown.Item
                 href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 {t('settings.text_help_translate')}
