@@ -116,6 +116,14 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
           </ListItem>
+          <ListItem number={5}>
+            <h6>
+              <Trans i18nKey="cheatsheet.item_5.title">
+                <Link to={routes.send}>Send</Link> a collaborative transaction to yourself.
+              </Trans>
+            </h6>
+            <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
+          </ListItem>
           <ListItem number={'last'}>
             <h6>{t('cheatsheet.item_last.title')}</h6>
             <div className="small text-secondary">
