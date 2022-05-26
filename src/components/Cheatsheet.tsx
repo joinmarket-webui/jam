@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { routes } from '../constants/routes'
+import styles from './Cheatsheet.module.css'
 
 interface CheatsheetProps {
   show: boolean
@@ -14,13 +15,13 @@ type NumberedProps = {
   className?: string
 }
 
-function Numbered({ number }: { number: number }) {
-  return <div className="numbered">{number}</div>
+function Numbered({ number }: NumberedProps) {
+  return <div className={styles.numbered}>{number}</div>
 }
 
 function ListItem({ number, children, ...props }: PropsWithChildren<NumberedProps>) {
   return (
-    <rb.Stack className={`cheatsheet-list-item ${props.className || ''}`} direction="horizontal" gap={3}>
+    <rb.Stack className={`${styles['cheatsheet-list-item']} ${props.className || ''}`} direction="horizontal" gap={3}>
       <Numbered number={number} />
       <rb.Stack gap={0}>{children}</rb.Stack>
     </rb.Stack>
@@ -31,7 +32,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
   const { t } = useTranslation()
 
   return (
-    <rb.Offcanvas className="cheatsheet" show={show} onHide={onHide} placement="bottom" onClick={onHide}>
+    <rb.Offcanvas className={styles.cheatsheet} show={show} onHide={onHide} placement="bottom" onClick={onHide}>
       <rb.Offcanvas.Header closeButton>
         <rb.Stack>
           <rb.Offcanvas.Title>{t('cheatsheet.title')}</rb.Offcanvas.Title>
@@ -83,7 +84,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
           </ListItem>
-          <ListItem number={3} className="upcoming-feature">
+          <ListItem number={3} className={styles['upcoming-feature']}>
             <h6>
               <Trans i18nKey="cheatsheet.item_3.title">
                 Optional: <Link to={routes.earn}>Lock</Link> funds in a fidelity bond.
