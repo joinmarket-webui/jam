@@ -3,9 +3,16 @@
   /* page height - navbar height - some spacing*/
   max-height: calc(100vh - 76px - 1rem) !important;
   margin: 0px auto !important;
+  border: none !important;
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
   width: 528px;
+
+  box-shadow: 6px -3px 12px 3px rgba(0, 0, 0, 0.1);
+}
+
+:root[data-theme='dark'] .cheatsheet {
+  box-shadow: 6px -3px 12px 3px rgba(0, 0, 0, 0.5);
 }
 
 .cheatsheet button[aria-label='Close'] {
