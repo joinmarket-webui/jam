@@ -191,14 +191,6 @@ export default function CurrentWalletMagic() {
         <rb.Row>
           <hr className="my-4" />
         </rb.Row>
-        <rb.Row>
-          <ExtendedLink disabled={isLoading} to={routes.walletList} className="btn btn-outline-dark">
-            <div className="d-flex justify-content-center align-items-center">
-              <Sprite symbol="wallet" width="24" height="24" />
-              <div className="ps-1">{t('current_wallet.button_switch_wallet')}</div>
-            </div>
-          </ExtendedLink>
-        </rb.Row>
       </>
     </div>
   )

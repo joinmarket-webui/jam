@@ -175,7 +175,7 @@ export default function Settings() {
 
           <Link to={routes.walletList} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
             <Sprite symbol="wallet" width="24" height="24" />
-            {t('current_wallet.button_switch_wallet')}
+            {t('settings.button_switch_wallet')}
           </Link>
           <Link to={routes.createWallet} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
             <Sprite symbol="plus" width="24" height="24" />
