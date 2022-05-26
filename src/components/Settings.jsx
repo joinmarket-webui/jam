@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
@@ -9,6 +10,7 @@ import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { SATS, BTC, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import { routes } from '../constants/routes'
 import languages from '../i18n/languages'
 import styles from './Settings.module.css'
 
@@ -170,6 +172,15 @@ export default function Settings() {
             {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
           </rb.Button>
           {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
+
+          <Link to={routes.walletList} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
+            <Sprite symbol="wallet" width="24" height="24" />
+            {t('current_wallet.button_switch_wallet')}
+          </Link>
+          <Link to={routes.createWallet} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
+            <Sprite symbol="plus" width="24" height="24" />
+            {t('wallets.button_new_wallet')}
+          </Link>
         </div>
 
         <h2 className="mb-0">{t('settings.section_title_community')}</h2>

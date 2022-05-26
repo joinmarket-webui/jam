@@ -387,7 +387,7 @@ export default function CreateWallet({ startWallet }) {
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
             Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletName) }}</strong> is active. You need
             to lock it first.
-            <Link to={routes.home} className="alert-link">
+            <Link to={routes.walletList} className="alert-link">
               Go back
             </Link>
             .
