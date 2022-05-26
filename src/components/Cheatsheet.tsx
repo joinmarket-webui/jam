@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { routes } from '../constants/routes'
+import Sprite from './Sprite'
 import styles from './Cheatsheet.module.css'
 
 interface CheatsheetProps {
@@ -11,12 +12,22 @@ interface CheatsheetProps {
 }
 
 type NumberedProps = {
-  number: number
+  number: number | 'last'
   className?: string
 }
 
 function Numbered({ number }: NumberedProps) {
-  return <div className={styles.numbered}>{number}</div>
+  return (
+    <div className={styles.numbered}>
+      {number === 'last' ? (
+        <>
+          <Sprite symbol="checkmark" width="24" height="24" />
+        </>
+      ) : (
+        <>{number}</>
+      )}
+    </div>
+  )
 }
 
 function ListItem({ number, children, ...props }: PropsWithChildren<NumberedProps>) {
@@ -105,10 +116,10 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
           </ListItem>
-          <ListItem number={5}>
-            <h6>{t('cheatsheet.item_5.title')}</h6>
+          <ListItem number={'last'}>
+            <h6>{t('cheatsheet.item_last.title')}</h6>
             <div className="small text-secondary">
-              <Trans i18nKey="cheatsheet.item_5.description">
+              <Trans i18nKey="cheatsheet.item_last.description">
                 Still confused?{' '}
                 <a
                   href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#a-private-flow-through-joinmarket"

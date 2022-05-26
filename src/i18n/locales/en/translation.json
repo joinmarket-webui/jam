@@ -251,7 +251,7 @@
       "title": "<0>Earn</0> yield by providing liquidity.",
       "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
-    "item_5": {
+    "item_last": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }

@@ -1,10 +1,10 @@
 .cheatsheet {
-  height: auto;
+  height: auto !important;
   /* page height - navbar height - some spacing*/
-  max-height: calc(100vh - 76px - 1rem);
+  max-height: calc(100vh - 76px - 1rem) !important;
+  margin: 0px auto !important;
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
-  margin: 0px auto;
   width: 528px;
 }
 
@@ -13,7 +13,7 @@
 }
 
 .cheatsheet a {
-  color: inherit;
+  color: inherit !important;
 }
 
 .cheatsheet-list-item {
