@@ -23,7 +23,7 @@
   color: inherit !important;
 }
 
-.cheatsheet-list-item {
+.cheatsheet .cheatsheet-list-item {
   align-items: start;
 }
 
