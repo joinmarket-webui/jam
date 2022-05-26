@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import Sprite from './Sprite'
 import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
@@ -115,8 +116,12 @@ export default function Wallets({ startWallet, stopWallet }) {
         <Link
           to={routes.createWallet}
           className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
+          data-testid="new-wallet-btn"
         >
-          {t('wallets.button_new_wallet')}
+          <div className="d-flex justify-content-center align-items-center">
+            <Sprite symbol="plus" width="24" height="24" className="me-2" />
+            <span>{t('wallets.button_new_wallet')}</span>
+          </div>
         </Link>
       </div>
     </div>
