@@ -1,0 +1,13 @@
+.settings .settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  border: none;
+  text-align: var(--bs-body-text-align);
+}
+
+.settings .settings-btn > svg:first-child {
+  min-width: 24px;
+  min-height: 24px;
+}
