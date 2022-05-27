@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useRef } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useRef } from 'react'
 // @ts-ignore
 import { useCurrentWallet } from './WalletContext'
 
@@ -107,6 +107,13 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
     },
     [currentWallet, reloadServiceConfig]
   )
+
+  useEffect(() => {
+    if (!currentWallet) {
+      // reset service config if wallet changed
+      serviceConfig.current = null
+    }
+  }, [currentWallet])
 
   return <ServiceConfigContext.Provider value={{ loadConfigValueIfAbsent }}>{children}</ServiceConfigContext.Provider>
 }
