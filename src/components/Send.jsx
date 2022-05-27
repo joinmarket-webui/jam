@@ -8,6 +8,7 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
+import { useLoadConfigValueIfAbsent } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
@@ -176,6 +177,7 @@ export default function Send() {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
+  const loadConfigValueIfAbsent = useLoadConfigValueIfAbsent()
   const settings = useSettings()
   const location = useLocation()
 
@@ -322,11 +324,12 @@ export default function Send() {
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
     })
 
-    const requestContext = { walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal }
-    const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_min_makers_failed'))))
+    const loadingMinimumMakerConfig = loadConfigValueIfAbsent({
+      signal: abortCtrl.signal,
+      key: { section: 'POLICY', field: 'minimum_makers' },
+    })
       .then((data) => {
-        const minimumMakers = parseInt(data.configvalue, 10)
+        const minimumMakers = parseInt(data.value, 10)
         setMinNumCollaborators(minimumMakers)
         setNumCollaborators(initialNumCollaborators(minimumMakers))
       })

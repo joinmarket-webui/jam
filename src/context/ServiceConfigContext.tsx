@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useReducer, useEffect, u
 import { useCurrentWallet } from './WalletContext'
 
 import * as Api from '../libs/JmWalletApi'
+import { kMaxLength } from 'buffer'
 
 interface JmConfigData {
   configvalue: string
@@ -18,14 +19,21 @@ interface ConfigKey {
   section: SectionKey
   field: string
 }
+const DEFAULT_CONFIG_KEYS: ConfigKey[] = [{ section: 'POLICY', field: 'minimum_makers' }]
 
 interface ServiceConfigUpdate {
   key: ConfigKey
   value: string
 }
 
+type LoadConfigValueProps = {
+  signal: AbortSignal
+  key: ConfigKey
+}
+
 interface ServiceConfigContextEntry {
   serviceConfig: ServiceConfig | null
+  loadConfigValueIfAbsent: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
 }
 
 const ServiceConfigContext = createContext<ServiceConfigContextEntry | undefined>(undefined)
@@ -34,26 +42,12 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
 
   const [serviceConfig, setServiceConfig] = useState<ServiceConfig | null>(null)
-  const [serviceConfig2, dispatchServiceConfig] = useReducer(
-    (state: ServiceConfig | null, obj: ServiceConfigUpdate) => {
-      const data = { ...state }
-      if (data && data[obj.key.section]) {
-        data[obj.key.section] = { ...data[obj.key.section], [obj.key.field]: obj.value }
-      } else {
-        data[obj.key.section] = { [obj.key.field]: obj.value }
-      }
-      return data as ServiceConfig | null
-    },
-    null
-  )
 
   const reloadServiceConfig = useCallback(
-    async ({ signal }: { signal: AbortSignal }) => {
+    async ({ signal, configKeys }: { signal: AbortSignal; configKeys: ConfigKey[] }) => {
       if (!currentWallet) {
         throw new Error('Cannot load config: Wallet not present')
       }
-
-      const configKeys: ConfigKey[] = [{ section: 'POLICY', field: 'minimum_makers' }]
 
       const { name: walletName, token } = currentWallet
       const fetches: Promise<ServiceConfigUpdate>[] = configKeys.map((configKey) => {
@@ -92,19 +86,46 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
     [currentWallet]
   )
 
+  const loadConfigValueIfAbsent = useCallback(
+    async ({ signal, key }: LoadConfigValueProps) => {
+      if (!currentWallet) {
+        throw new Error('Cannot load config: Wallet not present')
+      }
+      if (serviceConfig && serviceConfig[key.section] && serviceConfig[key.section][key.field] !== undefined) {
+        return {
+          key,
+          value: serviceConfig[key.section][key.field],
+        } as ServiceConfigUpdate
+      }
+      return reloadServiceConfig({ signal, configKeys: [key] }).then((conf) => {
+        return {
+          key: key,
+          value: conf[key.section][key.field],
+        } as ServiceConfigUpdate
+      })
+    },
+    [currentWallet, serviceConfig, reloadServiceConfig]
+  )
+
   useEffect(() => {
     if (!currentWallet) return
 
     const abortCtrl = new AbortController()
 
-    reloadServiceConfig({ signal: abortCtrl.signal }).catch((err) => console.error(err))
+    reloadServiceConfig({ signal: abortCtrl.signal, configKeys: DEFAULT_CONFIG_KEYS }).catch((err) =>
+      console.error(err)
+    )
 
     return () => {
       abortCtrl.abort()
     }
   }, [currentWallet, reloadServiceConfig])
 
-  return <ServiceConfigContext.Provider value={{ serviceConfig }}>{children}</ServiceConfigContext.Provider>
+  return (
+    <ServiceConfigContext.Provider value={{ serviceConfig, loadConfigValueIfAbsent }}>
+      {children}
+    </ServiceConfigContext.Provider>
+  )
 }
 
 const useServiceConfig = () => {
@@ -115,4 +136,12 @@ const useServiceConfig = () => {
   return context.serviceConfig
 }
 
-export { ServiceConfigContext, ServiceConfigProvider, useServiceConfig }
+const useLoadConfigValueIfAbsent = () => {
+  const context = useContext(ServiceConfigContext)
+  if (context === undefined) {
+    throw new Error('useLoadConfigValueIfAbsent must be used within a ServiceConfigProvider')
+  }
+  return context.loadConfigValueIfAbsent
+}
+
+export { ServiceConfigContext, ServiceConfigProvider, useServiceConfig, useLoadConfigValueIfAbsent }
