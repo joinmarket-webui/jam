@@ -136,15 +136,23 @@ const enhanceDirectPaymentErrorMessageIfNecessary = async (httpStatus, errorMess
 }
 
 const enhanceTakerErrorMessageIfNecessary = async (
-  requestContext,
+  loadConfigValueIfAbsent,
   httpStatus,
   errorMessage,
   onMaxFeeSettingsMissing
 ) => {
-  const configExists = (section, field) => Api.postConfigGet(requestContext, { section, field }).then((res) => res.ok)
-
   const tryEnhanceMessage = httpStatus === 409
   if (tryEnhanceMessage) {
+    const abortCtrl = new AbortController()
+
+    const configExists = (section, field) =>
+      loadConfigValueIfAbsent({
+        signal: abortCtrl.signal,
+        key: { section, field },
+      })
+        .then((val) => val.value !== null)
+        .catch(() => false)
+
     const maxFeeSettingsPresent = await Promise.all([
       configExists('POLICY', 'max_cj_fee_rel'),
       configExists('POLICY', 'max_cj_fee_abs'),
@@ -183,7 +191,7 @@ export default function Send() {
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
-  const waitForTakerToFinish = useMemo(() => isCoinjoinInProgress, [isCoinjoinInProgress])
+  const waitForTakerToFinish = useMemo(() => !!isCoinjoinInProgress, [isCoinjoinInProgress])
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning,
     [isCoinjoinInProgress, isMakerRunning]
@@ -342,7 +350,15 @@ export default function Send() {
     )
 
     return () => abortCtrl.abort()
-  }, [waitForTakerToFinish, waitForUtxosToBeSpent, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
+  }, [
+    waitForTakerToFinish,
+    waitForUtxosToBeSpent,
+    wallet,
+    reloadCurrentWalletInfo,
+    reloadServiceInfo,
+    loadConfigValueIfAbsent,
+    t,
+  ])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
@@ -410,7 +426,7 @@ export default function Send() {
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
         const displayMessage = await enhanceTakerErrorMessageIfNecessary(
-          requestContext,
+          loadConfigValueIfAbsent,
           res.status,
           message,
           (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`

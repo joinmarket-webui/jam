@@ -1,9 +1,8 @@
-import React, { createContext, useCallback, useContext, useReducer, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useRef } from 'react'
 // @ts-ignore
 import { useCurrentWallet } from './WalletContext'
 
 import * as Api from '../libs/JmWalletApi'
-import { kMaxLength } from 'buffer'
 
 interface JmConfigData {
   configvalue: string
@@ -19,7 +18,6 @@ interface ConfigKey {
   section: SectionKey
   field: string
 }
-const DEFAULT_CONFIG_KEYS: ConfigKey[] = [{ section: 'POLICY', field: 'minimum_makers' }]
 
 interface ServiceConfigUpdate {
   key: ConfigKey
@@ -32,7 +30,6 @@ type LoadConfigValueProps = {
 }
 
 interface ServiceConfigContextEntry {
-  serviceConfig: ServiceConfig | null
   loadConfigValueIfAbsent: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
 }
 
@@ -40,8 +37,7 @@ const ServiceConfigContext = createContext<ServiceConfigContextEntry | undefined
 
 const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
-
-  const [serviceConfig, setServiceConfig] = useState<ServiceConfig | null>(null)
+  const serviceConfig = useRef<ServiceConfig | null>(null)
 
   const reloadServiceConfig = useCallback(
     async ({ signal, configKeys }: { signal: AbortSignal; configKeys: ConfigKey[] }) => {
@@ -74,11 +70,14 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
               data[obj.key.section] = { [obj.key.field]: obj.value }
             }
             return data as ServiceConfig
-          }, {} as ServiceConfig)
+          }, serviceConfig.current || {})
         })
         .then((result) => {
           if (!signal.aborted) {
-            setServiceConfig(result)
+            serviceConfig.current = result
+            if (process.env.NODE_ENV === 'development') {
+              console.debug('service config updated', serviceConfig.current)
+            }
           }
           return result
         })
@@ -91,11 +90,13 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
       if (!currentWallet) {
         throw new Error('Cannot load config: Wallet not present')
       }
-      if (serviceConfig && serviceConfig[key.section] && serviceConfig[key.section][key.field] !== undefined) {
-        return {
-          key,
-          value: serviceConfig[key.section][key.field],
-        } as ServiceConfigUpdate
+      if (serviceConfig.current) {
+        if (serviceConfig.current[key.section] && serviceConfig.current[key.section][key.field] !== undefined) {
+          return {
+            key,
+            value: serviceConfig.current[key.section][key.field],
+          } as ServiceConfigUpdate
+        }
       }
       return reloadServiceConfig({ signal, configKeys: [key] }).then((conf) => {
         return {
@@ -104,36 +105,10 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
         } as ServiceConfigUpdate
       })
     },
-    [currentWallet, serviceConfig, reloadServiceConfig]
+    [currentWallet, reloadServiceConfig]
   )
 
-  useEffect(() => {
-    if (!currentWallet) return
-
-    const abortCtrl = new AbortController()
-
-    reloadServiceConfig({ signal: abortCtrl.signal, configKeys: DEFAULT_CONFIG_KEYS }).catch((err) =>
-      console.error(err)
-    )
-
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [currentWallet, reloadServiceConfig])
-
-  return (
-    <ServiceConfigContext.Provider value={{ serviceConfig, loadConfigValueIfAbsent }}>
-      {children}
-    </ServiceConfigContext.Provider>
-  )
-}
-
-const useServiceConfig = () => {
-  const context = useContext(ServiceConfigContext)
-  if (context === undefined) {
-    throw new Error('useServiceConfig must be used within a ServiceConfigProvider')
-  }
-  return context.serviceConfig
+  return <ServiceConfigContext.Provider value={{ loadConfigValueIfAbsent }}>{children}</ServiceConfigContext.Provider>
 }
 
 const useLoadConfigValueIfAbsent = () => {
@@ -144,4 +119,4 @@ const useLoadConfigValueIfAbsent = () => {
   return context.loadConfigValueIfAbsent
 }
 
-export { ServiceConfigContext, ServiceConfigProvider, useServiceConfig, useLoadConfigValueIfAbsent }
+export { ServiceConfigContext, ServiceConfigProvider, useLoadConfigValueIfAbsent }
