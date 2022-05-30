@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef } from 'react'
 // @ts-ignore
-import { useCurrentWallet } from './WalletContext'
+import { CurrentWallet, useCurrentWallet } from './WalletContext'
 
 import * as Api from '../libs/JmWalletApi'
 
@@ -29,6 +29,39 @@ type LoadConfigValueProps = {
   key: ConfigKey
 }
 
+const configReducer = (state: ServiceConfig, obj: ServiceConfigUpdate): ServiceConfig => {
+  const data = { ...state }
+  data[obj.key.section] = { ...data[obj.key.section], [obj.key.field]: obj.value }
+  return data
+}
+
+const fetchConfigValues = async ({
+  signal,
+  wallet,
+  configKeys,
+}: {
+  signal: AbortSignal
+  wallet: CurrentWallet
+  configKeys: ConfigKey[]
+}) => {
+  const { name: walletName, token } = wallet
+  const fetches: Promise<ServiceConfigUpdate>[] = configKeys.map((configKey) => {
+    return Api.postConfigGet(
+      { walletName, token, signal },
+      { section: configKey.section.toString(), field: configKey.field }
+    )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((data: JmConfigData) => {
+        return {
+          key: configKey,
+          value: data.configvalue,
+        } as ServiceConfigUpdate
+      })
+  })
+
+  return Promise.all(fetches)
+}
+
 interface ServiceConfigContextEntry {
   loadConfigValue: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
 }
@@ -39,39 +72,15 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
   const serviceConfig = useRef<ServiceConfig | null>(null)
 
-  const reloadServiceConfig = useCallback(
+  const updateServiceConfig = useCallback(
     async ({ signal, configKeys }: { signal: AbortSignal; configKeys: ConfigKey[] }) => {
       if (!currentWallet) {
         throw new Error('Cannot load config: Wallet not present')
       }
 
-      const { name: walletName, token } = currentWallet
-      const fetches: Promise<ServiceConfigUpdate>[] = configKeys.map((configKey) => {
-        return Api.postConfigGet(
-          { walletName, token, signal },
-          { section: configKey.section.toString(), field: configKey.field }
-        )
-          .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-          .then((data: JmConfigData) => {
-            return {
-              key: configKey,
-              value: data.configvalue,
-            } as ServiceConfigUpdate
-          })
-      })
-
-      return Promise.all(fetches)
-        .then((data) => {
-          return data.reduce((state: ServiceConfig, obj: ServiceConfigUpdate) => {
-            const data = { ...state }
-            if (data && data[obj.key.section]) {
-              data[obj.key.section] = { ...data[obj.key.section], [obj.key.field]: obj.value }
-            } else {
-              data[obj.key.section] = { [obj.key.field]: obj.value }
-            }
-            return data as ServiceConfig
-          }, serviceConfig.current || {})
-        })
+      const configUpdates = fetchConfigValues({ signal, wallet: currentWallet, configKeys })
+      return configUpdates
+        .then((updates) => updates.reduce(configReducer, serviceConfig.current || {}))
         .then((result) => {
           if (!signal.aborted) {
             serviceConfig.current = result
@@ -87,25 +96,26 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
 
   const loadConfigValueIfAbsent = useCallback(
     async ({ signal, key }: LoadConfigValueProps) => {
-      if (!currentWallet) {
-        throw new Error('Cannot load config: Wallet not present')
-      }
       if (serviceConfig.current) {
-        if (serviceConfig.current[key.section] && serviceConfig.current[key.section][key.field] !== undefined) {
+        const valueAlreadyPresent =
+          serviceConfig.current[key.section] && serviceConfig.current[key.section][key.field] !== undefined
+
+        if (valueAlreadyPresent) {
           return {
             key,
             value: serviceConfig.current[key.section][key.field],
           } as ServiceConfigUpdate
         }
       }
-      return reloadServiceConfig({ signal, configKeys: [key] }).then((conf) => {
+
+      return updateServiceConfig({ signal, configKeys: [key] }).then((conf) => {
         return {
-          key: key,
+          key,
           value: conf[key.section][key.field],
         } as ServiceConfigUpdate
       })
     },
-    [currentWallet, reloadServiceConfig]
+    [updateServiceConfig]
   )
 
   useEffect(() => {

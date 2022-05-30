@@ -3,7 +3,7 @@ import React, { createContext, useEffect, useCallback, useState, useContext, Pro
 import { getSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 
-interface CurrentWallet {
+export interface CurrentWallet {
   name: string
   token: string
 }
