@@ -181,14 +181,8 @@ export default function Send() {
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
-  const waitForTakerToFinish = useMemo(() => isCoinjoinInProgress, [isCoinjoinInProgress])
-  const isOperationDisabled = useMemo(
-    () => isCoinjoinInProgress || isMakerRunning,
-    [isCoinjoinInProgress, isMakerRunning]
-  )
 
   const [alert, setAlert] = useState(null)
-  const [isLoading, setIsLoading] = useState(!isOperationDisabled)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
@@ -197,6 +191,16 @@ export default function Send() {
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
   const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
+
+  const isOperationDisabled = useMemo(
+    () => isCoinjoinInProgress || isMakerRunning || waitForUtxosToBeSpent.length > 0,
+    [isCoinjoinInProgress, isMakerRunning, waitForUtxosToBeSpent]
+  )
+  const [isInitializing, setIsInitializing] = useState(!isOperationDisabled)
+  const isLoading = useMemo(
+    () => isInitializing || waitForUtxosToBeSpent.length > 0,
+    [isInitializing, waitForUtxosToBeSpent]
+  )
 
   useEffect(() => {
     setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
@@ -263,7 +267,6 @@ export default function Send() {
   useEffect(() => {
     if (waitForUtxosToBeSpent.length === 0) return
 
-    setIsLoading(true)
     const abortCtrl = new AbortController()
 
     // Delaying the poll requests gives the wallet some time to synchronize
@@ -279,7 +282,6 @@ export default function Send() {
           const outputs = data.data.utxos.utxos.map((it) => it.utxo)
           const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
           setWaitForUtxosToBeSpent([...utxosStillPresent])
-          setIsLoading(utxosStillPresent.length > 0)
         })
         .catch((err) => {
           if (abortCtrl.signal.aborted) return
@@ -287,7 +289,6 @@ export default function Send() {
           // Stop waiting for wallet synchronization on errors, but inform
           // the user that loading the wallet info failed
           setWaitForUtxosToBeSpent([])
-          setIsLoading(false)
 
           const message = err.message || t('send.error_loading_wallet_failed')
           setAlert({ variant: 'danger', message })
@@ -301,13 +302,15 @@ export default function Send() {
   }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    if (waitForTakerToFinish) return
-    if (waitForUtxosToBeSpent.length > 0) return
+    if (isOperationDisabled) {
+      setIsInitializing(false)
+      return
+    }
 
     const abortCtrl = new AbortController()
 
     setAlert(null)
-    setIsLoading(true)
+    setIsInitializing(true)
 
     // reloading service info is important, is it must be known as soon as possible
     // if the operation is even allowed, i.e. if no other service is running
@@ -335,11 +338,11 @@ export default function Send() {
       })
 
     Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
-      () => !abortCtrl.signal.aborted && setIsLoading(false)
+      () => !abortCtrl.signal.aborted && setIsInitializing(false)
     )
 
     return () => abortCtrl.abort()
-  }, [waitForTakerToFinish, waitForUtxosToBeSpent, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
+  }, [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
