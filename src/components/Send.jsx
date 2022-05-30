@@ -188,7 +188,7 @@ export default function Send() {
   )
 
   const [alert, setAlert] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!isOperationDisabled)
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
