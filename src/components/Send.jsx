@@ -8,7 +8,7 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { useLoadConfigValueIfAbsent } from '../context/ServiceConfigContext'
+import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
@@ -136,7 +136,7 @@ const enhanceDirectPaymentErrorMessageIfNecessary = async (httpStatus, errorMess
 }
 
 const enhanceTakerErrorMessageIfNecessary = async (
-  loadConfigValueIfAbsent,
+  loadConfigValue,
   httpStatus,
   errorMessage,
   onMaxFeeSettingsMissing
@@ -146,7 +146,7 @@ const enhanceTakerErrorMessageIfNecessary = async (
     const abortCtrl = new AbortController()
 
     const configExists = (section, field) =>
-      loadConfigValueIfAbsent({
+      loadConfigValue({
         signal: abortCtrl.signal,
         key: { section, field },
       })
@@ -185,7 +185,7 @@ export default function Send() {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
-  const loadConfigValueIfAbsent = useLoadConfigValueIfAbsent()
+  const loadConfigValue = useLoadConfigValue()
   const settings = useSettings()
   const location = useLocation()
 
@@ -332,7 +332,7 @@ export default function Send() {
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
     })
 
-    const loadingMinimumMakerConfig = loadConfigValueIfAbsent({
+    const loadingMinimumMakerConfig = loadConfigValue({
       signal: abortCtrl.signal,
       key: { section: 'POLICY', field: 'minimum_makers' },
     })
@@ -356,7 +356,7 @@ export default function Send() {
     wallet,
     reloadCurrentWalletInfo,
     reloadServiceInfo,
-    loadConfigValueIfAbsent,
+    loadConfigValue,
     t,
   ])
 
@@ -426,7 +426,7 @@ export default function Send() {
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
         const displayMessage = await enhanceTakerErrorMessageIfNecessary(
-          loadConfigValueIfAbsent,
+          loadConfigValue,
           res.status,
           message,
           (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`

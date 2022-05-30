@@ -30,7 +30,7 @@ type LoadConfigValueProps = {
 }
 
 interface ServiceConfigContextEntry {
-  loadConfigValueIfAbsent: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
+  loadConfigValue: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
 }
 
 const ServiceConfigContext = createContext<ServiceConfigContextEntry | undefined>(undefined)
@@ -115,15 +115,19 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
     }
   }, [currentWallet])
 
-  return <ServiceConfigContext.Provider value={{ loadConfigValueIfAbsent }}>{children}</ServiceConfigContext.Provider>
+  return (
+    <ServiceConfigContext.Provider value={{ loadConfigValue: loadConfigValueIfAbsent }}>
+      {children}
+    </ServiceConfigContext.Provider>
+  )
 }
 
-const useLoadConfigValueIfAbsent = () => {
+const useLoadConfigValue = () => {
   const context = useContext(ServiceConfigContext)
   if (context === undefined) {
-    throw new Error('useLoadConfigValueIfAbsent must be used within a ServiceConfigProvider')
+    throw new Error('useLoadConfigValue must be used within a ServiceConfigProvider')
   }
-  return context.loadConfigValueIfAbsent
+  return context.loadConfigValue
 }
 
-export { ServiceConfigContext, ServiceConfigProvider, useLoadConfigValueIfAbsent }
+export { ServiceConfigContext, ServiceConfigProvider, useLoadConfigValue }
