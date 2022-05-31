@@ -555,9 +555,7 @@ export default function Send() {
 
   return (
     <>
-      <div
-        className={`${isMakerRunning ? styles['maker-running'] : ''} ${isCoinjoinInProgress ? 'taker-running' : ''}`}
-      >
+      <div className={`${isMakerRunning || isCoinjoinInProgress ? styles['service-running'] : ''}`}>
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
         <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
           <>
@@ -594,7 +592,7 @@ export default function Send() {
           <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
         )}
 
-        <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['maker-running-form']}>
+        <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
               {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
