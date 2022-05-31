@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 // @ts-ignore
 import DisplayAccounts from './DisplayAccounts'
 // @ts-ignore
@@ -9,12 +10,16 @@ import DisplayAccountUTXOs from './DisplayAccountUTXOs'
 import DisplayUTXOs from './DisplayUTXOs'
 // @ts-ignore
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { isFeatureEnabled } from '../constants/features'
+import { routes } from '../constants/routes'
 import styles from './CurrentWalletAdvanced.module.css'
 
 type Utxos = any[]
 type Alert = { message: string; variant: string }
 
 export default function CurrentWalletAdvanced() {
+  const featureFidelityBondsEnabled = isFeatureEnabled('fidelityBonds')
+
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
@@ -76,21 +81,42 @@ export default function CurrentWalletAdvanced() {
       {!isLoading && walletInfo && (
         <DisplayAccounts accounts={walletInfo.data.display.walletinfo.accounts} className="mb-4" />
       )}
-      {!!fidelityBonds?.length && (
-        <div className="mt-5 mb-3 pe-3">
-          <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
-          <DisplayUTXOs utxos={fidelityBonds} className="pe-2" />
-        </div>
-      )}
+
+      <div className="mt-5 mb-3">
+        <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
+        {isLoading && (
+          <div>
+            <rb.Placeholder as="div" animation="wave" className={styles['current-wallet-placeholder-container']}>
+              <rb.Placeholder xs={12} className={styles['current-wallet-placeholder']} />
+            </rb.Placeholder>
+          </div>
+        )}
+
+        {!isLoading && fidelityBonds && (
+          <>
+            {fidelityBonds.length === 0 ? (
+              <rb.Alert variant="info">
+                <>
+                  <Trans i18nKey="fidelity_bond.alert_no_fidelity_bonds" as="span">
+                    No Fidelity Bond present.
+                  </Trans>{' '}
+                  {featureFidelityBondsEnabled && (
+                    <Link to={routes.fidelityBonds}>
+                      <Trans i18nKey="current_wallet_advanced.link_fidelity_bonds_create_text" as="span">
+                        Create a Fidelity Bond.
+                      </Trans>
+                    </Link>
+                  )}
+                </>
+              </rb.Alert>
+            ) : (
+              <DisplayUTXOs utxos={fidelityBonds} />
+            )}
+          </>
+        )}
+      </div>
       <>
-        <rb.Button
-          variant="outline-dark"
-          disabled={isLoading}
-          onClick={() => {
-            setShowUTXO(!showUTXO)
-          }}
-          className={isLoading ? 'mt-3 mb-3 pe-auto' : 'mb-3'}
-        >
+        <rb.Button variant="outline-dark" disabled={isLoading} onClick={() => setShowUTXO(!showUTXO)} className="mb-3">
           {showUTXO ? t('current_wallet_advanced.button_hide_utxos') : t('current_wallet_advanced.button_show_utxos')}
         </rb.Button>
         <rb.Fade in={showUTXO} mountOnEnter={true} unmountOnExit={true}>
