@@ -56,8 +56,9 @@ export function CopyButton({ value, onSuccess, onError, children, ...props }: Pr
 
 interface CopyButtonWithConfirmationProps extends CopyButtonProps {
   text: string
-  successText: string
-  successTextTimeout: number
+  successText?: string
+  successTextTimeout?: number
+  disabled?: boolean
 }
 
 export function CopyButtonWithConfirmation({

@@ -1,0 +1,4 @@
+/* Firefox */
+.fidelity-bond input[type='number'] {
+  -moz-appearance: unset !important;
+}
