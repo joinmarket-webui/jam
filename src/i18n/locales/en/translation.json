@@ -1,4 +1,12 @@
 {
+  "global": {
+    "loading": "Loading",
+    "button_copy_text": "Copy",
+    "button_copy_text_confirmed": "Copied"
+  },
+  "app": {
+    "alert_no_connection": "No connection to backend: {{ connectionError }}"
+  },
   "navbar": {
     "title": "Jam",
     "button_create_wallet": "Create Wallet",
@@ -9,9 +17,6 @@
     "menu_mobile": "Menu",
     "menu_mobile_settings": "Settings",
     "menu_mobile_wallets": "Wallets"
-  },
-  "app": {
-    "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "footer": {
     "warning": "This is alpha software.<br /><1>Read this before using.</1>",
