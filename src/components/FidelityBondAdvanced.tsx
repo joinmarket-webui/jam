@@ -257,15 +257,13 @@ export const FidelityBondAdvanced = () => {
 
           {fidelityBonds && (
             <>
-              {fidelityBonds.length === 0 ? (
-                <>
-                  <DepositFormAdvanced title={<Trans i18nKey="fidelity_bond.form_create.title">Fidelity Bond</Trans>} />
-                </>
-              ) : (
-                <rb.Row className="mt-2 mb-3">
-                  <rb.Col>{!!fidelityBonds?.length && <DisplayUTXOs utxos={fidelityBonds} />}</rb.Col>
-                </rb.Row>
+              {fidelityBonds.length > 0 && (
+                <div className="mt-2 mb-3">
+                  <DisplayUTXOs utxos={fidelityBonds} />
+                </div>
               )}
+
+              <DepositFormAdvanced title={<Trans i18nKey="fidelity_bond.form_create.title">Fidelity Bond</Trans>} />
             </>
           )}
         </>
