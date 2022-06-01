@@ -132,14 +132,19 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
     setAddressLocktime(null)
 
     setIsLoading(true)
+
     Api.getAddressTimelockNew({ walletName, token, locktime, signal: abortCtrl.signal })
       .then((res) =>
         res.ok ? res.json() : Api.Helper.throwError(res, t('fidelity_bond.error_loading_timelock_address_failed'))
       )
       .then((data) => {
+        if (abortCtrl.signal.aborted) return
+
         setAddress(data.address)
         setAddressLocktime(locktime)
       })
+      // show the loader a little longer to avoid flickering
+      .then((_) => new Promise((r) => setTimeout(r, 200)))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
@@ -160,46 +165,43 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
         </rb.Form>
         <rb.Row>
           <rb.Col>
-            <>
-              {isLoading && (
-                <div className="d-flex justify-content-center align-items-center">
-                  <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                  {t('global.loading')}
-                </div>
-              )}
-            </>
-          </rb.Col>
-        </rb.Row>
-        <rb.Row>
-          <rb.Col>
-            <>
-              {address && (
-                <>
-                  <rb.Toast style={{ width: 'auto' }}>
-                    <rb.Toast.Header closeButton={false}>
-                      <strong className="me-auto">
-                        <Trans i18nKey="fidelity_bond.form_create.text_expires_at" addressLocktime={addressLocktime}>
-                          Expires at: {{ addressLocktime }}
-                        </Trans>
-                      </strong>
-                    </rb.Toast.Header>
-                    <rb.Toast.Body>
-                      <div className="text-center">
-                        <div className="slashed-zeroes">{address}</div>
-                        <div className="my-2">
-                          <CopyButtonWithConfirmation
-                            value={address}
-                            text={t('global.button_copy_text')}
-                            successText={t('global.button_copy_text_confirmed')}
-                            disabled={!address || isLoading}
-                          />{' '}
+            <rb.Toast style={{ width: 'auto' }}>
+              <rb.Toast.Header closeButton={false}>
+                {isLoading ? (
+                  <div className="d-flex justify-content-center align-items-center">
+                    <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                    {t('global.loading')}
+                  </div>
+                ) : (
+                  <strong className="me-auto">
+                    <Trans i18nKey="fidelity_bond.form_create.text_expires_at" addressLocktime={addressLocktime}>
+                      Expires at: {{ addressLocktime }}
+                    </Trans>
+                  </strong>
+                )}
+              </rb.Toast.Header>
+              <rb.Toast.Body>
+                <div style={{ minHeight: '6rem' }}>
+                  {!isLoading && (
+                    <>
+                      {address && (
+                        <div className="text-center">
+                          <div className="slashed-zeroes">{address}</div>
+                          <div className="my-2">
+                            <CopyButtonWithConfirmation
+                              value={address}
+                              text={t('global.button_copy_text')}
+                              successText={t('global.button_copy_text_confirmed')}
+                              disabled={!address || isLoading}
+                            />{' '}
+                          </div>
                         </div>
-                      </div>
-                    </rb.Toast.Body>
-                  </rb.Toast>
-                </>
-              )}
-            </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </rb.Toast.Body>
+            </rb.Toast>
           </rb.Col>
         </rb.Row>
       </rb.Card.Body>
