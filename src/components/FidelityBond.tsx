@@ -63,11 +63,11 @@ const DepositTemplate = ({ title, amount, locktime, ...props }: DepositTemplateP
   )
 }*/
 
-interface LocktimeForm {
+interface LocktimeFormProps {
   onChange: (locktime: Api.Locktime) => void
   maxYears?: number
 }
-const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: LocktimeForm) => {
+const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: LocktimeFormProps) => {
   const { t } = useTranslation()
 
   const now = new Date()
@@ -96,9 +96,7 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
       <rb.Col xs={6}>
         <rb.Form.Group className="mb-4" controlId="locktimeYear">
           <rb.Form.Label form="fidelity-bond-form">
-            <Trans i18nKey="fidelity_bond.form_create.label_locktime_year" as="span">
-              Year
-            </Trans>
+            <Trans i18nKey="fidelity_bond.form_create.label_locktime_year">Year</Trans>
           </rb.Form.Label>
           <rb.Form.Control
             name="year"
@@ -112,7 +110,7 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
             isInvalid={locktimeYear < currentYear || locktimeYear > currentYear + maxYears}
           />
           <rb.Form.Control.Feedback type="invalid">
-            <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year" as="span">
+            <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year">
               Please provide a valid value.
             </Trans>
           </rb.Form.Control.Feedback>
@@ -121,9 +119,7 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
       <rb.Col xs={6}>
         <rb.Form.Group className="mb-4" controlId="locktimeMonth">
           <rb.Form.Label form="fidelity-bond-form">
-            <Trans i18nKey="fidelity_bond.form_create.label_locktime_month" as="span">
-              Month
-            </Trans>
+            <Trans i18nKey="fidelity_bond.form_create.label_locktime_month">Month</Trans>
           </rb.Form.Label>
           <rb.Form.Control
             name="month"
@@ -138,7 +134,7 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
             isInvalid={locktimeMonth < minMonth()}
           />
           <rb.Form.Control.Feedback type="invalid">
-            <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month" as="span">
+            <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month">
               Please provide a valid value.
             </Trans>
           </rb.Form.Control.Feedback>
@@ -148,11 +144,11 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
   )
 }
 
-interface DepositForm {
+interface DepositFormProps {
   title: string
   [key: string]: unknown
 }
-const DepositForm = ({ title, ...props }: DepositForm) => {
+const DepositForm = ({ title, ...props }: DepositFormProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
   const [amount, setAmount] = useState<number | null>(null)
@@ -248,14 +244,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
             <>
               {isLoading && (
                 <div className="d-flex justify-content-center align-items-center">
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="me-2"
-                  />
+                  <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
                   {t('global.loading')}
                 </div>
               )}
@@ -330,7 +319,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
     <div>
       {isLoading && (
         <div className="d-flex justify-content-center align-items-center">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           {t('global.loading')}
         </div>
       )}
@@ -388,7 +377,7 @@ const FidelityBondAdvanced = () => {
     <div>
       {isLoading ? (
         <div className="d-flex justify-content-center align-items-center">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           {t('global.loading')}
         </div>
       ) : (
@@ -399,13 +388,7 @@ const FidelityBondAdvanced = () => {
             <>
               {fidelityBonds.length === 0 ? (
                 <>
-                  <DepositFormAdvanced
-                    title={
-                      <Trans i18nKey="fidelity_bond.form_create.title" as="span">
-                        Fidelity Bond
-                      </Trans>
-                    }
-                  />
+                  <DepositFormAdvanced title={<Trans i18nKey="fidelity_bond.form_create.title">Fidelity Bond</Trans>} />
                 </>
               ) : (
                 <rb.Row className="mt-2 mb-3">
@@ -468,7 +451,7 @@ export default function FidelityBond() {
       <rb.Row>
         <rb.Col>
           <div className="mb-4">
-            <Trans i18nKey="fidelity_bond.description" as="p">
+            <Trans i18nKey="fidelity_bond.description">
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
                 target="_blank"
@@ -483,7 +466,7 @@ export default function FidelityBond() {
 
           {settings.useAdvancedWalletMode ? (
             <rb.Alert variant="warning" className="mb-4">
-              <Trans i18nKey="fidelity_bond.alert_warning_advanced_mode_active" as="p">
+              <Trans i18nKey="fidelity_bond.alert_warning_advanced_mode_active">
                 You are in advanced mode. It is assumed that you know what you are doing.
                 <br />
                 <small>
