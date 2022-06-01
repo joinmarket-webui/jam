@@ -283,9 +283,10 @@ export default function Earn() {
                     <>
                       {settings.useAdvancedWalletMode && (
                         <>
-                          <rb.Form.Group className="mb-3 d-flex justify-content-center" controlId="offertype">
+                          <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
                             <ToggleSwitch
                               label={t('earn.toggle_rel_offer')}
+                              labelOff={t('earn.toggle_abs_offer')}
                               initialValue={isRelativeOffer(values.offertype)}
                               onToggle={(isToggled) =>
                                 setFieldValue('offertype', isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS, true)
