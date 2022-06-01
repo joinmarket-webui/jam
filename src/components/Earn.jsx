@@ -85,6 +85,7 @@ export default function Earn() {
   const currentWallet = useCurrentWallet()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
+
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -111,7 +112,7 @@ export default function Earn() {
       Api.postMakerStart({ walletName, token }, data)
         .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
         // show the loader a little longer to avoid flickering
-        .then((_) => new Promise((r) => setTimeout(r, 200)))
+        .then((result) => new Promise((r) => setTimeout(() => r(result), 200)))
         .catch((e) => {
           setIsWaitingMakerStart(false)
           throw e
@@ -130,7 +131,7 @@ export default function Earn() {
     // Wait for the websocket or session response!
     return Api.getMakerStop({ walletName, token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
-      .then((_) => new Promise((r) => setTimeout(r, MAKER_STOP_RESPONSE_DELAY_MS)))
+      .then((result) => new Promise((r) => setTimeout(() => r(result), MAKER_STOP_RESPONSE_DELAY_MS)))
       .catch((e) => {
         setIsWaitingMakerStop(false)
         throw e
