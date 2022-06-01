@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { useSettings } from '../context/SettingsContext'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
@@ -76,6 +76,23 @@ const factorToPercentage = (val, precision = 6) => {
   // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
+}
+
+function AdvancedModeToggleButton() {
+  const { t } = useTranslation()
+  const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
+
+  return (
+    <rb.Button
+      variant="outline-dark"
+      className="border-0 d-inline-flex justify-content-center align-items-center"
+      onClick={() => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
+    >
+      <Sprite symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'} width="20" height="20" className="me-2" />
+      <small>{settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}</small>
+    </rb.Button>
+  )
 }
 
 export default function Earn() {
@@ -245,9 +262,19 @@ export default function Earn() {
   return (
     <div className="earn">
       <rb.Row>
-        <rb.Col>
+        <rb.Col
+          xs={{ span: 12 }}
+          sm={{ span: 'auto' }}
+          className="ms-auto d-inline-flex justify-content-end align-items-start mb-2"
+        >
+          <AdvancedModeToggleButton />
+        </rb.Col>
+        <rb.Col xs={{ span: 12 }} sm={{ span: 'auto' }}>
           <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
-
+        </rb.Col>
+      </rb.Row>
+      <rb.Row>
+        <rb.Col>
           <rb.Fade in={serviceInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
             <rb.Alert variant="info" className="mb-4">
               {t('earn.alert_coinjoin_in_progress')}
@@ -270,112 +297,113 @@ export default function Earn() {
                   {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
                     <>
                       {settings.useAdvancedWalletMode && (
-                        <rb.Form.Group className="mb-3" controlId="offertype">
-                          <ToggleSwitch
-                            label={t('earn.toggle_rel_offer')}
-                            initialValue={isRelativeOffer(values.offertype)}
-                            onToggle={(isToggled) =>
-                              setFieldValue('offertype', isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS, true)
-                            }
-                            disabled={isLoading || isSubmitting}
-                          />
-                        </rb.Form.Group>
-                      )}
-                      {values.offertype === OFFERTYPE_REL ? (
-                        <rb.Form.Group className="mb-3" controlId="feeRel">
-                          <rb.Form.Label className="mb-0">
-                            {t('earn.label_rel_fee', {
-                              fee: values.feeRel !== '' ? `(${factorToPercentage(values.feeRel)}%)` : '',
-                            })}
-                          </rb.Form.Label>
-                          <div className="mb-2">
-                            <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
-                          </div>
-                          {isLoading ? (
-                            <rb.Placeholder as="div" animation="wave">
-                              <rb.Placeholder xs={12} className={styles['input-loader']} />
-                            </rb.Placeholder>
-                          ) : (
-                            <rb.Form.Control
-                              className="slashed-zeroes"
-                              type="number"
-                              name="feeRel"
-                              disabled={isSubmitting}
-                              onChange={(e) => {
-                                const value = e.target.value || ''
-                                setFieldValue('feeRel', value && percentageToFactor(e.target.value), true)
-                              }}
-                              onBlur={handleBlur}
-                              value={factorToPercentage(values.feeRel)}
-                              isValid={touched.feeRel && !errors.feeRel}
-                              isInvalid={touched.feeRel && errors.feeRel}
-                              min={0}
-                              step={feeRelPercentageStep}
+                        <>
+                          <rb.Form.Group className="mb-3" controlId="offertype">
+                            <ToggleSwitch
+                              label={t('earn.toggle_rel_offer')}
+                              initialValue={isRelativeOffer(values.offertype)}
+                              onToggle={(isToggled) =>
+                                setFieldValue('offertype', isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS, true)
+                              }
+                              disabled={isLoading || isSubmitting}
                             />
-                          )}
-                          <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
-                        </rb.Form.Group>
-                      ) : (
-                        <rb.Form.Group className="mb-3" controlId="feeAbs">
-                          <rb.Form.Label className="mb-0">
-                            {t('earn.label_abs_fee', {
-                              fee:
-                                '(' +
-                                (values.feeAbs === '' ? 0 : values.feeAbs) +
-                                ' ' +
-                                (values.feeAbs === 1 ? 'sat' : 'sats') +
-                                ')',
-                            })}
-                          </rb.Form.Label>
-                          <div className="mb-2">
-                            <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
-                          </div>
-                          {isLoading ? (
-                            <rb.Placeholder as="div" animation="wave">
-                              <rb.Placeholder xs={12} className={styles['input-loader']} />
-                            </rb.Placeholder>
+                          </rb.Form.Group>
+                          {values.offertype === OFFERTYPE_REL ? (
+                            <rb.Form.Group className="mb-3" controlId="feeRel">
+                              <rb.Form.Label className="mb-0">
+                                {t('earn.label_rel_fee', {
+                                  fee: values.feeRel !== '' ? `(${factorToPercentage(values.feeRel)}%)` : '',
+                                })}
+                              </rb.Form.Label>
+                              <div className="mb-2">
+                                <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
+                              </div>
+                              {isLoading ? (
+                                <rb.Placeholder as="div" animation="wave">
+                                  <rb.Placeholder xs={12} className={styles['input-loader']} />
+                                </rb.Placeholder>
+                              ) : (
+                                <rb.Form.Control
+                                  className="slashed-zeroes"
+                                  type="number"
+                                  name="feeRel"
+                                  disabled={isSubmitting}
+                                  onChange={(e) => {
+                                    const value = e.target.value || ''
+                                    setFieldValue('feeRel', value && percentageToFactor(e.target.value), true)
+                                  }}
+                                  onBlur={handleBlur}
+                                  value={factorToPercentage(values.feeRel)}
+                                  isValid={touched.feeRel && !errors.feeRel}
+                                  isInvalid={touched.feeRel && errors.feeRel}
+                                  min={0}
+                                  step={feeRelPercentageStep}
+                                />
+                              )}
+                              <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
+                            </rb.Form.Group>
                           ) : (
-                            <rb.Form.Control
-                              className="slashed-zeroes"
-                              type="number"
-                              name="feeAbs"
-                              value={values.feeAbs}
-                              disabled={isSubmitting}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              isValid={touched.feeAbs && !errors.feeAbs}
-                              isInvalid={touched.feeAbs && errors.feeAbs}
-                              min={0}
-                              step={1}
-                            />
+                            <rb.Form.Group className="mb-3" controlId="feeAbs">
+                              <rb.Form.Label className="mb-0">
+                                {t('earn.label_abs_fee', {
+                                  fee:
+                                    '(' +
+                                    (values.feeAbs === '' ? 0 : values.feeAbs) +
+                                    ' ' +
+                                    (values.feeAbs === 1 ? 'sat' : 'sats') +
+                                    ')',
+                                })}
+                              </rb.Form.Label>
+                              <div className="mb-2">
+                                <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
+                              </div>
+                              {isLoading ? (
+                                <rb.Placeholder as="div" animation="wave">
+                                  <rb.Placeholder xs={12} className={styles['input-loader']} />
+                                </rb.Placeholder>
+                              ) : (
+                                <rb.Form.Control
+                                  className="slashed-zeroes"
+                                  type="number"
+                                  name="feeAbs"
+                                  value={values.feeAbs}
+                                  disabled={isSubmitting}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                  isValid={touched.feeAbs && !errors.feeAbs}
+                                  isInvalid={touched.feeAbs && errors.feeAbs}
+                                  min={0}
+                                  step={1}
+                                />
+                              )}
+                              <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
+                            </rb.Form.Group>
                           )}
-                          <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
-                        </rb.Form.Group>
-                      )}
-                      {settings.useAdvancedWalletMode && (
-                        <rb.Form.Group className="mb-3" controlId="minsize">
-                          <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
-                          {isLoading ? (
-                            <rb.Placeholder as="div" animation="wave">
-                              <rb.Placeholder xs={12} className={styles['input-loader']} />
-                            </rb.Placeholder>
-                          ) : (
-                            <rb.Form.Control
-                              className="slashed-zeroes"
-                              type="number"
-                              name="minsize"
-                              value={values.minsize}
-                              disabled={isSubmitting}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              isValid={touched.minsize && !errors.minsize}
-                              isInvalid={touched.minsize && errors.minsize}
-                              min={0}
-                              step={1000}
-                            />
-                          )}
-                          <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
-                        </rb.Form.Group>
+
+                          <rb.Form.Group className="mb-3" controlId="minsize">
+                            <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
+                            {isLoading ? (
+                              <rb.Placeholder as="div" animation="wave">
+                                <rb.Placeholder xs={12} className={styles['input-loader']} />
+                              </rb.Placeholder>
+                            ) : (
+                              <rb.Form.Control
+                                className="slashed-zeroes"
+                                type="number"
+                                name="minsize"
+                                value={values.minsize}
+                                disabled={isSubmitting}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                isValid={touched.minsize && !errors.minsize}
+                                isInvalid={touched.minsize && errors.minsize}
+                                min={0}
+                                step={1000}
+                              />
+                            )}
+                            <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
+                          </rb.Form.Group>
+                        </>
                       )}
                     </>
                   )}
