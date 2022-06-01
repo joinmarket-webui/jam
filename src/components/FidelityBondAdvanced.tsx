@@ -175,18 +175,28 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
             <>
               {address && (
                 <>
-                  <div className="text-center">
-                    <div className="slashed-zeroes">{address}</div>
-                    <div className="my-2">
-                      <CopyButtonWithConfirmation
-                        value={address}
-                        text={t('global.button_copy_text')}
-                        successText={t('global.button_copy_text_confirmed')}
-                        disabled={!address || isLoading}
-                      />{' '}
-                    </div>
-                  </div>
-                  <rb.Card.Text>Expires at: {addressLocktime}</rb.Card.Text>
+                  <rb.Toast style={{ width: 'auto' }}>
+                    <rb.Toast.Header closeButton={false}>
+                      <strong className="me-auto">
+                        <Trans i18nKey="fidelity_bond.form_create.text_expires_at" addressLocktime={addressLocktime}>
+                          Expires at: {{ addressLocktime }}
+                        </Trans>
+                      </strong>
+                    </rb.Toast.Header>
+                    <rb.Toast.Body>
+                      <div className="text-center">
+                        <div className="slashed-zeroes">{address}</div>
+                        <div className="my-2">
+                          <CopyButtonWithConfirmation
+                            value={address}
+                            text={t('global.button_copy_text')}
+                            successText={t('global.button_copy_text_confirmed')}
+                            disabled={!address || isLoading}
+                          />{' '}
+                        </div>
+                      </div>
+                    </rb.Toast.Body>
+                  </rb.Toast>
                 </>
               )}
             </>
