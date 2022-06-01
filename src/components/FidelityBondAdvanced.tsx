@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { useCurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../context/WalletContext'
@@ -9,8 +9,13 @@ import DisplayUTXOs from './DisplayUTXOs'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
-const dateToLocktime = (date: Date): Api.Locktime =>
-  `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Api.Locktime
+const dateToLockdate = (date: Date): Api.Lockdate =>
+  `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Api.Lockdate
+
+const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
+  const split = lockdate.split('-')
+  return Date.UTC(parseInt(split[0], 10), parseInt(split[1], 10) - 1, 1, 0, 0, 0)
+}
 
 // a maximum of years for a timelock to be accepted
 // this is useful in simple mode - when it should be prevented that users
@@ -18,35 +23,35 @@ const dateToLocktime = (date: Date): Api.Locktime =>
 // in "advanced" mode, this can be dropped or increased substantially
 const DEFAULT_MAX_TIMELOCK_YEARS = 10
 
-const initialLocktimeDate = () => {
+const initialLockdate = () => {
   const now = new Date()
   const year = now.getUTCFullYear()
   const month = now.getUTCMonth()
   return new Date(Date.UTC(year + 1, month, 1, 0, 0, 0))
 }
 
-interface LocktimeFormProps {
-  onChange: (locktime: Api.Locktime) => void
+interface LockdateFormProps {
+  onChange: (lockdate: Api.Lockdate) => void
   maxYears?: number
 }
-const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: LocktimeFormProps) => {
+const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: LockdateFormProps) => {
   const { t } = useTranslation()
 
   const now = new Date()
   const currentYear = now.getUTCFullYear()
   const currentMonth = 1 + now.getUTCMonth() // utc month ranges from [0, 11]
 
-  const [locktimeYear, setLocktimeYear] = useState(currentYear + 1)
-  const [locktimeMonth, setLocktimeMonth] = useState(currentMonth)
+  const [lockdateYear, setLockdateYear] = useState(currentYear + 1)
+  const [lockdateMonth, setLockdateMonth] = useState(currentMonth)
 
   useEffect(() => {
-    const date = new Date(Date.UTC(locktimeYear, locktimeMonth - 1, 1, 0, 0, 0))
+    const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1, 0, 0, 0))
     console.log(date.toLocaleDateString())
-    onChange(dateToLocktime(date))
-  }, [locktimeYear, locktimeMonth, onChange])
+    onChange(dateToLockdate(date))
+  }, [lockdateYear, lockdateMonth, onChange])
 
   const minMonth = () => {
-    if (locktimeYear > currentYear) {
+    if (lockdateYear > currentYear) {
       return 1
     }
 
@@ -63,13 +68,13 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
           <rb.Form.Control
             name="year"
             type="number"
-            value={locktimeYear}
+            value={lockdateYear}
             min={currentYear}
             max={currentYear + maxYears}
             placeholder={t('fidelity_bond.form_create.placeholder_locktime_year')}
             required
-            onChange={(e) => setLocktimeYear(parseInt(e.target.value, 10))}
-            isInvalid={locktimeYear < currentYear || locktimeYear > currentYear + maxYears}
+            onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
+            isInvalid={lockdateYear < currentYear || lockdateYear > currentYear + maxYears}
           />
           <rb.Form.Control.Feedback type="invalid">
             <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year">
@@ -86,14 +91,14 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
           <rb.Form.Control
             name="month"
             type="number"
-            value={locktimeMonth}
+            value={lockdateMonth}
             min={minMonth()}
             step={1}
             max={12}
             placeholder={t('fidelity_bond.form_create.placeholder_locktime_month')}
             required
-            onChange={(e) => setLocktimeMonth(parseInt(e.target.value, 10))}
-            isInvalid={locktimeMonth < minMonth()}
+            onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10))}
+            isInvalid={lockdateMonth < minMonth()}
           />
           <rb.Form.Control.Feedback type="invalid">
             <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month">
@@ -106,6 +111,10 @@ const LocktimeForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockt
   )
 }
 
+const locktimeDisplayString = (lockdate: Api.Lockdate) => {
+  return new Date(lockdateToTimestamp(lockdate)).toUTCString()
+}
+
 interface DepositFormAdvancedProps {
   title: React.ReactElement
   [key: string]: unknown
@@ -113,15 +122,19 @@ interface DepositFormAdvancedProps {
 const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
-  const [locktime, setLocktime] = useState(dateToLocktime(initialLocktimeDate()))
+  const [lockdate, setLockdate] = useState(dateToLockdate(initialLockdate()))
   const [address, setAddress] = useState(null)
-  const [addressLocktime, setAddressLocktime] = useState<Api.Locktime | null>(null)
+  const [addressLockdate, setAddressLockdate] = useState<Api.Lockdate | null>(null)
+  const addressLocktimeString = useMemo<string | null>(
+    () => (addressLockdate ? locktimeDisplayString(addressLockdate) : null),
+    [addressLockdate]
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [alert, setAlert] = useState<AlertWithMessage | null>(null)
 
   useEffect(() => {
     if (!currentWallet) return
-    if (!locktime) return
+    if (!lockdate) return
 
     const abortCtrl = new AbortController()
     const { name: walletName, token } = currentWallet
@@ -129,11 +142,11 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
     setAlert(null)
 
     setAddress(null)
-    setAddressLocktime(null)
+    setAddressLockdate(null)
 
     setIsLoading(true)
 
-    Api.getAddressTimelockNew({ walletName, token, locktime, signal: abortCtrl.signal })
+    Api.getAddressTimelockNew({ walletName, token, lockdate, signal: abortCtrl.signal })
       .then((res) =>
         res.ok ? res.json() : Api.Helper.throwError(res, t('fidelity_bond.error_loading_timelock_address_failed'))
       )
@@ -141,7 +154,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
         if (abortCtrl.signal.aborted) return
 
         setAddress(data.address)
-        setAddressLocktime(locktime)
+        setAddressLockdate(lockdate)
       })
       // show the loader a little longer to avoid flickering
       .then((_) => new Promise((r) => setTimeout(r, 200)))
@@ -151,7 +164,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, locktime, t])
+  }, [currentWallet, lockdate, t])
 
   return (
     <rb.Card {...props}>
@@ -161,7 +174,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
         {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
         <rb.Form noValidate>
-          <LocktimeForm onChange={setLocktime} />
+          <LockdateForm onChange={setLockdate} />
         </rb.Form>
         <rb.Row>
           <rb.Col>
@@ -174,29 +187,33 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
                   </div>
                 ) : (
                   <strong className="me-auto">
-                    <Trans i18nKey="fidelity_bond.form_create.text_expires_at" addressLocktime={addressLocktime}>
-                      Expires at: {{ addressLocktime }}
+                    <Trans
+                      i18nKey="fidelity_bond.form_create.text_expires_at"
+                      values={{
+                        addressLocktime: addressLocktimeString,
+                      }}
+                    >
+                      Expires at: {addressLocktimeString}
                     </Trans>
                   </strong>
                 )}
               </rb.Toast.Header>
               <rb.Toast.Body>
-                <div style={{ minHeight: '6rem' }}>
-                  {!isLoading && (
+                <div
+                  className="d-grid place-content-space-evenly justify-content-center text-center"
+                  style={{ minHeight: '6rem' }}
+                >
+                  {!isLoading && address && (
                     <>
-                      {address && (
-                        <div className="text-center">
-                          <div className="slashed-zeroes">{address}</div>
-                          <div className="my-2">
-                            <CopyButtonWithConfirmation
-                              value={address}
-                              text={t('global.button_copy_text')}
-                              successText={t('global.button_copy_text_confirmed')}
-                              disabled={!address || isLoading}
-                            />{' '}
-                          </div>
-                        </div>
-                      )}
+                      <div className="text-break slashed-zeroes">{address}</div>
+                      <div className=" my-2">
+                        <CopyButtonWithConfirmation
+                          value={address}
+                          text={t('global.button_copy_text')}
+                          successText={t('global.button_copy_text_confirmed')}
+                          disabled={!address || isLoading}
+                        />{' '}
+                      </div>
                     </>
                   )}
                 </div>
@@ -259,13 +276,16 @@ export const FidelityBondAdvanced = () => {
 
           {fidelityBonds && (
             <>
+              <div className="mb-4">
+                <DepositFormAdvanced title={<Trans i18nKey="fidelity_bond.form_create.title">Fidelity Bond</Trans>} />
+              </div>
+
               {fidelityBonds.length > 0 && (
-                <div className="mt-2 mb-3">
+                <div className="mt-2 mb-4">
+                  <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
                   <DisplayUTXOs utxos={fidelityBonds} />
                 </div>
               )}
-
-              <DepositFormAdvanced title={<Trans i18nKey="fidelity_bond.form_create.title">Fidelity Bond</Trans>} />
             </>
           )}
         </>
