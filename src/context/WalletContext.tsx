@@ -1,9 +1,9 @@
-import React, { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren } from 'react'
+import React, { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useRef } from 'react'
 
 import { getSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 
-interface CurrentWallet {
+export interface CurrentWallet {
   name: string
   token: string
 }
@@ -118,22 +118,43 @@ const loadWalletInfoData = async ({
 const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   const [currentWallet, setCurrentWallet] = useState(restoreWalletFromSession())
   const [currentWalletInfo, setCurrentWalletInfo] = useState<WalletInfo | null>(null)
+  const fetchWalletInfoInProgress = useRef<Promise<WalletInfo> | null>(null)
 
   const reloadCurrentWalletInfo = useCallback(
     async ({ signal }: { signal: AbortSignal }) => {
       if (!currentWallet) {
         throw new Error('Cannot load wallet info: Wallet not present')
       } else {
-        const { name: walletName, token } = currentWallet
-        return loadWalletInfoData({ walletName, token, signal }).then((walletInfo) => {
-          if (!signal.aborted) {
-            setCurrentWalletInfo(walletInfo)
+        if (fetchWalletInfoInProgress.current !== null) {
+          try {
+            return await fetchWalletInfoInProgress.current
+          } catch (err: unknown) {
+            // If a previous wallet info request was in progress but failed, retry!
+            // This happens e.g. when the in-progress request was aborted.
+            if (!(err instanceof Error) || err.name !== 'AbortError') {
+              console.warn('Previous wallet info request resulted in an unexpected error. Retrying!', err)
+            }
           }
-          return walletInfo
-        })
+        }
+
+        const { name: walletName, token } = currentWallet
+        const fetch = loadWalletInfoData({ walletName, token, signal })
+
+        fetchWalletInfoInProgress.current = fetch
+
+        return fetch
+          .finally(() => {
+            fetchWalletInfoInProgress.current = null
+          })
+          .then((walletInfo) => {
+            if (!signal.aborted) {
+              setCurrentWalletInfo(walletInfo)
+            }
+            return walletInfo
+          })
       }
     },
-    [currentWallet]
+    [currentWallet, fetchWalletInfoInProgress]
   )
 
   useEffect(() => {

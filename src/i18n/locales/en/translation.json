@@ -106,7 +106,8 @@
     "back_button": "Back",
     "skip_button": "Skip",
     "next_button": "Next",
-    "placeholder_seed_word_input": "Word"
+    "placeholder_seed_word_input": "Word",
+    "hint_duration_text": "Please be patient, this may take a few minutes."
   },
   "current_wallet": {
     "text_loading": "Loading",
@@ -257,6 +258,10 @@
       "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
+      "title": "<0>Send</0> a collaborative transaction to yourself.",
+      "description": "Collaborative transactions increase the privacy of yourself and others."
+    },
+    "item_last": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }

@@ -8,6 +8,7 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
+import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
@@ -135,15 +136,23 @@ const enhanceDirectPaymentErrorMessageIfNecessary = async (httpStatus, errorMess
 }
 
 const enhanceTakerErrorMessageIfNecessary = async (
-  requestContext,
+  loadConfigValue,
   httpStatus,
   errorMessage,
   onMaxFeeSettingsMissing
 ) => {
-  const configExists = (section, field) => Api.postConfigGet(requestContext, { section, field }).then((res) => res.ok)
-
   const tryEnhanceMessage = httpStatus === 409
   if (tryEnhanceMessage) {
+    const abortCtrl = new AbortController()
+
+    const configExists = (section, field) =>
+      loadConfigValue({
+        signal: abortCtrl.signal,
+        key: { section, field },
+      })
+        .then((val) => val.value !== null)
+        .catch(() => false)
+
     const maxFeeSettingsPresent = await Promise.all([
       configExists('POLICY', 'max_cj_fee_rel'),
       configExists('POLICY', 'max_cj_fee_abs'),
@@ -176,12 +185,13 @@ export default function Send() {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
+  const loadConfigValue = useLoadConfigValue()
   const settings = useSettings()
   const location = useLocation()
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
-  const waitForTakerToFinish = useMemo(() => isCoinjoinInProgress, [isCoinjoinInProgress])
+  const waitForTakerToFinish = useMemo(() => !!isCoinjoinInProgress, [isCoinjoinInProgress])
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning,
     [isCoinjoinInProgress, isMakerRunning]
@@ -322,11 +332,12 @@ export default function Send() {
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
     })
 
-    const requestContext = { walletName: wallet.name, token: wallet.token, signal: abortCtrl.signal }
-    const loadingMinimumMakerConfig = Api.postConfigGet(requestContext, { section: 'POLICY', field: 'minimum_makers' })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('send.error_loading_min_makers_failed'))))
+    const loadingMinimumMakerConfig = loadConfigValue({
+      signal: abortCtrl.signal,
+      key: { section: 'POLICY', field: 'minimum_makers' },
+    })
       .then((data) => {
-        const minimumMakers = parseInt(data.configvalue, 10)
+        const minimumMakers = parseInt(data.value, 10)
         setMinNumCollaborators(minimumMakers)
         setNumCollaborators(initialNumCollaborators(minimumMakers))
       })
@@ -339,7 +350,15 @@ export default function Send() {
     )
 
     return () => abortCtrl.abort()
-  }, [waitForTakerToFinish, waitForUtxosToBeSpent, wallet, reloadCurrentWalletInfo, reloadServiceInfo, t])
+  }, [
+    waitForTakerToFinish,
+    waitForUtxosToBeSpent,
+    wallet,
+    reloadCurrentWalletInfo,
+    reloadServiceInfo,
+    loadConfigValue,
+    t,
+  ])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
@@ -407,7 +426,7 @@ export default function Send() {
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
         const displayMessage = await enhanceTakerErrorMessageIfNecessary(
-          requestContext,
+          loadConfigValue,
           res.status,
           message,
           (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`

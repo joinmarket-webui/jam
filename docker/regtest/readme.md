@@ -1,7 +1,31 @@
-# Docker setup for running JoinMarket in regtest mode
+# Docker setup for running Jam in regtest mode
 
 This setup will help you set up a regtest environment quickly.
-It starts two JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
+It starts multiple JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
+Communication between these containers is done via Tor (if internet connection is available) and IRC (locally running container).
+
+## Common flow
+```sh
+# (optional) once in a while rebuild the images
+npm run regtest:rebuild
+
+# start the regtest environment
+npm run regtest:up
+
+# fund wallets and start maker
+./docker/regtest/init-setup.sh
+
+# mine blocks in regtest periodically
+npm run regtest:mine
+
+[...]
+
+# stop the regtest environment
+npm run regtest:down
+
+# (optional) wipe all test data and start from scratch next time
+npm run regtest:clear
+```
 
 ## Commands
 
@@ -41,6 +65,8 @@ The second JoinMarket container is based on `joinmarket-webui/joinmarket-webui-d
 (username `joinmarket` and pass `joinmarket` for Basic Authentication).
 This is useful if you want to perform regression tests.
 
+The third JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
+
 ### Rebuild
 
 In order to incorporate the current contents of `master` branch, simply rebuild the joinmarket images from scratch.
@@ -68,6 +94,13 @@ docker exec -t jm_regtest_joinmarket git log --oneline -1
 ## Helper scripts
 
 Some helper scripts are included to make recurring tasks and interaction with the containers easier.
+
+### `npm run regtest:mine`
+
+Mine regtest blocks in a fixed interval (current default is every 10 seconds).
+This is useful for features that await confirmations or need incoming blocks regularly.
+e.g. This is necessary for scheduled transactions to execute successfully.
+
 
 ### `init-setup.sh`
 

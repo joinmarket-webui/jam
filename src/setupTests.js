@@ -34,3 +34,19 @@ global.__DEV__.addToAppSettings = () => {
     global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.close()
   })
 })()
+
+beforeAll(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // Deprecated, still needed by @restart/hooks (last check: 2022-05-25)
+      removeListener: jest.fn(), // Deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }),
+  })
+})
