@@ -43,7 +43,7 @@ interface WalletDisplayInfo {
   accounts: Account[]
 }
 
-interface Account {
+export interface Account {
   account: string
   account_balance: BalanceString
   available_balance: BalanceString

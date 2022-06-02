@@ -10,6 +10,7 @@ import { FidelityBondAdvanced } from '../components/FidelityBondAdvanced'
 import Sprite from './Sprite'
 
 import styles from './FidelityBond.module.css'
+import { FidelityBondSimple } from './FidelityBondSimple'
 
 function AdvancedModeToggleButton() {
   const { t } = useTranslation()
@@ -72,7 +73,7 @@ export default function FidelityBond() {
             </Trans>
           </div>
 
-          {settings.useAdvancedWalletMode ? (
+          {settings.useAdvancedWalletMode && (
             <rb.Alert variant="warning" className="mb-4">
               <Trans i18nKey="fidelity_bond.alert_warning_advanced_mode_active">
                 You are in advanced mode. It is assumed that you know what you are doing.
@@ -82,15 +83,9 @@ export default function FidelityBond() {
                 </small>
               </Trans>
             </rb.Alert>
-          ) : (
-            <rb.Alert variant="danger" className="mb-4">
-              <Trans i18nKey="fidelity_bond.alert_warning_advanced_mode">
-                Fidelity Bonds are currently only available in advanced mode.
-              </Trans>
-            </rb.Alert>
           )}
 
-          {settings.useAdvancedWalletMode && <FidelityBondAdvanced />}
+          {settings.useAdvancedWalletMode ? <FidelityBondAdvanced /> : <FidelityBondSimple />}
         </rb.Col>
       </rb.Row>
     </div>

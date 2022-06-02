@@ -283,6 +283,10 @@ main {
   -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
 }
 
+.unstyled {
+  text-decoration: none !important;
+}
+
 /* Navbar Styles */
 
 #mainNav .nav-link {
@@ -583,6 +587,10 @@ h2 {
 
 :root[data-theme='dark'] .card {
   background-color: var(--bs-gray-900);
+}
+
+:root[data-theme='dark']
+  .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info) {
   border-color: var(--bs-gray-800) !important;
 }
 
