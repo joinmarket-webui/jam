@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 import { WalletProvider } from './context/WalletContext'
 import { ServiceInfoProvider } from './context/ServiceInfoContext'
+import { ServiceConfigProvider } from './context/ServiceConfigContext'
 // @ts-ignore
 import { SettingsProvider } from './context/SettingsContext'
 // @ts-ignore
@@ -17,9 +18,11 @@ const AllTheProviders = ({ children }: { children: React.ReactElement }) => {
         <I18nextProvider i18n={i18n}>
           <SettingsProvider>
             <WalletProvider>
-              <WebsocketProvider>
-                <ServiceInfoProvider>{children}</ServiceInfoProvider>
-              </WebsocketProvider>
+              <ServiceConfigProvider>
+                <WebsocketProvider>
+                  <ServiceInfoProvider>{children}</ServiceInfoProvider>
+                </WebsocketProvider>
+              </ServiceConfigProvider>
             </WalletProvider>
           </SettingsProvider>
         </I18nextProvider>

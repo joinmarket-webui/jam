@@ -5,9 +5,9 @@
  *
  * See OpenAPI spec: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/api/wallet-rpc.yaml
  *
- * Because we forward all requests through a proxy, additional functionality
+ * Because all requests are forwarded through a proxy, additional functionality
  * can be provided. One adaptation is to send the Authorization header as
- * 'x-jm-authorization' so that the reverse proxy can apply its own
+ * 'x-jm-authorization' so that any reverse proxy can apply its own
  * authentication mechanism.
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
