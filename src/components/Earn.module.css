@@ -1,4 +1,21 @@
-.input-loader {
+.earn .input-loader {
   height: 3.5rem;
   border-radius: 0.25rem;
+}
+
+.earn .input-group-text {
+  width: 5ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.earn form input:not([type='checkbox']) {
+  height: 3.5rem;
+}
+
+.earn form button {
+  height: 3rem;
+  width: 100%;
 }

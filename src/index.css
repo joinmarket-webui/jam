@@ -422,24 +422,7 @@ main {
   text-shadow: 0 0 15px var(--bs-gray-400);
 }
 
-/* Send, Receive, Earn Styles */
-
-.earn form input:not([type='checkbox']) {
-  height: 3.5rem;
-}
-
-.earn form .input-group .input-group-text {
-  width: 5ch;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
-}
-
-.earn form button {
-  height: 3rem;
-  width: 100%;
-}
+/* Send, Receive Styles */
 
 .receive form input {
   height: 3.5rem;

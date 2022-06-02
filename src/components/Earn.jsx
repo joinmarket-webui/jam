@@ -246,7 +246,7 @@ export default function Earn() {
   }
 
   return (
-    <div className="earn">
+    <div className={styles['earn']}>
       <rb.Row>
         <rb.Col
           xs={{ span: 12 }}
@@ -312,7 +312,9 @@ export default function Earn() {
                                 </rb.Placeholder>
                               ) : (
                                 <rb.InputGroup>
-                                  <rb.InputGroup.Text id="feeRel-addon1">%</rb.InputGroup.Text>
+                                  <rb.InputGroup.Text id="feeRel-addon1" className={styles['input-group-text']}>
+                                    %
+                                  </rb.InputGroup.Text>
                                   <rb.Form.Control
                                     aria-label={t('earn.label_rel_fee', { fee: '' })}
                                     className="slashed-zeroes"
@@ -353,7 +355,7 @@ export default function Earn() {
                                 </rb.Placeholder>
                               ) : (
                                 <rb.InputGroup>
-                                  <rb.InputGroup.Text id="feeAbs-addon1">
+                                  <rb.InputGroup.Text id="feeAbs-addon1" className={styles['input-group-text']}>
                                     <Sprite symbol="sats" width="24" height="24" />
                                   </rb.InputGroup.Text>
                                   <rb.Form.Control
@@ -384,7 +386,7 @@ export default function Earn() {
                               </rb.Placeholder>
                             ) : (
                               <rb.InputGroup>
-                                <rb.InputGroup.Text id="minsize-addon1">
+                                <rb.InputGroup.Text id="minsize-addon1" className={styles['input-group-text']}>
                                   <Sprite symbol="sats" width="24" height="24" />
                                 </rb.InputGroup.Text>
                                 <rb.Form.Control
