@@ -196,7 +196,7 @@ export default function Earn() {
     }
 
     if (isRelOffer) {
-      if (values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
+      if (typeof values.feeRel !== 'number' || values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
         errors.feeRel = t('earn.feedback_invalid_rel_fee', {
           feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
           feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
@@ -205,12 +205,12 @@ export default function Earn() {
     }
 
     if (isAbsOffer) {
-      if (values.feeAbs < 0) {
+      if (typeof values.feeAbs !== 'number' || values.feeAbs < 0) {
         errors.feeAbs = t('earn.feedback_invalid_abs_fee')
       }
     }
 
-    if (values.minsize < 0) {
+    if (typeof values.minsize !== 'number' || values.minsize < 0) {
       errors.minsize = t('earn.feedback_invalid_min_amount')
     }
 
@@ -299,7 +299,8 @@ export default function Earn() {
                             <rb.Form.Group className="mb-3" controlId="feeRel">
                               <rb.Form.Label className="mb-0">
                                 {t('earn.label_rel_fee', {
-                                  fee: values.feeRel !== '' ? `(${factorToPercentage(values.feeRel)}%)` : '',
+                                  fee:
+                                    typeof values.feeRel === 'number' ? `(${factorToPercentage(values.feeRel)}%)` : '',
                                 })}
                               </rb.Form.Label>
                               <div className="mb-2">
@@ -320,10 +321,10 @@ export default function Earn() {
                                     disabled={isSubmitting}
                                     onChange={(e) => {
                                       const value = e.target.value || ''
-                                      setFieldValue('feeRel', value && percentageToFactor(e.target.value), true)
+                                      setFieldValue('feeRel', value !== '' ? percentageToFactor(value) : '', true)
                                     }}
                                     onBlur={handleBlur}
-                                    value={factorToPercentage(values.feeRel)}
+                                    value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
                                     isValid={touched.feeRel && !errors.feeRel}
                                     isInvalid={touched.feeRel && errors.feeRel}
                                     min={0}
@@ -337,7 +338,10 @@ export default function Earn() {
                             <rb.Form.Group className="mb-3" controlId="feeAbs">
                               <rb.Form.Label className="mb-0">
                                 {t('earn.label_abs_fee', {
-                                  fee: `(${values.feeAbs || 0} ${values.feeAbs === 1 ? 'sat' : 'sats'})`,
+                                  fee:
+                                    typeof values.feeAbs === 'number'
+                                      ? `(${values.feeAbs} ${values.feeAbs === 1 ? 'sat' : 'sats'})`
+                                      : '',
                                 })}
                               </rb.Form.Label>
                               <div className="mb-2">
@@ -353,6 +357,7 @@ export default function Earn() {
                                     <Sprite symbol="sats" width="24" height="24" />
                                   </rb.InputGroup.Text>
                                   <rb.Form.Control
+                                    aria-label={t('earn.label_abs_fee', { fee: '' })}
                                     className="slashed-zeroes"
                                     type="number"
                                     name="feeAbs"
