@@ -426,7 +426,14 @@ main {
 
 .earn form input:not([type='checkbox']) {
   height: 3.5rem;
-  width: 100%;
+}
+
+.earn form .input-group .input-group-text {
+  width: 5ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
 }
 
 .earn form button {

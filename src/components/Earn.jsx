@@ -310,22 +310,26 @@ export default function Earn() {
                                   <rb.Placeholder xs={12} className={styles['input-loader']} />
                                 </rb.Placeholder>
                               ) : (
-                                <rb.Form.Control
-                                  className="slashed-zeroes"
-                                  type="number"
-                                  name="feeRel"
-                                  disabled={isSubmitting}
-                                  onChange={(e) => {
-                                    const value = e.target.value || ''
-                                    setFieldValue('feeRel', value && percentageToFactor(e.target.value), true)
-                                  }}
-                                  onBlur={handleBlur}
-                                  value={factorToPercentage(values.feeRel)}
-                                  isValid={touched.feeRel && !errors.feeRel}
-                                  isInvalid={touched.feeRel && errors.feeRel}
-                                  min={0}
-                                  step={feeRelPercentageStep}
-                                />
+                                <rb.InputGroup>
+                                  <rb.InputGroup.Text id="feeRel-addon1">%</rb.InputGroup.Text>
+                                  <rb.Form.Control
+                                    aria-label={t('earn.label_rel_fee', { fee: '' })}
+                                    className="slashed-zeroes"
+                                    type="number"
+                                    name="feeRel"
+                                    disabled={isSubmitting}
+                                    onChange={(e) => {
+                                      const value = e.target.value || ''
+                                      setFieldValue('feeRel', value && percentageToFactor(e.target.value), true)
+                                    }}
+                                    onBlur={handleBlur}
+                                    value={factorToPercentage(values.feeRel)}
+                                    isValid={touched.feeRel && !errors.feeRel}
+                                    isInvalid={touched.feeRel && errors.feeRel}
+                                    min={0}
+                                    step={feeRelPercentageStep}
+                                  />
+                                </rb.InputGroup>
                               )}
                               <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
                             </rb.Form.Group>
@@ -333,12 +337,7 @@ export default function Earn() {
                             <rb.Form.Group className="mb-3" controlId="feeAbs">
                               <rb.Form.Label className="mb-0">
                                 {t('earn.label_abs_fee', {
-                                  fee:
-                                    '(' +
-                                    (values.feeAbs === '' ? 0 : values.feeAbs) +
-                                    ' ' +
-                                    (values.feeAbs === 1 ? 'sat' : 'sats') +
-                                    ')',
+                                  fee: `(${values.feeAbs || 0} ${values.feeAbs === 1 ? 'sat' : 'sats'})`,
                                 })}
                               </rb.Form.Label>
                               <div className="mb-2">
@@ -349,19 +348,24 @@ export default function Earn() {
                                   <rb.Placeholder xs={12} className={styles['input-loader']} />
                                 </rb.Placeholder>
                               ) : (
-                                <rb.Form.Control
-                                  className="slashed-zeroes"
-                                  type="number"
-                                  name="feeAbs"
-                                  value={values.feeAbs}
-                                  disabled={isSubmitting}
-                                  onChange={handleChange}
-                                  onBlur={handleBlur}
-                                  isValid={touched.feeAbs && !errors.feeAbs}
-                                  isInvalid={touched.feeAbs && errors.feeAbs}
-                                  min={0}
-                                  step={1}
-                                />
+                                <rb.InputGroup>
+                                  <rb.InputGroup.Text id="feeAbs-addon1">
+                                    <Sprite symbol="sats" width="24" height="24" />
+                                  </rb.InputGroup.Text>
+                                  <rb.Form.Control
+                                    className="slashed-zeroes"
+                                    type="number"
+                                    name="feeAbs"
+                                    value={values.feeAbs}
+                                    disabled={isSubmitting}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    isValid={touched.feeAbs && !errors.feeAbs}
+                                    isInvalid={touched.feeAbs && errors.feeAbs}
+                                    min={0}
+                                    step={1}
+                                  />
+                                </rb.InputGroup>
                               )}
                               <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
                             </rb.Form.Group>
@@ -374,19 +378,24 @@ export default function Earn() {
                                 <rb.Placeholder xs={12} className={styles['input-loader']} />
                               </rb.Placeholder>
                             ) : (
-                              <rb.Form.Control
-                                className="slashed-zeroes"
-                                type="number"
-                                name="minsize"
-                                value={values.minsize}
-                                disabled={isSubmitting}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                isValid={touched.minsize && !errors.minsize}
-                                isInvalid={touched.minsize && errors.minsize}
-                                min={0}
-                                step={1000}
-                              />
+                              <rb.InputGroup>
+                                <rb.InputGroup.Text id="minsize-addon1">
+                                  <Sprite symbol="sats" width="24" height="24" />
+                                </rb.InputGroup.Text>
+                                <rb.Form.Control
+                                  className="slashed-zeroes"
+                                  type="number"
+                                  name="minsize"
+                                  value={values.minsize}
+                                  disabled={isSubmitting}
+                                  onChange={handleChange}
+                                  onBlur={handleBlur}
+                                  isValid={touched.minsize && !errors.minsize}
+                                  isInvalid={touched.minsize && errors.minsize}
+                                  min={0}
+                                  step={1000}
+                                />
+                              </rb.InputGroup>
                             )}
                             <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
                           </rb.Form.Group>
