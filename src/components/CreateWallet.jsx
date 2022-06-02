@@ -144,6 +144,11 @@ const WalletCreationForm = ({ createWallet }) => {
               )}
             </rb.Button>
           </rb.Form>
+          {isSubmitting && (
+            <div className="text-center text-muted small mt-4">
+              <p>{t('create_wallet.hint_duration_text')}</p>
+            </div>
+          )}
         </>
       )}
     </Formik>
