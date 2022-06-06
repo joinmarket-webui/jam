@@ -6,7 +6,7 @@ import Settings from './Settings'
 
 describe('<Settings />', () => {
   const setup = () => {
-    render(<Settings stopWallet={() => {}} />)
+    render(<Settings />)
   }
 
   it('should render settings without errors', () => {
@@ -20,7 +20,6 @@ describe('<Settings />', () => {
     expect(screen.queryByText(/English/)).toBeVisible()
 
     expect(screen.getByText('settings.section_title_wallet')).toBeVisible()
-    expect(screen.queryByText(/settings.button_exit_wallet/)).toBeVisible()
     expect(screen.queryByText(/settings.(show|hide)_seed/)).toBeVisible()
     expect(screen.queryByText(/settings.button_switch_wallet/)).toBeVisible()
     expect(screen.queryByText(/wallets.button_new_wallet/)).toBeVisible()

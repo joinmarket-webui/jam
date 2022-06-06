@@ -132,7 +132,4 @@
     <symbol id="plus" fill="none" stroke="currentColor"  viewBox="0 0 24 24">
         <path stroke-linecap="round" d="M12 3.5v17M20.5 12h-17"></path>
     </symbol>
-    <symbol id="exit" fill="none" stroke="currentColor"  viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.285 12h-8.012M16.51 15.636L20 12l-3.49-3.636M13.454 7V4H4v16h9.454v-3"></path>
-    </symbol>
 </svg>

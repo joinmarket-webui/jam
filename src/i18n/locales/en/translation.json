@@ -146,7 +146,6 @@
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
     "button_switch_wallet": "Switch wallet",
-    "button_exit_wallet": "Log out",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "github": "GitHub",
