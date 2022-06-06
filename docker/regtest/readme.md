@@ -12,11 +12,14 @@ npm run regtest:rebuild
 # start the regtest environment
 npm run regtest:up
 
-# fund wallets and start maker
-./docker/regtest/init-setup.sh
+# fund wallets and start maker in secondary container
+npm run regtest:init
 
 # mine blocks in regtest periodically
 npm run regtest:mine
+
+# start jam in development mode
+npm start
 
 [...]
 
@@ -29,12 +32,15 @@ npm run regtest:clear
 
 ## Commands
 
-### Run
+### Start
 
 Start the regtest environment with:
 
 ```sh
 npm run regtest:up
+
+# (optional) fund wallets and start maker in secondary container
+npm run regtest:init
 ```
 
 Once the regtest environment is up and running you can start Jam with:
@@ -53,6 +59,14 @@ If you want to start from scratch (removing all volumes):
 
 ```sh
 npm run regtest:clear
+```
+
+### Mine
+Mine regtest blocks in a fixed interval (current default is every 10 seconds).
+This is useful for features that await confirmations or need incoming blocks regularly.
+e.g. This is necessary for scheduled transactions to execute successfully.
+```sh
+npm run regtest:mine
 ```
 
 ## Images
@@ -95,18 +109,12 @@ docker exec -t jm_regtest_joinmarket git log --oneline -1
 
 Some helper scripts are included to make recurring tasks and interaction with the containers easier.
 
-### `npm run regtest:mine`
-
-Mine regtest blocks in a fixed interval (current default is every 10 seconds).
-This is useful for features that await confirmations or need incoming blocks regularly.
-e.g. This is necessary for scheduled transactions to execute successfully.
-
-
 ### `init-setup.sh`
 
 This script helps in providing both JoinMarket containers a wallet with spendable coins and starting the Maker Service in the secondary container.
 Its main goal is to make CoinJoin transactions possible in the regtest environment.
 It should be run immediately after the Docker setup is successfully started so you can start developing right away.
+A wallet named `funded.jmdat` with password `test` will be created if it does not exist.
 
 ```sh
 # fund wallets and start maker service in secondary container
@@ -214,5 +222,3 @@ joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: ob-watcher entered RUNNING
 
 - [JoinMarket Server (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver)
 - [JoinMarket Server Testing Docs (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/TESTING.md)
-- [BTCPay Server JoinMarket Docker Setup (GitHub)](https://github.com/btcpayserver/dockerfile-deps/tree/master/JoinMarket)
-- [BTCPay Server JoinMarket Image (DockerHub)](https://hub.docker.com/r/btcpayserver/joinmarket)
