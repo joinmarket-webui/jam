@@ -8,7 +8,7 @@ import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
-import ToggleSwitch from './ToggleSwitch'
+import RadioTabs from './RadioTabs'
 import { EarnReportOverlay } from './EarnReport'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
@@ -286,13 +286,23 @@ export default function Earn() {
                       </rb.Button>
                       {isAdvancedView && (
                         <div className="my-4">
-                          <rb.Form.Group className="mb-3 d-flex justify-content-center" controlId="offertype">
-                            <ToggleSwitch
-                              label={t('earn.toggle_rel_offer')}
-                              initialValue={isRelativeOffer(values.offertype)}
-                              onToggle={(isToggled) =>
-                                setFieldValue('offertype', isToggled ? OFFERTYPE_REL : OFFERTYPE_ABS, true)
-                              }
+                          <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
+                            <RadioTabs
+                              name="offertype"
+                              tabs={[
+                                {
+                                  label: t('earn.radio_abs_offer_label'),
+                                  value: OFFERTYPE_ABS,
+                                },
+                                {
+                                  label: t('earn.radio_rel_offer_label'),
+                                  value: OFFERTYPE_REL,
+                                },
+                              ]}
+                              onChange={(tab, checked) => {
+                                checked && setFieldValue('offertype', tab.value, true)
+                              }}
+                              initialValue={values.offertype}
                               disabled={isLoading || isSubmitting}
                             />
                           </rb.Form.Group>
