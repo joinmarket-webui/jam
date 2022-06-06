@@ -1,0 +1,48 @@
+.radio-tabs {
+  background-color: var(--bs-gray-300);
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+}
+
+:root[data-theme='dark'] .radio-tabs {
+  color: var(--bs-gray-100);
+  background-color: var(--bs-gray-800);
+}
+
+.radio-tab input[type='radio'] {
+  display: none;
+}
+
+.radio-tab label {
+  background-color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.radio-tab input[type='radio']:disabled ~ label {
+  background-color: transparent;
+  color: var(--bs-gray-600);
+  opacity: 0.5;
+}
+
+:root[data-theme='dark'] .radio-tab input[type='radio']:disabled ~ label {
+  color: var(--bs-gray-600);
+  opacity: 0.5;
+}
+
+.radio-tab input[type='radio']:not(:checked):not(:disabled) ~ label {
+  background-color: transparent;
+}
+
+.radio-tab input[type='radio']:not(:disabled) ~ label {
+  cursor: pointer;
+}
+
+.radio-tab input[type='radio']:checked:not(:disabled) ~ label {
+  background-color: var(--bs-gray-100);
+}
+
+:root[data-theme='dark'] .radio-tab input[type='radio']:checked:not(:disabled) ~ label {
+  color: var(--bs-gray-900);
+}
