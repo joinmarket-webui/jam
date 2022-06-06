@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
+import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
@@ -78,23 +78,6 @@ const factorToPercentage = (val, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
-function AdvancedModeToggleButton() {
-  const { t } = useTranslation()
-  const settings = useSettings()
-  const settingsDispatch = useSettingsDispatch()
-
-  return (
-    <rb.Button
-      variant="outline-dark"
-      className="border-0 d-inline-flex justify-content-center align-items-center"
-      onClick={() => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
-    >
-      <Sprite symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'} width="20" height="20" className="me-2" />
-      <small>{settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}</small>
-    </rb.Button>
-  )
-}
-
 export default function Earn() {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -102,6 +85,7 @@ export default function Earn() {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
 
+  const [isAdvancedView, setIsAdvancedView] = useState(settings.useAdvancedWalletMode)
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -262,18 +246,8 @@ export default function Earn() {
 
   return (
     <div className={styles['earn']}>
-      <rb.Row>
-        <rb.Col
-          xs={{ span: 12 }}
-          sm={{ span: 'auto' }}
-          className="ms-auto d-inline-flex justify-content-end align-items-start mb-2"
-        >
-          <AdvancedModeToggleButton />
-        </rb.Col>
-        <rb.Col xs={{ span: 12 }} sm={{ span: 'auto' }}>
-          <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
-        </rb.Col>
-      </rb.Row>
+      <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
+
       <rb.Row>
         <rb.Col>
           <rb.Fade in={serviceInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
@@ -296,9 +270,22 @@ export default function Earn() {
               {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
                 <rb.Form onSubmit={handleSubmit} noValidate>
                   {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
-                    <>
-                      {settings.useAdvancedWalletMode && (
-                        <>
+                    <div className={styles['settings-container']}>
+                      <rb.Button
+                        variant={`${settings.theme}`}
+                        className={`${styles['settings-btn']} d-flex align-items-center`}
+                        onClick={() => setIsAdvancedView((current) => !current)}
+                      >
+                        {t('earn.button_settings')}
+                        <Sprite
+                          symbol={`caret-${isAdvancedView ? 'up' : 'down'}`}
+                          className="ms-1"
+                          width="20"
+                          height="20"
+                        />
+                      </rb.Button>
+                      {isAdvancedView && (
+                        <div className="my-4">
                           <rb.Form.Group className="mb-3 d-flex justify-content-center" controlId="offertype">
                             <ToggleSwitch
                               label={t('earn.toggle_rel_offer')}
@@ -392,7 +379,7 @@ export default function Earn() {
                             </rb.Form.Group>
                           )}
 
-                          <rb.Form.Group className="mb-3" controlId="minsize">
+                          <rb.Form.Group controlId="minsize">
                             <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
                             {isLoading ? (
                               <rb.Placeholder as="div" animation="wave">
@@ -420,14 +407,17 @@ export default function Earn() {
                             )}
                             <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
                           </rb.Form.Group>
-                        </>
+                        </div>
                       )}
-                    </>
+
+                      <hr />
+                    </div>
                   )}
 
                   <rb.Button
                     variant="dark"
                     type="submit"
+                    className="mt-2"
                     disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
                   >
                     <div className="d-flex justify-content-center align-items-center">

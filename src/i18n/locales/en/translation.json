@@ -215,6 +215,7 @@
     "alert_stopping": "Service is stopping.",
     "alert_running": "Earning sats...",
     "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
+    "button_settings": "Advanced",
     "toggle_rel_offer": "Relative offer",
     "label_rel_fee": "Relative fee {{ fee }}",
     "description_rel_fee": "The fee to charge others, as a percentage of the transaction amount.",
