@@ -413,24 +413,20 @@ export default function Earn() {
         </rb.Col>
       </rb.Row>
 
-      {settings.useAdvancedWalletMode && (
-        <>
-          <rb.Row className="mt-5 mb-3">
-            <rb.Col className="d-flex justify-content-center">
-              <rb.Button
-                variant="outline-dark"
-                className="border-0 mb-2 d-inline-flex align-items-center"
-                onClick={() => setIsShowReport(true)}
-              >
-                <Sprite symbol="show" width="24" height="24" className="me-2" />
-                {t('earn.button_show_report')}
-              </rb.Button>
-            </rb.Col>
-          </rb.Row>
-
+      <rb.Row className="mt-5 mb-3">
+        <rb.Col className="d-flex justify-content-center">
           <EarnReportOverlay show={isShowReport} onHide={() => setIsShowReport(false)} />
-        </>
-      )}
+
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 mb-2 d-inline-flex align-items-center"
+            onClick={() => setIsShowReport(true)}
+          >
+            <Sprite symbol="show" width="24" height="24" className="me-2" />
+            {t('earn.button_show_report')}
+          </rb.Button>
+        </rb.Col>
+      </rb.Row>
     </div>
   )
 }

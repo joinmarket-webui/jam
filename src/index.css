@@ -669,3 +669,12 @@ h2 {
 :root[data-theme='dark'] .link-dark {
   color: var(--bs-white);
 }
+
+:root[data-theme='dark'] .toast {
+  background-color: transparent;
+}
+:root[data-theme='dark'] .toast-header {
+  color: var(--bs-white);
+  background-color: var(--bs-gray-800);
+  border-color: var(--bs-gray-900);
+}

@@ -530,18 +530,9 @@ const AccountSelector = ({ accounts, type = 'radio', onChange }: AccountSelector
       {selectableAccounts.length > 0 &&
         selectableAccounts.map((it) => {
           return (
-            <>
-              <rb.Col key={it.account} className="d-flex align-items-center">
-                <AccountCheckbox account={it} selected={isSelected(it)} onChange={() => addOrRemove(it)} />
-              </rb.Col>
-              {/*disabledAccounts.map((it) => {
-          return (
-            <div key={it.account} className="d-flex align-items-center mb-2">
+            <rb.Col key={it.account} className="d-flex align-items-center">
               <AccountCheckbox account={it} selected={isSelected(it)} onChange={() => addOrRemove(it)} />
-            </div>
-          )
-        })*/}
-            </>
+            </rb.Col>
           )
         })}
     </rb.Row>

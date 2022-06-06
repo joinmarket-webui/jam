@@ -12,6 +12,7 @@ import Receive from './Receive'
 import CurrentWalletMagic from './CurrentWalletMagic'
 import CurrentWalletAdvanced from './CurrentWalletAdvanced'
 import FidelityBond from './FidelityBond'
+import { FidelityBondDevOnly } from './FidelityBondDevOnly'
 import Settings from './Settings'
 import Navbar from './Navbar'
 import Layout from './Layout'
@@ -133,6 +134,9 @@ export default function App() {
                     <Route path={routes.settings} element={<Settings />} />
                     {isFeatureEnabled('fidelityBonds') && (
                       <Route path={routes.fidelityBonds} element={<FidelityBond />} />
+                    )}
+                    {isFeatureEnabled('fidelityBondsDevOnly') && (
+                      <Route path={routes.fidelityBondsDevOnly} element={<FidelityBondDevOnly />} />
                     )}
                   </>
                 )}
