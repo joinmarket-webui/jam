@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { useSettings } from '../context/SettingsContext'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
@@ -86,7 +86,6 @@ export default function Earn() {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
 
-  const [isAdvancedView, setIsAdvancedView] = useState(settings.useAdvancedWalletMode)
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -253,7 +252,7 @@ export default function Earn() {
           sm={{ span: 'auto' }}
           className="ms-auto d-inline-flex justify-content-end align-items-start mb-2"
         >
-          <AdvancedModeToggleButton onChange={(isAdvanced) => setIsAdvancedView(isAdvanced)} />
+          <AdvancedModeToggleButton />
         </rb.Col>
         <rb.Col xs={{ span: 12 }} sm={{ span: 'auto' }}>
           <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
@@ -282,7 +281,7 @@ export default function Earn() {
                 <rb.Form onSubmit={handleSubmit} noValidate>
                   {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
                     <>
-                      {isAdvancedView && (
+                      {settings.useAdvancedWalletMode && (
                         <>
                           <rb.Form.Group className="mb-3 d-flex justify-content-center" controlId="offertype">
                             <ToggleSwitch

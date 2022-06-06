@@ -1,8 +1,4 @@
 {
-  "global": {
-    "text_simple_view": "Simple view",
-    "text_advanced_view": "Advanced view"
-  },
   "navbar": {
     "title": "Jam",
     "button_create_wallet": "Create Wallet",
