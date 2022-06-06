@@ -177,10 +177,6 @@ export default function Settings() {
             <Sprite symbol="wallet" width="24" height="24" />
             {t('settings.button_switch_wallet')}
           </Link>
-          <Link to={routes.createWallet} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
-            <Sprite symbol="plus" width="24" height="24" />
-            {t('wallets.button_new_wallet')}
-          </Link>
         </div>
 
         <h2 className="mb-0">{t('settings.section_title_community')}</h2>

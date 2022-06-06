@@ -22,7 +22,6 @@ describe('<Settings />', () => {
     expect(screen.getByText('settings.section_title_wallet')).toBeVisible()
     expect(screen.queryByText(/settings.(show|hide)_seed/)).toBeVisible()
     expect(screen.queryByText(/settings.button_switch_wallet/)).toBeVisible()
-    expect(screen.queryByText(/wallets.button_new_wallet/)).toBeVisible()
 
     expect(screen.getByText('settings.section_title_community')).toBeVisible()
     expect(screen.queryByText(/settings.github/)).toBeVisible()
