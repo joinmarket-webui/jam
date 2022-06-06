@@ -220,7 +220,6 @@
     "alert_running": "Earning sats...",
     "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
     "toggle_rel_offer": "Relative offer",
-    "toggle_abs_offer": "Absolute offer",
     "label_rel_fee": "Relative fee {{ fee }}",
     "description_rel_fee": "The fee to charge others, as a percentage of the transaction amount.",
     "feedback_invalid_rel_fee": "Please provide a relative fee between {{feeRelPercentageMin}} and {{feeRelPercentageMax}}.",
