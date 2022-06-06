@@ -118,15 +118,15 @@ input[type='number'] {
   border-radius: 0.25rem;
 }
 
-.maker-running .maker-running-form {
+.service-running .send-form {
   filter: blur(2px);
 }
 
-.maker-running .collaborators-selector {
+.service-running .collaborators-selector {
   filter: blur(2px);
 }
 
-.maker-running .send-button {
+.service-running .send-button {
   filter: blur(2px);
 }
 
