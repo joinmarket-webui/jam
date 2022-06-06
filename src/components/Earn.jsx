@@ -7,7 +7,6 @@ import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
-import { AdvancedModeToggleButton } from './AdvancedModeToggleButton'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import { EarnReportOverlay } from './EarnReport'
@@ -77,6 +76,23 @@ const factorToPercentage = (val, precision = 6) => {
   // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
+}
+
+function AdvancedModeToggleButton() {
+  const { t } = useTranslation()
+  const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
+
+  return (
+    <rb.Button
+      variant="outline-dark"
+      className="border-0 d-inline-flex justify-content-center align-items-center"
+      onClick={() => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
+    >
+      <Sprite symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'} width="20" height="20" className="me-2" />
+      <small>{settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}</small>
+    </rb.Button>
+  )
 }
 
 export default function Earn() {
