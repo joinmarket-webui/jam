@@ -12,7 +12,7 @@ import styles from './FidelityBond.module.css'
 
 export default function FidelityBond() {
   const featureEnabled = isFeatureEnabled('fidelityBonds')
-  const featureAdvancedEnabled = isFeatureEnabled('fidelityBondsAdvanced')
+  const featureAdvancedEnabled = isFeatureEnabled('fidelityBondsDevOnly')
 
   const { t } = useTranslation()
 
@@ -45,13 +45,13 @@ export default function FidelityBond() {
           </div>
 
           <rb.Alert variant="danger" className="mb-4">
-            <Trans i18nKey="fidelity_bond.alert_warning_advanced_mode">
-              Fidelity Bonds are currently only available in advanced mode.
+            <Trans i18nKey="fidelity_bond.alert_warning_dev_mode">
+              Fidelity Bonds are currently only available in developer mode.
               {featureAdvancedEnabled && (
                 <>
                   {' '}
-                  <Link className="unstyled" to={routes.fidelityBondsAdvanced}>
-                    Switch to advanced view.
+                  <Link className="unstyled" to={routes.fidelityBondsDevOnly}>
+                    Switch to developer view.
                   </Link>
                 </>
               )}

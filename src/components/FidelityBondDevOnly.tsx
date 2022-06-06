@@ -234,8 +234,8 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
   )
 }
 
-export const FidelityBondAdvanced = () => {
-  const featureEnabled = isFeatureEnabled('fidelityBondsAdvanced')
+export const FidelityBondDevOnly = () => {
+  const featureEnabled = isFeatureEnabled('fidelityBondsDevOnly')
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
@@ -302,7 +302,7 @@ export const FidelityBondAdvanced = () => {
 
           <rb.Alert variant="warning" className="mb-4">
             <Trans i18nKey="fidelity_bond.alert_warning_advanced_mode_active">
-              You are in advanced mode. It is assumed that you know what you are doing.
+              You are in developer mode. It is assumed that you know what you are doing.
               <br />
               <small>
                 e.g. a transaction creating a Fidelity Bond <b>should have no change</b>, etc.
@@ -310,7 +310,7 @@ export const FidelityBondAdvanced = () => {
             </Trans>
             <div>
               <Link className="unstyled" to={routes.fidelityBonds}>
-                Switch to simple view.
+                Switch to default view.
               </Link>
             </div>
           </rb.Alert>
