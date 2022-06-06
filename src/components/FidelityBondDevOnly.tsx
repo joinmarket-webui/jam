@@ -287,6 +287,12 @@ export const FidelityBondDevOnly = () => {
       <rb.Row>
         <rb.Col>
           <div className="mb-4">
+            <Link className="unstyled" to={routes.fidelityBonds}>
+              Switch to default view.
+            </Link>
+          </div>
+
+          <div className="mb-4">
             <Trans i18nKey="fidelity_bond.description">
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
@@ -308,11 +314,6 @@ export const FidelityBondDevOnly = () => {
                 e.g. a transaction creating a Fidelity Bond <b>should have no change</b>, etc.
               </small>
             </Trans>
-            <div>
-              <Link className="unstyled" to={routes.fidelityBonds}>
-                Switch to default view.
-              </Link>
-            </div>
           </rb.Alert>
 
           {isLoading ? (
