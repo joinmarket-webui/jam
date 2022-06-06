@@ -6,6 +6,7 @@ export const routes = {
   earn: '/earn',
   settings: '/settings',
   fidelityBonds: '/fidelity-bonds',
+  fidelityBondsAdvanced: '/fidelity-bonds-advanced',
   wallet: '/wallet',
   createWallet: '/create-wallet',
 }

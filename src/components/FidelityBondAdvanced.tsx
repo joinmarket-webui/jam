@@ -1,11 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { useCurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../context/WalletContext'
 import { CopyButtonWithConfirmation } from '../components/CopyButton'
-import * as Api from '../libs/JmWalletApi'
+import { isFeatureEnabled } from '../constants/features'
+
+// @ts-ignore
+import PageTitle from './PageTitle'
 // @ts-ignore
 import DisplayUTXOs from './DisplayUTXOs'
+
+import { routes } from '../constants/routes'
+import * as Api from '../libs/JmWalletApi'
+import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
@@ -227,6 +235,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
 }
 
 export const FidelityBondAdvanced = () => {
+  const featureEnabled = isFeatureEnabled('fidelityBondsAdvanced')
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
@@ -263,33 +272,78 @@ export const FidelityBondAdvanced = () => {
     return () => abortCtrl.abort()
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
+  if (!featureEnabled) {
+    return (
+      <div>
+        <h2>Feature not enabled</h2>
+      </div>
+    )
+  }
+
   return (
-    <div>
-      {isLoading ? (
-        <div className="d-flex justify-content-center align-items-center">
-          <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          {t('global.loading')}
-        </div>
-      ) : (
-        <>
-          {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+    <div className={styles['fidelity-bond']}>
+      <PageTitle title={t('fidelity_bond.title')} subtitle={t('fidelity_bond.subtitle')} />
 
-          {fidelityBonds && (
+      <rb.Row>
+        <rb.Col>
+          <div className="mb-4">
+            <Trans i18nKey="fidelity_bond.description">
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-secondary"
+              >
+                See the documentation about Fidelity Bonds
+              </a>{' '}
+              for more information.
+            </Trans>
+          </div>
+
+          <rb.Alert variant="warning" className="mb-4">
+            <Trans i18nKey="fidelity_bond.alert_warning_advanced_mode_active">
+              You are in advanced mode. It is assumed that you know what you are doing.
+              <br />
+              <small>
+                e.g. a transaction creating a Fidelity Bond <b>should have no change</b>, etc.
+              </small>
+            </Trans>
+            <div>
+              <Link className="unstyled" to={routes.fidelityBonds}>
+                Switch to simple view.
+              </Link>
+            </div>
+          </rb.Alert>
+
+          {isLoading ? (
+            <div className="d-flex justify-content-center align-items-center">
+              <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              {t('global.loading')}
+            </div>
+          ) : (
             <>
-              <div className="mb-4">
-                <DepositFormAdvanced title={<Trans i18nKey="fidelity_bond.form_create.title">Fidelity Bond</Trans>} />
-              </div>
+              {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-              {fidelityBonds.length > 0 && (
-                <div className="mt-2 mb-4">
-                  <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
-                  <DisplayUTXOs utxos={fidelityBonds} />
-                </div>
+              {fidelityBonds && (
+                <>
+                  <div className="mb-4">
+                    <DepositFormAdvanced
+                      title={<Trans i18nKey="fidelity_bond.form_create.title">Fidelity Bond</Trans>}
+                    />
+                  </div>
+
+                  {fidelityBonds.length > 0 && (
+                    <div className="mt-2 mb-4">
+                      <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
+                      <DisplayUTXOs utxos={fidelityBonds} />
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
-        </>
-      )}
+        </rb.Col>
+      </rb.Row>
     </div>
   )
 }
