@@ -180,7 +180,7 @@ export default function Settings() {
         </div>
 
         <h2 className="mb-0">{t('settings.section_title_community')}</h2>
-        <div className="d-flex flex-column gap-3">
+        <div className={styles['settings-links']}>
           <a
             href="https://github.com/joinmarket-webui/joinmarket-webui"
             target="_blank"
