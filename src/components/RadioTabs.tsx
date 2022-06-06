@@ -8,7 +8,7 @@ interface RadioTab {
   disabled?: boolean
 }
 
-function RadioTab({ id, name, value, label, disabled, defaultChecked, onChange }: rb.FormCheckProps) {
+function RadioTabFormCheck({ id, name, value, label, disabled, defaultChecked, onChange }: rb.FormCheckProps) {
   const _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
     onChange && onChange(e)
@@ -33,7 +33,7 @@ function RadioTab({ id, name, value, label, disabled, defaultChecked, onChange }
 
 interface RadioTabsProps {
   name: string
-  label?: string
+  title?: string
   subtitle?: string
   tabs: RadioTab[]
   onChange: (tab: RadioTab, checked: boolean) => void
@@ -43,7 +43,7 @@ interface RadioTabsProps {
 
 export default function RadioTabs({
   name,
-  label,
+  title,
   subtitle,
   tabs,
   onChange,
@@ -58,9 +58,9 @@ export default function RadioTabs({
   return (
     <div className={styles['radio-tabs']}>
       <div className="d-flex flex-column gap-0">
-        {label && (
+        {title && (
           <>
-            <div className={`${styles['subtitle']} text-secondary`}>{subtitle}</div>
+            <div className={`${styles['title']}`}>{title}</div>
             {subtitle && <div className={`${styles['subtitle']} text-secondary`}>{subtitle}</div>}
           </>
         )}
@@ -68,7 +68,7 @@ export default function RadioTabs({
       <div className="d-flex gap-1">
         {tabs.map((tab, index) => {
           return (
-            <RadioTab
+            <RadioTabFormCheck
               key={index}
               id={`${name}-${index}`}
               name={name}
