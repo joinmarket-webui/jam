@@ -22,7 +22,7 @@ const dateToLockdate = (date: Date): Api.Lockdate =>
 
 const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
   const split = lockdate.split('-')
-  return Date.UTC(parseInt(split[0], 10), parseInt(split[1], 10) - 1, 1, 0, 0, 0)
+  return Date.UTC(parseInt(split[0], 10), parseInt(split[1], 10) - 1, 1)
 }
 
 // a maximum of years for a timelock to be accepted
@@ -35,7 +35,7 @@ const initialLockdate = () => {
   const now = new Date()
   const year = now.getUTCFullYear()
   const month = now.getUTCMonth()
-  return new Date(Date.UTC(year + 1, month, 1, 0, 0, 0))
+  return new Date(Date.UTC(year + 1, month, 1))
 }
 
 interface LockdateFormProps {
@@ -53,7 +53,7 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
   const [lockdateMonth, setLockdateMonth] = useState(currentMonth)
 
   useEffect(() => {
-    const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1, 0, 0, 0))
+    const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
     console.log(date.toLocaleDateString())
     onChange(dateToLockdate(date))
   }, [lockdateYear, lockdateMonth, onChange])
