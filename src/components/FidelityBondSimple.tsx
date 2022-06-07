@@ -916,16 +916,25 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
 }
 
 /**
+ * Send funds to a timelocked address with a collaborative sweep transactions.
+ * The transaction will have no change output.
+ *
+ * Steps:
  * - freeze all utxos except the selected ones
  * - sweep collaborative transaction to locktime address
- * - unfreeze utxos that were frozen by Jam
+ * - return frozen utxo ids
+ *
+ * The returned utxos SHOULD be unfrozen by the caller
+ * once the collaborative transaction finished.
+ *
+ * @return list of utxo ids that were automatically frozen and
  */
-const sendToFidelityBond = async (
+const sweepToFidelityBond = async (
   currentWallet: CurrentWallet,
   walletInfo: WalletInfo,
   selectedUtxos: Utxos,
   timelockedDestinationAddress: Api.BitcoinAddress
-) => {
+): Promise<Api.UtxoId[]> => {
   const { name: walletName, token } = currentWallet
 
   const selectedMixdepth = selectedUtxos[0].mixdepth // all utxos from same account!
@@ -948,7 +957,7 @@ const sendToFidelityBond = async (
   console.debug('Unfreeze eligible utxos', eligibleForUnfreeze)
   await Promise.all(unfreezePromises)
 
-  const __test_actuallyCreateFb = true // TODO: remove
+  const __test_actuallyCreateFb = false // TODO: remove
   if (__test_actuallyCreateFb) {
     await Api.postCoinjoin(
       { walletName, token },
@@ -963,15 +972,7 @@ const sendToFidelityBond = async (
     await Promise.resolve(true).then((_) => new Promise((r) => setTimeout(r, 5_000)))
   }
 
-  const restoreUnfreezePromises = eligibleForFreeze.map((it) => {
-    return Api.postFreeze({ walletName, token }, { utxo: it.utxo, freeze: false })
-  })
-
-  // TODO: do this only after the collaborative transaction is finished
-  console.debug('Unfreeze utxos [skipped for now]', eligibleForFreeze)
-  //await Promise.all(restoreUnfreezePromises)
-
-  return true
+  return eligibleForFreeze.map((it) => it.utxo)
 }
 
 export const FidelityBondSimple = () => {
@@ -985,10 +986,14 @@ export const FidelityBondSimple = () => {
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
 
   const [alert, setAlert] = useState<AlertWithMessage | null>(null)
+  const [isInitializing, setIsInitializing] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [isCreateSuccess, setIsCreateSuccess] = useState(false)
   const [isCreateError, setIsCreateError] = useState(false)
+  const waitForTakerToFinish = useMemo(() => {
+    return isCoinjoinInProgress && (isCreateSuccess || isCreateError)
+  }, [isCreateSuccess, isCreateError, isCoinjoinInProgress])
 
   const utxos = useMemo(
     () => (currentWalletInfo === null ? [] : currentWalletInfo.data.utxos.utxos),
@@ -1000,6 +1005,7 @@ export const FidelityBondSimple = () => {
     if (!currentWallet) {
       setAlert({ variant: 'danger', message: t('current_wallet.error_loading_failed') })
       setIsLoading(false)
+      setIsInitializing(false)
       return
     }
 
@@ -1013,10 +1019,33 @@ export const FidelityBondSimple = () => {
         const message = err.message || t('current_wallet.error_loading_failed')
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
       })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+
+        setIsLoading(false)
+        setIsInitializing(false)
+      })
 
     return () => abortCtrl.abort()
   }, [currentWallet, reloadCurrentWalletInfo, t])
+
+  useEffect(() => {
+    if (isCreating) return
+    if (!isCreateSuccess && !isCreateError) return
+    if (waitForTakerToFinish) return
+
+    const abortCtrl = new AbortController()
+    setIsLoading(true)
+
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+      .catch((err) => {
+        const message = err.message || t('current_wallet.error_loading_failed')
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+
+    return () => abortCtrl.abort()
+  }, [waitForTakerToFinish, isCreating, isCreateSuccess, isCreateError])
 
   const onSubmit = async (
     selectedUtxos: Utxos,
@@ -1030,36 +1059,31 @@ export const FidelityBondSimple = () => {
 
     setIsCreating(true)
     try {
-      await sendToFidelityBond(currentWallet, currentWalletInfo, selectedUtxos, timelockedDestinationAddress)
+      const frozenUtxos = await sweepToFidelityBond(
+        currentWallet,
+        currentWalletInfo,
+        selectedUtxos,
+        timelockedDestinationAddress
+      )
       setIsCreateSuccess(true)
     } catch (error) {
       setIsCreateError(true)
     } finally {
       setIsCreating(false)
     }
-
-    const abortCtrl = new AbortController()
-    setIsLoading(true)
-
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-      .catch((err) => {
-        const message = err.message || t('current_wallet.error_loading_failed')
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
-      })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
   }
 
   // TODO: use alert like in other screens
   if (isMakerRunning) {
     return <>Creating Fidelity Bonds is temporarily disabled: Earn is active.</>
   }
-  if (!isCreating && isCoinjoinInProgress) {
+  if (!waitForTakerToFinish && isCoinjoinInProgress) {
     return <>Creating Fidelity Bonds is temporarily disabled: A collaborative transaction is in progress.</>
   }
 
   return (
     <div>
-      {isLoading ? (
+      {isInitializing || isLoading ? (
         <div className="d-flex justify-content-center align-items-center">
           <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           {t('global.loading')}
@@ -1070,10 +1094,10 @@ export const FidelityBondSimple = () => {
 
           {currentWallet && currentWalletInfo && fidelityBonds && fidelityBonds.length === 0 && (
             <>
-              {isCreating || isCreateSuccess || isCreateError ? (
+              {waitForTakerToFinish || isCreating || isCreateSuccess || isCreateError ? (
                 <>
                   <>
-                    {isCreating && (
+                    {(isCreating || waitForTakerToFinish) && (
                       <div className="d-flex justify-content-center align-items-center">
                         <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
                         {t('fidelity_bond.transaction_in_progress')}

@@ -16,8 +16,12 @@ type ApiToken = string
 type WalletName = string
 
 type Mixdepth = number
-type AmountSats = BigInt | number // TODO: should only be bigint! Remove once every caller migrated TypeScript.
+export type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
 export type BitcoinAddress = string
+
+type Vout = number
+type TxId = string
+export type UtxoId = `${TxId}:${Vout}`
 
 type WithWalletName = {
   walletName: WalletName
@@ -83,7 +87,7 @@ interface DoCoinjoinRequest {
 }
 
 interface FreezeRequest {
-  utxo: string
+  utxo: UtxoId
   freeze: boolean
 }
 

@@ -13,14 +13,14 @@ export type Utxo = {
   address: string
   path: string
   label: string
-  value: number // in sats
+  value: Api.AmountSats
   tries: number
   tries_remaining: number
   external: boolean
   mixdepth: number
   confirmations: number
   frozen: boolean
-  utxo: string
+  utxo: Api.UtxoId
   locktime?: string
 }
 
