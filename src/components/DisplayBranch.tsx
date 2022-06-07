@@ -48,14 +48,14 @@ export function DisplayBranchHeader({ branch }: DisplayBranchProps) {
   return (
     <rb.Row className="w-100">
       <rb.Col>
-        <h6 className={styles['branch-title']}>
+        <div className={styles['branch-title']}>
           {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}
           {type === 'internal addresses' && <>{t('current_wallet_advanced.account_heading_internal_addresses')}</>}
           {!['internal addresses', 'external addresses'].includes(type) && <>{type}</>}
-        </h6>
+        </div>
         <code className="text-secondary text-break">{derivation}</code>
       </rb.Col>
-      <rb.Col className="d-flex align-items-center justify-content-end">
+      <rb.Col className={styles['branch-balance']}>
         <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
       </rb.Col>
     </rb.Row>
@@ -67,16 +67,13 @@ export function DisplayBranchBody({ branch }: DisplayBranchProps) {
   const xpub: string | undefined = detailsString.split('\t')[2]
   return (
     <>
-      <rb.Row className="p-3">
+      <rb.Row>
         <rb.Col>
-          {xpub ? (
-            <>
+          {xpub && (
+            <div className="p-3 mb-1">
+              <div>Extended public key</div>
               <code className="text-secondary text-break">{xpub}</code>
-            </>
-          ) : (
-            <>
-              <rb.Alert variant="warning">xpub not available.</rb.Alert>
-            </>
+            </div>
           )}
         </rb.Col>
       </rb.Row>
@@ -119,20 +116,13 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
     <rb.Card {...props}>
       <rb.Card.Body>
         <rb.Row key={address}>
-          <rb.Col xs={{ span: 6, order: 1 }} lg={{ span: 'auto' }}>
+          <rb.Col xs="2" sm="1">
             <code className="text-break">
               <span className="text-secondary">…/</span>
               {hdPathIndex}
             </code>
           </rb.Col>
-          <rb.Col
-            xs={{ span: 6, order: 2 }}
-            lg={{ span: 'auto', order: 3 }}
-            className="d-flex align-items-center justify-content-end"
-          >
-            <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
-          </rb.Col>
-          <rb.Col xs={{ span: 12, order: 3 }} sm={{ span: 10 }} lg={{ span: true, order: 2 }}>
+          <rb.Col xs="10" sm="8">
             <CopyButtonWithConfirmation
               className={`btn ${styles['address-copy-button']}`}
               text={
@@ -150,13 +140,11 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
             />
             {label && <span className="badge bg-info">{label}</span>}
           </rb.Col>
-          <rb.Col
-            xs={{ span: 12, order: 4 }}
-            sm={{ span: 2 }}
-            lg={{ order: 'last', span: 1 }}
-            className="d-flex align-items-end justify-content-end"
-          >
+          <rb.Col className="d-flex align-items-center" xs="6" sm="1">
             <>{statusNode}</>
+          </rb.Col>
+          <rb.Col className="d-flex align-items-center justify-content-end" xs="6" sm="2">
+            <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
         </rb.Row>
       </rb.Card.Body>

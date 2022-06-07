@@ -54,18 +54,13 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
       onKeyDown={onKeyDown}
     >
       <rb.Offcanvas.Header className={styles['accounts-overlay-header']}>
-        <rb.Row className="w-100">
-          <rb.Col className="d-flex align-items-center justify-content-start">
-            <rb.Button variant="link" className="unstyled d-inline-flex align-items-center" onClick={() => onHide()}>
-              <Sprite symbol="arrow-left" width="24" height="24" />
-              <span className="mx-2">{t('global.back')}</span>
+        <div className="d-flex flex-1">
+          <rb.Col>
+            <rb.Button variant="link" className="unstyled ps-0" onClick={() => onHide()}>
+              <span>{t('global.close')}</span>
             </rb.Button>
           </rb.Col>
-          <rb.Col
-            className="d-flex align-items-center justify-content-center"
-            xs={{ order: 'last', span: 12 }}
-            sm={{ order: 2, span: 'auto' }}
-          >
+          <rb.Col className="d-flex align-items-center justify-content-center">
             <rb.Offcanvas.Title className="d-inline-flex justify-content-center align-items-center">
               <rb.Button
                 variant="link"
@@ -86,17 +81,17 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
               </rb.Button>
             </rb.Offcanvas.Title>
           </rb.Col>
-          <rb.Col className="d-flex align-items-center justify-content-end" sm={{ order: 'last' }}>
+          <rb.Col className="d-none d-sm-flex align-items-center justify-content-end pe-0">
             <Balance
               valueString={account.account_balance}
               convertToUnit={settings.unit}
               showBalance={settings.showBalance}
             />
           </rb.Col>
-        </rb.Row>
+        </div>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body className={styles['offcanvas-body']}>
-        <rb.Accordion defaultActiveKey={`0`} flush>
+        <rb.Accordion flush>
           {account.branches.map((branch, index) => (
             <rb.Accordion.Item className={styles['accordion-item']} key={branch.branch} eventKey={`${index}`}>
               <rb.Accordion.Header>

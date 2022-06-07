@@ -1,5 +1,18 @@
 .branch-title {
   margin-bottom: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.branch-balance {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 0;
+}
+
+.branch-balance span {
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .address-copy-button {

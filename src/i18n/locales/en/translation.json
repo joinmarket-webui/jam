@@ -1,6 +1,7 @@
 {
   "global": {
-    "back": "Back"
+    "back": "Back",
+    "close": "Close"
   },
   "navbar": {
     "title": "Jam",
@@ -129,8 +130,8 @@
     "button_unfreeze": "unfreeze",
     "account_button_send": "Send",
     "account_button_receive": "Receive",
-    "account_heading_external_addresses": "External Addresses for deposits",
-    "account_heading_internal_addresses": "Addresses for internal deposits"
+    "account_heading_external_addresses": "External addresses for deposits",
+    "account_heading_internal_addresses": "Internal Addresses"
   },
   "settings": {
     "title": "Settings",
