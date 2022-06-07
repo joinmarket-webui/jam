@@ -25,6 +25,10 @@ const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
   return Date.UTC(parseInt(split[0], 10), parseInt(split[1], 10) - 1, 1)
 }
 
+const locktimeDisplayString = (lockdate: Api.Lockdate) => {
+  return new Date(lockdateToTimestamp(lockdate)).toUTCString()
+}
+
 // a maximum of years for a timelock to be accepted
 // this is useful in simple mode - when it should be prevented that users
 // lock up their coins for an awful amount of time by accident.
@@ -39,18 +43,24 @@ const initialLockdate = () => {
 }
 
 interface LockdateFormProps {
+  initialValue?: Api.Lockdate
   onChange: (lockdate: Api.Lockdate) => void
   maxYears?: number
 }
-const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: LockdateFormProps) => {
+const LockdateForm = ({
+  onChange,
+  initialValue = dateToLockdate(initialLockdate()),
+  maxYears = DEFAULT_MAX_TIMELOCK_YEARS,
+}: LockdateFormProps) => {
   const { t } = useTranslation()
 
   const now = new Date()
   const currentYear = now.getUTCFullYear()
   const currentMonth = 1 + now.getUTCMonth() // utc month ranges from [0, 11]
 
-  const [lockdateYear, setLockdateYear] = useState(currentYear + 1)
-  const [lockdateMonth, setLockdateMonth] = useState(currentMonth)
+  const initialDate = new Date(lockdateToTimestamp(initialValue))
+  const [lockdateYear, setLockdateYear] = useState(initialDate.getUTCFullYear())
+  const [lockdateMonth, setLockdateMonth] = useState(initialDate.getUTCMonth() + 1)
 
   useEffect(() => {
     const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
@@ -118,10 +128,6 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
   )
 }
 
-const locktimeDisplayString = (lockdate: Api.Lockdate) => {
-  return new Date(lockdateToTimestamp(lockdate)).toUTCString()
-}
-
 interface DepositFormAdvancedProps {
   title: React.ReactElement
   [key: string]: unknown
@@ -129,7 +135,7 @@ interface DepositFormAdvancedProps {
 const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
-  const [lockdate, setLockdate] = useState(dateToLockdate(initialLockdate()))
+  const [lockdate, setLockdate] = useState<Api.Lockdate | null>(null)
   const [address, setAddress] = useState(null)
   const [addressLockdate, setAddressLockdate] = useState<Api.Lockdate | null>(null)
   const addressLocktimeString = useMemo<string | null>(
