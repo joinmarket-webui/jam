@@ -1,4 +1,42 @@
-.input-loader {
+.earn .input-loader {
   height: 3.5rem;
   border-radius: 0.25rem;
+}
+
+.earn form input:not([type='checkbox']) {
+  height: 3.5rem;
+}
+
+.earn form button {
+  height: 3rem;
+  width: 100%;
+}
+
+.settings-container {
+  margin-top: 1.5rem;
+}
+
+.settings-container button.settings-btn {
+  background-color: transparent !important;
+  border: none;
+  padding-left: 0;
+  font-weight: 500;
+}
+
+.settings-container .input-group-text {
+  width: 5ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.earn hr {
+  background-color: rgba(222, 222, 222, 1);
+  opacity: 100%;
+}
+
+:root[data-theme='dark'] .earn hr {
+  background-color: var(--bs-gray-800);
+  opacity: 100%;
 }

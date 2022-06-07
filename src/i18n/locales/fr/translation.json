@@ -111,7 +111,6 @@
     "text_loading": "Chargement",
     "button_deposit": "Déposer",
     "button_withdraw": "Retirer",
-    "button_switch_wallet": "Changer de porte-monnaie",
     "error_loading_failed": "Le chargement du portefeuille a échoué."
   },
   "current_wallet_advanced": {
@@ -146,6 +145,7 @@
     "show_seed": "Afficher la phrase graine",
     "hide_seed": "Cacher la phrase graine",
     "reveal_seed": "Révéler la phrase graine",
+    "button_switch_wallet": "Changer de porte-monnaie",
     "error_loading_seed_failed": "Impossible de récupérer la phrase graine.",
     "seed_modal_info_text": "Veuillez noter votre phrase graine et votre mot de passe ! Sans ces informations, vous ne serez pas en mesure d'accéder à votre portefeuille !"
   },
