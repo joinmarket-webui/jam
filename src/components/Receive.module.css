@@ -1,5 +1,37 @@
+.receive hr {
+  background-color: rgba(222, 222, 222, 1);
+  opacity: 100%;
+}
+
+:root[data-theme='dark'] .receive hr {
+  background-color: var(--bs-gray-800);
+  opacity: 100%;
+}
+
+.receive button {
+  padding: 0.25rem 1rem;
+  font-weight: 500;
+  border-color: rgba(222, 222, 222, 1);
+}
+
 .settings-container {
   margin-top: 1.5rem;
+}
+
+.settings-container button.settings-btn {
+  background-color: transparent !important;
+  border: none;
+  padding-left: 0;
+}
+
+.receive form input {
+  height: 3.5rem;
+  width: 100%;
+}
+
+.receive select {
+  height: 3.5rem;
+  width: 100%;
 }
 
 .receive-placeholder-container {
