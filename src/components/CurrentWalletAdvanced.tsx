@@ -99,13 +99,16 @@ export default function CurrentWalletAdvanced() {
                 <>
                   <Trans i18nKey="fidelity_bond.alert_no_fidelity_bonds" as="span">
                     No Fidelity Bond present.
-                  </Trans>{' '}
+                  </Trans>
                   {featureFidelityBondsEnabled && (
-                    <Link to={routes.fidelityBonds}>
-                      <Trans i18nKey="current_wallet_advanced.link_fidelity_bonds_create_text" as="span">
-                        Create a Fidelity Bond.
-                      </Trans>
-                    </Link>
+                    <>
+                      {' '}
+                      <Link to={routes.fidelityBonds}>
+                        <Trans i18nKey="current_wallet_advanced.link_fidelity_bonds_create_text" as="span">
+                          Create a Fidelity Bond.
+                        </Trans>
+                      </Link>
+                    </>
                   )}
                 </>
               </rb.Alert>
