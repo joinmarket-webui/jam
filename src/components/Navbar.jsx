@@ -121,7 +121,7 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
       </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
-          to={routes.home}
+          to={routes.walletList}
           onClick={onClick}
           className={({ isActive }) =>
             'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
