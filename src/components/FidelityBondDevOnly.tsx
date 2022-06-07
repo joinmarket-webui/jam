@@ -54,7 +54,6 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
 
   useEffect(() => {
     const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
-    console.log(date.toLocaleDateString())
     onChange(dateToLockdate(date))
   }, [lockdateYear, lockdateMonth, onChange])
 
