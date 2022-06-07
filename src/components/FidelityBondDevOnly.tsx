@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -22,7 +22,11 @@ const dateToLockdate = (date: Date): Api.Lockdate =>
 
 const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
   const split = lockdate.split('-')
-  return Date.UTC(parseInt(split[0], 10), parseInt(split[1], 10) - 1, 1, 0, 0, 0)
+  return Date.UTC(parseInt(split[0], 10), parseInt(split[1], 10) - 1, 1)
+}
+
+const locktimeDisplayString = (lockdate: Api.Lockdate) => {
+  return new Date(lockdateToTimestamp(lockdate)).toUTCString()
 }
 
 // a maximum of years for a timelock to be accepted
@@ -31,40 +35,66 @@ const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
 // in "advanced" mode, this can be dropped or increased substantially
 const DEFAULT_MAX_TIMELOCK_YEARS = 10
 
-const initialLockdate = () => {
-  const now = new Date()
+type YearsRange = {
+  min: number
+  max: number
+}
+
+const toYearsRange = (min: number, max: number): YearsRange => {
+  if (max <= min) {
+    throw new Error('Invalid values for range of years.')
+  }
+  return { min, max }
+}
+
+const initialLockdate = (now: Date, range: YearsRange): Api.Lockdate => {
   const year = now.getUTCFullYear()
   const month = now.getUTCMonth()
-  return new Date(Date.UTC(year + 1, month, 1, 0, 0, 0))
+  return dateToLockdate(new Date(Date.UTC(year + Math.max(range.min + 1, 1), month, 1)))
 }
 
 interface LockdateFormProps {
+  initialValue?: Api.Lockdate
   onChange: (lockdate: Api.Lockdate) => void
-  maxYears?: number
+  yearsRange?: YearsRange
+  now?: Date
 }
-const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: LockdateFormProps) => {
+
+const LockdateForm = ({
+  onChange,
+  now = new Date(),
+  yearsRange = toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS),
+  initialValue = initialLockdate(now, yearsRange),
+}: LockdateFormProps) => {
   const { t } = useTranslation()
 
-  const now = new Date()
-  const currentYear = now.getUTCFullYear()
-  const currentMonth = 1 + now.getUTCMonth() // utc month ranges from [0, 11]
+  const currentYear = useMemo(() => now.getUTCFullYear(), [now])
+  const currentMonth = useMemo(() => now.getUTCMonth() + 1, [now]) // utc month ranges from [0, 11]
 
-  const [lockdateYear, setLockdateYear] = useState(currentYear + 1)
-  const [lockdateMonth, setLockdateMonth] = useState(currentMonth)
+  const initialDate = new Date(lockdateToTimestamp(initialValue))
+  const [lockdateYear, setLockdateYear] = useState(initialDate.getUTCFullYear())
+  const [lockdateMonth, setLockdateMonth] = useState(initialDate.getUTCMonth() + 1)
 
-  useEffect(() => {
-    const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1, 0, 0, 0))
-    console.log(date.toLocaleDateString())
-    onChange(dateToLockdate(date))
-  }, [lockdateYear, lockdateMonth, onChange])
-
-  const minMonth = () => {
-    if (lockdateYear > currentYear) {
+  const minMonth = useCallback(() => {
+    if (lockdateYear > currentYear + yearsRange.min) {
       return 1
     }
 
     return currentMonth + 1 // can be '13' - which means it never is valid and user must adapt 'year'.
-  }
+  }, [lockdateYear, currentYear, currentMonth, yearsRange])
+
+  const isLockdateYearValid = useMemo(
+    () => lockdateYear >= currentYear + yearsRange.min && lockdateYear <= currentYear + yearsRange.max,
+    [lockdateYear, currentYear, yearsRange]
+  )
+  const isLockdateMonthValid = useMemo(() => lockdateMonth >= minMonth(), [lockdateMonth, minMonth])
+
+  useEffect(() => {
+    if (!isLockdateYearValid || !isLockdateMonthValid) return
+
+    const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
+    onChange(dateToLockdate(date))
+  }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, onChange])
 
   return (
     <rb.Row>
@@ -77,12 +107,12 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
             name="year"
             type="number"
             value={lockdateYear}
-            min={currentYear}
-            max={currentYear + maxYears}
+            min={currentYear + yearsRange.min}
+            max={currentYear + yearsRange.max}
             placeholder={t('fidelity_bond.form_create.placeholder_locktime_year')}
             required
             onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
-            isInvalid={lockdateYear < currentYear || lockdateYear > currentYear + maxYears}
+            isInvalid={!isLockdateYearValid}
           />
           <rb.Form.Control.Feedback type="invalid">
             <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year">
@@ -106,7 +136,7 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
             placeholder={t('fidelity_bond.form_create.placeholder_locktime_month')}
             required
             onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10))}
-            isInvalid={lockdateMonth < minMonth()}
+            isInvalid={!isLockdateMonthValid}
           />
           <rb.Form.Control.Feedback type="invalid">
             <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month">
@@ -119,10 +149,6 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
   )
 }
 
-const locktimeDisplayString = (lockdate: Api.Lockdate) => {
-  return new Date(lockdateToTimestamp(lockdate)).toUTCString()
-}
-
 interface DepositFormAdvancedProps {
   title: React.ReactElement
   [key: string]: unknown
@@ -130,7 +156,9 @@ interface DepositFormAdvancedProps {
 const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
-  const [lockdate, setLockdate] = useState(dateToLockdate(initialLockdate()))
+
+  const yearsRange = useMemo(() => toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS), [])
+  const [lockdate, setLockdate] = useState<Api.Lockdate | null>(null)
   const [address, setAddress] = useState(null)
   const [addressLockdate, setAddressLockdate] = useState<Api.Lockdate | null>(null)
   const addressLocktimeString = useMemo<string | null>(
@@ -182,7 +210,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
         {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
         <rb.Form noValidate>
-          <LockdateForm onChange={setLockdate} />
+          <LockdateForm onChange={setLockdate} yearsRange={yearsRange} />
         </rb.Form>
         <rb.Row>
           <rb.Col>
