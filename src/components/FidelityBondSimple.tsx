@@ -262,7 +262,7 @@ const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
                   {!isLoading && address && (
                     <>
                       <div className="text-break slashed-zeroes">{address}</div>
-                      <div className=" my-2">
+                      <div className="my-2">
                         <CopyButtonWithConfirmation
                           value={address}
                           text={t('global.button_copy_text')}
@@ -365,6 +365,13 @@ interface UtxoSelectorProps {
   onChange: (selectedUtxos: Utxos) => void
 }
 const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps) => {
+  const sortedUtxos = useMemo<Utxos>(() => {
+    return [...utxos].sort((a, b) => {
+      if (a.value !== b.value) return a.value > b.value ? -1 : 1
+      if (a.confirmations !== b.confirmations) return a.confirmations > b.confirmations ? -1 : 1
+      return 0
+    })
+  }, [utxos])
   const [selected, setSelected] = useState<Utxos>([])
 
   useEffect(() => {
@@ -396,11 +403,11 @@ const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps)
 
   return (
     <div>
-      {utxos.length === 0 ? (
+      {sortedUtxos.length === 0 ? (
         <>No selectable utxos</>
       ) : (
         <>
-          {utxos.map((it) => {
+          {sortedUtxos.map((it) => {
             return (
               <div key={it.utxo} onClick={() => addOrRemove(it)} className="d-flex align-items-center mb-2">
                 <UtxoCheckbox utxo={it} onChange={() => addOrRemove(it)} />
@@ -536,6 +543,81 @@ const AccountSelector = ({ accounts, type = 'radio', onChange }: AccountSelector
           )
         })}
     </rb.Row>
+  )
+}
+
+interface SelectAccountStepProps {
+  walletInfo: WalletInfo
+  onSelected: (account: Account | null) => void
+}
+
+const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) => {
+  const { t } = useTranslation()
+  const accounts = useMemo(() => walletInfo.data.display.walletinfo.accounts, [walletInfo])
+  const utxos = useMemo(() => walletInfo.data.utxos.utxos, [walletInfo])
+  const balanceSummary = useBalanceSummary(walletInfo)
+
+  // TODO: this is a common pattern - try to generalize
+  const utxosByAccount = useMemo(() => {
+    return utxos.reduce((acc, utxo) => {
+      const key = `${utxo.mixdepth}`
+      acc[key] = acc[key] || []
+      acc[key].push(utxo)
+      return acc
+    }, {} as { [key: string]: Utxos })
+  }, [utxos])
+
+  const availableAccounts = useMemo(() => {
+    const accountsWithUtxos = Object.keys(utxosByAccount)
+    return accounts.filter((it) => accountsWithUtxos.includes(it.account))
+  }, [utxosByAccount, accounts])
+
+  const availableAccountBalances = useMemo(() => {
+    if (balanceSummary === null) return []
+
+    const availableAccountIndices = availableAccounts.map((it) => parseInt(it.account, 10))
+    return balanceSummary.accountBalances.filter((it) => availableAccountIndices.includes(it.accountIndex))
+  }, [availableAccounts, balanceSummary])
+
+  const selectableAccounts = useMemo(() => {
+    return accounts.map((it) => ({
+      ...it,
+      disabled: !availableAccounts.includes(it),
+      utxos: utxosByAccount[it.account] || [],
+    }))
+  }, [accounts, availableAccounts, utxosByAccount])
+
+  return (
+    <>
+      <h4>Select Account</h4>
+      {availableAccounts.length === 0 ? (
+        <>
+          <Link to={routes.receive} className="unstyled">
+            <rb.Alert variant="info" className="mb-4">
+              <rb.Row className="align-items-center">
+                <rb.Col>
+                  <>
+                    No suitable account available. Fund your wallet and run the scheduler, before you create a Fidelity
+                    Bond.
+                  </>
+                </rb.Col>
+                <rb.Col xs="auto">
+                  <Sprite symbol="caret-right" width="24px" height="24px" />
+                </rb.Col>
+              </rb.Row>
+            </rb.Alert>
+          </Link>
+        </>
+      ) : (
+        <>
+          <AccountSelector
+            accounts={selectableAccounts}
+            type="radio"
+            onChange={(selected) => onSelected(selected.length === 1 ? selected[0] : null)}
+          />
+        </>
+      )}
+    </>
   )
 }
 
@@ -757,80 +839,6 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, onChange }
           onToggle={(isToggled: boolean) => onChange(isToggled)}
         />
       </div>
-    </>
-  )
-}
-
-interface SelectAccountStepProps {
-  walletInfo: WalletInfo
-  onSelected: (account: Account | null) => void
-}
-const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) => {
-  const { t } = useTranslation()
-  const accounts = useMemo(() => walletInfo.data.display.walletinfo.accounts, [walletInfo])
-  const utxos = useMemo(() => walletInfo.data.utxos.utxos, [walletInfo])
-  const balanceSummary = useBalanceSummary(walletInfo)
-
-  // TODO: this is a common pattern - try to generalize
-  const utxosByAccount = useMemo(() => {
-    return utxos.reduce((acc, utxo) => {
-      const key = `${utxo.mixdepth}`
-      acc[key] = acc[key] || []
-      acc[key].push(utxo)
-      return acc
-    }, {} as { [key: string]: Utxos })
-  }, [utxos])
-
-  const availableAccounts = useMemo(() => {
-    const accountsWithUtxos = Object.keys(utxosByAccount)
-    return accounts.filter((it) => accountsWithUtxos.includes(it.account))
-  }, [utxosByAccount, accounts])
-
-  const availableAccountBalances = useMemo(() => {
-    if (balanceSummary === null) return []
-
-    const availableAccountIndices = availableAccounts.map((it) => parseInt(it.account, 10))
-    return balanceSummary.accountBalances.filter((it) => availableAccountIndices.includes(it.accountIndex))
-  }, [availableAccounts, balanceSummary])
-
-  const selectableAccounts = useMemo(() => {
-    return accounts.map((it) => ({
-      ...it,
-      disabled: !availableAccounts.includes(it),
-      utxos: utxosByAccount[it.account] || [],
-    }))
-  }, [accounts, availableAccounts, utxosByAccount])
-
-  return (
-    <>
-      <h4>Select Account</h4>
-      {availableAccounts.length === 0 ? (
-        <>
-          <Link to={routes.receive} className="unstyled">
-            <rb.Alert variant="info" className="mb-4">
-              <rb.Row className="align-items-center">
-                <rb.Col>
-                  <>
-                    No suitable account available. Fund your wallet and run the scheduler, before you create a Fidelity
-                    Bond.
-                  </>
-                </rb.Col>
-                <rb.Col xs="auto">
-                  <Sprite symbol="caret-right" width="24px" height="24px" />
-                </rb.Col>
-              </rb.Row>
-            </rb.Alert>
-          </Link>
-        </>
-      ) : (
-        <>
-          <AccountSelector
-            accounts={selectableAccounts}
-            type="radio"
-            onChange={(selected) => onSelected(selected.length === 1 ? selected[0] : null)}
-          />
-        </>
-      )}
     </>
   )
 }
