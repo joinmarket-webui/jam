@@ -1,14 +1,14 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
-import styles from './RadioTabs.module.css'
+import styles from './SegmentedTabs.module.css'
 
-interface RadioTab {
+interface SegmentedTab {
   label: string
   value: string
   disabled?: boolean
 }
 
-function RadioTabFormCheck({ id, name, value, label, disabled, defaultChecked, onChange }: rb.FormCheckProps) {
+function SegmentedTabFormCheck({ id, name, value, label, disabled, defaultChecked, onChange }: rb.FormCheckProps) {
   const _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
     onChange && onChange(e)
@@ -17,7 +17,7 @@ function RadioTabFormCheck({ id, name, value, label, disabled, defaultChecked, o
   return (
     <>
       <rb.Form.Check
-        bsPrefix={styles['radio-tab']}
+        bsPrefix={styles['segmented-tab']}
         type="radio"
         id={id}
         value={value}
@@ -31,26 +31,26 @@ function RadioTabFormCheck({ id, name, value, label, disabled, defaultChecked, o
   )
 }
 
-interface RadioTabsProps {
+interface SegmentedTabsProps {
   name: string
-  tabs: RadioTab[]
-  onChange: (tab: RadioTab, checked: boolean) => void
+  tabs: SegmentedTab[]
+  onChange: (tab: SegmentedTab, checked: boolean) => void
   initialValue?: string
   disabled?: boolean
 }
 
-export default function RadioTabs({ name, tabs, onChange, initialValue, disabled = false }: RadioTabsProps) {
-  const _onChange = (e: React.ChangeEvent<HTMLInputElement>, tab: RadioTab) => {
+export default function SegmentedTabs({ name, tabs, onChange, initialValue, disabled = false }: SegmentedTabsProps) {
+  const _onChange = (e: React.ChangeEvent<HTMLInputElement>, tab: SegmentedTab) => {
     e.stopPropagation()
     onChange(tab, e.currentTarget.checked)
   }
 
   return (
-    <div className={styles['radio-tabs']}>
+    <div className={styles['segmented-tabs']}>
       <div className="d-flex gap-1">
         {tabs.map((tab, index) => {
           return (
-            <RadioTabFormCheck
+            <SegmentedTabFormCheck
               key={index}
               id={`${name}-${index}`}
               name={name}

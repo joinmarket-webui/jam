@@ -1,24 +1,24 @@
-.radio-tabs {
+.segmented-tabs {
   background-color: var(--bs-gray-300);
   border-radius: 0.25rem;
   padding: 0.25rem;
   width: 100%;
 }
 
-:root[data-theme='dark'] .radio-tabs {
+:root[data-theme='dark'] .segmented-tabs {
   color: var(--bs-gray-100);
   background-color: var(--bs-gray-800);
 }
 
-.radio-tab {
+.segmented-tab {
   flex: 1 1 0;
 }
 
-.radio-tab input[type='radio'] {
+.segmented-tab input[type='radio'] {
   display: none;
 }
 
-.radio-tab label {
+.segmented-tab label {
   background-color: white;
   padding: 0.25rem 1rem;
   border-radius: 0.1rem;
@@ -27,30 +27,30 @@
   text-align: center;
 }
 
-.radio-tab input[type='radio']:disabled ~ label {
+.segmented-tab input[type='radio']:disabled ~ label {
   background-color: transparent;
   color: var(--bs-gray-600);
   opacity: 0.5;
 }
 
-:root[data-theme='dark'] .radio-tab input[type='radio']:disabled ~ label {
+:root[data-theme='dark'] .segmented-tab input[type='radio']:disabled ~ label {
   color: var(--bs-gray-600);
   opacity: 0.5;
 }
 
-.radio-tab input[type='radio']:not(:checked):not(:disabled) ~ label {
+.segmented-tab input[type='radio']:not(:checked):not(:disabled) ~ label {
   background-color: transparent;
 }
 
-.radio-tab input[type='radio']:not(:disabled) ~ label {
+.segmented-tab input[type='radio']:not(:disabled) ~ label {
   cursor: pointer;
 }
 
-.radio-tab input[type='radio']:checked:not(:disabled) ~ label {
+.segmented-tab input[type='radio']:checked:not(:disabled) ~ label {
   background-color: var(--bs-gray-100);
   box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.1);
 }
 
-:root[data-theme='dark'] .radio-tab input[type='radio']:checked:not(:disabled) ~ label {
+:root[data-theme='dark'] .segmented-tab input[type='radio']:checked:not(:disabled) ~ label {
   background-color: var(--bs-gray-600);
 }

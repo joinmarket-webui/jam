@@ -8,7 +8,7 @@ import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
-import RadioTabs from './RadioTabs'
+import SegmentedTabs from './SegmentedTabs'
 import { EarnReportOverlay } from './EarnReport'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
@@ -287,7 +287,7 @@ export default function Earn() {
                       {isAdvancedView && (
                         <div className="my-4">
                           <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
-                            <RadioTabs
+                            <SegmentedTabs
                               name="offertype"
                               tabs={[
                                 {
