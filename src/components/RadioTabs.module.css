@@ -2,11 +2,16 @@
   background-color: var(--bs-gray-300);
   border-radius: 0.25rem;
   padding: 0.25rem;
+  width: 100%;
 }
 
 :root[data-theme='dark'] .radio-tabs {
   color: var(--bs-gray-100);
   background-color: var(--bs-gray-800);
+}
+
+.radio-tab {
+  flex: 1 1 0;
 }
 
 .radio-tab input[type='radio'] {
@@ -15,9 +20,11 @@
 
 .radio-tab label {
   background-color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.1rem;
   font-weight: 500;
+  width: 100%;
+  text-align: center;
 }
 
 .radio-tab input[type='radio']:disabled ~ label {
@@ -41,8 +48,9 @@
 
 .radio-tab input[type='radio']:checked:not(:disabled) ~ label {
   background-color: var(--bs-gray-100);
+  box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.1);
 }
 
 :root[data-theme='dark'] .radio-tab input[type='radio']:checked:not(:disabled) ~ label {
-  color: var(--bs-gray-900);
+  background-color: var(--bs-gray-600);
 }

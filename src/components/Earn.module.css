@@ -20,6 +20,7 @@
   background-color: transparent !important;
   border: none;
   padding-left: 0;
+  font-weight: 500;
 }
 
 .settings-container .input-group-text {

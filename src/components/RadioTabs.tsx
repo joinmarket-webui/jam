@@ -33,23 +33,13 @@ function RadioTabFormCheck({ id, name, value, label, disabled, defaultChecked, o
 
 interface RadioTabsProps {
   name: string
-  title?: string
-  subtitle?: string
   tabs: RadioTab[]
   onChange: (tab: RadioTab, checked: boolean) => void
   initialValue?: string
   disabled?: boolean
 }
 
-export default function RadioTabs({
-  name,
-  title,
-  subtitle,
-  tabs,
-  onChange,
-  initialValue,
-  disabled = false,
-}: RadioTabsProps) {
+export default function RadioTabs({ name, tabs, onChange, initialValue, disabled = false }: RadioTabsProps) {
   const _onChange = (e: React.ChangeEvent<HTMLInputElement>, tab: RadioTab) => {
     e.stopPropagation()
     onChange(tab, e.currentTarget.checked)
@@ -57,14 +47,6 @@ export default function RadioTabs({
 
   return (
     <div className={styles['radio-tabs']}>
-      <div className="d-flex flex-column gap-0">
-        {title && (
-          <>
-            <div className={`${styles['title']}`}>{title}</div>
-            {subtitle && <div className={`${styles['subtitle']} text-secondary`}>{subtitle}</div>}
-          </>
-        )}
-      </div>
       <div className="d-flex gap-1">
         {tabs.map((tab, index) => {
           return (
