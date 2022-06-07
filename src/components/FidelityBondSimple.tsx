@@ -165,8 +165,9 @@ interface UtxoCheckboxProps {
   utxo: Utxo
   onChange: (selected: boolean) => void
   initialValue?: boolean
+  percentage?: number
 }
-const UtxoCheckbox = ({ utxo, onChange, initialValue = false }: UtxoCheckboxProps) => {
+const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: UtxoCheckboxProps) => {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<boolean>(initialValue)
 
@@ -177,7 +178,7 @@ const UtxoCheckbox = ({ utxo, onChange, initialValue = false }: UtxoCheckboxProp
   return (
     <>
       <rb.OverlayTrigger
-        trigger="focus"
+        trigger={['hover', 'focus']}
         placement="top"
         overlay={
           <rb.Popover>
@@ -214,9 +215,24 @@ const UtxoCheckbox = ({ utxo, onChange, initialValue = false }: UtxoCheckboxProp
               </div>
 
               <rb.Stack className="align-items-start">
+                <rb.Form.Check type="checkbox" className="d-none" label="" checked={selected} readOnly />
                 <Balance valueString={`${utxo.value}`} convertToUnit={SATS} showBalance={true} />
 
-                <rb.Form.Check type="checkbox" className="d-none" label="" checked={selected} readOnly />
+                {percentage !== undefined && (
+                  <div className="w-100" style={{ position: 'relative' }}>
+                    <div
+                      style={{
+                        position: 'absolute',
+                        height: '100%',
+                        width: `${percentage.toFixed(2)}%`,
+                        backgroundColor: `${selected ? 'rgba(39, 174, 96, 1)' : 'rgba(222, 222, 222, 1)'}`,
+                        opacity: '0.3',
+                      }}
+                    ></div>
+                    {`${percentage.toFixed(2)}%`}
+                  </div>
+                )}
+
                 <div>
                   <small className="text-secondary">{utxo.confirmations} Confirmations</small>
                 </div>
@@ -251,6 +267,9 @@ const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps)
       return 0
     })
   }, [utxos])
+
+  const utxosTotalAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
+
   const [selected, setSelected] = useState<Utxos>([])
 
   useEffect(() => {
@@ -287,9 +306,10 @@ const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps)
       ) : (
         <>
           {sortedUtxos.map((it) => {
+            const percentageOfTotal = utxosTotalAmountSum > 0 ? (100 * it.value) / utxosTotalAmountSum : undefined
             return (
               <div key={it.utxo} onClick={() => addOrRemove(it)} className="d-flex align-items-center mb-2">
-                <UtxoCheckbox utxo={it} onChange={() => addOrRemove(it)} />
+                <UtxoCheckbox utxo={it} onChange={() => addOrRemove(it)} percentage={percentageOfTotal} />
               </div>
             )
           })}
