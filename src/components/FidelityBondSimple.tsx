@@ -708,10 +708,9 @@ interface SelectLockdateStepProps {
 const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
   const settings = useSettings()
   const [lockdate, setLockdate] = useState<Api.Lockdate | null>(null)
-  const now = useMemo(() => Date.now(), [])
   const timeTillUnlockString = useMemo(
-    () => lockdate && timeUtils.timeElapsed(lockdateToTimestamp(lockdate), now),
-    [now, lockdate]
+    () => lockdate && timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now()),
+    [lockdate]
   )
 
   const selectedUtxosAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
@@ -770,14 +769,18 @@ interface ConfirmationStepProps {
   account: Account
   utxos: Utxos
   lockdate: Api.Lockdate
+  confirmed: boolean
   onChange: (confirmed: boolean) => void
 }
 
-const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, onChange }: ConfirmationStepProps) => {
+const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed, onChange }: ConfirmationStepProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
-  const now = useMemo(() => Date.now(), [])
-  const timeTillUnlockString = useMemo(() => timeUtils.timeElapsed(lockdateToTimestamp(lockdate), now), [now, lockdate])
+
+  const timeTillUnlockString = useMemo(
+    () => timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now()),
+    [lockdate]
+  )
 
   const selectedUtxosAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
 
@@ -836,6 +839,7 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, onChange }
       <div className="my-4 d-flex justify-content-center">
         <ToggleSwitch
           label={t('create_wallet.confirmation_toggle_fidelity_bond_summary')}
+          defaultChecked={confirmed}
           onToggle={(isToggled: boolean) => onChange(isToggled)}
         />
       </div>
@@ -884,6 +888,11 @@ export const FidelityBondSimple = () => {
       setStep(0)
     }
   }, [selectedAccount])
+
+  useEffect(() => {
+    // TODO: toggle button has no way to reflect this change currently
+    setUserConfirmed(false)
+  }, [step, selectedAccount, selectedUtxos, selectedLockdate])
 
   useEffect(() => {
     if (!currentWallet) {
@@ -1010,6 +1019,7 @@ export const FidelityBondSimple = () => {
                 account={selectedAccount}
                 utxos={selectedUtxos}
                 lockdate={selectedLockdate}
+                confirmed={userConfirmed}
                 onChange={setUserConfirmed}
               />
 
