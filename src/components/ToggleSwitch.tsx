@@ -1,15 +1,24 @@
 import React from 'react'
 import styles from './ToggleSwitch.module.css'
 
+interface ToggleSwitchProps {
+  label: string
+  subtitle?: string
+  onToggle: (isToggled: boolean) => void
+  initialValue?: boolean
+  disabled?: boolean
+}
+
 export default function ToggleSwitch({
   label,
   subtitle = undefined,
   onToggle,
   initialValue = false,
   disabled = false,
-}) {
-  const onClick = (e) => {
-    onToggle(e.target.checked)
+}: ToggleSwitchProps) {
+  const onClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    e.stopPropagation()
+    onToggle(e.currentTarget.checked)
   }
 
   return (

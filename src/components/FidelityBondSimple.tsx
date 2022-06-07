@@ -718,7 +718,7 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
       <div className="my-4 d-flex justify-content-center">
         <ToggleSwitch
           label={t('create_wallet.confirmation_toggle_fidelity_bond_summary')}
-          defaultChecked={confirmed}
+          initialValue={confirmed}
           onToggle={(isToggled: boolean) => onChange(isToggled)}
         />
       </div>

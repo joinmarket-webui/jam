@@ -1,0 +1,29 @@
+.settings .settings-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  border: none;
+  text-align: var(--bs-body-text-align);
+}
+
+.settings .settings-btn > svg:first-child {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.settings-group-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.settings-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+  padding: 0.375rem 0.75rem;
+}

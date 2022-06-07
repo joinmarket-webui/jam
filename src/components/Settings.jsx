@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
@@ -9,7 +10,9 @@ import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { SATS, BTC, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import { routes } from '../constants/routes'
 import languages from '../i18n/languages'
+import styles from './Settings.module.css'
 
 function SeedModal({ show = false, onHide }) {
   const { t } = useTranslation()
@@ -96,59 +99,49 @@ export default function Settings() {
   const isLightTheme = settings.theme === window.JM.THEMES[0]
 
   return (
-    <div>
+    <div className={styles.settings}>
       <PageTitle title={t('settings.title')} />
       <div className="d-flex flex-column gap-4">
-        <div style={{ marginLeft: '-.75rem' }} className="d-flex flex-column gap-2">
+        <div className={styles['settings-group-container']}>
           <rb.Button
             variant="outline-dark"
-            className="border-0 d-inline-flex align-items-center"
+            className={styles['settings-btn']}
             onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
           >
-            <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" className="me-2" />
+            <Sprite symbol={settings.showBalance ? 'hide' : 'show'} width="24" height="24" />
             {settings.showBalance ? t('settings.hide_balance') : t('settings.show_balance')}
           </rb.Button>
 
           <rb.Button
             variant="outline-dark"
-            className="border-0 d-inline-flex align-items-center"
+            className={styles['settings-btn']}
             onClick={() => settingsDispatch({ unit: isSats ? BTC : SATS })}
           >
-            <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" className="me-2" />
+            <Sprite symbol={isSats ? BTC : SATS} width="24" height="24" />
             {isSats ? t('settings.use_btc') : t('settings.use_sats')}
           </rb.Button>
 
           <rb.Button
             variant="outline-dark"
-            className="border-0 d-inline-flex align-items-center"
+            className={styles['settings-btn']}
             onClick={(e) => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
           >
-            <Sprite
-              symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]}
-              width="24"
-              height="24"
-              className="me-2"
-            />
+            <Sprite symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]} width="24" height="24" />
             {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
           </rb.Button>
 
           <rb.Button
             variant="outline-dark"
-            className="border-0 d-inline-flex align-items-center"
+            className={styles['settings-btn']}
             onClick={(e) => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
           >
-            <Sprite
-              symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'}
-              width="24"
-              height="24"
-              className="me-2"
-            />
+            <Sprite symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'} width="24" height="24" />
             {settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}
           </rb.Button>
 
           <rb.Dropdown>
-            <rb.Dropdown.Toggle variant="outline-dark" className="border-0 d-inline-flex align-items-center">
-              <Sprite symbol="globe" width="24" height="24" className="me-2" />
+            <rb.Dropdown.Toggle variant="outline-dark" className={styles['settings-btn']}>
+              <Sprite symbol="globe" width="24" height="24" />
               {languages.find((lng) => lng.key === (i18n.resolvedLanguage || i18n.language))?.description ||
                 languages[0].description}
             </rb.Dropdown.Toggle>
@@ -163,25 +156,31 @@ export default function Settings() {
               })}
               <rb.Dropdown.Item
                 href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 {t('settings.text_help_translate')}
               </rb.Dropdown.Item>
             </rb.Dropdown.Menu>
           </rb.Dropdown>
+        </div>
 
-          <rb.Button
-            variant="outline-dark"
-            className="border-0 mb-2 d-inline-flex align-items-center"
-            onClick={(e) => setShowingSeed(true)}
-          >
-            <Sprite symbol="mnemonic" width="24" height="24" className="me-2" />
+        <h2 className="mb-0">{t('settings.section_title_wallet')}</h2>
+        <div className={styles['settings-group-container']}>
+          <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
+            <Sprite symbol="mnemonic" width="24" height="24" />
             {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
           </rb.Button>
           {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
+
+          <Link to={routes.walletList} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
+            <Sprite symbol="wallet" width="24" height="24" />
+            {t('settings.button_switch_wallet')}
+          </Link>
         </div>
 
-        <div className="d-flex flex-column gap-3">
+        <h2 className="mb-0">{t('settings.section_title_community')}</h2>
+        <div className={styles['settings-links']}>
           <a
             href="https://github.com/joinmarket-webui/joinmarket-webui"
             target="_blank"

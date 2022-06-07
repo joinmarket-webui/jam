@@ -73,7 +73,7 @@ describe('<Wallets />', () => {
 
     expect(screen.getByText('wallets.text_loading')).toBeInTheDocument()
 
-    const callToActionButtonBefore = screen.getByText('wallets.button_new_wallet')
+    const callToActionButtonBefore = screen.getByTestId('new-wallet-btn')
     expect(callToActionButtonBefore.classList.contains('btn')).toBe(true)
     expect(callToActionButtonBefore.classList.contains('btn-lg')).toBe(false)
 
@@ -81,7 +81,7 @@ describe('<Wallets />', () => {
 
     expect(screen.getByText('wallets.subtitle_no_wallets')).toBeInTheDocument()
 
-    const callToActionButtonAfter = screen.getByText('wallets.button_new_wallet')
+    const callToActionButtonAfter = screen.getByTestId('new-wallet-btn')
     expect(callToActionButtonAfter.classList.contains('btn-lg')).toBe(true)
   })
 
@@ -111,7 +111,7 @@ describe('<Wallets />', () => {
     expect(screen.getByText('wallet0')).toBeInTheDocument()
     expect(screen.getByText('wallet1')).toBeInTheDocument()
 
-    const callToActionButton = screen.getByText('wallets.button_new_wallet')
+    const callToActionButton = screen.getByTestId('new-wallet-btn')
     expect(callToActionButton.classList.contains('btn')).toBe(true)
     expect(callToActionButton.classList.contains('btn-lg')).toBe(false)
   })
