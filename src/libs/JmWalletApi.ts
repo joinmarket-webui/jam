@@ -16,8 +16,8 @@ type ApiToken = string
 type WalletName = string
 
 type Mixdepth = number
-type AmountSats = BigInt
-type BitcoinAddress = string
+type AmountSats = BigInt | number // TODO: should only be bigint! Remove once every caller migrated TypeScript.
+export type BitcoinAddress = string
 
 type WithWalletName = {
   walletName: WalletName

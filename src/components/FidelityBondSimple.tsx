@@ -7,11 +7,11 @@ import {
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
   WalletInfo,
+  CurrentWallet,
   Utxos,
   Utxo,
   Account,
 } from '../context/WalletContext'
-import { CopyButtonWithConfirmation } from '../components/CopyButton'
 import * as Api from '../libs/JmWalletApi'
 // @ts-ignore
 import DisplayUTXOs from './DisplayUTXOs'
@@ -26,6 +26,7 @@ import { SATS } from '../utils'
 import { useBalanceSummary, WalletBalanceSummary } from '../hooks/BalanceSummary'
 import { routes } from '../constants/routes'
 import Sprite from './Sprite'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
@@ -42,13 +43,6 @@ const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
 // lock up their coins for an awful amount of time by accident.
 // in "advanced" mode, this can be dropped or increased substantially
 const DEFAULT_MAX_TIMELOCK_YEARS = 10
-
-const initialLockdate = () => {
-  const now = new Date()
-  const year = now.getUTCFullYear()
-  const month = now.getUTCMonth()
-  return new Date(Date.UTC(year + 1, month, 1, 0, 0, 0))
-}
 
 const timeUtils = (() => {
   type Milliseconds = number
@@ -164,121 +158,6 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
         </rb.Form.Group>
       </rb.Col>
     </rb.Row>
-  )
-}
-
-const locktimeDisplayString = (lockdate: Api.Lockdate) => {
-  return new Date(lockdateToTimestamp(lockdate)).toUTCString()
-}
-
-interface DepositFormAdvancedProps {
-  title: React.ReactElement
-  [key: string]: unknown
-}
-const DepositFormAdvanced = ({ title, ...props }: DepositFormAdvancedProps) => {
-  const { t } = useTranslation()
-  const currentWallet = useCurrentWallet()
-  const [lockdate, setLockdate] = useState(dateToLockdate(initialLockdate()))
-  const [address, setAddress] = useState(null)
-  const [addressLockdate, setAddressLockdate] = useState<Api.Lockdate | null>(null)
-  const addressLocktimeString = useMemo<string | null>(
-    () => (addressLockdate ? locktimeDisplayString(addressLockdate) : null),
-    [addressLockdate]
-  )
-  const [isLoading, setIsLoading] = useState(true)
-  const [alert, setAlert] = useState<AlertWithMessage | null>(null)
-
-  useEffect(() => {
-    if (!currentWallet) return
-    if (!lockdate) return
-
-    const abortCtrl = new AbortController()
-    const { name: walletName, token } = currentWallet
-
-    setAlert(null)
-
-    setAddress(null)
-    setAddressLockdate(null)
-
-    setIsLoading(true)
-
-    Api.getAddressTimelockNew({ walletName, token, lockdate, signal: abortCtrl.signal })
-      .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(res, t('fidelity_bond.error_loading_timelock_address_failed'))
-      )
-      .then((data) => {
-        if (abortCtrl.signal.aborted) return
-
-        setAddress(data.address)
-        setAddressLockdate(lockdate)
-      })
-      // show the loader a little longer to avoid flickering
-      .then((_) => new Promise((r) => setTimeout(r, 200)))
-      .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
-      })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
-
-    return () => abortCtrl.abort()
-  }, [currentWallet, lockdate, t])
-
-  return (
-    <rb.Card {...props}>
-      <rb.Card.Body>
-        <rb.Card.Title>{title}</rb.Card.Title>
-
-        {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-
-        <rb.Form noValidate>
-          <LockdateForm onChange={setLockdate} />
-        </rb.Form>
-        <rb.Row>
-          <rb.Col>
-            <rb.Toast style={{ width: 'auto' }}>
-              <rb.Toast.Header closeButton={false}>
-                {isLoading ? (
-                  <div className="d-flex justify-content-center align-items-center">
-                    <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                    {t('global.loading')}
-                  </div>
-                ) : (
-                  <strong className="me-auto">
-                    <Trans
-                      i18nKey="fidelity_bond.form_create.text_expires_at"
-                      values={{
-                        addressLocktime: addressLocktimeString,
-                      }}
-                    >
-                      Expires at: {addressLocktimeString}
-                    </Trans>
-                  </strong>
-                )}
-              </rb.Toast.Header>
-              <rb.Toast.Body>
-                <div
-                  className="d-grid place-content-space-evenly justify-content-center text-center"
-                  style={{ minHeight: '6rem' }}
-                >
-                  {!isLoading && address && (
-                    <>
-                      <div className="text-break slashed-zeroes">{address}</div>
-                      <div className="my-2">
-                        <CopyButtonWithConfirmation
-                          value={address}
-                          text={t('global.button_copy_text')}
-                          successText={t('global.button_copy_text_confirmed')}
-                          disabled={!address || isLoading}
-                        />{' '}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </rb.Toast.Body>
-            </rb.Toast>
-          </rb.Col>
-        </rb.Row>
-      </rb.Card.Body>
-    </rb.Card>
   )
 }
 
@@ -847,20 +726,17 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
   )
 }
 
-export const FidelityBondSimple = () => {
-  const { t } = useTranslation()
-  const currentWallet = useCurrentWallet()
-  const currentWalletInfo = useCurrentWalletInfo()
-  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  const balanceSummary = useBalanceSummary(currentWalletInfo)
-  const [isLoading, setIsLoading] = useState(true)
-  const [alert, setAlert] = useState<AlertWithMessage | null>(null)
+interface FidelityBondDetailsSetupFormProps {
+  currentWallet: CurrentWallet
+  walletInfo: WalletInfo
+  onSubmit: (utxos: Utxos, lockdate: Api.Lockdate, timelockedAddress: Api.BitcoinAddress) => Promise<unknown>
+}
 
-  const utxos = useMemo(
-    () => (currentWalletInfo === null ? [] : currentWalletInfo.data.utxos.utxos),
-    [currentWalletInfo]
-  )
-  const fidelityBonds = useMemo(() => (utxos === null ? [] : utxos.filter((utxo) => utxo.locktime)), [utxos])
+const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: FidelityBondDetailsSetupFormProps) => {
+  const { t } = useTranslation()
+  const balanceSummary = useBalanceSummary(walletInfo)
+
+  const utxos = useMemo(() => (walletInfo === null ? [] : walletInfo.data.utxos.utxos), [walletInfo])
 
   const [step, setStep] = useState<number>(0)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
@@ -894,6 +770,232 @@ export const FidelityBondSimple = () => {
     setUserConfirmed(false)
   }, [step, selectedAccount, selectedUtxos, selectedLockdate])
 
+  const _onSubmit = async (account: Account, utxos: Utxos, lockdate: Api.Lockdate) => {
+    if (!currentWallet) return
+    if (utxos.length === 0) return
+
+    const allUtxosInAccount = utxosByAccount[account.account]
+
+    // sanity check
+    const sameAccountCheck = utxos.every((it) => allUtxosInAccount.includes(it))
+    if (!sameAccountCheck) {
+      throw new Error('Given utxos must be from the same account')
+    }
+
+    const { name: walletName, token } = currentWallet
+    const timelockedDestinationAddress = await Api.getAddressTimelockNew({
+      walletName,
+      token,
+      lockdate,
+    })
+      .then((res) =>
+        res.ok ? res.json() : Api.Helper.throwError(res, t('fidelity_bond.error_loading_timelock_address_failed'))
+      )
+      .then((data) => data.address)
+
+    return await onSubmit(utxos, lockdate, timelockedDestinationAddress)
+  }
+
+  return (
+    <div>
+      <div className="d-flex justify-items-center align-items-center">
+        <h3>Step {step + 1}</h3>
+        {step > 0 && (
+          <rb.Button
+            variant="link"
+            type="button"
+            className="ms-auto align-self-start"
+            onClick={() => setStep(step - 1)}
+          >
+            {t('global.back')}
+          </rb.Button>
+        )}
+      </div>
+
+      {walletInfo && (
+        <div className={`${step !== 0 ? 'd-none' : ''}`}>
+          <SelectAccountStep walletInfo={walletInfo} onSelected={(target) => setSelectedAccount(target)} />
+
+          <rb.Button
+            variant="dark"
+            type="button"
+            size="lg"
+            className="w-100 mt-4"
+            disabled={selectedAccount === null}
+            onClick={() => setStep(1)}
+          >
+            {t('global.next')}
+          </rb.Button>
+        </div>
+      )}
+      {balanceSummary && selectedAccount && (
+        <div className={`${step !== 1 ? 'd-none' : ''}`}>
+          <SelectUtxosStep
+            balanceSummary={balanceSummary}
+            account={selectedAccount}
+            utxos={utxosByAccount[selectedAccount.account]}
+            onSelected={(target) => setSelectedUtxos(target)}
+          />
+
+          <rb.Button
+            variant="dark"
+            type="button"
+            size="lg"
+            className="w-100 mt-4"
+            disabled={selectedUtxos === null || selectedUtxos.length === 0}
+            onClick={() => setStep(2)}
+          >
+            {!selectedUtxosAmountSum ? (
+              t('global.next')
+            ) : (
+              <>
+                {/*t('fidelity_bond.proceed_with_amount', { amount: selectedUtxosAmountSum })*/}
+                {`Proceed with`}
+                {` `}
+                <Balance valueString={`${selectedUtxosAmountSum}`} convertToUnit={SATS} showBalance={true} />
+              </>
+            )}
+          </rb.Button>
+
+          <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(0)}>
+            {t('global.back')}
+          </rb.Button>
+        </div>
+      )}
+
+      {balanceSummary && selectedAccount && selectedUtxos && (
+        <div className={`${step !== 2 ? 'd-none' : ''}`}>
+          <SelectLockdateStep utxos={selectedUtxos} onChange={setSelectedLockdate} />
+
+          <rb.Button
+            variant="dark"
+            type="button"
+            size="lg"
+            className="w-100 mt-4"
+            disabled={selectedLockdate === null}
+            onClick={() => setStep(3)}
+          >
+            {t('global.next')}
+          </rb.Button>
+
+          <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(1)}>
+            {t('global.back')}
+          </rb.Button>
+        </div>
+      )}
+
+      {balanceSummary && selectedAccount && selectedUtxos && selectedLockdate && (
+        <div className={`${step !== 3 ? 'd-none' : ''}`}>
+          <ConfirmationStep
+            balanceSummary={balanceSummary}
+            account={selectedAccount}
+            utxos={selectedUtxos}
+            lockdate={selectedLockdate}
+            confirmed={userConfirmed}
+            onChange={setUserConfirmed}
+          />
+
+          <rb.Button
+            variant="dark"
+            type="button"
+            size="lg"
+            className="w-100 mt-4"
+            disabled={!userConfirmed}
+            onClick={() => _onSubmit(selectedAccount, selectedUtxos, selectedLockdate)}
+          >
+            {t('fidelity_bond.button_create')}
+          </rb.Button>
+
+          <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(2)}>
+            {t('global.back')}
+          </rb.Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * - freeze all utxos except the selected ones
+ * - sweep collaborative transaction to locktime address
+ * - unfreeze utxos that were frozen by Jam
+ */
+const sendToFidelityBond = async (
+  currentWallet: CurrentWallet,
+  walletInfo: WalletInfo,
+  selectedUtxos: Utxos,
+  timelockedDestinationAddress: Api.BitcoinAddress
+) => {
+  const { name: walletName, token } = currentWallet
+
+  const selectedMixdepth = selectedUtxos[0].mixdepth // all utxos from same account!
+  const allUtxosInAccount = walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === selectedMixdepth)
+
+  const otherUtxos = allUtxosInAccount.filter((it) => !selectedUtxos.includes(it))
+  const eligibleForFreeze = otherUtxos.filter((it) => !it.frozen)
+  const eligibleForUnfreeze = selectedUtxos.filter((it) => it.frozen)
+
+  const freezePromises = eligibleForFreeze.map((it) => {
+    return Api.postFreeze({ walletName, token }, { utxo: it.utxo, freeze: true })
+  })
+  const unfreezePromises = eligibleForUnfreeze.map((it) => {
+    return Api.postFreeze({ walletName, token }, { utxo: it.utxo, freeze: false })
+  })
+
+  console.debug('Freezing other utxos', eligibleForFreeze)
+  await Promise.all(freezePromises)
+
+  console.debug('Unfreeze eligible utxos', eligibleForUnfreeze)
+  await Promise.all(unfreezePromises)
+
+  const __test_actuallyCreateFb = true // TODO: remove
+  if (__test_actuallyCreateFb) {
+    await Api.postCoinjoin(
+      { walletName, token },
+      {
+        mixdepth: selectedUtxos[0].mixdepth,
+        destination: timelockedDestinationAddress,
+        amount_sats: 0, // sweep
+        counterparties: 1, // TODO: how to choose? When in doubt, use same mechanism as on "Send" page
+      }
+    )
+  } else {
+    await Promise.resolve(true).then((_) => new Promise((r) => setTimeout(r, 5_000)))
+  }
+
+  const restoreUnfreezePromises = eligibleForFreeze.map((it) => {
+    return Api.postFreeze({ walletName, token }, { utxo: it.utxo, freeze: false })
+  })
+
+  // TODO: do this only after the collaborative transaction is finished
+  console.debug('Unfreeze utxos [skipped for now]', eligibleForFreeze)
+  //await Promise.all(restoreUnfreezePromises)
+
+  return true
+}
+
+export const FidelityBondSimple = () => {
+  const { t } = useTranslation()
+  const currentWallet = useCurrentWallet()
+  const currentWalletInfo = useCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+  const serviceInfo = useServiceInfo()
+
+  const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
+  const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
+
+  const [alert, setAlert] = useState<AlertWithMessage | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isCreating, setIsCreating] = useState(false)
+  const [isCreateSuccess, setIsCreateSuccess] = useState(false)
+  const [isCreateError, setIsCreateError] = useState(false)
+
+  const utxos = useMemo(
+    () => (currentWalletInfo === null ? [] : currentWalletInfo.data.utxos.utxos),
+    [currentWalletInfo]
+  )
+  const fidelityBonds = useMemo(() => (utxos === null ? null : utxos.filter((utxo) => utxo.locktime)), [utxos])
+
   useEffect(() => {
     if (!currentWallet) {
       setAlert({ variant: 'danger', message: t('current_wallet.error_loading_failed') })
@@ -916,6 +1018,45 @@ export const FidelityBondSimple = () => {
     return () => abortCtrl.abort()
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
+  const onSubmit = async (
+    selectedUtxos: Utxos,
+    selectedLockdate: Api.Lockdate,
+    timelockedDestinationAddress: Api.BitcoinAddress
+  ) => {
+    if (isCreating) return
+    if (!currentWallet) return
+    if (!currentWalletInfo) return
+    if (selectedUtxos.length === 0) return
+
+    setIsCreating(true)
+    try {
+      await sendToFidelityBond(currentWallet, currentWalletInfo, selectedUtxos, timelockedDestinationAddress)
+      setIsCreateSuccess(true)
+    } catch (error) {
+      setIsCreateError(true)
+    } finally {
+      setIsCreating(false)
+    }
+
+    const abortCtrl = new AbortController()
+    setIsLoading(true)
+
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+      .catch((err) => {
+        const message = err.message || t('current_wallet.error_loading_failed')
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+  }
+
+  // TODO: use alert like in other screens
+  if (isMakerRunning) {
+    return <>Creating Fidelity Bonds is temporarily disabled: Earn is active.</>
+  }
+  if (!isCreating && isCoinjoinInProgress) {
+    return <>Creating Fidelity Bonds is temporarily disabled: A collaborative transaction is in progress.</>
+  }
+
   return (
     <div>
       {isLoading ? (
@@ -925,125 +1066,37 @@ export const FidelityBondSimple = () => {
         </div>
       ) : (
         <>
-          <div className="d-flex justify-items-center align-items-center">
-            <h3>Step {step + 1}</h3>
-            {step > 0 && (
-              <rb.Button
-                variant="link"
-                type="button"
-                className="ms-auto align-self-start"
-                onClick={() => setStep(step - 1)}
-              >
-                {t('global.back')}
-              </rb.Button>
-            )}
-          </div>
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-          {currentWalletInfo && (
-            <div className={`${step !== 0 ? 'd-none' : ''}`}>
-              <SelectAccountStep walletInfo={currentWalletInfo} onSelected={(target) => setSelectedAccount(target)} />
-
-              <rb.Button
-                variant="dark"
-                type="button"
-                size="lg"
-                className="w-100 mt-4"
-                disabled={selectedAccount === null}
-                onClick={() => setStep(1)}
-              >
-                {t('global.next')}
-              </rb.Button>
-            </div>
-          )}
-          {balanceSummary && selectedAccount && (
-            <div className={`${step !== 1 ? 'd-none' : ''}`}>
-              <SelectUtxosStep
-                balanceSummary={balanceSummary}
-                account={selectedAccount}
-                utxos={utxosByAccount[selectedAccount.account]}
-                onSelected={(target) => setSelectedUtxos(target)}
-              />
-
-              <rb.Button
-                variant="dark"
-                type="button"
-                size="lg"
-                className="w-100 mt-4"
-                disabled={selectedUtxos === null || selectedUtxos.length === 0}
-                onClick={() => setStep(2)}
-              >
-                {!selectedUtxosAmountSum ? (
-                  t('global.next')
-                ) : (
-                  <>
-                    {/*t('fidelity_bond.proceed_with_amount', { amount: selectedUtxosAmountSum })*/}
-                    {`Proceed with`}
-                    {` `}
-                    <Balance valueString={`${selectedUtxosAmountSum}`} convertToUnit={SATS} showBalance={true} />
-                  </>
-                )}
-              </rb.Button>
-
-              <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(0)}>
-                {t('global.back')}
-              </rb.Button>
-            </div>
-          )}
-
-          {balanceSummary && selectedAccount && selectedUtxos && (
-            <div className={`${step !== 2 ? 'd-none' : ''}`}>
-              <SelectLockdateStep utxos={selectedUtxos} onChange={setSelectedLockdate} />
-
-              <rb.Button
-                variant="dark"
-                type="button"
-                size="lg"
-                className="w-100 mt-4"
-                disabled={selectedLockdate === null}
-                onClick={() => setStep(3)}
-              >
-                {t('global.next')}
-              </rb.Button>
-
-              <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(1)}>
-                {t('global.back')}
-              </rb.Button>
-            </div>
-          )}
-
-          {balanceSummary && selectedAccount && selectedUtxos && selectedLockdate && (
-            <div className={`${step !== 3 ? 'd-none' : ''}`}>
-              <ConfirmationStep
-                balanceSummary={balanceSummary}
-                account={selectedAccount}
-                utxos={selectedUtxos}
-                lockdate={selectedLockdate}
-                confirmed={userConfirmed}
-                onChange={setUserConfirmed}
-              />
-
-              <rb.Button
-                variant="dark"
-                type="button"
-                size="lg"
-                className="w-100 mt-4"
-                disabled={!userConfirmed}
-                onClick={() => setStep(3)}
-              >
-                {t('fidelity_bond.button_create')}
-              </rb.Button>
-
-              <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(2)}>
-                {t('global.back')}
-              </rb.Button>
-            </div>
-          )}
-
-          {fidelityBonds && (
+          {currentWallet && currentWalletInfo && fidelityBonds && fidelityBonds.length === 0 && (
             <>
-              <div className="mb-4"></div>
+              {isCreating || isCreateSuccess || isCreateError ? (
+                <>
+                  <>
+                    {isCreating && (
+                      <div className="d-flex justify-content-center align-items-center">
+                        <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                        {t('fidelity_bond.transaction_in_progress')}
+                      </div>
+                    )}
+                    {isCreateSuccess && (
+                      <div className="d-flex justify-content-center align-items-center">Success!</div>
+                    )}
+                    {isCreateError && <div className="d-flex justify-content-center align-items-center">Error!</div>}
+                  </>
+                </>
+              ) : (
+                <FidelityBondDetailsSetupForm
+                  currentWallet={currentWallet}
+                  walletInfo={currentWalletInfo}
+                  onSubmit={onSubmit}
+                />
+              )}
+            </>
+          )}
 
+          {fidelityBonds && fidelityBonds.length > 0 && (
+            <>
               {fidelityBonds.length > 0 && (
                 <div className="mt-2 mb-4">
                   <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
