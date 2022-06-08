@@ -8,15 +8,18 @@ interface AccountSelectorProps {
   accounts: SelectableAccount[]
   type?: 'checkbox' | 'radio'
   onChange: (selectedAccounts: Account[]) => void
+  displayDisabledAccounts?: boolean
 }
-const AccountSelector = ({ accounts, type = 'radio', onChange }: AccountSelectorProps) => {
+const AccountSelector = ({
+  accounts,
+  type = 'radio',
+  onChange,
+  displayDisabledAccounts = true,
+}: AccountSelectorProps) => {
   const [selected, setSelected] = useState<Account[]>([])
 
   const selectableAccounts = useMemo(() => {
     return accounts.filter((it) => !it.disabled)
-  }, [accounts])
-  const disabledAccounts = useMemo(() => {
-    return accounts.filter((it) => !!it.disabled)
   }, [accounts])
 
   const totalAmount = useMemo(() => {
@@ -54,21 +57,24 @@ const AccountSelector = ({ accounts, type = 'radio', onChange }: AccountSelector
 
   return (
     <rb.Row xs={1} className="gap-2">
-      {selectableAccounts.length > 0 &&
-        selectableAccounts.map((it) => {
-          const utxosAmountSum = it.utxos.reduce((acc, curr) => acc + curr.value, 0)
-          const percentageOfTotal = totalAmount > 0 ? (100 * utxosAmountSum) / totalAmount : undefined
-          return (
-            <rb.Col key={it.account} className="d-flex align-items-center">
-              <AccountCheckbox
-                account={it}
-                selected={isSelected(it)}
-                onChange={() => addOrRemove(it)}
-                percentage={percentageOfTotal}
-              />
-            </rb.Col>
-          )
-        })}
+      {accounts.map((it) => {
+        if (!displayDisabledAccounts && it.disabled) {
+          return <></>
+        }
+
+        const utxosAmountSum = it.utxos.reduce((acc, curr) => acc + curr.value, 0)
+        const percentageOfTotal = totalAmount > 0 ? (100 * utxosAmountSum) / totalAmount : undefined
+        return (
+          <rb.Col key={it.account} className="d-flex align-items-center">
+            <AccountCheckbox
+              account={it}
+              selected={isSelected(it)}
+              onChange={() => addOrRemove(it)}
+              percentage={percentageOfTotal}
+            />
+          </rb.Col>
+        )
+      })}
     </rb.Row>
   )
 }

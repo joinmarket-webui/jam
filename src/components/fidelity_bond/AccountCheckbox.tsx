@@ -71,7 +71,7 @@ const AccountCheckbox = ({ account, onChange, selected, percentage }: AccountChe
                 </div>
                 <div>
                   <small className="text-secondary">{account.utxos.length} output(s)</small>
-                  {percentage && (
+                  {percentage !== undefined && (
                     <>
                       <small className="ps-1 text-secondary">| {`${percentage.toFixed(2)}%`}</small>
                     </>
