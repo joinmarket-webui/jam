@@ -27,6 +27,7 @@ import { useBalanceSummary, WalletBalanceSummary } from '../hooks/BalanceSummary
 import { routes } from '../constants/routes'
 import Sprite from './Sprite'
 import { useServiceInfo } from '../context/ServiceInfoContext'
+import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
@@ -161,6 +162,15 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
   )
 }
 
+const PercentageBar = ({ percentage, highlight }: { percentage: number; highlight: boolean }) => {
+  return (
+    <div
+      style={{ width: `${percentage.toFixed(2)}%` }}
+      className={`${styles['percentage-bar']} ${highlight ? styles['highlight'] : ''}`}
+    ></div>
+  )
+}
+
 interface UtxoCheckboxProps {
   utxo: Utxo
   onChange: (selected: boolean) => void
@@ -197,9 +207,10 @@ const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: Utxo
             e.stopPropagation()
             setSelected((current) => !current)
           }}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', position: 'relative' }}
         >
-          <rb.Card.Body>
+          {percentage !== undefined && <PercentageBar percentage={percentage} highlight={selected} />}
+          <rb.Card.Body style={{}}>
             <div className="d-flex align-items-center">
               <div
                 className="d-flex align-items-center justify-content-center me-3"
@@ -218,21 +229,7 @@ const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: Utxo
                 <rb.Form.Check type="checkbox" className="d-none" label="" checked={selected} readOnly />
                 <Balance valueString={`${utxo.value}`} convertToUnit={SATS} showBalance={true} />
 
-                {percentage !== undefined && (
-                  <div className="w-100" style={{ position: 'relative' }}>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        height: '100%',
-                        width: `${percentage.toFixed(2)}%`,
-                        backgroundColor: `${selected ? 'rgba(39, 174, 96, 1)' : 'rgba(222, 222, 222, 1)'}`,
-                        opacity: '0.3',
-                      }}
-                    ></div>
-                    {`${percentage.toFixed(2)}%`}
-                  </div>
-                )}
-
+                {percentage !== undefined && <div>{`${percentage.toFixed(2)}%`}</div>}
                 <div>
                   <small className="text-secondary">{utxo.confirmations} Confirmations</small>
                 </div>
