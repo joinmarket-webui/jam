@@ -47,7 +47,7 @@ const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps)
 
   useEffect(() => {
     onChange(selected)
-  }, [selected])
+  }, [selected, onChange])
 
   return (
     <div>
@@ -58,8 +58,13 @@ const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps)
           {sortedUtxos.map((it) => {
             const percentageOfTotal = utxosTotalAmountSum > 0 ? (100 * it.value) / utxosTotalAmountSum : undefined
             return (
-              <rb.Col key={it.utxo} onClick={() => addOrRemove(it)} className="d-flex align-items-center">
-                <UtxoCheckbox utxo={it} onChange={() => addOrRemove(it)} percentage={percentageOfTotal} />
+              <rb.Col key={it.utxo} className="d-flex align-items-center">
+                <UtxoCheckbox
+                  utxo={it}
+                  checked={isSelected(it)}
+                  onChange={addOrRemove}
+                  percentage={percentageOfTotal}
+                />
               </rb.Col>
             )
           })}

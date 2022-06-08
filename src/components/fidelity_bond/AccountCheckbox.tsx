@@ -1,6 +1,5 @@
 import React from 'react'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
 import { Account, Utxos } from '../../context/WalletContext'
 // @ts-ignore
 import Balance from '../../components/Balance'
@@ -15,12 +14,11 @@ export type SelectableAccount = Account & WithUtxos & WithDisabled
 
 interface AccountCheckboxProps {
   account: SelectableAccount
-  selected: boolean
-  onChange: (selected: boolean) => void
+  checked: boolean
+  onChange: (account: Account, checked: boolean) => void
   percentage?: number
 }
-const AccountCheckbox = ({ account, onChange, selected, percentage }: AccountCheckboxProps) => {
-  const { t } = useTranslation()
+const AccountCheckbox = ({ account, onChange, checked, percentage }: AccountCheckboxProps) => {
   return (
     <>
       <rb.OverlayTrigger
@@ -36,18 +34,18 @@ const AccountCheckbox = ({ account, onChange, selected, percentage }: AccountChe
         }
       >
         <rb.Card
-          text={selected ? 'success' : undefined}
-          border={selected ? 'success' : undefined}
+          text={checked ? 'success' : undefined}
+          border={checked ? 'success' : undefined}
           className="w-100"
           onClick={(e) => {
             e.stopPropagation()
             if (!account.disabled) {
-              onChange(!selected)
+              onChange(account, !checked)
             }
           }}
           style={{ cursor: 'pointer', position: 'relative' }}
         >
-          {percentage !== undefined && <PercentageBar percentage={percentage} highlight={selected} />}
+          {percentage !== undefined && <PercentageBar percentage={percentage} highlight={checked} />}
           <rb.Card.Body>
             <div className="d-flex align-items-center">
               <div
@@ -55,13 +53,13 @@ const AccountCheckbox = ({ account, onChange, selected, percentage }: AccountChe
                 style={{
                   width: '3rem',
                   height: '3rem',
-                  backgroundColor: `${selected ? 'rgba(39, 174, 96, 1)' : 'rgba(222, 222, 222, 1)'}`,
-                  color: `${selected ? 'white' : 'rgba(66, 66, 66, 1)'}`,
+                  backgroundColor: `${checked ? 'rgba(39, 174, 96, 1)' : 'rgba(222, 222, 222, 1)'}`,
+                  color: `${checked ? 'white' : 'rgba(66, 66, 66, 1)'}`,
                   borderRadius: '50%',
                 }}
               >
-                {selected && <Sprite symbol="checkmark" width="24" height="24" />}
-                {!selected && account.disabled && <Sprite symbol="cross" width="24" height="24" />}
+                {checked && <Sprite symbol="checkmark" width="24" height="24" />}
+                {!checked && account.disabled && <Sprite symbol="cross" width="24" height="24" />}
               </div>
 
               <rb.Stack className="align-items-start">

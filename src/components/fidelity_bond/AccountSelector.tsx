@@ -53,7 +53,7 @@ const AccountSelector = ({
 
   useEffect(() => {
     onChange(selected)
-  }, [selected])
+  }, [selected, onChange])
 
   return (
     <rb.Row xs={1} className="gap-2">
@@ -68,8 +68,8 @@ const AccountSelector = ({
           <rb.Col key={it.account} className="d-flex align-items-center">
             <AccountCheckbox
               account={it}
-              selected={isSelected(it)}
-              onChange={() => addOrRemove(it)}
+              checked={isSelected(it)}
+              onChange={addOrRemove}
               percentage={percentageOfTotal}
             />
           </rb.Col>

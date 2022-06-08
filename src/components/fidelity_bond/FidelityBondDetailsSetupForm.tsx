@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -66,10 +66,8 @@ interface SelectAccountStepProps {
 }
 
 const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) => {
-  const { t } = useTranslation()
   const accounts = useMemo(() => walletInfo.data.display.walletinfo.accounts, [walletInfo])
   const utxos = useMemo(() => walletInfo.data.utxos.utxos, [walletInfo])
-  const balanceSummary = useBalanceSummary(walletInfo)
 
   // TODO: this is a common pattern - try to generalize
   const utxosByAccount = useMemo(() => {
@@ -86,13 +84,6 @@ const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) =
     return accounts.filter((it) => accountsWithUtxos.includes(it.account))
   }, [utxosByAccount, accounts])
 
-  const availableAccountBalances = useMemo(() => {
-    if (balanceSummary === null) return []
-
-    const availableAccountIndices = availableAccounts.map((it) => parseInt(it.account, 10))
-    return balanceSummary.accountBalances.filter((it) => availableAccountIndices.includes(it.accountIndex))
-  }, [availableAccounts, balanceSummary])
-
   const selectableAccounts = useMemo(() => {
     return accounts.map((it) => ({
       ...it,
@@ -100,6 +91,13 @@ const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) =
       utxos: utxosByAccount[it.account] || [],
     }))
   }, [accounts, availableAccounts, utxosByAccount])
+
+  const onChange = useCallback(
+    (selected: Account[]) => {
+      onSelected(selected.length === 1 ? selected[0] : null)
+    },
+    [onSelected]
+  )
 
   return (
     <>
@@ -124,11 +122,7 @@ const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) =
         </>
       ) : (
         <>
-          <AccountSelector
-            accounts={selectableAccounts}
-            type="radio"
-            onChange={(selected) => onSelected(selected.length === 1 ? selected[0] : null)}
-          />
+          <AccountSelector accounts={selectableAccounts} type="radio" onChange={onChange} />
         </>
       )}
     </>
@@ -227,7 +221,7 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
     () =>
       lockdate &&
       timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
-    [lockdate]
+    [lockdate, i18n]
   )
 
   const selectedUtxosAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
@@ -457,7 +451,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
 
       {walletInfo && (
         <div className={`${step !== 0 ? 'd-none' : ''}`}>
-          <SelectAccountStep walletInfo={walletInfo} onSelected={(target) => setSelectedAccount(target)} />
+          <SelectAccountStep walletInfo={walletInfo} onSelected={setSelectedAccount} />
 
           <rb.Button
             variant="dark"
@@ -477,7 +471,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
             balanceSummary={balanceSummary}
             account={selectedAccount}
             utxos={utxosByAccount[selectedAccount.account]}
-            onSelected={(target) => setSelectedUtxos(target)}
+            onSelected={setSelectedUtxos}
           />
 
           <rb.Button

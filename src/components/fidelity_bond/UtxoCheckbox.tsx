@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Utxo } from '../../context/WalletContext'
@@ -11,17 +11,12 @@ import PercentageBar from './PercentageBar'
 
 interface UtxoCheckboxProps {
   utxo: Utxo
-  onChange: (selected: boolean) => void
-  initialValue?: boolean
+  checked: boolean
+  onChange: (utxo: Utxo, checked: boolean) => void
   percentage?: number
 }
-const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: UtxoCheckboxProps) => {
+const UtxoCheckbox = ({ utxo, checked, onChange, percentage }: UtxoCheckboxProps) => {
   const { t } = useTranslation()
-  const [selected, setSelected] = useState<boolean>(initialValue)
-
-  useEffect(() => {
-    onChange(selected)
-  }, [selected])
 
   return (
     <>
@@ -38,16 +33,16 @@ const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: Utxo
         }
       >
         <rb.Card
-          text={selected ? 'success' : undefined}
-          border={selected ? 'success' : undefined}
+          text={checked ? 'success' : undefined}
+          border={checked ? 'success' : undefined}
           className="w-100"
           onClick={(e) => {
             e.stopPropagation()
-            setSelected((current) => !current)
+            onChange(utxo, !checked)
           }}
           style={{ cursor: 'pointer', position: 'relative' }}
         >
-          {percentage !== undefined && <PercentageBar percentage={percentage} highlight={selected} />}
+          {percentage !== undefined && <PercentageBar percentage={percentage} highlight={checked} />}
           <rb.Card.Body style={{}}>
             <div className="d-flex align-items-center">
               <div
@@ -55,16 +50,16 @@ const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: Utxo
                 style={{
                   width: '3rem',
                   height: '3rem',
-                  backgroundColor: `${selected ? 'rgba(39, 174, 96, 1)' : 'rgba(222, 222, 222, 1)'}`,
+                  backgroundColor: `${checked ? 'rgba(39, 174, 96, 1)' : 'rgba(222, 222, 222, 1)'}`,
                   color: 'white',
                   borderRadius: '50%',
                 }}
               >
-                {selected && <Sprite symbol="checkmark" width="24" height="24" />}
+                {checked && <Sprite symbol="checkmark" width="24" height="24" />}
               </div>
 
               <rb.Stack className="align-items-start">
-                <rb.Form.Check type="checkbox" className="d-none" label="" checked={selected} readOnly />
+                <rb.Form.Check type="checkbox" className="d-none" label="" checked={checked} readOnly />
                 <Balance valueString={`${utxo.value}`} convertToUnit={SATS} showBalance={true} />
 
                 {percentage !== undefined && <div>{`${percentage.toFixed(2)}%`}</div>}
@@ -76,7 +71,7 @@ const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: Utxo
                   {utxo.frozen && (
                     <>
                       <span className="me-2 badge bg-info">{t('current_wallet_advanced.label_frozen')}</span>
-                      {selected && <span className="small text-warning">Will be unfrozen automatically</span>}
+                      {checked && <span className="small text-warning">Will be unfrozen automatically</span>}
                     </>
                   )}
                 </div>

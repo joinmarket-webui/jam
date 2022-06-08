@@ -17,47 +17,8 @@ import DisplayUTXOs from './DisplayUTXOs'
 
 import * as Api from '../libs/JmWalletApi'
 import FidelityBondDetailsSetupForm from './fidelity_bond/FidelityBondDetailsSetupForm'
-import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
-
-// TODO: move to utils?
-const timeUtils = (() => {
-  type Milliseconds = number
-  type UnitKey = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
-
-  type Units = {
-    [key in UnitKey]: Milliseconds
-  }
-
-  const units: Units = {
-    year: 24 * 60 * 60 * 1_000 * 365,
-    month: (24 * 60 * 60 * 1_000 * 365) / 12,
-    day: 24 * 60 * 60 * 1_000,
-    hour: 60 * 60 * 1_000,
-    minute: 60 * 1_000,
-    second: 1_000,
-  }
-
-  type Locales = Intl.UnicodeBCP47LocaleIdentifier | Intl.UnicodeBCP47LocaleIdentifier[]
-  const timeElapsed = (d1: Milliseconds, d2: Milliseconds = Date.now(), locales: Locales = 'en') => {
-    const rtf = new Intl.RelativeTimeFormat(locales, { numeric: 'auto' })
-    const elapsedInMillis: Milliseconds = d1 - d2
-
-    for (let k of Object.keys(units) as UnitKey[]) {
-      const limit: number = units[k]
-      if (Math.abs(elapsedInMillis) > limit) {
-        return rtf.format(Math.round(elapsedInMillis / limit), k)
-      }
-    }
-
-    return rtf.format(Math.round(elapsedInMillis / units['second']), 'second')
-  }
-
-  return {
-    timeElapsed,
-  }
-})()
 
 /**
  * - freeze all utxos except the selected ones
@@ -211,7 +172,7 @@ export const FidelityBondSimple = () => {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [waitForTakerToFinish, isCreating, isCreateSuccess, isCreateError])
+  }, [waitForTakerToFinish, isCreating, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
     if (!isLoading) return
@@ -249,7 +210,7 @@ export const FidelityBondSimple = () => {
       })
 
     return () => abortCtrl.abort()
-  }, [isLoading, waitForTakerToFinish, isCreateSuccess, isCreateError, frozenUtxoIds, currentWallet])
+  }, [isLoading, waitForTakerToFinish, isCreateSuccess, isCreateError, frozenUtxoIds, currentWallet, t])
 
   const onSubmit = async (
     selectedAccount: Account,
