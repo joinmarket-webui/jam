@@ -27,3 +27,9 @@
   margin-bottom: 0.25rem;
   padding: 0.375rem 0.75rem;
 }
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0;
+}
