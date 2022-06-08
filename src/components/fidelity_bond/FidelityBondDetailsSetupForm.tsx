@@ -16,12 +16,11 @@ import { useBalanceSummary, WalletBalanceSummary } from '../../hooks/BalanceSumm
 import Sprite from './../Sprite'
 import UtxoSelector from './UtxoSelector'
 import AccountSelector from './AccountSelector'
-import LockdateForm, { lockdateToTimestamp } from './LockdateForm'
+import LockdateForm, { toYearsRange, lockdateToTimestamp, DEFAULT_MAX_TIMELOCK_YEARS } from './LockdateForm'
 
 import { routes } from '../../constants/routes'
 import * as Api from '../../libs/JmWalletApi'
 
-// TODO: move to utils?
 const timeUtils = (() => {
   type Milliseconds = number
   type UnitKey = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
@@ -219,7 +218,16 @@ interface SelectLockdateStepProps {
 const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
   const { i18n } = useTranslation()
   const settings = useSettings()
+
   const [lockdate, setLockdate] = useState<Api.Lockdate | null>(null)
+  const yearsRange = useMemo(() => {
+    if (process.env.NODE_ENV === 'development') {
+      // allow creating lockdate in the past in dev mode
+      return toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS)
+    }
+    return toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS)
+  }, [])
+
   const timeTillUnlockString = useMemo(
     () =>
       lockdate &&
@@ -240,6 +248,7 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
                 setLockdate(it)
                 onChange(it)
               }}
+              yearsRange={yearsRange}
             />
 
             {timeTillUnlockString && <p className="lead text-center">Funds will unlock {timeTillUnlockString}</p>}
