@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import * as rb from 'react-bootstrap'
 import { Utxos, Utxo } from '../../context/WalletContext'
 
 import UtxoCheckbox from './UtxoCheckbox'
@@ -53,16 +54,16 @@ const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps)
       {sortedUtxos.length === 0 ? (
         <>No selectable utxos</>
       ) : (
-        <>
+        <rb.Row xs={1} className="gap-2">
           {sortedUtxos.map((it) => {
             const percentageOfTotal = utxosTotalAmountSum > 0 ? (100 * it.value) / utxosTotalAmountSum : undefined
             return (
-              <div key={it.utxo} onClick={() => addOrRemove(it)} className="d-flex align-items-center mb-2">
+              <rb.Col key={it.utxo} onClick={() => addOrRemove(it)} className="d-flex align-items-center">
                 <UtxoCheckbox utxo={it} onChange={() => addOrRemove(it)} percentage={percentageOfTotal} />
-              </div>
+              </rb.Col>
             )
           })}
-        </>
+        </rb.Row>
       )}
     </div>
   )
