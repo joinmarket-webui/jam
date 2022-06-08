@@ -324,8 +324,9 @@ interface AccountCheckboxProps {
   account: SelectableAccount
   selected: boolean
   onChange: (selected: boolean) => void
+  percentage?: number
 }
-const AccountCheckbox = ({ account, onChange, selected }: AccountCheckboxProps) => {
+const AccountCheckbox = ({ account, onChange, selected, percentage }: AccountCheckboxProps) => {
   const { t } = useTranslation()
   return (
     <>
@@ -351,8 +352,9 @@ const AccountCheckbox = ({ account, onChange, selected }: AccountCheckboxProps) 
               onChange(!selected)
             }
           }}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: 'pointer', position: 'relative' }}
         >
+          {percentage !== undefined && <PercentageBar percentage={percentage} highlight={selected} />}
           <rb.Card.Body>
             <div className="d-flex align-items-center">
               <div
@@ -376,6 +378,11 @@ const AccountCheckbox = ({ account, onChange, selected }: AccountCheckboxProps) 
                 </div>
                 <div>
                   <small className="text-secondary">{account.utxos.length} output(s)</small>
+                  {percentage && (
+                    <>
+                      <small className="ps-1 text-secondary">| {`${percentage.toFixed(2)}%`}</small>
+                    </>
+                  )}
                 </div>
               </rb.Stack>
             </div>
@@ -399,6 +406,12 @@ const AccountSelector = ({ accounts, type = 'radio', onChange }: AccountSelector
   }, [accounts])
   const disabledAccounts = useMemo(() => {
     return accounts.filter((it) => !!it.disabled)
+  }, [accounts])
+
+  const totalAmount = useMemo(() => {
+    return accounts
+      .map((it) => it.utxos.reduce((acc, curr) => acc + curr.value, 0))
+      .reduce((acc, curr) => acc + curr, 0)
   }, [accounts])
 
   useEffect(() => {
@@ -432,9 +445,16 @@ const AccountSelector = ({ accounts, type = 'radio', onChange }: AccountSelector
     <rb.Row xs={1} className="gap-2">
       {selectableAccounts.length > 0 &&
         selectableAccounts.map((it) => {
+          const utxosAmountSum = it.utxos.reduce((acc, curr) => acc + curr.value, 0)
+          const percentageOfTotal = totalAmount > 0 ? (100 * utxosAmountSum) / totalAmount : undefined
           return (
             <rb.Col key={it.account} className="d-flex align-items-center">
-              <AccountCheckbox account={it} selected={isSelected(it)} onChange={() => addOrRemove(it)} />
+              <AccountCheckbox
+                account={it}
+                selected={isSelected(it)}
+                onChange={() => addOrRemove(it)}
+                percentage={percentageOfTotal}
+              />
             </rb.Col>
           )
         })}
@@ -734,7 +754,7 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
 
       <div className="my-4 d-flex justify-content-center">
         <ToggleSwitch
-          label={t('create_wallet.confirmation_toggle_fidelity_bond_summary')}
+          label={t('fidelity_bond.confirmation_toggle_create_fb_summary')}
           initialValue={confirmed}
           onToggle={(isToggled: boolean) => onChange(isToggled)}
         />
