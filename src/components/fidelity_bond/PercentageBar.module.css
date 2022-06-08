@@ -1,0 +1,17 @@
+.percentage-bar {
+  position: absolute;
+  height: 100%;
+  background-color: rgba(22, 22, 22, 0.1);
+}
+
+:root[data-theme='dark'] .percentage-bar {
+  background-color: rgba(222, 222, 222, 0.1);
+}
+
+.percentage-bar.highlight {
+  background-color: rgba(39, 174, 96, 0.2);
+}
+
+:root[data-theme='dark'] .percentage-bar.highlight {
+  background-color: rgba(39, 174, 96, 0.1);
+}

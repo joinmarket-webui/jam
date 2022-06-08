@@ -9,7 +9,6 @@ import {
   WalletInfo,
   CurrentWallet,
   Utxos,
-  Utxo,
   Account,
 } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
@@ -27,6 +26,8 @@ import { useBalanceSummary, WalletBalanceSummary } from '../hooks/BalanceSummary
 import { routes } from '../constants/routes'
 import Sprite from './Sprite'
 import { useServiceInfo } from '../context/ServiceInfoContext'
+import UtxoSelector from './fidelity_bond/UtxoSelector'
+import PercentageBar from './fidelity_bond/PercentageBar'
 import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
@@ -161,160 +162,6 @@ const LockdateForm = ({ onChange, maxYears = DEFAULT_MAX_TIMELOCK_YEARS }: Lockd
         </rb.Form.Group>
       </rb.Col>
     </rb.Row>
-  )
-}
-
-const PercentageBar = ({ percentage, highlight }: { percentage: number; highlight: boolean }) => {
-  return (
-    <div
-      style={{ width: `${percentage.toFixed(2)}%` }}
-      className={`${styles['percentage-bar']} ${highlight ? styles['highlight'] : ''}`}
-    ></div>
-  )
-}
-
-interface UtxoCheckboxProps {
-  utxo: Utxo
-  onChange: (selected: boolean) => void
-  initialValue?: boolean
-  percentage?: number
-}
-const UtxoCheckbox = ({ utxo, onChange, initialValue = false, percentage }: UtxoCheckboxProps) => {
-  const { t } = useTranslation()
-  const [selected, setSelected] = useState<boolean>(initialValue)
-
-  useEffect(() => {
-    onChange(selected)
-  }, [selected])
-
-  return (
-    <>
-      <rb.OverlayTrigger
-        trigger={['hover', 'focus']}
-        placement="top"
-        overlay={
-          <rb.Popover>
-            <rb.Popover.Header as="h3">{utxo.value}</rb.Popover.Header>
-            <rb.Popover.Body>
-              <div className="slashed-zeroes">{utxo.utxo}</div>
-            </rb.Popover.Body>
-          </rb.Popover>
-        }
-      >
-        <rb.Card
-          text={selected ? 'success' : undefined}
-          border={selected ? 'success' : undefined}
-          className="w-100"
-          onClick={(e) => {
-            e.stopPropagation()
-            setSelected((current) => !current)
-          }}
-          style={{ cursor: 'pointer', position: 'relative' }}
-        >
-          {percentage !== undefined && <PercentageBar percentage={percentage} highlight={selected} />}
-          <rb.Card.Body style={{}}>
-            <div className="d-flex align-items-center">
-              <div
-                className="d-flex align-items-center justify-content-center me-3"
-                style={{
-                  width: '3rem',
-                  height: '3rem',
-                  backgroundColor: `${selected ? 'rgba(39, 174, 96, 1)' : 'rgba(222, 222, 222, 1)'}`,
-                  color: 'white',
-                  borderRadius: '50%',
-                }}
-              >
-                {selected && <Sprite symbol="checkmark" width="24" height="24" />}
-              </div>
-
-              <rb.Stack className="align-items-start">
-                <rb.Form.Check type="checkbox" className="d-none" label="" checked={selected} readOnly />
-                <Balance valueString={`${utxo.value}`} convertToUnit={SATS} showBalance={true} />
-
-                {percentage !== undefined && <div>{`${percentage.toFixed(2)}%`}</div>}
-                <div>
-                  <small className="text-secondary">{utxo.confirmations} Confirmations</small>
-                </div>
-                <div>
-                  {utxo.label && <span className="me-2 badge bg-light">{utxo.label}</span>}
-                  {utxo.frozen && (
-                    <>
-                      <span className="me-2 badge bg-info">{t('current_wallet_advanced.label_frozen')}</span>
-                      {selected && <span className="small text-warning">Will be unfrozen automatically</span>}
-                    </>
-                  )}
-                </div>
-              </rb.Stack>
-            </div>
-          </rb.Card.Body>
-        </rb.Card>
-      </rb.OverlayTrigger>
-    </>
-  )
-}
-
-interface UtxoSelectorProps {
-  utxos: Utxos
-  type?: 'checkbox' | 'radio'
-  onChange: (selectedUtxos: Utxos) => void
-}
-const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps) => {
-  const sortedUtxos = useMemo<Utxos>(() => {
-    return [...utxos].sort((a, b) => {
-      if (a.value !== b.value) return a.value > b.value ? -1 : 1
-      if (a.confirmations !== b.confirmations) return a.confirmations > b.confirmations ? -1 : 1
-      return 0
-    })
-  }, [utxos])
-
-  const utxosTotalAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
-
-  const [selected, setSelected] = useState<Utxos>([])
-
-  useEffect(() => {
-    setSelected([])
-  }, [utxos])
-
-  const isSelected = useCallback(
-    (utxo: Utxo) => {
-      return selected.includes(utxo)
-    },
-    [selected]
-  )
-
-  const addOrRemove = useCallback(
-    (utxo: Utxo) => {
-      setSelected((current) => {
-        if (isSelected(utxo)) {
-          return current.filter((it) => it !== utxo)
-        }
-        return type === 'checkbox' ? [...current, utxo] : [utxo]
-      })
-    },
-    [isSelected, type]
-  )
-
-  useEffect(() => {
-    onChange(selected)
-  }, [selected])
-
-  return (
-    <div>
-      {sortedUtxos.length === 0 ? (
-        <>No selectable utxos</>
-      ) : (
-        <>
-          {sortedUtxos.map((it) => {
-            const percentageOfTotal = utxosTotalAmountSum > 0 ? (100 * it.value) / utxosTotalAmountSum : undefined
-            return (
-              <div key={it.utxo} onClick={() => addOrRemove(it)} className="d-flex align-items-center mb-2">
-                <UtxoCheckbox utxo={it} onChange={() => addOrRemove(it)} percentage={percentageOfTotal} />
-              </div>
-            )
-          })}
-        </>
-      )}
-    </div>
   )
 }
 
