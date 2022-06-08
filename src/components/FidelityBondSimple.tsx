@@ -45,6 +45,7 @@ const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
 // in "advanced" mode, this can be dropped or increased substantially
 const DEFAULT_MAX_TIMELOCK_YEARS = 10
 
+// TODO: move to utils?
 const timeUtils = (() => {
   type Milliseconds = number
   type UnitKey = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
@@ -61,19 +62,20 @@ const timeUtils = (() => {
     minute: 60 * 1_000,
     second: 1_000,
   }
-  const RELATIVE_TIME_FORMAT = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
-  const timeElapsed = (d1: Milliseconds, d2: Milliseconds = Date.now()) => {
+  type Locales = Intl.UnicodeBCP47LocaleIdentifier | Intl.UnicodeBCP47LocaleIdentifier[]
+  const timeElapsed = (d1: Milliseconds, d2: Milliseconds = Date.now(), locales: Locales = 'en') => {
+    const rtf = new Intl.RelativeTimeFormat(locales, { numeric: 'auto' })
     const elapsedInMillis: Milliseconds = d1 - d2
 
     for (let k of Object.keys(units) as UnitKey[]) {
       const limit: number = units[k]
       if (Math.abs(elapsedInMillis) > limit) {
-        return RELATIVE_TIME_FORMAT.format(Math.round(elapsedInMillis / limit), k)
+        return rtf.format(Math.round(elapsedInMillis / limit), k)
       }
     }
 
-    return RELATIVE_TIME_FORMAT.format(Math.round(elapsedInMillis / units['second']), 'second')
+    return rtf.format(Math.round(elapsedInMillis / units['second']), 'second')
   }
 
   return {
@@ -622,10 +624,13 @@ interface SelectLockdateStepProps {
   onChange: (lockdate: Api.Lockdate) => void
 }
 const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
+  const { i18n } = useTranslation()
   const settings = useSettings()
   const [lockdate, setLockdate] = useState<Api.Lockdate | null>(null)
   const timeTillUnlockString = useMemo(
-    () => lockdate && timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now()),
+    () =>
+      lockdate &&
+      timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
     [lockdate]
   )
 
@@ -690,12 +695,12 @@ interface ConfirmationStepProps {
 }
 
 const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed, onChange }: ConfirmationStepProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const settings = useSettings()
 
   const timeTillUnlockString = useMemo(
-    () => timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now()),
-    [lockdate]
+    () => timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
+    [lockdate, i18n]
   )
 
   const selectedUtxosAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
