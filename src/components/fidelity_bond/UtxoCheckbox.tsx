@@ -15,6 +15,7 @@ interface UtxoCheckboxProps {
   onChange: (utxo: Utxo, checked: boolean) => void
   percentage?: number
 }
+// TODO: use real checkboxes and harmonize with "AccountCheckbox"
 const UtxoCheckbox = ({ utxo, checked, onChange, percentage }: UtxoCheckboxProps) => {
   const { t } = useTranslation()
 

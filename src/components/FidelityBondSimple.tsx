@@ -202,10 +202,9 @@ export const FidelityBondSimple = () => {
 
         setIsLoading(false)
 
-        // reset the utxos regardless of success or error
-        // there is generally nothing that can be done if
-        // if the call does not success - otherwise this results
-        // in endlessly trying to unfreeze the utxos
+        // reset the utxos regardless of success or error.
+        // there is generally nothing that can be done if the call does not success.
+        // otherwise this results in endlessly trying to unfreeze the utxos
         setFrozenUtxoIds(null)
       })
 
@@ -227,7 +226,7 @@ export const FidelityBondSimple = () => {
     try {
       const frozenUtxoIds = await prepareFidelityBondSweepTransaction(currentWallet, currentWalletInfo, selectedUtxos)
       // TODO: consider storing utxo id hashes in local storage..
-      // that way we can revert any changes if a user leaves the page beofe the unfreezing happens
+      // that way any changes can be reverted if a user leaves the page beofe the unfreezing happens
       setFrozenUtxoIds(frozenUtxoIds)
 
       await sweepToFidelityBond(currentWallet, selectedAccount, timelockedDestinationAddress)

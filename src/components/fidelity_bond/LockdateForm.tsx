@@ -63,7 +63,8 @@ const LockdateForm = ({
       return 1
     }
 
-    return currentMonth + 1 // can be '13' - which means it never is valid and user must adapt 'year'.
+    // "minMonth" can be '13' - which means it never is valid and user must adapt 'year'.
+    return currentMonth + 1
   }, [lockdateYear, currentYear, currentMonth, yearsRange])
 
   const isLockdateYearValid = useMemo(

@@ -18,6 +18,7 @@ interface AccountCheckboxProps {
   onChange: (account: Account, checked: boolean) => void
   percentage?: number
 }
+// TODO: use real checkboxes and harmonize with "UtxoCheckbox"
 const AccountCheckbox = ({ account, onChange, checked, percentage }: AccountCheckboxProps) => {
   return (
     <>
