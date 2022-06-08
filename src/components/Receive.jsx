@@ -9,7 +9,8 @@ import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
-import { CopyButtonWithConfirmation } from './CopyButton'
+import { CopyButton } from './CopyButton'
+import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
 import styles from './Receive.module.css'
 
 export default function Receive() {
@@ -83,20 +84,26 @@ export default function Receive() {
               </rb.Placeholder>
             )}
           </div>
-          <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
-            {address && <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>}
+          <rb.Card.Body
+            className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0 d-flex flex-column align-items-center`}
+          >
+            {address && (
+              <rb.Card.Text className={`${styles['address']} text-center slashed-zeroes`}>{address}</rb.Card.Text>
+            )}
             {!address && (
               <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
                 <rb.Placeholder xs={12} sm={10} md={8} className={styles['receive-placeholder']} />
               </rb.Placeholder>
             )}
-            <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
-              <CopyButtonWithConfirmation
+            <div className="d-flex justify-content-center gap-3 w-75">
+              <CopyButton
+                className="flex-1"
                 value={address}
                 text={t('receive.button_copy_address')}
                 successText={t('receive.text_copy_address_confirmed')}
                 disabled={!address || isLoading}
               />
+              {checkIsWebShareAPISupported() && <ShareButton value={address} className="flex-1" />}
             </div>
           </rb.Card.Body>
         </rb.Card>
