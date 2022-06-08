@@ -4,7 +4,6 @@ import { Account, Utxos } from '../../context/WalletContext'
 // @ts-ignore
 import Balance from '../../components/Balance'
 
-import { SATS } from '../../utils'
 import PercentageBar from './PercentageBar'
 import CheckboxCard from './CheckboxCard'
 
@@ -15,11 +14,21 @@ export type SelectableAccount = Account & WithUtxos & WithDisabled
 interface AccountCheckboxProps {
   account: SelectableAccount
   checked: boolean
+  disabled?: boolean
   onChange: (account: Account, checked: boolean) => void
   percentage?: number
+  unit?: 'sats' | 'BTC'
+  showBalance?: boolean
 }
 
-const AccountCheckbox = ({ account, onChange, checked, percentage }: AccountCheckboxProps) => {
+const AccountCheckbox = ({
+  account,
+  onChange,
+  checked,
+  percentage,
+  unit = 'sats',
+  showBalance = false,
+}: AccountCheckboxProps) => {
   const _onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       return onChange(account, e.target.checked)
@@ -33,7 +42,7 @@ const AccountCheckbox = ({ account, onChange, checked, percentage }: AccountChec
       <rb.Stack className="align-items-start p-2">
         <div>Jar #{account.account}</div>
         <div>
-          <Balance valueString={account.account_balance} convertToUnit={SATS} showBalance={true} />
+          <Balance valueString={account.account_balance} convertToUnit={unit} showBalance={showBalance} />
         </div>
         <div>
           <small className="text-secondary">{account.utxos.length} output(s)</small>

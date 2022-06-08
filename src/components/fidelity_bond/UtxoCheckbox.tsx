@@ -5,7 +5,6 @@ import { Utxo } from '../../context/WalletContext'
 // @ts-ignore
 import Balance from '../../components/Balance'
 
-import { SATS } from '../../utils'
 import PercentageBar from './PercentageBar'
 import CheckboxCard from './CheckboxCard'
 
@@ -15,9 +14,19 @@ interface UtxoCheckboxProps {
   disabled?: boolean
   onChange: (utxo: Utxo, checked: boolean) => void
   percentage?: number
+  unit?: 'sats' | 'BTC'
+  showBalance?: boolean
 }
 
-const UtxoCheckbox = ({ utxo, checked, disabled = false, onChange, percentage }: UtxoCheckboxProps) => {
+const UtxoCheckbox = ({
+  utxo,
+  checked,
+  disabled = false,
+  unit = 'sats',
+  showBalance = false,
+  onChange,
+  percentage,
+}: UtxoCheckboxProps) => {
   const { t } = useTranslation()
 
   const _onChange = useCallback(
@@ -31,7 +40,7 @@ const UtxoCheckbox = ({ utxo, checked, disabled = false, onChange, percentage }:
     <CheckboxCard checked={checked} disabled={disabled} onChange={_onChange}>
       {percentage !== undefined && <PercentageBar percentage={percentage} highlight={checked} />}
       <rb.Stack className="align-items-start p-2">
-        <Balance valueString={`${utxo.value}`} convertToUnit={SATS} showBalance={true} />
+        <Balance valueString={`${utxo.value}`} convertToUnit={unit} showBalance={showBalance} />
 
         {percentage !== undefined && <div>{`${percentage.toFixed(2)}%`}</div>}
         <div>

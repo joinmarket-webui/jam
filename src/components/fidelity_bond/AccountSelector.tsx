@@ -2,6 +2,8 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 
 import { Account } from '../../context/WalletContext'
+// @ts-ignore
+import { useSettings } from '../../context/SettingsContext'
 import AccountCheckbox, { SelectableAccount } from './AccountCheckbox'
 
 interface AccountSelectorProps {
@@ -16,6 +18,7 @@ const AccountSelector = ({
   onChange,
   displayDisabledAccounts = true,
 }: AccountSelectorProps) => {
+  const settings = useSettings()
   const [selected, setSelected] = useState<Account[]>([])
 
   const selectableAccounts = useMemo(() => {
@@ -71,6 +74,8 @@ const AccountSelector = ({
               checked={isSelected(it)}
               onChange={addOrRemove}
               percentage={percentageOfTotal}
+              unit={settings.unit}
+              showBalance={settings.showBalance}
             />
           </rb.Col>
         )

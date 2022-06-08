@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
+
 import { Utxos, Utxo } from '../../context/WalletContext'
+// @ts-ignore
+import { useSettings } from '../../context/SettingsContext'
 
 import UtxoCheckbox from './UtxoCheckbox'
 
@@ -10,6 +13,8 @@ interface UtxoSelectorProps {
   onChange: (selectedUtxos: Utxos) => void
 }
 const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps) => {
+  const settings = useSettings()
+
   const sortedUtxos = useMemo<Utxos>(() => {
     return [...utxos].sort((a, b) => {
       if (a.value !== b.value) return a.value > b.value ? -1 : 1
@@ -64,6 +69,8 @@ const UtxoSelector = ({ utxos, type = 'checkbox', onChange }: UtxoSelectorProps)
                   checked={isSelected(it)}
                   onChange={addOrRemove}
                   percentage={percentageOfTotal}
+                  unit={settings.unit}
+                  showBalance={settings.showBalance}
                 />
               </rb.Col>
             )

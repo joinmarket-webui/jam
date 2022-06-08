@@ -18,7 +18,6 @@ import UtxoSelector from './UtxoSelector'
 import AccountSelector from './AccountSelector'
 import LockdateForm, { lockdateToTimestamp } from './LockdateForm'
 
-import { SATS } from '../../utils'
 import { routes } from '../../constants/routes'
 import * as Api from '../../libs/JmWalletApi'
 
@@ -190,7 +189,11 @@ const SelectUtxosStep = ({ balanceSummary, account, utxos, onSelected }: SelectU
               <tr>
                 <td>Total sum of selected UTXOs</td>
                 <td className="text-end">
-                  <Balance valueString={`${selectedUtxosAmountSum}`} convertToUnit={SATS} showBalance={true} />
+                  <Balance
+                    valueString={`${selectedUtxosAmountSum}`}
+                    convertToUnit={settings.unit}
+                    showBalance={settings.showBalance}
+                  />
                 </td>
               </tr>
               <tr>
@@ -256,7 +259,11 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
               <tr>
                 <td>Fidelity Bond Size</td>
                 <td className="text-end">
-                  <Balance valueString={`${selectedUtxosAmountSum}`} convertToUnit={SATS} showBalance={true} />
+                  <Balance
+                    valueString={`${selectedUtxosAmountSum}`}
+                    convertToUnit={settings.unit}
+                    showBalance={settings.showBalance}
+                  />
                 </td>
               </tr>
               <tr>
@@ -327,7 +334,11 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
               <tr>
                 <td>Fidelity Bond Size</td>
                 <td className="text-end">
-                  <Balance valueString={`${selectedUtxosAmountSum}`} convertToUnit={SATS} showBalance={true} />
+                  <Balance
+                    valueString={`${selectedUtxosAmountSum}`}
+                    convertToUnit={settings.unit}
+                    showBalance={settings.showBalance}
+                  />
                 </td>
               </tr>
               <tr>
@@ -373,6 +384,7 @@ interface FidelityBondDetailsSetupFormProps {
 
 const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: FidelityBondDetailsSetupFormProps) => {
   const { t } = useTranslation()
+  const settings = useSettings()
   const balanceSummary = useBalanceSummary(walletInfo)
 
   const utxos = useMemo(() => (walletInfo === null ? [] : walletInfo.data.utxos.utxos), [walletInfo])
@@ -491,7 +503,11 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
                 {/*t('fidelity_bond.proceed_with_amount', { amount: selectedUtxosAmountSum })*/}
                 {`Proceed with`}
                 {` `}
-                <Balance valueString={`${selectedUtxosAmountSum}`} convertToUnit={SATS} showBalance={true} />
+                <Balance
+                  valueString={`${selectedUtxosAmountSum}`}
+                  convertToUnit={settings.unit}
+                  showBalance={settings.showBalance}
+                />
               </>
             )}
           </rb.Button>
