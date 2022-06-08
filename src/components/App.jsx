@@ -150,8 +150,8 @@ export default function App() {
 
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
-          <div className="d-flex flex-1 order-0 justify-content-start align-items-center">
-            <div className="warning-hint text-start text-secondary d-none d-md-block">
+          <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
+            <div className="warning-hint text-start text-secondary">
               <Trans i18nKey="footer.warning">
                 This is pre-alpha software.
                 <rb.Button
@@ -164,7 +164,7 @@ export default function App() {
               </Trans>
             </div>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center pt-0 px-4">
+          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center pt-0">
             {cheatsheetEnabled && (
               <div className="order-1 order-sm-0">
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
