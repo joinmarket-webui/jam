@@ -349,7 +349,8 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
 
       <div className="my-4 d-flex justify-content-center">
         <ToggleSwitch
-          label={t('fidelity_bond.confirmation_toggle_create_fb_summary')}
+          label={t('fidelity_bond.create_form.confirmation_toggle_title')}
+          subtitle={t('fidelity_bond.create_form.confirmation_toggle_subtitle')}
           initialValue={confirmed}
           onToggle={(isToggled: boolean) => onChange(isToggled)}
         />
@@ -540,7 +541,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
             disabled={!userConfirmed}
             onClick={() => _onSubmit(selectedAccount, selectedUtxos, selectedLockdate)}
           >
-            {t('fidelity_bond.button_create')}
+            {t('fidelity_bond.create_form.button_create')}
           </rb.Button>
 
           <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(2)}>

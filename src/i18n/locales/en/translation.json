@@ -2,7 +2,9 @@
   "global": {
     "loading": "Loading",
     "button_copy_text": "Copy",
-    "button_copy_text_confirmed": "Copied"
+    "button_copy_text_confirmed": "Copied",
+    "next": "Next",
+    "back": "Back"
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}"
@@ -268,6 +270,15 @@
     "item_last": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
+    }
+  },
+  "fidelity_bond": {
+    "title": "Fidelity Bonds (Experimental)",
+    "subtitle": "Fidelity Bonds are a feature to improve the resistance to sybil attacks by deliberately locking up bitcoin value to make a cryptographic identity expensive to obtain. Therefore improving your privacy and the whole network. You will have a higher probability to take part in collaborative transaction and earn more yield.",
+    "create_form": {
+      "confirmation_toggle_title": "I have reviewed my inputs carefully",
+      "confirmation_toggle_subtitle": "I understand that the locked value will be inaccessible for the given duration",
+      "button_create": "Create Fidelity Bond"
     }
   },
   "scheduler": {
