@@ -30,15 +30,15 @@ type CoinControlSetupResult = {
 }
 
 const createCoinControlSetup = (walletInfo: WalletInfo, selectedUtxos: Utxos): CoinControlSetupResult => {
-  const selectedMixdepth = selectedUtxos[0].mixdepth
+  if (selectedUtxos.length === 0) throw new Error('At least one utxo must be provided')
+
+  const accountIndex = selectedUtxos[0].mixdepth
 
   // sanity check
-  const sameAccountCheck = selectedUtxos.every((it) => it.mixdepth === selectedMixdepth)
-  if (!sameAccountCheck) {
-    throw new Error('Given utxos must be from the same account')
-  }
+  const sameAccountCheck = selectedUtxos.every((it) => it.mixdepth === accountIndex)
+  if (!sameAccountCheck) throw new Error('Given utxos must be from the same account')
 
-  const allUtxosInAccount = walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === selectedMixdepth)
+  const allUtxosInAccount = walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === accountIndex)
 
   const otherUtxos = allUtxosInAccount.filter((it) => !selectedUtxos.includes(it))
   const eligibleForFreeze = otherUtxos.filter((it) => !it.frozen).map((it) => it.utxo)
