@@ -100,7 +100,7 @@ export default function App() {
         </div>
       )}
       <Navbar />
-      <rb.Container as="main" className="py-3 py-sm-5">
+      <rb.Container as="main" className="py-4 py-sm-5">
         {sessionConnectionError && (
           <rb.Alert variant="danger">
             {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
