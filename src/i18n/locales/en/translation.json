@@ -14,7 +14,7 @@
     "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "footer": {
-    "warning": "This is alpha software.<br /><1>Read this before using.</1>",
+    "warning": "This is beta software.<br /><1>Read this before using.</1>",
     "warning_alert_title": "Warning",
     "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.",
     "warning_alert_button_ok": "Fine with me.",
@@ -30,7 +30,7 @@
     "splashscreen_description_line1": "Your wallet, your coins.",
     "splashscreen_description_line2": "100% open-source & open-design.",
     "splashscreen_warning_title": "Warning",
-    "splashscreen_warning_text": "While JoinMarket is tried and tested, Jam is anything but. It is alpha software, so please use it with caution. You can <1>help to improve the project on GitHub</1>.",
+    "splashscreen_warning_text": "While JoinMarket is tried and tested, Jam is anything but. It is beta software, so please use it with caution. You can <1>help to improve the project on GitHub</1>.",
     "screen_1_title": "Welcome to Jam for JoinMarket!",
     "screen_1_description": "Jam is an interface for JoinMarket, a privacy-focused software solution that aims to improve the confidentiality and privacy of your bitcoin transactions. Its main focus is to facilitate the creation of collaborative transactions through a peer-to-peer marketplace.",
     "screen_2_title": "Collaborative Transactions",
