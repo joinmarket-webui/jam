@@ -27,21 +27,12 @@ import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
-/**
- * - freeze all utxos except the selected ones
- * - unfreeze any frozen selected utxo
- * - return frozen utxo ids
- *
- * The returned utxos SHOULD be unfrozen by the caller
- * once the collaborative transaction finishes.
- *
- * @return list of utxo ids that were automatically frozen
- */
-const prepareFidelityBondSweepTransaction = async (
-  requestContext: Api.WalletRequestContext,
-  walletInfo: WalletInfo,
-  selectedUtxos: Utxos
-): Promise<Api.UtxoId[]> => {
+type CoinControlSetupResult = {
+  freeze: Api.UtxoId[]
+  unfreeze: Api.UtxoId[]
+}
+
+const createCoinControlSetup = (walletInfo: WalletInfo, selectedUtxos: Utxos): CoinControlSetupResult => {
   const selectedMixdepth = selectedUtxos[0].mixdepth
 
   // sanity check
@@ -56,16 +47,50 @@ const prepareFidelityBondSweepTransaction = async (
   const eligibleForFreeze = otherUtxos.filter((it) => !it.frozen).map((it) => it.utxo)
   const eligibleForUnfreeze = selectedUtxos.filter((it) => it.frozen).map((it) => it.utxo)
 
-  const freezePromises = eligibleForFreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: true }))
-  const unfreezePromises = eligibleForUnfreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
+  return {
+    freeze: eligibleForFreeze,
+    unfreeze: eligibleForUnfreeze,
+  }
+}
 
-  console.debug(`Freezing ${eligibleForFreeze.length} utxos in account ${selectedMixdepth}`, eligibleForFreeze)
+/**
+ * Prepare the sweep transaction creating a Fidelity Bond.
+ * Steps:
+ * - freeze all utxos except the selected ones
+ * - unfreeze any frozen selected utxo
+ * - return frozen utxo ids
+ *
+ * The returned utxos SHOULD be unfrozen by the caller
+ * once the collaborative transaction finishes.
+ *
+ * @return list of utxo ids that were frozen
+ */
+const prepareUtxosForSweep = async (
+  requestContext: Api.WalletRequestContext,
+  setup: CoinControlSetupResult
+): Promise<Api.UtxoId[]> => {
+  const freezePromises = setup.freeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: true }))
+  const unfreezePromises = setup.unfreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
+
   await Promise.all(freezePromises)
-
-  console.debug(`Unfreeze ${eligibleForFreeze.length} utxos in account ${selectedMixdepth}`, eligibleForUnfreeze)
   await Promise.all(unfreezePromises)
 
-  return eligibleForFreeze
+  return setup.freeze
+}
+
+/**
+ * Undo potential changes made to utxos freeze state.
+ *
+ */
+const undoPrepareUtxosForSweep = async (
+  requestContext: Api.WalletRequestContext,
+  setup: CoinControlSetupResult
+): Promise<void> => {
+  const reversedSetup = {
+    freeze: setup.unfreeze,
+    unfreeze: setup.freeze,
+  }
+  await prepareUtxosForSweep(requestContext, reversedSetup)
 }
 
 /**
@@ -77,13 +102,13 @@ const sweepToFidelityBond = async (
   account: Account,
   timelockedDestinationAddress: Api.BitcoinAddress,
   counterparties: number
-): Promise<Response> => {
+): Promise<true> => {
   return await Api.postCoinjoin(requestContext, {
     mixdepth: parseInt(account.account, 10),
     destination: timelockedDestinationAddress,
     amount_sats: 0, // sweep
     counterparties,
-  })
+  }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
 }
 
 export default function FidelityBond() {
@@ -103,7 +128,8 @@ export default function FidelityBond() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [isCreateSuccess, setIsCreateSuccess] = useState(false)
-  const [isCreateError, setIsCreateError] = useState(false)
+  const [createError, setCreateError] = useState<unknown | null>(null)
+  const isCreateError = useMemo(() => createError !== null, [createError])
   const [frozenUtxoIds, setFrozenUtxoIds] = useState<Api.UtxoId[] | null>(null)
 
   const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
@@ -230,19 +256,40 @@ export default function FidelityBond() {
         key: { section: 'POLICY', field: 'minimum_makers' },
       }).then((data) => parseInt(data.value, 10))
 
-      const frozenUtxoIds = await prepareFidelityBondSweepTransaction(requestContext, currentWalletInfo, selectedUtxos)
+      const coinControlSetup = createCoinControlSetup(currentWalletInfo, selectedUtxos)
 
-      // TODO: consider storing utxo id hashes in local storage..
-      // that way any changes can be reverted if a user leaves the page beofe the unfreezing happens
-      setFrozenUtxoIds(frozenUtxoIds)
+      console.info(
+        `Freezing ${coinControlSetup.freeze.length} utxos that are not part of the fidelity bond`,
+        coinControlSetup.freeze
+      )
+      console.info(
+        `Unfreeze ${coinControlSetup.unfreeze.length} utxos that are part of the fidelity bond`,
+        coinControlSetup.unfreeze
+      )
 
-      // TODO: how many counterparties to use? is "minimum" for fbs okay?
-      await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
+      try {
+        const frozenUtxoIds = await prepareUtxosForSweep(requestContext, coinControlSetup)
+
+        // TODO: consider storing utxo id hashes in local storage..
+        // that way any changes can be reverted if a user leaves the page beofe the unfreezing happens
+        setFrozenUtxoIds(frozenUtxoIds)
+
+        // TODO: how many counterparties to use? is "minimum" for fbs okay?
+        await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
+      } catch (error) {
+        try {
+          await undoPrepareUtxosForSweep(requestContext, coinControlSetup)
+        } catch (restoreError) {
+          // unfortunately, restore failed and there is nothing that can be done except informing the user
+          // TODO: user feedback
+        }
+        throw error
+      }
 
       setWaitForTakerToFinish(true)
       setIsCreateSuccess(true)
     } catch (error) {
-      setIsCreateError(true)
+      setCreateError(error)
       throw error
     } finally {
       setIsCreating(false)
@@ -282,6 +329,9 @@ export default function FidelityBond() {
           for more information.
         </Trans>
       </div>
+
+      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+
       <div>
         {isInitializing || isLoading ? (
           <div className="d-flex justify-content-center align-items-center">
@@ -290,8 +340,6 @@ export default function FidelityBond() {
           </div>
         ) : (
           <>
-            {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-
             {currentWallet && currentWalletInfo && fidelityBonds && fidelityBonds.length === 0 && (
               <>
                 {waitForTakerToFinish || isCreateSuccess || isCreateError ? (
