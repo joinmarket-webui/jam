@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
@@ -21,8 +20,6 @@ import PageTitle from './PageTitle'
 
 import FidelityBondDetailsSetupForm from './fidelity_bond/FidelityBondDetailsSetupForm'
 import * as Api from '../libs/JmWalletApi'
-import { routes } from '../constants/routes'
-import { isFeatureEnabled } from '../constants/features'
 import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }

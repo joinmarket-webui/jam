@@ -223,9 +223,8 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
 
   const [lockdate, setLockdate] = useState<Api.Lockdate | null>(null)
   const yearsRange = useMemo(() => {
-    if (process.env.NODE_ENV === 'development') {
-      // allow creating lockdate in the past in dev mode
-      // return toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS)
+    if (isDebugFeatureEnabled('allowCreatingExpiredFidelityBond')) {
+      return toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS)
     }
     return toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS)
   }, [])
