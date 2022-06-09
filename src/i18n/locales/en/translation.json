@@ -16,7 +16,7 @@
   "footer": {
     "warning": "This is beta software.<br /><1>Read this before using.</1>",
     "warning_alert_title": "Warning",
-    "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.",
+    "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in a beta stage, so use with caution.",
     "warning_alert_button_ok": "Fine with me.",
     "cheatsheet": "Cheatsheet",
     "connected": "Connected",

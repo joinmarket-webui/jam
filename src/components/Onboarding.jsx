@@ -72,7 +72,7 @@ export default function Onboarding() {
           <div className="fw-bolder">{t('onboarding.splashscreen_warning_title')}</div>
           <div>
             <Trans i18nKey="onboarding.splashscreen_warning_text">
-              While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.
+              While JoinMarket is tried and tested, Jam is not. It is in a beta stage, so use with caution.
               <a
                 href="https://github.com/joinmarket-webui/joinmarket-webui/issues"
                 target="_blank"
