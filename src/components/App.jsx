@@ -34,7 +34,7 @@ export default function App() {
   const sessionConnectionError = useSessionConnectionError()
 
   const [websocketConnected, setWebsocketConnected] = useState()
-  const [showAlphaWarning, setShowBetaWarning] = useState(false)
+  const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
   const cheatsheetEnabled = currentWallet
@@ -84,7 +84,7 @@ export default function App() {
 
   return (
     <>
-      {showAlphaWarning && (
+      {showBetaWarning && (
         <div className="warning-card-wrapper">
           <rb.Card className="warning-card translate-middle shadow-lg">
             <rb.Card.Body>
