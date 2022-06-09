@@ -255,7 +255,7 @@ export default function FidelityBond() {
   }, [waitForTakerToFinish, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
 
   /**
-   * Unfreeze any utxo that has been frozen before the
+   * Unfreeze any utxo that has been frozen before
    * broadcasting the collaborative sweep transaction.
    */
   useEffect(() => {
