@@ -283,9 +283,9 @@ export default function FidelityBond() {
 
         setIsLoading(false)
 
-        // reset the utxos regardless of success or error.
-        // there is generally nothing that can be done if the call does not success.
-        // otherwise this results in endlessly trying to unfreeze the utxos
+        // Reset the utxos regardless of success or error.
+        // There is generally nothing that can be done if the call does not succeed.
+        // Otherwise this results in endlessly trying to unfreeze the utxos.
         setFrozenUtxoIds(null)
       })
 
