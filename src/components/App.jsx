@@ -153,7 +153,7 @@ export default function App() {
           <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
             <div className="warning-hint text-start text-secondary">
               <Trans i18nKey="footer.warning">
-                This is pre-alpha software.
+                This is alpha software.
                 <rb.Button
                   variant="link"
                   className="warning-hint text-start border-0 p-0 text-secondary"
