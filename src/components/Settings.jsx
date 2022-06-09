@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
-import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -100,8 +99,8 @@ export default function Settings() {
 
   return (
     <div className={styles.settings}>
-      <PageTitle title={t('settings.title')} />
-      <div className="d-flex flex-column gap-4">
+      <div className="d-flex flex-column gap-3">
+        <div className={styles['section-title']}>{t('settings.title')}</div>
         <div className={styles['settings-group-container']}>
           <rb.Button
             variant="outline-dark"
@@ -165,7 +164,7 @@ export default function Settings() {
           </rb.Dropdown>
         </div>
 
-        <h2 className="mb-0">{t('settings.section_title_wallet')}</h2>
+        <div className={styles['section-title']}>{t('settings.section_title_wallet')}</div>
         <div className={styles['settings-group-container']}>
           <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
             <Sprite symbol="mnemonic" width="24" height="24" />
@@ -179,7 +178,7 @@ export default function Settings() {
           </Link>
         </div>
 
-        <h2 className="mb-0">{t('settings.section_title_community')}</h2>
+        <div className={styles['section-title']}>{t('settings.section_title_community')}</div>
         <div className={styles['settings-links']}>
           <a
             href="https://github.com/joinmarket-webui/joinmarket-webui"
