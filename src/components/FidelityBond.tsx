@@ -77,12 +77,14 @@ const prepareUtxosForSweep = async (
   // make sure to limit the number of concurrent requests
   const freezeActions = setup.freeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: true }))
   for (const freezeAction of freezeActions) {
-    await freezeAction.then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+    const res = await freezeAction
+    if (!res.ok) await Api.Helper.throwError(res)
   }
 
   const unfreezeActions = setup.unfreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
   for (const unfreezeAction of unfreezeActions) {
-    await unfreezeAction.then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+    const res = await unfreezeAction
+    if (!res.ok) await Api.Helper.throwError(res)
   }
 
   return setup.freeze
@@ -407,42 +409,32 @@ export default function FidelityBond() {
               <>
                 {waitForTakerToFinish || isCreateSuccess || isCreateError ? (
                   <>
-                    <>
-                      {waitForTakerToFinish ? (
-                        <>
-                          <div className="d-flex justify-content-center align-items-center">
-                            <rb.Spinner
-                              animation="border"
-                              size="sm"
-                              role="status"
-                              aria-hidden="true"
-                              className="me-2"
-                            />
-                            <Trans i18nKey="fidelity_bond.transaction_in_progress_loading_text">
-                              Creating Fidelity Bond…
+                    {waitForTakerToFinish ? (
+                      <>
+                        <div className="d-flex justify-content-center align-items-center">
+                          <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                          <Trans i18nKey="fidelity_bond.transaction_in_progress_loading_text">
+                            Creating Fidelity Bond…
+                          </Trans>
+                        </div>
+                        <div className="d-flex justify-content-center">
+                          <small>
+                            <Trans i18nKey="fidelity_bond.transaction_in_progress_patience_text">
+                              Please be patient, this will take several minutes.
                             </Trans>
-                          </div>
-                          <div className="d-flex justify-content-center">
-                            <small>
-                              <Trans i18nKey="fidelity_bond.transaction_in_progress_patience_text">
-                                Please be patient, this will take several minutes.
-                              </Trans>
-                            </small>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <>
-                            {isCreateSuccess && (
-                              <div className="d-flex justify-content-center align-items-center">Success!</div>
-                            )}
-                            {isCreateError && (
-                              <div className="d-flex justify-content-center align-items-center">Error!</div>
-                            )}
-                          </>
-                        </>
-                      )}
-                    </>
+                          </small>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {isCreateSuccess && (
+                          <div className="d-flex justify-content-center align-items-center">Success!</div>
+                        )}
+                        {isCreateError && (
+                          <div className="d-flex justify-content-center align-items-center">Error!</div>
+                        )}
+                      </>
+                    )}
                   </>
                 ) : (
                   <FidelityBondDetailsSetupForm
