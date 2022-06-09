@@ -7,8 +7,7 @@
     "tab_earn": "Générer",
     "joining_in_progress": "Joindre",
     "menu_mobile": "Menu",
-    "menu_mobile_settings": "Réglages",
-    "menu_mobile_wallets": "Porte-monnaies"
+    "menu_mobile_settings": "Réglages"
   },
   "app": {
     "alert_no_connection": "Aucune connexion au backend: {{ connectionError }}"
