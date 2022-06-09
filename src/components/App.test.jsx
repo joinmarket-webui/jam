@@ -47,7 +47,7 @@ describe('<App />', () => {
     expect(screen.getByText('wallets.button_new_wallet')).toBeInTheDocument()
   })
 
-  it('should display a modal with alpha warning information', () => {
+  it('should display a modal with beta warning information', () => {
     global.__DEV__.addToAppSettings({ showOnboarding: false })
 
     act(() => {
