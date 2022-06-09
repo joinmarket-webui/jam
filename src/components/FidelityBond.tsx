@@ -135,19 +135,34 @@ const undoPrepareUtxosForSweep = async (
 }
 
 /**
- * Send funds to a timelocked address with a collaborative sweep transactions.
+ * Send funds to a timelocked address.
+ * Defaults to sweep with a collaborative transaction.
+ * If the selected utxos is a single expired FB, a "diret-send" is for sweeping.
+ *
  * The transaction will have no change output.
  */
 const sweepToFidelityBond = async (
   requestContext: Api.WalletRequestContext,
   account: Account,
+  utxos: Utxos,
   timelockedDestinationAddress: Api.BitcoinAddress,
   counterparties: number
 ): Promise<true> => {
+  const amount_sats = 0 // sweep
+
+  const useDirectSend = utxos.length === 1 && !!utxos[0].locktime
+  if (useDirectSend) {
+    return await Api.postDirectSend(requestContext, {
+      mixdepth: parseInt(account.account, 10),
+      destination: timelockedDestinationAddress,
+      amount_sats,
+    }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+  }
+
   return await Api.postCoinjoin(requestContext, {
     mixdepth: parseInt(account.account, 10),
     destination: timelockedDestinationAddress,
-    amount_sats: 0, // sweep
+    amount_sats,
     counterparties,
   }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
 }
@@ -188,6 +203,10 @@ export default function FidelityBond() {
     [currentWalletInfo]
   )
   const fidelityBonds = useMemo(() => (utxos === null ? null : utxos.filter((utxo) => utxo.locktime)), [utxos])
+  const activeFidelityBonds = useMemo(
+    () => (fidelityBonds === null ? null : fidelityBonds.filter((utxo) => utxo.frozen)),
+    [fidelityBonds]
+  )
 
   useEffect(() => {
     if (!currentWallet) {
@@ -311,7 +330,13 @@ export default function FidelityBond() {
         setFrozenUtxoIds(frozenUtxoIds)
 
         // TODO: how many counterparties to use? is "minimum" for fbs okay?
-        await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
+        await sweepToFidelityBond(
+          requestContext,
+          selectedAccount,
+          selectedUtxos,
+          timelockedDestinationAddress,
+          minimumMakers
+        )
       } catch (error) {
         const unrestoredUtxos = await undoPrepareUtxosForSweep(requestContext, coinControlSetup)
         if (unrestoredUtxos.length !== 0) {
@@ -378,16 +403,33 @@ export default function FidelityBond() {
           </div>
         ) : (
           <>
-            {currentWallet && currentWalletInfo && fidelityBonds && fidelityBonds.length === 0 && (
+            {currentWallet && currentWalletInfo && activeFidelityBonds && activeFidelityBonds.length === 0 && (
               <>
                 {waitForTakerToFinish || isCreateSuccess || isCreateError ? (
                   <>
                     <>
                       {waitForTakerToFinish ? (
-                        <div className="d-flex justify-content-center align-items-center">
-                          <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                          {t('fidelity_bond.transaction_in_progress')}
-                        </div>
+                        <>
+                          <div className="d-flex justify-content-center align-items-center">
+                            <rb.Spinner
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                              className="me-2"
+                            />
+                            <Trans i18nKey="fidelity_bond.transaction_in_progress_loading_text">
+                              Creating Fidelity Bond…
+                            </Trans>
+                          </div>
+                          <div className="d-flex justify-content-center">
+                            <small>
+                              <Trans i18nKey="fidelity_bond.transaction_in_progress_patience_text">
+                                Please be patient, this will take several minutes.
+                              </Trans>
+                            </small>
+                          </div>
+                        </>
                       ) : (
                         <>
                           <>
@@ -412,15 +454,11 @@ export default function FidelityBond() {
               </>
             )}
 
-            {fidelityBonds && fidelityBonds.length > 0 && (
-              <>
-                {fidelityBonds.length > 0 && (
-                  <div className="mt-2 mb-4">
-                    <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
-                    <DisplayUTXOs utxos={fidelityBonds} />
-                  </div>
-                )}
-              </>
+            {activeFidelityBonds && activeFidelityBonds.length > 0 && (
+              <div className="mt-2 mb-4">
+                <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
+                <DisplayUTXOs utxos={activeFidelityBonds} />
+              </div>
             )}
           </>
         )}

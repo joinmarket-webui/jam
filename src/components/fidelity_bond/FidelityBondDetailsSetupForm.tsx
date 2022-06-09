@@ -160,6 +160,7 @@ const SelectUtxosStep = ({ balanceSummary, account, utxos, onSelected }: SelectU
     if (walletTotalBalanceInSats <= 0) return 0
     return selectedUtxosAmountSum / walletTotalBalanceInSats
   }, [selectedUtxosAmountSum, walletTotalBalanceInSats])
+
   return (
     <>
       <h2>Select UTXOs</h2>
@@ -197,7 +198,7 @@ const SelectUtxosStep = ({ balanceSummary, account, utxos, onSelected }: SelectU
               </tr>
               <tr>
                 <td className="border-0">Relative size to your total balance</td>
-                <td className="border-0 text-end">{(relativeSizeToTotalBalance * 100).toFixed(2)} %</td>
+                <td className="border-0 text-end">{(relativeSizeToTotalBalance * 100).toFixed(2)}%</td>
               </tr>
             </tbody>
           </rb.Table>
@@ -509,8 +510,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
               t('global.next')
             ) : (
               <>
-                {/*t('fidelity_bond.proceed_with_amount', { amount: selectedUtxosAmountSum })*/}
-                {`Proceed with`}
+                Proceed with
                 {` `}
                 <Balance
                   valueString={`${selectedUtxosAmountSum}`}
