@@ -152,16 +152,24 @@ export default function App() {
         <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
           <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
             <div className="warning-hint text-start text-secondary">
-              <Trans i18nKey="footer.warning">
-                This is pre-alpha software.
-                <rb.Button
-                  variant="link"
-                  className="warning-hint text-start border-0 p-0 text-secondary"
-                  onClick={() => setShowAlphaWarning(true)}
-                >
-                  Read this before using.
-                </rb.Button>
-              </Trans>
+              This is pre-alpha software.
+              <br />
+              <a
+                href="https://github.com/joinmarket-webui/joinmarket-webui/tags"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-secondary"
+              >
+                v{packageInfo.version}
+              </a>
+              {' - '}
+              <rb.Button
+                variant="link"
+                className="warning-hint text-start border-0 p-0 text-secondary"
+                onClick={() => setShowAlphaWarning(true)}
+              >
+                Read this before using.
+              </rb.Button>
             </div>
           </div>
           <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center pt-0">
@@ -184,17 +192,6 @@ export default function App() {
             )}
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
-            <div className="warning-hint text-start text-secondary d-none d-md-block pe-1">
-              <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui/tags"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="d-flex align-items-center text-secondary"
-              >
-                {' '}
-                v{packageInfo.version}
-              </a>
-            </div>
             <div className="d-flex gap-2 pe-2">
               <a
                 href="https://github.com/joinmarket-webui/joinmarket-webui"
