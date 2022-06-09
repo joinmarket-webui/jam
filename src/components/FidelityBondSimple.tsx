@@ -17,22 +17,26 @@ import DisplayUTXOs from './DisplayUTXOs'
 
 import * as Api from '../libs/JmWalletApi'
 import FidelityBondDetailsSetupForm from './fidelity_bond/FidelityBondDetailsSetupForm'
+import { useLoadConfigValue } from '../context/ServiceConfigContext'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
 /**
  * - freeze all utxos except the selected ones
- * - unfreze any frozen selected utxo
+ * - unfreeze any frozen selected utxo
  * - return frozen utxo ids
+ *
+ * The returned utxos SHOULD be unfrozen by the caller
+ * once the collaborative transaction finishes.
+ *
+ * @return list of utxo ids that were automatically frozen
  */
 const prepareFidelityBondSweepTransaction = async (
-  currentWallet: CurrentWallet,
+  requestContext: Api.WalletRequestContext,
   walletInfo: WalletInfo,
   selectedUtxos: Utxos
 ): Promise<Api.UtxoId[]> => {
-  const { name: walletName, token } = currentWallet
-
-  const selectedMixdepth = selectedUtxos[0].mixdepth // all utxos from same account!
+  const selectedMixdepth = selectedUtxos[0].mixdepth
 
   // sanity check
   const sameAccountCheck = selectedUtxos.every((it) => it.mixdepth === selectedMixdepth)
@@ -43,55 +47,37 @@ const prepareFidelityBondSweepTransaction = async (
   const allUtxosInAccount = walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === selectedMixdepth)
 
   const otherUtxos = allUtxosInAccount.filter((it) => !selectedUtxos.includes(it))
-  const eligibleForFreeze = otherUtxos.filter((it) => !it.frozen)
-  const eligibleForUnfreeze = selectedUtxos.filter((it) => it.frozen)
+  const eligibleForFreeze = otherUtxos.filter((it) => !it.frozen).map((it) => it.utxo)
+  const eligibleForUnfreeze = selectedUtxos.filter((it) => it.frozen).map((it) => it.utxo)
 
-  const freezePromises = eligibleForFreeze.map((it) => {
-    return Api.postFreeze({ walletName, token }, { utxo: it.utxo, freeze: true })
-  })
-  const unfreezePromises = eligibleForUnfreeze.map((it) => {
-    return Api.postFreeze({ walletName, token }, { utxo: it.utxo, freeze: false })
-  })
+  const freezePromises = eligibleForFreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: true }))
+  const unfreezePromises = eligibleForUnfreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
 
-  console.debug('Freezing other utxos', eligibleForFreeze)
+  console.debug(`Freezing ${eligibleForFreeze.length} utxos in account ${selectedMixdepth}`, eligibleForFreeze)
   await Promise.all(freezePromises)
 
-  console.debug('Unfreeze eligible utxos', eligibleForUnfreeze)
+  console.debug(`Unfreeze ${eligibleForFreeze.length} utxos in account ${selectedMixdepth}`, eligibleForUnfreeze)
   await Promise.all(unfreezePromises)
 
-  return eligibleForFreeze.map((it) => it.utxo)
+  return eligibleForFreeze
 }
 
 /**
  * Send funds to a timelocked address with a collaborative sweep transactions.
  * The transaction will have no change output.
- *
- * Steps:
- * - freeze all utxos except the selected ones
- * - sweep collaborative transaction to locktime address
- * - return frozen utxo ids
- *
- * The returned utxos SHOULD be unfrozen by the caller
- * once the collaborative transaction finished.
- *
- * @return list of utxo ids that were automatically frozen and
  */
 const sweepToFidelityBond = async (
-  currentWallet: CurrentWallet,
+  requestContext: Api.WalletRequestContext,
   account: Account,
-  timelockedDestinationAddress: Api.BitcoinAddress
+  timelockedDestinationAddress: Api.BitcoinAddress,
+  counterparties: number
 ): Promise<Response> => {
-  const { name: walletName, token } = currentWallet
-
-  return await Api.postCoinjoin(
-    { walletName, token },
-    {
-      mixdepth: parseInt(account.account, 10),
-      destination: timelockedDestinationAddress,
-      amount_sats: 0, // sweep
-      counterparties: 1, // TODO: how to choose? When in doubt, use same mechanism as on "Send" page
-    }
-  )
+  return await Api.postCoinjoin(requestContext, {
+    mixdepth: parseInt(account.account, 10),
+    destination: timelockedDestinationAddress,
+    amount_sats: 0, // sweep
+    counterparties,
+  })
 }
 
 export const FidelityBondSimple = () => {
@@ -100,6 +86,7 @@ export const FidelityBondSimple = () => {
   const currentWalletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
+  const loadConfigValue = useLoadConfigValue()
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
@@ -157,7 +144,6 @@ export const FidelityBondSimple = () => {
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    if (isCreating) return
     if (!isCreateSuccess && !isCreateError) return
     if (waitForTakerToFinish) return
 
@@ -172,8 +158,12 @@ export const FidelityBondSimple = () => {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [waitForTakerToFinish, isCreating, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
+  }, [waitForTakerToFinish, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
 
+  /**
+   * Unfreeze any utxo that has been frozen before the
+   * broadcasting the collaborative sweep transaction.
+   */
   useEffect(() => {
     if (!isLoading) return
     if (!currentWallet) return
@@ -222,14 +212,26 @@ export const FidelityBondSimple = () => {
     if (!currentWalletInfo) return
     if (selectedUtxos.length === 0) return
 
+    const abortCtrl = new AbortController()
+    const { name: walletName, token } = currentWallet
+    const requestContext = { walletName, token, signal: abortCtrl.signal }
+
     setIsCreating(true)
     try {
-      const frozenUtxoIds = await prepareFidelityBondSweepTransaction(currentWallet, currentWalletInfo, selectedUtxos)
+      const minimumMakers = await loadConfigValue({
+        signal: abortCtrl.signal,
+        key: { section: 'POLICY', field: 'minimum_makers' },
+      }).then((data) => parseInt(data.value, 10))
+
+      const frozenUtxoIds = await prepareFidelityBondSweepTransaction(requestContext, currentWalletInfo, selectedUtxos)
+
       // TODO: consider storing utxo id hashes in local storage..
       // that way any changes can be reverted if a user leaves the page beofe the unfreezing happens
       setFrozenUtxoIds(frozenUtxoIds)
 
-      await sweepToFidelityBond(currentWallet, selectedAccount, timelockedDestinationAddress)
+      // TODO: how many counterparties to use? is "minimum" for fbs okay?
+      await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
+
       setWaitForTakerToFinish(true)
       setIsCreateSuccess(true)
     } catch (error) {
