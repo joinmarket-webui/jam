@@ -48,7 +48,7 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
   const _yearsRange = useMemo<YearsRange>(() => yearsRange || toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS), [yearsRange])
   const _initalValue = useMemo<Api.Lockdate>(
     () => initialValue || initialLockdate(_now, _yearsRange),
-    [_now, _yearsRange]
+    [initialValue, _now, _yearsRange]
   )
 
   const currentYear = useMemo(() => _now.getUTCFullYear(), [_now])
@@ -67,10 +67,10 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
     return Array(years)
       .fill('')
       .map((_, index) => index + currentYear + extra)
-  }, [currentYear, _yearsRange])
+  }, [_yearsRange, currentYear, currentMonth])
 
   const minMonth = useMemo(() => {
-    // "minMonth" can be '13' - which means it never is valid and user must adapt 'year'.
+    // 'minMonth' can be `13` - which means it never is valid and user must adapt 'year'.
     return lockdateYear > currentYear + _yearsRange.min ? 1 : currentMonth + 1
   }, [lockdateYear, currentYear, currentMonth, _yearsRange])
 
