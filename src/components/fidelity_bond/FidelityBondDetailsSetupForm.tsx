@@ -20,6 +20,7 @@ import LockdateForm, { toYearsRange, lockdateToTimestamp, DEFAULT_MAX_TIMELOCK_Y
 
 import { routes } from '../../constants/routes'
 import * as Api from '../../libs/JmWalletApi'
+import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 
 const timeUtils = (() => {
   type Milliseconds = number
@@ -438,7 +439,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
    */
   useEffect(() => {
     if (!selectedLockdate) return
-    if (process.env.NODE_ENV !== 'development') return
+    if (!isDebugFeatureEnabled('logFidelityBondAddressToConsole')) return
 
     const abortCtrl = new AbortController()
     Api.getAddressTimelockNew({
@@ -447,12 +448,10 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
       signal: abortCtrl.signal,
       lockdate: selectedLockdate,
     })
-      .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(res, t('fidelity_bond.error_loading_timelock_address_failed'))
-      )
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
       .then((data) => data.address)
-      .then((timelockedAddress) => console.info(`timelocked address for ${selectedLockdate}:`, timelockedAddress))
-      .catch((error) => console.warn(`Could not fetch timelocked address for ${selectedLockdate}:`, error))
+      .then((timelockedAddress) => console.info(`Address with lockdate '${selectedLockdate}':`, timelockedAddress))
+      .catch((error) => console.warn(`Could not fetch address with lockdate '${selectedLockdate}':`, error))
 
     return () => {
       abortCtrl.abort()

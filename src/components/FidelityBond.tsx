@@ -176,7 +176,6 @@ export default function FidelityBond() {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const loadConfigValue = useLoadConfigValue()
-  const featureAdvancedEnabled = isFeatureEnabled('fidelityBondsDevOnly')
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
@@ -372,14 +371,6 @@ export default function FidelityBond() {
   return (
     <div className={styles['fidelity-bond']}>
       <PageTitle title={t('fidelity_bond.title')} subtitle={t('fidelity_bond.subtitle')} />
-
-      {featureAdvancedEnabled && (
-        <div className="mb-4">
-          <Link className="unstyled" to={routes.fidelityBondsDevOnly}>
-            Switch to developer view.
-          </Link>
-        </div>
-      )}
 
       <div className="mb-4">
         <Trans i18nKey="fidelity_bond.description">
