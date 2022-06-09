@@ -63,34 +63,75 @@ const createCoinControlSetup = (walletInfo: WalletInfo, selectedUtxos: Utxos): C
  * The returned utxos SHOULD be unfrozen by the caller
  * once the collaborative transaction finishes.
  *
- * @return list of utxo ids that were frozen
+ * @return list of utxo ids that were frozen.
  */
 const prepareUtxosForSweep = async (
   requestContext: Api.WalletRequestContext,
   setup: CoinControlSetupResult
 ): Promise<Api.UtxoId[]> => {
-  const freezePromises = setup.freeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: true }))
-  const unfreezePromises = setup.unfreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
+  // sequentially perfom the freeze/unfreeze actions.
+  // this should be very fast and will not unnecessarily freeze/unfreeze
+  // utxos in case an error is triggered.
+  // can be optimized, but keep in mind that there might be users
+  // with a large amount of utxos, hence if you want to do requests in parallel
+  // make sure to limit the number of concurrent requests
+  const freezeActions = setup.freeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: true }))
+  for (const freezeAction of freezeActions) {
+    await freezeAction.then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+  }
 
-  await Promise.all(freezePromises)
-  await Promise.all(unfreezePromises)
+  const unfreezeActions = setup.unfreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
+  for (const unfreezeAction of unfreezeActions) {
+    await unfreezeAction.then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+  }
 
   return setup.freeze
 }
 
+type UtxoApiAction = {
+  utxo: Api.UtxoId
+  action: Promise<Response>
+}
+
 /**
  * Undo potential changes made to utxos freeze state.
+ * Tries to continue in case of errors.
  *
+ * @returns list of utxo ids for which the state could not be restored.
  */
 const undoPrepareUtxosForSweep = async (
   requestContext: Api.WalletRequestContext,
   setup: CoinControlSetupResult
-): Promise<void> => {
+): Promise<Api.UtxoId[]> => {
   const reversedSetup = {
     freeze: setup.unfreeze,
     unfreeze: setup.freeze,
   }
-  await prepareUtxosForSweep(requestContext, reversedSetup)
+  const failed: Api.UtxoId[] = []
+
+  const freezeActions: UtxoApiAction[] = reversedSetup.freeze.map((utxo) => ({
+    utxo,
+    action: Api.postFreeze(requestContext, { utxo, freeze: true }),
+  }))
+  for (const freezeAction of freezeActions) {
+    const response = await freezeAction.action
+    if (!response.ok) {
+      failed.push(freezeAction.utxo)
+    }
+  }
+
+  const unfreezeActions: UtxoApiAction[] = reversedSetup.unfreeze.map((utxo) => ({
+    utxo,
+    action: Api.postFreeze(requestContext, { utxo, freeze: false }),
+  }))
+  for (const unfreezeAction of unfreezeActions) {
+    const response = await unfreezeAction.action
+    if (!response.ok) {
+      failed.push(unfreezeAction.utxo)
+    }
+  }
+
+  return failed
 }
 
 /**
@@ -259,12 +300,7 @@ export default function FidelityBond() {
       const coinControlSetup = createCoinControlSetup(currentWalletInfo, selectedUtxos)
 
       console.info(
-        `Freezing ${coinControlSetup.freeze.length} utxos that are not part of the fidelity bond`,
-        coinControlSetup.freeze
-      )
-      console.info(
-        `Unfreeze ${coinControlSetup.unfreeze.length} utxos that are part of the fidelity bond`,
-        coinControlSetup.unfreeze
+        `Fidelity Bond Setup: Freezing ${coinControlSetup.freeze.length} utxos, unfreezing ${coinControlSetup.unfreeze.length} utxos`
       )
 
       try {
@@ -277,11 +313,13 @@ export default function FidelityBond() {
         // TODO: how many counterparties to use? is "minimum" for fbs okay?
         await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
       } catch (error) {
-        try {
-          await undoPrepareUtxosForSweep(requestContext, coinControlSetup)
-        } catch (restoreError) {
+        const unrestoredUtxos = await undoPrepareUtxosForSweep(requestContext, coinControlSetup)
+        if (unrestoredUtxos.length !== 0) {
           // unfortunately, restore failed and there is nothing that can be done except informing the user
-          // TODO: user feedback
+          // TODO: provide visual feedback, e.g. modal?
+          console.warn(
+            `Previous state of ${unrestoredUtxos.length} utxo(s) could not be restored and must be frozen/unfrozen manually.`
+          )
         }
         throw error
       }
