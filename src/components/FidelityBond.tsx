@@ -139,7 +139,7 @@ const undoPrepareUtxosForSweep = async (
 /**
  * Send funds to a timelocked address.
  * Defaults to sweep with a collaborative transaction.
- * If the selected utxos is a single expired FB, a "diret-send" is for sweeping.
+ * If the selected utxo is a single expired FB, "diret-send" is used.
  *
  * The transaction will have no change output.
  */
@@ -149,24 +149,24 @@ const sweepToFidelityBond = async (
   utxos: Utxos,
   timelockedDestinationAddress: Api.BitcoinAddress,
   counterparties: number
-): Promise<true> => {
+): Promise<void> => {
   const amount_sats = 0 // sweep
 
   const useDirectSend = utxos.length === 1 && !!utxos[0].locktime
   if (useDirectSend) {
-    return await Api.postDirectSend(requestContext, {
+    await Api.postDirectSend(requestContext, {
       mixdepth: parseInt(account.account, 10),
       destination: timelockedDestinationAddress,
       amount_sats,
     }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+  } else {
+    await Api.postCoinjoin(requestContext, {
+      mixdepth: parseInt(account.account, 10),
+      destination: timelockedDestinationAddress,
+      amount_sats,
+      counterparties,
+    }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
   }
-
-  return await Api.postCoinjoin(requestContext, {
-    mixdepth: parseInt(account.account, 10),
-    destination: timelockedDestinationAddress,
-    amount_sats,
-    counterparties,
-  }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
 }
 
 export default function FidelityBond() {
