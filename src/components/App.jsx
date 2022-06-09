@@ -34,7 +34,7 @@ export default function App() {
   const sessionConnectionError = useSessionConnectionError()
 
   const [websocketConnected, setWebsocketConnected] = useState()
-  const [showAlphaWarning, setShowAlphaWarning] = useState(false)
+  const [showAlphaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
   const cheatsheetEnabled = currentWallet
@@ -91,7 +91,7 @@ export default function App() {
               <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
               <p className="text-secondary">{t('footer.warning_alert_text')}</p>
               <div className="text-center mt-3">
-                <rb.Button variant="secondary" onClick={() => setShowAlphaWarning(false)}>
+                <rb.Button variant="secondary" onClick={() => setShowBetaWarning(false)}>
                   {t('footer.warning_alert_button_ok')}
                 </rb.Button>
               </div>
@@ -157,7 +157,7 @@ export default function App() {
                 <rb.Button
                   variant="link"
                   className="warning-hint text-start border-0 p-0 text-secondary"
-                  onClick={() => setShowAlphaWarning(true)}
+                  onClick={() => setShowBetaWarning(true)}
                 >
                   Read this before using.
                 </rb.Button>
