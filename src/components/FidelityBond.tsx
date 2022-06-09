@@ -324,7 +324,7 @@ export default function FidelityBond() {
         const frozenUtxoIds = await prepareUtxosForSweep(requestContext, coinControlSetup)
 
         // TODO: consider storing utxo id hashes in local storage..
-        // that way any changes can be reverted if a user leaves the page beofe the unfreezing happens
+        // That way, any changes can be reverted if a user leaves the page before the unfreezing happens.
         setFrozenUtxoIds(frozenUtxoIds)
 
         // TODO: how many counterparties to use? is "minimum" for fbs okay?
