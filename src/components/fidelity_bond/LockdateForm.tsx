@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { Trans, useTranslation } from 'react-i18next'
+import { Trans } from 'react-i18next'
 
 import * as Api from '../../libs/JmWalletApi'
 
@@ -37,41 +37,51 @@ const initialLockdate = (now: Date, range: YearsRange): Api.Lockdate => {
 }
 
 interface LockdateFormProps {
-  initialValue?: Api.Lockdate
   onChange: (lockdate: Api.Lockdate) => void
+  initialValue?: Api.Lockdate
   yearsRange?: YearsRange
   now?: Date
 }
 
-const LockdateForm = ({
-  onChange,
-  now = new Date(),
-  yearsRange = toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS),
-  initialValue = initialLockdate(now, yearsRange),
-}: LockdateFormProps) => {
-  const { t } = useTranslation()
+const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormProps) => {
+  const _now = useMemo<Date>(() => now || new Date(), [now])
+  const _yearsRange = useMemo<YearsRange>(() => yearsRange || toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS), [yearsRange])
+  const _initalValue = useMemo<Api.Lockdate>(
+    () => initialValue || initialLockdate(_now, _yearsRange),
+    [_now, _yearsRange]
+  )
 
-  const currentYear = useMemo(() => now.getUTCFullYear(), [now])
-  const currentMonth = useMemo(() => now.getUTCMonth() + 1, [now]) // utc month ranges from [0, 11]
+  const currentYear = useMemo(() => _now.getUTCFullYear(), [_now])
+  const currentMonth = useMemo(() => _now.getUTCMonth() + 1, [_now]) // utc month ranges from [0, 11]
 
-  const initialDate = new Date(lockdateToTimestamp(initialValue))
-  const [lockdateYear, setLockdateYear] = useState(initialDate.getUTCFullYear())
-  const [lockdateMonth, setLockdateMonth] = useState(initialDate.getUTCMonth() + 1)
+  const initialDate = useMemo(() => new Date(lockdateToTimestamp(_initalValue)), [_initalValue])
+  const initialYear = useMemo(() => initialDate.getUTCFullYear(), [initialDate])
+  const initialMonth = useMemo(() => initialDate.getUTCMonth() + 1, [initialDate])
 
-  const minMonth = useCallback(() => {
-    if (lockdateYear > currentYear + yearsRange.min) {
-      return 1
-    }
+  const [lockdateYear, setLockdateYear] = useState(initialYear)
+  const [lockdateMonth, setLockdateMonth] = useState(initialMonth)
 
+  const selectableYears = useMemo(() => {
+    const years = _yearsRange.max - _yearsRange.min
+    const extra = _yearsRange.min + (currentMonth === 12 ? 1 : 0)
+    return Array(years)
+      .fill('')
+      .map((_, index) => index + currentYear + extra)
+  }, [currentYear, _yearsRange])
+
+  const minMonth = useMemo(() => {
     // "minMonth" can be '13' - which means it never is valid and user must adapt 'year'.
-    return currentMonth + 1
-  }, [lockdateYear, currentYear, currentMonth, yearsRange])
+    return lockdateYear > currentYear + _yearsRange.min ? 1 : currentMonth + 1
+  }, [lockdateYear, currentYear, currentMonth, _yearsRange])
 
   const isLockdateYearValid = useMemo(
-    () => lockdateYear >= currentYear + yearsRange.min && lockdateYear <= currentYear + yearsRange.max,
-    [lockdateYear, currentYear, yearsRange]
+    () => lockdateYear >= currentYear + _yearsRange.min && lockdateYear <= currentYear + _yearsRange.max,
+    [lockdateYear, currentYear, _yearsRange]
   )
-  const isLockdateMonthValid = useMemo(() => lockdateMonth >= minMonth(), [lockdateMonth, minMonth])
+  const isLockdateMonthValid = useMemo(
+    () => lockdateMonth >= minMonth && lockdateMonth <= 12,
+    [lockdateMonth, minMonth]
+  )
 
   useEffect(() => {
     if (!isLockdateYearValid || !isLockdateMonthValid) return
@@ -83,21 +93,23 @@ const LockdateForm = ({
   return (
     <rb.Row>
       <rb.Col xs={6}>
-        <rb.Form.Group className="mb-4" controlId="locktimeYear">
+        <rb.Form.Group className="mb-4" controlId="lockdateYear">
           <rb.Form.Label form="fidelity-bond-form">
-            <Trans i18nKey="fidelity_bond.form_create.label_locktime_year">Year</Trans>
+            <Trans i18nKey="fidelity_bond.form_create.label_lockdate_year">Year</Trans>
           </rb.Form.Label>
-          <rb.Form.Control
-            name="year"
-            type="number"
-            value={lockdateYear}
-            min={currentYear + yearsRange.min}
-            max={currentYear + yearsRange.max}
-            placeholder={t('fidelity_bond.form_create.placeholder_locktime_year')}
-            required
+          <rb.Form.Select
+            defaultValue={initialYear}
             onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
+            required
             isInvalid={!isLockdateYearValid}
-          />
+          >
+            {selectableYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </rb.Form.Select>
+
           <rb.Form.Control.Feedback type="invalid">
             <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year">
               Please provide a valid value.
@@ -106,22 +118,22 @@ const LockdateForm = ({
         </rb.Form.Group>
       </rb.Col>
       <rb.Col xs={6}>
-        <rb.Form.Group className="mb-4" controlId="locktimeMonth">
+        <rb.Form.Group className="mb-4" controlId="lockdateMonth">
           <rb.Form.Label form="fidelity-bond-form">
-            <Trans i18nKey="fidelity_bond.form_create.label_locktime_month">Month</Trans>
+            <Trans i18nKey="fidelity_bond.form_create.label_lockdate_month">Month</Trans>
           </rb.Form.Label>
-          <rb.Form.Control
-            name="month"
-            type="number"
-            value={lockdateMonth}
-            min={minMonth()}
-            step={1}
-            max={12}
-            placeholder={t('fidelity_bond.form_create.placeholder_locktime_month')}
-            required
+          <rb.Form.Select
+            defaultValue={initialMonth}
             onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10))}
+            required
             isInvalid={!isLockdateMonthValid}
-          />
+          >
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
+              <option key={month} value={month} disabled={month < minMonth}>
+                {month}
+              </option>
+            ))}
+          </rb.Form.Select>
           <rb.Form.Control.Feedback type="invalid">
             <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month">
               Please provide a valid value.

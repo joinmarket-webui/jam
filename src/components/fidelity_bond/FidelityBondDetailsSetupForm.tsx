@@ -225,7 +225,7 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
   const yearsRange = useMemo(() => {
     if (process.env.NODE_ENV === 'development') {
       // allow creating lockdate in the past in dev mode
-      return toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS)
+      // return toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS)
     }
     return toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS)
   }, [])
