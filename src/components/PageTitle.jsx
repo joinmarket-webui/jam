@@ -20,7 +20,7 @@ export default function PageTitle({ title, subtitle, success = false, center = f
           </div>
         </div>
       )}
-      <h2>{title}</h2>
+      <div style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem' }}>{title}</div>
       {subtitle && <p className="text-secondary">{subtitle}</p>}
     </div>
   )

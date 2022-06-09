@@ -65,3 +65,15 @@
   height: 16.25rem;
   margin: 0;
 }
+
+.address {
+  font-size: 0.75rem;
+  padding: 1rem 0 1rem;
+}
+
+@media only screen and (min-width: 768px) {
+  .address {
+    font-size: var(--bs-body-font-size);
+    padding: 0;
+  }
+}

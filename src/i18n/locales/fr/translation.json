@@ -7,16 +7,15 @@
     "tab_earn": "Générer",
     "joining_in_progress": "Joindre",
     "menu_mobile": "Menu",
-    "menu_mobile_settings": "Réglages",
-    "menu_mobile_wallets": "Porte-monnaies"
+    "menu_mobile_settings": "Réglages"
   },
   "app": {
     "alert_no_connection": "Aucune connexion au backend: {{ connectionError }}"
   },
   "footer": {
-    "warning": "Ceci est un logiciel alpha.<br /><1> Lisez-ceci avant usage.</1>",
+    "warning": "Ceci est un logiciel beta.<br /><1> Lisez-ceci avant usage.</1>",
     "warning_alert_title": "Avertissement",
-    "warning_alert_text": "Bien que JoinMarket soit déja testé, Jam ne l'est pas. Il est en phase alpha, et donc à utiliser avec prudence.",
+    "warning_alert_text": "Bien que JoinMarket soit déja testé, Jam ne l'est pas. Il est en phase beta, et donc à utiliser avec prudence.",
     "warning_alert_button_ok": "Ça me convient.",
     "docs": "Docs",
     "features": "Fonctionnalités",
@@ -33,7 +32,7 @@
     "splashscreen_description_line1": "Votre porte-monnaie, vos pièces.",
     "splashscreen_description_line2": "100% open-source et open-design.",
     "splashscreen_warning_title": "Avertissement",
-    "splashscreen_warning_text": "Bien que JoinMarket soit déja testé, Jam ne l'est pas. Il est en phase alpha, et donc à utiliser avec prudence.  <1>Aidez-nous à améliorer le projet sur GitHub.</1>",
+    "splashscreen_warning_text": "Bien que JoinMarket soit déja testé, Jam ne l'est pas. Il est en phase beta, et donc à utiliser avec prudence.  <1>Aidez-nous à améliorer le projet sur GitHub.</1>",
     "screen_1_title": "Bienvenue dans Jam pour JoinMarket !",
     "screen_1_description": "JoinMarket est une solution logicielle axée sur le respect de la vie privée qui vise à améliorer la confidentialité et le caractère privé de vos transactions en bitcoins. Il facilite la création de transactions collaboratives par le biais d'une place de marché de pair à pair.",
     "screen_2_title": "Transactions collaboratives",

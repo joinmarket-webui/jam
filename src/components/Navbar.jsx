@@ -119,18 +119,6 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
           <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_settings')}</span>
         </NavLink>
       </rb.Nav.Item>
-      <rb.Nav.Item className="d-flex align-items-stretch">
-        <NavLink
-          to={routes.walletList}
-          onClick={onClick}
-          className={({ isActive }) =>
-            'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
-          }
-        >
-          <Sprite symbol="grid" width="30" height="30" className="d-none d-md-inline-block" />
-          <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_wallets')}</span>
-        </NavLink>
-      </rb.Nav.Item>
     </rb.Nav>
   )
 }
