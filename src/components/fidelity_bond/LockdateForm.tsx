@@ -3,14 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Trans } from 'react-i18next'
 
 import * as Api from '../../libs/JmWalletApi'
-
-const dateToLockdate = (date: Date): Api.Lockdate =>
-  `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Api.Lockdate
-
-export const lockdateToTimestamp = (lockdate: Api.Lockdate): number => {
-  const split = lockdate.split('-')
-  return Date.UTC(parseInt(split[0], 10), parseInt(split[1], 10) - 1, 1)
-}
+import * as fb from './fb_utils'
 
 // a maximum of years for a timelock to be accepted
 // this is useful in simple mode - when it should be prevented that users
@@ -33,7 +26,7 @@ export const toYearsRange = (min: number, max: number): YearsRange => {
 const initialLockdate = (now: Date, range: YearsRange): Api.Lockdate => {
   const year = now.getUTCFullYear()
   const month = now.getUTCMonth()
-  return dateToLockdate(new Date(Date.UTC(year + Math.max(range.min + 1, 1), month, 1)))
+  return fb.lockdate.fromTimestamp(Date.UTC(year + Math.max(range.min + 1, 1), month, 1))
 }
 
 interface LockdateFormProps {
@@ -54,7 +47,7 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
   const currentYear = useMemo(() => _now.getUTCFullYear(), [_now])
   const currentMonth = useMemo(() => _now.getUTCMonth() + 1, [_now]) // utc month ranges from [0, 11]
 
-  const initialDate = useMemo(() => new Date(lockdateToTimestamp(_initalValue)), [_initalValue])
+  const initialDate = useMemo(() => new Date(fb.lockdate.toTimestamp(_initalValue)), [_initalValue])
   const initialYear = useMemo(() => initialDate.getUTCFullYear(), [initialDate])
   const initialMonth = useMemo(() => initialDate.getUTCMonth() + 1, [initialDate])
 
@@ -86,8 +79,8 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
   useEffect(() => {
     if (!isLockdateYearValid || !isLockdateMonthValid) return
 
-    const date = new Date(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
-    onChange(dateToLockdate(date))
+    const timestamp = Date.UTC(lockdateYear, lockdateMonth - 1, 1)
+    onChange(fb.lockdate.fromTimestamp(timestamp))
   }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, onChange])
 
   return (

@@ -16,48 +16,12 @@ import { useBalanceSummary, WalletBalanceSummary } from '../../hooks/BalanceSumm
 import Sprite from './../Sprite'
 import UtxoSelector from './UtxoSelector'
 import AccountSelector from './AccountSelector'
-import LockdateForm, { toYearsRange, lockdateToTimestamp, DEFAULT_MAX_TIMELOCK_YEARS } from './LockdateForm'
+import LockdateForm, { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from './LockdateForm'
 
 import { routes } from '../../constants/routes'
 import * as Api from '../../libs/JmWalletApi'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
-
-const timeUtils = (() => {
-  type Milliseconds = number
-  type UnitKey = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
-
-  type Units = {
-    [key in UnitKey]: Milliseconds
-  }
-
-  const units: Units = {
-    year: 24 * 60 * 60 * 1_000 * 365,
-    month: (24 * 60 * 60 * 1_000 * 365) / 12,
-    day: 24 * 60 * 60 * 1_000,
-    hour: 60 * 60 * 1_000,
-    minute: 60 * 1_000,
-    second: 1_000,
-  }
-
-  type Locales = Intl.UnicodeBCP47LocaleIdentifier | Intl.UnicodeBCP47LocaleIdentifier[]
-  const timeElapsed = (d1: Milliseconds, d2: Milliseconds = Date.now(), locales: Locales = 'en') => {
-    const rtf = new Intl.RelativeTimeFormat(locales, { numeric: 'auto' })
-    const elapsedInMillis: Milliseconds = d1 - d2
-
-    for (let k of Object.keys(units) as UnitKey[]) {
-      const limit: number = units[k]
-      if (Math.abs(elapsedInMillis) > limit) {
-        return rtf.format(Math.round(elapsedInMillis / limit), k)
-      }
-    }
-
-    return rtf.format(Math.round(elapsedInMillis / units['second']), 'second')
-  }
-
-  return {
-    timeElapsed,
-  }
-})()
+import * as fb from './fb_utils'
 
 interface SelectAccountStepProps {
   walletInfo: WalletInfo
@@ -229,7 +193,7 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
   const timeTillUnlockString = useMemo(
     () =>
       lockdate &&
-      timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
+      fb.time.elapsed(fb.lockdate.toTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
     [lockdate, i18n]
   )
 
@@ -303,7 +267,7 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
   const settings = useSettings()
 
   const timeTillUnlockString = useMemo(
-    () => timeUtils.timeElapsed(lockdateToTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
+    () => fb.time.elapsed(fb.lockdate.toTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
     [lockdate, i18n]
   )
 
