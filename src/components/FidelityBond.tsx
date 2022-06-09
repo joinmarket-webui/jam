@@ -92,6 +92,14 @@ type UtxoApiAction = {
   action: Promise<Response>
 }
 
+const perfomActionSequential = async (actions: UtxoApiAction[]) => {
+  const failed: Api.UtxoId[] = []
+  for (const action of actions) {
+    const response = await action.action
+    if (!response.ok) failed.push(action.utxo)
+  }
+  return failed
+}
 /**
  * Undo potential changes made to utxos freeze state.
  * Tries to continue in case of errors.
@@ -112,23 +120,13 @@ const undoPrepareUtxosForSweep = async (
     utxo,
     action: Api.postFreeze(requestContext, { utxo, freeze: true }),
   }))
-  for (const freezeAction of freezeActions) {
-    const response = await freezeAction.action
-    if (!response.ok) {
-      failed.push(freezeAction.utxo)
-    }
-  }
+  await perfomActionSequential(freezeActions).then((failedUtxoIds) => failedUtxoIds.forEach((it) => failed.push(it)))
 
   const unfreezeActions: UtxoApiAction[] = reversedSetup.unfreeze.map((utxo) => ({
     utxo,
     action: Api.postFreeze(requestContext, { utxo, freeze: false }),
   }))
-  for (const unfreezeAction of unfreezeActions) {
-    const response = await unfreezeAction.action
-    if (!response.ok) {
-      failed.push(unfreezeAction.utxo)
-    }
-  }
+  await perfomActionSequential(unfreezeActions).then((failedUtxoIds) => failedUtxoIds.forEach((it) => failed.push(it)))
 
   return failed
 }
@@ -252,8 +250,8 @@ export default function FidelityBond() {
   }, [waitForTakerToFinish, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
 
   /**
-   * Unfreeze any utxo that has been frozen before
-   * broadcasting the collaborative sweep transaction.
+   * Unfreeze any utxo that has been frozen during the setup
+   * after broadcasting the sweep transaction.
    */
   useEffect(() => {
     if (!isLoading) return
@@ -262,16 +260,22 @@ export default function FidelityBond() {
     if (!isCreateSuccess && !isCreateError) return
     if (frozenUtxoIds === null || frozenUtxoIds.length === 0) return
 
-    const { name: walletName, token } = currentWallet
-
-    const unfreezePromises = frozenUtxoIds.map((utxoId) => {
-      return Api.postFreeze({ walletName, token }, { utxo: utxoId, freeze: false })
-    })
-
     const abortCtrl = new AbortController()
+    const { name: walletName, token } = currentWallet
+    const requestContext = { walletName, token, signal: abortCtrl.signal }
+
     setIsLoading(true)
 
-    Promise.all(unfreezePromises)
+    const unfreezeActions: UtxoApiAction[] = frozenUtxoIds.map((utxo) => ({
+      utxo,
+      action: Api.postFreeze(requestContext, { utxo, freeze: false }),
+    }))
+    perfomActionSequential(unfreezeActions)
+      .then((failedUtxoIds) => {
+        if (failedUtxoIds.length > 0) {
+          throw new Error(t('fidelity_bond.error_while_unfreezing_utxos'))
+        }
+      })
       .catch((err) => {
         if (abortCtrl.signal.aborted) return
 
@@ -323,10 +327,6 @@ export default function FidelityBond() {
       try {
         const frozenUtxoIds = await prepareUtxosForSweep(requestContext, coinControlSetup)
 
-        // TODO: consider storing utxo id hashes in local storage..
-        // That way, any changes can be reverted if a user leaves the page before the unfreezing happens.
-        setFrozenUtxoIds(frozenUtxoIds)
-
         // TODO: how many counterparties to use? is "minimum" for fbs okay?
         await sweepToFidelityBond(
           requestContext,
@@ -335,6 +335,10 @@ export default function FidelityBond() {
           timelockedDestinationAddress,
           minimumMakers
         )
+
+        // TODO: consider storing utxo id hashes in local storage..
+        // That way, any changes can be reverted if a user leaves the page before the unfreezing happens.
+        setFrozenUtxoIds(frozenUtxoIds)
       } catch (error) {
         const unrestoredUtxos = await undoPrepareUtxosForSweep(requestContext, coinControlSetup)
         if (unrestoredUtxos.length !== 0) {
