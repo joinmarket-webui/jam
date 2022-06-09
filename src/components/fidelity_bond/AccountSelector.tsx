@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 
 import { Account } from '../../context/WalletContext'
@@ -8,18 +8,12 @@ import AccountCheckbox, { SelectableAccount } from './AccountCheckbox'
 
 interface AccountSelectorProps {
   accounts: SelectableAccount[]
-  type?: 'checkbox' | 'radio'
-  onChange: (selectedAccounts: Account[]) => void
+  onChange: (selectedAccount: Account | null) => void
   displayDisabledAccounts?: boolean
 }
-const AccountSelector = ({
-  accounts,
-  type = 'radio',
-  onChange,
-  displayDisabledAccounts = true,
-}: AccountSelectorProps) => {
+const AccountSelector = ({ accounts, onChange, displayDisabledAccounts = true }: AccountSelectorProps) => {
   const settings = useSettings()
-  const [selected, setSelected] = useState<Account[]>([])
+  const [selected, setSelected] = useState<Account | null>(null)
 
   const selectableAccounts = useMemo(() => {
     return accounts.filter((it) => !it.disabled)
@@ -32,27 +26,8 @@ const AccountSelector = ({
   }, [accounts])
 
   useEffect(() => {
-    setSelected([])
+    setSelected(null)
   }, [selectableAccounts])
-
-  const isSelected = useCallback(
-    (account: Account) => {
-      return selected.includes(account)
-    },
-    [selected]
-  )
-
-  const addOrRemove = useCallback(
-    (account: Account) => {
-      setSelected((current) => {
-        if (isSelected(account)) {
-          return current.filter((it) => it !== account)
-        }
-        return type === 'checkbox' ? [...current, account] : [account]
-      })
-    },
-    [isSelected, type]
-  )
 
   useEffect(() => {
     onChange(selected)
@@ -71,8 +46,15 @@ const AccountSelector = ({
           <rb.Col key={it.account} className="d-flex align-items-center">
             <AccountCheckbox
               account={it}
-              checked={isSelected(it)}
-              onChange={addOrRemove}
+              checked={it === selected}
+              onChange={(account) => {
+                setSelected((current) => {
+                  if (current === account) {
+                    return null
+                  }
+                  return account
+                })
+              }}
               percentage={percentageOfTotal}
               unit={settings.unit}
               showBalance={settings.showBalance}

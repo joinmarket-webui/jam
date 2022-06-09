@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -61,12 +61,14 @@ const timeUtils = (() => {
 
 interface SelectAccountStepProps {
   walletInfo: WalletInfo
-  onSelected: (account: Account | null) => void
+  onChange: (account: Account | null) => void
 }
 
-const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) => {
+const SelectAccountStep = ({ walletInfo, onChange }: SelectAccountStepProps) => {
   const accounts = useMemo(() => walletInfo.data.display.walletinfo.accounts, [walletInfo])
   const utxos = useMemo(() => walletInfo.data.utxos.utxos, [walletInfo])
+
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
 
   // TODO: this is a common pattern - try to generalize
   const utxosByAccount = useMemo(() => {
@@ -91,37 +93,32 @@ const SelectAccountStep = ({ walletInfo, onSelected }: SelectAccountStepProps) =
     }))
   }, [accounts, availableAccounts, utxosByAccount])
 
-  const onChange = useCallback(
-    (selected: Account[]) => {
-      onSelected(selected.length === 1 ? selected[0] : null)
-    },
-    [onSelected]
-  )
+  useEffect(() => {
+    onChange(selectedAccount)
+  }, [selectedAccount, onChange])
 
   return (
     <>
       <h4>Select Account</h4>
       {availableAccounts.length === 0 ? (
-        <>
-          <Link to={routes.receive} className="unstyled">
-            <rb.Alert variant="info" className="mb-4">
-              <rb.Row className="align-items-center">
-                <rb.Col>
-                  <>
-                    No suitable account available. Fund your wallet and run the scheduler, before you create a Fidelity
-                    Bond.
-                  </>
-                </rb.Col>
-                <rb.Col xs="auto">
-                  <Sprite symbol="caret-right" width="24px" height="24px" />
-                </rb.Col>
-              </rb.Row>
-            </rb.Alert>
-          </Link>
-        </>
+        <Link to={routes.receive} className="unstyled">
+          <rb.Alert variant="info" className="mb-4">
+            <rb.Row className="align-items-center">
+              <rb.Col>
+                <>
+                  No suitable account available. Fund your wallet and run the scheduler, before you create a Fidelity
+                  Bond.
+                </>
+              </rb.Col>
+              <rb.Col xs="auto">
+                <Sprite symbol="caret-right" width="24px" height="24px" />
+              </rb.Col>
+            </rb.Row>
+          </rb.Alert>
+        </Link>
       ) : (
         <>
-          <AccountSelector accounts={selectableAccounts} type="radio" onChange={onChange} />
+          <AccountSelector accounts={selectableAccounts} onChange={setSelectedAccount} />
         </>
       )}
     </>
@@ -132,9 +129,9 @@ interface SelectUtxosStepProps {
   balanceSummary: WalletBalanceSummary
   account: Account
   utxos: Utxos
-  onSelected: (utxos: Utxos) => void
+  onChange: (utxos: Utxos) => void
 }
-const SelectUtxosStep = ({ balanceSummary, account, utxos, onSelected }: SelectUtxosStepProps) => {
+const SelectUtxosStep = ({ balanceSummary, account, utxos, onChange }: SelectUtxosStepProps) => {
   const settings = useSettings()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
 
@@ -148,8 +145,8 @@ const SelectUtxosStep = ({ balanceSummary, account, utxos, onSelected }: SelectU
   }, [utxos])
 
   useEffect(() => {
-    onSelected(selectedUtxos)
-  }, [selectedUtxos, onSelected])
+    onChange(selectedUtxos)
+  }, [selectedUtxos, onChange])
 
   // TODO: add `calculatedTotalBalanceInSats`
   const walletTotalBalanceInSats = useMemo(
@@ -501,7 +498,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
 
       {walletInfo && (
         <div className={`${step !== 0 ? 'd-none' : ''}`}>
-          <SelectAccountStep walletInfo={walletInfo} onSelected={setSelectedAccount} />
+          <SelectAccountStep walletInfo={walletInfo} onChange={setSelectedAccount} />
 
           <rb.Button
             variant="dark"
@@ -521,7 +518,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
             balanceSummary={balanceSummary}
             account={selectedAccount}
             utxos={utxosByAccount[selectedAccount.account]}
-            onSelected={setSelectedUtxos}
+            onChange={setSelectedUtxos}
           />
 
           <rb.Button
