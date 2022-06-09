@@ -369,7 +369,7 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
       </rb.Card>
 
       <div className="my-4 d-flex justify-content-center">
-        {/* TODO: reset the toggle value (once that is implemented) when a users leaves the page, e.g. "Back" button */}
+        {/* TODO: reset the toggle value (once that is implemented) when a user leaves the page, e.g. "Back" button */}
         <ToggleSwitch
           label={t('fidelity_bond.create_form.confirmation_toggle_title')}
           subtitle={t('fidelity_bond.create_form.confirmation_toggle_subtitle')}
@@ -430,6 +430,34 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
     // TODO: toggle button has no way to reflect this change currently
     setUserConfirmed(false)
   }, [step, selectedAccount, selectedUtxos, selectedLockdate])
+
+  /**
+   * Log the timelocked address to console in development mode!
+   * This will enable devs to send to the address
+   * in another way than dictated by this view.
+   */
+  useEffect(() => {
+    if (!selectedLockdate) return
+    if (process.env.NODE_ENV !== 'development') return
+
+    const abortCtrl = new AbortController()
+    Api.getAddressTimelockNew({
+      walletName: currentWallet.name,
+      token: currentWallet.token,
+      signal: abortCtrl.signal,
+      lockdate: selectedLockdate,
+    })
+      .then((res) =>
+        res.ok ? res.json() : Api.Helper.throwError(res, t('fidelity_bond.error_loading_timelock_address_failed'))
+      )
+      .then((data) => data.address)
+      .then((timelockedAddress) => console.info(`timelocked address for ${selectedLockdate}:`, timelockedAddress))
+      .catch((error) => console.warn(`Could not fetch timelocked address for ${selectedLockdate}:`, error))
+
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [currentWallet, selectedLockdate])
 
   const _onSubmit = async (account: Account, utxos: Utxos, lockdate: Api.Lockdate) => {
     if (!currentWallet) return
