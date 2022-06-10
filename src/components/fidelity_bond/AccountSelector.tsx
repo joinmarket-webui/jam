@@ -4,14 +4,27 @@ import * as rb from 'react-bootstrap'
 import { Account } from '../../context/WalletContext'
 // @ts-ignore
 import { useSettings } from '../../context/SettingsContext'
-import AccountCheckbox, { SelectableAccount } from './AccountCheckbox'
+
+// @ts-ignore
+import Balance from '../../components/Balance'
+import PercentageBar from './PercentageBar'
+import AccountCheckbox from './AccountCheckbox'
+import { WalletBalanceSummary } from '../../hooks/BalanceSummary'
+
+type SelectableAccount = Account & { disabled?: boolean }
 
 interface AccountSelectorProps {
+  balanceSummary: WalletBalanceSummary
   accounts: SelectableAccount[]
   onChange: (selectedAccount: Account | null) => void
   displayDisabledAccounts?: boolean
 }
-const AccountSelector = ({ accounts, onChange, displayDisabledAccounts = true }: AccountSelectorProps) => {
+const AccountSelector = ({
+  balanceSummary,
+  accounts,
+  onChange,
+  displayDisabledAccounts = true,
+}: AccountSelectorProps) => {
   const settings = useSettings()
   const [selected, setSelected] = useState<Account | null>(null)
 
@@ -19,11 +32,9 @@ const AccountSelector = ({ accounts, onChange, displayDisabledAccounts = true }:
     return accounts.filter((it) => !it.disabled)
   }, [accounts])
 
-  const totalAmount = useMemo(() => {
-    return accounts
-      .map((it) => it.utxos.reduce((acc, curr) => acc + curr.value, 0))
-      .reduce((acc, curr) => acc + curr, 0)
-  }, [accounts])
+  const totalBalance = useMemo(() => {
+    return balanceSummary.calculatedAvailableBalanceInSats + balanceSummary.calculatedFrozenOrLockedBalanceInSats
+  }, [balanceSummary])
 
   useEffect(() => {
     setSelected(null)
@@ -40,14 +51,19 @@ const AccountSelector = ({ accounts, onChange, displayDisabledAccounts = true }:
           return <></>
         }
 
-        const utxosAmountSum = it.utxos.reduce((acc, curr) => acc + curr.value, 0)
-        const percentageOfTotal = totalAmount > 0 ? (100 * utxosAmountSum) / totalAmount : undefined
+        const accountIndex = parseInt(it.account, 10)
+        const availableAccountBalance = balanceSummary.accountBalances
+          .filter((balance) => balance.accountIndex === accountIndex)
+          .reduce((acc, curr) => acc + curr.calculatedAvailableBalanceInSats, 0)
+
+        const percentageOfTotal = totalBalance > 0 ? (100 * availableAccountBalance) / totalBalance : undefined
         return (
           <rb.Col key={it.account} className="d-flex align-items-center">
             <AccountCheckbox
               account={it}
               checked={it === selected}
-              onChange={(account) => {
+              disabled={availableAccountBalance === 0}
+              onAccountSelected={(account) => {
                 setSelected((current) => {
                   if (current === account) {
                     return null
@@ -55,10 +71,29 @@ const AccountSelector = ({ accounts, onChange, displayDisabledAccounts = true }:
                   return account
                 })
               }}
-              percentage={percentageOfTotal}
-              unit={settings.unit}
-              showBalance={settings.showBalance}
-            />
+            >
+              {' '}
+              <>
+                {percentageOfTotal !== undefined && (
+                  <PercentageBar percentage={percentageOfTotal} highlight={selected === it} />
+                )}
+                <rb.Stack className="align-items-start p-2">
+                  <div>Jar #{it.account}</div>
+                  <div>
+                    <Balance
+                      valueString={`${availableAccountBalance}`}
+                      convertToUnit={settings.unit}
+                      showBalance={settings.showBalance}
+                    />
+                  </div>
+                  {percentageOfTotal !== undefined && (
+                    <div className="text-secondary">
+                      <small>{`${percentageOfTotal.toFixed(2)}%`}</small>
+                    </div>
+                  )}
+                </rb.Stack>
+              </>
+            </AccountCheckbox>
           </rb.Col>
         )
       })}

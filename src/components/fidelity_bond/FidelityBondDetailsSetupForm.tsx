@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 
-import { WalletInfo, CurrentWallet, Utxos, Account } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, Account } from '../../context/WalletContext'
 // @ts-ignore
 import { useSettings } from '../../context/SettingsContext'
 
@@ -13,48 +12,21 @@ import Balance from '../../components/Balance'
 import ToggleSwitch from '../../components/ToggleSwitch'
 import { useBalanceSummary, WalletBalanceSummary } from '../../hooks/BalanceSummary'
 
-import Sprite from './../Sprite'
 import AccountSelector from './AccountSelector'
 import LockdateForm, { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from './LockdateForm'
 
-import { routes } from '../../constants/routes'
 import * as Api from '../../libs/JmWalletApi'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import * as fb from './fb_utils'
 
 interface SelectAccountStepProps {
-  walletInfo: WalletInfo
+  balanceSummary: WalletBalanceSummary
+  accounts: Account[]
   onChange: (account: Account | null) => void
 }
 
-const SelectAccountStep = ({ walletInfo, onChange }: SelectAccountStepProps) => {
-  const accounts = useMemo(() => walletInfo.data.display.walletinfo.accounts, [walletInfo])
-  const utxos = useMemo(() => walletInfo.data.utxos.utxos, [walletInfo])
-
+const SelectAccountStep = ({ balanceSummary, accounts, onChange }: SelectAccountStepProps) => {
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
-
-  // TODO: this is a common pattern - try to generalize
-  const utxosByAccount = useMemo(() => {
-    return utxos.reduce((acc, utxo) => {
-      const key = `${utxo.mixdepth}`
-      acc[key] = acc[key] || []
-      acc[key].push(utxo)
-      return acc
-    }, {} as { [key: string]: Utxos })
-  }, [utxos])
-
-  const availableAccounts = useMemo(() => {
-    const accountsWithUtxos = Object.keys(utxosByAccount)
-    return accounts.filter((it) => accountsWithUtxos.includes(it.account))
-  }, [utxosByAccount, accounts])
-
-  const selectableAccounts = useMemo(() => {
-    return accounts.map((it) => ({
-      ...it,
-      disabled: !availableAccounts.includes(it),
-      utxos: utxosByAccount[it.account] || [],
-    }))
-  }, [accounts, availableAccounts, utxosByAccount])
 
   useEffect(() => {
     onChange(selectedAccount)
@@ -63,27 +35,7 @@ const SelectAccountStep = ({ walletInfo, onChange }: SelectAccountStepProps) => 
   return (
     <>
       <h4>Select Account</h4>
-      {availableAccounts.length === 0 ? (
-        <Link to={routes.receive} className="unstyled">
-          <rb.Alert variant="info" className="mb-4">
-            <rb.Row className="align-items-center">
-              <rb.Col>
-                <>
-                  No suitable account available. Fund your wallet and run the scheduler, before you create a Fidelity
-                  Bond.
-                </>
-              </rb.Col>
-              <rb.Col xs="auto">
-                <Sprite symbol="caret-right" width="24px" height="24px" />
-              </rb.Col>
-            </rb.Row>
-          </rb.Alert>
-        </Link>
-      ) : (
-        <>
-          <AccountSelector accounts={selectableAccounts} onChange={setSelectedAccount} />
-        </>
-      )}
+      <AccountSelector balanceSummary={balanceSummary} accounts={accounts} onChange={setSelectedAccount} />
     </>
   )
 }
@@ -209,7 +161,11 @@ const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChan
                 <td className="text-end">#{account.account}</td>
               </tr>
               <tr>
-                <td>Fidelity Bond Size</td>
+                <td>
+                  Fidelity Bond Size
+                  <br />
+                  <small className="text-secondary">Excluding transaction fees</small>
+                </td>
                 <td className="text-end">
                   <Balance
                     valueString={`${accountAvailableBalanceInSats}`}
@@ -257,8 +213,7 @@ interface FidelityBondDetailsSetupFormProps {
 const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: FidelityBondDetailsSetupFormProps) => {
   const { t } = useTranslation()
   const balanceSummary = useBalanceSummary(walletInfo)
-
-  const utxos = useMemo(() => (walletInfo === null ? [] : walletInfo.data.utxos.utxos), [walletInfo])
+  const accounts = useMemo(() => walletInfo.data.display.walletinfo.accounts, [walletInfo])
 
   const [step, setStep] = useState<number>(0)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
@@ -335,9 +290,9 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
         )}
       </div>
 
-      {walletInfo && (
+      {balanceSummary && (
         <div className={`${step !== 0 ? 'd-none' : ''}`}>
-          <SelectAccountStep walletInfo={walletInfo} onChange={setSelectedAccount} />
+          <SelectAccountStep balanceSummary={balanceSummary} accounts={accounts} onChange={setSelectedAccount} />
 
           <rb.Button
             variant="dark"

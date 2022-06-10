@@ -4,7 +4,7 @@ import * as rb from 'react-bootstrap'
 import Sprite from '../Sprite'
 import styles from './CheckboxCard.module.css'
 
-interface CheckboxCardProps extends rb.FormCheckProps {}
+export interface CheckboxCardProps extends rb.FormCheckProps {}
 
 const CheckboxCard = ({ children, checked, disabled, ...props }: PropsWithChildren<CheckboxCardProps>) => {
   const ref = useRef<HTMLInputElement>(null)
