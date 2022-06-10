@@ -60,6 +60,11 @@ export default function FidelityBond() {
   const isCreateError = useMemo(() => createError !== null, [createError])
 
   const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
+  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState<AlertWithMessage | null>(null)
+
+  useEffect(() => {
+    setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
+  }, [isCoinjoinInProgress])
 
   useEffect(() => {
     if (isCreating) return
@@ -146,8 +151,13 @@ export default function FidelityBond() {
 
       // TODO: how many counterparties to use? is "minimum" for fbs okay?
       await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
-      setWaitForTakerToFinish(true)
       setIsCreateSuccess(true)
+
+      setTakerStartedInfoAlert({
+        variant: 'success',
+        message: t('send.alert_coinjoin_started'),
+      })
+      setWaitForTakerToFinish(true)
     } catch (error) {
       setCreateError(error)
       throw error
@@ -183,6 +193,10 @@ export default function FidelityBond() {
       </div>
 
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+
+      {takerStartedInfoAlert && (
+        <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
+      )}
 
       <div>
         {isInitializing || isLoading ? (
