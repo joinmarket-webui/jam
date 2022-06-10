@@ -60,11 +60,6 @@ export default function FidelityBond() {
   const isCreateError = useMemo(() => createError !== null, [createError])
 
   const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
-  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState<AlertWithMessage | null>(null)
-
-  useEffect(() => {
-    setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
-  }, [isCoinjoinInProgress])
 
   useEffect(() => {
     if (isCreating) return
@@ -113,8 +108,9 @@ export default function FidelityBond() {
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    if (!isCreateSuccess && !isCreateError) return
+    if (isCreating) return
     if (waitForTakerToFinish) return
+    if (!isCreateSuccess && !isCreateError) return
 
     const abortCtrl = new AbortController()
     setIsLoading(true)
@@ -127,7 +123,7 @@ export default function FidelityBond() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [waitForTakerToFinish, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
+  }, [waitForTakerToFinish, isCreating, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
 
   const onSubmit = async (
     selectedAccount: Account,
@@ -152,11 +148,6 @@ export default function FidelityBond() {
       // TODO: how many counterparties to use? is "minimum" for fbs okay?
       await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
       setIsCreateSuccess(true)
-
-      setTakerStartedInfoAlert({
-        variant: 'success',
-        message: t('send.alert_coinjoin_started'),
-      })
       setWaitForTakerToFinish(true)
     } catch (error) {
       setCreateError(error)
@@ -194,10 +185,6 @@ export default function FidelityBond() {
 
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-      {takerStartedInfoAlert && (
-        <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
-      )}
-
       <div>
         {isInitializing || isLoading ? (
           <div className="d-flex justify-content-center align-items-center">
@@ -225,6 +212,9 @@ export default function FidelityBond() {
                             </Trans>
                           </small>
                         </div>
+                        <rb.Alert variant="info" className="my-4">
+                          {t('send.text_coinjoin_already_running')}
+                        </rb.Alert>
                       </>
                     ) : (
                       <>
