@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { WalletInfo, BalanceString, Utxos, Utxo } from '../context/WalletContext'
 
 type Milliseconds = number
@@ -41,7 +41,6 @@ type AccountBalanceSummary = BalanceSummarySupport & {
 }
 
 export type WalletBalanceSummary = BalanceSummarySupport & {
-  createdAt: Milliseconds
   accountBalances: AccountBalanceSummary[]
 }
 
@@ -63,7 +62,12 @@ const calculateFrozenOrLockedBalance = (utxos: Utxos, refTime: Milliseconds = Da
 }
 
 const useBalanceSummary = (currentWalletInfo: WalletInfo | null, now?: Milliseconds): WalletBalanceSummary | null => {
-  const refTime = useMemo(() => (now !== undefined ? now : new Date().getTime()), [currentWalletInfo, now])
+  const [refTime, setRefTime] = useState<Milliseconds>(now !== undefined ? now : Date.now())
+
+  useEffect(() => {
+    if (!currentWalletInfo) return
+    setRefTime(now !== undefined ? now : Date.now())
+  }, [now, currentWalletInfo])
 
   const balanceSummary = useMemo(() => {
     if (!currentWalletInfo) {
@@ -127,7 +131,6 @@ const useBalanceSummary = (currentWalletInfo: WalletInfo | null, now?: Milliseco
 
       return {
         ...walletBalanceSummary,
-        createdAt: refTime,
         accountBalances: accountsBalanceSummary,
         calculatedTotalBalanceInSats: walletTotalCalculated,
         calculatedFrozenOrLockedBalanceInSats: walletFrozenOrLockedCalculated,
