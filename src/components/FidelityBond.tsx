@@ -4,14 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
-import {
-  useCurrentWallet,
-  useCurrentWalletInfo,
-  useReloadCurrentWalletInfo,
-  WalletInfo,
-  Utxos,
-  Account,
-} from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo, Account } from '../context/WalletContext'
 
 // @ts-ignore
 import DisplayUTXOs from './DisplayUTXOs'
@@ -24,113 +17,6 @@ import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
-type CoinControlSetupResult = {
-  freeze: Api.UtxoId[]
-  unfreeze: Api.UtxoId[]
-}
-
-const createCoinControlSetup = (walletInfo: WalletInfo, selectedUtxos: Utxos): CoinControlSetupResult => {
-  if (selectedUtxos.length === 0) throw new Error('At least one utxo must be provided')
-
-  const accountIndex = selectedUtxos[0].mixdepth
-
-  // sanity check
-  const sameAccountCheck = selectedUtxos.every((it) => it.mixdepth === accountIndex)
-  if (!sameAccountCheck) throw new Error('Given utxos must be from the same account')
-
-  const allUtxosInAccount = walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === accountIndex)
-
-  const otherUtxos = allUtxosInAccount.filter((it) => !selectedUtxos.includes(it))
-  const eligibleForFreeze = otherUtxos.filter((it) => !it.frozen).map((it) => it.utxo)
-  const eligibleForUnfreeze = selectedUtxos.filter((it) => it.frozen).map((it) => it.utxo)
-
-  return {
-    freeze: eligibleForFreeze,
-    unfreeze: eligibleForUnfreeze,
-  }
-}
-
-/**
- * Prepare the sweep transaction creating a Fidelity Bond.
- * Steps:
- * - freeze all utxos except the selected ones
- * - unfreeze any frozen selected utxo
- * - return frozen utxo ids
- *
- * The returned utxos SHOULD be unfrozen by the caller
- * once the collaborative transaction finishes.
- *
- * @return list of utxo ids that were frozen.
- */
-const prepareUtxosForSweep = async (
-  requestContext: Api.WalletRequestContext,
-  setup: CoinControlSetupResult
-): Promise<Api.UtxoId[]> => {
-  // sequentially perfom the freeze/unfreeze actions.
-  // this should be very fast and will not unnecessarily freeze/unfreeze
-  // utxos in case an error is triggered.
-  // can be optimized, but keep in mind that there might be users
-  // with a large amount of utxos, hence if you want to do requests in parallel
-  // make sure to limit the number of concurrent requests
-  const freezeActions = setup.freeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: true }))
-  for (const freezeAction of freezeActions) {
-    const res = await freezeAction
-    if (!res.ok) await Api.Helper.throwError(res)
-  }
-
-  const unfreezeActions = setup.unfreeze.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
-  for (const unfreezeAction of unfreezeActions) {
-    const res = await unfreezeAction
-    if (!res.ok) await Api.Helper.throwError(res)
-  }
-
-  return setup.freeze
-}
-
-type UtxoApiAction = {
-  utxo: Api.UtxoId
-  action: Promise<Response>
-}
-
-const perfomActionSequential = async (actions: UtxoApiAction[]) => {
-  const failed: Api.UtxoId[] = []
-  for (const action of actions) {
-    const response = await action.action
-    if (!response.ok) failed.push(action.utxo)
-  }
-  return failed
-}
-/**
- * Undo potential changes made to utxos freeze state.
- * Tries to continue in case of errors.
- *
- * @returns list of utxo ids for which the state could not be restored.
- */
-const undoPrepareUtxosForSweep = async (
-  requestContext: Api.WalletRequestContext,
-  setup: CoinControlSetupResult
-): Promise<Api.UtxoId[]> => {
-  const reversedSetup = {
-    freeze: setup.unfreeze,
-    unfreeze: setup.freeze,
-  }
-  const failed: Api.UtxoId[] = []
-
-  const freezeActions: UtxoApiAction[] = reversedSetup.freeze.map((utxo) => ({
-    utxo,
-    action: Api.postFreeze(requestContext, { utxo, freeze: true }),
-  }))
-  await perfomActionSequential(freezeActions).then((failedUtxoIds) => failedUtxoIds.forEach((it) => failed.push(it)))
-
-  const unfreezeActions: UtxoApiAction[] = reversedSetup.unfreeze.map((utxo) => ({
-    utxo,
-    action: Api.postFreeze(requestContext, { utxo, freeze: false }),
-  }))
-  await perfomActionSequential(unfreezeActions).then((failedUtxoIds) => failedUtxoIds.forEach((it) => failed.push(it)))
-
-  return failed
-}
-
 /**
  * Send funds to a timelocked address.
  * Defaults to sweep with a collaborative transaction.
@@ -141,27 +27,17 @@ const undoPrepareUtxosForSweep = async (
 const sweepToFidelityBond = async (
   requestContext: Api.WalletRequestContext,
   account: Account,
-  utxos: Utxos,
   timelockedDestinationAddress: Api.BitcoinAddress,
   counterparties: number
 ): Promise<void> => {
   const amount_sats = 0 // sweep
 
-  const useDirectSend = utxos.length === 1 && !!utxos[0].locktime
-  if (useDirectSend) {
-    await Api.postDirectSend(requestContext, {
-      mixdepth: parseInt(account.account, 10),
-      destination: timelockedDestinationAddress,
-      amount_sats,
-    }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
-  } else {
-    await Api.postCoinjoin(requestContext, {
-      mixdepth: parseInt(account.account, 10),
-      destination: timelockedDestinationAddress,
-      amount_sats,
-      counterparties,
-    }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
-  }
+  await Api.postCoinjoin(requestContext, {
+    mixdepth: parseInt(account.account, 10),
+    destination: timelockedDestinationAddress,
+    amount_sats,
+    counterparties,
+  }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
 }
 
 export default function FidelityBond() {
@@ -182,7 +58,6 @@ export default function FidelityBond() {
   const [isCreateSuccess, setIsCreateSuccess] = useState(false)
   const [createError, setCreateError] = useState<unknown | null>(null)
   const isCreateError = useMemo(() => createError !== null, [createError])
-  const [frozenUtxoIds, setFrozenUtxoIds] = useState<Api.UtxoId[] | null>(null)
 
   const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
 
@@ -249,63 +124,14 @@ export default function FidelityBond() {
     return () => abortCtrl.abort()
   }, [waitForTakerToFinish, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
 
-  /**
-   * Unfreeze any utxo that has been frozen during the setup
-   * after broadcasting the sweep transaction.
-   */
-  useEffect(() => {
-    if (!isLoading) return
-    if (!currentWallet) return
-    if (waitForTakerToFinish) return
-    if (!isCreateSuccess && !isCreateError) return
-    if (frozenUtxoIds === null || frozenUtxoIds.length === 0) return
-
-    const abortCtrl = new AbortController()
-    const { name: walletName, token } = currentWallet
-    const requestContext = { walletName, token, signal: abortCtrl.signal }
-
-    setIsLoading(true)
-
-    const unfreezeActions: UtxoApiAction[] = frozenUtxoIds.map((utxo) => ({
-      utxo,
-      action: Api.postFreeze(requestContext, { utxo, freeze: false }),
-    }))
-    perfomActionSequential(unfreezeActions)
-      .then((failedUtxoIds) => {
-        if (failedUtxoIds.length > 0) {
-          throw new Error(t('fidelity_bond.error_while_unfreezing_utxos'))
-        }
-      })
-      .catch((err) => {
-        if (abortCtrl.signal.aborted) return
-
-        const message = err.message || t('fidelity_bond.error_while_unfreezing_utxos')
-        setAlert({ variant: 'danger', message })
-      })
-      .finally(() => {
-        if (abortCtrl.signal.aborted) return
-
-        setIsLoading(false)
-
-        // Reset the utxos regardless of success or error.
-        // There is generally nothing that can be done if the call does not succeed.
-        // Otherwise this results in endlessly trying to unfreeze the utxos.
-        setFrozenUtxoIds(null)
-      })
-
-    return () => abortCtrl.abort()
-  }, [isLoading, waitForTakerToFinish, isCreateSuccess, isCreateError, frozenUtxoIds, currentWallet, t])
-
   const onSubmit = async (
     selectedAccount: Account,
-    selectedUtxos: Utxos,
     selectedLockdate: Api.Lockdate,
     timelockedDestinationAddress: Api.BitcoinAddress
   ) => {
     if (isCreating) return
     if (!currentWallet) return
     if (!currentWalletInfo) return
-    if (selectedUtxos.length === 0) return
 
     const abortCtrl = new AbortController()
     const { name: walletName, token } = currentWallet
@@ -318,39 +144,8 @@ export default function FidelityBond() {
         key: { section: 'POLICY', field: 'minimum_makers' },
       }).then((data) => parseInt(data.value, 10))
 
-      const coinControlSetup = createCoinControlSetup(currentWalletInfo, selectedUtxos)
-
-      console.info(
-        `Fidelity Bond Setup: Freezing ${coinControlSetup.freeze.length} utxos, unfreezing ${coinControlSetup.unfreeze.length} utxos`
-      )
-
-      try {
-        const frozenUtxoIds = await prepareUtxosForSweep(requestContext, coinControlSetup)
-
-        // TODO: how many counterparties to use? is "minimum" for fbs okay?
-        await sweepToFidelityBond(
-          requestContext,
-          selectedAccount,
-          selectedUtxos,
-          timelockedDestinationAddress,
-          minimumMakers
-        )
-
-        // TODO: consider storing utxo id hashes in local storage..
-        // That way, any changes can be reverted if a user leaves the page before the unfreezing happens.
-        setFrozenUtxoIds(frozenUtxoIds)
-      } catch (error) {
-        const unrestoredUtxos = await undoPrepareUtxosForSweep(requestContext, coinControlSetup)
-        if (unrestoredUtxos.length !== 0) {
-          // unfortunately, restore failed and there is nothing that can be done except informing the user
-          // TODO: provide visual feedback, e.g. modal?
-          console.warn(
-            `Previous state of ${unrestoredUtxos.length} utxo(s) could not be restored and must be frozen/unfrozen manually.`
-          )
-        }
-        throw error
-      }
-
+      // TODO: how many counterparties to use? is "minimum" for fbs okay?
+      await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
       setWaitForTakerToFinish(true)
       setIsCreateSuccess(true)
     } catch (error) {

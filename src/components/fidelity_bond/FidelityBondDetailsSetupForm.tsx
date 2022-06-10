@@ -14,7 +14,6 @@ import ToggleSwitch from '../../components/ToggleSwitch'
 import { useBalanceSummary, WalletBalanceSummary } from '../../hooks/BalanceSummary'
 
 import Sprite from './../Sprite'
-import UtxoSelector from './UtxoSelector'
 import AccountSelector from './AccountSelector'
 import LockdateForm, { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from './LockdateForm'
 
@@ -89,96 +88,10 @@ const SelectAccountStep = ({ walletInfo, onChange }: SelectAccountStepProps) => 
   )
 }
 
-interface SelectUtxosStepProps {
-  balanceSummary: WalletBalanceSummary
-  account: Account
-  utxos: Utxos
-  onChange: (utxos: Utxos) => void
-}
-const SelectUtxosStep = ({ balanceSummary, account, utxos, onChange }: SelectUtxosStepProps) => {
-  const settings = useSettings()
-  const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
-
-  const selectedUtxosAmountSum = useMemo(
-    () => selectedUtxos.reduce((acc, current) => acc + current.value, 0),
-    [selectedUtxos]
-  )
-
-  useEffect(() => {
-    setSelectedUtxos([])
-  }, [utxos])
-
-  useEffect(() => {
-    onChange(selectedUtxos)
-  }, [selectedUtxos, onChange])
-
-  // TODO: add `calculatedTotalBalanceInSats`
-  const walletTotalBalanceInSats = useMemo(
-    () => balanceSummary.calculatedAvailableBalanceInSats + balanceSummary.calculatedFrozenOrLockedBalanceInSats,
-    [balanceSummary]
-  )
-
-  const relativeSizeToTotalBalance = useMemo(() => {
-    if (walletTotalBalanceInSats <= 0) return 0
-    return selectedUtxosAmountSum / walletTotalBalanceInSats
-  }, [selectedUtxosAmountSum, walletTotalBalanceInSats])
-
-  return (
-    <>
-      <h2>Select UTXOs</h2>
-
-      <rb.Card
-        className="w-100"
-        style={{
-          position: 'sticky',
-          top: '75px',
-          zIndex: 10,
-        }}
-      >
-        <rb.Card.Body style={{ padding: '0.25rem' }}>
-          <rb.Table
-            className="rounded"
-            variant={settings.theme}
-            style={{
-              marginBottom: 0,
-            }}
-          >
-            <tbody>
-              <tr>
-                <td>Account</td>
-                <td className="text-end">#{account.account}</td>
-              </tr>
-              <tr>
-                <td>Total sum of selected UTXOs</td>
-                <td className="text-end">
-                  <Balance
-                    valueString={`${selectedUtxosAmountSum}`}
-                    convertToUnit={settings.unit}
-                    showBalance={settings.showBalance}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="border-0">Relative size to your total balance</td>
-                <td className="border-0 text-end">{(relativeSizeToTotalBalance * 100).toFixed(2)}%</td>
-              </tr>
-            </tbody>
-          </rb.Table>
-        </rb.Card.Body>
-      </rb.Card>
-
-      <div className="mt-3">
-        <UtxoSelector utxos={utxos} onChange={setSelectedUtxos} />
-      </div>
-    </>
-  )
-}
-
 interface SelectLockdateStepProps {
-  utxos: Utxos
   onChange: (lockdate: Api.Lockdate) => void
 }
-const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
+const SelectLockdateStep = ({ onChange }: SelectLockdateStepProps) => {
   const { i18n } = useTranslation()
   const settings = useSettings()
 
@@ -196,8 +109,6 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
       fb.time.elapsed(fb.lockdate.toTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
     [lockdate, i18n]
   )
-
-  const selectedUtxosAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
 
   return (
     <>
@@ -228,16 +139,6 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
           >
             <tbody>
               <tr>
-                <td>Fidelity Bond Size</td>
-                <td className="text-end">
-                  <Balance
-                    valueString={`${selectedUtxosAmountSum}`}
-                    convertToUnit={settings.unit}
-                    showBalance={settings.showBalance}
-                  />
-                </td>
-              </tr>
-              <tr>
                 <td>Locked until</td>
                 <td className="text-end">{lockdate || '-'}</td>
               </tr>
@@ -256,13 +157,12 @@ const SelectLockdateStep = ({ utxos, onChange }: SelectLockdateStepProps) => {
 interface ConfirmationStepProps {
   balanceSummary: WalletBalanceSummary
   account: Account
-  utxos: Utxos
   lockdate: Api.Lockdate
   confirmed: boolean
   onChange: (confirmed: boolean) => void
 }
 
-const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed, onChange }: ConfirmationStepProps) => {
+const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChange }: ConfirmationStepProps) => {
   const { t, i18n } = useTranslation()
   const settings = useSettings()
 
@@ -271,7 +171,13 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
     [lockdate, i18n]
   )
 
-  const selectedUtxosAmountSum = useMemo(() => utxos.reduce((acc, current) => acc + current.value, 0), [utxos])
+  const accountAvailableBalanceInSats = useMemo(
+    () =>
+      balanceSummary.accountBalances
+        .filter((it) => it.accountIndex === parseInt(account.account, 10))
+        .reduce((acc, curr) => acc + curr.calculatedAvailableBalanceInSats, 0),
+    [balanceSummary, account]
+  )
 
   // TODO: add `calculatedTotalBalanceInSats`
   const walletTotalBalanceInSats = useMemo(
@@ -281,8 +187,8 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
 
   const relativeSizeToTotalBalance = useMemo(() => {
     if (walletTotalBalanceInSats <= 0) return 0
-    return selectedUtxosAmountSum / walletTotalBalanceInSats
-  }, [selectedUtxosAmountSum, walletTotalBalanceInSats])
+    return accountAvailableBalanceInSats / walletTotalBalanceInSats
+  }, [accountAvailableBalanceInSats, walletTotalBalanceInSats])
 
   return (
     <>
@@ -306,7 +212,7 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
                 <td>Fidelity Bond Size</td>
                 <td className="text-end">
                   <Balance
-                    valueString={`${selectedUtxosAmountSum}`}
+                    valueString={`${accountAvailableBalanceInSats}`}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />
@@ -345,41 +251,19 @@ const ConfirmationStep = ({ balanceSummary, account, utxos, lockdate, confirmed,
 interface FidelityBondDetailsSetupFormProps {
   currentWallet: CurrentWallet
   walletInfo: WalletInfo
-  onSubmit: (
-    account: Account,
-    utxos: Utxos,
-    lockdate: Api.Lockdate,
-    timelockedAddress: Api.BitcoinAddress
-  ) => Promise<unknown>
+  onSubmit: (account: Account, lockdate: Api.Lockdate, timelockedAddress: Api.BitcoinAddress) => Promise<unknown>
 }
 
 const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: FidelityBondDetailsSetupFormProps) => {
   const { t } = useTranslation()
-  const settings = useSettings()
   const balanceSummary = useBalanceSummary(walletInfo)
 
   const utxos = useMemo(() => (walletInfo === null ? [] : walletInfo.data.utxos.utxos), [walletInfo])
 
   const [step, setStep] = useState<number>(0)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
-  const [selectedUtxos, setSelectedUtxos] = useState<Utxos | null>(null)
   const [selectedLockdate, setSelectedLockdate] = useState<Api.Lockdate | null>(null)
   const [userConfirmed, setUserConfirmed] = useState(false)
-
-  const selectedUtxosAmountSum = useMemo(
-    () => selectedUtxos?.reduce((acc, current) => acc + current.value, 0),
-    [selectedUtxos]
-  )
-
-  // TODO: this is a common pattern - try to generalize
-  const utxosByAccount = useMemo(() => {
-    return utxos.reduce((acc, utxo) => {
-      const key = `${utxo.mixdepth}`
-      acc[key] = acc[key] || []
-      acc[key].push(utxo)
-      return acc
-    }, {} as { [key: string]: Utxos })
-  }, [utxos])
 
   useEffect(() => {
     if (selectedAccount === null) {
@@ -390,7 +274,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
   useEffect(() => {
     // TODO: toggle button has no way to reflect this change currently
     setUserConfirmed(false)
-  }, [step, selectedAccount, selectedUtxos, selectedLockdate])
+  }, [step, selectedAccount, selectedLockdate])
 
   /**
    * Log the timelocked address to console in development mode!
@@ -418,17 +302,8 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
     }
   }, [currentWallet, selectedLockdate])
 
-  const _onSubmit = async (account: Account, utxos: Utxos, lockdate: Api.Lockdate) => {
+  const _onSubmit = async (account: Account, lockdate: Api.Lockdate) => {
     if (!currentWallet) return
-    if (utxos.length === 0) return
-
-    const allUtxosInAccount = utxosByAccount[account.account]
-
-    // sanity check
-    const sameAccountCheck = utxos.every((it) => allUtxosInAccount.includes(it))
-    if (!sameAccountCheck) {
-      throw new Error('Given utxos must be from the same account')
-    }
 
     const { name: walletName, token } = currentWallet
     const timelockedDestinationAddress = await Api.getAddressTimelockNew({
@@ -441,7 +316,7 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
       )
       .then((data) => data.address)
 
-    return await onSubmit(account, utxos, lockdate, timelockedDestinationAddress)
+    return await onSubmit(account, lockdate, timelockedDestinationAddress)
   }
 
   return (
@@ -476,36 +351,20 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
           </rb.Button>
         </div>
       )}
+
       {balanceSummary && selectedAccount && (
         <div className={`${step !== 1 ? 'd-none' : ''}`}>
-          <SelectUtxosStep
-            balanceSummary={balanceSummary}
-            account={selectedAccount}
-            utxos={utxosByAccount[selectedAccount.account]}
-            onChange={setSelectedUtxos}
-          />
+          <SelectLockdateStep onChange={setSelectedLockdate} />
 
           <rb.Button
             variant="dark"
             type="button"
             size="lg"
             className="w-100 mt-4"
-            disabled={selectedUtxos === null || selectedUtxos.length === 0}
+            disabled={selectedLockdate === null}
             onClick={() => setStep(2)}
           >
-            {!selectedUtxosAmountSum ? (
-              t('global.next')
-            ) : (
-              <>
-                Proceed with
-                {` `}
-                <Balance
-                  valueString={`${selectedUtxosAmountSum}`}
-                  convertToUnit={settings.unit}
-                  showBalance={settings.showBalance}
-                />
-              </>
-            )}
+            {t('global.next')}
           </rb.Button>
 
           <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(0)}>
@@ -514,33 +373,11 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
         </div>
       )}
 
-      {balanceSummary && selectedAccount && selectedUtxos && (
+      {balanceSummary && selectedAccount && selectedLockdate && (
         <div className={`${step !== 2 ? 'd-none' : ''}`}>
-          <SelectLockdateStep utxos={selectedUtxos} onChange={setSelectedLockdate} />
-
-          <rb.Button
-            variant="dark"
-            type="button"
-            size="lg"
-            className="w-100 mt-4"
-            disabled={selectedLockdate === null}
-            onClick={() => setStep(3)}
-          >
-            {t('global.next')}
-          </rb.Button>
-
-          <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(1)}>
-            {t('global.back')}
-          </rb.Button>
-        </div>
-      )}
-
-      {balanceSummary && selectedAccount && selectedUtxos && selectedLockdate && (
-        <div className={`${step !== 3 ? 'd-none' : ''}`}>
           <ConfirmationStep
             balanceSummary={balanceSummary}
             account={selectedAccount}
-            utxos={selectedUtxos}
             lockdate={selectedLockdate}
             confirmed={userConfirmed}
             onChange={setUserConfirmed}
@@ -552,12 +389,12 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
             size="lg"
             className="w-100 mt-4"
             disabled={!userConfirmed}
-            onClick={() => _onSubmit(selectedAccount, selectedUtxos, selectedLockdate)}
+            onClick={() => _onSubmit(selectedAccount, selectedLockdate)}
           >
             {t('fidelity_bond.create_form.button_create')}
           </rb.Button>
 
-          <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(2)}>
+          <rb.Button variant="link" type="button" className="w-100 mt-4" onClick={() => setStep(1)}>
             {t('global.back')}
           </rb.Button>
         </div>
