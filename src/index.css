@@ -305,13 +305,16 @@ main {
 
 @media only screen and (min-width: 768px) {
   .center-nav-link {
-    min-width: 80px;
-    padding: 8px 0 !important;
+    padding: 8px 1.5rem !important;
   }
 
   .center-nav-link.active {
-    padding: 8px 0 6px 0 !important;
+    padding: 8px 1.5rem 6px 1.5rem !important;
     border-bottom: 2px solid black;
+  }
+
+  .center-nav-link-divider {
+    color: #bbbbbb;
   }
 
   .leading-nav-link {
