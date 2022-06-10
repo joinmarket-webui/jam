@@ -17,7 +17,6 @@ import LockdateForm, { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from './Lockda
 
 import * as Api from '../../libs/JmWalletApi'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
-import * as fb from './fb_utils'
 
 interface SelectAccountStepProps {
   balanceSummary: WalletBalanceSummary
@@ -44,10 +43,6 @@ interface SelectLockdateStepProps {
   onChange: (lockdate: Api.Lockdate) => void
 }
 const SelectLockdateStep = ({ onChange }: SelectLockdateStepProps) => {
-  const { i18n } = useTranslation()
-  const settings = useSettings()
-
-  const [lockdate, setLockdate] = useState<Api.Lockdate | null>(null)
   const yearsRange = useMemo(() => {
     if (isDebugFeatureEnabled('allowCreatingExpiredFidelityBond')) {
       return toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS)
@@ -55,51 +50,14 @@ const SelectLockdateStep = ({ onChange }: SelectLockdateStepProps) => {
     return toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS)
   }, [])
 
-  const timeTillUnlockString = useMemo(
-    () =>
-      lockdate &&
-      fb.time.elapsed(fb.lockdate.toTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
-    [lockdate, i18n]
-  )
-
   return (
     <>
       <h4>Select duration</h4>
-      <rb.Card className="w-100">
+      <rb.Card className="w-100 mt-3">
         <rb.Card.Body>
           <rb.Form noValidate>
-            <LockdateForm
-              onChange={(it) => {
-                setLockdate(it)
-                onChange(it)
-              }}
-              yearsRange={yearsRange}
-            />
-
-            {timeTillUnlockString && <p className="lead text-center">Funds will unlock {timeTillUnlockString}</p>}
+            <LockdateForm onChange={onChange} yearsRange={yearsRange} />
           </rb.Form>
-        </rb.Card.Body>
-      </rb.Card>
-
-      <rb.Card className="w-100 mt-3">
-        <rb.Card.Body style={{ padding: '0.25rem' }}>
-          <rb.Table
-            variant={settings.theme}
-            style={{
-              marginBottom: 0,
-            }}
-          >
-            <tbody>
-              <tr>
-                <td>Locked until</td>
-                <td className="text-end">{lockdate || '-'}</td>
-              </tr>
-              <tr>
-                <td className="border-0">Duration</td>
-                <td className="border-0 text-end">{timeTillUnlockString || '-'}</td>
-              </tr>
-            </tbody>
-          </rb.Table>
         </rb.Card.Body>
       </rb.Card>
     </>
@@ -115,13 +73,8 @@ interface ConfirmationStepProps {
 }
 
 const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChange }: ConfirmationStepProps) => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const settings = useSettings()
-
-  const timeTillUnlockString = useMemo(
-    () => fb.time.elapsed(fb.lockdate.toTimestamp(lockdate), Date.now(), i18n.resolvedLanguage || i18n.language),
-    [lockdate, i18n]
-  )
 
   const accountAvailableBalanceInSats = useMemo(
     () =>
@@ -179,12 +132,8 @@ const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChan
                 <td className="text-end">{(relativeSizeToTotalBalance * 100).toFixed(2)} %</td>
               </tr>
               <tr>
-                <td className="">Locked until</td>
-                <td className="text-end">{lockdate}</td>
-              </tr>
-              <tr>
-                <td className="border-0">Duration</td>
-                <td className="border-0 text-end">{timeTillUnlockString}</td>
+                <td className="border-0">Locked until</td>
+                <td className="border-0 text-end">{lockdate}</td>
               </tr>
             </tbody>
           </rb.Table>
