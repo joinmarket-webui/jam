@@ -51,6 +51,7 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
           {t('navbar.tab_receive')}
         </NavLink>
       </rb.Nav.Item>
+      <div className="d-none d-md-flex align-items-center center-nav-link-divider">»</div>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.jam}
@@ -65,6 +66,7 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
           </div>
         </NavLink>
       </rb.Nav.Item>
+      <div className="d-none d-md-flex align-items-center center-nav-link-divider">/</div>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.earn}
@@ -79,6 +81,7 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
           </div>
         </NavLink>
       </rb.Nav.Item>
+      <div className="d-none d-md-flex align-items-center center-nav-link-divider">»</div>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.send}
