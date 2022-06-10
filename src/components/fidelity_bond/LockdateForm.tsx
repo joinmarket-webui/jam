@@ -30,7 +30,7 @@ const initialLockdate = (now: Date, range: YearsRange): Api.Lockdate => {
 }
 
 interface LockdateFormProps {
-  onChange: (lockdate: Api.Lockdate) => void
+  onChange: (lockdate: Api.Lockdate | null) => void
   initialValue?: Api.Lockdate
   yearsRange?: YearsRange
   now?: Date
@@ -77,7 +77,10 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
   )
 
   useEffect(() => {
-    if (!isLockdateYearValid || !isLockdateMonthValid) return
+    if (!isLockdateYearValid || !isLockdateMonthValid) {
+      onChange(null)
+      return
+    }
 
     const timestamp = Date.UTC(lockdateYear, lockdateMonth - 1, 1)
     onChange(fb.lockdate.fromTimestamp(timestamp))

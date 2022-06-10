@@ -40,7 +40,7 @@ const SelectAccountStep = ({ balanceSummary, accounts, onChange }: SelectAccount
 }
 
 interface SelectLockdateStepProps {
-  onChange: (lockdate: Api.Lockdate) => void
+  onChange: (lockdate: Api.Lockdate | null) => void
 }
 const SelectLockdateStep = ({ onChange }: SelectLockdateStepProps) => {
   const yearsRange = useMemo(() => {
