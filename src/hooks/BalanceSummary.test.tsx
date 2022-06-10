@@ -96,6 +96,7 @@ describe('BalanceSummary', () => {
     expect(balanceSummary).not.toBeNull()
     expect(balanceSummary!.totalBalance).toBe('0.00000006')
     expect(balanceSummary!.availableBalance).toBe('0.00000001')
+    expect(balanceSummary!.calculatedTotalBalanceInSats).toBe(6)
     expect(balanceSummary!.calculatedAvailableBalanceInSats).toBe(1)
     expect(balanceSummary!.calculatedFrozenOrLockedBalanceInSats).toBe(5)
     expect(balanceSummary!.accountBalances).toEqual([])
@@ -170,6 +171,7 @@ describe('BalanceSummary', () => {
     expect(balanceSummary).not.toBeNull()
     expect(balanceSummary!.totalBalance).toBe('6.66666666')
     expect(balanceSummary!.availableBalance).toBe('3.22222222')
+    expect(balanceSummary!.calculatedTotalBalanceInSats).toBe(666666666)
     expect(balanceSummary!.calculatedAvailableBalanceInSats).toBe(322222222)
     expect(balanceSummary!.calculatedFrozenOrLockedBalanceInSats).toBe(344444444)
     expect(balanceSummary!.accountBalances).toHaveLength(4)
@@ -181,6 +183,7 @@ describe('BalanceSummary', () => {
     expect(account0.accountIndex).toBe(0)
     expect(account0.totalBalance).toBe('0.00000000')
     expect(account0.availableBalance).toBe('0.00000000')
+    expect(account0.calculatedTotalBalanceInSats).toBe(0)
     expect(account0.calculatedAvailableBalanceInSats).toBe(0)
     expect(account0.calculatedFrozenOrLockedBalanceInSats).toBe(0)
 
@@ -188,6 +191,7 @@ describe('BalanceSummary', () => {
     expect(account1.accountIndex).toBe(1)
     expect(account1.totalBalance).toBe('1.11111111')
     expect(account1.availableBalance).toBe('1.11111111')
+    expect(account1.calculatedTotalBalanceInSats).toBe(111111111)
     expect(account1.calculatedAvailableBalanceInSats).toBe(111111111)
     expect(account1.calculatedFrozenOrLockedBalanceInSats).toBe(0)
 
@@ -195,6 +199,7 @@ describe('BalanceSummary', () => {
     expect(account2.accountIndex).toBe(2)
     expect(account2.totalBalance).toBe('2.22222222')
     expect(account2.availableBalance).toBe('2.11111111')
+    expect(account2.calculatedTotalBalanceInSats).toBe(222222222)
     expect(account2.calculatedAvailableBalanceInSats).toBe(211111111)
     expect(account2.calculatedFrozenOrLockedBalanceInSats).toBe(11111111)
 
@@ -202,6 +207,7 @@ describe('BalanceSummary', () => {
     expect(account3.accountIndex).toBe(3)
     expect(account3.totalBalance).toBe('3.33333333')
     expect(account3.availableBalance).toBe('0.00000000')
+    expect(account3.calculatedTotalBalanceInSats).toBe(333333333)
     expect(account3.calculatedAvailableBalanceInSats).toBe(0)
     expect(account3.calculatedFrozenOrLockedBalanceInSats).toBe(333333333)
   })

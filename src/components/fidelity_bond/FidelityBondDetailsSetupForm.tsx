@@ -84,16 +84,10 @@ const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChan
     [balanceSummary, account]
   )
 
-  // TODO: add `calculatedTotalBalanceInSats`
-  const walletTotalBalanceInSats = useMemo(
-    () => balanceSummary.calculatedAvailableBalanceInSats + balanceSummary.calculatedFrozenOrLockedBalanceInSats,
-    [balanceSummary]
-  )
-
   const relativeSizeToTotalBalance = useMemo(() => {
-    if (walletTotalBalanceInSats <= 0) return 0
-    return accountAvailableBalanceInSats / walletTotalBalanceInSats
-  }, [accountAvailableBalanceInSats, walletTotalBalanceInSats])
+    if (balanceSummary.calculatedTotalBalanceInSats <= 0) return 0
+    return accountAvailableBalanceInSats / balanceSummary.calculatedTotalBalanceInSats
+  }, [accountAvailableBalanceInSats, balanceSummary])
 
   return (
     <>
