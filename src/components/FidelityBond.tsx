@@ -21,14 +21,7 @@ import styles from './FidelityBond.module.css'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
-/**
- * Send funds to a timelocked address.
- * Defaults to sweep with a collaborative transaction.
- * If the selected utxo is a single expired FB, "diret-send" is used.
- *
- * The transaction will have no change output.
- */
-const sweepToFidelityBond = async (
+const collaborativeSweepToFidelityBond = async (
   requestContext: Api.WalletRequestContext,
   account: Account,
   timelockedDestinationAddress: Api.BitcoinAddress,
@@ -41,6 +34,20 @@ const sweepToFidelityBond = async (
     destination: timelockedDestinationAddress,
     amount_sats,
     counterparties,
+  }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+}
+
+const directSweepToFidelityBond = async (
+  requestContext: Api.WalletRequestContext,
+  account: Account,
+  timelockedDestinationAddress: Api.BitcoinAddress
+) => {
+  const amount_sats = 0 // sweep
+
+  await Api.postDirectSend(requestContext, {
+    mixdepth: parseInt(account.account, 10),
+    destination: timelockedDestinationAddress,
+    amount_sats,
   }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
 }
 
@@ -79,6 +86,10 @@ export default function FidelityBond() {
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
+  const isOperationDisabled = useMemo(
+    () => isMakerRunning || isCoinjoinInProgress,
+    [isMakerRunning, isCoinjoinInProgress]
+  )
 
   const [alert, setAlert] = useState<AlertWithMessage | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
@@ -90,16 +101,7 @@ export default function FidelityBond() {
 
   const utxos = useMemo(() => currentWalletInfo?.data.utxos.utxos, [currentWalletInfo])
   const fidelityBonds = useMemo(() => utxos?.filter((utxo) => utxo.locktime), [utxos])
-  const activeFidelityBonds = useMemo(() => {
-    console.log(fidelityBonds)
-    return fidelityBonds?.filter((it) => isLocked(it))
-  }, [fidelityBonds])
-
-  const isOperationDisabled = useMemo(() => {
-    if (isMakerRunning) return true
-    if (!isInitiateTxSuccess && !isInitiateTxError && isCoinjoinInProgress) return true
-    return false
-  }, [isMakerRunning, isCoinjoinInProgress, isInitiateTxSuccess, isInitiateTxError])
+  const activeFidelityBonds = useMemo(() => fidelityBonds?.filter((it) => isLocked(it)), [fidelityBonds])
 
   useEffect(() => {
     if (!currentWallet) {
@@ -128,6 +130,13 @@ export default function FidelityBond() {
     return () => abortCtrl.abort()
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
+  /**
+   * Initiate sending funds to a timelocked address.
+   * Defaults to sweep with a collaborative transaction.
+   * If the selected utxo is a single expired FB, "diret-send" is used.
+   *
+   * The transaction will have no change output.
+   */
   const onSubmit = async (
     selectedAccount: Account,
     selectedLockdate: Api.Lockdate,
@@ -135,7 +144,7 @@ export default function FidelityBond() {
   ) => {
     if (isSending) return
     if (!currentWallet) return
-    if (!fidelityBonds) return
+    if (!utxos) return
 
     const abortCtrl = new AbortController()
     const { name: walletName, token } = currentWallet
@@ -143,13 +152,31 @@ export default function FidelityBond() {
 
     setIsSending(true)
     try {
-      const minimumMakers = await loadConfigValue({
-        signal: abortCtrl.signal,
-        key: { section: 'POLICY', field: 'minimum_makers' },
-      }).then((data) => parseInt(data.value, 10))
+      const accountIndex = parseInt(selectedAccount.account, 10)
+      const usedUtxos = utxos
+        .filter((it) => it.mixdepth === accountIndex)
+        .filter((it) => !it.frozen)
+        .filter((it) => !isLocked(it))
 
-      // TODO: how many counterparties to use? is "minimum" for fbs okay?
-      await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
+      // ff the selected utxo is a single expired FB, send via "direct-send"
+      const useDirectSend = usedUtxos.length === 1 && !!usedUtxos[0].locktime && !isLocked(usedUtxos[0])
+
+      if (useDirectSend) {
+        await directSweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress)
+      } else {
+        const minimumMakers = await loadConfigValue({
+          signal: abortCtrl.signal,
+          key: { section: 'POLICY', field: 'minimum_makers' },
+        }).then((data) => parseInt(data.value, 10))
+
+        // TODO: how many counterparties to use? is "minimum" for fbs okay?
+        await collaborativeSweepToFidelityBond(
+          requestContext,
+          selectedAccount,
+          timelockedDestinationAddress,
+          minimumMakers
+        )
+      }
       setIsInitiateTxSuccess(true)
     } catch (error) {
       setInitiateTxError(error)
@@ -192,9 +219,12 @@ export default function FidelityBond() {
                 {isInitiateTxSuccess || isInitiateTxError ? (
                   <>
                     {isInitiateTxSuccess ? (
-                      <rb.Alert variant="success" className="my-4">
-                        The transaction to create your Fidelity Bond has been successfully initiated.
-                      </rb.Alert>
+                      <>
+                        <rb.Alert variant="success" className="my-4">
+                          The transaction to create your Fidelity Bond has been successfully initiated.
+                        </rb.Alert>
+                        {isCoinjoinInProgress && <TakerIsRunningAlert />}
+                      </>
                     ) : (
                       <rb.Alert variant="danger" className="my-4">
                         Error while initiating your Fidelity Bond transaction.
