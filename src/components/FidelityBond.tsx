@@ -14,6 +14,7 @@ import PageTitle from './PageTitle'
 import FidelityBondDetailsSetupForm from './fidelity_bond/FidelityBondDetailsSetupForm'
 import * as Api from '../libs/JmWalletApi'
 import styles from './FidelityBond.module.css'
+import { isLocked } from '../hooks/BalanceSummary'
 
 type AlertWithMessage = rb.AlertProps & { message: string }
 
@@ -40,6 +41,50 @@ const sweepToFidelityBond = async (
   }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
 }
 
+const FidelityBondInProgress = () => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <div className="d-flex justify-content-center align-items-center">
+        <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+        <Trans i18nKey="fidelity_bond.transaction_in_progress_loading_text">Creating Fidelity Bond…</Trans>
+      </div>
+      <div className="d-flex justify-content-center">
+        <small>
+          <Trans i18nKey="fidelity_bond.transaction_in_progress_patience_text">
+            Please be patient, this will take several minutes.
+          </Trans>
+        </small>
+      </div>
+      <rb.Alert variant="info" className="my-4">
+        {t('send.text_coinjoin_already_running')}
+      </rb.Alert>
+    </>
+  )
+}
+
+const FidelityBondError = () => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <rb.Alert variant="danger" className="my-4">
+        {t('fidelity_bond.text_fidelity_bond_create_error')}
+      </rb.Alert>
+    </>
+  )
+}
+
+const FidelityBondSuccess = () => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <rb.Alert variant="success" className="my-4">
+        {t('fidelity_bond.text_fidelity_bond_create_success')}
+      </rb.Alert>
+    </>
+  )
+}
+
 export default function FidelityBond() {
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
@@ -56,8 +101,23 @@ export default function FidelityBond() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const [isInitiateTxSuccess, setIsInitiateTxSuccess] = useState(false)
-  const [initiateTxError, setInitiateTxError] = useState<unknown | null>(null)
-  const isInitiateTxError = useMemo(() => initiateTxError !== null, [initiateTxError])
+  const [initiateTxError, setInitiateTxError] = useState<unknown>(undefined)
+  const isInitiateTxError = useMemo(() => initiateTxError !== undefined, [initiateTxError])
+
+  const utxos = useMemo(() => currentWalletInfo?.data.utxos.utxos, [currentWalletInfo])
+  const fidelityBonds = useMemo(() => utxos?.filter((utxo) => utxo.locktime), [utxos])
+  const activeFidelityBonds = useMemo(() => fidelityBonds?.filter(isLocked), [fidelityBonds])
+  const [amountOfFidelityBondsBeforeStart, setAmountOfFidelityBondsBeforeStart] = useState<number | undefined>(
+    undefined
+  )
+  const [amountOfFidelityBondsAfterFinish, setAmountOfFidelityBondsAfterFinish] = useState<number | undefined>(
+    undefined
+  )
+  const fidelityBondSuccessfullyCreated = useMemo(() => {
+    if (amountOfFidelityBondsBeforeStart === undefined) return undefined
+    if (amountOfFidelityBondsAfterFinish === undefined) return undefined
+    return amountOfFidelityBondsAfterFinish === amountOfFidelityBondsBeforeStart + 1
+  }, [amountOfFidelityBondsBeforeStart, amountOfFidelityBondsAfterFinish])
 
   const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
 
@@ -68,16 +128,6 @@ export default function FidelityBond() {
 
     setWaitForTakerToFinish(isCoinjoinInProgress)
   }, [isSending, isInitiateTxSuccess, isInitiateTxError, isCoinjoinInProgress])
-
-  const utxos = useMemo(
-    () => (currentWalletInfo === null ? [] : currentWalletInfo.data.utxos.utxos),
-    [currentWalletInfo]
-  )
-  const fidelityBonds = useMemo(() => (utxos === null ? null : utxos.filter((utxo) => utxo.locktime)), [utxos])
-  const activeFidelityBonds = useMemo(
-    () => (fidelityBonds === null ? null : fidelityBonds.filter((utxo) => utxo.frozen)),
-    [fidelityBonds]
-  )
 
   useEffect(() => {
     if (!currentWallet) {
@@ -108,18 +158,27 @@ export default function FidelityBond() {
 
   useEffect(() => {
     if (isSending) return
-    if (waitForTakerToFinish) return
     if (!isInitiateTxSuccess && !isInitiateTxError) return
+    if (waitForTakerToFinish) return
 
     const abortCtrl = new AbortController()
     setIsLoading(true)
 
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-      .catch((err) => {
-        const message = err.message || t('current_wallet.error_loading_failed')
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
-      })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+    const delayInMs = 1_000 // let the backend some time to synchronize
+    setTimeout(() => {
+      if (abortCtrl.signal.aborted) return
+
+      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+        .then((info) => {
+          const fidelityBonds = info.data.utxos.utxos.filter((utxo) => utxo.locktime)
+          setAmountOfFidelityBondsAfterFinish(fidelityBonds.length)
+        })
+        .catch((err) => {
+          const message = err.message || t('current_wallet.error_loading_failed')
+          !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+        })
+        .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+    }, delayInMs)
 
     return () => abortCtrl.abort()
   }, [waitForTakerToFinish, isSending, isInitiateTxSuccess, isInitiateTxError, reloadCurrentWalletInfo, t])
@@ -131,13 +190,14 @@ export default function FidelityBond() {
   ) => {
     if (isSending) return
     if (!currentWallet) return
-    if (!currentWalletInfo) return
+    if (!fidelityBonds) return
 
     const abortCtrl = new AbortController()
     const { name: walletName, token } = currentWallet
     const requestContext = { walletName, token, signal: abortCtrl.signal }
 
     setIsSending(true)
+    setAmountOfFidelityBondsBeforeStart(fidelityBonds.length)
     try {
       const minimumMakers = await loadConfigValue({
         signal: abortCtrl.signal,
@@ -192,55 +252,41 @@ export default function FidelityBond() {
           </div>
         ) : (
           <>
-            {currentWallet && currentWalletInfo && activeFidelityBonds && activeFidelityBonds.length === 0 && (
+            {fidelityBondSuccessfullyCreated !== undefined ? (
+              <>{fidelityBondSuccessfullyCreated ? <FidelityBondSuccess /> : <FidelityBondError />}</>
+            ) : (
               <>
-                {waitForTakerToFinish || isInitiateTxSuccess || isInitiateTxError ? (
+                {activeFidelityBonds && (
                   <>
-                    {waitForTakerToFinish ? (
+                    {activeFidelityBonds.length === 0 ? (
                       <>
-                        <div className="d-flex justify-content-center align-items-center">
-                          <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                          <Trans i18nKey="fidelity_bond.transaction_in_progress_loading_text">
-                            Creating Fidelity Bond…
-                          </Trans>
-                        </div>
-                        <div className="d-flex justify-content-center">
-                          <small>
-                            <Trans i18nKey="fidelity_bond.transaction_in_progress_patience_text">
-                              Please be patient, this will take several minutes.
-                            </Trans>
-                          </small>
-                        </div>
-                        <rb.Alert variant="info" className="my-4">
-                          {t('send.text_coinjoin_already_running')}
-                        </rb.Alert>
+                        {waitForTakerToFinish || isInitiateTxSuccess || isInitiateTxError ? (
+                          <>
+                            <FidelityBondInProgress />
+                          </>
+                        ) : (
+                          <>
+                            {currentWallet && currentWalletInfo && (
+                              <FidelityBondDetailsSetupForm
+                                currentWallet={currentWallet}
+                                walletInfo={currentWalletInfo}
+                                onSubmit={onSubmit}
+                              />
+                            )}
+                          </>
+                        )}
                       </>
                     ) : (
                       <>
-                        {isInitiateTxSuccess && (
-                          <div className="d-flex justify-content-center align-items-center">Success!</div>
-                        )}
-                        {isInitiateTxError && (
-                          <div className="d-flex justify-content-center align-items-center">Error!</div>
-                        )}
+                        <div className="mt-2 mb-4">
+                          <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
+                          <DisplayUTXOs utxos={activeFidelityBonds} />
+                        </div>
                       </>
                     )}
                   </>
-                ) : (
-                  <FidelityBondDetailsSetupForm
-                    currentWallet={currentWallet}
-                    walletInfo={currentWalletInfo}
-                    onSubmit={onSubmit}
-                  />
                 )}
               </>
-            )}
-
-            {activeFidelityBonds && activeFidelityBonds.length > 0 && (
-              <div className="mt-2 mb-4">
-                <h5>{t('current_wallet_advanced.title_fidelity_bonds')}</h5>
-                <DisplayUTXOs utxos={activeFidelityBonds} />
-              </div>
             )}
           </>
         )}
