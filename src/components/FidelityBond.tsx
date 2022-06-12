@@ -153,13 +153,13 @@ export default function FidelityBond() {
     setIsSending(true)
     try {
       const accountIndex = parseInt(selectedAccount.account, 10)
-      const usedUtxos = utxos
+      const spendableUtxos = utxos
         .filter((it) => it.mixdepth === accountIndex)
         .filter((it) => !it.frozen)
         .filter((it) => !isLocked(it))
 
       // ff the selected utxo is a single expired FB, send via "direct-send"
-      const useDirectSend = usedUtxos.length === 1 && !!usedUtxos[0].locktime && !isLocked(usedUtxos[0])
+      const useDirectSend = spendableUtxos.length === 1 && !!spendableUtxos[0].locktime
 
       if (useDirectSend) {
         await directSweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress)

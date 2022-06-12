@@ -13,7 +13,7 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
-import { useBalanceSummary } from '../hooks/BalanceSummary'
+import { isLocked, useBalanceSummary } from '../hooks/BalanceSummary'
 
 // When running the scheduler with internal destination addresses, the funds
 // will end up on those 3 mixdepths (one UTXO each).
@@ -58,7 +58,7 @@ const useSchedulerPreconditionSummary = (walletInfoOrNull, startAccountIndex) =>
     return utxos
       .filter((it) => it.mixdepth === startAccountIndex)
       .filter((it) => !it.frozen)
-      .filter((it) => !it.locktime)
+      .filter((it) => !isLocked(it))
   }, [walletInfoOrNull, startAccountIndex])
 
   const [summary, setSummary] = useState(DEFAULT_PRECONDITION_SUMMARY)

@@ -48,8 +48,8 @@ export default function CurrentWalletAdvanced() {
           const unspentOutputs = info.data.utxos.utxos
           setUtxos(unspentOutputs)
 
-          const lockedOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
-          setFidelityBonds(lockedOutputs)
+          const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
+          setFidelityBonds(fbOutputs)
         }
       })
       .catch((err) => {
