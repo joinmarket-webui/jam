@@ -53,21 +53,21 @@ export default function FidelityBond() {
 
   const [alert, setAlert] = useState<AlertWithMessage | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isCreating, setIsCreating] = useState(false)
-  const [isCreateSuccess, setIsCreateSuccess] = useState(false)
-  const [createError, setCreateError] = useState<unknown | null>(null)
-  const isCreateError = useMemo(() => createError !== null, [createError])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSending, setIsSending] = useState(false)
+  const [isInitiateTxSuccess, setIsInitiateTxSuccess] = useState(false)
+  const [initiateTxError, setInitiateTxError] = useState<unknown | null>(null)
+  const isInitiateTxError = useMemo(() => initiateTxError !== null, [initiateTxError])
 
   const [waitForTakerToFinish, setWaitForTakerToFinish] = useState(false)
 
   useEffect(() => {
-    if (isCreating) return
-    if (!isCreateSuccess && !isCreateError) return
+    if (isSending) return
+    if (!isInitiateTxSuccess && !isInitiateTxError) return
     if (isCoinjoinInProgress === null) return
 
     setWaitForTakerToFinish(isCoinjoinInProgress)
-  }, [isCreating, isCreateSuccess, isCreateError, isCoinjoinInProgress])
+  }, [isSending, isInitiateTxSuccess, isInitiateTxError, isCoinjoinInProgress])
 
   const utxos = useMemo(
     () => (currentWalletInfo === null ? [] : currentWalletInfo.data.utxos.utxos),
@@ -82,7 +82,6 @@ export default function FidelityBond() {
   useEffect(() => {
     if (!currentWallet) {
       setAlert({ variant: 'danger', message: t('current_wallet.error_loading_failed') })
-      setIsLoading(false)
       setIsInitializing(false)
       return
     }
@@ -108,9 +107,9 @@ export default function FidelityBond() {
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    if (isCreating) return
+    if (isSending) return
     if (waitForTakerToFinish) return
-    if (!isCreateSuccess && !isCreateError) return
+    if (!isInitiateTxSuccess && !isInitiateTxError) return
 
     const abortCtrl = new AbortController()
     setIsLoading(true)
@@ -123,14 +122,14 @@ export default function FidelityBond() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [waitForTakerToFinish, isCreating, isCreateSuccess, isCreateError, reloadCurrentWalletInfo, t])
+  }, [waitForTakerToFinish, isSending, isInitiateTxSuccess, isInitiateTxError, reloadCurrentWalletInfo, t])
 
   const onSubmit = async (
     selectedAccount: Account,
     selectedLockdate: Api.Lockdate,
     timelockedDestinationAddress: Api.BitcoinAddress
   ) => {
-    if (isCreating) return
+    if (isSending) return
     if (!currentWallet) return
     if (!currentWalletInfo) return
 
@@ -138,7 +137,7 @@ export default function FidelityBond() {
     const { name: walletName, token } = currentWallet
     const requestContext = { walletName, token, signal: abortCtrl.signal }
 
-    setIsCreating(true)
+    setIsSending(true)
     try {
       const minimumMakers = await loadConfigValue({
         signal: abortCtrl.signal,
@@ -147,13 +146,13 @@ export default function FidelityBond() {
 
       // TODO: how many counterparties to use? is "minimum" for fbs okay?
       await sweepToFidelityBond(requestContext, selectedAccount, timelockedDestinationAddress, minimumMakers)
-      setIsCreateSuccess(true)
+      setIsInitiateTxSuccess(true)
       setWaitForTakerToFinish(true)
     } catch (error) {
-      setCreateError(error)
+      setInitiateTxError(error)
       throw error
     } finally {
-      setIsCreating(false)
+      setIsSending(false)
     }
   }
 
@@ -195,7 +194,7 @@ export default function FidelityBond() {
           <>
             {currentWallet && currentWalletInfo && activeFidelityBonds && activeFidelityBonds.length === 0 && (
               <>
-                {waitForTakerToFinish || isCreateSuccess || isCreateError ? (
+                {waitForTakerToFinish || isInitiateTxSuccess || isInitiateTxError ? (
                   <>
                     {waitForTakerToFinish ? (
                       <>
@@ -218,10 +217,10 @@ export default function FidelityBond() {
                       </>
                     ) : (
                       <>
-                        {isCreateSuccess && (
+                        {isInitiateTxSuccess && (
                           <div className="d-flex justify-content-center align-items-center">Success!</div>
                         )}
-                        {isCreateError && (
+                        {isInitiateTxError && (
                           <div className="d-flex justify-content-center align-items-center">Error!</div>
                         )}
                       </>
