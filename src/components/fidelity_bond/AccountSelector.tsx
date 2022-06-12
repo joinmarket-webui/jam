@@ -6,7 +6,7 @@ import { Account } from '../../context/WalletContext'
 import { useSettings } from '../../context/SettingsContext'
 
 // @ts-ignore
-import Balance from '../../components/Balance'
+import Balance from '../Balance'
 import PercentageBar from './PercentageBar'
 import AccountCheckbox from './AccountCheckbox'
 import { WalletBalanceSummary } from '../../hooks/BalanceSummary'
@@ -32,10 +32,6 @@ const AccountSelector = ({
     return accounts.filter((it) => !it.disabled)
   }, [accounts])
 
-  const totalBalance = useMemo(() => {
-    return balanceSummary.calculatedAvailableBalanceInSats + balanceSummary.calculatedFrozenOrLockedBalanceInSats
-  }, [balanceSummary])
-
   useEffect(() => {
     setSelected(null)
   }, [selectableAccounts])
@@ -56,7 +52,10 @@ const AccountSelector = ({
           .filter((balance) => balance.accountIndex === accountIndex)
           .reduce((acc, curr) => acc + curr.calculatedAvailableBalanceInSats, 0)
 
-        const percentageOfTotal = totalBalance > 0 ? (100 * availableAccountBalance) / totalBalance : undefined
+        const percentageOfTotal =
+          balanceSummary.calculatedTotalBalanceInSats > 0
+            ? (100 * availableAccountBalance) / balanceSummary.calculatedTotalBalanceInSats
+            : undefined
         return (
           <rb.Col key={it.account} className="d-flex align-items-center">
             <AccountCheckbox
