@@ -86,57 +86,59 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
   }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, onChange])
 
   return (
-    <rb.Row>
-      <rb.Col xs={6}>
-        <rb.Form.Group className="mb-4" controlId="lockdateYear">
-          <rb.Form.Label form="fidelity-bond-form">
-            <Trans i18nKey="fidelity_bond.form_create.label_lockdate_year">Year</Trans>
-          </rb.Form.Label>
-          <rb.Form.Select
-            defaultValue={initialYear}
-            onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
-            required
-            isInvalid={!isLockdateYearValid}
-          >
-            {selectableYears.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </rb.Form.Select>
+    <rb.Container>
+      <rb.Row>
+        <rb.Col sm={6}>
+          <rb.Form.Group className="mb-4" controlId="lockdateYear">
+            <rb.Form.Label form="fidelity-bond-form">
+              <Trans i18nKey="fidelity_bond.form_create.label_lockdate_year">Year</Trans>
+            </rb.Form.Label>
+            <rb.Form.Select
+              defaultValue={initialYear}
+              onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
+              required
+              isInvalid={!isLockdateYearValid}
+            >
+              {selectableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </rb.Form.Select>
 
-          <rb.Form.Control.Feedback type="invalid">
-            <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year">
-              Please provide a valid value.
-            </Trans>
-          </rb.Form.Control.Feedback>
-        </rb.Form.Group>
-      </rb.Col>
-      <rb.Col xs={6}>
-        <rb.Form.Group className="mb-4" controlId="lockdateMonth">
-          <rb.Form.Label form="fidelity-bond-form">
-            <Trans i18nKey="fidelity_bond.form_create.label_lockdate_month">Month</Trans>
-          </rb.Form.Label>
-          <rb.Form.Select
-            defaultValue={initialMonth}
-            onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10))}
-            required
-            isInvalid={!isLockdateMonthValid}
-          >
-            {selectableMonth.map((it) => (
-              <option key={it.value} value={it.value} disabled={it.disabled}>
-                {it.displayValue}
-              </option>
-            ))}
-          </rb.Form.Select>
-          <rb.Form.Control.Feedback type="invalid">
-            <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month">
-              Please provide a valid value.
-            </Trans>
-          </rb.Form.Control.Feedback>
-        </rb.Form.Group>
-      </rb.Col>
-    </rb.Row>
+            <rb.Form.Control.Feedback type="invalid">
+              <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year">
+                Please provide a valid value.
+              </Trans>
+            </rb.Form.Control.Feedback>
+          </rb.Form.Group>
+        </rb.Col>
+        <rb.Col sm={6}>
+          <rb.Form.Group className="mb-4" controlId="lockdateMonth">
+            <rb.Form.Label form="fidelity-bond-form">
+              <Trans i18nKey="fidelity_bond.form_create.label_lockdate_month">Month</Trans>
+            </rb.Form.Label>
+            <rb.Form.Select
+              defaultValue={initialMonth}
+              onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10))}
+              required
+              isInvalid={!isLockdateMonthValid}
+            >
+              {selectableMonth.map((it) => (
+                <option key={it.value} value={it.value} disabled={it.disabled}>
+                  {it.displayValue}
+                </option>
+              ))}
+            </rb.Form.Select>
+            <rb.Form.Control.Feedback type="invalid">
+              <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month">
+                Please provide a valid value.
+              </Trans>
+            </rb.Form.Control.Feedback>
+          </rb.Form.Group>
+        </rb.Col>
+      </rb.Row>
+    </rb.Container>
   )
 }
 
