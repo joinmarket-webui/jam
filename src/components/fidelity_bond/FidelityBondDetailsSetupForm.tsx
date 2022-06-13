@@ -78,10 +78,7 @@ const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChan
   const settings = useSettings()
 
   const accountAvailableBalanceInSats = useMemo(
-    () =>
-      balanceSummary.accountBalances
-        .filter((it) => it.accountIndex === parseInt(account.account, 10))
-        .reduce((acc, curr) => acc + curr.calculatedAvailableBalanceInSats, 0),
+    () => balanceSummary.accountBalances[parseInt(account.account, 10)].calculatedAvailableBalanceInSats,
     [balanceSummary, account]
   )
 

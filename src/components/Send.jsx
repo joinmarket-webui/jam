@@ -237,16 +237,10 @@ export default function Send() {
   const [formIsValid, setFormIsValid] = useState(false)
 
   const balanceSummary = useBalanceSummary(walletInfo)
-  const accountBalanceOrNull = useMemo(() => {
-    const eligibleAccountBalances =
-      balanceSummary && balanceSummary.accountBalances.filter((it) => it.accountIndex === account)
-
-    if (!eligibleAccountBalances || eligibleAccountBalances.length !== 1) {
-      return null
-    }
-
-    return eligibleAccountBalances[0]
-  }, [balanceSummary, account])
+  const accountBalanceOrNull = useMemo(
+    () => (balanceSummary && balanceSummary.accountBalances[account]) || null,
+    [balanceSummary, account]
+  )
 
   useEffect(() => {
     if (
@@ -622,7 +616,7 @@ export default function Send() {
                 disabled={isOperationDisabled}
               >
                 {balanceSummary &&
-                  balanceSummary.accountBalances
+                  Object.values(balanceSummary.accountBalances)
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
                     .map(({ accountIndex, totalBalance, calculatedTotalBalanceInSats }) => (
                       <option key={accountIndex} value={accountIndex}>

@@ -40,8 +40,12 @@ type AccountBalanceSummary = BalanceSummarySupport & {
   accountIndex: number
 }
 
+type AccountBalances = {
+  [key: number]: AccountBalanceSummary
+}
+
 export type WalletBalanceSummary = BalanceSummarySupport & {
-  accountBalances: AccountBalanceSummary[]
+  accountBalances: AccountBalances
 }
 
 export const isLocked = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
@@ -100,22 +104,24 @@ const useBalanceSummary = (currentWalletInfo: WalletInfo | null, now?: Milliseco
         })
       )
 
-      const accountsBalanceSummary = accounts.map(({ account, account_balance, available_balance }) => {
-        const accountBalanceSummary: BalanceSummary = {
-          totalBalance: account_balance,
-          availableBalance: available_balance,
-        }
-        const accountTotalCalculated: AmountSats = totalCalculatedByAccount[account] || 0
-        const accountFrozenOrLockedCalculated: AmountSats = frozenOrLockedCalculatedByAccount[account] || 0
-        const accountAvailableCalculated: AmountSats = accountTotalCalculated - accountFrozenOrLockedCalculated
-        return {
-          ...accountBalanceSummary,
-          calculatedTotalBalanceInSats: accountTotalCalculated,
-          calculatedFrozenOrLockedBalanceInSats: accountFrozenOrLockedCalculated,
-          calculatedAvailableBalanceInSats: accountAvailableCalculated,
-          accountIndex: parseInt(account, 10),
-        } as AccountBalanceSummary
-      })
+      const accountsBalanceSummary = accounts
+        .map(({ account, account_balance, available_balance }) => {
+          const accountBalanceSummary: BalanceSummary = {
+            totalBalance: account_balance,
+            availableBalance: available_balance,
+          }
+          const accountTotalCalculated: AmountSats = totalCalculatedByAccount[account] || 0
+          const accountFrozenOrLockedCalculated: AmountSats = frozenOrLockedCalculatedByAccount[account] || 0
+          const accountAvailableCalculated: AmountSats = accountTotalCalculated - accountFrozenOrLockedCalculated
+          return {
+            ...accountBalanceSummary,
+            calculatedTotalBalanceInSats: accountTotalCalculated,
+            calculatedFrozenOrLockedBalanceInSats: accountFrozenOrLockedCalculated,
+            calculatedAvailableBalanceInSats: accountAvailableCalculated,
+            accountIndex: parseInt(account, 10),
+          } as AccountBalanceSummary
+        })
+        .reduce((acc, curr) => ({ ...acc, [curr.accountIndex]: curr }), {} as AccountBalances)
 
       const walletTotalCalculated: AmountSats = Object.values(totalCalculatedByAccount).reduce(
         (acc, totalSats) => acc + totalSats,

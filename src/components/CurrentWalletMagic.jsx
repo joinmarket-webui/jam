@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -41,8 +41,10 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
 
 const PrivacyLevels = ({ accountBalances, loading }) => {
   const numPrivacyLevelsPalceholders = 5
-  const sortedAccountBalances = (accountBalances || []).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
-  const numAccounts = sortedAccountBalances.length
+  const sortedAccountBalances = useMemo(() => {
+    if (!accountBalances) return []
+    return Object.values(accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  }, [accountBalances])
 
   return (
     <div className="d-flex justify-content-center">
@@ -54,7 +56,7 @@ const PrivacyLevels = ({ accountBalances, loading }) => {
           : sortedAccountBalances.map(({ accountIndex, totalBalance }) => (
               <PrivacyLevel
                 key={accountIndex}
-                numAccounts={numAccounts}
+                numAccounts={sortedAccountBalances.length}
                 level={accountIndex}
                 balance={totalBalance}
                 loading={loading}

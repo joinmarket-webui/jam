@@ -38,9 +38,7 @@ const AccountSelector = ({ balanceSummary, accounts, onChange }: AccountSelector
     <rb.Row xs={1} className="gap-2">
       {accounts.map((it) => {
         const accountIndex = parseInt(it.account, 10)
-        const availableAccountBalance = balanceSummary.accountBalances
-          .filter((balance) => balance.accountIndex === accountIndex)
-          .reduce((acc, curr) => acc + curr.calculatedAvailableBalanceInSats, 0)
+        const availableAccountBalance = balanceSummary.accountBalances[accountIndex].calculatedAvailableBalanceInSats
 
         const percentageOfTotal =
           balanceSummary.calculatedTotalBalanceInSats > 0
