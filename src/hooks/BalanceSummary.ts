@@ -22,7 +22,7 @@ interface BalanceSummary {
 
 type BalanceSummarySupport = BalanceSummary & {
   /**
-   * @description Manually calculated frozen or locked balance in sats.
+   * @description Manually calculated total balance in sats.
    */
   calculatedTotalBalanceInSats: AmountSats
   /**

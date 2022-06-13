@@ -17,14 +17,8 @@ interface AccountSelectorProps {
   balanceSummary: WalletBalanceSummary
   accounts: SelectableAccount[]
   onChange: (selectedAccount: Account | null) => void
-  displayDisabledAccounts?: boolean
 }
-const AccountSelector = ({
-  balanceSummary,
-  accounts,
-  onChange,
-  displayDisabledAccounts = true,
-}: AccountSelectorProps) => {
+const AccountSelector = ({ balanceSummary, accounts, onChange }: AccountSelectorProps) => {
   const settings = useSettings()
   const [selected, setSelected] = useState<Account | null>(null)
 
@@ -43,10 +37,6 @@ const AccountSelector = ({
   return (
     <rb.Row xs={1} className="gap-2">
       {accounts.map((it) => {
-        if (!displayDisabledAccounts && it.disabled) {
-          return <></>
-        }
-
         const accountIndex = parseInt(it.account, 10)
         const availableAccountBalance = balanceSummary.accountBalances
           .filter((balance) => balance.accountIndex === accountIndex)
@@ -61,7 +51,7 @@ const AccountSelector = ({
             <AccountCheckbox
               account={it}
               checked={it === selected}
-              disabled={availableAccountBalance === 0}
+              disabled={it.disabled || availableAccountBalance === 0}
               onAccountSelected={(account) => {
                 setSelected((current) => {
                   if (current === account) {
