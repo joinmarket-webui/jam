@@ -27,14 +27,16 @@ const collaborativeSweepToFidelityBond = async (
   timelockedDestinationAddress: Api.BitcoinAddress,
   counterparties: number
 ): Promise<void> => {
-  const amount_sats = 0 // sweep
-
-  await Api.postCoinjoin(requestContext, {
+  const res = await Api.postCoinjoin(requestContext, {
     mixdepth: parseInt(account.account, 10),
     destination: timelockedDestinationAddress,
-    amount_sats,
     counterparties,
-  }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+    amount_sats: 0, // sweep
+  })
+
+  if (!res.ok) {
+    await Api.Helper.throwError(res)
+  }
 }
 
 const directSweepToFidelityBond = async (
@@ -42,13 +44,15 @@ const directSweepToFidelityBond = async (
   account: Account,
   timelockedDestinationAddress: Api.BitcoinAddress
 ) => {
-  const amount_sats = 0 // sweep
-
-  await Api.postDirectSend(requestContext, {
+  const res = await Api.postDirectSend(requestContext, {
     mixdepth: parseInt(account.account, 10),
     destination: timelockedDestinationAddress,
-    amount_sats,
-  }).then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+    amount_sats: 0, // sweep
+  })
+
+  if (!res.ok) {
+    await Api.Helper.throwError(res)
+  }
 }
 
 const MakerIsRunningAlert = () => {
