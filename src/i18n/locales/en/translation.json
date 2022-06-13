@@ -11,16 +11,15 @@
     "tab_earn": "Earn",
     "joining_in_progress": "Joining",
     "menu_mobile": "Menu",
-    "menu_mobile_settings": "Settings",
-    "menu_mobile_wallets": "Wallets"
+    "menu_mobile_settings": "Settings"
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "footer": {
-    "warning": "This is alpha software.<br /><1>Read this before using.</1>",
+    "warning": "This is beta software.<br /><1>Read this before using.</1>",
     "warning_alert_title": "Warning",
-    "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in an alpha stage, so use with caution.",
+    "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in a beta stage, so use with caution.",
     "warning_alert_button_ok": "Fine with me.",
     "cheatsheet": "Cheatsheet",
     "connected": "Connected",
@@ -34,7 +33,7 @@
     "splashscreen_description_line1": "Your wallet, your coins.",
     "splashscreen_description_line2": "100% open-source & open-design.",
     "splashscreen_warning_title": "Warning",
-    "splashscreen_warning_text": "While JoinMarket is tried and tested, Jam is anything but. It is alpha software, so please use it with caution. You can <1>help to improve the project on GitHub</1>.",
+    "splashscreen_warning_text": "While JoinMarket is tried and tested, Jam is anything but. It is beta software, so please use it with caution. You can <1>help to improve the project on GitHub</1>.",
     "screen_1_title": "Welcome to Jam for JoinMarket!",
     "screen_1_description": "Jam is an interface for JoinMarket, a privacy-focused software solution that aims to improve the confidentiality and privacy of your bitcoin transactions. Its main focus is to facilitate the creation of collaborative transactions through a peer-to-peer marketplace.",
     "screen_2_title": "Collaborative Transactions",
@@ -106,13 +105,13 @@
     "back_button": "Back",
     "skip_button": "Skip",
     "next_button": "Next",
-    "placeholder_seed_word_input": "Word"
+    "placeholder_seed_word_input": "Word",
+    "hint_duration_text": "Please be patient, this may take a few minutes."
   },
   "current_wallet": {
     "text_loading": "Loading",
     "button_deposit": "Receive",
     "button_withdraw": "Send",
-    "button_switch_wallet": "Switch wallet",
     "error_loading_failed": "Loading wallet failed."
   },
   "current_wallet_advanced": {
@@ -135,6 +134,8 @@
   },
   "settings": {
     "title": "Settings",
+    "section_title_wallet": "Wallet",
+    "section_title_community": "Community",
     "show_balance": "Show Balance",
     "hide_balance": "Hide Balance",
     "use_sats": "Display amounts in sats",
@@ -147,6 +148,7 @@
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
+    "button_switch_wallet": "Switch wallet",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "github": "GitHub",
@@ -218,7 +220,9 @@
     "alert_stopping": "Service is stopping.",
     "alert_running": "Earning sats...",
     "alert_coinjoin_in_progress": "A collaborative transaction is currently in progress.",
-    "toggle_rel_offer": "Relative offer",
+    "button_settings": "Advanced",
+    "radio_abs_offer_label": "Absolute offer",
+    "radio_rel_offer_label": "Relative offer",
     "label_rel_fee": "Relative fee {{ fee }}",
     "description_rel_fee": "The fee to charge others, as a percentage of the transaction amount.",
     "feedback_invalid_rel_fee": "Please provide a relative fee between {{feeRelPercentageMin}} and {{feeRelPercentageMax}}.",
@@ -256,6 +260,10 @@
       "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
+      "title": "<0>Send</0> a collaborative transaction to yourself.",
+      "description": "Collaborative transactions increase the privacy of yourself and others."
+    },
+    "item_last": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }

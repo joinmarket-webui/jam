@@ -1,16 +1,46 @@
-# Docker setup for running JoinMarket in regtest mode
+# Docker setup for running Jam in regtest mode
 
 This setup will help you set up a regtest environment quickly.
-It starts two JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
+It starts multiple JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
+Communication between these containers is done via Tor (if internet connection is available) and IRC (locally running container).
+
+## Common flow
+```sh
+# (optional) once in a while rebuild the images
+npm run regtest:rebuild
+
+# start the regtest environment
+npm run regtest:up
+
+# fund wallets and start maker in secondary container
+npm run regtest:init
+
+# mine blocks in regtest periodically
+npm run regtest:mine
+
+# start jam in development mode
+npm start
+
+[...]
+
+# stop the regtest environment
+npm run regtest:down
+
+# (optional) wipe all test data and start from scratch next time
+npm run regtest:clear
+```
 
 ## Commands
 
-### Run
+### Start
 
 Start the regtest environment with:
 
 ```sh
 npm run regtest:up
+
+# (optional) fund wallets and start maker in secondary container
+npm run regtest:init
 ```
 
 Once the regtest environment is up and running you can start Jam with:
@@ -31,6 +61,14 @@ If you want to start from scratch (removing all volumes):
 npm run regtest:clear
 ```
 
+### Mine
+Mine regtest blocks in a fixed interval (current default is every 10 seconds).
+This is useful for features that await confirmations or need incoming blocks regularly.
+e.g. This is necessary for scheduled transactions to execute successfully.
+```sh
+npm run regtest:mine
+```
+
 ## Images
 
 The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is an adaption of [joinmarket-webui-standalone](https://github.com/joinmarket-webui/joinmarket-webui-docker/tree/master/standalone) with as little adaptations as possible.
@@ -40,6 +78,8 @@ Keep in mind: Building from `master` is not always reliable. This tradeoff is ma
 The second JoinMarket container is based on `joinmarket-webui/joinmarket-webui-dev-standalone:master` which exposes an UI on port `29080`
 (username `joinmarket` and pass `joinmarket` for Basic Authentication).
 This is useful if you want to perform regression tests.
+
+The third JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
 
 ### Rebuild
 
@@ -74,6 +114,7 @@ Some helper scripts are included to make recurring tasks and interaction with th
 This script helps in providing both JoinMarket containers a wallet with spendable coins and starting the Maker Service in the secondary container.
 Its main goal is to make CoinJoin transactions possible in the regtest environment.
 It should be run immediately after the Docker setup is successfully started so you can start developing right away.
+A wallet named `funded.jmdat` with password `test` will be created if it does not exist.
 
 ```sh
 # fund wallets and start maker service in secondary container
@@ -181,5 +222,3 @@ joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: ob-watcher entered RUNNING
 
 - [JoinMarket Server (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver)
 - [JoinMarket Server Testing Docs (GitHub)](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/TESTING.md)
-- [BTCPay Server JoinMarket Docker Setup (GitHub)](https://github.com/btcpayserver/dockerfile-deps/tree/master/JoinMarket)
-- [BTCPay Server JoinMarket Image (DockerHub)](https://hub.docker.com/r/btcpayserver/joinmarket)

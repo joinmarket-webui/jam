@@ -6,11 +6,11 @@ import App from './components/App'
 // @ts-ignore
 import { SettingsProvider } from './context/SettingsContext'
 // @ts-ignore
-import { WalletProvider } from './context/WalletContext'
-// @ts-ignore
 import { WebsocketProvider } from './context/WebsocketContext'
-// @ts-ignore
 import { ServiceInfoProvider } from './context/ServiceInfoContext'
+import { WalletProvider } from './context/WalletContext'
+import { ServiceConfigProvider } from './context/ServiceConfigContext'
+
 import reportWebVitals from './reportWebVitals'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
@@ -31,11 +31,13 @@ ReactDOM.render(
     <BrowserRouter basename={window.JM.PUBLIC_PATH}>
       <SettingsProvider>
         <WalletProvider>
-          <WebsocketProvider>
-            <ServiceInfoProvider>
-              <App />
-            </ServiceInfoProvider>
-          </WebsocketProvider>
+          <ServiceConfigProvider>
+            <WebsocketProvider>
+              <ServiceInfoProvider>
+                <App />
+              </ServiceInfoProvider>
+            </WebsocketProvider>
+          </ServiceConfigProvider>
         </WalletProvider>
       </SettingsProvider>
     </BrowserRouter>

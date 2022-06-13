@@ -1,6 +1,39 @@
 import React, { PropsWithChildren, useState, useEffect, useRef } from 'react'
-import { copyToClipboard } from '../utils'
+import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
+
+const copyToClipboard = (
+  text: string,
+  fallbackInputField: HTMLInputElement,
+  errorMessage?: string
+): Promise<boolean> => {
+  const copyToClipboardFallback = (
+    inputField: HTMLInputElement,
+    errorMessage = 'Cannot copy value to clipboard'
+  ): Promise<boolean> =>
+    new Promise((resolve, reject) => {
+      inputField.select()
+      const success = document.execCommand && document.execCommand('copy')
+      inputField.blur()
+      success ? resolve(success) : reject(new Error(errorMessage))
+    })
+
+  // The `navigator.clipboard` API might not be available, e.g. on sites served over HTTP.
+  if (!navigator.clipboard) {
+    return copyToClipboardFallback(fallbackInputField)
+  }
+
+  return navigator.clipboard
+    .writeText(text)
+    .then(() => true)
+    .catch((e: Error) => {
+      if (fallbackInputField) {
+        return copyToClipboardFallback(fallbackInputField, errorMessage)
+      } else {
+        throw e
+      }
+    })
+}
 
 interface CopyableProps {
   value: string
@@ -9,18 +42,19 @@ interface CopyableProps {
   className?: string
 }
 
-function Copyable({ value, onError, onSuccess, className, children, ...props }: PropsWithChildren<CopyableProps>) {
+function Copyable({ value, onSuccess, onError, className, children, ...props }: PropsWithChildren<CopyableProps>) {
   const valueFallbackInputRef = useRef(null)
 
   return (
     <>
-      <button
+      <rb.Button
+        variant="outline-dark"
         className={className}
         {...props}
         onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
       >
         {children}
-      </button>
+      </rb.Button>
       <input
         readOnly
         aria-hidden
@@ -36,39 +70,21 @@ function Copyable({ value, onError, onSuccess, className, children, ...props }: 
   )
 }
 
-interface CopyButtonProps extends CopyableProps {}
-
-export function CopyButton({ value, onSuccess, onError, children, ...props }: PropsWithChildren<CopyButtonProps>) {
-  return (
-    <Copyable
-      className="btn"
-      value={value}
-      onError={onError}
-      onSuccess={onSuccess}
-      data-bs-toggle="tooltip"
-      data-bs-placement="left"
-      {...props}
-    >
-      {children}
-    </Copyable>
-  )
-}
-
-interface CopyButtonWithConfirmationProps extends CopyButtonProps {
+interface CopyButtonProps extends CopyableProps {
   text: React.ReactNode | string
   successText?: React.ReactNode | string
   successTextTimeout?: number
 }
 
-export function CopyButtonWithConfirmation({
+export function CopyButton({
   value,
   onSuccess,
   onError,
   text,
   successText = text,
   successTextTimeout = 1_500,
-  ...props
-}: CopyButtonWithConfirmationProps) {
+  className,
+}: CopyButtonProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
   const [valueCopiedFlag, setValueCopiedFlag] = useState(0)
 
@@ -84,26 +100,23 @@ export function CopyButtonWithConfirmation({
   }, [valueCopiedFlag, successTextTimeout])
 
   return (
-    <CopyButton
-      className="btn btn-outline-dark"
+    <Copyable
+      className={className}
       value={value}
       onError={onError}
       onSuccess={() => {
         setValueCopiedFlag((current) => current + 1)
         onSuccess && onSuccess()
       }}
-      {...props}
     >
-      <div className="d-flex justify-content-center align-items-center">
+      <div className="d-flex align-items-center justify-content-center">
         {showValueCopiedConfirmation ? (
-          <>
-            {successText}
-            <Sprite color="green" symbol="checkmark" className="ms-1" width="24" height="24" />
-          </>
+          <Sprite color="green" symbol="checkmark" className="me-1" width="20" height="20" />
         ) : (
-          <>{text}</>
+          <Sprite symbol="copy" className="me-1" width="20" height="20" />
         )}
+        <>{showValueCopiedConfirmation ? successText : text}</>
       </div>
-    </CopyButton>
+    </Copyable>
   )
 }

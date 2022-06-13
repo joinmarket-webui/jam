@@ -34,7 +34,7 @@ export default function App() {
   const sessionConnectionError = useSessionConnectionError()
 
   const [websocketConnected, setWebsocketConnected] = useState()
-  const [showAlphaWarning, setShowAlphaWarning] = useState(false)
+  const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
   const cheatsheetEnabled = currentWallet
@@ -84,14 +84,14 @@ export default function App() {
 
   return (
     <>
-      {showAlphaWarning && (
+      {showBetaWarning && (
         <div className="warning-card-wrapper">
           <rb.Card className="warning-card translate-middle shadow-lg">
             <rb.Card.Body>
               <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
               <p className="text-secondary">{t('footer.warning_alert_text')}</p>
               <div className="text-center mt-3">
-                <rb.Button variant="secondary" onClick={() => setShowAlphaWarning(false)}>
+                <rb.Button variant="secondary" onClick={() => setShowBetaWarning(false)}>
                   {t('footer.warning_alert_button_ok')}
                 </rb.Button>
               </div>
@@ -100,7 +100,7 @@ export default function App() {
         </div>
       )}
       <Navbar />
-      <rb.Container as="main" className="py-5">
+      <rb.Container as="main" className="py-4 py-sm-5">
         {sessionConnectionError && (
           <rb.Alert variant="danger">
             {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
@@ -150,21 +150,21 @@ export default function App() {
 
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
-          <div className="d-flex flex-1 order-0 justify-content-start align-items-center">
-            <div className="warning-hint text-start text-secondary d-none d-md-block">
+          <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
+            <div className="warning-hint text-start text-secondary">
               <Trans i18nKey="footer.warning">
                 This is pre-alpha software.
                 <rb.Button
                   variant="link"
                   className="warning-hint text-start border-0 p-0 text-secondary"
-                  onClick={() => setShowAlphaWarning(true)}
+                  onClick={() => setShowBetaWarning(true)}
                 >
                   Read this before using.
                 </rb.Button>
               </Trans>
             </div>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center pt-0 px-4">
+          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center pt-0">
             {cheatsheetEnabled && (
               <div className="order-1 order-sm-0">
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />

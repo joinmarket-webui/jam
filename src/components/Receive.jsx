@@ -9,7 +9,8 @@ import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext
 import * as Api from '../libs/JmWalletApi'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
-import { CopyButtonWithConfirmation } from './CopyButton'
+import { CopyButton } from './CopyButton'
+import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
 import styles from './Receive.module.css'
 
 export default function Receive() {
@@ -70,7 +71,7 @@ export default function Receive() {
   }
 
   return (
-    <div className="receive">
+    <div className={`${styles.receive}`}>
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <div className="qr-container">
@@ -83,71 +84,79 @@ export default function Receive() {
               </rb.Placeholder>
             )}
           </div>
-          <rb.Card.Body className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0`}>
-            {address && <rb.Card.Text className="text-center slashed-zeroes">{address}</rb.Card.Text>}
+          <rb.Card.Body
+            className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0 d-flex flex-column align-items-center`}
+          >
+            {address && (
+              <rb.Card.Text className={`${styles['address']} text-center slashed-zeroes`}>{address}</rb.Card.Text>
+            )}
             {!address && (
               <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
                 <rb.Placeholder xs={12} sm={10} md={8} className={styles['receive-placeholder']} />
               </rb.Placeholder>
             )}
-            <div className="d-flex justify-content-center" style={{ gap: '1rem' }}>
-              <CopyButtonWithConfirmation
+            <div className="d-flex justify-content-center gap-3 w-75">
+              <CopyButton
+                className="flex-1"
                 value={address}
                 text={t('receive.button_copy_address')}
                 successText={t('receive.text_copy_address_confirmed')}
                 disabled={!address || isLoading}
               />
+              {checkIsWebShareAPISupported() && <ShareButton value={address} className="flex-1" />}
             </div>
           </rb.Card.Body>
         </rb.Card>
       </div>
-      <div className={styles['settings-container']}>
-        <rb.Button
-          variant={`${settings.theme}`}
-          className="ps-0 border-0 d-flex align-items-center"
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          {t('receive.button_settings')}
-          <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
-        </rb.Button>
-      </div>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-        {showSettings && (
-          <>
-            {settings.useAdvancedWalletMode && (
-              <rb.Form.Group className="mt-4" controlId="account">
-                <rb.Form.Label>{t('receive.label_choose_account')}</rb.Form.Label>
-                <rb.Form.Select
-                  defaultValue={account}
-                  onChange={(e) => setAccount(parseInt(e.target.value, 10))}
-                  required
-                  disabled={isLoading || accounts.length === 0}
-                >
-                  {accounts.map((val) => (
-                    <option key={val} value={val}>
-                      {t('receive.account_selector_option_dev_mode', { number: val })}
-                    </option>
-                  ))}
-                </rb.Form.Select>
+        <div className={styles['settings-container']}>
+          <rb.Button
+            variant={`${settings.theme}`}
+            className={`${styles['settings-btn']} d-flex align-items-center`}
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            {t('receive.button_settings')}
+            <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
+          </rb.Button>
+          {showSettings && (
+            <div className="my-4">
+              {settings.useAdvancedWalletMode && (
+                <rb.Form.Group className="mb-4" controlId="account">
+                  <rb.Form.Label>{t('receive.label_choose_account')}</rb.Form.Label>
+                  <rb.Form.Select
+                    defaultValue={account}
+                    onChange={(e) => setAccount(parseInt(e.target.value, 10))}
+                    required
+                    disabled={isLoading || accounts.length === 0}
+                  >
+                    {accounts.map((val) => (
+                      <option key={val} value={val}>
+                        {t('receive.account_selector_option_dev_mode', { number: val })}
+                      </option>
+                    ))}
+                  </rb.Form.Select>
+                </rb.Form.Group>
+              )}
+              <rb.Form.Group controlId="amountSats">
+                <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
+                <rb.Form.Control
+                  className="slashed-zeroes"
+                  name="amount"
+                  type="number"
+                  placeholder="0"
+                  value={amount}
+                  min={0}
+                  onChange={(e) => setAmount(e.target.value)}
+                  disabled={isLoading}
+                />
+                <rb.Form.Control.Feedback type="invalid">
+                  {t('receive.feedback_invalid_amount')}
+                </rb.Form.Control.Feedback>
               </rb.Form.Group>
-            )}
-            <rb.Form.Group className="my-4" controlId="amountSats">
-              <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
-              <rb.Form.Control
-                className="slashed-zeroes"
-                name="amount"
-                type="number"
-                placeholder="0"
-                value={amount}
-                min={0}
-                onChange={(e) => setAmount(e.target.value)}
-                disabled={isLoading}
-              />
-              <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
-            </rb.Form.Group>
-          </>
-        )}
-        <hr />
+            </div>
+          )}
+          <hr />
+        </div>
         <rb.Button variant="outline-dark" type="submit" disabled={isLoading} className="mt-2" style={{ width: '100%' }}>
           {isLoading ? (
             <div className="d-flex justify-content-center align-items-center">

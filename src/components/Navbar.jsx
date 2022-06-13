@@ -51,6 +51,7 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
           {t('navbar.tab_receive')}
         </NavLink>
       </rb.Nav.Item>
+      <div className="d-none d-md-flex align-items-center center-nav-link-divider">»</div>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.jam}
@@ -65,6 +66,7 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
           </div>
         </NavLink>
       </rb.Nav.Item>
+      <div className="d-none d-md-flex align-items-center center-nav-link-divider">/</div>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.earn}
@@ -79,6 +81,7 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
           </div>
         </NavLink>
       </rb.Nav.Item>
+      <div className="d-none d-md-flex align-items-center center-nav-link-divider">»</div>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.send}
@@ -117,18 +120,6 @@ const TrailingNav = ({ coinjoinInProgess, onClick }) => {
         >
           <Sprite symbol="gear" width="30" height="30" className="d-none d-md-inline-block" />
           <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_settings')}</span>
-        </NavLink>
-      </rb.Nav.Item>
-      <rb.Nav.Item className="d-flex align-items-stretch">
-        <NavLink
-          to={routes.home}
-          onClick={onClick}
-          className={({ isActive }) =>
-            'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
-          }
-        >
-          <Sprite symbol="grid" width="30" height="30" className="d-none d-md-inline-block" />
-          <span className="d-inline-block d-md-none">{t('navbar.menu_mobile_wallets')}</span>
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>

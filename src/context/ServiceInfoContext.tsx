@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useReducer, useState, useEffect } from 'react'
+import React, { createContext, useCallback, useContext, useReducer, useState, useEffect, useRef } from 'react'
 // @ts-ignore
 import { useCurrentWallet, useSetCurrentWallet } from './WalletContext'
 // @ts-ignore
@@ -38,6 +38,8 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const setCurrentWallet = useSetCurrentWallet()
   const websocket = useWebsocket()
 
+  const fetchSessionInProgress = useRef<Promise<ServiceInfo> | null>(null)
+
   const [serviceInfo, dispatchServiceInfo] = useReducer(
     (state: ServiceInfo | null, obj: ServiceInfoUpdate) => ({ ...state, ...obj } as ServiceInfo | null),
     null
@@ -54,13 +56,25 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   }, [connectionError, setCurrentWallet])
 
   const reloadServiceInfo = useCallback(
-    ({ signal }: { signal: AbortSignal }) => {
+    async ({ signal }: { signal: AbortSignal }) => {
       const resetWalletAndClearSession = () => {
         setCurrentWallet(null)
         clearSession()
       }
 
-      return Api.getSession({ signal })
+      if (fetchSessionInProgress.current !== null) {
+        try {
+          return await fetchSessionInProgress.current
+        } catch (err: unknown) {
+          // If a request was in progress but failed, retry!
+          // This happens e.g. when the in-progress request was aborted.
+          if (!(err instanceof Error) || err.name !== 'AbortError') {
+            console.warn('Previous session request resulted in an unexpected error. Retrying!', err)
+          }
+        }
+      }
+
+      const fetch = Api.getSession({ signal })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data: JmSessionData) => {
           const {
@@ -70,13 +84,21 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             wallet_name: walletNameOrNoneString,
           } = data
           const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
+          return { sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName } as ServiceInfo
+        })
 
-          const info: ServiceInfo = { sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName }
+      fetchSessionInProgress.current = fetch
+
+      return fetch
+        .finally(() => {
+          fetchSessionInProgress.current = null
+        })
+        .then((info: ServiceInfo) => {
           if (!signal.aborted) {
             dispatchServiceInfo(info)
             setConnectionError(undefined)
 
-            const activeWalletChanged = currentWallet && (!activeWalletName || currentWallet.name !== activeWalletName)
+            const activeWalletChanged = currentWallet && (!info.walletName || currentWallet.name !== info.walletName)
             if (activeWalletChanged) {
               resetWalletAndClearSession()
             }

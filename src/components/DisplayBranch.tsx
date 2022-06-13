@@ -7,7 +7,7 @@ import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { Branch, BranchEntry } from '../context/WalletContext'
 import styles from './DisplayBranch.module.css'
-import { CopyButtonWithConfirmation } from './CopyButton'
+import { CopyButton } from './CopyButton'
 import Sprite from './Sprite'
 
 const toHdPathIndex = (hdPath: string) => {
@@ -123,7 +123,7 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
             </code>
           </rb.Col>
           <rb.Col xs="10" sm="8">
-            <CopyButtonWithConfirmation
+            <CopyButton
               className={`btn ${styles['address-copy-button']}`}
               text={
                 <>
