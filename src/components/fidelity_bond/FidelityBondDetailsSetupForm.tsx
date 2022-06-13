@@ -13,7 +13,8 @@ import ToggleSwitch from '../../components/ToggleSwitch'
 import { useBalanceSummary, WalletBalanceSummary } from '../../hooks/BalanceSummary'
 
 import AccountSelector from './AccountSelector'
-import LockdateForm, { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from './LockdateForm'
+import LockdateForm from './LockdateForm'
+import { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from './fb_utils'
 
 import * as Api from '../../libs/JmWalletApi'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'

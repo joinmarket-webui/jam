@@ -5,52 +5,18 @@ import { Trans } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './fb_utils'
 
-// A maximum of years for a timelock to be accepted.
-// This is useful in simple mode - when it should be prevented that users
-// lock up their coins for an awful amount of time by accident.
-// In "advanced" mode, this can be dropped or increased substantially.
-export const DEFAULT_MAX_TIMELOCK_YEARS = 10
-
-// The months ahead for the initial lock date.
-// It is recommended to start locking for a period of between 3 months and 1 years initially.
-// This value should be at the lower end of this recommendation.
-// See https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long
-// for more information (last checked on 2022-06-13).
-const INITIAL_LOCKDATE_MONTH_AHEAD = 3
-
-type YearsRange = {
-  min: number
-  max: number
-}
-
-export const toYearsRange = (min: number, max: number): YearsRange => {
-  if (max <= min) {
-    throw new Error('Invalid values for range of years.')
-  }
-  return { min, max }
-}
-
-const initialLockdate = (now: Date, range: YearsRange): Api.Lockdate => {
-  const year = now.getUTCFullYear()
-  const month = now.getUTCMonth()
-
-  const initMonth = (month + INITIAL_LOCKDATE_MONTH_AHEAD) % 12
-  const initYear = year + Math.max(range.min, Math.floor((month + INITIAL_LOCKDATE_MONTH_AHEAD) / 12))
-  return fb.lockdate.fromTimestamp(Date.UTC(initYear, initMonth, 1))
-}
-
 interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
   initialValue?: Api.Lockdate
-  yearsRange?: YearsRange
+  yearsRange?: fb.YearsRange
   now?: Date
 }
 
 const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormProps) => {
   const _now = useMemo<Date>(() => now || new Date(), [now])
-  const _yearsRange = useMemo<YearsRange>(() => yearsRange || toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS), [yearsRange])
+  const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
   const _initalValue = useMemo<Api.Lockdate>(
-    () => initialValue || initialLockdate(_now, _yearsRange),
+    () => initialValue || fb.lockdate.initial(_now, _yearsRange),
     [initialValue, _now, _yearsRange]
   )
 

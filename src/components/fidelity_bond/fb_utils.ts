@@ -1,16 +1,43 @@
-import * as Api from '../../libs/JmWalletApi'
+import { Lockdate } from '../../libs/JmWalletApi'
 
 type Milliseconds = number
 
-export const lockdate = (() => {
-  const _fromDate = (date: Date): Api.Lockdate => {
-    return `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Api.Lockdate
+export type YearsRange = {
+  min: number
+  max: number
+}
+
+export const toYearsRange = (min: number, max: number): YearsRange => {
+  if (max <= min) {
+    throw new Error('Invalid values for range of years.')
   }
-  const fromTimestamp = (timestamp: Milliseconds): Api.Lockdate => {
+  return { min, max }
+}
+
+// A maximum of years for a timelock to be accepted.
+// This is useful in simple mode - when it should be prevented that users
+// lock up their coins for an awful amount of time by accident.
+// In "advanced" mode, this can be dropped or increased substantially.
+export const DEFAULT_MAX_TIMELOCK_YEARS = 10
+export const DEFAULT_TIMELOCK_YEARS_RANGE = toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS)
+
+// The months ahead for the initial lock date.
+// It is recommended to start locking for a period of between 3 months and 1 years initially.
+// This value should be at the lower end of this recommendation.
+// See https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long
+// for more information (last checked on 2022-06-13).
+// Exported for tests only!
+export const __INITIAL_LOCKDATE_MONTH_AHEAD = 3
+
+export const lockdate = (() => {
+  const _fromDate = (date: Date): Lockdate => {
+    return `${date.getUTCFullYear()}-${date.getUTCMonth() >= 9 ? '' : '0'}${1 + date.getUTCMonth()}` as Lockdate
+  }
+  const fromTimestamp = (timestamp: Milliseconds): Lockdate => {
     if (Number.isNaN(timestamp)) throw new Error('Unsupported input: NaN')
     return _fromDate(new Date(timestamp))
   }
-  const toTimestamp = (lockdate: Api.Lockdate): Milliseconds => {
+  const toTimestamp = (lockdate: Lockdate): Milliseconds => {
     const split = lockdate.split('-')
     if (split.length !== 2 || split[0].length !== 4 || split[1].length !== 2) {
       throw new Error('Unsupported format')
@@ -24,8 +51,29 @@ export const lockdate = (() => {
     return Date.UTC(year, month - 1, 1)
   }
 
+  /**
+   * Returns a lockdate an initial lockdate in the future.
+   *
+   * This method tries to provide a date that is at least
+   * {@link __INITIAL_LOCKDATE_MONTH_AHEAD} months after {@link now}.
+   *
+   * @param now the reference date
+   * @param range a min/max range of years
+   * @returns an initial lockdate
+   */
+  const initial = (now: Date, range: YearsRange = DEFAULT_TIMELOCK_YEARS_RANGE): Lockdate => {
+    const year = now.getUTCFullYear()
+    const month = now.getUTCMonth()
+
+    const minMonthAhead = Math.max(range.min * 12, __INITIAL_LOCKDATE_MONTH_AHEAD + 1)
+    const initYear = year + Math.floor((month + minMonthAhead) / 12)
+    const initMonth = (month + minMonthAhead) % 12
+    return fromTimestamp(Date.UTC(initYear, initMonth, 1))
+  }
+
   return {
     fromTimestamp,
     toTimestamp,
+    initial,
   }
 })()
