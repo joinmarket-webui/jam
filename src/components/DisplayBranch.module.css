@@ -20,9 +20,20 @@
   padding: 0 !important;
 }
 
+.address-copy-button .sprite {
+  min-width: 2rem;
+  margin-left: 0.25rem !important;
+}
+
 .sprite-copy {
-  visibility: hidden;
+  visibility: visible;
   color: var(--bs-black);
+}
+
+@media only screen and (min-width: 576px) {
+  .sprite-copy {
+    visibility: hidden;
+  }
 }
 
 :root[data-theme='dark'] .sprite-copy {

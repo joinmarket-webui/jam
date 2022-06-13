@@ -131,13 +131,18 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
               text={
                 <>
                   <code className="text-break">{address}</code>
-                  <Sprite className={`ms-1 ${styles['sprite-copy']}`} symbol="copy" width="24" height="24" />
+                  <Sprite
+                    className={`${styles['sprite']} ${styles['sprite-copy']}`}
+                    symbol="copy"
+                    width="24"
+                    height="24"
+                  />
                 </>
               }
               successText={
                 <>
                   <code className="text-break">{address}</code>
-                  <Sprite className="ms-1" color="green" symbol="checkmark" width="24" height="24" />
+                  <Sprite className={styles['sprite']} color="green" symbol="checkmark" width="24" height="24" />
                 </>
               }
               value={address}
