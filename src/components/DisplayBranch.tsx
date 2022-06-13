@@ -124,7 +124,8 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
           </rb.Col>
           <rb.Col xs="10" sm="8">
             <CopyButton
-              className={`btn ${styles['address-copy-button']}`}
+              className={`${styles['address-copy-button']}`}
+              showSprites={false}
               text={
                 <>
                   <code className="text-break">{address}</code>
@@ -134,6 +135,7 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
               successText={
                 <>
                   <code className="text-break">{address}</code>
+                  <Sprite className="ms-1" color="green" symbol="checkmark" width="24" height="24" />
                 </>
               }
               value={address}

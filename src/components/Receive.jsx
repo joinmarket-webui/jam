@@ -97,7 +97,7 @@ export default function Receive() {
             )}
             <div className="d-flex justify-content-center gap-3 w-75">
               <CopyButton
-                className="flex-1"
+                className="btn btn-outline-dark flex-1"
                 value={address}
                 text={t('receive.button_copy_address')}
                 successText={t('receive.text_copy_address_confirmed')}
