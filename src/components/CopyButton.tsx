@@ -1,5 +1,4 @@
 import React, { PropsWithChildren, useState, useEffect, useRef } from 'react'
-import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 
 const copyToClipboard = (
