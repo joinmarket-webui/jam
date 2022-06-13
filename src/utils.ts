@@ -1,3 +1,13 @@
+const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
+  minimumIntegerDigits: 1,
+  minimumFractionDigits: 8,
+})
+
+const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
+  minimumIntegerDigits: 1,
+  minimumFractionDigits: 0,
+})
+
 export const BTC = 'BTC'
 export const SATS = 'sats'
 
@@ -13,12 +23,7 @@ export const formatBtc = (value: number) => {
   const decimalPoint = '\u002E'
   const nbHalfSpace = '\u202F'
 
-  const formatter = new Intl.NumberFormat('en-US', {
-    minimumIntegerDigits: 1,
-    minimumFractionDigits: 8,
-  })
-
-  const numberString = formatter.format(value)
+  const numberString = BTC_FORMATTER.format(value)
 
   const [integerPart, fractionalPart] = numberString.split(decimalPoint)
 
@@ -31,10 +36,5 @@ export const formatBtc = (value: number) => {
 }
 
 export const formatSats = (value: number) => {
-  const formatter = new Intl.NumberFormat('en-US', {
-    minimumIntegerDigits: 1,
-    minimumFractionDigits: 0,
-  })
-
-  return formatter.format(value)
+  return SATS_FORMATTER.format(value)
 }

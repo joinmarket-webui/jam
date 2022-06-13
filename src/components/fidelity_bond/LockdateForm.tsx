@@ -1,9 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './fb_utils'
+
+const monthFormatter = (locales: string) => new Intl.DateTimeFormat(locales, { month: 'long' })
+
+const DEFAULT_MONTH_FORMATTER = monthFormatter('en-US')
+
+const getOrCreateMonthFormatter = (locale: string) =>
+  DEFAULT_MONTH_FORMATTER.resolvedOptions().locale === locale ? DEFAULT_MONTH_FORMATTER : monthFormatter(locale)
+
+const displayMonth = (date: Date, locale: string = 'en-US') => {
+  return getOrCreateMonthFormatter(locale).format(date)
+}
 
 interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
@@ -13,6 +24,7 @@ interface LockdateFormProps {
 }
 
 const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormProps) => {
+  const { i18n } = useTranslation()
   const _now = useMemo<Date>(() => now || new Date(), [now])
   const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
   const _initalValue = useMemo<Api.Lockdate>(
@@ -42,6 +54,17 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
     // 'minMonth' can be `13` - which means it never is valid and user must adapt 'year'.
     return lockdateYear > currentYear + _yearsRange.min ? 1 : currentMonth + 1
   }, [lockdateYear, currentYear, currentMonth, _yearsRange])
+
+  const selectableMonth = useMemo(() => {
+    return Array(12)
+      .fill('')
+      .map((_, index) => index + 1)
+      .map((month) => ({
+        value: month,
+        displayValue: displayMonth(new Date(Date.UTC(2009, month - 1, 1)), i18n.resolvedLanguage || i18n.language),
+        disabled: month < minMonth,
+      }))
+  }, [i18n, minMonth])
 
   const isLockdateYearValid = useMemo(
     () => lockdateYear >= currentYear + _yearsRange.min && lockdateYear <= currentYear + _yearsRange.max,
@@ -100,9 +123,9 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
             required
             isInvalid={!isLockdateMonthValid}
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => (
-              <option key={month} value={month} disabled={month < minMonth}>
-                {month}
+            {selectableMonth.map((it) => (
+              <option key={it.value} value={it.value} disabled={it.disabled}>
+                {it.displayValue}
               </option>
             ))}
           </rb.Form.Select>
