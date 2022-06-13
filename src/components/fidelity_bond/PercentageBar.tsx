@@ -7,8 +7,6 @@ interface PercentageBarProps {
 }
 
 const PercentageBar = ({ percentage, highlight = false }: PercentageBarProps) => {
-  // unfortunately, setting the width via data prop does not work:`width: attr(data-percentage)`.
-  // hence, workaround is to set it via "style" prop.
   return (
     <div
       style={{ width: `${percentage.toFixed(2)}%` }}
