@@ -135,7 +135,7 @@ const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChan
         </rb.Card.Body>
       </rb.Card>
 
-      <div className="my-4 d-flex justify-content-center">
+      <div className="my-4 ps-1">
         {/* TODO: reset the toggle value (once that is implemented) when a user leaves the page, e.g. "Back" button */}
         <ToggleSwitch
           label={t('fidelity_bond.create_form.confirmation_toggle_title')}
