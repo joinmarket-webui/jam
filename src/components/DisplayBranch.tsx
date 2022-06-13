@@ -46,19 +46,21 @@ export function DisplayBranchHeader({ branch }: DisplayBranchProps) {
   const { balance, branch: detailsString } = branch
   const [type, derivation] = detailsString.split('\t')
   return (
-    <rb.Row className="w-100">
-      <rb.Col>
-        <div className={styles['branch-title']}>
-          {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}
-          {type === 'internal addresses' && <>{t('current_wallet_advanced.account_heading_internal_addresses')}</>}
-          {!['internal addresses', 'external addresses'].includes(type) && <>{type}</>}
-        </div>
-        <code className="text-secondary text-break">{derivation}</code>
-      </rb.Col>
-      <rb.Col className={styles['branch-balance']}>
-        <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
-      </rb.Col>
-    </rb.Row>
+    <rb.Container fluid>
+      <rb.Row className="w-100">
+        <rb.Col>
+          <div className={styles['branch-title']}>
+            {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}
+            {type === 'internal addresses' && <>{t('current_wallet_advanced.account_heading_internal_addresses')}</>}
+            {!['internal addresses', 'external addresses'].includes(type) && <>{type}</>}
+          </div>
+          <code className="text-secondary text-break">{derivation}</code>
+        </rb.Col>
+        <rb.Col className={styles['branch-balance']}>
+          <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+        </rb.Col>
+      </rb.Row>
+    </rb.Container>
   )
 }
 
@@ -66,7 +68,7 @@ export function DisplayBranchBody({ branch }: DisplayBranchProps) {
   const { branch: detailsString, entries } = branch
   const xpub: string | undefined = detailsString.split('\t')[2]
   return (
-    <>
+    <rb.Container fluid>
       <rb.Row>
         <rb.Col>
           {xpub && (
@@ -86,7 +88,7 @@ export function DisplayBranchBody({ branch }: DisplayBranchProps) {
           }`}
         />
       ))}
-    </>
+    </rb.Container>
   )
 }
 
