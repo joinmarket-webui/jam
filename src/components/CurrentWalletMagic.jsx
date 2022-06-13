@@ -51,6 +51,7 @@ export default function CurrentWalletMagic() {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showJars, setShowJars] = useState(false)
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -87,7 +88,7 @@ export default function CurrentWalletMagic() {
             loading={isLoading}
           />
         </rb.Row>
-        <rb.Row className="mt-4 d-flex justify-content-center">
+        <rb.Row className="mt-4 mb-5 d-flex justify-content-center">
           <rb.Col xs={10} md={8}>
             <rb.Row>
               <rb.Col>
@@ -117,20 +118,36 @@ export default function CurrentWalletMagic() {
             </rb.Row>
           </rb.Col>
         </rb.Row>
-        <rb.Row>
-          <hr className="my-4" />
-        </rb.Row>
-        <rb.Row>
-          {isLoading ? (
-            <rb.Placeholder as="div" animation="wave">
-              <rb.Placeholder className={styles['jars-placeholder']} />
-            </rb.Placeholder>
-          ) : (
-            <Jars accountBalances={balanceSummary?.accountBalances} totalBalance={balanceSummary?.totalBalance} />
-          )}
-        </rb.Row>
-        <rb.Row>
-          <hr className="my-4" />
+        <rb.Collapse in={showJars}>
+          <rb.Row>
+            <div className="mb-5">
+              <div>
+                {isLoading ? (
+                  <rb.Placeholder as="div" animation="wave">
+                    <rb.Placeholder className={styles['jars-placeholder']} />
+                  </rb.Placeholder>
+                ) : (
+                  <Jars accountBalances={balanceSummary?.accountBalances} totalBalance={balanceSummary?.totalBalance} />
+                )}
+              </div>
+            </div>
+          </rb.Row>
+        </rb.Collapse>
+        <rb.Row className="d-flex justify-content-center">
+          <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
+            <div className={styles['jars-divider-container']}>
+              <hr className={styles['jars-divider-line']} />
+              <div
+                className={styles['jars-divider-button']}
+                onClick={() => {
+                  setShowJars(!showJars)
+                }}
+              >
+                <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
+              </div>
+              <hr className={styles['jars-divider-line']} />
+            </div>
+          </rb.Col>
         </rb.Row>
       </>
     </div>
