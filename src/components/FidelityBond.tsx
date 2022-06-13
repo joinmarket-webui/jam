@@ -158,7 +158,7 @@ export default function FidelityBond() {
         .filter((it) => !it.frozen)
         .filter((it) => !isLocked(it))
 
-      // ff the selected utxo is a single expired FB, send via "direct-send"
+      // If the selected utxo is a single expired FB, send via "direct-send".
       const useDirectSend = spendableUtxos.length === 1 && !!spendableUtxos[0].locktime
 
       if (useDirectSend) {
