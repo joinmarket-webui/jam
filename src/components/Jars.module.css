@@ -1,0 +1,23 @@
+.jars-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.jar-index {
+  font-size: 0.8rem;
+  color: var(--bs-gray-600);
+}
+
+.jar-balance {
+  font-size: 0.8rem;
+}
+
+@media only screen and (min-width: 768px) {
+  .jars-container {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+}
