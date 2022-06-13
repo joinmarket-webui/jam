@@ -118,13 +118,13 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
     <rb.Card {...props}>
       <rb.Card.Body>
         <rb.Row key={address}>
-          <rb.Col xs="2" sm="1">
+          <rb.Col xs={{ span: 6, order: 1 }} lg={{ span: 'auto' }}>
             <code className="text-break">
               <span className="text-secondary">…/</span>
               {hdPathIndex}
             </code>
           </rb.Col>
-          <rb.Col xs="10" sm="8">
+          <rb.Col xs={{ span: 12, order: 3 }} sm={{ span: 10 }} lg={{ span: true, order: 2 }}>
             <CopyButton
               className={`${styles['address-copy-button']}`}
               showSprites={false}
@@ -144,10 +144,19 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
             />
             {label && <span className="badge bg-info">{label}</span>}
           </rb.Col>
-          <rb.Col className="d-flex align-items-center" xs="6" sm="1">
+          <rb.Col
+            xs={{ span: 12, order: 4 }}
+            sm={{ span: 2 }}
+            lg={{ span: 1, order: 'last' }}
+            className="d-flex align-items-end justify-content-end"
+          >
             <>{statusNode}</>
           </rb.Col>
-          <rb.Col className="d-flex align-items-center justify-content-end" xs="6" sm="2">
+          <rb.Col
+            xs={{ span: 6, order: 2 }}
+            lg={{ span: 'auto', order: 3 }}
+            className="d-flex align-items-center justify-content-end"
+          >
             <Balance valueString={amount} convertToUnit={settings.unit} showBalance={settings.showBalance} />
           </rb.Col>
         </rb.Row>
