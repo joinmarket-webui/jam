@@ -5,11 +5,18 @@ import { Trans } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './fb_utils'
 
-// a maximum of years for a timelock to be accepted
-// this is useful in simple mode - when it should be prevented that users
+// A maximum of years for a timelock to be accepted.
+// This is useful in simple mode - when it should be prevented that users
 // lock up their coins for an awful amount of time by accident.
-// in "advanced" mode, this can be dropped or increased substantially
+// In "advanced" mode, this can be dropped or increased substantially.
 export const DEFAULT_MAX_TIMELOCK_YEARS = 10
+
+// The months ahead for the initial lock date.
+// It is recommended to start locking for a period of between 3 months and 1 years initially.
+// This value should be at the lower end of this recommendation.
+// See https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long
+// for more information (last checked on 2022-06-13).
+const INITIAL_LOCKDATE_MONTH_AHEAD = 3
 
 type YearsRange = {
   min: number
@@ -26,7 +33,10 @@ export const toYearsRange = (min: number, max: number): YearsRange => {
 const initialLockdate = (now: Date, range: YearsRange): Api.Lockdate => {
   const year = now.getUTCFullYear()
   const month = now.getUTCMonth()
-  return fb.lockdate.fromTimestamp(Date.UTC(year + Math.max(range.min + 1, 1), month, 1))
+
+  const initMonth = (month + INITIAL_LOCKDATE_MONTH_AHEAD) % 12
+  const initYear = year + Math.max(range.min, Math.floor((month + INITIAL_LOCKDATE_MONTH_AHEAD) / 12))
+  return fb.lockdate.fromTimestamp(Date.UTC(initYear, initMonth, 1))
 }
 
 interface LockdateFormProps {
