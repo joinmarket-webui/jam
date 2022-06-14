@@ -7,6 +7,10 @@
   color: var(--bs-body-color);
 }
 
+.jar-sprite {
+  cursor: pointer;
+}
+
 .jar-index {
   font-size: 0.8rem;
   color: var(--bs-gray-600);

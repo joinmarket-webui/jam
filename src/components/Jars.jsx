@@ -21,8 +21,8 @@ const Jar = ({ accountIndex, balance, fill, onClick }) => {
   })(fill)
 
   return (
-    <div className="d-flex flex-column align-items-center gap-1" onClick={onClick}>
-      <Sprite symbol={jarSymbol} width="32px" height="48px" />
+    <div className="d-flex flex-column align-items-center gap-1">
+      <Sprite className={styles['jar-sprite']} symbol={jarSymbol} width="32px" height="48px" onClick={onClick} />
       <div className={styles['jar-index']}>{'#' + accountIndex}</div>
       <div className={styles['jar-balance']}>
         <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
