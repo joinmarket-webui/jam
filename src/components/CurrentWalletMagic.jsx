@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -10,6 +10,7 @@ import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
+import { DisplayAccountsOverlay } from './DisplayAccountsOverlay'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
@@ -39,7 +40,7 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   )
 }
 
-const PrivacyLevels = ({ accountBalances, loading }) => {
+const PrivacyLevels = ({ accountBalances, loading, onAccountClicked }) => {
   const numPrivacyLevelsPalceholders = 5
   const sortedAccountBalances = (accountBalances || []).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
   const numAccounts = sortedAccountBalances.length
@@ -58,6 +59,7 @@ const PrivacyLevels = ({ accountBalances, loading }) => {
                 level={accountIndex}
                 balance={totalBalance}
                 loading={loading}
+                onClick={onAccountClicked}
               />
             ))}
       </div>
@@ -73,7 +75,7 @@ const LoadingPrivacyLevel = ({ level }) => {
     })
 
   return (
-    <div className="d-flex align-items-center">
+    <div className="d-flex align-items-center" style={{ cursor: 'wait' }}>
       <div className="d-flex">{loadingShields}</div>
       <div className="ps-2">
         <Balance loading={true} />
@@ -82,7 +84,7 @@ const LoadingPrivacyLevel = ({ level }) => {
   )
 }
 
-const PrivacyLevel = ({ numAccounts, level, balance }) => {
+const PrivacyLevel = ({ numAccounts, level, balance, onClick }) => {
   const settings = useSettings()
 
   const filledShields = Array(level + 1)
@@ -97,7 +99,7 @@ const PrivacyLevel = ({ numAccounts, level, balance }) => {
     })
 
   return (
-    <div className="d-flex align-items-center">
+    <div className="d-flex align-items-center" onClick={() => onClick && onClick(level)} style={{ cursor: 'pointer' }}>
       <div className={`d-flex privacy-level-${level}`}>
         {filledShields}
         {outlinedShields}
@@ -121,6 +123,18 @@ export default function CurrentWalletMagic() {
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const accounts = useMemo(
+    () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
+    [currentWalletInfo]
+  )
+  const [selectedAccountIndex, setSelectedAccountIndex] = useState(0)
+  const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
+
+  const onAccountClicked = useCallback((accountIndex) => {
+    setSelectedAccountIndex(accountIndex)
+    setIsAccountOverlayShown(true)
+  }, [])
+
   useEffect(() => {
     const abortCtrl = new AbortController()
 
@@ -138,60 +152,77 @@ export default function CurrentWalletMagic() {
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
   return (
-    <div className="privacy-levels">
-      {alert && (
-        <rb.Row>
-          <rb.Col>
-            <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>
-          </rb.Col>
-        </rb.Row>
+    <>
+      {accounts && (
+        <DisplayAccountsOverlay
+          accounts={accounts}
+          selectedAccountIndex={selectedAccountIndex}
+          show={isAccountOverlayShown}
+          onHide={() => setIsAccountOverlayShown(false)}
+        />
       )}
-      <>
-        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
-          <WalletHeader
-            name={currentWallet?.name}
-            balance={balanceSummary?.totalBalance}
-            unit={settings.unit}
-            showBalance={settings.showBalance}
-            loading={isLoading}
-          />
-        </rb.Row>
-        <rb.Row className="mt-4">
-          <rb.Col>
-            {/* Always receive on first mixdepth. */}
-            <ExtendedLink
-              to={routes.receive}
-              state={{ account: 0 }}
-              className="btn btn-outline-dark w-100"
-              disabled={isLoading}
-            >
-              <div className="d-flex justify-content-center align-items-center">
-                <Sprite symbol="receive" width="24" height="24" />
-                <div className="ps-1">{t('current_wallet.button_deposit')}</div>
-              </div>
-            </ExtendedLink>
-          </rb.Col>
-          <rb.Col>
-            {/* Todo: Withdrawing needs to factor in the privacy levels as well.
+      <div className="privacy-levels">
+        {alert && (
+          <rb.Row>
+            <rb.Col>
+              <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>
+            </rb.Col>
+          </rb.Row>
+        )}
+        <>
+          <rb.Row
+            onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
+            style={{ cursor: 'pointer' }}
+          >
+            <WalletHeader
+              name={currentWallet?.name}
+              balance={balanceSummary?.totalBalance}
+              unit={settings.unit}
+              showBalance={settings.showBalance}
+              loading={isLoading}
+            />
+          </rb.Row>
+          <rb.Row className="mt-4">
+            <rb.Col>
+              {/* Always receive on first mixdepth. */}
+              <ExtendedLink
+                to={routes.receive}
+                state={{ account: 0 }}
+                className="btn btn-outline-dark w-100"
+                disabled={isLoading}
+              >
+                <div className="d-flex justify-content-center align-items-center">
+                  <Sprite symbol="receive" width="24" height="24" />
+                  <div className="ps-1">{t('current_wallet.button_deposit')}</div>
+                </div>
+              </ExtendedLink>
+            </rb.Col>
+            <rb.Col>
+              {/* Todo: Withdrawing needs to factor in the privacy levels as well.
               Depending on the mixdepth/account there will be different amounts available. */}
-            <ExtendedLink to={routes.send} className="btn btn-outline-dark w-100" disabled={isLoading}>
-              <div className="d-flex justify-content-center align-items-center">
-                <Sprite symbol="send" width="24" height="24" />
-                <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
-              </div>
-            </ExtendedLink>
-          </rb.Col>
-        </rb.Row>
-        <rb.Row>
-          <hr className="my-4" />
-        </rb.Row>
-        <rb.Row>
-          <PrivacyLevels accountBalances={balanceSummary?.accountBalances} loading={isLoading} />
-        </rb.Row>
-        <rb.Row>
-          <hr className="my-4" />
-        </rb.Row>
-      </>
-    </div>
+              <ExtendedLink to={routes.send} className="btn btn-outline-dark w-100" disabled={isLoading}>
+                <div className="d-flex justify-content-center align-items-center">
+                  <Sprite symbol="send" width="24" height="24" />
+                  <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
+                </div>
+              </ExtendedLink>
+            </rb.Col>
+          </rb.Row>
+          <rb.Row>
+            <hr className="my-4" />
+          </rb.Row>
+          <rb.Row>
+            <PrivacyLevels
+              accountBalances={balanceSummary?.accountBalances}
+              loading={isLoading}
+              onAccountClicked={onAccountClicked}
+            />
+          </rb.Row>
+          <rb.Row>
+            <hr className="my-4" />
+          </rb.Row>
+        </>
+      </div>
+    </>
   )
 }
