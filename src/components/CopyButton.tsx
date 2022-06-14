@@ -1,5 +1,4 @@
 import React, { PropsWithChildren, useState, useEffect, useRef } from 'react'
-import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 
 const copyToClipboard = (
@@ -47,14 +46,13 @@ function Copyable({ value, onSuccess, onError, className, children, ...props }: 
 
   return (
     <>
-      <rb.Button
-        variant="outline-dark"
-        className={className}
+      <button
         {...props}
+        className={className}
         onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
       >
         {children}
-      </rb.Button>
+      </button>
       <input
         readOnly
         aria-hidden
@@ -71,9 +69,10 @@ function Copyable({ value, onSuccess, onError, className, children, ...props }: 
 }
 
 interface CopyButtonProps extends CopyableProps {
-  text: string
-  successText: string
-  successTextTimeout: number
+  text: React.ReactNode | string
+  successText?: React.ReactNode | string
+  successTextTimeout?: number
+  showSprites?: boolean
 }
 
 export function CopyButton({
@@ -84,6 +83,7 @@ export function CopyButton({
   successText = text,
   successTextTimeout = 1_500,
   className,
+  showSprites = true,
 }: CopyButtonProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
   const [valueCopiedFlag, setValueCopiedFlag] = useState(0)
@@ -101,7 +101,7 @@ export function CopyButton({
 
   return (
     <Copyable
-      className={className}
+      className={`btn ${className || ''}`}
       value={value}
       onError={onError}
       onSuccess={() => {
@@ -110,12 +110,16 @@ export function CopyButton({
       }}
     >
       <div className="d-flex align-items-center justify-content-center">
-        {showValueCopiedConfirmation ? (
-          <Sprite color="green" symbol="checkmark" className="me-1" width="20" height="20" />
-        ) : (
-          <Sprite symbol="copy" className="me-1" width="20" height="20" />
+        {showSprites && (
+          <>
+            {showValueCopiedConfirmation ? (
+              <Sprite color="green" symbol="checkmark" className="me-1" width="20" height="20" />
+            ) : (
+              <Sprite symbol="copy" className="me-1" width="20" height="20" />
+            )}
+          </>
         )}
-        {showValueCopiedConfirmation ? successText : text}
+        <>{showValueCopiedConfirmation ? successText : text}</>
       </div>
     </Copyable>
   )

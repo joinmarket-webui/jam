@@ -283,6 +283,10 @@ main {
   -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
 }
 
+.unstyled {
+  text-decoration: none;
+}
+
 /* Navbar Styles */
 
 #mainNav .nav-link {
@@ -393,6 +397,10 @@ h2 {
   box-shadow: none;
 }
 
+.btn-link {
+  color: currentColor;
+}
+
 .alert-info {
   color: var(--bs-white);
   background-color: var(--bs-gray-800);
@@ -416,42 +424,6 @@ h2 {
 
 .placeholder {
   background-color: var(--bs-gray-400);
-}
-
-/* Privacy Level Styles */
-
-.privacy-level-4 {
-  color: rgba(39, 174, 96, 1);
-}
-
-.privacy-level-3 {
-  color: rgba(76, 157, 126, 1);
-}
-
-.privacy-level-2 {
-  color: rgba(113, 140, 157, 1);
-}
-
-.privacy-level-1 {
-  color: rgba(150, 124, 187, 1);
-}
-
-.privacy-level-0 {
-  color: rgba(187, 107, 217, 1);
-}
-
-.privacy-levels hr {
-  border-top: 1px solid rgba(222, 222, 222, 1);
-  opacity: 1;
-}
-:root[data-theme='dark'] .privacy-levels hr {
-  border-color: var(--bs-gray-800);
-}
-
-.privacy-levels .btn.btn-outline-dark {
-  padding: 0.25rem;
-  font-weight: 500;
-  border-color: rgba(222, 222, 222, 1);
 }
 
 /* Wallets Styles */
@@ -514,6 +486,23 @@ h2 {
 
 .btn:disabled:hover {
   cursor: not-allowed;
+}
+
+/* Account Overlay */
+
+.accordion-header .accordion-button:not(.collapsed) {
+  /* Disable coloring for expanded headers */
+  color: var(--bs-black);
+  background-color: transparent;
+}
+
+.accordion-header .accordion-button:not(.collapsed)::after {
+  /* Disable coloring for expanded headers */
+  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23212529%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
+}
+
+:root[data-theme='dark'] .accordion-header .accordion-button:not(.collapsed)::after {
+  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23fff%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
 }
 
 /* Theme overrides */

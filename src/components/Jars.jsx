@@ -4,7 +4,7 @@ import styles from './Jars.module.css'
 import Sprite from './Sprite'
 import Balance from './Balance'
 
-const Jar = ({ accountIndex, balance, fill }) => {
+const Jar = ({ accountIndex, balance, fill, onClick }) => {
   const settings = useSettings()
 
   const jarSymbol = ((fill) => {
@@ -21,7 +21,7 @@ const Jar = ({ accountIndex, balance, fill }) => {
   })(fill)
 
   return (
-    <div className="d-flex flex-column align-items-center gap-1">
+    <div className="d-flex flex-column align-items-center gap-1" onClick={onClick}>
       <Sprite symbol={jarSymbol} width="32px" height="48px" />
       <div className={styles['jar-index']}>{'#' + accountIndex}</div>
       <div className={styles['jar-balance']}>
@@ -31,7 +31,7 @@ const Jar = ({ accountIndex, balance, fill }) => {
   )
 }
 
-const Jars = ({ accountBalances, totalBalance }) => {
+const Jars = ({ accountBalances, totalBalance, onClick }) => {
   const sortedAccountBalances = (accountBalances || []).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
 
   // Classifies the account balance into one of four groups:
@@ -56,6 +56,7 @@ const Jars = ({ accountBalances, totalBalance }) => {
             accountIndex={account.accountIndex}
             balance={account.totalBalance}
             fill={calculateFillLevel(account.totalBalance, totalBalance)}
+            onClick={() => onClick(account.accountIndex)}
           />
         )
       })}

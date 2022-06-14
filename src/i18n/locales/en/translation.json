@@ -1,4 +1,8 @@
 {
+  "global": {
+    "back": "Back",
+    "close": "Close"
+  },
   "navbar": {
     "title": "Jam",
     "button_create_wallet": "Create Wallet",
@@ -125,7 +129,7 @@
     "button_unfreeze": "unfreeze",
     "account_button_send": "Send",
     "account_button_receive": "Receive",
-    "account_heading_external_addresses": "External Addresses",
+    "account_heading_external_addresses": "External addresses for deposits",
     "account_heading_internal_addresses": "Internal Addresses"
   },
   "settings": {
