@@ -137,7 +137,7 @@ export default function FidelityBond() {
   /**
    * Initiate sending funds to a timelocked address.
    * Defaults to sweep with a collaborative transaction.
-   * If the selected utxo is a single expired FB, "diret-send" is used.
+   * If the selected utxo is a single expired FB, "direct-send" is used.
    *
    * The transaction will have no change output.
    */
