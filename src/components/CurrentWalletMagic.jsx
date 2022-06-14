@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -11,6 +11,7 @@ import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
 import { DisplayAccountsOverlay } from './DisplayAccountsOverlay'
+import { Jars } from './Jars'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
@@ -40,79 +41,6 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   )
 }
 
-const PrivacyLevels = ({ accountBalances, loading, onAccountClicked }) => {
-  const numPrivacyLevelsPalceholders = 5
-  const sortedAccountBalances = useMemo(() => {
-    if (!accountBalances) return []
-    return Object.values(accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
-  }, [accountBalances])
-
-  return (
-    <div className="d-flex justify-content-center">
-      <div className="d-flex flex-column align-items-start" style={{ gap: '1rem' }}>
-        {loading
-          ? Array(numPrivacyLevelsPalceholders)
-              .fill('')
-              .map((_, index) => <LoadingPrivacyLevel key={index} level={numPrivacyLevelsPalceholders} />)
-          : sortedAccountBalances.map(({ accountIndex, totalBalance }) => (
-              <PrivacyLevel
-                key={accountIndex}
-                numAccounts={sortedAccountBalances.length}
-                level={accountIndex}
-                balance={totalBalance}
-                loading={loading}
-                onClick={onAccountClicked}
-              />
-            ))}
-      </div>
-    </div>
-  )
-}
-
-const LoadingPrivacyLevel = ({ level }) => {
-  const loadingShields = Array(level)
-    .fill('')
-    .map((_, index) => {
-      return <Sprite key={index} symbol="shield-filled-loading" width="24" height="30" />
-    })
-
-  return (
-    <div className="d-flex align-items-center" style={{ cursor: 'wait' }}>
-      <div className="d-flex">{loadingShields}</div>
-      <div className="ps-2">
-        <Balance loading={true} />
-      </div>
-    </div>
-  )
-}
-
-const PrivacyLevel = ({ numAccounts, level, balance, onClick }) => {
-  const settings = useSettings()
-
-  const filledShields = Array(level + 1)
-    .fill('')
-    .map((_, index) => {
-      return <Sprite key={index} symbol="shield-filled" width="24" height="30" />
-    })
-  const outlinedShields = Array(numAccounts - filledShields.length)
-    .fill('')
-    .map((_, index) => {
-      return <Sprite key={index} symbol="shield-outline" width="24" height="30" />
-    })
-
-  return (
-    <div className="d-flex align-items-center" onClick={() => onClick && onClick(level)} style={{ cursor: 'pointer' }}>
-      <div className={`d-flex privacy-level-${level}`}>
-        {filledShields}
-        {outlinedShields}
-      </div>
-      <div className="ps-2">
-        <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
-      </div>
-    </div>
-  )
-}
-
 export default function CurrentWalletMagic() {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -124,6 +52,7 @@ export default function CurrentWalletMagic() {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showJars, setShowJars] = useState(false)
 
   const accounts = useMemo(
     () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
@@ -132,10 +61,10 @@ export default function CurrentWalletMagic() {
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
-  const onAccountClicked = useCallback((accountIndex) => {
+  const onJarClicked = (accountIndex) => {
     setSelectedAccountIndex(accountIndex)
     setIsAccountOverlayShown(true)
-  }, [])
+  }
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -154,7 +83,15 @@ export default function CurrentWalletMagic() {
   }, [currentWallet, reloadCurrentWalletInfo, t])
 
   return (
-    <>
+    <div>
+      {alert && (
+        <rb.Row>
+          <rb.Col>
+            <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>
+          </rb.Col>
+        </rb.Row>
+      )}
+
       {accounts && (
         <DisplayAccountsOverlay
           accounts={accounts}
@@ -163,28 +100,18 @@ export default function CurrentWalletMagic() {
           onHide={() => setIsAccountOverlayShown(false)}
         />
       )}
-      <div className="privacy-levels">
-        {alert && (
+      <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
+        <WalletHeader
+          name={currentWallet?.name}
+          balance={balanceSummary?.totalBalance}
+          unit={settings.unit}
+          showBalance={settings.showBalance}
+          loading={isLoading}
+        />
+      </rb.Row>
+      <rb.Row className="mt-4 mb-5 d-flex justify-content-center">
+        <rb.Col xs={10} md={8}>
           <rb.Row>
-            <rb.Col>
-              <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>
-            </rb.Col>
-          </rb.Row>
-        )}
-        <>
-          <rb.Row
-            onClick={() => settingsDispatch({ showBalance: !settings.showBalance })}
-            style={{ cursor: 'pointer' }}
-          >
-            <WalletHeader
-              name={currentWallet?.name}
-              balance={balanceSummary?.totalBalance}
-              unit={settings.unit}
-              showBalance={settings.showBalance}
-              loading={isLoading}
-            />
-          </rb.Row>
-          <rb.Row className="mt-4">
             <rb.Col>
               {/* Always receive on first mixdepth. */}
               <ExtendedLink
@@ -210,21 +137,43 @@ export default function CurrentWalletMagic() {
               </ExtendedLink>
             </rb.Col>
           </rb.Row>
-          <rb.Row>
-            <hr className="my-4" />
-          </rb.Row>
-          <rb.Row>
-            <PrivacyLevels
-              accountBalances={balanceSummary?.accountBalances}
-              loading={isLoading}
-              onAccountClicked={onAccountClicked}
-            />
-          </rb.Row>
-          <rb.Row>
-            <hr className="my-4" />
-          </rb.Row>
-        </>
-      </div>
-    </>
+        </rb.Col>
+      </rb.Row>
+      <rb.Collapse in={showJars}>
+        <rb.Row>
+          <div className="mb-5">
+            <div>
+              {isLoading ? (
+                <rb.Placeholder as="div" animation="wave">
+                  <rb.Placeholder className={styles['jars-placeholder']} />
+                </rb.Placeholder>
+              ) : (
+                <Jars
+                  accountBalances={balanceSummary?.accountBalances}
+                  totalBalance={balanceSummary?.totalBalance}
+                  onClick={onJarClicked}
+                />
+              )}
+            </div>
+          </div>
+        </rb.Row>
+      </rb.Collapse>
+      <rb.Row className="d-flex justify-content-center">
+        <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
+          <div className={styles['jars-divider-container']}>
+            <hr className={styles['jars-divider-line']} />
+            <div
+              className={styles['jars-divider-button']}
+              onClick={() => {
+                setShowJars(!showJars)
+              }}
+            >
+              <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
+            </div>
+            <hr className={styles['jars-divider-line']} />
+          </div>
+        </rb.Col>
+      </rb.Row>
+    </div>
   )
 }

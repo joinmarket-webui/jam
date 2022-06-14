@@ -138,7 +138,7 @@ export default function App() {
                 )}
               </Route>
               {currentWallet && !settings.useAdvancedWalletMode && (
-                <Route element={<Layout variant="narrow" />}>
+                <Route element={<Layout />}>
                   <Route path={routes.wallet} element={<CurrentWalletMagic />} />
                 </Route>
               )}

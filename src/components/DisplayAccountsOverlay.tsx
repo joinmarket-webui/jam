@@ -95,9 +95,7 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
           {account.branches.map((branch, index) => (
             <rb.Accordion.Item className={styles['accordion-item']} key={branch.branch} eventKey={`${index}`}>
               <rb.Accordion.Header>
-                <div className="w-100">
-                  <DisplayBranchHeader branch={branch} />
-                </div>
+                <DisplayBranchHeader branch={branch} />
               </rb.Accordion.Header>
               <rb.Accordion.Body className={styles['accordion-body']}>
                 <DisplayBranchBody branch={branch} />
