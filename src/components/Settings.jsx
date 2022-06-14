@@ -143,11 +143,13 @@ export default function Settings({ stopWallet }) {
         {alert && <Alert {...alert} />}
         <ConfirmModal
           isShown={showConfirmLockModal}
-          title={t('settings.confirm_locking_modal_title')}
+          title={t('wallets.wallet_preview.modal_lock_wallet_title')}
           body={
-            serviceInfo?.makerRunning
-              ? t('settings.confirm_locking_modal_body_earn')
-              : t('settings.confirm_locking_modal_body_jam')
+            (serviceInfo?.makerRunning
+              ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
+              : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
+            ' ' +
+            t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')
           }
           onCancel={() => setShowConfirmLockModal(null)}
           onConfirm={() => {
