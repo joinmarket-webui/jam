@@ -47,7 +47,7 @@ export function DisplayBranchHeader({ branch }: DisplayBranchProps) {
   const [type, derivation] = detailsString.split('\t')
   return (
     <rb.Container fluid>
-      <rb.Row className="w-100">
+      <rb.Row className="w-100 align-items-center">
         <rb.Col>
           <div className={styles['branch-title']}>
             {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}

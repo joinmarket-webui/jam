@@ -7,14 +7,6 @@ const Col = ({ variant, children }) => {
     return <rb.Col>{children}</rb.Col>
   }
 
-  if (variant === 'narrow') {
-    return (
-      <rb.Col xs={10} sm={8} md={6} lg={4}>
-        {children}
-      </rb.Col>
-    )
-  }
-
   return (
     <rb.Col md={10} lg={8} xl={6}>
       {children}
