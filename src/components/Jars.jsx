@@ -1,6 +1,5 @@
 import React from 'react'
-import * as rb from 'react-bootstrap'
-import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
+import { useSettings } from '../context/SettingsContext'
 import styles from './Jars.module.css'
 import Sprite from './Sprite'
 import Balance from './Balance'
