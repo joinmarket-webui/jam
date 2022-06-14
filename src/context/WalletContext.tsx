@@ -50,14 +50,14 @@ export interface Account {
   branches: Branch[]
 }
 
-interface Branch {
+export interface Branch {
   branch: string
   balance: BalanceString
   available_balance: BalanceString
   entries: BranchEntry[]
 }
 
-interface BranchEntry {
+export interface BranchEntry {
   hd_path: string
   address: string
   amount: BalanceString
@@ -223,5 +223,4 @@ export {
   useSetCurrentWallet,
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
-  BranchEntry,
 }

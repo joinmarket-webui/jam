@@ -4,7 +4,8 @@
     "button_copy_text": "Copy",
     "button_copy_text_confirmed": "Copied",
     "next": "Next",
-    "back": "Back"
+    "back": "Back",
+    "close": "Close"
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}"
@@ -132,7 +133,7 @@
     "button_unfreeze": "unfreeze",
     "account_button_send": "Send",
     "account_button_receive": "Receive",
-    "account_heading_external_addresses": "External Addresses",
+    "account_heading_external_addresses": "External addresses for deposits",
     "account_heading_internal_addresses": "Internal Addresses"
   },
   "settings": {

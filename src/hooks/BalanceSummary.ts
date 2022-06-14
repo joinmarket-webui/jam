@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { WalletInfo, BalanceString, Utxos, Utxo } from '../context/WalletContext'
 
+import { AmountSats } from '../libs/JmWalletApi'
+
 type Milliseconds = number
 type Seconds = number
-type AmountSats = number
 
 interface BalanceSummary {
   totalBalance: BalanceString
