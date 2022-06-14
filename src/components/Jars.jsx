@@ -22,7 +22,7 @@ const Jar = ({ accountIndex, balance, fill }) => {
 
   return (
     <div className="d-flex flex-column align-items-center gap-1">
-      <Sprite symbol={jarSymbol} width="2rem" height="3rem" />
+      <Sprite symbol={jarSymbol} width="32px" height="48px" />
       <div className={styles['jar-index']}>{'#' + accountIndex}</div>
       <div className={styles['jar-balance']}>
         <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
