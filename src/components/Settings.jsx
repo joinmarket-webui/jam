@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
+import Alert from './Alert'
+import { ConfirmModal } from './Modal'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import { SATS, BTC, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
@@ -80,12 +83,19 @@ function SeedModal({ show = false, onHide }) {
   )
 }
 
-export default function Settings() {
-  const { t } = useTranslation()
+export default function Settings({ stopWallet }) {
   const [showingSeed, setShowingSeed] = useState(false)
+  const [lockingWallet, setLockingWallet] = useState(false)
+  const [showConfirmLockModal, setShowConfirmLockModal] = useState(null)
+  const [alert, setAlert] = useState(null)
+
+  const { t } = useTranslation()
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const { i18n } = useTranslation()
+  const currentWallet = useCurrentWallet()
+  const navigate = useNavigate()
+  const serviceInfo = useServiceInfo()
 
   const setTheme = (theme) => {
     if (window.JM.THEMES.includes(theme)) {
@@ -97,10 +107,56 @@ export default function Settings() {
   const isSats = settings.unit === SATS
   const isLightTheme = settings.theme === window.JM.THEMES[0]
 
+  const lockWallet = useCallback(
+    async ({ force, destination }) => {
+      if (!force && (serviceInfo.coinjoinInProgress || serviceInfo.makerRunning)) {
+        setShowConfirmLockModal({ destination })
+        return
+      }
+
+      setLockingWallet(true)
+
+      try {
+        const { name: walletName, token } = currentWallet
+        const res = await Api.getWalletLock({ walletName, token })
+
+        if (res.ok || res.status === 401) {
+          stopWallet()
+        } else {
+          await Api.Helper.throwError(res)
+        }
+
+        setLockingWallet(false)
+        navigate(destination)
+      } catch (e) {
+        setLockingWallet(false)
+        setAlert({ variant: 'danger', dismissible: false, message: e.message })
+      }
+    },
+    [currentWallet, stopWallet, navigate, serviceInfo]
+  )
+
   return (
     <div className={styles.settings}>
       <div className="d-flex flex-column gap-3">
         <div className={styles['section-title']}>{t('settings.title')}</div>
+        {alert && <Alert {...alert} />}
+        <ConfirmModal
+          isShown={showConfirmLockModal}
+          title={t('wallets.wallet_preview.modal_lock_wallet_title')}
+          body={
+            (serviceInfo?.makerRunning
+              ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
+              : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
+            ' ' +
+            t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')
+          }
+          onCancel={() => setShowConfirmLockModal(null)}
+          onConfirm={() => {
+            setShowConfirmLockModal(null)
+            lockWallet({ force: true, destination: showConfirmLockModal?.destination })
+          }}
+        />
         <div className={styles['settings-group-container']}>
           <rb.Button
             variant="outline-dark"
@@ -172,10 +228,44 @@ export default function Settings() {
           </rb.Button>
           {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
 
+          <rb.Button
+            variant="outline-dark"
+            className={styles['settings-btn']}
+            onClick={() => lockWallet({ force: false, destination: routes.walletList })}
+          >
+            {lockingWallet ? (
+              <>
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="mx-1" />
+                {t('settings.button_locking_wallet')}
+              </>
+            ) : (
+              <>
+                <Sprite symbol="lock" width="24" height="24" />
+                {t('settings.button_lock_wallet')}
+              </>
+            )}
+          </rb.Button>
           <Link to={routes.walletList} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
             <Sprite symbol="wallet" width="24" height="24" />
             {t('settings.button_switch_wallet')}
           </Link>
+          <rb.Button
+            variant="outline-dark"
+            className={styles['settings-btn']}
+            onClick={() => lockWallet({ force: false, destination: routes.createWallet })}
+          >
+            {lockingWallet ? (
+              <>
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="mx-1" />
+                {t('settings.button_locking_wallet')}
+              </>
+            ) : (
+              <>
+                <Sprite symbol="plus" width="24" height="24" />
+                {t('settings.button_create_wallet')}
+              </>
+            )}
+          </rb.Button>
         </div>
 
         <div className={styles['section-title']}>{t('settings.section_title_community')}</div>

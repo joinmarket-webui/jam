@@ -68,12 +68,10 @@
       "button_locking": "Locking",
       "button_unlocking": "Unlocking",
       "feedback_missing_password": "Please set the wallet's password.",
-      "modal_lock_wallet_title": "Confirm locking",
+      "modal_lock_wallet_title": "Lock Wallet",
       "modal_lock_wallet_maker_running_text": "Earn is active. Locking the wallet will stop the service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "A collaborative transaction is currently in progress. Locking the wallet will stop the service.",
-      "modal_lock_wallet_alternative_action_text": "Alternatively, just close the window to log out.",
-      "modal_lock_wallet_button_confirm": "Yes, lock wallet",
-      "modal_lock_wallet_button_cancel": "Cancel"
+      "modal_lock_wallet_alternative_action_text": "You can close the browser window to let it run in the background."
     }
   },
   "create_wallet": {
@@ -148,12 +146,18 @@
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
+    "button_lock_wallet": "Lock wallet",
+    "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
+    "button_create_wallet": "Create new wallet",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "github": "GitHub",
     "telegram": "Telegram",
-    "jm_twitter": "JoinMarket Twitter"
+    "jm_twitter": "JoinMarket Twitter",
+    "confirm_locking_modal_title": "Lock Wallet",
+    "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
+    "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background."
   },
   "send": {
     "loading": "Loading",
@@ -296,5 +300,9 @@
       "hint_missing_confirmations": "The scheduler requires one of your UTXOs to have <2>{{ minConfirmations }}</2> or more confirmations. Wait for <6>{{ amountOfMissingConfirmations }}</6> more block(s).",
       "hint_missing_overall_retries": "You've tried running the scheduler unsuccessfully too many times in a row. For security reasons, you need a fresh UTXO to try again. See <2>the docs</2> for more information."
     }
+  },
+  "modal": {
+    "confirm_button_accept": "Confirm",
+    "confirm_button_reject": "Cancel"
   }
 }
