@@ -105,7 +105,7 @@ const ConfirmationStep = ({
       <rb.Card className="w-100 mt-3">
         <rb.Card.Body style={{ padding: '0.25rem' }}>
           <rb.Table
-            variant={settings.theme}
+            variant={settings.theme === 'light' ? undefined : 'dark'}
             style={{
               marginBottom: 0,
             }}
