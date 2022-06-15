@@ -130,7 +130,7 @@ export default function App() {
                     <Route path={routes.send} element={<Send />} />
                     <Route path={routes.earn} element={<Earn />} />
                     <Route path={routes.receive} element={<Receive />} />
-                    <Route path={routes.settings} element={<Settings />} />
+                    <Route path={routes.settings} element={<Settings stopWallet={stopWallet} />} />
                     {isFeatureEnabled('fidelityBonds') && (
                       <Route path={routes.fidelityBonds} element={<FidelityBond />} />
                     )}
