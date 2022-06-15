@@ -19,6 +19,8 @@ import { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from './fb_utils'
 import * as Api from '../../libs/JmWalletApi'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 
+type AlertWithMessage = rb.AlertProps & { message: string }
+
 interface SelectAccountStepProps {
   balanceSummary: WalletBalanceSummary
   accounts: Account[]
@@ -69,11 +71,19 @@ interface ConfirmationStepProps {
   balanceSummary: WalletBalanceSummary
   account: Account
   lockdate: Api.Lockdate
+  destinationAddress: Api.BitcoinAddress
   confirmed: boolean
   onChange: (confirmed: boolean) => void
 }
 
-const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChange }: ConfirmationStepProps) => {
+const ConfirmationStep = ({
+  balanceSummary,
+  account,
+  lockdate,
+  destinationAddress,
+  confirmed,
+  onChange,
+}: ConfirmationStepProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -108,8 +118,7 @@ const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChan
               <tr>
                 <td>
                   Fidelity Bond Size
-                  <br />
-                  <small className="text-secondary">Excluding transaction fees</small>
+                  <div className="small text-secondary">Excluding transaction fees</div>
                 </td>
                 <td className="text-end">
                   <Balance
@@ -124,8 +133,14 @@ const ConfirmationStep = ({ balanceSummary, account, lockdate, confirmed, onChan
                 <td className="text-end">{(relativeSizeToTotalBalance * 100).toFixed(2)} %</td>
               </tr>
               <tr>
-                <td className="border-0">Locked until</td>
-                <td className="border-0 text-end">{lockdate}</td>
+                <td>Locked until</td>
+                <td className="text-end">{lockdate}</td>
+              </tr>
+              <tr>
+                <td colSpan={2} className="border-0">
+                  Timelocked Destination Address
+                  <div className="small text-secondary slashed-zeroes">{destinationAddress}</div>
+                </td>
               </tr>
             </tbody>
           </rb.Table>
@@ -156,9 +171,11 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
   const balanceSummary = useBalanceSummary(walletInfo)
   const accounts = useMemo(() => walletInfo.data.display.walletinfo.accounts, [walletInfo])
 
+  const [alert, setAlert] = useState<AlertWithMessage | null>(null)
   const [step, setStep] = useState<number>(0)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
   const [selectedLockdate, setSelectedLockdate] = useState<Api.Lockdate | null>(null)
+  const [timelockedDestinationAddress, setTimelockedDestinationAddress] = useState<Api.BitcoinAddress | null>(null)
   const [userConfirmed, setUserConfirmed] = useState(false)
 
   useEffect(() => {
@@ -172,14 +189,11 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
     setUserConfirmed(false)
   }, [step, selectedAccount, selectedLockdate])
 
-  /**
-   * Log the timelocked address to console in development mode!
-   * This will enable devs to send to the address
-   * in another way than dictated by this view.
-   */
   useEffect(() => {
     if (!selectedLockdate) return
-    if (!isDebugFeatureEnabled('logFidelityBondAddressToConsole')) return
+
+    setAlert(null)
+    setTimelockedDestinationAddress(null)
 
     const abortCtrl = new AbortController()
     Api.getAddressTimelockNew({
@@ -188,32 +202,17 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
       signal: abortCtrl.signal,
       lockdate: selectedLockdate,
     })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((data) => data.address)
-      .then((timelockedAddress) => console.info(`Address with lockdate '${selectedLockdate}':`, timelockedAddress))
-      .catch((error) => console.warn(`Could not fetch address with lockdate '${selectedLockdate}':`, error))
-
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [currentWallet, selectedLockdate])
-
-  const _onSubmit = async (account: Account, lockdate: Api.Lockdate) => {
-    if (!currentWallet) return
-
-    const { name: walletName, token } = currentWallet
-    const timelockedDestinationAddress = await Api.getAddressTimelockNew({
-      walletName,
-      token,
-      lockdate,
-    })
       .then((res) =>
         res.ok ? res.json() : Api.Helper.throwError(res, t('fidelity_bond.error_loading_timelock_address_failed'))
       )
-      .then((data) => data.address)
+      .then((data) => setTimelockedDestinationAddress(data.address))
+      .catch((err) => {
+        const message = err.message || t('fidelity_bond.error_loading_timelock_address_failed')
+        setAlert({ variant: 'danger', message })
+      })
 
-    return await onSubmit(account, lockdate, timelockedDestinationAddress)
-  }
+    return () => abortCtrl.abort()
+  }, [currentWallet, selectedLockdate, t])
 
   return (
     <div>
@@ -271,21 +270,39 @@ const FidelityBondDetailsSetupForm = ({ currentWallet, walletInfo, onSubmit }: F
 
       {balanceSummary && selectedAccount && selectedLockdate && (
         <div className={`${step !== 2 ? 'd-none' : ''}`}>
-          <ConfirmationStep
-            balanceSummary={balanceSummary}
-            account={selectedAccount}
-            lockdate={selectedLockdate}
-            confirmed={userConfirmed}
-            onChange={setUserConfirmed}
-          />
+          {alert ? (
+            <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>
+          ) : (
+            <>
+              {timelockedDestinationAddress === null ? (
+                <div className="d-flex justify-content-center align-items-center">
+                  <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                  {t('global.loading')}
+                </div>
+              ) : (
+                <ConfirmationStep
+                  balanceSummary={balanceSummary}
+                  account={selectedAccount}
+                  lockdate={selectedLockdate}
+                  destinationAddress={timelockedDestinationAddress}
+                  confirmed={userConfirmed}
+                  onChange={setUserConfirmed}
+                />
+              )}
+            </>
+          )}
 
           <rb.Button
             variant="dark"
             type="button"
             size="lg"
             className="w-100 mt-4"
-            disabled={!userConfirmed}
-            onClick={() => _onSubmit(selectedAccount, selectedLockdate)}
+            disabled={!userConfirmed || !timelockedDestinationAddress}
+            onClick={() =>
+              userConfirmed &&
+              timelockedDestinationAddress &&
+              onSubmit(selectedAccount, selectedLockdate, timelockedDestinationAddress)
+            }
           >
             {t('fidelity_bond.create_form.button_create')}
           </rb.Button>

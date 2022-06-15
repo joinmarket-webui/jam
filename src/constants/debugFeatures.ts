@@ -1,6 +1,5 @@
 interface DebugFeatures {
   insecureScheduleTesting: boolean
-  logFidelityBondAddressToConsole: boolean
   allowCreatingExpiredFidelityBond: boolean
 }
 
@@ -8,7 +7,6 @@ const devMode = process.env.NODE_ENV === 'development'
 
 const debugFeatures: DebugFeatures = {
   insecureScheduleTesting: true,
-  logFidelityBondAddressToConsole: true,
   allowCreatingExpiredFidelityBond: true,
 }
 
