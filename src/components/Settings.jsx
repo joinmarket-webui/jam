@@ -122,7 +122,7 @@ export default function Settings({ stopWallet }) {
 
         if (res.ok || res.status === 401) {
           stopWallet()
-        } else if (!res.ok) {
+        } else {
           await Api.Helper.throwError(res)
         }
 
