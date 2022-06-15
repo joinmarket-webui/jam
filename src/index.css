@@ -284,7 +284,7 @@ main {
 }
 
 .unstyled {
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 /* Navbar Styles */
@@ -529,6 +529,10 @@ h2 {
 
 :root[data-theme='dark'] .card {
   background-color: var(--bs-gray-900);
+}
+
+:root[data-theme='dark']
+  .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info) {
   border-color: var(--bs-gray-800) !important;
 }
 
@@ -606,4 +610,13 @@ h2 {
 
 :root[data-theme='dark'] .link-dark {
   color: var(--bs-white);
+}
+
+:root[data-theme='dark'] .toast {
+  background-color: transparent;
+}
+:root[data-theme='dark'] .toast-header {
+  color: var(--bs-white);
+  background-color: var(--bs-gray-800);
+  border-color: var(--bs-gray-900);
 }

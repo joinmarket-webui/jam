@@ -84,6 +84,7 @@ export function CopyButton({
   successTextTimeout = 1_500,
   className,
   showSprites = true,
+  ...props
 }: CopyButtonProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
   const [valueCopiedFlag, setValueCopiedFlag] = useState(0)
@@ -101,6 +102,7 @@ export function CopyButton({
 
   return (
     <Copyable
+      {...props}
       className={`btn ${className || ''}`}
       value={value}
       onError={onError}

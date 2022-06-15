@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSettings } from '../context/SettingsContext'
 import styles from './Jars.module.css'
 import Sprite from './Sprite'
@@ -32,7 +32,10 @@ const Jar = ({ accountIndex, balance, fill, onClick }) => {
 }
 
 const Jars = ({ accountBalances, totalBalance, onClick }) => {
-  const sortedAccountBalances = (accountBalances || []).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  const sortedAccountBalances = useMemo(() => {
+    if (!accountBalances) return []
+    return Object.values(accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  }, [accountBalances])
 
   // Classifies the account balance into one of four groups:
   // - More than half of the total balance

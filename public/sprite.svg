@@ -136,6 +136,10 @@
     <symbol id="plus" fill="currentColor" viewBox="0 0 24 24">
         <path fill-rule="evenodd" d="M12 3.25a.75.75 0 01.75.75v7.25H20a.75.75 0 010 1.5h-7.25V20a.75.75 0 01-1.5 0v-7.25H4a.75.75 0 010-1.5h7.25V4a.75.75 0 01.75-.75z" clip-rule="evenodd"></path>
     </symbol>
+    <symbol id="cross" fill="currentColor" viewBox="0 0 24 24" >
+        <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0l12 12a.75.75 0 11-1.06 1.06l-12-12a.75.75 0 010-1.06z" clip-rule="evenodd" />
+        <path fill-rule="evenodd" d="M18.53 5.47a.75.75 0 010 1.06l-12 12a.75.75 0 01-1.06-1.06l12-12a.75.75 0 011.06 0z" clip-rule="evenodd" />
+    </symbol>
     <symbol id="copy" fill="none" stroke="currentColor"  viewBox="0 0 24 24">
         <rect width="9" height="13" x="6.5" y="6.5" rx="1.5"></rect><path d="M8.5 6A1.5 1.5 0 0110 4.5h6A1.5 1.5 0 0117.5 6v10a1.5 1.5 0 01-1.5 1.5"></path>
     </symbol>

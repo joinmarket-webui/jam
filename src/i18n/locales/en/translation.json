@@ -1,7 +1,14 @@
 {
   "global": {
+    "loading": "Loading",
+    "button_copy_text": "Copy",
+    "button_copy_text_confirmed": "Copied",
+    "next": "Next",
     "back": "Back",
     "close": "Close"
+  },
+  "app": {
+    "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "navbar": {
     "title": "Jam",
@@ -12,9 +19,6 @@
     "joining_in_progress": "Joining",
     "menu_mobile": "Menu",
     "menu_mobile_settings": "Settings"
-  },
-  "app": {
-    "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "footer": {
     "warning": "This is beta software.<br /><1>Read this before using.</1>",
@@ -270,6 +274,17 @@
     "item_last": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
+    }
+  },
+  "fidelity_bond": {
+    "title": "Fidelity Bonds (Experimental)",
+    "subtitle": "Fidelity Bonds prevent Sybil attacks by deliberately increasing the cost of creating cryptographic identities. Creating a fidelity bond will increase your chances of being picked for a collaborative transaction.",
+    "text_maker_running": "Earn is active. Stop the service in order to create a Fidelity Bond.",
+    "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
+    "create_form": {
+      "confirmation_toggle_title": "I have reviewed my inputs carefully",
+      "confirmation_toggle_subtitle": "I understand that the locked funds will be inaccessible for the given duration",
+      "button_create": "Create Fidelity Bond"
     }
   },
   "scheduler": {

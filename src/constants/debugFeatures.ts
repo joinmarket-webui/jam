@@ -1,11 +1,13 @@
 interface DebugFeatures {
   insecureScheduleTesting: boolean
+  allowCreatingExpiredFidelityBond: boolean
 }
 
 const devMode = process.env.NODE_ENV === 'development'
 
 const debugFeatures: DebugFeatures = {
   insecureScheduleTesting: true,
+  allowCreatingExpiredFidelityBond: true,
 }
 
 type DebugFeature = keyof DebugFeatures
