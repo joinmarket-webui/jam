@@ -16,6 +16,11 @@ const displayMonth = (date: Date, locale: string = 'en-US') => {
   return getOrCreateMonthFormatter(locale).format(date)
 }
 
+// exported for tests only
+export const _minMonth = (year: number, yearsRange: fb.YearsRange, now = new Date()): number => {
+  return year > now.getUTCFullYear() + yearsRange.min ? 1 : now.getUTCMonth() + 1 + 1
+}
+
 interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
   yearsRange?: fb.YearsRange
@@ -46,10 +51,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
       .map((_, index) => index + currentYear + extra)
   }, [_yearsRange, currentYear, currentMonth])
 
-  const minMonth = useMemo(() => {
-    // 'minMonth' can be `13` - which means it never is valid and user must adapt 'year'.
-    return lockdateYear > currentYear + _yearsRange.min ? 1 : currentMonth + 1
-  }, [lockdateYear, currentYear, currentMonth, _yearsRange])
+  const minMonth = useMemo(() => _minMonth(lockdateYear, _yearsRange, _now), [lockdateYear, _yearsRange, _now])
 
   const selectableMonth = useMemo(() => {
     return Array(12)

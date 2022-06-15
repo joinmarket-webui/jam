@@ -5,7 +5,7 @@ import { render, screen } from '../../testUtils'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './fb_utils'
 
-import LockdateForm from './LockdateForm'
+import LockdateForm, { _minMonth } from './LockdateForm'
 
 describe('<LockdateForm />', () => {
   const now = new Date(Date.UTC(2009, 0, 3))
@@ -75,5 +75,30 @@ describe('<LockdateForm />', () => {
 
     act(() => user.selectOptions(monthDropdown, [`${currentMonth}`]))
     expect(selectedLockdate).toBe(expectedLockdate) // select lockdate has not changed
+  })
+
+  describe('_minMonth', () => {
+    const yearsRange = fb.toYearsRange(0, 10)
+    const yearsRangeMinusOne = fb.toYearsRange(-1, 10)
+    const yearsRangePlusOne = fb.toYearsRange(1, 10)
+
+    const year = 2009
+    const january = new Date(Date.UTC(year, 0))
+    const july = new Date(Date.UTC(year, 6))
+    const december = new Date(Date.UTC(year, 11))
+
+    it('should calculate min month correctly', () => {
+      expect(_minMonth(2009, yearsRange, january)).toBe(2)
+      expect(_minMonth(2009, yearsRange, july)).toBe(8)
+      expect(_minMonth(2009, yearsRange, december)).toBe(13)
+
+      expect(_minMonth(2009, yearsRangeMinusOne, january)).toBe(1)
+      expect(_minMonth(2009, yearsRangeMinusOne, july)).toBe(1)
+      expect(_minMonth(2009, yearsRangeMinusOne, december)).toBe(1)
+
+      expect(_minMonth(2009, yearsRangePlusOne, january)).toBe(2) // of next year
+      expect(_minMonth(2009, yearsRangePlusOne, july)).toBe(8) // of next year
+      expect(_minMonth(2009, yearsRangePlusOne, december)).toBe(13) // of next year
+    })
   })
 })
