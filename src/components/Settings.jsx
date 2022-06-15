@@ -123,7 +123,7 @@ export default function Settings({ stopWallet }) {
         if (res.ok || res.status === 401) {
           stopWallet()
         } else if (!res.ok) {
-          Api.Helper.throwError(res)
+          await Api.Helper.throwError(res)
         }
 
         setLockingWallet(false)
