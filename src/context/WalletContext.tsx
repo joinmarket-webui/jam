@@ -8,21 +8,19 @@ export interface CurrentWallet {
   token: string
 }
 
-export type Satoshi = number
-
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
 export type Utxo = {
   address: string
   path: string
   label: string
-  value: Satoshi
+  value: Api.AmountSats
   tries: number
   tries_remaining: number
   external: boolean
   mixdepth: number
   confirmations: number
   frozen: boolean
-  utxo: string
+  utxo: Api.UtxoId
   locktime?: string
 }
 

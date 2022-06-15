@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
+import { isFeatureEnabled } from '../constants/features'
 import Wallets from './Wallets'
 import CreateWallet from './CreateWallet'
 import Jam from './Jam'
@@ -10,6 +11,7 @@ import Earn from './Earn'
 import Receive from './Receive'
 import CurrentWalletMagic from './CurrentWalletMagic'
 import CurrentWalletAdvanced from './CurrentWalletAdvanced'
+import FidelityBond from './FidelityBond'
 import Settings from './Settings'
 import Navbar from './Navbar'
 import Layout from './Layout'
@@ -128,7 +130,10 @@ export default function App() {
                     <Route path={routes.send} element={<Send />} />
                     <Route path={routes.earn} element={<Earn />} />
                     <Route path={routes.receive} element={<Receive />} />
-                    <Route path={routes.settings} element={<Settings />} />
+                    <Route path={routes.settings} element={<Settings stopWallet={stopWallet} />} />
+                    {isFeatureEnabled('fidelityBonds') && (
+                      <Route path={routes.fidelityBonds} element={<FidelityBond />} />
+                    )}
                   </>
                 )}
               </Route>

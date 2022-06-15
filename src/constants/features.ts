@@ -1,11 +1,13 @@
 interface Features {
   skipWalletBackupConfirmation: boolean
+  fidelityBonds: boolean
 }
 
 const devMode = process.env.NODE_ENV === 'development'
 
 const features: Features = {
   skipWalletBackupConfirmation: devMode,
+  fidelityBonds: devMode,
 }
 
 type Feature = keyof Features

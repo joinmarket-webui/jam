@@ -12,7 +12,7 @@ import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
-import { btcToSats, SATS, formatBtc, formatSats } from '../utils'
+import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
 
@@ -237,16 +237,10 @@ export default function Send() {
   const [formIsValid, setFormIsValid] = useState(false)
 
   const balanceSummary = useBalanceSummary(walletInfo)
-  const accountBalanceOrNull = useMemo(() => {
-    const eligibleAccountBalances =
-      balanceSummary && balanceSummary.accountBalances.filter((it) => it.accountIndex === account)
-
-    if (!eligibleAccountBalances || eligibleAccountBalances.length !== 1) {
-      return null
-    }
-
-    return eligibleAccountBalances[0]
-  }, [balanceSummary, account])
+  const accountBalanceOrNull = useMemo(
+    () => (balanceSummary && balanceSummary.accountBalances[account]) || null,
+    [balanceSummary, account]
+  )
 
   useEffect(() => {
     if (
@@ -622,16 +616,16 @@ export default function Send() {
                 disabled={isOperationDisabled}
               >
                 {balanceSummary &&
-                  balanceSummary.accountBalances
+                  Object.values(balanceSummary.accountBalances)
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
-                    .map(({ accountIndex, totalBalance }) => (
+                    .map(({ accountIndex, totalBalance, calculatedTotalBalanceInSats }) => (
                       <option key={accountIndex} value={accountIndex}>
                         {settings.useAdvancedWalletMode
                           ? t('send.account_selector_option_dev_mode', { number: accountIndex })
                           : t('send.account_selector_option', { number: accountIndex })}{' '}
                         {settings.showBalance &&
                           (settings.unit === 'sats'
-                            ? `(${formatSats(btcToSats(totalBalance))} sats)`
+                            ? `(${formatSats(calculatedTotalBalanceInSats)} sats)`
                             : `(\u20BF${formatBtc(totalBalance)})`)}
                       </option>
                     ))}

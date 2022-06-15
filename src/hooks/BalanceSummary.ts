@@ -1,6 +1,10 @@
-import { useMemo } from 'react'
-import { btcToSats } from '../utils'
-import { WalletInfo, Satoshi, BalanceString, Utxos } from '../context/WalletContext'
+import { useEffect, useMemo, useState } from 'react'
+import { WalletInfo, BalanceString, Utxos, Utxo } from '../context/WalletContext'
+
+import { AmountSats } from '../libs/JmWalletApi'
+
+type Milliseconds = number
+type Seconds = number
 
 interface BalanceSummary {
   totalBalance: BalanceString
@@ -19,30 +23,57 @@ interface BalanceSummary {
 
 type BalanceSummarySupport = BalanceSummary & {
   /**
+   * @description Manually calculated total balance in sats.
+   */
+  calculatedTotalBalanceInSats: AmountSats
+  /**
    * @description Manually calculated available balance in sats.
    *   Same as {@link BalanceSummary.availableBalance} except address reuse is taken into account.
    */
-  calculatedAvailableBalanceInSats: Satoshi
+  calculatedAvailableBalanceInSats: AmountSats
   /**
    * @description Manually calculated frozen or locked balance in sats.
    */
-  calculatedFrozenOrLockedBalanceInSats: Satoshi
+  calculatedFrozenOrLockedBalanceInSats: AmountSats
 }
 
 type AccountBalanceSummary = BalanceSummarySupport & {
   accountIndex: number
 }
 
-export type WalletBalanceSummary = BalanceSummarySupport & {
-  accountBalances: AccountBalanceSummary[]
+type AccountBalances = {
+  [key: number]: AccountBalanceSummary
 }
 
-const calculateFrozenOrLockedBalance = (utxos: Utxos) => {
-  const frozenOrLockedUtxos = utxos.filter((utxo) => utxo.frozen || utxo.locktime)
+export type WalletBalanceSummary = BalanceSummarySupport & {
+  accountBalances: AccountBalances
+}
+
+export const isLocked = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
+  if (!utxo.locktime) return false
+
+  const pathAndLocktime = utxo.path.split(':')
+  if (pathAndLocktime.length !== 2) return false
+
+  const locktimeUnixTimestamp: Seconds = parseInt(pathAndLocktime[1], 10)
+  if (Number.isNaN(locktimeUnixTimestamp)) return false
+
+  return locktimeUnixTimestamp * 1_000 >= refTime
+}
+
+const calculateFrozenOrLockedBalance = (utxos: Utxos, refTime: Milliseconds = Date.now()) => {
+  const frozenOrLockedUtxos = utxos.filter((utxo) => utxo.frozen || isLocked(utxo, refTime))
   return frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
 }
 
-const useBalanceSummary = (currentWalletInfo: WalletInfo | null): WalletBalanceSummary | null => {
+const useBalanceSummary = (currentWalletInfo: WalletInfo | null, now?: Milliseconds): WalletBalanceSummary | null => {
+  const [refTime, setRefTime] = useState<Milliseconds>(now !== undefined ? now : Date.now())
+
+  useEffect(() => {
+    if (!currentWalletInfo) return
+    setRefTime(now !== undefined ? now : Date.now())
+  }, [now, currentWalletInfo])
+
   const balanceSummary = useMemo(() => {
     if (!currentWalletInfo) {
       return null
@@ -63,48 +94,60 @@ const useBalanceSummary = (currentWalletInfo: WalletInfo | null): WalletBalanceS
         return acc
       }, {} as { [key: string]: Utxos })
 
+      const totalCalculatedByAccount = Object.fromEntries(
+        Object.entries(utxosByAccount).map(([account, utxos]) => {
+          return [account, utxos.reduce((acc, utxo) => acc + utxo.value, 0)]
+        })
+      )
       const frozenOrLockedCalculatedByAccount = Object.fromEntries(
         Object.entries(utxosByAccount).map(([account, utxos]) => {
-          return [account, calculateFrozenOrLockedBalance(utxos)]
+          return [account, calculateFrozenOrLockedBalance(utxos, refTime)]
         })
       )
 
-      const accountsBalanceSummary = accounts.map(({ account, account_balance, available_balance }) => {
-        const accountBalanceSummary: BalanceSummary = {
-          totalBalance: account_balance,
-          availableBalance: available_balance,
-        }
+      const accountsBalanceSummary = accounts
+        .map(({ account, account_balance, available_balance }) => {
+          const accountBalanceSummary: BalanceSummary = {
+            totalBalance: account_balance,
+            availableBalance: available_balance,
+          }
+          const accountTotalCalculated: AmountSats = totalCalculatedByAccount[account] || 0
+          const accountFrozenOrLockedCalculated: AmountSats = frozenOrLockedCalculatedByAccount[account] || 0
+          const accountAvailableCalculated: AmountSats = accountTotalCalculated - accountFrozenOrLockedCalculated
+          return {
+            ...accountBalanceSummary,
+            calculatedTotalBalanceInSats: accountTotalCalculated,
+            calculatedFrozenOrLockedBalanceInSats: accountFrozenOrLockedCalculated,
+            calculatedAvailableBalanceInSats: accountAvailableCalculated,
+            accountIndex: parseInt(account, 10),
+          } as AccountBalanceSummary
+        })
+        .reduce((acc, curr) => ({ ...acc, [curr.accountIndex]: curr }), {} as AccountBalances)
 
-        const accountFrozenOrLockedCalculated = frozenOrLockedCalculatedByAccount[account] || 0
-        const accountAvailableCalculatedInSats =
-          btcToSats(accountBalanceSummary.totalBalance!) - accountFrozenOrLockedCalculated
-        return {
-          ...accountBalanceSummary,
-          calculatedAvailableBalanceInSats: accountAvailableCalculatedInSats,
-          calculatedFrozenOrLockedBalanceInSats: accountFrozenOrLockedCalculated,
-          accountIndex: parseInt(account, 10),
-        } as AccountBalanceSummary
-      })
+      const walletTotalCalculated: AmountSats = Object.values(totalCalculatedByAccount).reduce(
+        (acc, totalSats) => acc + totalSats,
+        0
+      )
 
-      const walletFrozenOrLockedCalculated = Object.values(frozenOrLockedCalculatedByAccount).reduce(
+      const walletFrozenOrLockedCalculated: AmountSats = Object.values(frozenOrLockedCalculatedByAccount).reduce(
         (acc, frozenOrLockedSats) => acc + frozenOrLockedSats,
         0
       )
 
-      const walletAvailableCalculatedInSats =
-        btcToSats(walletBalanceSummary.totalBalance!) - walletFrozenOrLockedCalculated
+      const walletAvailableCalculated = walletTotalCalculated - walletFrozenOrLockedCalculated
 
       return {
         ...walletBalanceSummary,
         accountBalances: accountsBalanceSummary,
-        calculatedAvailableBalanceInSats: walletAvailableCalculatedInSats,
+        calculatedTotalBalanceInSats: walletTotalCalculated,
         calculatedFrozenOrLockedBalanceInSats: walletFrozenOrLockedCalculated,
+        calculatedAvailableBalanceInSats: walletAvailableCalculated,
       }
     } catch (e) {
       console.warn('"useBalanceSummary" hook cannot determine balance format', e)
       return null
     }
-  }, [currentWalletInfo])
+  }, [currentWalletInfo, refTime])
 
   return balanceSummary
 }

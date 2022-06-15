@@ -1,7 +1,14 @@
 {
   "global": {
+    "loading": "Loading",
+    "button_copy_text": "Copy",
+    "button_copy_text_confirmed": "Copied",
+    "next": "Next",
     "back": "Back",
     "close": "Close"
+  },
+  "app": {
+    "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "navbar": {
     "title": "Jam",
@@ -12,9 +19,6 @@
     "joining_in_progress": "Joining",
     "menu_mobile": "Menu",
     "menu_mobile_settings": "Settings"
-  },
-  "app": {
-    "alert_no_connection": "No connection to backend: {{ connectionError }}"
   },
   "footer": {
     "warning": "This is beta software.<br /><1>Read this before using.</1>",
@@ -68,12 +72,10 @@
       "button_locking": "Locking",
       "button_unlocking": "Unlocking",
       "feedback_missing_password": "Please set the wallet's password.",
-      "modal_lock_wallet_title": "Confirm locking",
+      "modal_lock_wallet_title": "Lock Wallet",
       "modal_lock_wallet_maker_running_text": "Earn is active. Locking the wallet will stop the service.",
       "modal_lock_wallet_coinjoin_in_progress_text": "A collaborative transaction is currently in progress. Locking the wallet will stop the service.",
-      "modal_lock_wallet_alternative_action_text": "Alternatively, just close the window to log out.",
-      "modal_lock_wallet_button_confirm": "Yes, lock wallet",
-      "modal_lock_wallet_button_cancel": "Cancel"
+      "modal_lock_wallet_alternative_action_text": "You can close the browser window to let it run in the background."
     }
   },
   "create_wallet": {
@@ -151,12 +153,18 @@
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
+    "button_lock_wallet": "Lock wallet",
+    "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
+    "button_create_wallet": "Create new wallet",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "github": "GitHub",
     "telegram": "Telegram",
-    "jm_twitter": "JoinMarket Twitter"
+    "jm_twitter": "JoinMarket Twitter",
+    "confirm_locking_modal_title": "Lock Wallet",
+    "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
+    "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background."
   },
   "send": {
     "loading": "Loading",
@@ -271,6 +279,17 @@
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
   },
+  "fidelity_bond": {
+    "title": "Fidelity Bonds (Experimental)",
+    "subtitle": "Fidelity Bonds prevent Sybil attacks by deliberately increasing the cost of creating cryptographic identities. Creating a fidelity bond will increase your chances of being picked for a collaborative transaction.",
+    "text_maker_running": "Earn is active. Stop the service in order to create a Fidelity Bond.",
+    "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
+    "create_form": {
+      "confirmation_toggle_title": "I have reviewed my inputs carefully",
+      "confirmation_toggle_subtitle": "I understand that the locked funds will be inaccessible for the given duration",
+      "button_create": "Create Fidelity Bond"
+    }
+  },
   "scheduler": {
     "title": "Jam Scheduler (Experimental)",
     "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of yourself and others. Every scheduled transaction is a collaborative transaction. The scheduler will use all available funds that aren't frozen.",
@@ -299,5 +318,9 @@
       "hint_missing_confirmations": "The scheduler requires one of your UTXOs to have <2>{{ minConfirmations }}</2> or more confirmations. Wait for <6>{{ amountOfMissingConfirmations }}</6> more block(s).",
       "hint_missing_overall_retries": "You've tried running the scheduler unsuccessfully too many times in a row. For security reasons, you need a fresh UTXO to try again. See <2>the docs</2> for more information."
     }
+  },
+  "modal": {
+    "confirm_button_accept": "Confirm",
+    "confirm_button_reject": "Cancel"
   }
 }

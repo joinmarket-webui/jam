@@ -2,41 +2,13 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
+import { ConfirmModal } from './Modal'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { routes } from '../constants/routes'
 import styles from './Wallet.module.css'
-
-function ConfirmModal({ show = false, onHide, title, body, footer }) {
-  return (
-    <rb.Modal show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
-      <rb.Modal.Header closeButton>
-        <rb.Modal.Title>{title}</rb.Modal.Title>
-      </rb.Modal.Header>
-      <rb.Modal.Body>{body}</rb.Modal.Body>
-      <rb.Modal.Footer>{footer}</rb.Modal.Footer>
-    </rb.Modal>
-  )
-}
-
-function ConfirmLockModal({ show = false, body, onHide, onConfirm }) {
-  const { t } = useTranslation()
-
-  const title = t('wallets.wallet_preview.modal_lock_wallet_title')
-  const footer = (
-    <>
-      <rb.Button variant="outline-dark" onClick={onHide}>
-        {t('wallets.wallet_preview.modal_lock_wallet_button_cancel')}
-      </rb.Button>
-      <rb.Button variant="dark" onClick={onConfirm}>
-        {t('wallets.wallet_preview.modal_lock_wallet_button_confirm')}
-      </rb.Button>
-    </>
-  )
-  return <ConfirmModal show={show} onHide={onHide} title={title} body={body} footer={footer} />
-}
 
 const WalletLockForm = ({ walletName, lockWallet }) => {
   const { t } = useTranslation()
@@ -145,7 +117,6 @@ export default function Wallet({
 }) {
   const { t } = useTranslation()
   const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
-  const [confirmLockBody, setConfirmLockBody] = useState(<></>)
 
   const navigate = useNavigate()
 
@@ -243,20 +214,6 @@ export default function Wallet({
   )
 
   useEffect(() => {
-    const serviceRunningInfoText =
-      (makerRunning && t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')) ||
-      (coinjoinInProgress && t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text'))
-
-    setConfirmLockBody(
-      <>
-        {serviceRunningInfoText}
-        {serviceRunningInfoText ? ' ' : ''}
-        {t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}
-      </>
-    )
-  }, [makerRunning, coinjoinInProgress, t])
-
-  useEffect(() => {
     if (!currentWallet) {
       setShowLockConfirmModal(false)
     }
@@ -274,13 +231,18 @@ export default function Wallet({
 
   return (
     <>
-      <ConfirmLockModal
-        show={showLockConfirmModal}
-        body={confirmLockBody}
+      <ConfirmModal
+        isShown={showLockConfirmModal}
+        title={t('wallets.wallet_preview.modal_lock_wallet_title')}
+        body={
+          (makerRunning
+            ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
+            : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
+          ' ' +
+          t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')
+        }
+        onCancel={() => setShowLockConfirmModal(false)}
         onConfirm={onLockConfirmed}
-        onHide={() => {
-          setShowLockConfirmModal(false)
-        }}
       />
       <rb.Card {...props}>
         <rb.Card.Body>

@@ -16,8 +16,12 @@ type ApiToken = string
 type WalletName = string
 
 type Mixdepth = number
-type AmountSats = BigInt
-type BitcoinAddress = string
+export type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
+export type BitcoinAddress = string
+
+type Vout = number
+type TxId = string
+export type UtxoId = `${TxId}:${Vout}`
 
 type WithWalletName = {
   walletName: WalletName
@@ -29,9 +33,9 @@ type WithMixdepth = {
 type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 type YYYY = `2${Digit}${Digit}${Digit}`
 type MM = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12'
-type Locktime = `${YYYY}-${MM}`
-type WithLocktime = {
-  locktime: Locktime
+export type Lockdate = `${YYYY}-${MM}`
+type WithLockdate = {
+  lockdate: Lockdate
 }
 
 interface ApiRequestContext {
@@ -83,7 +87,7 @@ interface DoCoinjoinRequest {
 }
 
 interface FreezeRequest {
-  utxo: string
+  utxo: UtxoId
   freeze: boolean
 }
 
@@ -147,8 +151,8 @@ const getAddressNew = async ({ token, signal, walletName, mixdepth }: WalletRequ
   })
 }
 
-const getAddressTimelockNew = async ({ token, signal, walletName, locktime }: WalletRequestContext & WithLocktime) => {
-  return await fetch(`${basePath()}/v1/wallet/${walletName}/address/timelock/new/${locktime}`, {
+const getAddressTimelockNew = async ({ token, signal, walletName, lockdate }: WalletRequestContext & WithLockdate) => {
+  return await fetch(`${basePath()}/v1/wallet/${walletName}/address/timelock/new/${lockdate}`, {
     headers: { ...Authorization(token) },
     signal,
   })

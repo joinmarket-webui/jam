@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
@@ -63,8 +63,10 @@ const Jar = ({ accountIndex, balance, fill, onClick }) => {
 
 const Jars = ({ accountBalances, totalBalance, onClick }) => {
   const { t } = useTranslation()
-
-  const sortedAccountBalances = (accountBalances || []).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  const sortedAccountBalances = useMemo(() => {
+    if (!accountBalances) return []
+    return Object.values(accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  }, [accountBalances])
 
   // Classifies the account balance into one of four groups:
   // - More than half of the total balance

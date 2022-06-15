@@ -7,6 +7,7 @@ import Alert from './Alert'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo } from '../context/ServiceInfoContext'
+import { isLocked } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
 
 const Utxo = ({ utxo, ...props }) => {
@@ -21,7 +22,7 @@ const Utxo = ({ utxo, ...props }) => {
   const isOperationEnabled = useCallback(() => {
     const noServiceIsRunning = serviceInfo && !serviceInfo.makerRunning && !serviceInfo.coinjoinInProgress
 
-    const isUnfreezeEnabled = !utxo.locktime || new Date(utxo.locktime).getTime() < Date.now()
+    const isUnfreezeEnabled = !isLocked(utxo)
     const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
 
     return noServiceIsRunning && allowedToExecute

@@ -317,12 +317,12 @@ describe('<Wallet />', () => {
       // modal appeared
       expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title')).toBeInTheDocument()
       expect(screen.getByText(expectedModalBody)).toBeInTheDocument()
-      expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_cancel')).toBeInTheDocument()
-      expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_confirm')).toBeInTheDocument()
+      expect(screen.getByText('modal.confirm_button_accept')).toBeInTheDocument()
+      expect(screen.getByText('modal.confirm_button_reject')).toBeInTheDocument()
 
       act(() => {
         // click on the modal's "cancel" button
-        const lockWalletButton = screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_cancel')
+        const lockWalletButton = screen.getByText('modal.confirm_button_reject')
         user.click(lockWalletButton)
       })
       await waitForElementToBeRemoved(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title'))
@@ -339,7 +339,7 @@ describe('<Wallet />', () => {
 
       act(() => {
         // click on the modal's "confirm" button
-        const lockWalletButton = screen.getByText('wallets.wallet_preview.modal_lock_wallet_button_confirm')
+        const lockWalletButton = screen.getByText('modal.confirm_button_accept')
         user.click(lockWalletButton)
       })
       await waitForElementToBeRemoved(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title'))
