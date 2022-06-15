@@ -96,8 +96,7 @@ export default function FidelityBond() {
   )
 
   const [alert, setAlert] = useState<AlertWithMessage | null>(null)
-  const [isInitializing, setIsInitializing] = useState(true)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
   const [isInitiateTxSuccess, setIsInitiateTxSuccess] = useState(false)
   const [initiateTxError, setInitiateTxError] = useState<unknown>(undefined)
@@ -108,12 +107,6 @@ export default function FidelityBond() {
   const activeFidelityBonds = useMemo(() => fidelityBonds?.filter((it) => isLocked(it)), [fidelityBonds])
 
   useEffect(() => {
-    if (!currentWallet) {
-      setAlert({ variant: 'danger', message: t('current_wallet.error_loading_failed') })
-      setIsInitializing(false)
-      return
-    }
-
     const abortCtrl = new AbortController()
 
     setAlert(null)
@@ -125,10 +118,7 @@ export default function FidelityBond() {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
       })
       .finally(() => {
-        if (abortCtrl.signal.aborted) return
-
-        setIsLoading(false)
-        setIsInitializing(false)
+        !abortCtrl.signal.aborted && setIsLoading(false)
       })
 
     return () => abortCtrl.abort()
@@ -211,7 +201,7 @@ export default function FidelityBond() {
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
       <div>
-        {isInitializing || isLoading ? (
+        {isLoading ? (
           <div className="d-flex justify-content-center align-items-center">
             <rb.Spinner animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             {t('global.loading')}
