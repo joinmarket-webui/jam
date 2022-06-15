@@ -21,6 +21,15 @@ export const _minMonth = (year: number, yearsRange: fb.YearsRange, now = new Dat
   return year > now.getUTCFullYear() + yearsRange.min ? 1 : now.getUTCMonth() + 1 + 1
 }
 
+// exported for tests only
+export const _selectableYears = (yearsRange: fb.YearsRange, now = new Date()): number[] => {
+  const years = yearsRange.max - yearsRange.min
+  const extra = yearsRange.min + (now.getUTCMonth() === 11 ? 1 : 0)
+  return Array(years)
+    .fill('')
+    .map((_, index) => index + now.getUTCFullYear() + extra)
+}
+
 interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
   yearsRange?: fb.YearsRange
@@ -43,13 +52,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
   const [lockdateYear, setLockdateYear] = useState(initialYear)
   const [lockdateMonth, setLockdateMonth] = useState(initialMonth)
 
-  const selectableYears = useMemo(() => {
-    const years = _yearsRange.max - _yearsRange.min
-    const extra = _yearsRange.min + (currentMonth === 12 ? 1 : 0)
-    return Array(years)
-      .fill('')
-      .map((_, index) => index + currentYear + extra)
-  }, [_yearsRange, currentYear, currentMonth])
+  const selectableYears = useMemo(() => _selectableYears(_yearsRange, _now), [_yearsRange, _now])
 
   const minMonth = useMemo(() => _minMonth(lockdateYear, _yearsRange, _now), [lockdateYear, _yearsRange, _now])
 

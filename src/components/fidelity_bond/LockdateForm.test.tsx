@@ -5,7 +5,7 @@ import { render, screen } from '../../testUtils'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './fb_utils'
 
-import LockdateForm, { _minMonth } from './LockdateForm'
+import LockdateForm, { _minMonth, _selectableYears } from './LockdateForm'
 
 describe('<LockdateForm />', () => {
   const now = new Date(Date.UTC(2009, 0, 3))
@@ -82,23 +82,46 @@ describe('<LockdateForm />', () => {
     const yearsRangeMinusOne = fb.toYearsRange(-1, 10)
     const yearsRangePlusOne = fb.toYearsRange(1, 10)
 
-    const year = 2009
-    const january = new Date(Date.UTC(year, 0))
-    const july = new Date(Date.UTC(year, 6))
-    const december = new Date(Date.UTC(year, 11))
+    const january2009 = new Date(Date.UTC(2009, 0))
+    const july2009 = new Date(Date.UTC(2009, 6))
+    const december2009 = new Date(Date.UTC(2009, 11))
 
     it('should calculate min month correctly', () => {
-      expect(_minMonth(2009, yearsRange, january)).toBe(2)
-      expect(_minMonth(2009, yearsRange, july)).toBe(8)
-      expect(_minMonth(2009, yearsRange, december)).toBe(13)
+      expect(_minMonth(2009, yearsRange, january2009)).toBe(2)
+      expect(_minMonth(2009, yearsRange, july2009)).toBe(8)
+      expect(_minMonth(2009, yearsRange, december2009)).toBe(13)
 
-      expect(_minMonth(2009, yearsRangeMinusOne, january)).toBe(1)
-      expect(_minMonth(2009, yearsRangeMinusOne, july)).toBe(1)
-      expect(_minMonth(2009, yearsRangeMinusOne, december)).toBe(1)
+      expect(_minMonth(2009, yearsRangeMinusOne, january2009)).toBe(1)
+      expect(_minMonth(2009, yearsRangeMinusOne, july2009)).toBe(1)
+      expect(_minMonth(2009, yearsRangeMinusOne, december2009)).toBe(1)
 
-      expect(_minMonth(2009, yearsRangePlusOne, january)).toBe(2) // of next year
-      expect(_minMonth(2009, yearsRangePlusOne, july)).toBe(8) // of next year
-      expect(_minMonth(2009, yearsRangePlusOne, december)).toBe(13) // of next year
+      expect(_minMonth(2009, yearsRangePlusOne, january2009)).toBe(2) // of next year
+      expect(_minMonth(2009, yearsRangePlusOne, july2009)).toBe(8) // of next year
+      expect(_minMonth(2009, yearsRangePlusOne, december2009)).toBe(13) // of next year
+    })
+  })
+
+  describe('_selectableYears', () => {
+    const yearsRange = fb.toYearsRange(0, 2)
+    const yearsRangeMinusOne = fb.toYearsRange(-1, 2)
+    const yearsRangePlusOne = fb.toYearsRange(1, 2)
+
+    const january2009 = new Date(Date.UTC(2009, 0))
+    const july2009 = new Date(Date.UTC(2009, 6))
+    const december2009 = new Date(Date.UTC(2009, 11))
+
+    it('should calculate selectable years correctly', () => {
+      expect(_selectableYears(yearsRange, january2009)).toEqual([2009, 2010])
+      expect(_selectableYears(yearsRange, july2009)).toEqual([2009, 2010])
+      expect(_selectableYears(yearsRange, december2009)).toEqual([2010, 2011])
+
+      expect(_selectableYears(yearsRangeMinusOne, january2009)).toEqual([2008, 2009, 2010])
+      expect(_selectableYears(yearsRangeMinusOne, july2009)).toEqual([2008, 2009, 2010])
+      expect(_selectableYears(yearsRangeMinusOne, december2009)).toEqual([2009, 2010, 2011])
+
+      expect(_selectableYears(yearsRangePlusOne, january2009)).toEqual([2010])
+      expect(_selectableYears(yearsRangePlusOne, july2009)).toEqual([2010])
+      expect(_selectableYears(yearsRangePlusOne, december2009)).toEqual([2011])
     })
   })
 })
