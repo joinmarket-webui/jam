@@ -126,11 +126,11 @@ export default function Settings({ stopWallet }) {
           Api.Helper.throwError(res)
         }
 
+        setLockingWallet(false)
         navigate(destination)
       } catch (e) {
-        setAlert({ variant: 'danger', dismissible: false, message: e.message })
-      } finally {
         setLockingWallet(false)
+        setAlert({ variant: 'danger', dismissible: false, message: e.message })
       }
     },
     [currentWallet, stopWallet, navigate, serviceInfo]
