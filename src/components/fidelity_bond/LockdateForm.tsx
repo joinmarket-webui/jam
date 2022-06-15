@@ -16,9 +16,37 @@ const displayMonth = (date: Date, locale: string = 'en-US') => {
   return getOrCreateMonthFormatter(locale).format(date)
 }
 
+type Month = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12
+
 // exported for tests only
-export const _minMonth = (year: number, yearsRange: fb.YearsRange, now = new Date()): number => {
-  return year > now.getUTCFullYear() + yearsRange.min ? 1 : now.getUTCMonth() + 1 + 1
+export const _minMonth = (year: number, yearsRange: fb.YearsRange, now = new Date()): Month | 13 => {
+  if (year > now.getUTCFullYear() + yearsRange.min) return 1 as Month
+  if (year < now.getUTCFullYear() + yearsRange.min) return 13
+  return (now.getUTCMonth() + 1 + 1) as Month | 13
+}
+
+type SelectableMonth = {
+  value: Month
+  displayValue: string
+  disabled: boolean
+}
+
+// exported for tests only
+export const _selectableMonths = (
+  year: number,
+  yearsRange: fb.YearsRange,
+  now = new Date(),
+  locale?: string
+): SelectableMonth[] => {
+  const minMonth = _minMonth(year, yearsRange, now)
+  return Array(12)
+    .fill('')
+    .map((_, index) => (index + 1) as Month)
+    .map((month) => ({
+      value: month,
+      displayValue: displayMonth(new Date(Date.UTC(year, month - 1, 1)), locale),
+      disabled: month < minMonth,
+    }))
 }
 
 // exported for tests only
@@ -41,39 +69,28 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
   const _now = useMemo<Date>(() => now || new Date(), [now])
   const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
 
-  const currentYear = useMemo(() => _now.getUTCFullYear(), [_now])
-  const currentMonth = useMemo(() => _now.getUTCMonth() + 1, [_now]) // utc month ranges from [0, 11]
-
   const initialValue = useMemo<Api.Lockdate>(() => fb.lockdate.initial(_now, _yearsRange), [_now, _yearsRange])
   const initialDate = useMemo(() => new Date(fb.lockdate.toTimestamp(initialValue)), [initialValue])
   const initialYear = useMemo(() => initialDate.getUTCFullYear(), [initialDate])
-  const initialMonth = useMemo(() => initialDate.getUTCMonth() + 1, [initialDate])
+  const initialMonth = useMemo(() => (initialDate.getUTCMonth() + 1) as Month, [initialDate])
 
   const [lockdateYear, setLockdateYear] = useState(initialYear)
   const [lockdateMonth, setLockdateMonth] = useState(initialMonth)
 
   const selectableYears = useMemo(() => _selectableYears(_yearsRange, _now), [_yearsRange, _now])
-
-  const minMonth = useMemo(() => _minMonth(lockdateYear, _yearsRange, _now), [lockdateYear, _yearsRange, _now])
-
-  const selectableMonth = useMemo(() => {
-    return Array(12)
-      .fill('')
-      .map((_, index) => index + 1)
-      .map((month) => ({
-        value: month,
-        displayValue: displayMonth(new Date(Date.UTC(2009, month - 1, 1)), i18n.resolvedLanguage || i18n.language),
-        disabled: month < minMonth,
-      }))
-  }, [i18n, minMonth])
-
-  const isLockdateYearValid = useMemo(
-    () => lockdateYear >= currentYear + _yearsRange.min && lockdateYear <= currentYear + _yearsRange.max,
-    [lockdateYear, currentYear, _yearsRange]
+  const selectableMonths = useMemo(
+    () => _selectableMonths(lockdateYear, _yearsRange, _now, i18n.resolvedLanguage || i18n.language),
+    [lockdateYear, _yearsRange, _now, i18n]
   )
+
+  const isLockdateYearValid = useMemo(() => selectableYears.includes(lockdateYear), [lockdateYear, selectableYears])
   const isLockdateMonthValid = useMemo(
-    () => lockdateMonth >= minMonth && lockdateMonth <= 12,
-    [lockdateMonth, minMonth]
+    () =>
+      selectableMonths
+        .filter((it) => !it.disabled)
+        .map((it) => it.value)
+        .includes(lockdateMonth),
+    [lockdateMonth, selectableMonths]
   )
 
   useEffect(() => {
@@ -121,12 +138,12 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
             </rb.Form.Label>
             <rb.Form.Select
               defaultValue={initialMonth}
-              onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10))}
+              onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10) as Month)}
               required
               isInvalid={!isLockdateMonthValid}
               data-testid="select-lockdate-month"
             >
-              {selectableMonth.map((it) => (
+              {selectableMonths.map((it) => (
                 <option key={it.value} value={it.value} disabled={it.disabled}>
                   {it.displayValue}
                 </option>

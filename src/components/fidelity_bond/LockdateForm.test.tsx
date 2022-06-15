@@ -5,7 +5,7 @@ import { render, screen } from '../../testUtils'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './fb_utils'
 
-import LockdateForm, { _minMonth, _selectableYears } from './LockdateForm'
+import LockdateForm, { _minMonth, _selectableMonths, _selectableYears } from './LockdateForm'
 
 describe('<LockdateForm />', () => {
   const now = new Date(Date.UTC(2009, 0, 3))
@@ -95,9 +95,80 @@ describe('<LockdateForm />', () => {
       expect(_minMonth(2009, yearsRangeMinusOne, july2009)).toBe(1)
       expect(_minMonth(2009, yearsRangeMinusOne, december2009)).toBe(1)
 
-      expect(_minMonth(2009, yearsRangePlusOne, january2009)).toBe(2) // of next year
-      expect(_minMonth(2009, yearsRangePlusOne, july2009)).toBe(8) // of next year
-      expect(_minMonth(2009, yearsRangePlusOne, december2009)).toBe(13) // of next year
+      expect(_minMonth(2009, yearsRangePlusOne, january2009)).toBe(13)
+      expect(_minMonth(2009, yearsRangePlusOne, july2009)).toBe(13)
+      expect(_minMonth(2009, yearsRangePlusOne, december2009)).toBe(13)
+    })
+  })
+
+  describe('_selectableMonth', () => {
+    const yearsRange = fb.toYearsRange(0, 2)
+
+    const january2009 = new Date(Date.UTC(2009, 0))
+    const july2009 = new Date(Date.UTC(2009, 6))
+    const december2009 = new Date(Date.UTC(2009, 11))
+
+    it('should display month name', () => {
+      const selectableMonths = _selectableMonths(2009, yearsRange, january2009)
+      expect(selectableMonths).toHaveLength(12)
+
+      expect(selectableMonths[0].displayValue).toBe('January')
+      expect(selectableMonths[11].displayValue).toBe('December')
+    })
+
+    it('should set disabled flag correctly for january', () => {
+      const selectableMonths2008 = _selectableMonths(2008, yearsRange, january2009)
+      expect(selectableMonths2008).toHaveLength(12)
+      expect(selectableMonths2008[0].disabled).toBe(true)
+      expect(selectableMonths2008[11].disabled).toBe(true)
+
+      const selectableMonths2009 = _selectableMonths(2009, yearsRange, january2009)
+      expect(selectableMonths2009).toHaveLength(12)
+      expect(selectableMonths2009[0].disabled).toBe(true)
+      expect(selectableMonths2009[1].disabled).toBe(false)
+      expect(selectableMonths2009[11].disabled).toBe(false)
+
+      const selectableMonths2010 = _selectableMonths(2010, yearsRange, january2009)
+      expect(selectableMonths2010).toHaveLength(12)
+      expect(selectableMonths2010[0].disabled).toBe(false)
+      expect(selectableMonths2010[11].disabled).toBe(false)
+    })
+
+    it('should set disabled flag correctly for july', () => {
+      const selectableMonths2008 = _selectableMonths(2008, yearsRange, july2009)
+      expect(selectableMonths2008).toHaveLength(12)
+      expect(selectableMonths2008[0].disabled).toBe(true)
+      expect(selectableMonths2008[11].disabled).toBe(true)
+
+      const selectableMonths2009 = _selectableMonths(2009, yearsRange, july2009)
+      expect(selectableMonths2009).toHaveLength(12)
+      expect(selectableMonths2009[0].disabled).toBe(true)
+      expect(selectableMonths2009[1].disabled).toBe(true)
+      expect(selectableMonths2009[6].disabled).toBe(true)
+      expect(selectableMonths2009[7].disabled).toBe(false)
+      expect(selectableMonths2009[11].disabled).toBe(false)
+
+      const selectableMonths2010 = _selectableMonths(2010, yearsRange, july2009)
+      expect(selectableMonths2010).toHaveLength(12)
+      expect(selectableMonths2010[0].disabled).toBe(false)
+      expect(selectableMonths2010[11].disabled).toBe(false)
+    })
+
+    it('should set disabled flag correctly for december', () => {
+      const selectableMonths2008 = _selectableMonths(2008, yearsRange, december2009)
+      expect(selectableMonths2008).toHaveLength(12)
+      expect(selectableMonths2008[0].disabled).toBe(true)
+      expect(selectableMonths2008[11].disabled).toBe(true)
+
+      const selectableMonths2009 = _selectableMonths(2009, yearsRange, december2009)
+      expect(selectableMonths2009).toHaveLength(12)
+      expect(selectableMonths2009[0].disabled).toBe(true)
+      expect(selectableMonths2009[11].disabled).toBe(true)
+
+      const selectableMonths2010 = _selectableMonths(2010, yearsRange, december2009)
+      expect(selectableMonths2010).toHaveLength(12)
+      expect(selectableMonths2010[0].disabled).toBe(false)
+      expect(selectableMonths2010[11].disabled).toBe(false)
     })
   })
 
