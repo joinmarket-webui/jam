@@ -18,24 +18,20 @@ const displayMonth = (date: Date, locale: string = 'en-US') => {
 
 interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
-  initialValue?: Api.Lockdate
   yearsRange?: fb.YearsRange
   now?: Date
 }
 
-const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormProps) => {
+const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
   const { i18n } = useTranslation()
   const _now = useMemo<Date>(() => now || new Date(), [now])
   const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
-  const _initalValue = useMemo<Api.Lockdate>(
-    () => initialValue || fb.lockdate.initial(_now, _yearsRange),
-    [initialValue, _now, _yearsRange]
-  )
 
   const currentYear = useMemo(() => _now.getUTCFullYear(), [_now])
   const currentMonth = useMemo(() => _now.getUTCMonth() + 1, [_now]) // utc month ranges from [0, 11]
 
-  const initialDate = useMemo(() => new Date(fb.lockdate.toTimestamp(_initalValue)), [_initalValue])
+  const initialValue = useMemo<Api.Lockdate>(() => fb.lockdate.initial(_now, _yearsRange), [_now, _yearsRange])
+  const initialDate = useMemo(() => new Date(fb.lockdate.toTimestamp(initialValue)), [initialValue])
   const initialYear = useMemo(() => initialDate.getUTCFullYear(), [initialDate])
   const initialMonth = useMemo(() => initialDate.getUTCMonth() + 1, [initialDate])
 
@@ -76,13 +72,12 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
   )
 
   useEffect(() => {
-    if (!isLockdateYearValid || !isLockdateMonthValid) {
+    if (isLockdateYearValid && isLockdateMonthValid) {
+      const timestamp = Date.UTC(lockdateYear, lockdateMonth - 1, 1)
+      onChange(fb.lockdate.fromTimestamp(timestamp))
+    } else {
       onChange(null)
-      return
     }
-
-    const timestamp = Date.UTC(lockdateYear, lockdateMonth - 1, 1)
-    onChange(fb.lockdate.fromTimestamp(timestamp))
   }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, onChange])
 
   return (
@@ -98,6 +93,7 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
               onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
               required
               isInvalid={!isLockdateYearValid}
+              data-testid="select-lockdate-year"
             >
               {selectableYears.map((year) => (
                 <option key={year} value={year}>
@@ -123,6 +119,7 @@ const LockdateForm = ({ onChange, now, yearsRange, initialValue }: LockdateFormP
               onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10))}
               required
               isInvalid={!isLockdateMonthValid}
+              data-testid="select-lockdate-month"
             >
               {selectableMonth.map((it) => (
                 <option key={it.value} value={it.value} disabled={it.disabled}>
