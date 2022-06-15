@@ -112,7 +112,10 @@
     "text_loading": "Loading",
     "button_deposit": "Receive",
     "button_withdraw": "Send",
-    "error_loading_failed": "Loading wallet failed."
+    "error_loading_failed": "Loading wallet failed.",
+    "jar_tooltip": "Look inside",
+    "jars_title": "Wallet distribution",
+    "jars_title_popover": "Todo: Description of what Jars (mixdepths) are."
   },
   "current_wallet_advanced": {
     "error_loading_utxos_failed": "Loading UTXOs failed.",

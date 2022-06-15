@@ -1,3 +1,18 @@
+.jars-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0 0.5rem 0 0;
+}
+
+.jars-title .info-icon {
+  color: var(--bs-gray-500);
+  border: 1px solid var(--bs-gray-500);
+  border-radius: 50%;
+}
+
 .jars-container {
   display: flex;
   flex-direction: column;
@@ -7,8 +22,15 @@
   color: var(--bs-body-color);
 }
 
-.jar-sprite {
+.jar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
+}
+
+.jar-sprite {
+  margin: 0 0 0.25rem 0;
 }
 
 .jar-index {
