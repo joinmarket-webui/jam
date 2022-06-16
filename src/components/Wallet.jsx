@@ -143,7 +143,7 @@ export default function Wallet({
 
         const { walletname: unlockedWalletName, token } = body
         startWallet(unlockedWalletName, token)
-        navigate('/wallet')
+        navigate(routes.wallet)
       } catch (e) {
         const message = e.message.replace('Wallet', walletName)
         setAlert({ variant: 'danger', dismissible: false, message })
