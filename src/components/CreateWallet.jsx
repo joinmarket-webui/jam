@@ -304,6 +304,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
           <div className="mb-2">
             <ToggleSwitch
               label={t('create_wallet.confirmation_toggle_reveal_info')}
+              checked={revealSensitiveInfo}
               onToggle={(isToggled) => {
                 setRevealSensitiveInfo(isToggled)
                 setSensitiveInfoWasRevealed(true)
@@ -313,6 +314,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
           <div className="mb-4">
             <ToggleSwitch
               label={t('create_wallet.confirmation_toggle_info_written_down')}
+              checked={userConfirmed}
               onToggle={(isToggled) => setUserConfirmed(isToggled)}
             />
           </div>
