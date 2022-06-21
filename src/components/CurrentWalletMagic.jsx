@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
@@ -43,6 +44,8 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
 
 export default function CurrentWalletMagic() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
@@ -62,6 +65,15 @@ export default function CurrentWalletMagic() {
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
   const onJarClicked = (accountIndex) => {
+    if (accountIndex === 0) {
+      const isEmpty = Number(balanceSummary?.accountBalances[accountIndex]?.totalBalance) === 0
+
+      if (isEmpty) {
+        navigate(routes.receive, { state: { account: accountIndex } })
+        return
+      }
+    }
+
     setSelectedAccountIndex(accountIndex)
     setIsAccountOverlayShown(true)
   }

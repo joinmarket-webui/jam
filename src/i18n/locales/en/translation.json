@@ -116,6 +116,7 @@
     "button_withdraw": "Send",
     "error_loading_failed": "Loading wallet failed.",
     "jar_tooltip": "Look inside",
+    "jar_tooltip_empty_jar_0": "Receive",
     "jars_title": "Wallet distribution",
     "jars_title_popover": "Todo: Description of what Jars (mixdepths) are."
   },

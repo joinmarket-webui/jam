@@ -13,6 +13,8 @@ const Jar = ({ accountIndex, balance, fill, onClick }) => {
   const [jarIsOpen, setJarIsOpen] = useState(false)
   const tooltipTarget = useRef(null)
 
+  const jarIsEmpty = parseInt(balance, 10) === 0
+
   const jarSymbol = ((fill) => {
     switch (fill) {
       case 1:
@@ -48,7 +50,9 @@ const Jar = ({ accountIndex, balance, fill, onClick }) => {
       >
         {(props) => (
           <rb.Tooltip id="jar-tooltip" {...props}>
-            {t('current_wallet.jar_tooltip')}
+            {accountIndex === 0 && jarIsEmpty
+              ? t('current_wallet.jar_tooltip_empty_jar_0')
+              : t('current_wallet.jar_tooltip')}
           </rb.Tooltip>
         )}
       </rb.Overlay>
