@@ -15,6 +15,15 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
+.button-jar-selector {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translate(0%, -50%);
+  padding: 0.2rem 0.5rem !important;
+  border: none !important;
+}
+
 .button-sweep {
   width: 6rem;
   height: 2rem;

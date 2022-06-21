@@ -74,6 +74,8 @@ const Jars = ({ accountBalances, totalBalance, onClick }) => {
   // - Not empty
   // - Empty
   const calculateFillLevel = (accountBalance, totalBalance) => {
+    if (!totalBalance) return 0
+
     if (accountBalance > totalBalance / 2) return 3
     if (accountBalance > totalBalance / 4) return 2
     if (accountBalance > 0) return 1

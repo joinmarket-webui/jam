@@ -1,0 +1,116 @@
+:global .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+:global .modal-dialog {
+  max-width: 45rem !important;
+}
+
+.modal :global .modal-content {
+  background-color: var(--bs-body-bg) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0px 0px 24px rgba(0, 0, 0, 0.25) !important;
+}
+
+.modal-header {
+  display: flex !important;
+  justify-content: flex-start !important;
+  background-color: transparent !important;
+  padding: 1.25rem !important;
+}
+
+.modal-title {
+  width: 100%;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: var(--bs-body-color) !important;
+}
+
+.modal-title > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title .cancel-button {
+  padding: 0 0 0 1rem;
+  color: var(--bs-body-color);
+  background-color: transparent !important;
+  border: none;
+}
+
+.modal-body {
+}
+
+.modal-footer {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1rem;
+  background-color: transparent !important;
+  padding: 1rem 1.25rem 1.25rem 1.25rem !important;
+}
+
+.modal-footer :global .btn {
+  flex-grow: 1;
+  min-height: 2.8rem;
+  font-weight: 500;
+  border-color: none !important;
+}
+
+.jars-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  color: var(--bs-body-color);
+}
+
+.jar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.jar-container.not-selectable {
+  color: var(--bs-gray-600);
+}
+
+.jar-sprite {
+  margin: 0 0 0.25rem 0;
+}
+
+.jar-index {
+  font-size: 0.8rem;
+  color: var(--bs-gray-600);
+}
+
+.jar-balance {
+  font-size: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+@media only screen and (min-width: 768px) {
+  .jars-container {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+}
+
+.selection-circle {
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid var(--bs-body-color);
+}
+
+.selection-circle-filled {
+  background-color: var(--bs-body-color);
+}
+
+.selection-circle-placeholder {
+  height: 1.25rem;
+  width: 1.25rem;
+}
