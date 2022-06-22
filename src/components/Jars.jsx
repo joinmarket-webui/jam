@@ -28,13 +28,19 @@ const Jars = ({ accountBalances, totalBalance, onClick }) => {
       </rb.OverlayTrigger>
       <div className={styles.jarsContainer}>
         {sortedAccountBalances.map((account) => {
+          const jarIsEmpty = parseInt(account.totalBalance, 10) === 0
+
           return (
             <OpenableJar
               key={account.accountIndex}
               index={account.accountIndex}
               balance={account.totalBalance}
               fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
-              tooltipText={t('current_wallet.jar_tooltip')}
+              tooltipText={
+                account.accountIndex === 0 && jarIsEmpty
+                  ? t('current_wallet.jar_tooltip_empty_jar_0')
+                  : t('current_wallet.jar_tooltip')
+              }
               onClick={() => onClick(account.accountIndex)}
             />
           )
