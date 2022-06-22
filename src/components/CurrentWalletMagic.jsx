@@ -129,7 +129,7 @@ export default function CurrentWalletMagic() {
               <ExtendedLink
                 to={routes.receive}
                 state={{ account: 0 }}
-                className="btn btn-outline-dark w-100"
+                className={`${styles['send-receive-button']} btn btn-outline-dark w-100`}
                 disabled={isLoading}
               >
                 <div className="d-flex justify-content-center align-items-center">
@@ -141,7 +141,11 @@ export default function CurrentWalletMagic() {
             <rb.Col>
               {/* Todo: Withdrawing needs to factor in the privacy levels as well.
               Depending on the mixdepth/account there will be different amounts available. */}
-              <ExtendedLink to={routes.send} className="btn btn-outline-dark w-100" disabled={isLoading}>
+              <ExtendedLink
+                to={routes.send}
+                className={`${styles['send-receive-button']} btn btn-outline-dark w-100`}
+                disabled={isLoading}
+              >
                 <div className="d-flex justify-content-center align-items-center">
                   <Sprite symbol="send" width="24" height="24" />
                   <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
