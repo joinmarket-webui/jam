@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
+import classnames from 'classnames/bind'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
@@ -198,7 +199,7 @@ export default function Send() {
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
-  const [sendFromJarSelectorShown, setSendFromJarSelectorShown] = useState(false)
+  const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
   const [destinationJar, setDestinationJar] = useState(null)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
@@ -602,14 +603,14 @@ export default function Send() {
 
         {!isLoading && balanceSummary && (
           <JarSelectorModal
-            isShown={sendFromJarSelectorShown}
+            isShown={destinationJarPickerShown}
             title={'Select a jar from your wallet to send the funds to.'}
             accountBalances={balanceSummary?.accountBalances}
             totalBalance={balanceSummary?.totalBalance}
             disabledJar={account}
-            onCancel={() => setSendFromJarSelectorShown(false)}
+            onCancel={() => setDestinationJarPickerShown(false)}
             onConfirm={(selectedJar) => {
-              setSendFromJarSelectorShown(false)
+              setDestinationJarPickerShown(false)
 
               const externalBranch = walletInfo.data.display.walletinfo.accounts[selectedJar].branches.find(
                 (branch) => {
@@ -724,10 +725,10 @@ export default function Send() {
                   <rb.Form.Control
                     name="destination"
                     placeholder={t('send.placeholder_recipient')}
-                    className={`${styles.input} slashed-zeroes`}
-                    value={
-                      destinationJar !== null ? `Jar #${destinationJar} (${destination || ''})` : destination || ''
-                    }
+                    className={classnames('slashed-zeroes', styles['input'], {
+                      [styles['jar-input']]: destinationJar !== null,
+                    })}
+                    value={destination || ''}
                     required
                     onChange={(e) => setDestination(e.target.value)}
                     isInvalid={destination !== null && !isValidAddress(destination)}
@@ -741,23 +742,25 @@ export default function Send() {
                         setDestinationJar(null)
                         setDestination(initialDestination)
                       } else {
-                        setSendFromJarSelectorShown(true)
+                        setDestinationJarPickerShown(true)
                       }
                     }}
                     disabled={isOperationDisabled}
                   >
                     {destinationJar !== null ? (
                       <div className="d-flex justify-content-center align-items-center">
-                        <div>
-                          <Sprite symbol="cancel" width="26" height="26" />
+                        <Sprite symbol="cancel" width="26" height="26" />
+                        <div className={styles['selected-jar-container']}>
+                          <Sprite symbol="jar-open-empty" width="28px" height="28px" />
+                          <span className={styles['selected-jar-index']}>{destinationJar}</span>
                         </div>
                       </div>
                     ) : (
                       <div className="d-flex justify-content-center align-items-center">
                         <Sprite
                           symbol="jar-closed-empty"
-                          width="24px"
-                          height="24px"
+                          width="28px"
+                          height="28px"
                           style={{ paddingBottom: '0.2rem' }}
                         />
                       </div>
