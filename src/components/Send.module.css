@@ -38,7 +38,13 @@ input[type='number'] {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 0.8rem;
-  font-weight: 300;
+}
+
+:root[data-theme='dark'] .button-jar-selector {
+  color: var(--bs-gray-800) !important;
+}
+:root[data-theme='dark'] .button-jar-selector:hover {
+  color: var(--bs-white) !important;
 }
 
 .button-sweep {

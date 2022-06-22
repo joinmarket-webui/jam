@@ -86,10 +86,9 @@ const SelectableJar = ({
 }: JarProps & SelectableJarProps) => {
   return (
     <div
-      className={cx('selectableJarContainer', {
-        selectable: isSelectable,
-        selected: isSelected,
-      })}
+      className={`${styles['selectableJarContainer']} ${isSelectable ? styles['selectable'] : ''} ${
+        isSelected ? styles['selected'] : ''
+      }`}
       onClick={() => isSelectable && onClick()}
     >
       <Jar index={index} balance={balance} fillLevel={fillLevel} />
