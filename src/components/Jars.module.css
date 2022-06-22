@@ -1,4 +1,4 @@
-.jars-title {
+.jarsTitle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7,13 +7,13 @@
   padding: 0 0.5rem 0 0;
 }
 
-.jars-title .info-icon {
+.jarsTitle .infoIcon {
   color: var(--bs-gray-500);
   border: 1px solid var(--bs-gray-500);
   border-radius: 50%;
 }
 
-.jars-container {
+.jarsContainer {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -22,28 +22,8 @@
   color: var(--bs-body-color);
 }
 
-.jar-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-}
-
-.jar-sprite {
-  margin: 0 0 0.25rem 0;
-}
-
-.jar-index {
-  font-size: 0.8rem;
-  color: var(--bs-gray-600);
-}
-
-.jar-balance {
-  font-size: 0.8rem;
-}
-
 @media only screen and (min-width: 768px) {
-  .jars-container {
+  .jarsContainer {
     flex-direction: row;
     gap: 1.5rem;
   }
