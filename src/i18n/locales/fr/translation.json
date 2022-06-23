@@ -193,8 +193,6 @@
     "button_copy_address": "Copier",
     "text_copy_address_confirmed": "Copié",
     "button_settings": "Paramètres",
-    "label_choose_account": "Choisissez un compte",
-    "account_selector_option_dev_mode": "Compte {{ number }}",
     "label_amount": "Montant à demander en sats",
     "feedback_invalid_amount": "Veuillez fournir un montant valide.",
     "button_new_address": "Obtenir une nouvelle adresse",

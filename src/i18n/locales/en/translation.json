@@ -214,8 +214,6 @@
     "button_copy_address": "Copy",
     "text_copy_address_confirmed": "Copied",
     "button_settings": "Advanced",
-    "label_choose_account": "Choose account",
-    "account_selector_option_dev_mode": "Account {{ number }}",
     "label_amount": "Amount to request in sats",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "button_new_address": "Get new address",
