@@ -164,16 +164,27 @@ export default function Receive() {
           )}
           <hr />
         </div>
-        <rb.Button variant="outline-dark" type="submit" disabled={isLoading} className="mt-2" style={{ width: '100%' }}>
-          {isLoading ? (
-            <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              {t('receive.text_getting_address')}
-            </div>
-          ) : (
-            t('receive.button_new_address')
-          )}
-        </rb.Button>
+
+        <div className="mt-2 d-flex justify-content-center">
+          <rb.Button
+            variant="outline-dark"
+            type="submit"
+            disabled={isLoading}
+            className="d-flex justify-content-center align-items-center"
+          >
+            {isLoading ? (
+              <>
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                {t('receive.text_getting_address')}
+              </>
+            ) : (
+              <>
+                <Sprite symbol="refresh" className="me-2" width="24" height="24" />
+                {t('receive.button_new_address')}
+              </>
+            )}
+          </rb.Button>
+        </div>
       </rb.Form>
     </div>
   )

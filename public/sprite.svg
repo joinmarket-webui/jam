@@ -245,4 +245,8 @@
         <line x1="10.6642" y1="10.75" x2="20.5637" y2="20.6495" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <line x1="20.5" y1="10.9142" x2="10.6005" y2="20.8137" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
+    <symbol id="refresh" fill="currentColor" viewBox="0 0 24 24" >
+        <path fill-rule="evenodd" d="M6.64 9.788a.75.75 0 01.53.918 5 5 0 007.33 5.624.75.75 0 11.75 1.3 6.501 6.501 0 01-9.529-7.312.75.75 0 01.919-.53zM8.75 6.37a6.5 6.5 0 019.529 7.312.75.75 0 11-1.45-.388A5.001 5.001 0 009.5 7.67a.75.75 0 11-.75-1.3z" clip-rule="evenodd" />
+        <path fill-rule="evenodd" d="M5.72 9.47a.75.75 0 011.06 0l2.5 2.5a.75.75 0 11-1.06 1.06l-1.97-1.97-1.97 1.97a.75.75 0 01-1.06-1.06l2.5-2.5zM14.72 10.97a.75.75 0 011.06 0l1.97 1.97 1.97-1.97a.75.75 0 111.06 1.06l-2.5 2.5a.75.75 0 01-1.06 0l-2.5-2.5a.75.75 0 010-1.06z" clip-rule="evenodd" />
+    </symbol>
 </svg>
