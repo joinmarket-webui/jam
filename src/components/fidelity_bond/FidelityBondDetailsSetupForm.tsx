@@ -151,7 +151,7 @@ const ConfirmationStep = ({
         <ToggleSwitch
           label={t('fidelity_bond.create_form.confirmation_toggle_title')}
           subtitle={t('fidelity_bond.create_form.confirmation_toggle_subtitle')}
-          checked={confirmed}
+          toggledOn={confirmed}
           onToggle={(isToggled) => onChange(isToggled)}
         />
       </div>

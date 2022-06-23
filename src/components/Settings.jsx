@@ -74,7 +74,7 @@ function SeedModal({ show = false, onHide }) {
                 <div className="mb-2">
                   <ToggleSwitch
                     label={t('settings.reveal_seed')}
-                    checked={revealSeed}
+                    toggledOn={revealSeed}
                     onToggle={(isToggled) => setRevealSeed(isToggled)}
                   />
                 </div>

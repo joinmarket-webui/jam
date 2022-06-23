@@ -457,7 +457,7 @@ export default function Jam() {
                           <ToggleSwitch
                             label={t('scheduler.toggle_internal_destination_title')}
                             subtitle={t('scheduler.toggle_internal_destination_subtitle')}
-                            checked={destinationIsExternal}
+                            toggledOn={destinationIsExternal}
                             onToggle={async (isToggled) => {
                               if (!isToggled) {
                                 try {
@@ -489,7 +489,7 @@ export default function Jam() {
                               subtitle={
                                 "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
                               }
-                              checked={useInsecureTestingSettings}
+                              toggledOn={useInsecureTestingSettings}
                               onToggle={(isToggled) => setUseInsecureTestingSettings(isToggled)}
                               disabled={isSubmitting}
                             />

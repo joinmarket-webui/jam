@@ -5,7 +5,7 @@ interface ToggleSwitchProps {
   label: string
   subtitle?: string
   onToggle: (isToggled: boolean) => void
-  checked: boolean
+  toggledOn: boolean
   disabled?: boolean
 }
 
@@ -13,7 +13,7 @@ export default function ToggleSwitch({
   label,
   subtitle = undefined,
   onToggle,
-  checked,
+  toggledOn,
   disabled = false,
 }: ToggleSwitchProps) {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +27,7 @@ export default function ToggleSwitch({
         type="checkbox"
         className={`${styles['peer']} ${styles['toggle-switch-input']}`}
         onChange={onChange}
-        checked={checked}
+        checked={toggledOn}
         disabled={disabled}
       />
       <span className={styles['toggle-switch']}></span>
