@@ -463,6 +463,7 @@ export default function Send() {
         setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(IS_COINJOIN_DEFAULT_VAL)
         setIsSweep(false)
+        setDestinationJar(null)
 
         form.reset()
       }
@@ -728,11 +729,11 @@ export default function Send() {
                     className={classnames('slashed-zeroes', styles['input'], {
                       [styles['jar-input']]: destinationJar !== null,
                     })}
-                    value={destination || ''}
+                    value={destinationJar !== null ? `Jar #${destinationJar} (${destination})` : destination || ''}
                     required
                     onChange={(e) => setDestination(e.target.value)}
                     isInvalid={destination !== null && !isValidAddress(destination)}
-                    disabled={isOperationDisabled}
+                    disabled={isOperationDisabled || destinationJar !== null}
                   />
                   <rb.Button
                     variant="outline-dark"
@@ -750,10 +751,6 @@ export default function Send() {
                     {destinationJar !== null ? (
                       <div className="d-flex justify-content-center align-items-center">
                         <Sprite symbol="cancel" width="26" height="26" />
-                        <div className={styles['selected-jar-container']}>
-                          <Sprite symbol="jar-open-empty" width="28px" height="28px" />
-                          <span className={styles['selected-jar-index']}>{destinationJar}</span>
-                        </div>
                       </div>
                     ) : (
                       <div className="d-flex justify-content-center align-items-center">

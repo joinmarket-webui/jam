@@ -28,18 +28,6 @@ input[type='number'] {
   border: none !important;
 }
 
-.button-jar-selector .selected-jar-container {
-  position: relative;
-}
-
-.button-jar-selector .selected-jar-index {
-  position: absolute;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.8rem;
-}
-
 :root[data-theme='dark'] .button-jar-selector {
   color: var(--bs-gray-800) !important;
 }
