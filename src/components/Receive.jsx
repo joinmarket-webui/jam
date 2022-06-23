@@ -1,17 +1,20 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { BitcoinQR } from './BitcoinQR'
+
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
+
+import { BitcoinQR } from './BitcoinQR'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import { CopyButton } from './CopyButton'
 import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
 import styles from './Receive.module.css'
+import { SelectableJar, calculateFillLevel } from './jars/Jar'
 
 export default function Receive() {
   const { t } = useTranslation()
@@ -19,15 +22,20 @@ export default function Receive() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
+  const balanceSummary = useBalanceSummary(walletInfo)
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
-  const [accounts, setAccounts] = useState([])
   const [addressCount, setAddressCount] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
+
+  const sortedAccountBalances = useMemo(() => {
+    if (!balanceSummary) return []
+    return Object.values(balanceSummary.accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
+  }, [balanceSummary])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -48,15 +56,6 @@ export default function Receive() {
 
     return () => abortCtrl.abort()
   }, [account, currentWallet, addressCount, t])
-
-  useEffect(() => {
-    // `walletInfo` will be populated at least once (when wallet is unlocked).
-    // This data *might* be outdated and it can be argued that it should be actively reloaded.
-    // However, creating a new account (e.g. by providing custom options to run scheduled transactions)
-    // is a rather rare event. Revisit this behaviour when necessary.
-    const accountNumbers = walletInfo ? walletInfo.data.display.walletinfo.accounts.map((it) => it.account) : []
-    setAccounts(accountNumbers)
-  }, [walletInfo])
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -121,21 +120,21 @@ export default function Receive() {
           {showSettings && (
             <div className="my-4">
               {settings.useAdvancedWalletMode && (
-                <rb.Form.Group className="mb-4" controlId="account">
-                  <rb.Form.Label>{t('receive.label_choose_account')}</rb.Form.Label>
-                  <rb.Form.Select
-                    defaultValue={account}
-                    onChange={(e) => setAccount(parseInt(e.target.value, 10))}
-                    required
-                    disabled={isLoading || accounts.length === 0}
-                  >
-                    {accounts.map((val) => (
-                      <option key={val} value={val}>
-                        {t('receive.account_selector_option_dev_mode', { number: val })}
-                      </option>
-                    ))}
-                  </rb.Form.Select>
-                </rb.Form.Group>
+                <div className={styles.jarsContainer}>
+                  {sortedAccountBalances.map((it) => {
+                    return (
+                      <SelectableJar
+                        key={it.accountIndex}
+                        index={it.accountIndex}
+                        balance={it.totalBalance}
+                        isSelectable={true}
+                        isSelected={it.accountIndex === account}
+                        fillLevel={calculateFillLevel(it.totalBalance, balanceSummary?.totalBalance || 0)}
+                        onClick={() => setAccount(it.accountIndex)}
+                      />
+                    )
+                  })}
+                </div>
               )}
               <rb.Form.Group controlId="amountSats">
                 <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
