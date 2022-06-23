@@ -72,7 +72,11 @@ function SeedModal({ show = false, onHide }) {
               </rb.Row>
               <div className="d-flex justify-content-center align-items-center">
                 <div className="mb-2">
-                  <ToggleSwitch label={t('settings.reveal_seed')} onToggle={(isToggled) => setRevealSeed(isToggled)} />
+                  <ToggleSwitch
+                    label={t('settings.reveal_seed')}
+                    toggledOn={revealSeed}
+                    onToggle={(isToggled) => setRevealSeed(isToggled)}
+                  />
                 </div>
               </div>
             </>

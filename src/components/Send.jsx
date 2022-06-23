@@ -704,7 +704,7 @@ export default function Send() {
             <ToggleSwitch
               label={t('send.toggle_coinjoin')}
               subtitle={t('send.toggle_coinjoin_subtitle')}
-              initialValue={isCoinjoin}
+              toggledOn={isCoinjoin}
               onToggle={(isToggled) => setIsCoinjoin(isToggled)}
               disabled={isLoading || isOperationDisabled}
             />
