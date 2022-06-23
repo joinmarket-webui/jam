@@ -46,5 +46,5 @@
 .send-receive-button {
   padding: 0.25rem;
   font-weight: 500;
-  border-color: rgba(222, 222, 222, 1);
+  border-color: rgba(222, 222, 222, 1) !important;
 }
