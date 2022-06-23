@@ -40,41 +40,37 @@ export default function Wallets({ startWallet, stopWallet }) {
         setWalletList(sortedWalletList)
       }
     }
-  }, [serviceInfo, walletList, setWalletList])
+  }, [serviceInfo, walletList])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
 
     setIsLoading(true)
-    const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
-      const message = err.message || t('wallets.error_loading_failed')
-      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
-    })
+    const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
 
     const loadingWallets = Api.getWalletAll({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
-      .then((data) => {
-        if (!abortCtrl.signal.aborted) {
-          const wallets = sortWallets(data.wallets || [], currentWallet?.name)
+      .then((data) => sortWallets(data.wallets || [], currentWallet?.name))
+      .then((sortedWalletList) => {
+        if (abortCtrl.signal.aborted) return
 
-          if (currentWallet) {
-            if (wallets.length > 1) {
-              setAlert({
-                variant: 'info',
-                message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
-                dismissible: false,
-              })
-            }
-          }
+        setWalletList(sortedWalletList)
 
-          setWalletList(wallets)
+        if (currentWallet && sortedWalletList.length > 1) {
+          setAlert({
+            variant: 'info',
+            message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
+            dismissible: false,
+          })
         }
       })
-      .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
-      })
 
-    Promise.all([loadingServiceInfo, loadingWallets]).finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+    Promise.all([loadingServiceInfo, loadingWallets])
+      .catch((err) => {
+        const message = err.message || t('wallets.error_loading_failed')
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
   }, [currentWallet, reloadServiceInfo, t])

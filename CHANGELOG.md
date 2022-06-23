@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.0.7](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.6...v0.0.7) (2022-06-20)
+
+#### Fixed
+
+* loading state on Send page ([#300](https://github.com/joinmarket-webui/joinmarket-webui/issues/300)) ([db4f5ab](https://github.com/joinmarket-webui/joinmarket-webui/commit/db4f5ab18a6dcef6784c2f85adffc69a014570cc))
+* mobile layout issues ([#311](https://github.com/joinmarket-webui/joinmarket-webui/issues/311)) ([8f62a42](https://github.com/joinmarket-webui/joinmarket-webui/commit/8f62a42302e40672eeeb78dc896e6116501a5905))
+* prevent unnecessary session requests ([#298](https://github.com/joinmarket-webui/joinmarket-webui/issues/298)) ([bf627e7](https://github.com/joinmarket-webui/joinmarket-webui/commit/bf627e7ce128dea4679ba8e4035f578fad7a710b))
+* prevent unnecessary wallet info requests ([#297](https://github.com/joinmarket-webui/joinmarket-webui/issues/297)) ([9377b33](https://github.com/joinmarket-webui/joinmarket-webui/commit/9377b33a11abbbafefbc93e0e34f2df59dd1749a))
+* show balance in unit based on settings on Send screen ([#276](https://github.com/joinmarket-webui/joinmarket-webui/issues/276)) ([b0c8c4f](https://github.com/joinmarket-webui/joinmarket-webui/commit/b0c8c4f83c7e98b61be4f9a551a2b7d70c40aa43))
+* styles ([#329](https://github.com/joinmarket-webui/joinmarket-webui/issues/329)) ([f5e8227](https://github.com/joinmarket-webui/joinmarket-webui/commit/f5e822743e8ad9ac0e8da77c0deb98573fcb325a))
+
+#### Added
+
+* add share button to receive screen ([#310](https://github.com/joinmarket-webui/joinmarket-webui/issues/310)) ([ed03476](https://github.com/joinmarket-webui/joinmarket-webui/commit/ed03476766eaf31eed4589aa25e594d13023c29d))
+* basic fidelity bonds ([#307](https://github.com/joinmarket-webui/joinmarket-webui/issues/307)) ([c68e4c5](https://github.com/joinmarket-webui/joinmarket-webui/commit/c68e4c5c64c8daa1f79307adf9b0d13b5ad6704c))
+* enable report overlay ([#305](https://github.com/joinmarket-webui/joinmarket-webui/issues/305)) ([69c4211](https://github.com/joinmarket-webui/joinmarket-webui/commit/69c4211b8271b9c0b2f77d74d9bf630180a50495))
+* first draft of jars on main wallet screen ([#324](https://github.com/joinmarket-webui/joinmarket-webui/issues/324)) ([216100a](https://github.com/joinmarket-webui/joinmarket-webui/commit/216100a3b973f4e91dedfbd866b40d9e268cca41))
+* improve wallet control in settings ([#325](https://github.com/joinmarket-webui/joinmarket-webui/issues/325)) ([9d00212](https://github.com/joinmarket-webui/joinmarket-webui/commit/9d0021287f75c1a7349363fb484ec4f36810b36d))
+* make jars interactive ([#331](https://github.com/joinmarket-webui/joinmarket-webui/issues/331)) ([95b3f09](https://github.com/joinmarket-webui/joinmarket-webui/commit/95b3f09696bcfb39bc9bd94aaacf8953542d5a90))
+* **navbar:** remove wallets item ([#316](https://github.com/joinmarket-webui/joinmarket-webui/issues/316)) ([da99a3e](https://github.com/joinmarket-webui/joinmarket-webui/commit/da99a3e5ea188480b4b74599a782b43e35e7e6b1)), closes [#315](https://github.com/joinmarket-webui/joinmarket-webui/issues/315)
+
 ### [0.0.6](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.5...v0.0.6) (2022-05-19)
 
 #### Added

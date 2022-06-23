@@ -366,7 +366,7 @@ export default function CreateWallet({ startWallet }) {
   const walletConfirmed = () => {
     if (createdWallet.name && createdWallet.token) {
       startWallet(createdWallet.name, createdWallet.token)
-      navigate('/wallet')
+      navigate(routes.wallet)
     } else {
       setAlert({ variant: 'danger', message: t('alert_confirmation_failed') })
     }
