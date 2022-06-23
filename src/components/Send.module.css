@@ -3,6 +3,10 @@
   width: 100%;
 }
 
+.jar-input {
+  padding-right: 5rem;
+}
+
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -13,6 +17,22 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type='number'] {
   -moz-appearance: textfield;
+}
+
+.button-jar-selector {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translate(0%, -50%);
+  padding: 0.2rem 0.5rem !important;
+  border: none !important;
+}
+
+:root[data-theme='dark'] .button-jar-selector {
+  color: var(--bs-gray-800) !important;
+}
+:root[data-theme='dark'] .button-jar-selector:hover {
+  color: var(--bs-white) !important;
 }
 
 .button-sweep {

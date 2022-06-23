@@ -2,10 +2,12 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
+import classnames from 'classnames/bind'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
+import JarSelectorModal from './JarSelectorModal'
 import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
@@ -197,6 +199,8 @@ export default function Send() {
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
+  const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
+  const [destinationJar, setDestinationJar] = useState(null)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
@@ -459,6 +463,7 @@ export default function Send() {
         setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(IS_COINJOIN_DEFAULT_VAL)
         setIsSweep(false)
+        setDestinationJar(null)
 
         form.reset()
       }
@@ -597,6 +602,35 @@ export default function Send() {
           <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
         )}
 
+        {!isLoading && balanceSummary && (
+          <JarSelectorModal
+            isShown={destinationJarPickerShown}
+            title={'Select a jar from your wallet to send the funds to.'}
+            accountBalances={balanceSummary?.accountBalances}
+            totalBalance={balanceSummary?.totalBalance}
+            disabledJar={account}
+            onCancel={() => setDestinationJarPickerShown(false)}
+            onConfirm={(selectedJar) => {
+              setDestinationJarPickerShown(false)
+
+              const externalBranch = walletInfo.data.display.walletinfo.accounts[selectedJar].branches.find(
+                (branch) => {
+                  return branch.branch.split('\t')[0] === 'external addresses'
+                }
+              )
+
+              const newEntry = externalBranch.entries.find((entry) => entry.status === 'new')
+
+              if (newEntry) {
+                setDestination(newEntry.address)
+                setDestinationJar(selectedJar)
+              } else {
+                console.error(`Cannot find a new address in mixdepth ${selectedJar}`)
+              }
+            }}
+          />
+        )}
+
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
             <rb.Form.Label>
@@ -682,22 +716,56 @@ export default function Send() {
           </rb.Form.Group>
           <rb.Form.Group className="mb-4" controlId="destination">
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
-            {isLoading ? (
-              <rb.Placeholder as="div" animation="wave">
-                <rb.Placeholder xs={12} className={styles['input-loader']} />
-              </rb.Placeholder>
-            ) : (
-              <rb.Form.Control
-                name="destination"
-                placeholder={t('send.placeholder_recipient')}
-                className={`${styles.input} slashed-zeroes`}
-                value={destination || ''}
-                required
-                onChange={(e) => setDestination(e.target.value)}
-                isInvalid={destination !== null && !isValidAddress(destination)}
-                disabled={isOperationDisabled}
-              />
-            )}
+            <div className="position-relative">
+              {isLoading ? (
+                <rb.Placeholder as="div" animation="wave">
+                  <rb.Placeholder xs={12} className={styles['input-loader']} />
+                </rb.Placeholder>
+              ) : (
+                <>
+                  <rb.Form.Control
+                    name="destination"
+                    placeholder={t('send.placeholder_recipient')}
+                    className={classnames('slashed-zeroes', styles['input'], {
+                      [styles['jar-input']]: destinationJar !== null,
+                    })}
+                    value={destinationJar !== null ? `Jar #${destinationJar} (${destination})` : destination || ''}
+                    required
+                    onChange={(e) => setDestination(e.target.value)}
+                    isInvalid={destination !== null && !isValidAddress(destination)}
+                    disabled={isOperationDisabled || destinationJar !== null}
+                  />
+                  <rb.Button
+                    variant="outline-dark"
+                    className={styles['button-jar-selector']}
+                    onClick={() => {
+                      if (destinationJar !== null) {
+                        setDestinationJar(null)
+                        setDestination(initialDestination)
+                      } else {
+                        setDestinationJarPickerShown(true)
+                      }
+                    }}
+                    disabled={isOperationDisabled}
+                  >
+                    {destinationJar !== null ? (
+                      <div className="d-flex justify-content-center align-items-center">
+                        <Sprite symbol="cancel" width="26" height="26" />
+                      </div>
+                    ) : (
+                      <div className="d-flex justify-content-center align-items-center">
+                        <Sprite
+                          symbol="jar-closed-empty"
+                          width="28px"
+                          height="28px"
+                          style={{ paddingBottom: '0.2rem' }}
+                        />
+                      </div>
+                    )}
+                  </rb.Button>
+                </>
+              )}
+            </div>
             <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
           </rb.Form.Group>
           <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
