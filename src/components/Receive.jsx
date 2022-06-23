@@ -127,8 +127,7 @@ export default function Receive() {
                     </rb.Placeholder>
                   ) : (
                     <div className={styles.jarsContainer}>
-                      {sortedAccountBalances.map((it) => {
-                        return (
+                      {sortedAccountBalances.map((it) => (
                           <SelectableJar
                             key={it.accountIndex}
                             index={it.accountIndex}
@@ -138,8 +137,7 @@ export default function Receive() {
                             fillLevel={calculateFillLevel(it.totalBalance, balanceSummary.totalBalance)}
                             onClick={() => setSelectedJarIndex(it.accountIndex)}
                           />
-                        )
-                      })}
+                        ))}
                     </div>
                   )}
                 </>
