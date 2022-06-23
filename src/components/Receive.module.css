@@ -44,6 +44,14 @@
   height: 1.5rem;
 }
 
+.inputGroupText {
+  width: 5ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
 .qr-container {
   display: flex;
   justify-content: center;

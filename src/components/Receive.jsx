@@ -139,16 +139,23 @@ export default function Receive() {
               )}
               <rb.Form.Group controlId="amountSats">
                 <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
-                <rb.Form.Control
-                  className="slashed-zeroes"
-                  name="amount"
-                  type="number"
-                  placeholder="0"
-                  value={amount}
-                  min={0}
-                  onChange={(e) => setAmount(e.target.value)}
-                  disabled={isLoading}
-                />
+                <rb.InputGroup>
+                  <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
+                    <Sprite symbol="sats" width="24" height="24" />
+                  </rb.InputGroup.Text>
+                  <rb.Form.Control
+                    aria-label={t('receive.label_amount')}
+                    className="slashed-zeroes"
+                    name="amount"
+                    type="number"
+                    placeholder="0"
+                    value={amount}
+                    disabled={isLoading}
+                    onChange={(e) => setAmount(e.target.value)}
+                    min={0}
+                    step={1}
+                  />
+                </rb.InputGroup>
                 <rb.Form.Control.Feedback type="invalid">
                   {t('receive.feedback_invalid_amount')}
                 </rb.Form.Control.Feedback>
