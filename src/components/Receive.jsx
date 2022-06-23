@@ -128,16 +128,16 @@ export default function Receive() {
                   ) : (
                     <div className={styles.jarsContainer}>
                       {sortedAccountBalances.map((it) => (
-                          <SelectableJar
-                            key={it.accountIndex}
-                            index={it.accountIndex}
-                            balance={it.totalBalance}
-                            isSelectable={true}
-                            isSelected={it.accountIndex === selectedJarIndex}
-                            fillLevel={calculateFillLevel(it.totalBalance, balanceSummary.totalBalance)}
-                            onClick={() => setSelectedJarIndex(it.accountIndex)}
-                          />
-                        ))}
+                        <SelectableJar
+                          key={it.accountIndex}
+                          index={it.accountIndex}
+                          balance={it.totalBalance}
+                          isSelectable={true}
+                          isSelected={it.accountIndex === selectedJarIndex}
+                          fillLevel={calculateFillLevel(it.totalBalance, balanceSummary.totalBalance)}
+                          onClick={() => setSelectedJarIndex(it.accountIndex)}
+                        />
+                      ))}
                     </div>
                   )}
                 </>
