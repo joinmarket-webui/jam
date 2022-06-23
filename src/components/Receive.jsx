@@ -28,7 +28,7 @@ export default function Receive() {
   const [isLoading, setIsLoading] = useState(false)
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
-  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || 0)
+  const [selectedJarIndex, setSelectedJarIndex] = useState(parseInt(location.state?.account, 10) || 0)
   const [addressCount, setAddressCount] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
 
@@ -44,7 +44,7 @@ export default function Receive() {
     setAlert(null)
     setIsLoading(true)
 
-    Api.getAddressNew({ walletName, mixdepth: account, token, signal: abortCtrl.signal })
+    Api.getAddressNew({ walletName, mixdepth: selectedJarIndex, token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
       .then((data) => setAddress(data.address))
       .catch((err) => {
@@ -55,7 +55,7 @@ export default function Receive() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [account, currentWallet, addressCount, t])
+  }, [selectedJarIndex, currentWallet, addressCount, t])
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -134,9 +134,9 @@ export default function Receive() {
                             index={it.accountIndex}
                             balance={it.totalBalance}
                             isSelectable={true}
-                            isSelected={it.accountIndex === account}
+                            isSelected={it.accountIndex === selectedJarIndex}
                             fillLevel={calculateFillLevel(it.totalBalance, balanceSummary.totalBalance)}
-                            onClick={() => setAccount(it.accountIndex)}
+                            onClick={() => setSelectedJarIndex(it.accountIndex)}
                           />
                         )
                       })}
