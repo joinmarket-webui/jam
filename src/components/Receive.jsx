@@ -119,28 +119,24 @@ export default function Receive() {
           </rb.Button>
           {showSettings && (
             <div className="my-4">
-              {settings.useAdvancedWalletMode && (
-                <>
-                  {!balanceSummary || sortedAccountBalances.length === 0 ? (
-                    <rb.Placeholder as="div" animation="wave">
-                      <rb.Placeholder className={styles.jarsPlaceholder} />
-                    </rb.Placeholder>
-                  ) : (
-                    <div className={styles.jarsContainer}>
-                      {sortedAccountBalances.map((it) => (
-                        <SelectableJar
-                          key={it.accountIndex}
-                          index={it.accountIndex}
-                          balance={it.totalBalance}
-                          isSelectable={true}
-                          isSelected={it.accountIndex === selectedJarIndex}
-                          fillLevel={calculateFillLevel(it.totalBalance, balanceSummary.totalBalance)}
-                          onClick={() => setSelectedJarIndex(it.accountIndex)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </>
+              {!balanceSummary || sortedAccountBalances.length === 0 ? (
+                <rb.Placeholder as="div" animation="wave">
+                  <rb.Placeholder className={styles.jarsPlaceholder} />
+                </rb.Placeholder>
+              ) : (
+                <div className={styles.jarsContainer}>
+                  {sortedAccountBalances.map((it) => (
+                    <SelectableJar
+                      key={it.accountIndex}
+                      index={it.accountIndex}
+                      balance={it.totalBalance}
+                      isSelectable={true}
+                      isSelected={it.accountIndex === selectedJarIndex}
+                      fillLevel={calculateFillLevel(it.totalBalance, balanceSummary.totalBalance)}
+                      onClick={() => setSelectedJarIndex(it.accountIndex)}
+                    />
+                  ))}
+                </div>
               )}
               <rb.Form.Group controlId="amountSats">
                 <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
