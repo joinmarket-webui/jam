@@ -8,11 +8,14 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import JarSelectorModal from './JarSelectorModal'
+
 import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
+import { COINJOIN_PRECONDITIONS, useCoinjoinPreconditionSummary } from '../hooks/CoinjoinPrecondition'
+
 import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
@@ -193,6 +196,54 @@ function SweepAccordionToggle({ eventKey }) {
   )
 }
 
+function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
+  return (
+    <rb.Alert variant="warning" className="mb-4">
+      <>
+        {coinjoinPreconditionSummary.numberOfMissingUtxos > 0 ? (
+          <Trans i18nKey="send.coinjoin_precondition.hint_missing_utxos">
+            To execute a collaborative transaction you need at least one UTXO with{' '}
+            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
+            confirmations in the source jar. Select another jar to send from or fund this jar and wait for{' '}
+            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong> blocks.
+          </Trans>
+        ) : coinjoinPreconditionSummary.amountOfMissingConfirmations > 0 ? (
+          <Trans i18nKey="send.coinjoin_precondition.hint_missing_confirmations">
+            A collaborative transaction requires one of your UTXOs to have{' '}
+            <strong>
+              {{
+                /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
+                 (which is essential for parameterized translations to work). */
+                minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+              }}
+            </strong>{' '}
+            or more confirmations. Select another jar to send from or wait for{' '}
+            <strong>
+              {{ amountOfMissingConfirmations: coinjoinPreconditionSummary.amountOfMissingConfirmations }}
+            </strong>{' '}
+            more block(s).
+          </Trans>
+        ) : (
+          coinjoinPreconditionSummary.amountOfMissingOverallRetries > 0 && (
+            <Trans i18nKey="send.coinjoin_precondition.hint_missing_overall_retries">
+              You've tried executing a collaborative transaction from this jar unsuccessfully too many times in a row.
+              For security reasons, you need a fresh UTXO to try again. See{' '}
+              <a
+                href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                the docs
+              </a>{' '}
+              for more information.
+            </Trans>
+          )
+        )}
+      </>
+    </rb.Alert>
+  )
+}
+
 export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
@@ -247,18 +298,36 @@ export default function Send() {
     [balanceSummary, account]
   )
 
+  const sourceJarUtxos = useMemo(() => {
+    if (!walletInfo) return null
+
+    return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === account)
+  }, [walletInfo, account])
+
+  const coinjoinPreconditionSummary = useCoinjoinPreconditionSummary(sourceJarUtxos || [])
+
   useEffect(() => {
     if (
       isValidAddress(destination) &&
       isValidAccount(account) &&
       isValidAmount(amount, isSweep) &&
-      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
+      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true) &&
+      (isCoinjoin ? coinjoinPreconditionSummary.isFulfilled : true)
     ) {
       setFormIsValid(true)
     } else {
       setFormIsValid(false)
     }
-  }, [destination, account, amount, numCollaborators, minNumCollaborators, isCoinjoin, isSweep])
+  }, [
+    destination,
+    account,
+    amount,
+    numCollaborators,
+    minNumCollaborators,
+    isCoinjoin,
+    isSweep,
+    coinjoinPreconditionSummary,
+  ])
 
   useEffect(() => {
     if (isSweep) {
@@ -603,6 +672,10 @@ export default function Send() {
         )}
         {takerStartedInfoAlert && (
           <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
+        )}
+
+        {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
+          <CoinjoinPreconditionFailedAlert coinjoinPreconditionSummary={coinjoinPreconditionSummary} />
         )}
 
         {!isLoading && balanceSummary && (
