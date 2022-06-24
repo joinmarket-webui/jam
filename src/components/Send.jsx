@@ -22,6 +22,20 @@ const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
+const INITIAL_DESTINATION = null
+const INITIAL_ACCOUNT = 0
+const INITIAL_AMOUNT = null
+
+const initialNumCollaborators = (minValue) => {
+  const defaultNumber = pseudoRandomNumber(8, 10)
+
+  if (minValue > 8) {
+    return minValue + pseudoRandomNumber(0, 2)
+  }
+
+  return defaultNumber
+}
+
 // not cryptographically random. returned number is in range [min, max] (both inclusive).
 const pseudoRandomNumber = (min, max) => {
   return Math.round(Math.random() * (max - min)) + min
@@ -220,22 +234,9 @@ export default function Send() {
     setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
   }, [isCoinjoinInProgress])
 
-  const initialDestination = null
-  const initialAccount = 0
-  const initialAmount = null
-  const initialNumCollaborators = (minValue) => {
-    const defaultNumber = pseudoRandomNumber(8, 10)
-
-    if (minValue > 8) {
-      return minValue + pseudoRandomNumber(0, 2)
-    }
-
-    return defaultNumber
-  }
-
-  const [destination, setDestination] = useState(initialDestination)
-  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || initialAccount)
-  const [amount, setAmount] = useState(initialAmount)
+  const [destination, setDestination] = useState(INITIAL_DESTINATION)
+  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || INITIAL_ACCOUNT)
+  const [amount, setAmount] = useState(INITIAL_AMOUNT)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
@@ -338,6 +339,8 @@ export default function Send() {
       key: { section: 'POLICY', field: 'minimum_makers' },
     })
       .then((data) => {
+        if (abortCtrl.signal.aborted) return
+
         const minimumMakers = parseInt(data.value, 10)
         setMinNumCollaborators(minimumMakers)
         setNumCollaborators(initialNumCollaborators(minimumMakers))
@@ -458,8 +461,8 @@ export default function Send() {
         : await sendPayment(account, destination, amount)
 
       if (success) {
-        setDestination(initialDestination)
-        setAmount(initialAmount)
+        setDestination(INITIAL_DESTINATION)
+        setAmount(INITIAL_AMOUNT)
         setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(IS_COINJOIN_DEFAULT_VAL)
         setIsSweep(false)
@@ -741,7 +744,7 @@ export default function Send() {
                     onClick={() => {
                       if (destinationJar !== null) {
                         setDestinationJar(null)
-                        setDestination(initialDestination)
+                        setDestination(INITIAL_DESTINATION)
                       } else {
                         setDestinationJarPickerShown(true)
                       }
