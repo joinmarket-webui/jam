@@ -5,7 +5,6 @@ import Sprite from './Sprite'
 import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
-import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
@@ -25,10 +24,9 @@ function sortWallets(wallets, activeWalletName = null) {
   }
 }
 
-export default function Wallets({ startWallet, stopWallet }) {
+export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const currentWallet = useCurrentWallet()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const [walletList, setWalletList] = useState(null)

@@ -123,7 +123,10 @@ export default function App() {
           {!sessionConnectionError && (
             <>
               <Route element={<Layout />}>
-                <Route path={routes.home} element={<Wallets startWallet={startWallet} stopWallet={stopWallet} />} />
+                <Route
+                  path={routes.home}
+                  element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
+                />
                 {currentWallet && (
                   <>
                     <Route path={routes.jam} element={<Jam />} />
