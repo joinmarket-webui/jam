@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
@@ -39,7 +39,7 @@ export default function App() {
   const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
-  const cheatsheetEnabled = currentWallet
+  const cheatsheetEnabled = useMemo(() => !!currentWallet, [currentWallet])
 
   const startWallet = useCallback(
     (name, token) => {

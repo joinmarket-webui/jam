@@ -124,14 +124,13 @@ export default function Settings({ stopWallet }) {
         const { name: walletName, token } = currentWallet
         const res = await Api.getWalletLock({ walletName, token })
 
+        setLockingWallet(false)
         if (res.ok || res.status === 401) {
           stopWallet()
+          navigate(destination)
         } else {
           await Api.Helper.throwError(res)
         }
-
-        setLockingWallet(false)
-        navigate(destination)
       } catch (e) {
         setLockingWallet(false)
         setAlert({ variant: 'danger', dismissible: false, message: e.message })
