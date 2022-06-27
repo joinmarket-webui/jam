@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useMemo, useEffect, useCallback, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Alert from './Alert'
@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
+import { ConfirmModal } from './Modal'
 
 function arrayEquals(a, b) {
   return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
@@ -26,12 +27,123 @@ function sortWallets(wallets, activeWalletName = null) {
 
 export default function Wallets({ startWallet, stopWallet }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const currentWallet = useCurrentWallet()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [alert, setAlert] = useState(null)
+  const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
+
+  const coinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
+  const makerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
+
+  const unlockWallet = useCallback(
+    async (walletName, password) => {
+      if (currentWallet) {
+        setAlert({
+          variant: 'warning',
+          dismissible: false,
+          message:
+            currentWallet.name === walletName
+              ? // unlocking same wallet
+                t('wallets.wallet_preview.alert_wallet_already_unlocked', { walletName: walletDisplayName(walletName) })
+              : // unlocking another wallet while one is already unlocked
+                t('wallets.wallet_preview.alert_other_wallet_unlocked', { walletName: walletDisplayName(walletName) }),
+        })
+        return
+      }
+
+      setAlert(null)
+      try {
+        const res = await Api.postWalletUnlock({ walletName }, { password })
+        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
+
+        const { walletname: unlockedWalletName, token } = body
+        startWallet(unlockedWalletName, token)
+        navigate(routes.wallet)
+      } catch (e) {
+        const message = e.message.replace('Wallet', walletName)
+        setAlert({ variant: 'danger', dismissible: false, message })
+      }
+    },
+    [currentWallet, setAlert, startWallet, t, navigate]
+  )
+
+  const lockWallet = useCallback(
+    async (lockableWalletName, { confirmed = false }) => {
+      if (!currentWallet || currentWallet.name !== lockableWalletName) {
+        setAlert({
+          variant: 'warning',
+          dismissible: false,
+          message: currentWallet
+            ? // locking another wallet while active one is still unlocked
+              t('wallets.wallet_preview.alert_other_wallet_unlocked', {
+                walletName: walletDisplayName(currentWallet.name),
+              })
+            : // locking without active wallet
+              t('wallets.wallet_preview.alert_wallet_already_locked', {
+                walletName: walletDisplayName(lockableWalletName),
+              }),
+        })
+        return
+      }
+
+      const needsLockConfirmation = !confirmed && (coinjoinInProgress || makerRunning)
+      if (needsLockConfirmation) {
+        setShowLockConfirmModal(true)
+        return
+      }
+
+      setAlert(null)
+
+      try {
+        const { name: walletName, token } = currentWallet
+
+        const res = await Api.getWalletLock({ walletName, token })
+
+        // On status OK or UNAUTHORIZED, stop the wallet and clear all local
+        // information. The token might have become invalid or another one might have been
+        // issued for the same wallet, etc.
+        // In any case, the user has no access to the wallet anymore.
+        if (res.ok || res.status === 401) {
+          stopWallet()
+        }
+
+        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
+        const { walletname: lockedWalletName, already_locked } = body
+
+        setAlert({
+          variant: already_locked ? 'warning' : 'success',
+          dismissible: false,
+          message: already_locked
+            ? t('wallets.wallet_preview.alert_wallet_already_locked', {
+                walletName: walletDisplayName(lockedWalletName),
+              })
+            : t('wallets.wallet_preview.alert_wallet_locked_successfully', {
+                walletName: walletDisplayName(lockedWalletName),
+              }),
+        })
+      } catch (e) {
+        setAlert({ variant: 'danger', dismissible: false, message: e.message })
+      }
+    },
+    [currentWallet, coinjoinInProgress, makerRunning, setAlert, stopWallet, t]
+  )
+
+  useEffect(() => {
+    if (!currentWallet) {
+      setShowLockConfirmModal(false)
+    }
+  }, [currentWallet])
+
+  const onLockConfirmed = useCallback(async () => {
+    if (!currentWallet) return
+
+    setShowLockConfirmModal(false)
+    await lockWallet(currentWallet.name, { confirmed: true })
+  }, [currentWallet, lockWallet])
 
   useEffect(() => {
     if (walletList && serviceInfo) {
@@ -76,50 +188,67 @@ export default function Wallets({ startWallet, stopWallet }) {
   }, [currentWallet, reloadServiceInfo, t])
 
   return (
-    <div className="wallets">
-      <PageTitle
-        title={t('wallets.title')}
-        subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : null}
-        center={true}
-      />
-      {alert && <Alert {...alert} />}
-      {isLoading ? (
-        <div className="d-flex justify-content-center align-items-center">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          <span>{t('wallets.text_loading')}</span>
-        </div>
-      ) : (
-        walletList?.map((wallet, index) => (
-          <Wallet
-            key={wallet}
-            name={wallet}
-            noneActive={!serviceInfo?.walletName}
-            isActive={serviceInfo?.walletName === wallet}
-            hasToken={currentWallet && currentWallet.token && currentWallet.name === serviceInfo?.walletName}
-            makerRunning={serviceInfo?.makerRunning}
-            coinjoinInProgress={serviceInfo?.coinjoinInProgress}
-            currentWallet={currentWallet}
-            startWallet={startWallet}
-            stopWallet={stopWallet}
-            setAlert={setAlert}
-            className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
-              index === 0 ? 'border-top-1' : 'border-top-0'
-            }`}
-          />
-        ))
-      )}
-      <div className="d-flex justify-content-center">
-        <Link
-          to={routes.createWallet}
-          className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
-          data-testid="new-wallet-btn"
-        >
+    <>
+      <div className="wallets">
+        <PageTitle
+          title={t('wallets.title')}
+          subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : null}
+          center={true}
+        />
+        {alert && <Alert {...alert} />}
+        {isLoading ? (
           <div className="d-flex justify-content-center align-items-center">
-            <Sprite symbol="plus" width="24" height="24" className="me-2" />
-            <span>{t('wallets.button_new_wallet')}</span>
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+            <span>{t('wallets.text_loading')}</span>
           </div>
-        </Link>
+        ) : (
+          walletList?.map((wallet, index) => {
+            return (
+              <Wallet
+                key={wallet}
+                name={wallet}
+                noneActive={!serviceInfo?.walletName}
+                isActive={serviceInfo?.walletName === wallet}
+                hasToken={currentWallet && currentWallet.token && currentWallet.name === serviceInfo?.walletName}
+                makerRunning={serviceInfo?.makerRunning}
+                coinjoinInProgress={serviceInfo?.coinjoinInProgress}
+                currentWallet={currentWallet}
+                lockWallet={lockWallet}
+                unlockWallet={unlockWallet}
+                className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
+                  index === 0 ? 'border-top-1' : 'border-top-0'
+                }`}
+              />
+            )
+          })
+        )}
+        <div className="d-flex justify-content-center">
+          <Link
+            to={routes.createWallet}
+            className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
+            data-testid="new-wallet-btn"
+          >
+            <div className="d-flex justify-content-center align-items-center">
+              <Sprite symbol="plus" width="24" height="24" className="me-2" />
+              <span>{t('wallets.button_new_wallet')}</span>
+            </div>
+          </Link>
+        </div>
       </div>
-    </div>
+
+      <ConfirmModal
+        isShown={showLockConfirmModal}
+        title={t('wallets.wallet_preview.modal_lock_wallet_title')}
+        body={
+          (makerRunning
+            ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
+            : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
+          ' ' +
+          t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')
+        }
+        onCancel={() => setShowLockConfirmModal(false)}
+        onConfirm={onLockConfirmed}
+      />
+    </>
   )
 }
