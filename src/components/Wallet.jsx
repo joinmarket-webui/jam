@@ -102,20 +102,14 @@ const WalletUnlockForm = ({ walletName, unlockWallet }) => {
 
 export default function Wallet({
   name,
-  noneActive,
-  isActive,
-  hasToken,
-  makerRunning,
-  coinjoinInProgress,
-  currentWallet,
   lockWallet,
   unlockWallet,
+  isActive,
+  makerRunning,
+  coinjoinInProgress,
   ...props
 }) {
   const { t } = useTranslation()
-
-  const showLockOptions = isActive && hasToken
-  const showUnlockOptions = noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress)
 
   return (
     <>
@@ -144,11 +138,11 @@ export default function Wallet({
               )}
             </div>
 
-            {showLockOptions ? (
+            {lockWallet ? (
               <WalletLockForm walletName={name} lockWallet={lockWallet} />
             ) : (
               <div className={`w-100 mt-3 mt-md-0 ${styles['wallet-password-input']}`}>
-                {showUnlockOptions && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />}
+                {unlockWallet && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />}
               </div>
             )}
           </div>

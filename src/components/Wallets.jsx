@@ -203,18 +203,22 @@ export default function Wallets({ startWallet, stopWallet }) {
           </div>
         ) : (
           walletList?.map((wallet, index) => {
+            const noneActive = !serviceInfo?.walletName
+            const isActive = serviceInfo?.walletName === wallet
+            const hasToken = currentWallet && currentWallet.token && currentWallet.name === serviceInfo?.walletName
+
+            const showLockOptions = isActive && hasToken
+            const showUnlockOptions =
+              noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress)
             return (
               <Wallet
                 key={wallet}
                 name={wallet}
-                noneActive={!serviceInfo?.walletName}
-                isActive={serviceInfo?.walletName === wallet}
-                hasToken={currentWallet && currentWallet.token && currentWallet.name === serviceInfo?.walletName}
-                makerRunning={serviceInfo?.makerRunning}
-                coinjoinInProgress={serviceInfo?.coinjoinInProgress}
-                currentWallet={currentWallet}
-                lockWallet={lockWallet}
-                unlockWallet={unlockWallet}
+                lockWallet={showLockOptions ? lockWallet : undefined}
+                unlockWallet={showUnlockOptions ? unlockWallet : undefined}
+                isActive={isActive}
+                makerRunning={makerRunning}
+                coinjoinInProgress={coinjoinInProgress}
                 className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
                   index === 0 ? 'border-top-1' : 'border-top-0'
                 }`}
