@@ -140,16 +140,23 @@ export default function Receive() {
               )}
               <rb.Form.Group controlId="amountSats">
                 <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
-                <rb.Form.Control
-                  className="slashed-zeroes"
-                  name="amount"
-                  type="number"
-                  placeholder="0"
-                  value={amount}
-                  min={0}
-                  onChange={(e) => setAmount(e.target.value)}
-                  disabled={isLoading}
-                />
+                <rb.InputGroup>
+                  <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
+                    <Sprite symbol="sats" width="24" height="24" />
+                  </rb.InputGroup.Text>
+                  <rb.Form.Control
+                    aria-label={t('receive.label_amount')}
+                    className="slashed-zeroes"
+                    name="amount"
+                    type="number"
+                    placeholder="0"
+                    value={amount}
+                    disabled={isLoading}
+                    onChange={(e) => setAmount(e.target.value)}
+                    min={0}
+                    step={1}
+                  />
+                </rb.InputGroup>
                 <rb.Form.Control.Feedback type="invalid">
                   {t('receive.feedback_invalid_amount')}
                 </rb.Form.Control.Feedback>
@@ -158,16 +165,27 @@ export default function Receive() {
           )}
           <hr />
         </div>
-        <rb.Button variant="outline-dark" type="submit" disabled={isLoading} className="mt-2" style={{ width: '100%' }}>
-          {isLoading ? (
-            <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              {t('receive.text_getting_address')}
-            </div>
-          ) : (
-            t('receive.button_new_address')
-          )}
-        </rb.Button>
+
+        <div className="mt-2 d-flex justify-content-center">
+          <rb.Button
+            variant="outline-dark"
+            type="submit"
+            disabled={isLoading}
+            className="d-flex justify-content-center align-items-center"
+          >
+            {isLoading ? (
+              <>
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                {t('receive.text_getting_address')}
+              </>
+            ) : (
+              <>
+                <Sprite symbol="refresh" className="me-2" width="24" height="24" />
+                {t('receive.button_new_address')}
+              </>
+            )}
+          </rb.Button>
+        </div>
       </rb.Form>
     </div>
   )
