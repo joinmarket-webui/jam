@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { routes } from '../constants/routes'
 import Sprite from './Sprite'
-import { isFeatureEnabled } from '../constants/features'
 import styles from './Cheatsheet.module.css'
 
 interface CheatsheetProps {
@@ -42,7 +41,6 @@ function ListItem({ number, children, ...props }: PropsWithChildren<NumberedProp
 
 export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
   const { t } = useTranslation()
-  const featureFidelityBondsEnabled = isFeatureEnabled('fidelityBonds')
 
   return (
     <rb.Offcanvas className={styles.cheatsheet} show={show} onHide={onHide} placement="bottom" onClick={onHide}>
@@ -97,23 +95,13 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
           </ListItem>
-          <ListItem number={3} className={featureFidelityBondsEnabled ? '' : styles['upcoming-feature']}>
+          <ListItem number={3}>
             <h6>
               <Trans i18nKey="cheatsheet.item_3.title">
-                Optional: <Link to={featureFidelityBondsEnabled ? routes.fidelityBonds : routes.home}>Lock</Link> funds
-                in a fidelity bond.
+                Optional: <Link to={routes.fidelityBonds}>Lock</Link> funds in a fidelity bond.
               </Trans>
             </h6>
-            <div className="small text-secondary">
-              {t('cheatsheet.item_3.description')}
-              {/* the following phrase is intentionally not translated because it will be removed soon */}
-              {!featureFidelityBondsEnabled && (
-                <>
-                  <br />
-                  <strong>Feature not implemented yet. Coming soon!</strong>
-                </>
-              )}
-            </div>
+            <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
           </ListItem>
           <ListItem number={4}>
             <h6>
