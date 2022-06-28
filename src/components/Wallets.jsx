@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useCallback, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
+import classnames from 'classnames/bind'
 import Sprite from './Sprite'
 import Alert from './Alert'
 import Wallet from './Wallet'
@@ -31,6 +32,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   const reloadServiceInfo = useReloadServiceInfo()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isUnlocking, setIsUnlocking] = useState(false)
   const [alert, setAlert] = useState(null)
   const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
 
@@ -54,9 +56,12 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       }
 
       setAlert(null)
+      setIsUnlocking(true)
       try {
         const res = await Api.postWalletUnlock({ walletName }, { password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
+
+        setIsUnlocking(false)
 
         const { walletname: unlockedWalletName, token } = body
         startWallet(unlockedWalletName, token)
@@ -64,6 +69,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       } catch (e) {
         const message = e.message.replace('Wallet', walletName)
         setAlert({ variant: 'danger', dismissible: false, message })
+        setIsUnlocking(false)
       }
     },
     [currentWallet, setAlert, startWallet, t, navigate]
@@ -227,7 +233,12 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         <div className="d-flex justify-content-center">
           <Link
             to={routes.createWallet}
-            className={`btn mt-4 ${walletList?.length === 0 ? 'btn-lg btn-dark' : 'btn-outline-dark'}`}
+            className={classnames('btn', 'mt-4', {
+              'btn-lg': walletList?.length === 0,
+              'btn-dark': walletList?.length === 0,
+              'btn-outline-dark': !walletList || walletList.length > 0,
+              disabled: isUnlocking,
+            })}
             data-testid="new-wallet-btn"
           >
             <div className="d-flex justify-content-center align-items-center">
