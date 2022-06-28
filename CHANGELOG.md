@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.0.8](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.7...v0.0.8) (2022-06-28)
+
+#### Added
+
+* **jars:** add receive shortcut if jar 0 is empty ([#344](https://github.com/joinmarket-webui/joinmarket-webui/issues/344)) ([01afb88](https://github.com/joinmarket-webui/joinmarket-webui/commit/01afb88888c173b677f4979c5ae8eef350a9da19))
+* **jars:** destination jar selector on receive screen ([#346](https://github.com/joinmarket-webui/joinmarket-webui/issues/346)) ([911177c](https://github.com/joinmarket-webui/joinmarket-webui/commit/911177c899fe43fe2d889718dc644c6630629d8f))
+* **jars:** destination jar selector on send screen ([#345](https://github.com/joinmarket-webui/joinmarket-webui/issues/345)) ([a08c584](https://github.com/joinmarket-webui/joinmarket-webui/commit/a08c584f5ee51fd88e5b16c862626717955c7102))
+
+#### Fixed
+
+* Check preconditions before send request ([#349](https://github.com/joinmarket-webui/joinmarket-webui/issues/349)) ([581184d](https://github.com/joinmarket-webui/joinmarket-webui/commit/581184d92fa4bab1054d1d6e34d7777abebe7f00))
+* checked state of ToggleSwitch can be controlled by caller ([#332](https://github.com/joinmarket-webui/joinmarket-webui/issues/332)) ([c9007f5](https://github.com/joinmarket-webui/joinmarket-webui/commit/c9007f5428ae4ba79d68cd39972565a1747120e1))
+* remove fidelity bond feature flag ([9fe84c8](https://github.com/joinmarket-webui/joinmarket-webui/commit/9fe84c8cda8e3959d13fa436ea9f650bf1d0b3ed))
+
 ### [0.0.7](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.6...v0.0.7) (2022-06-20)
 
 #### Fixed
