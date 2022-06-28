@@ -58,7 +58,7 @@
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-evenly;
   align-items: center;
   gap: 2rem;
   color: var(--bs-body-color);
