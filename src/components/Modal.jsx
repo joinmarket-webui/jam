@@ -22,15 +22,11 @@ const ConfirmModal = ({ isShown, title, body, onCancel, onConfirm }) => {
       </rb.Modal.Header>
       <rb.Modal.Body className={styles['modal-body']}>{body}</rb.Modal.Body>
       <rb.Modal.Footer className={styles['modal-footer']}>
-        <rb.Button
-          variant="outline-dark"
-          onClick={onCancel}
-          className="d-flex justify-content-center align-items-center"
-        >
+        <rb.Button variant="light" onClick={onCancel} className="d-flex justify-content-center align-items-center">
           <Sprite symbol="cancel" width="26" height="26" />
           <div>{t('modal.confirm_button_reject')}</div>
         </rb.Button>
-        <rb.Button variant="outline-dark" onClick={onConfirm}>
+        <rb.Button variant="dark" onClick={onConfirm}>
           {t('modal.confirm_button_accept')}
         </rb.Button>
       </rb.Modal.Footer>
