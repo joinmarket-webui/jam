@@ -10,7 +10,6 @@ import DisplayAccountUTXOs from './DisplayAccountUTXOs'
 import DisplayUTXOs from './DisplayUTXOs'
 // @ts-ignore
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
-import { isFeatureEnabled } from '../constants/features'
 import { routes } from '../constants/routes'
 import styles from './CurrentWalletAdvanced.module.css'
 
@@ -18,8 +17,6 @@ type Utxos = any[]
 type Alert = { message: string; variant: string }
 
 export default function CurrentWalletAdvanced() {
-  const featureFidelityBondsEnabled = isFeatureEnabled('fidelityBonds')
-
   const { t } = useTranslation()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
@@ -100,16 +97,14 @@ export default function CurrentWalletAdvanced() {
                   <Trans i18nKey="fidelity_bond.alert_no_fidelity_bonds" as="span">
                     No Fidelity Bond present.
                   </Trans>
-                  {featureFidelityBondsEnabled && (
-                    <>
-                      {' '}
-                      <Link to={routes.fidelityBonds}>
-                        <Trans i18nKey="current_wallet_advanced.link_fidelity_bonds_create_text" as="span">
-                          Create a Fidelity Bond.
-                        </Trans>
-                      </Link>
-                    </>
-                  )}
+                  <>
+                    {' '}
+                    <Link to={routes.fidelityBonds}>
+                      <Trans i18nKey="current_wallet_advanced.link_fidelity_bonds_create_text" as="span">
+                        Create a Fidelity Bond.
+                      </Trans>
+                    </Link>
+                  </>
                 </>
               </rb.Alert>
             ) : (

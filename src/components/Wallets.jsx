@@ -61,8 +61,9 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         const res = await Api.postWalletUnlock({ walletName }, { password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
-        const { walletname: unlockedWalletName, token } = body
         setIsUnlocking(false)
+
+        const { walletname: unlockedWalletName, token } = body
         startWallet(unlockedWalletName, token)
         navigate(routes.wallet)
       } catch (e) {
