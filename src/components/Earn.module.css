@@ -3,6 +3,11 @@
   border-radius: 0.25rem;
 }
 
+.earn .fb-loader {
+  height: 11rem;
+  border-radius: 0.25rem;
+}
+
 .earn form input:not([type='checkbox']) {
   height: 3.5rem;
 }

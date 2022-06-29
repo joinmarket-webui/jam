@@ -1,0 +1,56 @@
+.container {
+  border: 1px solid var(--bs-gray-200);
+  border-radius: 0.3rem;
+  padding: 1.25rem;
+}
+
+.header {
+  cursor: pointer;
+}
+
+.header .subtitleJar {
+  flex-shrink: 0;
+}
+
+.header .subtitle {
+  flex-shrink: 1;
+  font-size: 0.9rem;
+  color: var(--bs-gray-600);
+}
+
+.header .title {
+  width: 100%;
+  font-size: 1.2rem;
+  color: var(--bs-body-color);
+}
+
+.header svg {
+  color: var(--bs-body-color);
+}
+
+.header :global .accordion-button:after {
+  display: none;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.buttons > button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 2.2rem;
+  font-size: 1rem;
+}
+
+.successCheckmark {
+  width: '2rem';
+  height: '2rem';
+  background-color: 'rgba(39, 174, 96, 1)';
+  color: 'white';
+  border-radius: '50%';
+}
