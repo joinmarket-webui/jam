@@ -41,5 +41,5 @@
   flex-grow: 1;
   min-height: 2.8rem;
   font-weight: 500;
-  border-color: none !important;
+  border-color: rgba(222, 222, 222, 1);
 }
