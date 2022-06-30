@@ -29,7 +29,7 @@ RUN cd /src/scripts \
 
 WORKDIR /src/scripts
 
-COPY docker-entrypoint.sh .
+COPY docker-entrypoint.sh /
 COPY autostart /root/
 COPY supervisor-conf/*.conf /etc/supervisor/conf.d/
 
@@ -44,4 +44,4 @@ EXPOSE 28183
 # jmwalletd websocket
 EXPOSE 28283
 
-ENTRYPOINT  [ "tini", "-g", "--", "./docker-entrypoint.sh" ]
+ENTRYPOINT  [ "tini", "-g", "--", "/docker-entrypoint.sh" ]

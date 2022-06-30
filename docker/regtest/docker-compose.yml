@@ -10,7 +10,8 @@ services:
     restart: unless-stopped
     environment:
       READY_FILE: /root/.nbxplorer/btc_fully_synched
-      ENSURE_WALLET: 1
+      ENSURE_WALLET: "true"
+      REMOVE_LOCK_FILES: "true"
       jm_rpc_wallet_file: jm_primary
       jm_minimum_makers: 1
       jm_tx_broadcast: self
@@ -55,7 +56,8 @@ services:
     restart: unless-stopped
     environment:
       READY_FILE: /root/.nbxplorer/btc_fully_synched
-      ENSURE_WALLET: 1
+      ENSURE_WALLET: "true"
+      REMOVE_LOCK_FILES: "true"
       APP_USER: joinmarket
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_secondary
