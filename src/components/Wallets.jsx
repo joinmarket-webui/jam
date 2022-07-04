@@ -252,16 +252,15 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       <ConfirmModal
         isShown={showLockConfirmModal}
         title={t('wallets.wallet_preview.modal_lock_wallet_title')}
-        body={
-          (makerRunning
-            ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
-            : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
-          ' ' +
-          t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')
-        }
         onCancel={() => setShowLockConfirmModal(false)}
         onConfirm={onLockConfirmed}
-      />
+      >
+        {(makerRunning
+          ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
+          : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
+          ' ' +
+          t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}
+      </ConfirmModal>
     </>
   )
 }
