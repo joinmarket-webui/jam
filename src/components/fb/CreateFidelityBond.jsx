@@ -6,8 +6,7 @@ import Alert from '../Alert'
 import Sprite from '../Sprite'
 import { ConfirmModal } from '../Modal'
 import { SelectJar, SelectUtxos, SelectDate, FreezeUtxos, ReviewInputs } from './FidelityBondSteps'
-import { utxosToFreeze, allUtxosAreFrozen } from './utils'
-import { toYearsRange, DEFAULT_MAX_TIMELOCK_YEARS } from '../fidelity_bond/fb_utils'
+import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
 
@@ -40,9 +39,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
   const yearsRange = useMemo(() => {
     if (isDebugFeatureEnabled('allowCreatingExpiredFidelityBond')) {
-      return toYearsRange(-1, DEFAULT_MAX_TIMELOCK_YEARS)
+      return fb.toYearsRange(-1, fb.DEFAULT_MAX_TIMELOCK_YEARS)
     }
-    return toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS)
+    return fb.toYearsRange(0, fb.DEFAULT_MAX_TIMELOCK_YEARS)
   }, [])
 
   const reset = () => {
@@ -226,13 +225,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.selectUtxos:
         return 'Next'
       case steps.freezeUtxos:
-        return allUtxosAreFrozen({
-          utxos: utxosToFreeze({ allUtxos: utxos[selectedJar], selectedUtxosForFidelityBond: selectedUtxos }),
-        })
-          ? 'Next'
-          : alert !== null
-          ? 'Try again'
-          : 'Freeze UTXOs'
+        const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos))
+
+        if (utxosAreFrozen) {
+          return 'Next'
+        } else if (alert !== null) {
+          return 'Try Again'
+        }
+
+        return 'Freeze UTXOs'
       case steps.reviewInputs:
         return timelockedAddress === null ? 'Try again' : 'Create Fidelity Bond'
       case steps.createFidelityBond:
@@ -266,11 +267,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         return null
       }
 
-      if (
-        allUtxosAreFrozen({
-          utxos: utxosToFreeze({ allUtxos: utxos[selectedJar], selectedUtxosForFidelityBond: selectedUtxos }),
-        })
-      ) {
+      const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos))
+      if (utxosAreFrozen) {
         return steps.reviewInputs
       }
 
@@ -303,13 +301,13 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       return
     }
 
-    if (
-      step === steps.freezeUtxos &&
-      !allUtxosAreFrozen({
-        utxos: utxosToFreeze({ allUtxos: utxos[selectedJar], selectedUtxosForFidelityBond: selectedUtxos }),
-      })
-    ) {
-      freezeUtxos(utxosToFreeze({ allUtxos: utxos[selectedJar], selectedUtxosForFidelityBond: selectedUtxos }))
+    if (step === steps.freezeUtxos) {
+      const utxosToFreeze = fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos)
+      const utxosAreFrozen = fb.utxo.allAreFrozen(utxosToFreeze)
+
+      if (!utxosAreFrozen) {
+        freezeUtxos(utxosToFreeze)
+      }
     }
 
     if (nextStep(step) === steps.reviewInputs) {

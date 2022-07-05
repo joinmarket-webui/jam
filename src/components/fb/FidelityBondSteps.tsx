@@ -9,9 +9,8 @@ import { calculateFillLevel, SelectableJar } from '../jars/Jar'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { CopyButton } from '../CopyButton'
-import LockdateForm from '../fidelity_bond/LockdateForm'
-import * as fb from '../fidelity_bond/fb_utils'
-import { utxosToFreeze, utxoIsInList } from './utils'
+import LockdateForm from './LockdateForm'
+import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
 
 const cx = classnamesBind.bind(styles)
@@ -162,9 +161,9 @@ const SelectUtxos = ({ jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselect
           key={index}
           utxo={utxo}
           isSelectable={!utxo.frozen}
-          isSelected={utxoIsInList({ utxo, list: selectedUtxos })}
+          isSelected={fb.utxo.isInList(utxo, selectedUtxos)}
           onClick={() => {
-            if (utxoIsInList({ utxo, list: selectedUtxos })) {
+            if (fb.utxo.isInList(utxo, selectedUtxos)) {
               onUtxoDeselected(utxo)
             } else {
               onUtxoSelected(utxo)
@@ -187,7 +186,7 @@ const FreezeUtxos = ({ jar, utxos, selectedUtxos, isLoading = false }: FreezeUtx
         The following UTXOs will not be used for the fidelity bond. They will be frozen in order to remain in jar #{jar}
         . You can unfreeze them anytime after creating the fidelity bond.
       </div>
-      {utxosToFreeze({ allUtxos: utxos, selectedUtxosForFidelityBond: selectedUtxos }).map((utxo, index) => (
+      {fb.utxo.utxosToFreeze(utxos, selectedUtxos).map((utxo, index) => (
         <UtxoCard key={index} utxo={utxo} isSelectable={false} isSelected={false} isLoading={isLoading} />
       ))}
     </div>

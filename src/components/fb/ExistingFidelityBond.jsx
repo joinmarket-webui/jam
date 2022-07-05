@@ -8,7 +8,6 @@ import styles from './ExistingFidelityBond.module.css'
 const ExistingFidelityBond = ({ utxo }) => {
   const settings = useSettings()
 
-  console.log(utxo)
   return (
     <div className={styles.container}>
       <div className="d-flex justify-content-between align-items-center">

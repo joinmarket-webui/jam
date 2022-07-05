@@ -3,7 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 
 import * as Api from '../../libs/JmWalletApi'
-import * as fb from './fb_utils'
+import * as fb from './utils'
 
 const monthFormatter = (locales: string) => new Intl.DateTimeFormat(locales, { month: 'long' })
 
