@@ -153,6 +153,10 @@
   height: 18px;
 }
 
+.confirmationStepIcon svg {
+  color: var(--bs-body-color);
+}
+
 .confirmationStepLabel {
   color: var(--bs-gray-600);
   font-size: 0.8rem;

@@ -258,7 +258,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
         <CopyButton
           showSprites={false}
           text={<Sprite symbol="copy" width="18" height="18" />}
-          successText={<Sprite color="green" symbol="checkmark" width="18" height="18" />}
+          successText={<Sprite symbol="checkmark" width="18" height="18" />}
           value={timelockedAddress}
           className={styles.confirmationStepIcon}
         />

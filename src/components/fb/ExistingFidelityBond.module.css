@@ -38,3 +38,7 @@
   width: 18px;
   height: 18px;
 }
+
+.icon svg {
+  color: var(--bs-body-color);
+}
