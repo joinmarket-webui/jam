@@ -4,6 +4,10 @@
   padding: 1.25rem;
 }
 
+:root[data-theme='dark'] .container {
+  border-color: var(--bs-gray-700);
+}
+
 .header {
   cursor: pointer;
 }

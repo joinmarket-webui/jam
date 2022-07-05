@@ -12,6 +12,10 @@
   border-radius: 0.5rem;
 }
 
+:root[data-theme='dark'] .utxoCard {
+  border-color: var(--bs-gray-700);
+}
+
 .utxoCard.selectable {
   cursor: pointer;
 }
@@ -23,6 +27,11 @@
 .utxoCard.selected {
   background-color: rgb(45, 156, 219, 0.03);
   border: 2px solid rgb(45, 156, 219, 1);
+}
+
+:root[data-theme='dark'] .utxoCard.selected {
+  background-color: var(--bs-gray-800);
+  border-color: var(--bs-gray-500);
 }
 
 .utxoCard.selected:not(.selectable) {
@@ -37,6 +46,10 @@
   border: 2px solid var(--bs-gray-200);
 }
 
+:root[data-theme='dark'] .utxoCard > .utxoSelectionMarker {
+  border-color: var(--bs-gray-500);
+}
+
 .utxoCard:not(.selected):not(.selectable) > .utxoSelectionMarker {
   visibility: hidden;
 }
@@ -49,6 +62,10 @@
 .utxoCard.selected:not(.selectable) > .utxoSelectionMarker {
   border: 6px solid var(--bs-gray-200);
   background-color: white;
+}
+
+:root[data-theme='dark'] .utxoCard.selected:not(.selectable) > .utxoSelectionMarker {
+  border-color: var(--bs-gray-500);
 }
 
 .utxoCard > .utxoBody {
@@ -84,6 +101,11 @@
   color: var(--bs-gray-600);
   min-width: 5.5rem;
   font-size: 0.9rem;
+}
+
+:root[data-theme='dark'] .utxoCard > .utxoLabel {
+  background-color: var(--bs-gray-700);
+  color: var(--bs-gray-400);
 }
 
 .utxoCard.selected:not(.selectable) > .utxoLabel {
@@ -145,6 +167,10 @@
   color: var(--bs-gray-800);
 }
 
+:root[data-theme='dark'] .utxoSummaryTitle {
+  color: var(--bs-gray-600);
+}
+
 .utxoSummaryCard {
   display: flex;
   flex-direction: column;
@@ -153,6 +179,11 @@
   border: 1px solid var(--bs-gray-200);
   background-color: var(--bs-gray-100);
   border-radius: 0.3rem;
+}
+
+:root[data-theme='dark'] .utxoSummaryCard {
+  border-color: var(--bs-gray-600);
+  background-color: var(--bs-gray-800);
 }
 
 .utxoSummaryCardTitleContainer {
