@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import { useReloadCurrentWalletInfo } from '../../context/WalletContext'
+import Alert from '../Alert'
 import Sprite from '../Sprite'
 import { ConfirmModal } from '../Modal'
 import { SelectJar, SelectUtxos, SelectDate, FreezeUtxos, ReviewInputs } from './FidelityBondSteps'
@@ -18,6 +19,7 @@ const steps = {
   reviewInputs: 4,
   createFidelityBond: 5,
   done: 6,
+  failed: 7,
 }
 
 const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo }) => {
@@ -25,6 +27,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [alert, setAlert] = useState(null)
   const [step, setStep] = useState(steps.selectDate)
   const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
 
@@ -49,6 +52,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     setSelectedUtxos([])
     setLockDate(null)
     setTimelockedAddress(null)
+    setAlert(null)
   }
 
   const freezeUtxos = async (utxos) => {
@@ -68,9 +72,11 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     await Promise.all(freezeCalls)
       .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
       .catch((err) => {
-        console.error(err.message)
+        setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
-      .finally(() => setIsLoading(false))
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   const loadTimeLockedAddress = async (lockDate) => {
@@ -84,12 +90,12 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       signal: abortCtrl.signal,
       lockdate: lockDate,
     })
-      .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(res, 'fidelity_bond.error_loading_timelock_address_failed')
-      )
+      .then((res) => {
+        return res.ok ? res.json() : Api.Helper.throwError(res, 'fidelity_bond.error_loading_timelock_address_failed')
+      })
       .then((data) => setTimelockedAddress(data.address))
       .catch((err) => {
-        console.error(err.message)
+        setAlert({ variant: 'danger', message: err.message })
       })
       .finally(() => setIsLoading(false))
   }
@@ -97,7 +103,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
   const directSweepToFidelityBond = async (jar, address) => {
     setIsLoading(true)
 
-    const res = await Api.postDirectSend(
+    await Api.postDirectSend(
       { walletName: wallet.name, token: wallet.token },
       {
         mixdepth: jar,
@@ -105,12 +111,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         amount_sats: 0, // sweep
       }
     )
-
-    if (!res.ok) {
-      await Api.Helper.throwError(res)
-    }
-
-    setIsLoading(false)
+      .then((res) => {
+        if (!res.ok) {
+          return Api.Helper.throwError(res, 'Could not create fidelity bond.')
+        }
+      })
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => setIsLoading(false))
   }
 
   useEffect(() => {
@@ -167,9 +176,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           />
         )
       case steps.reviewInputs:
-        return isLoading || timelockedAddress === null ? (
-          <div>Loading...</div>
-        ) : (
+        if (isLoading) {
+          return <div>Loading...</div>
+        }
+
+        if (timelockedAddress === null) {
+          return <div>Could not load time locked address.</div>
+        }
+
+        return (
           <ReviewInputs
             lockDate={lockDate}
             jar={selectedJar}
@@ -178,6 +193,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
             timelockedAddress={timelockedAddress}
           />
         )
+
       case steps.createFidelityBond:
         return isLoading ? (
           <div className="d-flex justify-content-center align-items-center mt-5">
@@ -186,8 +202,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           </div>
         ) : (
           <div className="d-flex justify-content-center align-items-center gap-2 mt-5">
-            <Sprite className={styles.successCheckmark} symbol="checkmark" width="24" height="30" />
-            Fidelity Bond Created!
+            {alert === null ? (
+              <>
+                <Sprite className={styles.successCheckmark} symbol="checkmark" width="24" height="30" />
+                Fidelity Bond Created!{' '}
+              </>
+            ) : (
+              <>Couldn't create fidelity bond. </>
+            )}
           </div>
         )
       default:
@@ -208,11 +230,13 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           utxos: utxosToFreeze({ allUtxos: utxos[selectedJar], selectedUtxosForFidelityBond: selectedUtxos }),
         })
           ? 'Next'
+          : alert !== null
+          ? 'Try again'
           : 'Freeze UTXOs'
       case steps.reviewInputs:
-        return 'Create Fidelity Bond'
+        return timelockedAddress === null ? 'Try again' : 'Create Fidelity Bond'
       case steps.createFidelityBond:
-        return 'Close'
+        return alert === null ? 'Close' : 'Try Again'
       default:
         return null
     }
@@ -254,12 +278,20 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
 
     if (currentStep === steps.reviewInputs) {
+      if (isLoading) {
+        return null
+      }
+
       return steps.createFidelityBond
     }
 
     if (currentStep === steps.createFidelityBond) {
-      if (!isLoading) {
+      if (!isLoading && alert === null) {
         return steps.done
+      }
+
+      if (alert !== null) {
+        return steps.failed
       }
     }
 
@@ -284,6 +316,11 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       loadTimeLockedAddress(lockDate)
     }
 
+    if (step === steps.reviewInputs && timelockedAddress === null) {
+      loadTimeLockedAddress(lockDate)
+      return
+    }
+
     if (nextStep(step) === steps.createFidelityBond) {
       setShowConfirmInputsModal(true)
       return
@@ -293,11 +330,17 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       reset()
     }
 
+    if (nextStep(step) === steps.failed) {
+      reset()
+      return
+    }
+
     setStep(nextStep(step))
   }
 
   return (
     <div className={styles.container}>
+      {alert && <Alert {...alert} className="mt-0" onDismissed={() => setAlert(null)} />}
       <ConfirmModal
         isShown={showConfirmInputsModal}
         title={'Are you sure you want to lock your funds?'}
