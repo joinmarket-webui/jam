@@ -113,7 +113,9 @@ const UtxoCard = ({
       className={cx('utxoCard', { selected: isSelected, selectable: isSelectable })}
       onClick={() => isSelectable && onClick()}
     >
-      <div className={styles.utxoSelectionMarker} />
+      <div className={styles.utxoSelectionMarker}>
+        {isSelected && <Sprite symbol="checkmark" width="18" height="18" />}
+      </div>
       <div className={styles.utxoBody}>
         <Balance valueString={utxo.value.toString()} convertToUnit={settings.unit} showBalance={true} />
         <code className={styles.utxoAddress}>{utxo.address}</code>

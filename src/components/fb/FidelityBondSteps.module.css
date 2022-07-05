@@ -42,8 +42,11 @@
 .utxoCard > .utxoSelectionMarker {
   width: 1.25rem;
   height: 1.25rem;
-  border-radius: 50%;
+  border-radius: 0.3rem;
   border: 2px solid var(--bs-gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 :root[data-theme='dark'] .utxoCard > .utxoSelectionMarker {
@@ -55,13 +58,21 @@
 }
 
 .utxoCard.selected > .utxoSelectionMarker {
-  border: 6px solid #2d9cdb;
+  border: 2px solid #2d9cdb;
   background-color: white;
 }
 
+.utxoCard.selected > .utxoSelectionMarker > svg {
+  color: #2d9cdb;
+}
+
 .utxoCard.selected:not(.selectable) > .utxoSelectionMarker {
-  border: 6px solid var(--bs-gray-200);
+  border: 2px solid var(--bs-gray-200);
   background-color: white;
+}
+
+.utxoCard.selected:not(.selectable) > .utxoSelectionMarker > svg {
+  color: var(--bs-gray-200);
 }
 
 :root[data-theme='dark'] .utxoCard.selected:not(.selectable) > .utxoSelectionMarker {
