@@ -54,7 +54,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     setAlert(null)
   }
 
-  const freezeUtxos = async (utxos) => {
+  const freezeUtxos = (utxos) => {
     setIsLoading(true)
 
     const abortCtrl = new AbortController()
@@ -68,7 +68,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       })
     )
 
-    await Promise.all(freezeCalls)
+    Promise.all(freezeCalls)
       .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
       .then((_) => setAlert(null))
       .catch((err) => {
@@ -79,12 +79,12 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       })
   }
 
-  const loadTimeLockedAddress = async (lockDate) => {
+  const loadTimeLockedAddress = (lockDate) => {
     setIsLoading(true)
 
     const abortCtrl = new AbortController()
 
-    await Api.getAddressTimelockNew({
+    Api.getAddressTimelockNew({
       walletName: wallet.name,
       token: wallet.token,
       signal: abortCtrl.signal,
@@ -101,10 +101,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       .finally(() => setIsLoading(false))
   }
 
-  const directSweepToFidelityBond = async (jar, address) => {
+  const directSweepToFidelityBond = (jar, address) => {
     setIsLoading(true)
 
-    await Api.postDirectSend(
+    Api.postDirectSend(
       { walletName: wallet.name, token: wallet.token },
       {
         mixdepth: jar,
