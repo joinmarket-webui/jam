@@ -239,7 +239,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
     },
     {
       icon: <Sprite symbol="jar-open-fill-50" width="18" height="18" className={styles.confirmationStepIcon} />,
-      label: 'Funds will be spend from',
+      label: 'Funds will be spent from',
       content: `Jar #${jar}`,
     },
     {
@@ -263,7 +263,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
           className={styles.confirmationStepIcon}
         />
       ),
-      label: 'Funds will be lockd up on this address',
+      label: 'Funds will be locked up on this address',
       content: <code className={styles.timelockedAddress}>{timelockedAddress}</code>,
     },
   ]
