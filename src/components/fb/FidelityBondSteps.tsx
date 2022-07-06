@@ -198,38 +198,34 @@ const FreezeUtxos = ({ jar, utxos, selectedUtxos, isLoading = false }: FreezeUtx
 const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }: ReviewInputsProps) => {
   const settings = useSettings()
 
-  const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: string; utxos: Array<Utxo> }) => {
-    const settings = useSettings()
-
-    return (
-      <div className="d-flex flex-column gap-2">
-        <div className="d-flex align-items-center gap-1">
-          <Sprite symbol={icon} width="18" height="18" className={styles.utxoSummaryIcon} />
-          <div className={styles.utxoSummaryTitle}>{title}</div>
-        </div>
-        <div className="d-flex flex-wrap gap-1">
-          {utxos.map((utxo, index) => (
-            <div className={styles.utxoSummaryCard} key={index}>
-              <div className={styles.utxoSummaryCardTitleContainer}>
-                <div className={styles.utxoSummaryCardTitle}>
-                  <Balance valueString={utxo.value.toString()} convertToUnit={settings.unit} showBalance={true} />
-                </div>
-                {utxo.label === 'cj-out' && (
-                  <div className={cx('utxoSummaryCardTitleLabel', 'utxoCjOut')}>
-                    <Sprite symbol="cj" width="9" height="9" />
-                    {utxo.label}
-                  </div>
-                )}
-              </div>
-              <div className={styles.utxoSummaryCardSubtitle}>
-                <code>{utxo.address}</code>
-              </div>
-            </div>
-          ))}
-        </div>
+  const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: string; utxos: Array<Utxo> }) => (
+    <div className="d-flex flex-column gap-2">
+      <div className="d-flex align-items-center gap-1">
+        <Sprite symbol={icon} width="18" height="18" className={styles.utxoSummaryIcon} />
+        <div className={styles.utxoSummaryTitle}>{title}</div>
       </div>
-    )
-  }
+      <div className="d-flex flex-wrap gap-1">
+        {utxos.map((utxo, index) => (
+          <div className={styles.utxoSummaryCard} key={index}>
+            <div className={styles.utxoSummaryCardTitleContainer}>
+              <div className={styles.utxoSummaryCardTitle}>
+                <Balance valueString={utxo.value.toString()} convertToUnit={settings.unit} showBalance={true} />
+              </div>
+              {utxo.label === 'cj-out' && (
+                <div className={cx('utxoSummaryCardTitleLabel', 'utxoCjOut')}>
+                  <Sprite symbol="cj" width="9" height="9" />
+                  {utxo.label}
+                </div>
+              )}
+            </div>
+            <div className={styles.utxoSummaryCardSubtitle}>
+              <code>{utxo.address}</code>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   const confirmationItems = [
     {
