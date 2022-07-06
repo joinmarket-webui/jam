@@ -4,11 +4,14 @@ import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
+import { CreateFidelityBond } from './fb/CreateFidelityBond'
+import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
 import { EarnReportOverlay } from './EarnReport'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
@@ -82,8 +85,11 @@ export default function Earn() {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
+  const currentWalletInfo = useCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
+  const balanceSummary = useBalanceSummary(currentWalletInfo)
 
   const [isAdvancedView, setIsAdvancedView] = useState(settings.useAdvancedWalletMode)
   const [alert, setAlert] = useState(null)
@@ -93,6 +99,7 @@ export default function Earn() {
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
+  const [fidelityBonds, setFidelityBonds] = useState([])
 
   const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
     setIsSending(true)
@@ -146,14 +153,23 @@ export default function Earn() {
 
     setIsLoading(true)
 
-    reloadServiceInfo({ signal: abortCtrl.signal })
+    const reloadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
+    const reloadingCurrentWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).then((info) => {
+      if (info && !abortCtrl.signal.aborted) {
+        const unspentOutputs = info.data.utxos.utxos
+        const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
+        setFidelityBonds(fbOutputs)
+      }
+    })
+
+    Promise.all([reloadingServiceInfo, reloadingCurrentWalletInfo])
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, isSending, reloadServiceInfo])
+  }, [currentWallet, isSending, reloadServiceInfo, reloadCurrentWalletInfo])
 
   useEffect(() => {
     if (isSending) return
@@ -255,16 +271,39 @@ export default function Earn() {
               {t('earn.alert_coinjoin_in_progress')}
             </rb.Alert>
           </rb.Fade>
-
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-
           {serviceInfoAlert && <rb.Alert variant={serviceInfoAlert.variant}>{serviceInfoAlert.message}</rb.Alert>}
-
           {!serviceInfo?.coinjoinInProgress &&
             !serviceInfo?.makerRunning &&
             !isWaitingMakerStart &&
             !isWaitingMakerStop && <p className="text-secondary mb-4">{t('earn.market_explainer')}</p>}
-
+          {!serviceInfo?.coinjoinInProgress && (
+            <>
+              <PageTitle
+                title={'Create a Fidelity Bond'}
+                subtitle={
+                  'Fidelity bonds prevent Sybil attacks by deliberately increasing the cost of creating cryptographic identities. Creating a fidelity bond will increase your chances of being picked for a collaborative transaction.'
+                }
+              />
+              <div className="d-flex flex-column gap-3">
+                {fidelityBonds.length > 0 &&
+                  fidelityBonds.map((utxo, index) => <ExistingFidelityBond key={index} utxo={utxo} />)}
+                {!isLoading && balanceSummary ? (
+                  <CreateFidelityBond
+                    otherFidelityBondExists={fidelityBonds.length > 0}
+                    accountBalances={balanceSummary?.accountBalances}
+                    totalBalance={balanceSummary?.totalBalance}
+                    wallet={currentWallet}
+                    walletInfo={currentWalletInfo}
+                  />
+                ) : (
+                  <rb.Placeholder as="div" animation="wave">
+                    <rb.Placeholder xs={12} className={styles['fb-loader']} />
+                  </rb.Placeholder>
+                )}
+              </div>
+            </>
+          )}
           {!serviceInfo?.coinjoinInProgress && (
             <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
               {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
@@ -423,7 +462,6 @@ export default function Earn() {
                       <hr />
                     </div>
                   )}
-
                   <rb.Button
                     variant="dark"
                     type="submit"
@@ -457,7 +495,6 @@ export default function Earn() {
           )}
         </rb.Col>
       </rb.Row>
-
       <rb.Row className="mt-5 mb-3">
         <rb.Col className="d-flex justify-content-center">
           <EarnReportOverlay show={isShowReport} onHide={() => setIsShowReport(false)} />

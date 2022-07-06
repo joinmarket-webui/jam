@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 // @ts-ignore
@@ -10,7 +9,6 @@ import DisplayAccountUTXOs from './DisplayAccountUTXOs'
 import DisplayUTXOs from './DisplayUTXOs'
 // @ts-ignore
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
-import { routes } from '../constants/routes'
 import styles from './CurrentWalletAdvanced.module.css'
 
 type Utxos = any[]
@@ -97,14 +95,6 @@ export default function CurrentWalletAdvanced() {
                   <Trans i18nKey="fidelity_bond.alert_no_fidelity_bonds" as="span">
                     No Fidelity Bond present.
                   </Trans>
-                  <>
-                    {' '}
-                    <Link to={routes.fidelityBonds}>
-                      <Trans i18nKey="current_wallet_advanced.link_fidelity_bonds_create_text" as="span">
-                        Create a Fidelity Bond.
-                      </Trans>
-                    </Link>
-                  </>
                 </>
               </rb.Alert>
             ) : (

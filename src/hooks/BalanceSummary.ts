@@ -152,4 +152,4 @@ const useBalanceSummary = (currentWalletInfo: WalletInfo | null, now?: Milliseco
   return balanceSummary
 }
 
-export { useBalanceSummary }
+export { useBalanceSummary, AccountBalances, AccountBalanceSummary }

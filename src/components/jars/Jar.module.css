@@ -39,6 +39,7 @@
 
 .selectableJarContainer:not(.selectable) {
   color: var(--bs-gray-600);
+  cursor: unset;
 }
 
 .selectableJarContainer:not(.selectable) > .selectionCircle {
