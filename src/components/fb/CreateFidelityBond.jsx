@@ -70,6 +70,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
     await Promise.all(freezeCalls)
       .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
+      .then((_) => setAlert(null))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
@@ -93,6 +94,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         return res.ok ? res.json() : Api.Helper.throwError(res, 'fidelity_bond.error_loading_timelock_address_failed')
       })
       .then((data) => setTimelockedAddress(data.address))
+      .then((_) => setAlert(null))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
@@ -115,6 +117,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           return Api.Helper.throwError(res, 'Could not create fidelity bond.')
         }
       })
+      .then((_) => setAlert(null))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
