@@ -14,7 +14,11 @@ const ExistingFidelityBond = ({ utxo }) => {
         <div className={styles.title}>Fidelity Bond</div>
         <div className="d-flex align-items-center gap-1">
           <Sprite symbol="coins" width="24" height="24" />
-          <Balance valueString={utxo.value.toString()} convertToUnit={settings.unit} showBalance={true} />
+          <Balance
+            valueString={utxo.value.toString()}
+            convertToUnit={settings.unit}
+            showBalance={settings.showBalance}
+          />
         </div>
       </div>
       <div className="d-flex align-items-center justify-content-start gap-4 px-3 mt-3">
