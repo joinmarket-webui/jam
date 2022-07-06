@@ -127,12 +127,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     const utxosByAccount = utxos.reduce((res, utxo) => {
       const { mixdepth } = utxo
       res[mixdepth] = res[mixdepth] || []
-
-      // todo: remove
-      if (utxo.value === 100000000) {
-        utxo.label = 'cj-out'
-      }
-
       res[mixdepth].push(utxo)
 
       return res
