@@ -2,38 +2,10 @@ import React from 'react'
 import { render } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
-import { useBalanceSummary, WalletBalanceSummary, isLocked } from './BalanceSummary'
+import { useBalanceSummary, WalletBalanceSummary } from './BalanceSummary'
 import { WalletInfo, Utxo } from '../context/WalletContext'
 
 const now = Date.UTC(2009, 0, 3)
-
-describe('isLocked', () => {
-  it('should detect timelocked utxo as locked', () => {
-    const utxo = {
-      // timelocked, not yet expired
-      locktime: 'any',
-      path: `m/84'/1'/0'/0/1:${now / 1_000 + 1}`,
-    } as Utxo
-    expect(isLocked(utxo, now)).toBe(true)
-  })
-
-  it('should detect expired timelocked utxo as unlocked', () => {
-    const utxo = {
-      // timelocked, but expired
-      locktime: 'any',
-      path: `m/84'/1'/0'/0/1:${now / 1_000 - 1}`,
-    } as Utxo
-    expect(isLocked(utxo, now)).toBe(false)
-  })
-
-  it('should detect non-timelocked utxo as unlocked', () => {
-    const utxo = {
-      // not timelocked
-      path: `m/84'/1'/0'/0/1`,
-    } as Utxo
-    expect(isLocked(utxo, now)).toBe(false)
-  })
-})
 
 describe('BalanceSummary', () => {
   function setup(walletInfo: WalletInfo | null, refTime: number) {
