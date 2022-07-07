@@ -1,5 +1,4 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -21,6 +20,10 @@ import styles from './Earn.module.css'
 // There is currently no way to know for sure - adding a delay at least mitigates the problem.
 // 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
 const MAKER_STOP_RESPONSE_DELAY_MS = 2_000
+
+// When reloading UTXO after creating a fidelity bond, use a delay to make sure
+// that the UTXO corresponding to the fidelity bond is correctly marked as such.
+const RELOAD_FIDELITY_BONDS_DELAY_MS = 2_000
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
@@ -194,6 +197,29 @@ export default function Earn() {
     })
   }, [isSending, serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
 
+  const reloadFidelityBonds = ({ delay }) => {
+    const abortCtrl = new AbortController()
+
+    setIsLoading(true)
+
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
+      }, delay)
+    })
+      .then((info) => {
+        if (info) {
+          const unspentOutputs = info.data.utxos.utxos
+          const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
+          setFidelityBonds(fbOutputs)
+        }
+      })
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+  }
+
   const feeRelMin = 0.0
   const feeRelMax = 0.1 // 10%
   const feeRelPercentageStep = 0.0001
@@ -295,6 +321,7 @@ export default function Earn() {
                     totalBalance={balanceSummary?.totalBalance}
                     wallet={currentWallet}
                     walletInfo={currentWalletInfo}
+                    onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
                   />
                 ) : (
                   <rb.Placeholder as="div" animation="wave">

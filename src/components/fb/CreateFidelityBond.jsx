@@ -21,7 +21,7 @@ const steps = {
   failed: 7,
 }
 
-const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo }) => {
+const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo, onDone }) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [isExpanded, setIsExpanded] = useState(false)
@@ -234,7 +234,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.reviewInputs:
         return timelockedAddress === null ? 'Try again' : 'Create Fidelity Bond'
       case steps.createFidelityBond:
-        return alert === null ? 'Close' : 'Try Again'
+        return alert === null ? 'Done' : 'Try Again'
       default:
         return null
     }
@@ -323,6 +323,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
     if (nextStep(step) === steps.done) {
       reset()
+      onDone()
     }
 
     if (nextStep(step) === steps.failed) {
