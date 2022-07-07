@@ -339,16 +339,17 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       <ConfirmModal
         isShown={showConfirmInputsModal}
         title={'Are you sure you want to lock your funds?'}
-        body={`Be aware that your funds can only be moved again when the fidelity bond expires on ${new Date(
-          lockDate
-        ).toUTCString()}`}
         onCancel={() => setShowConfirmInputsModal(false)}
         onConfirm={() => {
           setStep(steps.createFidelityBond)
           setShowConfirmInputsModal(false)
           directSweepToFidelityBond(selectedJar, timelockedAddress)
         }}
-      />
+      >
+        {`Be aware that your funds can only be moved again when the fidelity bond expires on ${new Date(
+          lockDate
+        ).toUTCString()}`}
+      </ConfirmModal>
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
         <div className="d-flex justify-content-between align-items-center">
           <div className={styles.title}>
