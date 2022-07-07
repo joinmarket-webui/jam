@@ -314,20 +314,26 @@ export default function Earn() {
               <div className="d-flex flex-column gap-3">
                 {fidelityBonds.length > 0 &&
                   fidelityBonds.map((utxo, index) => <ExistingFidelityBond key={index} utxo={utxo} />)}
-                {!isLoading && balanceSummary ? (
-                  <CreateFidelityBond
-                    otherFidelityBondExists={fidelityBonds.length > 0}
-                    accountBalances={balanceSummary?.accountBalances}
-                    totalBalance={balanceSummary?.totalBalance}
-                    wallet={currentWallet}
-                    walletInfo={currentWalletInfo}
-                    onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
-                  />
-                ) : (
-                  <rb.Placeholder as="div" animation="wave">
-                    <rb.Placeholder xs={12} className={styles['fb-loader']} />
-                  </rb.Placeholder>
-                )}
+
+                <>
+                  {!serviceInfo?.makerRunning &&
+                    !isWaitingMakerStart &&
+                    !isWaitingMakerStop &&
+                    (!isLoading && balanceSummary ? (
+                      <CreateFidelityBond
+                        otherFidelityBondExists={fidelityBonds.length > 0}
+                        accountBalances={balanceSummary?.accountBalances}
+                        totalBalance={balanceSummary?.totalBalance}
+                        wallet={currentWallet}
+                        walletInfo={currentWalletInfo}
+                        onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                      />
+                    ) : (
+                      <rb.Placeholder as="div" animation="wave">
+                        <rb.Placeholder xs={12} className={styles['fb-loader']} />
+                      </rb.Placeholder>
+                    ))}
+                </>
               </div>
             </>
           )}
