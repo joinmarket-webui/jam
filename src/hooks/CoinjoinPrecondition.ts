@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { isLocked } from '../hooks/BalanceSummary'
+import * as fb from '../components/fb/utils'
 import { Utxos } from '../context/WalletContext'
 
 export const COINJOIN_PRECONDITIONS = {
@@ -18,7 +18,7 @@ export interface CoinjoinPreconditionSummary {
 
 export const useCoinjoinPreconditionSummary = (utxos: Utxos): CoinjoinPreconditionSummary => {
   const eligibleUtxos = useMemo(() => {
-    return utxos.filter((it) => !it.frozen).filter((it) => !isLocked(it))
+    return utxos.filter((it) => !it.frozen).filter((it) => !fb.utxo.isLocked(it))
   }, [utxos])
 
   return useMemo(() => {
