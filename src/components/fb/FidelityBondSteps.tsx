@@ -108,6 +108,8 @@ const UtxoCard = ({
 }: UtxoCardProps) => {
   const settings = useSettings()
 
+  const utxoIsLocked = useMemo(() => fb.utxo.isLocked(utxo), [utxo])
+
   return (
     <div
       className={cx('utxoCard', { selected: isSelected, selectable: isSelectable })}
@@ -130,13 +132,13 @@ const UtxoCard = ({
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
         </div>
       )}
-      {!isLoading && utxo.frozen && !utxo.locktime && (
+      {!isLoading && utxo.frozen && !utxoIsLocked && (
         <div className={cx('utxoLabel', 'utxoFrozen')}>
           <Sprite symbol="lock" width="18" height="18" />
           <div>frozen</div>
         </div>
       )}
-      {!isLoading && utxo.locktime && (
+      {!isLoading && utxoIsLocked && (
         <div className={cx('utxoLabel', 'utxoFidelityBond')}>
           <Sprite symbol="lock" width="18" height="18" />
           <div>locked</div>
