@@ -69,11 +69,23 @@ export interface BranchEntry {
   extradata: string
 }
 
+type CombinedRawWalletData = {
+  utxos: UtxosResponse
+  display: WalletDisplayResponse
+}
+
+type AddressInfo = {
+  status: AddressStatus
+  address: Api.BitcoinAddress
+}
+
+type AddressSummary = {
+  [key: Api.BitcoinAddress]: AddressInfo
+}
+
 export interface WalletInfo {
-  data: {
-    utxos: UtxosResponse
-    display: WalletDisplayResponse
-  }
+  addressSummary: AddressSummary
+  data: CombinedRawWalletData
 }
 
 interface WalletContextEntry {
@@ -81,6 +93,17 @@ interface WalletContextEntry {
   setCurrentWallet: React.Dispatch<React.SetStateAction<CurrentWallet | null>>
   currentWalletInfo: WalletInfo | null
   reloadCurrentWalletInfo: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
+}
+
+const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
+  const accounts = data.display.walletinfo.accounts
+  return accounts
+    .flatMap((it) => it.branches)
+    .flatMap((it) => it.entries)
+    .reduce((acc, { address, status }) => {
+      acc[address] = { address, status }
+      return acc
+    }, {} as AddressSummary)
 }
 
 const WalletContext = createContext<WalletContextEntry | undefined>(undefined)
@@ -99,7 +122,7 @@ const loadWalletInfoData = async ({
   walletName,
   token,
   signal,
-}: Api.WalletRequestContext & { signal: AbortSignal }): Promise<WalletInfo> => {
+}: Api.WalletRequestContext & { signal: AbortSignal }): Promise<CombinedRawWalletData> => {
   const loadingWallet = Api.getWalletDisplay({ walletName, token, signal }).then(
     (res): Promise<WalletDisplayResponse> => (res.ok ? res.json() : Api.Helper.throwError(res))
   )
@@ -110,10 +133,17 @@ const loadWalletInfoData = async ({
 
   const data = await Promise.all([loadingWallet, loadingUtxos])
   return {
-    data: {
-      display: data[0],
-      utxos: data[1],
-    },
+    display: data[0],
+    utxos: data[1],
+  }
+}
+
+const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
+  const addressSummary = toAddressSummary(data)
+
+  return {
+    addressSummary,
+    data,
   }
 }
 
@@ -140,7 +170,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
         }
 
         const { name: walletName, token } = currentWallet
-        const fetch = loadWalletInfoData({ walletName, token, signal })
+        const fetch = loadWalletInfoData({ walletName, token, signal }).then((data) => toWalletInfo(data))
 
         fetchWalletInfoInProgress.current = fetch
 

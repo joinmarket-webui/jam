@@ -4,7 +4,6 @@ import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
 import { AccountBalances, AccountBalanceSummary } from '../../hooks/BalanceSummary'
-import { useAddressSummary } from '../../hooks/AddressSummary'
 import { Utxo, AddressStatus, WalletInfo } from '../../context/WalletContext'
 import { calculateFillLevel, SelectableJar } from '../jars/Jar'
 import Sprite from '../Sprite'
@@ -160,8 +159,6 @@ const UtxoCard = ({
 }
 
 const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
-  const addressSummary = useAddressSummary(walletInfo)!
-
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>
@@ -172,7 +169,7 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
           <UtxoCard
             key={index}
             utxo={utxo}
-            status={addressSummary[utxo.address]?.status}
+            status={walletInfo.addressSummary[utxo.address]?.status}
             isSelectable={!utxo.frozen}
             isSelected={fb.utxo.isInList(utxo, selectedUtxos)}
             onClick={() => {
@@ -190,8 +187,6 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
 }
 
 const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false }: FreezeUtxosProps) => {
-  const addressSummary = useAddressSummary(walletInfo)!
-
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>Selected UTXOs:</div>
@@ -199,7 +194,7 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
         <UtxoCard
           key={index}
           utxo={utxo}
-          status={addressSummary[utxo.address]?.status}
+          status={walletInfo.addressSummary[utxo.address]?.status}
           isSelectable={false}
           isSelected={true}
         />
@@ -212,7 +207,7 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
         <UtxoCard
           key={index}
           utxo={utxo}
-          status={addressSummary[utxo.address]?.status}
+          status={walletInfo.addressSummary[utxo.address]?.status}
           isSelectable={false}
           isSelected={false}
           isLoading={isLoading}

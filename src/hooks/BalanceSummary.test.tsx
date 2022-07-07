@@ -36,6 +36,7 @@ describe('BalanceSummary', () => {
     act(() => {
       balanceSummary = setup(
         {
+          addressSummary: {},
           data: {
             utxos: {
               utxos: [],
@@ -65,6 +66,7 @@ describe('BalanceSummary', () => {
     act(() => {
       balanceSummary = setup(
         {
+          addressSummary: {},
           data: {
             utxos: {
               utxos: [
@@ -126,6 +128,7 @@ describe('BalanceSummary', () => {
     act(() => {
       balanceSummary = setup(
         {
+          addressSummary: {},
           data: {
             utxos: {
               utxos: [
