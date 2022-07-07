@@ -98,7 +98,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={3}>
             <h6>
               <Trans i18nKey="cheatsheet.item_3.title">
-                Optional: <Link to={routes.fidelityBonds}>Lock</Link> funds in a fidelity bond.
+                Optional: <Link to={routes.earn}>Lock</Link> funds in a fidelity bond.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
