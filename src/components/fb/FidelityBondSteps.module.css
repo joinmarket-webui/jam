@@ -126,7 +126,6 @@
 
 .utxoCard > .utxoLabel.utxoFrozen > svg {
   color: #2d9cdb;
-  margin-bottom: 0.1rem;
 }
 
 .utxoCard > .utxoLabel.utxoFidelityBond > svg {

@@ -132,7 +132,7 @@ const UtxoCard = ({
       )}
       {!isLoading && utxo.frozen && !utxo.locktime && (
         <div className={cx('utxoLabel', 'utxoFrozen')}>
-          <Sprite symbol="lock" width="18" height="18" />
+          <Sprite symbol="snowflake" width="18" height="18" />
           <div>frozen</div>
         </div>
       )}
