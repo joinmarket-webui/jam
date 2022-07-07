@@ -4,7 +4,8 @@ import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
 import { AccountBalances, AccountBalanceSummary } from '../../hooks/BalanceSummary'
-import { Utxo } from '../../context/WalletContext'
+import { useAddressSummary } from '../../hooks/AddressSummary'
+import { Utxo, AddressStatus, WalletInfo } from '../../context/WalletContext'
 import { calculateFillLevel, SelectableJar } from '../jars/Jar'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
@@ -30,6 +31,7 @@ interface SelectJarProps {
 
 interface UtxoCardProps {
   utxo: Utxo
+  status?: AddressStatus
   isSelectable?: boolean
   isSelected?: boolean
   isLoading?: boolean
@@ -37,6 +39,7 @@ interface UtxoCardProps {
 }
 
 interface SelectUtxosProps {
+  walletInfo: WalletInfo
   jar: number
   utxos: Array<Utxo>
   selectedUtxos: Array<Utxo>
@@ -45,6 +48,7 @@ interface SelectUtxosProps {
 }
 
 interface FreezeUtxosProps {
+  walletInfo: WalletInfo
   jar: number
   utxos: Array<Utxo>
   selectedUtxos: Array<Utxo>
@@ -101,6 +105,7 @@ const SelectJar = ({ accountBalances, totalBalance, utxos, selectedJar, onJarSel
 
 const UtxoCard = ({
   utxo,
+  status,
   isSelectable = true,
   isSelected = false,
   isLoading = false,
@@ -144,7 +149,7 @@ const UtxoCard = ({
           <div>locked</div>
         </div>
       )}
-      {!isLoading && !utxo.frozen && utxo.label === 'cj-out' && (
+      {!isLoading && !utxo.frozen && status === 'cj-out' && (
         <div className={cx('utxoLabel', 'utxoCjOut')}>
           <Sprite symbol="cj" width="18" height="18" />
           <div>cj-out</div>
@@ -154,44 +159,64 @@ const UtxoCard = ({
   )
 }
 
-const SelectUtxos = ({ jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
+const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
+  const addressSummary = useAddressSummary(walletInfo)!
+
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>
         Select one or more UTXOs from jar #{jar} to use for the fidelity bond.
       </div>
-      {utxos.map((utxo, index) => (
-        <UtxoCard
-          key={index}
-          utxo={utxo}
-          isSelectable={!utxo.frozen}
-          isSelected={fb.utxo.isInList(utxo, selectedUtxos)}
-          onClick={() => {
-            if (fb.utxo.isInList(utxo, selectedUtxos)) {
-              onUtxoDeselected(utxo)
-            } else {
-              onUtxoSelected(utxo)
-            }
-          }}
-        />
-      ))}
+      {utxos.map((utxo, index) => {
+        return (
+          <UtxoCard
+            key={index}
+            utxo={utxo}
+            status={addressSummary[utxo.address]?.status}
+            isSelectable={!utxo.frozen}
+            isSelected={fb.utxo.isInList(utxo, selectedUtxos)}
+            onClick={() => {
+              if (fb.utxo.isInList(utxo, selectedUtxos)) {
+                onUtxoDeselected(utxo)
+              } else {
+                onUtxoSelected(utxo)
+              }
+            }}
+          />
+        )
+      })}
     </div>
   )
 }
 
-const FreezeUtxos = ({ jar, utxos, selectedUtxos, isLoading = false }: FreezeUtxosProps) => {
+const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false }: FreezeUtxosProps) => {
+  const addressSummary = useAddressSummary(walletInfo)!
+
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>Selected UTXOs:</div>
       {selectedUtxos.map((utxo, index) => (
-        <UtxoCard key={index} utxo={utxo} isSelectable={false} isSelected={true} />
+        <UtxoCard
+          key={index}
+          utxo={utxo}
+          status={addressSummary[utxo.address]?.status}
+          isSelectable={false}
+          isSelected={true}
+        />
       ))}
       <div className={styles.stepDescription}>
         The following UTXOs will not be used for the fidelity bond. They will be frozen in order to remain in jar #{jar}
         . You can unfreeze them anytime after creating the fidelity bond.
       </div>
       {fb.utxo.utxosToFreeze(utxos, selectedUtxos).map((utxo, index) => (
-        <UtxoCard key={index} utxo={utxo} isSelectable={false} isSelected={false} isLoading={isLoading} />
+        <UtxoCard
+          key={index}
+          utxo={utxo}
+          status={addressSummary[utxo.address]?.status}
+          isSelectable={false}
+          isSelected={false}
+          isLoading={isLoading}
+        />
       ))}
     </div>
   )
