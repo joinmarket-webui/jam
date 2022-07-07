@@ -10,7 +10,7 @@ export interface CurrentWallet {
 
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
 export type Utxo = {
-  address: string
+  address: Api.BitcoinAddress
   path: string
   label: string
   value: Api.AmountSats
@@ -21,7 +21,7 @@ export type Utxo = {
   confirmations: number
   frozen: boolean
   utxo: Api.UtxoId
-  locktime?: string
+  locktime?: Api.Lockdate
 }
 
 export type Utxos = Utxo[]
@@ -57,12 +57,14 @@ export interface Branch {
   entries: BranchEntry[]
 }
 
+export type AddressStatus = 'new' | 'used' | 'reused' | 'cj-out' | 'change-out' | 'non-cj-change' | 'deposit'
+
 export interface BranchEntry {
   hd_path: string
-  address: string
+  address: Api.BitcoinAddress
   amount: BalanceString
   available_balance: BalanceString
-  status: string
+  status: AddressStatus
   label: string
   extradata: string
 }

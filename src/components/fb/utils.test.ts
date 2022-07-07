@@ -172,7 +172,7 @@ describe('utils', () => {
       it('should detect timelocked utxo as locked', () => {
         const utxo = {
           // timelocked, not yet expired
-          locktime: 'any',
+          locktime: '2009-01',
           path: `m/84'/1'/0'/0/1:${now / 1_000 + 1}`,
         } as Utxo
         expect(fb.utxo.isLocked(utxo, now)).toBe(true)
@@ -181,7 +181,7 @@ describe('utils', () => {
       it('should detect expired timelocked utxo as unlocked', () => {
         const utxo = {
           // timelocked, but expired
-          locktime: 'any',
+          locktime: '2009-01',
           path: `m/84'/1'/0'/0/1:${now / 1_000 - 1}`,
         } as Utxo
         expect(fb.utxo.isLocked(utxo, now)).toBe(false)

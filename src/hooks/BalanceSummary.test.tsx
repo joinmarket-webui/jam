@@ -92,7 +92,7 @@ describe('BalanceSummary', () => {
                   mixdepth: 0,
                   // unfrozen and expired
                   frozen: false,
-                  locktime: '1970-01',
+                  locktime: '2009-01',
                   path: `m/84'/1'/0'/0/2:${now / 1_000 - 1}`,
                 } as Utxo,
               ],
