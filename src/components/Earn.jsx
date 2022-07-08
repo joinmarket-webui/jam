@@ -492,13 +492,13 @@ export default function Earn() {
                         </div>
                       )}
 
-                      <hr />
+                      <hr className="m-0" />
                     </div>
                   )}
                   <rb.Button
                     variant="dark"
                     type="submit"
-                    className="mt-2"
+                    className="mt-4"
                     disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
                   >
                     <div className="d-flex justify-content-center align-items-center">
