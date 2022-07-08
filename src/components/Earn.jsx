@@ -314,20 +314,26 @@ export default function Earn() {
               <div className="d-flex flex-column gap-3">
                 {fidelityBonds.length > 0 &&
                   fidelityBonds.map((utxo, index) => <ExistingFidelityBond key={index} utxo={utxo} />)}
-                {!isLoading && balanceSummary ? (
-                  <CreateFidelityBond
-                    otherFidelityBondExists={fidelityBonds.length > 0}
-                    accountBalances={balanceSummary?.accountBalances}
-                    totalBalance={balanceSummary?.totalBalance}
-                    wallet={currentWallet}
-                    walletInfo={currentWalletInfo}
-                    onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
-                  />
-                ) : (
-                  <rb.Placeholder as="div" animation="wave">
-                    <rb.Placeholder xs={12} className={styles['fb-loader']} />
-                  </rb.Placeholder>
-                )}
+
+                <>
+                  {!serviceInfo?.makerRunning &&
+                    !isWaitingMakerStart &&
+                    !isWaitingMakerStop &&
+                    (!isLoading && balanceSummary ? (
+                      <CreateFidelityBond
+                        otherFidelityBondExists={fidelityBonds.length > 0}
+                        accountBalances={balanceSummary?.accountBalances}
+                        totalBalance={balanceSummary?.totalBalance}
+                        wallet={currentWallet}
+                        walletInfo={currentWalletInfo}
+                        onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                      />
+                    ) : (
+                      <rb.Placeholder as="div" animation="wave">
+                        <rb.Placeholder xs={12} className={styles['fb-loader']} />
+                      </rb.Placeholder>
+                    ))}
+                </>
               </div>
             </>
           )}
@@ -486,13 +492,13 @@ export default function Earn() {
                         </div>
                       )}
 
-                      <hr />
+                      <hr className="m-0" />
                     </div>
                   )}
                   <rb.Button
                     variant="dark"
                     type="submit"
-                    className="mt-2"
+                    className="mt-4"
                     disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
                   >
                     <div className="d-flex justify-content-center align-items-center">
