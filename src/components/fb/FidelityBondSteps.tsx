@@ -201,13 +201,13 @@ const FreezeUtxos = ({ jar, utxos, selectedUtxos, isLoading = false }: FreezeUtx
     </div>
   )
 }
-const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: string; utxos: Array<Utxo> }) => {
+const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: React.ReactElement; utxos: Array<Utxo> }) => {
   const settings = useSettings()
 
   return (
     <div className="d-flex flex-column gap-2">
       <div className="d-flex align-items-center gap-1">
-        <Sprite symbol={icon} width="18" height="18" className={styles.utxoSummaryIcon} />
+        {icon}
         <div className={styles.utxoSummaryTitle}>{title}</div>
       </div>
       <div className="d-flex flex-wrap gap-1">
@@ -292,7 +292,11 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
         </div>
       </div>
       <hr className="my-0" />
-      <UtxoSummary title={'UTXOs that will be locked up'} icon="lock" utxos={selectedUtxos} />
+      <UtxoSummary
+        title={'UTXOs that will be locked up'}
+        icon={<Sprite symbol="lock" width="18" height="18" className={styles.utxoSummaryIconLock} />}
+        utxos={selectedUtxos}
+      />
     </div>
   )
 }
@@ -334,7 +338,7 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
             <hr className="my-0 w-100" />
             <UtxoSummary
               title={'Do you want to unfreeze the UTXOs that were frozen earlier?'}
-              icon="sun"
+              icon={<Sprite symbol="sun" width="18" height="18" />}
               utxos={frozenUtxos}
             />
           </>
