@@ -5,12 +5,20 @@ import { useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
 import { ConfirmModal } from '../Modal'
-import { SelectJar, SelectUtxos, SelectDate, FreezeUtxos, ReviewInputs, CreatedFidelityBond } from './FidelityBondSteps'
+import {
+  SelectJar,
+  SelectUtxos,
+  SelectDate,
+  FreezeUtxos,
+  ReviewInputs,
+  CreatedFidelityBond,
+  Done,
+} from './FidelityBondSteps'
 import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
 
-const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2000
+const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2500
 
 const steps = {
   selectDate: 0,
@@ -24,7 +32,7 @@ const steps = {
   failed: 8,
 }
 
-const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo }) => {
+const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo, onDone }) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [isExpanded, setIsExpanded] = useState(false)
@@ -153,12 +161,11 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       )
       .then((reloadedWalletInfo) => {
         // Note that two fidelity bonds with the same locktime will end up on the same address.
-        // Therefore, this might not acutally be the UTXO we just created.
+        // Therefore, this might not actually be the UTXO we just created.
         // Since we're using it only for displaying locktime and address, this should be fine though.
         const fbUtxo = reloadedWalletInfo.data.utxos.utxos.find((utxo) => utxo.address === address)
 
         if (fbUtxo !== undefined) {
-          console.log('createdFidelityBondUtxo', fbUtxo)
           setCreatedFidelityBondUtxo(fbUtxo)
         }
       })
@@ -257,7 +264,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           </div>
         ) : (
           <div className="d-flex justify-content-center align-items-center gap-2 mt-5">
-            {alert === null ? <>UTXOs unfrozen.</> : <>Couldn't Unfreeze UTXOS. </>}
+            {alert === null ? <Done text="UTXOs unfrozen." /> : <>Couldn't Unfreeze UTXOS. </>}
           </div>
         )
       default:
@@ -265,7 +272,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
   }
 
-  const buttonText = (currentStep) => {
+  const primaryButtonText = (currentStep) => {
     switch (currentStep) {
       case steps.selectDate:
         return 'Next'
@@ -286,7 +293,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.reviewInputs:
         return timelockedAddress === null ? 'Try again' : 'Create Fidelity Bond'
       case steps.createFidelityBond:
-        return alert === null ? 'Unfreeze Utxos' : 'Start over'
+        if (alert !== null) {
+          return 'Start over'
+        }
+
+        if (frozenUtxos.length > 0) {
+          return 'Unfreeze UTXOs'
+        }
+
+        return 'Done'
       case steps.unfreezeUtxos:
         return 'Done'
       default:
@@ -294,10 +309,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
   }
 
-  const cancelButtonText = (currentStep) => {
+  const secondaryButtonText = (currentStep) => {
+    if (nextStep(step) === steps.done || nextStep(step) === steps.failed) {
+      return null
+    }
+
     switch (currentStep) {
       case steps.createFidelityBond:
-        return 'Done'
+        return frozenUtxos.length > 0 ? 'Done' : null
       default:
         return 'Cancel'
     }
@@ -364,7 +383,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     return null
   }
 
-  const onButtonClicked = () => {
+  const onPrimaryButtonClicked = () => {
     if (nextStep(step) === null) {
       return
     }
@@ -393,7 +412,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
 
     if (nextStep(step) === steps.unfreezeUtxos) {
-      console.log('unfreezing', frozenUtxos)
       unfreezeUtxos(frozenUtxos)
     }
 
@@ -404,10 +422,20 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
     if (nextStep(step) === steps.done) {
       reset()
+      onDone()
       return
     }
 
     setStep(nextStep(step))
+  }
+
+  const onSecondaryButtonClicked = () => {
+    if (step === steps.createFidelityBond) {
+      reset()
+      onDone()
+    } else {
+      reset()
+    }
   }
 
   return (
@@ -450,14 +478,19 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           <hr />
           <div className="mb-5">{stepComponent(step)}</div>
           <div className={styles.buttons}>
-            {!isLoading && buttonText(step) !== null && (
-              <rb.Button variant="dark" disabled={nextStep(step) === null} type="submit" onClick={onButtonClicked}>
-                {buttonText(step)}
+            {!isLoading && primaryButtonText(step) !== null && (
+              <rb.Button
+                variant="dark"
+                disabled={nextStep(step) === null}
+                type="submit"
+                onClick={onPrimaryButtonClicked}
+              >
+                {primaryButtonText(step)}
               </rb.Button>
             )}
-            {!isLoading && nextStep(step) !== steps.done && nextStep(step) !== steps.failed && (
-              <rb.Button variant="white" type="submit" onClick={reset}>
-                {cancelButtonText(step)}
+            {!isLoading && secondaryButtonText(step) !== null && (
+              <rb.Button variant="white" type="submit" onClick={onSecondaryButtonClicked}>
+                {secondaryButtonText(step)}
               </rb.Button>
             )}
           </div>
