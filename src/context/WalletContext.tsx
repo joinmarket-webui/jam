@@ -101,7 +101,7 @@ const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
     .flatMap((it) => it.branches)
     .flatMap((it) => it.entries)
     .reduce((acc, { address, status }) => {
-      acc[address] = { address, status }
+      acc[address] = { address, status: Math.random() < 0.7 ? 'cj-out' : 'deposit' }
       return acc
     }, {} as AddressSummary)
 }
