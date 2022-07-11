@@ -47,6 +47,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
   const [selectedJar, setSelectedJar] = useState(null)
   const [selectedUtxos, setSelectedUtxos] = useState([])
   const [timelockedAddress, setTimelockedAddress] = useState(null)
+  const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
   const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState(null)
   const [frozenUtxos, setFrozenUtxos] = useState([])
 
@@ -67,6 +68,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     setAlert(null)
     setCreatedFidelityBondUtxo(null)
     setFrozenUtxos([])
+    setUtxoIdsToBeSpent([])
   }
 
   const freezeUtxos = (utxos) => {
@@ -100,7 +102,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     Promise.all(freezeCalls)
       .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
       .then((_) => setAlert(null))
-      .then((_) => freeze && setFrozenUtxos(utxosThatWereFrozen))
+      .then((_) => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
@@ -134,8 +136,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
   const directSweepToFidelityBond = (jar, address) => {
     setIsLoading(true)
 
-    const abortCtrl = new AbortController()
-
     Api.postDirectSend(
       { walletName: wallet.name, token: wallet.token },
       {
@@ -144,36 +144,59 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         amount_sats: 0, // sweep
       }
     )
-      .then((res) => {
-        if (!res.ok) {
-          return Api.Helper.throwError(res, 'Could not create fidelity bond.')
-        }
-      })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError('Could not create fidelity bond.')))
+      .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input) => input.outpoint)))
       .then((_) => setAlert(null))
-      .then(
-        (_) =>
-          new Promise((resolve) =>
-            setTimeout(
-              () => resolve(reloadCurrentWalletInfo({ signal: abortCtrl.signal })),
-              TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS
-            )
-          )
-      )
-      .then((reloadedWalletInfo) => {
-        // Note that two fidelity bonds with the same locktime will end up on the same address.
-        // Therefore, this might not actually be the UTXO we just created.
-        // Since we're using it only for displaying locktime and address, this should be fine though.
-        const fbUtxo = reloadedWalletInfo.data.utxos.utxos.find((utxo) => utxo.address === address)
-
-        if (fbUtxo !== undefined) {
-          setCreatedFidelityBondUtxo(fbUtxo)
-        }
-      })
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
-      .finally(() => setIsLoading(false))
   }
+
+  useEffect(() => {
+    if (utxoIdsToBeSpent.length === 0) return
+
+    const abortCtrl = new AbortController()
+
+    const timer = setTimeout(() => {
+      if (abortCtrl.signal.aborted) return
+
+      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+        .then((walletInfo) => {
+          if (abortCtrl.signal.aborted) return
+
+          const allUtxoIds = walletInfo.data.utxos.utxos.map((utxo) => utxo.utxo)
+          const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
+
+          if (utxoIdsStillPresent.length === 0) {
+            // Note that two fidelity bonds with the same locktime will end up on the same address.
+            // Therefore, this might not actually be the UTXO we just created.
+            // Since we're using it only for displaying locktime and address, this should be fine though.
+            const fbUtxo = walletInfo.data.utxos.utxos.find((utxo) => utxo.address === timelockedAddress)
+
+            if (fbUtxo !== undefined) {
+              setCreatedFidelityBondUtxo(fbUtxo)
+            }
+
+            setIsLoading(false)
+          }
+
+          setUtxoIdsToBeSpent([...utxoIdsStillPresent])
+        })
+        .catch((err) => {
+          if (abortCtrl.signal.aborted) return
+
+          setUtxoIdsToBeSpent([])
+          setIsLoading(false)
+
+          setAlert({ variant: 'danger', message: 'Cloud not load wallet' })
+        })
+    }, TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS)
+
+    return () => {
+      abortCtrl.abort()
+      clearTimeout(timer)
+    }
+  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress])
 
   useEffect(() => {
     const utxos = walletInfo.data.utxos.utxos
