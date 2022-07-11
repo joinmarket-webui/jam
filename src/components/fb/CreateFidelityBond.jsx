@@ -155,6 +155,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.selectUtxos:
         return (
           <SelectUtxos
+            walletInfo={walletInfo}
             jar={selectedJar}
             utxos={utxos[selectedJar]}
             selectedUtxos={selectedUtxos}
@@ -165,6 +166,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.freezeUtxos:
         return (
           <FreezeUtxos
+            walletInfo={walletInfo}
             jar={selectedJar}
             utxos={utxos[selectedJar]}
             selectedUtxos={selectedUtxos}
