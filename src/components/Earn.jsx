@@ -59,8 +59,7 @@ const persistFormValues = (values) => {
 
 const initialFormValues = (settings) => ({
   offertype:
-    (settings.useAdvancedWalletMode && window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype)) ||
-    FORM_INPUT_DEFAULT_VALUES.offertype,
+    window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype) || FORM_INPUT_DEFAULT_VALUES.offertype,
   feeRel:
     parseFloat(window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeRel)) || FORM_INPUT_DEFAULT_VALUES.feeRel,
   feeAbs:
@@ -94,7 +93,7 @@ export default function Earn() {
   const reloadServiceInfo = useReloadServiceInfo()
   const balanceSummary = useBalanceSummary(currentWalletInfo)
 
-  const [isAdvancedView, setIsAdvancedView] = useState(settings.useAdvancedWalletMode)
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -346,17 +345,17 @@ export default function Earn() {
                       <rb.Button
                         variant={`${settings.theme}`}
                         className={`${styles['settings-btn']} d-flex align-items-center`}
-                        onClick={() => setIsAdvancedView((current) => !current)}
+                        onClick={() => setShowAdvancedSettings((current) => !current)}
                       >
                         {t('earn.button_settings')}
                         <Sprite
-                          symbol={`caret-${isAdvancedView ? 'up' : 'down'}`}
+                          symbol={`caret-${showAdvancedSettings ? 'up' : 'down'}`}
                           className="ms-1"
                           width="20"
                           height="20"
                         />
                       </rb.Button>
-                      {isAdvancedView && (
+                      {showAdvancedSettings && (
                         <div className="my-4">
                           <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
                             <SegmentedTabs
