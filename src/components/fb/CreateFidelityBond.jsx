@@ -363,13 +363,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
 
     if (currentStep === steps.createFidelityBond) {
-      if (!isLoading && alert === null) {
+      if (!isLoading && alert === null && frozenUtxos.length > 0) {
         return steps.unfreezeUtxos
       }
 
       if (alert !== null) {
         return steps.failed
       }
+
+      return steps.done
     }
 
     if (currentStep === steps.unfreezeUtxos) {
