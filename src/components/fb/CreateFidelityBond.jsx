@@ -304,7 +304,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.selectJar:
         return 'Next'
       case steps.selectUtxos:
-        if (!onlyCjOutUtxosSelected()) {
+        if (!onlyCjOutOrFbUtxosSelected()) {
           return 'Select potentially less private UTXOs'
         }
 
@@ -322,7 +322,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.reviewInputs:
         if (timelockedAddress === null) return 'Try again'
 
-        if (!onlyCjOutUtxosSelected()) {
+        if (!onlyCjOutOrFbUtxosSelected()) {
           return 'Create fidelity bond with potentially less private UTXOs'
         }
 
@@ -344,8 +344,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
   }
 
-  const onlyCjOutUtxosSelected = () => {
-    return selectedUtxos.every((utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out')
+  const onlyCjOutOrFbUtxosSelected = () => {
+    return selectedUtxos.every(
+      (utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out' || utxo.locktime !== undefined
+    )
   }
 
   const secondaryButtonText = (currentStep) => {
@@ -521,7 +523,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           <div className={styles.buttons}>
             {!isLoading && primaryButtonText(step) !== null && (
               <rb.Button
-                variant={nextStep(step) === steps.createFidelityBond && !onlyCjOutUtxosSelected() ? 'danger' : 'dark'}
+                variant={
+                  nextStep(step) === steps.createFidelityBond && !onlyCjOutOrFbUtxosSelected() ? 'danger' : 'dark'
+                }
                 disabled={nextStep(step) === null}
                 type="submit"
                 onClick={onPrimaryButtonClicked}
