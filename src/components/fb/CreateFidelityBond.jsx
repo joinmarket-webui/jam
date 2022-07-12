@@ -320,7 +320,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.selectJar:
         return t('earn.fidelity_bond.select_jar.text_primary_button')
       case steps.selectUtxos:
-        if (!onlyCjOutUtxosSelected()) {
+        if (!onlyCjOutOrFbUtxosSelected()) {
           return t('earn.fidelity_bond.select_utxos.text_primary_button_unsafe')
         }
 
@@ -338,7 +338,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.reviewInputs:
         if (timelockedAddress === null) return t('earn.fidelity_bond.review_inputs.text_primary_button_error')
 
-        if (!onlyCjOutUtxosSelected()) {
+        if (!onlyCjOutOrFbUtxosSelected()) {
           return t('earn.fidelity_bond.review_inputs.text_primary_button_unsafe')
         }
 
@@ -360,8 +360,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
   }
 
-  const onlyCjOutUtxosSelected = () => {
-    return selectedUtxos.every((utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out')
+  const onlyCjOutOrFbUtxosSelected = () => {
+    return selectedUtxos.every(
+      (utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out' || utxo.locktime !== undefined
+    )
   }
 
   const secondaryButtonText = (currentStep) => {
@@ -543,7 +545,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           <div className={styles.buttons}>
             {!isLoading && primaryButtonText(step) !== null && (
               <rb.Button
-                variant={nextStep(step) === steps.createFidelityBond && !onlyCjOutUtxosSelected() ? 'danger' : 'dark'}
+                variant={
+                  nextStep(step) === steps.createFidelityBond && !onlyCjOutOrFbUtxosSelected() ? 'danger' : 'dark'
+                }
                 disabled={nextStep(step) === null}
                 type="submit"
                 onClick={onPrimaryButtonClicked}
