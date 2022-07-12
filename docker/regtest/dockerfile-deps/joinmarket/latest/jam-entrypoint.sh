@@ -17,7 +17,7 @@ if [ ! -f "$AUTO_START" ]; then
 fi
 
 # remove leftover lockfiles from possible unclean shutdowns before startup
-if [ "${REMOVE_LOCK_FILES}" = true ]; then
+if [ "${REMOVE_LOCK_FILES}" = "true" ]; then
     echo "Remove leftover wallet lockfiles before startup..."
     rm --force --verbose "${DATADIR}"/wallets/.*.jmdat.lock
 fi
@@ -57,12 +57,12 @@ done < <(env -0)
 jmenv['rpc_wallet_file']=${jmenv['rpc_wallet_file']:-'jm_webui_default'}
 
 # adapt 'blockchain_source' if missing and we're in regtest mode
-if [ "${jmenv['network']}" == "regtest" ] && [ "${jmenv['blockchain_source']}" == "" ]; then
+if [ "${jmenv['network']}" = "regtest" ] && [ "${jmenv['blockchain_source']}" = "" ]; then
     jmenv['blockchain_source']='regtest'
 fi
 
 # there is no 'regtest' value for config 'network': make sure to use "testnet" in regtest mode
-if [ "${jmenv['network']}" == "regtest" ]; then
+if [ "${jmenv['network']}" = "regtest" ]; then
     jmenv['network']='testnet'
 fi
 
@@ -72,13 +72,13 @@ for key in "${!jmenv[@]}"; do
     sed -i "s/^$key =.*/$key = $val/g" "$CONFIG" || echo "Couldn't set : $key = $val, please modify $CONFIG manually"
 done
 
-if [ "${READY_FILE}" ] && [ "${READY_FILE}" != false ]; then
+if [ "${READY_FILE}" ] && [ "${READY_FILE}" != "false" ]; then
     echo "Waiting $READY_FILE to be created..."
     while [ ! -f "$READY_FILE" ]; do sleep 1; done
     echo "The chain is fully synched"
 fi
 
-if [ "${ENSURE_WALLET}" = true ]; then
+if [ "${ENSURE_WALLET}" = "true" ]; then
     btcuser="${jmenv['rpc_user']}:${jmenv['rpc_password']}"
     btchost="http://${jmenv['rpc_host']}:${jmenv['rpc_port']}"
     wallet_name="${jmenv['rpc_wallet_file']}"

@@ -22,18 +22,16 @@ ENV DEFAULT_AUTO_START /root/autostart
 ENV AUTO_START ${DATADIR}/autostart
 ENV PATH /src/scripts:$PATH
 
-COPY default.cfg "${CONFIG}"
-COPY autostart /root/
-COPY supervisor-conf/*.conf /etc/supervisor/conf.d/
-
-RUN cd /src/scripts \
-    && (python wallet-tool.py generate || true) \
-    && cp "${CONFIG}" "${DEFAULT_CONFIG}"
-
 WORKDIR /src/scripts
 
 COPY start-dn.py .
-COPY docker-entrypoint.sh .
+
+COPY autostart ${DEFAULT_AUTO_START}
+COPY default.cfg ${DEFAULT_CONFIG}
+COPY supervisor-conf/*.conf /etc/supervisor/conf.d/
+
+COPY docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
 
 # payjoin server
 EXPOSE 8080
@@ -46,4 +44,4 @@ EXPOSE 28183
 # jmwalletd websocket
 EXPOSE 28283
 
-ENTRYPOINT  [ "tini", "-g", "--", "./docker-entrypoint.sh" ]
+ENTRYPOINT  [ "tini", "-g", "--", "/docker-entrypoint.sh" ]
