@@ -14,6 +14,17 @@
 }
 
 .jarBalance {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  /* min width should approximately match width of value "(symbol) 0.00 000 000":
+    - 1ch for the symbol
+    - 9ch chars for all zeros
+    - 1.5ch for the dot and spaces
+  */
+  min-width: 11.5ch;
+
   font-size: 0.8rem;
   padding-bottom: 0.8rem;
 }
@@ -28,6 +39,7 @@
 
 .selectableJarContainer:not(.selectable) {
   color: var(--bs-gray-600);
+  cursor: unset;
 }
 
 .selectableJarContainer:not(.selectable) > .selectionCircle {

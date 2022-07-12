@@ -3,7 +3,7 @@ import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
 import { render, screen } from '../../testUtils'
 import * as Api from '../../libs/JmWalletApi'
-import * as fb from './fb_utils'
+import * as fb from './utils'
 
 import LockdateForm, { _minMonth, _selectableMonths, _selectableYears } from './LockdateForm'
 

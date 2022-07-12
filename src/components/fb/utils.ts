@@ -1,6 +1,8 @@
 import { Lockdate } from '../../libs/JmWalletApi'
+import { Utxo } from '../../context/WalletContext'
 
 type Milliseconds = number
+type Seconds = number
 
 export type YearsRange = {
   min: number
@@ -76,4 +78,31 @@ export const lockdate = (() => {
     toTimestamp,
     initial,
   }
+})()
+
+export const utxo = (() => {
+  const isEqual = (lhs: Utxo, rhs: Utxo) => {
+    return lhs.utxo === rhs.utxo
+  }
+
+  const isInList = (utxo: Utxo, list: Array<Utxo>) => list.findIndex((it) => isEqual(it, utxo)) !== -1
+
+  const utxosToFreeze = (allUtxos: Array<Utxo>, fbUtxos: Array<Utxo>) =>
+    allUtxos.filter((utxo) => !isInList(utxo, fbUtxos))
+
+  const allAreFrozen = (utxos: Array<Utxo>) => utxos.every((utxo) => utxo.frozen)
+
+  const isLocked = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
+    if (!utxo.locktime) return false
+
+    const pathAndLocktime = utxo.path.split(':')
+    if (pathAndLocktime.length !== 2) return false
+
+    const locktimeUnixTimestamp: Seconds = parseInt(pathAndLocktime[1], 10)
+    if (Number.isNaN(locktimeUnixTimestamp)) return false
+
+    return locktimeUnixTimestamp * 1_000 >= refTime
+  }
+
+  return { isEqual, isInList, utxosToFreeze, allAreFrozen, isLocked }
 })()

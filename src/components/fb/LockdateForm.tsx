@@ -3,7 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 
 import * as Api from '../../libs/JmWalletApi'
-import * as fb from './fb_utils'
+import * as fb from './utils'
 
 const monthFormatter = (locales: string) => new Intl.DateTimeFormat(locales, { month: 'long' })
 
@@ -106,7 +106,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
     <rb.Container>
       <rb.Row>
         <rb.Col sm={6}>
-          <rb.Form.Group className="mb-4" controlId="lockdateYear">
+          <rb.Form.Group controlId="lockdateYear">
             <rb.Form.Label form="fidelity-bond-form">
               <Trans i18nKey="fidelity_bond.form_create.label_lockdate_year">Year</Trans>
             </rb.Form.Label>
@@ -132,7 +132,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
           </rb.Form.Group>
         </rb.Col>
         <rb.Col sm={6}>
-          <rb.Form.Group className="mb-4" controlId="lockdateMonth">
+          <rb.Form.Group controlId="lockdateMonth">
             <rb.Form.Label form="fidelity-bond-form">
               <Trans i18nKey="fidelity_bond.form_create.label_lockdate_month">Month</Trans>
             </rb.Form.Label>

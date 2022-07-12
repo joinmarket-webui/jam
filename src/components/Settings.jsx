@@ -147,19 +147,18 @@ export default function Settings({ stopWallet }) {
         <ConfirmModal
           isShown={showConfirmLockModal}
           title={t('wallets.wallet_preview.modal_lock_wallet_title')}
-          body={
-            (serviceInfo?.makerRunning
-              ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
-              : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
-            ' ' +
-            t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')
-          }
           onCancel={() => setShowConfirmLockModal(null)}
           onConfirm={() => {
             setShowConfirmLockModal(null)
             lockWallet({ force: true, destination: showConfirmLockModal?.destination })
           }}
-        />
+        >
+          {(serviceInfo?.makerRunning
+            ? t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')
+            : t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')) +
+            ' ' +
+            t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}
+        </ConfirmModal>
         <div className={styles['settings-group-container']}>
           <rb.Button
             variant="outline-dark"

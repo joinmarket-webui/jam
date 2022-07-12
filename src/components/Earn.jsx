@@ -1,14 +1,16 @@
-import React from 'react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet } from '../context/WalletContext'
+import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
+import { useBalanceSummary } from '../hooks/BalanceSummary'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
+import { CreateFidelityBond } from './fb/CreateFidelityBond'
+import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
 import { EarnReportOverlay } from './EarnReport'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
@@ -18,6 +20,10 @@ import styles from './Earn.module.css'
 // There is currently no way to know for sure - adding a delay at least mitigates the problem.
 // 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
 const MAKER_STOP_RESPONSE_DELAY_MS = 2_000
+
+// When reloading UTXO after creating a fidelity bond, use a delay to make sure
+// that the UTXO corresponding to the fidelity bond is correctly marked as such.
+const RELOAD_FIDELITY_BONDS_DELAY_MS = 2_000
 
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
@@ -53,8 +59,7 @@ const persistFormValues = (values) => {
 
 const initialFormValues = (settings) => ({
   offertype:
-    (settings.useAdvancedWalletMode && window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype)) ||
-    FORM_INPUT_DEFAULT_VALUES.offertype,
+    window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype) || FORM_INPUT_DEFAULT_VALUES.offertype,
   feeRel:
     parseFloat(window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeRel)) || FORM_INPUT_DEFAULT_VALUES.feeRel,
   feeAbs:
@@ -82,10 +87,13 @@ export default function Earn() {
   const { t } = useTranslation()
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
+  const currentWalletInfo = useCurrentWalletInfo()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
+  const balanceSummary = useBalanceSummary(currentWalletInfo)
 
-  const [isAdvancedView, setIsAdvancedView] = useState(settings.useAdvancedWalletMode)
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -93,6 +101,7 @@ export default function Earn() {
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
+  const [fidelityBonds, setFidelityBonds] = useState([])
 
   const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
     setIsSending(true)
@@ -146,14 +155,23 @@ export default function Earn() {
 
     setIsLoading(true)
 
-    reloadServiceInfo({ signal: abortCtrl.signal })
+    const reloadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
+    const reloadingCurrentWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).then((info) => {
+      if (info && !abortCtrl.signal.aborted) {
+        const unspentOutputs = info.data.utxos.utxos
+        const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
+        setFidelityBonds(fbOutputs)
+      }
+    })
+
+    Promise.all([reloadingServiceInfo, reloadingCurrentWalletInfo])
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, isSending, reloadServiceInfo])
+  }, [currentWallet, isSending, reloadServiceInfo, reloadCurrentWalletInfo])
 
   useEffect(() => {
     if (isSending) return
@@ -177,6 +195,29 @@ export default function Earn() {
       return current
     })
   }, [isSending, serviceInfo, isWaitingMakerStart, isWaitingMakerStop, t])
+
+  const reloadFidelityBonds = ({ delay }) => {
+    const abortCtrl = new AbortController()
+
+    setIsLoading(true)
+
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
+      }, delay)
+    })
+      .then((info) => {
+        if (info) {
+          const unspentOutputs = info.data.utxos.utxos
+          const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
+          setFidelityBonds(fbOutputs)
+        }
+      })
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message })
+      })
+      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+  }
 
   const feeRelMin = 0.0
   const feeRelMax = 0.1 // 10%
@@ -255,16 +296,46 @@ export default function Earn() {
               {t('earn.alert_coinjoin_in_progress')}
             </rb.Alert>
           </rb.Fade>
-
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-
           {serviceInfoAlert && <rb.Alert variant={serviceInfoAlert.variant}>{serviceInfoAlert.message}</rb.Alert>}
-
           {!serviceInfo?.coinjoinInProgress &&
             !serviceInfo?.makerRunning &&
             !isWaitingMakerStart &&
             !isWaitingMakerStop && <p className="text-secondary mb-4">{t('earn.market_explainer')}</p>}
+          {!serviceInfo?.coinjoinInProgress && (
+            <>
+              <PageTitle
+                title={'Create a Fidelity Bond'}
+                subtitle={
+                  'Fidelity bonds prevent Sybil attacks by deliberately increasing the cost of creating cryptographic identities. Creating a fidelity bond will increase your chances of being picked for a collaborative transaction.'
+                }
+              />
+              <div className="d-flex flex-column gap-3">
+                {fidelityBonds.length > 0 &&
+                  fidelityBonds.map((utxo, index) => <ExistingFidelityBond key={index} utxo={utxo} />)}
 
+                <>
+                  {!serviceInfo?.makerRunning &&
+                    !isWaitingMakerStart &&
+                    !isWaitingMakerStop &&
+                    (!isLoading && balanceSummary ? (
+                      <CreateFidelityBond
+                        otherFidelityBondExists={fidelityBonds.length > 0}
+                        accountBalances={balanceSummary?.accountBalances}
+                        totalBalance={balanceSummary?.totalBalance}
+                        wallet={currentWallet}
+                        walletInfo={currentWalletInfo}
+                        onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                      />
+                    ) : (
+                      <rb.Placeholder as="div" animation="wave">
+                        <rb.Placeholder xs={12} className={styles['fb-loader']} />
+                      </rb.Placeholder>
+                    ))}
+                </>
+              </div>
+            </>
+          )}
           {!serviceInfo?.coinjoinInProgress && (
             <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
               {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
@@ -274,17 +345,17 @@ export default function Earn() {
                       <rb.Button
                         variant={`${settings.theme}`}
                         className={`${styles['settings-btn']} d-flex align-items-center`}
-                        onClick={() => setIsAdvancedView((current) => !current)}
+                        onClick={() => setShowAdvancedSettings((current) => !current)}
                       >
                         {t('earn.button_settings')}
                         <Sprite
-                          symbol={`caret-${isAdvancedView ? 'up' : 'down'}`}
+                          symbol={`caret-${showAdvancedSettings ? 'up' : 'down'}`}
                           className="ms-1"
                           width="20"
                           height="20"
                         />
                       </rb.Button>
-                      {isAdvancedView && (
+                      {showAdvancedSettings && (
                         <div className="my-4">
                           <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
                             <SegmentedTabs
@@ -420,14 +491,13 @@ export default function Earn() {
                         </div>
                       )}
 
-                      <hr />
+                      <hr className="m-0" />
                     </div>
                   )}
-
                   <rb.Button
                     variant="dark"
                     type="submit"
-                    className="mt-2"
+                    className="mt-4"
                     disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
                   >
                     <div className="d-flex justify-content-center align-items-center">
@@ -457,7 +527,6 @@ export default function Earn() {
           )}
         </rb.Col>
       </rb.Row>
-
       <rb.Row className="mt-5 mb-3">
         <rb.Col className="d-flex justify-content-center">
           <EarnReportOverlay show={isShowReport} onHide={() => setIsShowReport(false)} />

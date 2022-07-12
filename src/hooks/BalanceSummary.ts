@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { WalletInfo, BalanceString, Utxos, Utxo } from '../context/WalletContext'
+import { WalletInfo, BalanceString, Utxos } from '../context/WalletContext'
 
+import * as fb from '../components/fb/utils'
 import { AmountSats } from '../libs/JmWalletApi'
 
 type Milliseconds = number
-type Seconds = number
 
 interface BalanceSummary {
   totalBalance: BalanceString
@@ -49,20 +49,8 @@ export type WalletBalanceSummary = BalanceSummarySupport & {
   accountBalances: AccountBalances
 }
 
-export const isLocked = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
-  if (!utxo.locktime) return false
-
-  const pathAndLocktime = utxo.path.split(':')
-  if (pathAndLocktime.length !== 2) return false
-
-  const locktimeUnixTimestamp: Seconds = parseInt(pathAndLocktime[1], 10)
-  if (Number.isNaN(locktimeUnixTimestamp)) return false
-
-  return locktimeUnixTimestamp * 1_000 >= refTime
-}
-
 const calculateFrozenOrLockedBalance = (utxos: Utxos, refTime: Milliseconds = Date.now()) => {
-  const frozenOrLockedUtxos = utxos.filter((utxo) => utxo.frozen || isLocked(utxo, refTime))
+  const frozenOrLockedUtxos = utxos.filter((utxo) => utxo.frozen || fb.utxo.isLocked(utxo, refTime))
   return frozenOrLockedUtxos.reduce((acc, utxo) => acc + utxo.value, 0)
 }
 
@@ -152,4 +140,4 @@ const useBalanceSummary = (currentWalletInfo: WalletInfo | null, now?: Milliseco
   return balanceSummary
 }
 
-export { useBalanceSummary }
+export { useBalanceSummary, AccountBalances, AccountBalanceSummary }
