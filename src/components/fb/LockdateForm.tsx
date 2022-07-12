@@ -108,7 +108,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
         <rb.Col sm={6}>
           <rb.Form.Group controlId="lockdateYear">
             <rb.Form.Label form="fidelity-bond-form">
-              <Trans i18nKey="fidelity_bond.form_create.label_lockdate_year">Year</Trans>
+              <Trans i18nKey="earn.fidelity_bond.select_date.form_label_year">Year</Trans>
             </rb.Form.Label>
             <rb.Form.Select
               defaultValue={initialYear}
@@ -123,18 +123,12 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
                 </option>
               ))}
             </rb.Form.Select>
-
-            <rb.Form.Control.Feedback type="invalid">
-              <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_year">
-                Please provide a valid value.
-              </Trans>
-            </rb.Form.Control.Feedback>
           </rb.Form.Group>
         </rb.Col>
         <rb.Col sm={6}>
           <rb.Form.Group controlId="lockdateMonth">
             <rb.Form.Label form="fidelity-bond-form">
-              <Trans i18nKey="fidelity_bond.form_create.label_lockdate_month">Month</Trans>
+              <Trans i18nKey="earn.fidelity_bond.select_date.form_label_month">Month</Trans>
             </rb.Form.Label>
             <rb.Form.Select
               defaultValue={initialMonth}
@@ -149,11 +143,6 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
                 </option>
               ))}
             </rb.Form.Select>
-            <rb.Form.Control.Feedback type="invalid">
-              <Trans i18nKey="fidelity_bond.form_create.feedback_invalid_locktime_month">
-                Please provide a valid value.
-              </Trans>
-            </rb.Form.Control.Feedback>
           </rb.Form.Group>
         </rb.Col>
       </rb.Row>

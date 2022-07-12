@@ -253,6 +253,88 @@
     "button_show_report": "Show report",
     "report": {
       "title": "Report"
+    },
+    "fidelity_bond": {
+      "error_freezing_utxos": "Could not freeze utxos.",
+      "error_unfreezing_utxos": "Could not unfreeze utxos.",
+      "error_loading_address": "Could not load time-locked address.",
+      "error_creating_fidelity_bond": "The transaction to create the fidelity bond failed.",
+      "error_reloading_wallet": "Could not reload the wallet.",
+      "text_loading": "Loading...",
+      "text_creating": "Creating...",
+      "text_unfreezing": "Unfreezing...",
+      "select_date": {
+        "text_primary_button": "Next",
+        "text_secondary_button": "Cancel",
+        "form_label_year": "Year",
+        "form_label_month": "Month",
+        "description": "Select for how long you want to lock up bitcoin in a fidelity bond."
+      },
+      "select_jar": {
+        "text_primary_button": "Next",
+        "text_secondary_button": "Cancel",
+        "description": "Select a jar to fund the fidelity bond from."
+      },
+      "select_utxos": {
+        "text_primary_button": "Next",
+        "text_primary_button_unsafe": "Select potentially less private UTXOs",
+        "text_secondary_button": "Cancel",
+        "description": "Select one or more UTXOs from jar #{{ jar }} to use for the fidelity bond.",
+        "utxo_card": {
+          "confirmations": "{{ confs }} Confirmations",
+          "label_frozen": "frozen",
+          "label_locked": "locked",
+          "label_cj_out": "cj-out"
+        }
+      },
+      "freeze_utxos": {
+        "text_primary_button": "Freeze UTXOs",
+        "text_primary_button_all_frozen": "Next",
+        "text_primary_button_error": "Try again",
+        "text_secondary_button": "Cancel",
+        "description_selected_utxos": "Selected UTXOs",
+        "description_unselected_utxos": "The following UTXOs will not be used for the fidelity bond.",
+        "description_selected_utxos_to_freeze": "They will be frozen to remain in jar #{{ jar }}. You can unfreeze them anytime after creating the fidelity bond."
+      },
+      "review_inputs": {
+        "text_primary_button": "Create fidelity bond",
+        "text_primary_button_unsafe": "Create fidelity bond with potentially less private UTXOs",
+        "text_secondary_button": "Cancel",
+        "description": "You configured the fidelity bond as follows:",
+        "label_lock_date": "Locked until",
+        "label_jar": "Jar #{{ jar }}",
+        "label_amount": "Amount to be locked up",
+        "label_address": "Funds will be locked up on this address",
+        "label_selected_utxos": "UTXOs that will be locked up"
+      },
+      "create_fidelity_bond": {
+        "text_primary_button": "Done",
+        "text_primary_button_unfreeze": "Unfreeze UTXOs",
+        "text_primary_button_error": "Start over",
+        "text_secondary_button": "Done",
+        "label_lock_date": "Locked until",
+        "label_address": "Timelocked address",
+        "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?"
+      },
+      "unfreeze_utxos": {
+        "text_primary_button": "Done",
+        "done": "UTXOs unfrozen"
+      },
+      "confirm_modal": {
+        "title": "Are you sure you want to lock your funds?",
+        "body": "Be aware that your funds can only be moved again when the fidelity bond expires on {{date}}"
+      },
+      "title": "Long-term deposit with a Fidelity Bond",
+      "title_fidelity_bond_exists": "Create another Fidelity Bond",
+      "subtitle": "You increase your chance to be chosen as a market maker in a collaborative transaction by locking up some funds for a certain amount of time. Be aware that your bitcoin can only be moved again when the bond is expired.",
+
+      "text_maker_running": "Earn is active. Stop the service in order to create a Fidelity Bond.",
+      "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
+      "create_form": {
+        "confirmation_toggle_title": "I have reviewed my inputs carefully",
+        "confirmation_toggle_subtitle": "I understand that the locked funds will be inaccessible for the given duration",
+        "button_create": "Create Fidelity Bond"
+      }
     }
   },
   "cheatsheet": {
@@ -281,17 +363,6 @@
     "item_last": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
-    }
-  },
-  "fidelity_bond": {
-    "title": "Fidelity Bonds (Experimental)",
-    "subtitle": "Fidelity Bonds prevent Sybil attacks by deliberately increasing the cost of creating cryptographic identities. Creating a fidelity bond will increase your chances of being picked for a collaborative transaction.",
-    "text_maker_running": "Earn is active. Stop the service in order to create a Fidelity Bond.",
-    "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
-    "create_form": {
-      "confirmation_toggle_title": "I have reviewed my inputs carefully",
-      "confirmation_toggle_subtitle": "I understand that the locked funds will be inaccessible for the given duration",
-      "button_create": "Create Fidelity Bond"
     }
   },
   "scheduler": {
