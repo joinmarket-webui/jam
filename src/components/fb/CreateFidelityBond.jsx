@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
