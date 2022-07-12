@@ -304,6 +304,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       case steps.selectJar:
         return 'Next'
       case steps.selectUtxos:
+        if (!onlyCjOutOrFbUtxosSelected()) {
+          return 'Select potentially less private UTXOs'
+        }
+
         return 'Next'
       case steps.freezeUtxos:
         const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos))
@@ -316,7 +320,13 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
         return 'Freeze UTXOs'
       case steps.reviewInputs:
-        return timelockedAddress === null ? 'Try again' : 'Create Fidelity Bond'
+        if (timelockedAddress === null) return 'Try again'
+
+        if (!onlyCjOutOrFbUtxosSelected()) {
+          return 'Create fidelity bond with potentially less private UTXOs'
+        }
+
+        return 'Create fidelity bond'
       case steps.createFidelityBond:
         if (alert !== null) {
           return 'Start over'
@@ -332,6 +342,12 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       default:
         return null
     }
+  }
+
+  const onlyCjOutOrFbUtxosSelected = () => {
+    return selectedUtxos.every(
+      (utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out' || utxo.locktime !== undefined
+    )
   }
 
   const secondaryButtonText = (currentStep) => {
@@ -507,7 +523,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           <div className={styles.buttons}>
             {!isLoading && primaryButtonText(step) !== null && (
               <rb.Button
-                variant="dark"
+                variant={
+                  nextStep(step) === steps.createFidelityBond && !onlyCjOutOrFbUtxosSelected() ? 'danger' : 'dark'
+                }
                 disabled={nextStep(step) === null}
                 type="submit"
                 onClick={onPrimaryButtonClicked}
