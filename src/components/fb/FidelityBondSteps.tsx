@@ -62,6 +62,11 @@ interface ReviewInputsProps {
   timelockedAddress: string
 }
 
+interface CreatedFidelityBondProps {
+  fbUtxo: Utxo | null
+  frozenUtxos: Array<Utxo>
+}
+
 const SelectDate = ({ selectableYearsRange, onDateSelected }: SelectDateProps) => {
   return (
     <div className="d-flex flex-column gap-4">
@@ -216,14 +221,13 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
     </div>
   )
 }
-
-const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }: ReviewInputsProps) => {
+const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: React.ReactElement; utxos: Array<Utxo> }) => {
   const settings = useSettings()
 
-  const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: string; utxos: Array<Utxo> }) => (
+  return (
     <div className="d-flex flex-column gap-2">
       <div className="d-flex align-items-center gap-1">
-        <Sprite symbol={icon} width="18" height="18" className={styles.utxoSummaryIcon} />
+        {icon}
         <div className={styles.utxoSummaryTitle}>{title}</div>
       </div>
       <div className="d-flex flex-wrap gap-1">
@@ -248,6 +252,10 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
       </div>
     </div>
   )
+}
+
+const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }: ReviewInputsProps) => {
+  const settings = useSettings()
 
   const confirmationItems = [
     {
@@ -304,9 +312,71 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
         </div>
       </div>
       <hr className="my-0" />
-      <UtxoSummary title={'UTXOs that will be locked up'} icon="lock" utxos={selectedUtxos} />
+      <UtxoSummary
+        title={'UTXOs that will be locked up'}
+        icon={<Sprite symbol="lock" width="18" height="18" className={styles.utxoSummaryIconLock} />}
+        utxos={selectedUtxos}
+      />
     </div>
   )
 }
 
-export { SelectJar, SelectUtxos, SelectDate, FreezeUtxos, ReviewInputs }
+const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) => {
+  return (
+    <div className="d-flex flex-column gap-3">
+      <Done text="Fidelity bond created." />
+
+      <div className="d-flex flex-column align-items-start gap-4">
+        {fbUtxo !== null && (
+          <div className="d-flex flex-column gap-1 mt-2">
+            <div className="d-flex align-items-center gap-2">
+              <Sprite symbol="clock" width="18" height="18" className={styles.confirmationStepIcon} />
+              <div className="d-flex flex-column">
+                <div className={styles.confirmationStepLabel}>Locked until</div>
+                <div className={styles.confirmationStepContent}>{fbUtxo.locktime}</div>
+              </div>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <CopyButton
+                showSprites={false}
+                text={<Sprite symbol="copy" width="18" height="18" />}
+                successText={<Sprite symbol="checkmark" width="18" height="18" />}
+                value={fbUtxo.address}
+                className={styles.confirmationStepIcon}
+              />
+              <div className="d-flex flex-column">
+                <div className={styles.confirmationStepLabel}>Timelocked address</div>
+                <div className={styles.confirmationStepContent}>
+                  <code className={styles.timelockedAddress}>{fbUtxo.address}</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {frozenUtxos.length > 0 && (
+          <>
+            <hr className="my-0 w-100" />
+            <UtxoSummary
+              title={'Do you want to unfreeze the UTXOs that were frozen earlier?'}
+              icon={<Sprite symbol="sun" width="18" height="18" />}
+              utxos={frozenUtxos}
+            />
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const Done = ({ text }: { text: string }) => {
+  return (
+    <div className="d-flex flex-column justify-content-center align-items-center gap-1">
+      <div className={styles.createdCheckmark}>
+        <Sprite symbol="checkmark" width="24" height="30" />
+      </div>
+      <div className={styles.createdSummaryTitle}>{text}</div>
+    </div>
+  )
+}
+
+export { SelectJar, SelectUtxos, SelectDate, FreezeUtxos, ReviewInputs, CreatedFidelityBond, Done }

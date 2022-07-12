@@ -173,7 +173,7 @@
   font-size: 0.8rem;
 }
 
-.utxoSummaryIcon {
+.utxoSummaryIconLock {
   margin-bottom: 3px;
 }
 
@@ -235,4 +235,20 @@
   font-size: 0.55rem;
   color: var(--bs-gray-600);
   word-break: break-all;
+}
+
+.createdCheckmark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: rgba(39, 174, 96, 1);
+  color: white;
+  border-radius: 50%;
+}
+
+.createdSummaryTitle {
+  font-size: 1.2rem;
+  font-weight: 500;
 }
