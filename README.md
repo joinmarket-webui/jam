@@ -20,7 +20,7 @@
 ---
 
 Jam is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) with focus on user-friendliness.
-It aims to provide sensible defaults and be easy to use for beginners while still providing the features advanced users expect.
+It aims to provide sensible defaults and be easy to use for beginners while still having the features advanced users expect.
 
 - 💬 Join our [Telegram group](https://t.me/JoinMarketWebUI).
 - 📚 Check out the [Wiki](https://github.com/joinmarket-webui/joinmarket-webui/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
@@ -77,8 +77,7 @@ We're aiming for a more stable version to be available as a one-click app instal
 - [x] Spending from the wallet via collaborative transactions
 - [x] Running the yield generator
 - [x] Scheduled transactions
-- [ ] Support for fidelity bonds
-- [ ] [TBD](https://github.com/orgs/joinmarket-webui/projects/1/views/7)
+- [x] Support for fidelity bonds
 
 ## 🧑‍💻 Participating
 
