@@ -307,7 +307,7 @@ export default function Earn() {
               <PageTitle
                 title={'Create a Fidelity Bond'}
                 subtitle={
-                  'Fidelity bonds prevent Sybil attacks by deliberately increasing the cost of creating cryptographic identities. Creating a fidelity bond will increase your chances of being picked for a collaborative transaction.'
+                  'A fidelity bond is a long-term deposit that makes cryptographic identities deliberately costly. By cryptographically locking up funds for a specific duration, you signal that you are a serious market participant and increase the chance of your offers being taken.'
                 }
               />
               <div className="d-flex flex-column gap-3">
