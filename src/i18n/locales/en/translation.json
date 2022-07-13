@@ -250,9 +250,9 @@
     "button_stop": "Stop",
     "text_starting": "Starting",
     "text_stopping": "Stopping",
-    "button_show_report": "Show report",
+    "button_show_report": "Show earnings report",
     "report": {
-      "title": "Report"
+      "title": "Earnings Report"
     },
     "fidelity_bond": {
       "error_freezing_utxos": "Could not freeze utxos.",
