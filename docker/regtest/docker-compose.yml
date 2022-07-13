@@ -23,12 +23,6 @@ services:
       jm_rpc_password: joinmarket
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
       jm_socks5: "false" # will _not_ connect to local irc over tor
-      jm_socks5_host: tor
-      jm_socks5_port: 9050
-      jm_tor_control_host: tor
-      jm_tor_control_port: 9051
-      jm_onion_socks5_host: tor
-      jm_onion_socks5_port: 9050
     expose:
       - 8080  # payjoin server
       - 62601 # obwatch
@@ -42,10 +36,8 @@ services:
     volumes:
       - "joinmarket_datadir:/root/.joinmarket"
       - "nbxplorer_datadir:/root/.nbxplorer"
-      - "tor_datadir:/home/tor/.tor"
     depends_on:
       - bitcoind
-      - tor
       - nbxplorer
       - irc
 

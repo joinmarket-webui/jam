@@ -13,7 +13,12 @@ ENV REPO_REF master
 WORKDIR /src
 RUN git clone "$REPO" . --depth=10 --branch "$REPO_BRANCH" && git checkout "$REPO_REF"
 
+# ensure /etc/tor exists - install script will create /etc/tor/torrc
+RUN mkdir --parents /etc/tor
+
 RUN ./install.sh --docker-install --with-local-tor --disable-secp-check --without-qt
+
+RUN ln /etc/tor/torrc /usr/local/etc/tor/torrc
 
 ENV DATADIR /root/.joinmarket
 ENV CONFIG ${DATADIR}/joinmarket.cfg
