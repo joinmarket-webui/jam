@@ -325,8 +325,8 @@
         "title": "Create fidelity bond and time-lock funds?",
         "body": "It will be impossible to spend time-locked funds until the fidelity bond expires. Date of expiration is {{date}}"
       },
-      "title": "Set Bond Duration",
-      "title_fidelity_bond_exists": "Set Duration of Additional Bond",
+      "title": "Configure Fidelity Bond",
+      "title_fidelity_bond_exists": "Configure Additional Bond",
       "subtitle": "Your sats will be time-locked by the Bitcoin protocol. It is impossible to move them before the bond is expired.",
 
       "text_maker_running": "Earn is active. Stop the service in order to create a Fidelity Bond.",
