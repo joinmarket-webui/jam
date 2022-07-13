@@ -324,8 +324,8 @@
         "title": "Are you sure you want to lock your funds?",
         "body": "Be aware that your funds can only be moved again when the fidelity bond expires on {{date}}"
       },
-      "title": "Choose Deposit Duration",
-      "title_fidelity_bond_exists": "Create another Fidelity Bond",
+      "title": "Set Bond Duration",
+      "title_fidelity_bond_exists": "Set Duration of Additional Bond",
       "subtitle": "Your sats will be time-locked by the Bitcoin protocol. It is impossible to move them before the bond is expired.",
 
       "text_maker_running": "Earn is active. Stop the service in order to create a Fidelity Bond.",
