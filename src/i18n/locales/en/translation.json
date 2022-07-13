@@ -289,12 +289,12 @@
       },
       "freeze_utxos": {
         "text_primary_button": "Freeze UTXOs",
-        "text_primary_button_all_frozen": "Next",
+        "text_primary_button_all_frozen": "Review bond configuration",
         "text_primary_button_error": "Try again",
         "text_secondary_button": "Cancel",
-        "description_selected_utxos": "Selected UTXOs",
-        "description_unselected_utxos": "The following UTXOs will not be used for the fidelity bond.",
-        "description_selected_utxos_to_freeze": "They will be frozen to remain in jar #{{ jar }}. You can unfreeze them anytime after creating the fidelity bond."
+        "description_selected_utxos": "Selected UTXOs:",
+        "description_unselected_utxos": "The following UTXOs will not be used for the fidelity bond:",
+        "description_selected_utxos_to_freeze": "They will be frozen to remain in Jar #{{ jar }}. You can unfreeze them anytime after creating the bond."
       },
       "review_inputs": {
         "text_primary_button": "Create fidelity bond",
@@ -304,9 +304,9 @@
         "label_lock_date": "Locked until",
         "label_jar": "Funded from",
         "label_jar_n": "Jar #{{ jar }}",
-        "label_amount": "Amount to be locked up",
+        "label_amount": "Amount to be locked",
         "label_address": "Funds will be time-locked and sent to",
-        "label_selected_utxos": "UTXOs that will be locked up"
+        "label_selected_utxos": "UTXOs that will be time-locked:"
       },
       "create_fidelity_bond": {
         "text_primary_button": "Done",
@@ -314,7 +314,7 @@
         "text_primary_button_error": "Start over",
         "text_secondary_button": "Done",
         "label_lock_date": "Locked until",
-        "label_address": "Timelocked address",
+        "label_address": "Time-locked address",
         "label_utxos_to_unfreeze": "Do you want to unfreeze the UTXOs that were frozen earlier?"
       },
       "unfreeze_utxos": {
@@ -322,8 +322,8 @@
         "done": "UTXOs unfrozen"
       },
       "confirm_modal": {
-        "title": "Are you sure you want to lock your funds?",
-        "body": "Be aware that your funds can only be moved again when the fidelity bond expires on {{date}}"
+        "title": "Create fidelity bond and time-lock funds?",
+        "body": "It will be impossible to spend time-locked funds until the fidelity bond expires. Date of expiration is {{date}}"
       },
       "title": "Set Bond Duration",
       "title_fidelity_bond_exists": "Set Duration of Additional Bond",
