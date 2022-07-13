@@ -268,7 +268,7 @@
         "text_secondary_button": "Cancel",
         "form_label_year": "Year",
         "form_label_month": "Month",
-        "description": "Bond expiration date:"
+        "description": "Fidelity bond expiration date:"
       },
       "select_jar": {
         "text_primary_button": "Next",
@@ -302,10 +302,10 @@
         "text_secondary_button": "Cancel",
         "description": "You configured the fidelity bond as follows:",
         "label_lock_date": "Locked until",
-        "label_jar": "Jar",
+        "label_jar": "Funded from",
         "label_jar_n": "Jar #{{ jar }}",
         "label_amount": "Amount to be locked up",
-        "label_address": "Funds will be locked up on this address",
+        "label_address": "Funds will be time-locked and sent to",
         "label_selected_utxos": "UTXOs that will be locked up"
       },
       "create_fidelity_bond": {
