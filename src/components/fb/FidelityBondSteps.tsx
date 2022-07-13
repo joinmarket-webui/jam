@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
+import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import { AccountBalances, AccountBalanceSummary } from '../../hooks/BalanceSummary'
 import { Utxo, AddressStatus, WalletInfo } from '../../context/WalletContext'
@@ -68,20 +69,19 @@ interface CreatedFidelityBondProps {
 }
 
 const SelectDate = ({ selectableYearsRange, onDateSelected }: SelectDateProps) => {
+  const { t } = useTranslation()
+
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>
-        Fidelity bonds are a feature of JoinMarket which improves the resistance to sybil attacks, and therefore
-        improves the privacy of the system. This should be a better and easier to understand description and let the
-        user know that they should pick a date until which the fidelity bond will be valid. Maybe also a recommendation
-        on the length.
-      </div>
+      <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_date.description')}</div>
       <LockdateForm onChange={(date) => onDateSelected(date)} yearsRange={selectableYearsRange} />
     </div>
   )
 }
 
 const SelectJar = ({ accountBalances, totalBalance, utxos, selectedJar, onJarSelected }: SelectJarProps) => {
+  const { t } = useTranslation()
+
   const sortedAccountBalances: Array<AccountBalanceSummary> = useMemo(() => {
     if (!accountBalances) return []
     return Object.values(accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
@@ -89,7 +89,7 @@ const SelectJar = ({ accountBalances, totalBalance, utxos, selectedJar, onJarSel
 
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>Select a jar to fund the fidelity bond from.</div>
+      <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_jar.description')}</div>
       <div className="d-flex justify-content-between">
         {sortedAccountBalances.map((account, index) => (
           <SelectableJar
@@ -116,6 +116,7 @@ const UtxoCard = ({
   onClick = () => {},
 }: UtxoCardProps) => {
   const settings = useSettings()
+  const { t } = useTranslation()
 
   const utxoIsLocked = useMemo(() => fb.utxo.isLocked(utxo), [utxo])
 
@@ -133,7 +134,7 @@ const UtxoCard = ({
         <div className={styles.utxoDetails}>
           <div>{utxo.path}</div>
           <div>&#183;</div>
-          <div>{utxo.confirmations} Confirmations</div>
+          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.confirmations', { confs: utxo.confirmations })}</div>
         </div>
       </div>
       {isLoading && (
@@ -144,19 +145,19 @@ const UtxoCard = ({
       {!isLoading && utxo.frozen && !utxoIsLocked && (
         <div className={cx('utxoLabel', 'utxoFrozen')}>
           <Sprite symbol="snowflake" width="18" height="18" />
-          <div>frozen</div>
+          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.label_frozen')}</div>
         </div>
       )}
       {!isLoading && utxoIsLocked && (
         <div className={cx('utxoLabel', 'utxoFidelityBond')}>
           <Sprite symbol="lock" width="18" height="18" />
-          <div>locked</div>
+          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.label_locked')}</div>
         </div>
       )}
       {!isLoading && !utxo.frozen && status === 'cj-out' && (
         <div className={cx('utxoLabel', 'utxoCjOut')}>
           <Sprite symbol="cj" width="18" height="18" />
-          <div>cj-out</div>
+          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.label_cj_out')}</div>
         </div>
       )}
     </div>
@@ -164,11 +165,11 @@ const UtxoCard = ({
 }
 
 const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
+  const { t } = useTranslation()
+
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>
-        Select one or more UTXOs from jar #{jar} to use for the fidelity bond.
-      </div>
+      <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_utxos.description', { jar })}</div>
       {utxos.map((utxo, index) => {
         return (
           <UtxoCard
@@ -192,9 +193,13 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
 }
 
 const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false }: FreezeUtxosProps) => {
+  const { t } = useTranslation()
+
+  const utxosToFreeze = useMemo(() => fb.utxo.utxosToFreeze(utxos, selectedUtxos), [utxos, selectedUtxos])
+
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>Selected UTXOs:</div>
+      <div className={styles.stepDescription}>{t('earn.fidelity_bond.freeze_utxos.description_selected_utxos')}</div>
       {selectedUtxos.map((utxo, index) => (
         <UtxoCard
           key={index}
@@ -204,11 +209,17 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
           isSelected={true}
         />
       ))}
-      <div className={styles.stepDescription}>
-        The following UTXOs will not be used for the fidelity bond. They will be frozen in order to remain in jar #{jar}
-        . You can unfreeze them anytime after creating the fidelity bond.
-      </div>
-      {fb.utxo.utxosToFreeze(utxos, selectedUtxos).map((utxo, index) => (
+      {fb.utxo.allAreFrozen(utxosToFreeze) ? (
+        <div className={styles.stepDescription}>
+          {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}
+        </div>
+      ) : (
+        <div className={styles.stepDescription}>
+          {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}{' '}
+          {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar })}
+        </div>
+      )}
+      {utxosToFreeze.map((utxo, index) => (
         <UtxoCard
           key={index}
           utxo={utxo}
@@ -221,6 +232,7 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
     </div>
   )
 }
+
 const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: React.ReactElement; utxos: Array<Utxo> }) => {
   const settings = useSettings()
 
@@ -256,21 +268,22 @@ const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: React.ReactE
 
 const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }: ReviewInputsProps) => {
   const settings = useSettings()
+  const { t } = useTranslation()
 
   const confirmationItems = [
     {
       icon: <Sprite symbol="clock" width="18" height="18" className={styles.confirmationStepIcon} />,
-      label: 'Locked until',
+      label: t('earn.fidelity_bond.review_inputs.label_lock_date'),
       content: <>{new Date(lockDate).toUTCString()}</>,
     },
     {
       icon: <Sprite symbol="jar-open-fill-50" width="18" height="18" className={styles.confirmationStepIcon} />,
-      label: 'Funds will be spent from',
+      label: t('earn.fidelity_bond.review_inputs.label_jar', { jar }),
       content: `Jar #${jar}`,
     },
     {
       icon: <Sprite symbol="coins" width="18" height="18" className={styles.confirmationStepIcon} />,
-      label: 'Amount to be locked up',
+      label: t('earn.fidelity_bond.review_inputs.label_amount'),
       content: (
         <Balance
           valueString={selectedUtxos.reduce((acc: number, utxo: Utxo) => acc + utxo.value, 0).toString()}
@@ -289,14 +302,14 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
           className={styles.confirmationStepIcon}
         />
       ),
-      label: 'Funds will be locked up on this address',
+      label: t('earn.fidelity_bond.review_inputs.label_address'),
       content: <code className={styles.timelockedAddress}>{timelockedAddress}</code>,
     },
   ]
 
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>You configured the fidelity bond as follows.</div>
+      <div className={styles.stepDescription}>{t('earn.fidelity_bond.review_inputs.description')}</div>
       <div className="d-flex gap-5 px-4 align-items-center">
         <Sprite symbol="fb-filled" width="60" height="110" className={styles.fbIcon} />
         <div className="d-flex flex-column gap-3">
@@ -313,7 +326,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
       </div>
       <hr className="my-0" />
       <UtxoSummary
-        title={'UTXOs that will be locked up'}
+        title={t('earn.fidelity_bond.review_inputs.label_selected_utxos')}
         icon={<Sprite symbol="lock" width="18" height="18" className={styles.utxoSummaryIconLock} />}
         utxos={selectedUtxos}
       />
@@ -322,6 +335,8 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
 }
 
 const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) => {
+  const { t } = useTranslation()
+
   return (
     <div className="d-flex flex-column gap-3">
       <Done text="Fidelity bond created." />
@@ -332,7 +347,9 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
             <div className="d-flex align-items-center gap-2">
               <Sprite symbol="clock" width="18" height="18" className={styles.confirmationStepIcon} />
               <div className="d-flex flex-column">
-                <div className={styles.confirmationStepLabel}>Locked until</div>
+                <div className={styles.confirmationStepLabel}>
+                  {t('earn.fidelity_bond.create_fidelity_bond.label_lock_date')}
+                </div>
                 <div className={styles.confirmationStepContent}>{fbUtxo.locktime}</div>
               </div>
             </div>
@@ -345,7 +362,9 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
                 className={styles.confirmationStepIcon}
               />
               <div className="d-flex flex-column">
-                <div className={styles.confirmationStepLabel}>Timelocked address</div>
+                <div className={styles.confirmationStepLabel}>
+                  {t('earn.fidelity_bond.create_fidelity_bond.label_address')}
+                </div>
                 <div className={styles.confirmationStepContent}>
                   <code className={styles.timelockedAddress}>{fbUtxo.address}</code>
                 </div>
@@ -357,7 +376,7 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
           <>
             <hr className="my-0 w-100" />
             <UtxoSummary
-              title={'Do you want to unfreeze the UTXOs that were frozen earlier?'}
+              title={t('earn.fidelity_bond.create_fidelity_bond.label_utxos_to_unfreeze')}
               icon={<Sprite symbol="sun" width="18" height="18" />}
               utxos={frozenUtxos}
             />

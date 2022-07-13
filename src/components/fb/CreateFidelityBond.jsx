@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
+import { useTranslation } from 'react-i18next'
 import { useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
@@ -34,6 +35,7 @@ const steps = {
 
 const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo, onDone }) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+  const { t } = useTranslation()
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -94,7 +96,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
             utxosThatWereFrozen.push(utxo)
           }
         } else {
-          return Api.Helper.throwError(res, 'current_wallet_advanced.error_freeze_failed')
+          return Api.Helper.throwError(
+            res,
+            freeze ? t('earn.fidelity_bond.error_freezing_utxos') : t('earn.fidelity_bond.error_unfreezing_utxos')
+          )
         }
       })
     )
@@ -123,7 +128,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       lockdate: lockDate,
     })
       .then((res) => {
-        return res.ok ? res.json() : Api.Helper.throwError(res, 'fidelity_bond.error_loading_timelock_address_failed')
+        return res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_loading_address'))
       })
       .then((data) => setTimelockedAddress(data.address))
       .then((_) => setAlert(null))
@@ -144,7 +149,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         amount_sats: 0, // sweep
       }
     )
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError('Could not create fidelity bond.')))
+      .then((res) =>
+        res.ok ? res.json() : Api.Helper.throwError(t('earn.fidelity_bond.error_creating_fidelity_bond'))
+      )
       .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input) => input.outpoint)))
       .then((_) => setAlert(null))
       .catch((err) => {
@@ -188,7 +195,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           setUtxoIdsToBeSpent([])
           setIsLoading(false)
 
-          setAlert({ variant: 'danger', message: 'Cloud not load wallet' })
+          setAlert({ variant: 'danger', message: t('earn.fidelity_bond.error_reloading_wallet') })
         })
     }, TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS)
 
@@ -196,7 +203,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       abortCtrl.abort()
       clearTimeout(timer)
     }
-  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress])
+  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t])
 
   useEffect(() => {
     const utxos = walletInfo.data.utxos.utxos
@@ -249,11 +256,16 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         )
       case steps.reviewInputs:
         if (isLoading) {
-          return <div>Loading...</div>
+          return (
+            <div className="d-flex justify-content-center align-items-center mt-5">
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              <div>{t('earn.fidelity_bond.text_loading')}</div>
+            </div>
+          )
         }
 
         if (timelockedAddress === null) {
-          return <div>Could not load time locked address.</div>
+          return <div>{t('earn.fidelity_bond.error.loading_address')}</div>
         }
 
         return (
@@ -270,14 +282,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         return isLoading ? (
           <div className="d-flex justify-content-center align-items-center mt-5">
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-            <div>Creating...</div>
+            <div>{t('earn.fidelity_bond.text_creating')}</div>
           </div>
         ) : (
           <div className="d-flex justify-content-center align-items-center gap-2 mt-5">
             {alert === null ? (
               <CreatedFidelityBond fbUtxo={createdFidelityBondUtxo} frozenUtxos={frozenUtxos} />
             ) : (
-              <>Couldn't create fidelity bond. </>
+              <>{t('earn.fidelity_bond.error_creating_fidelity_bond')}</>
             )}
           </div>
         )
@@ -285,11 +297,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         return isLoading ? (
           <div className="d-flex justify-content-center align-items-center mt-5">
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-            <div>Unfreezing...</div>
+            <div>{t('earn.fidelity_bond.text_unfreezing')}</div>
           </div>
         ) : (
           <div className="d-flex justify-content-center align-items-center gap-2 mt-5">
-            {alert === null ? <Done text="UTXOs unfrozen." /> : <>Couldn't Unfreeze UTXOS. </>}
+            {alert === null ? (
+              <Done text={t('earn.fidelity_bond.unfreeze_utxos.done')} />
+            ) : (
+              <>{t('earn.fidelity_bond.error_unfreezing_utxos')}</>
+            )}
           </div>
         )
       default:
@@ -300,45 +316,45 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
   const primaryButtonText = (currentStep) => {
     switch (currentStep) {
       case steps.selectDate:
-        return 'Next'
+        return t('earn.fidelity_bond.select_date.text_primary_button')
       case steps.selectJar:
-        return 'Next'
+        return t('earn.fidelity_bond.select_jar.text_primary_button')
       case steps.selectUtxos:
         if (!onlyCjOutOrFbUtxosSelected()) {
-          return 'Select potentially less private UTXOs'
+          return t('earn.fidelity_bond.select_utxos.text_primary_button_unsafe')
         }
 
-        return 'Next'
+        return t('earn.fidelity_bond.select_utxos.text_primary_button')
       case steps.freezeUtxos:
         const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos))
 
         if (utxosAreFrozen) {
-          return 'Next'
+          return t('earn.fidelity_bond.freeze_utxos.text_primary_button_all_frozen')
         } else if (alert !== null) {
-          return 'Try Again'
+          return t('earn.fidelity_bond.freeze_utxos.text_primary_button_error')
         }
 
-        return 'Freeze UTXOs'
+        return t('earn.fidelity_bond.freeze_utxos.text_primary_button')
       case steps.reviewInputs:
-        if (timelockedAddress === null) return 'Try again'
+        if (timelockedAddress === null) return t('earn.fidelity_bond.review_inputs.text_primary_button_error')
 
         if (!onlyCjOutOrFbUtxosSelected()) {
-          return 'Create fidelity bond with potentially less private UTXOs'
+          return t('earn.fidelity_bond.review_inputs.text_primary_button_unsafe')
         }
 
-        return 'Create fidelity bond'
+        return t('earn.fidelity_bond.review_inputs.text_primary_button')
       case steps.createFidelityBond:
         if (alert !== null) {
-          return 'Start over'
+          return t('earn.fidelity_bond.create_fidelity_bond.text_primary_button_error')
         }
 
         if (frozenUtxos.length > 0) {
-          return 'Unfreeze UTXOs'
+          return t('earn.fidelity_bond.create_fidelity_bond.text_primary_button_unfreeze')
         }
 
-        return 'Done'
+        return t('earn.fidelity_bond.create_fidelity_bond.text_primary_button')
       case steps.unfreezeUtxos:
-        return 'Done'
+        return t('earn.fidelity_bond.unfreeze_utxos.text_primary_button')
       default:
         return null
     }
@@ -356,10 +372,20 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
 
     switch (currentStep) {
+      case steps.selectDate:
+        return t('earn.fidelity_bond.select_date.text_secondary_button')
+      case steps.selectJar:
+        return t('earn.fidelity_bond.select_jar.text_secondary_button')
+      case steps.selectUtxos:
+        return t('earn.fidelity_bond.select_utxos.text_secondary_button')
+      case steps.freezeUtxos:
+        return t('earn.fidelity_bond.freeze_utxos.text_secondary_button')
+      case steps.reviewInputs:
+        return t('earn.fidelity_bond.review_inputs.text_secondary_button')
       case steps.createFidelityBond:
-        return frozenUtxos.length > 0 ? 'Done' : null
+        return frozenUtxos.length > 0 ? t('earn.fidelity_bond.create_fidelity_bond.text_secondary_button') : null
       default:
-        return 'Cancel'
+        return null
     }
   }
 
@@ -486,7 +512,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
       {alert && <Alert {...alert} className="mt-0" onDismissed={() => setAlert(null)} />}
       <ConfirmModal
         isShown={showConfirmInputsModal}
-        title={'Are you sure you want to lock your funds?'}
+        title={t('earn.fidelity_bond.confirm_modal.title')}
         onCancel={() => setShowConfirmInputsModal(false)}
         onConfirm={() => {
           setStep(steps.createFidelityBond)
@@ -494,25 +520,21 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           directSweepToFidelityBond(selectedJar, timelockedAddress)
         }}
       >
-        {`Be aware that your funds can only be moved again when the fidelity bond expires on ${new Date(
-          lockDate
-        ).toUTCString()}`}
+        {t('earn.fidelity_bond.confirm_modal.body', { date: new Date(lockDate).toUTCString() })}
       </ConfirmModal>
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
         <div className="d-flex justify-content-between align-items-center">
           <div className={styles.title}>
-            {otherFidelityBondExists ? 'Create another Fidelity Bond' : 'Long-term deposit with a Fidelity Bond'}
+            {otherFidelityBondExists
+              ? t('earn.fidelity_bond.title_fidelity_bond_exists')
+              : t('earn.fidelity_bond.title')}
           </div>
           <Sprite symbol={isExpanded ? 'caret-up' : 'plus'} width="20" height="20" />
         </div>
         {!otherFidelityBondExists && (
           <div className="d-flex align-items-center justify-content-center gap-4 px-3 mt-3">
             <Sprite className={styles.subtitleJar} symbol="fb-clock" width="46px" height="74px" />
-            <div className={styles.subtitle}>
-              You increase your chance to be chosen as a market maker in a collaborative transaction by locking up some
-              funds for a certain amount of time. Be aware that your bitcoin can only be moved again when the bond is
-              expired.
-            </div>
+            <div className={styles.subtitle}>{t('earn.fidelity_bond.subtitle')}</div>
           </div>
         )}
       </div>
