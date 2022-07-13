@@ -1,26 +1,26 @@
 #!/bin/bash
 set -e
 
+# ensure 'logs' directory exists
+mkdir --parents "${DATADIR}/logs"
+
 # First we restore the default cfg as created by wallet-tool.py generate
-if ! [ -f "$CONFIG" ]; then
+if [ ! -f "$CONFIG" ]; then
     cp "$DEFAULT_CONFIG" "$CONFIG"
 fi
 
-if ! [ -f "$AUTO_START" ]; then
+if [ ! -f "$AUTO_START" ]; then
     cp "$DEFAULT_AUTO_START" "$AUTO_START"
 fi
 
 # generate ssl certificates for jmwalletd
-if ! [ -f "${DATADIR}/ssl/key.pem" ]; then
+if [ ! -f "${DATADIR}/ssl/key.pem" ]; then
     subj="/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=example.com"
-    mkdir -p "${DATADIR}/ssl/" \
+    mkdir --parents "${DATADIR}/ssl/" \
       && pushd "$_" \
       && openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.pem -keyout key.pem -subj "$subj" \
       && popd
 fi
-
-# ensure 'logs' directory exists
-mkdir -p "${DATADIR}/logs"
 
 # auto start services
 while read -r p; do
@@ -44,13 +44,13 @@ while IFS='=' read -r -d '' envkey parsedval; do
     fi
 done < <(env -0)
 
-# adapt 'blockchain_source' is missing and we're in regtest mode
-if [ "${jmenv['network']}" == "regtest" ] && [ "${jmenv['blockchain_source']}" == "" ]; then
+# adapt 'blockchain_source' if missing and we're in regtest mode
+if [ "${jmenv['network']}" = "regtest" ] && [ "${jmenv['blockchain_source']}" = "" ]; then
     jmenv['blockchain_source']='regtest'
 fi
 
 # there is no 'regtest' value for config 'network': make sure to use "testnet" in regtest mode
-if [ "${jmenv['network']}" == "regtest" ]; then
+if [ "${jmenv['network']}" = "regtest" ]; then
     jmenv['network']='testnet'
 fi
 
@@ -64,13 +64,13 @@ jmenv['hidden_service_dir']="${hsdirEscapedSafe}"
 hsdirUnsafe=$(sed "s/^.*/${hsdirEscapedUnsafe}/g" <<< '')
 hsdirSafe=$(sed "s/^.*/${hsdirEscapedSafe}/g" <<< '')
 
-mkdir -p "${hsdirUnsafe}"
-rm -rf "${hsdirSafe}"
-cp -R "${hsdirUnsafe}" "${hsdirSafe}"
-chown root:root -R "${hsdirSafe}"
+mkdir --parents "${hsdirUnsafe}"
+rm --force --recursive "${hsdirSafe}"
+cp --recursive "${hsdirUnsafe}" "${hsdirSafe}"
+chown root:root --recursive "${hsdirSafe}"
 # this is important because tor is very finicky about permissions
 # see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/68c64e135dabafca8ed78202ace1ced1884684be/docs/onion-message-channels.md#joinmarket-specific-configuration
-chmod 600 -R "${hsdirSafe}"
+chmod 600 --recursive "${hsdirSafe}"
 # ---------- Hidden Service Directory - End
 
 # For every env variable JM_FOO=BAR, replace the default configuration value of 'foo' by 'BAR'
@@ -78,6 +78,5 @@ for key in "${!jmenv[@]}"; do
     val=${jmenv[${key}]}
     sed -i "s/^$key =.*/$key = $val/g" "$CONFIG" || echo "Couldn't set : $key = $val, please modify $CONFIG manually"
 done
-
 
 exec supervisord
