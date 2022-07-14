@@ -118,7 +118,7 @@
     "jar_tooltip": "Look inside",
     "jar_tooltip_empty_jar_0": "Receive",
     "jars_title": "Wallet distribution",
-    "jars_title_popover": "Todo: Description of what Jars (mixdepths) are."
+    "jars_title_popover": "Todo: Description of what jars (mixdepths) are."
   },
   "current_wallet_advanced": {
     "error_loading_utxos_failed": "Loading UTXOs failed.",
@@ -279,7 +279,7 @@
         "text_primary_button": "Next",
         "text_primary_button_unsafe": "Select potentially less private UTXOs",
         "text_secondary_button": "Cancel",
-        "description": "Select one or more UTXOs from jar #{{ jar }} to use for the fidelity bond.",
+        "description": "Select one or more UTXOs from Jar #{{ jar }} to use for the fidelity bond.",
         "utxo_card": {
           "confirmations": "{{ confs }} Confirmations",
           "label_frozen": "frozen",
