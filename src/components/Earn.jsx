@@ -305,10 +305,8 @@ export default function Earn() {
           {!serviceInfo?.coinjoinInProgress && (
             <>
               <PageTitle
-                title={fidelityBonds.length > 0 ? 'Your Fidelity Bonds' : 'Create a Fidelity Bond'}
-                subtitle={
-                  'A fidelity bond is a long-term deposit that makes cryptographic identities deliberately costly. By cryptographically locking up funds for a specific duration, you signal that you are a serious market participant and increase the chance of your offers being taken.'
-                }
+                title={fidelityBonds.length > 0 ? t('earn.title_fidelity_bond_exists') : t('earn.title_fidelity_bonds')}
+                subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
                 {fidelityBonds.length > 0 &&

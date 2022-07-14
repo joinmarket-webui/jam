@@ -339,7 +339,7 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
 
   return (
     <div className="d-flex flex-column gap-3">
-      <Done text="Fidelity bond created!" />
+      <Done text={t('earn.fidelity_bond.create_fidelity_bond.success_text')} />
 
       <div className="d-flex flex-column align-items-start gap-4">
         {fbUtxo !== null && (

@@ -254,6 +254,9 @@
     "report": {
       "title": "Earnings Report"
     },
+    "title_fidelity_bonds": "Create a Fidelity Bond",
+    "title_fidelity_bond_exists": "Your Fidelity Bonds",
+    "subtitle_fidelity_bonds": "A fidelity bond is a long-term deposit that makes cryptographic identities deliberately costly. By cryptographically locking up funds for a specific duration, you signal that you are a serious market participant and increase the chance of your offers being taken.",
     "fidelity_bond": {
       "error_freezing_utxos": "Could not freeze UTXOs.",
       "error_unfreezing_utxos": "Could not unfreeze UTXOs.",
@@ -309,6 +312,7 @@
         "label_selected_utxos": "UTXOs that will be time-locked:"
       },
       "create_fidelity_bond": {
+        "success_text": "Fidelity bond created!",
         "text_primary_button": "Done",
         "text_primary_button_unfreeze": "Unfreeze UTXOs",
         "text_primary_button_error": "Start over",
