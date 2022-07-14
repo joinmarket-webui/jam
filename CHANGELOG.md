@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 * advanced wording and behavior ([#390](https://github.com/joinmarket-webui/joinmarket-webui/issues/390)) ([c25c3ce](https://github.com/joinmarket-webui/joinmarket-webui/commit/c25c3ce6259112c702e249e4af3396001f8bbe3e))
-* change frozen icon ([#379](https://github.com/joinmarket-webui/joinmarket-webui/issues/379)) ([b4590c9](https://github.com/joinmarket-webui/joinmarket-webui/commit/b4590c9be1be0edbbcf6bfda5030876b2a7b64fb))
 * disable 'create wallet' link when unlocking wallet ([#334](https://github.com/joinmarket-webui/joinmarket-webui/issues/334)) ([e3083b9](https://github.com/joinmarket-webui/joinmarket-webui/commit/e3083b9c8ba5a99747f588188769b954ed03f0c2))
 * do not show FB create form when maker is running ([#384](https://github.com/joinmarket-webui/joinmarket-webui/issues/384)) ([e0f51fa](https://github.com/joinmarket-webui/joinmarket-webui/commit/e0f51faacbef44a3914c3f000722761362b47ee0))
 * don not show expired fidelity bonds as locked ([#378](https://github.com/joinmarket-webui/joinmarket-webui/issues/378)) ([0f7d590](https://github.com/joinmarket-webui/joinmarket-webui/commit/0f7d590e352d0dd1f8dce6e55a495b789aef2d31))
@@ -22,9 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 * batch unfreeze UTXOs after creating fidelity bond ([#388](https://github.com/joinmarket-webui/joinmarket-webui/issues/388)) ([efa3361](https://github.com/joinmarket-webui/joinmarket-webui/commit/efa336117779b6f24a5165b41c9e863c85b90c7c))
-* mention jar [#0](https://github.com/joinmarket-webui/joinmarket-webui/issues/0) in preconditions ([#395](https://github.com/joinmarket-webui/joinmarket-webui/issues/395)) ([08b3e7f](https://github.com/joinmarket-webui/joinmarket-webui/commit/08b3e7f4b15151e406920e04eec5c35a154ee7c2))
 * move fidelity bonds to earn screen ([#361](https://github.com/joinmarket-webui/joinmarket-webui/issues/361)) ([8608329](https://github.com/joinmarket-webui/joinmarket-webui/commit/8608329f3e45f1cc6c5cae43f8960ae01a9e147c))
-* time-lock-icon ([#402](https://github.com/joinmarket-webui/joinmarket-webui/issues/402)) ([c361837](https://github.com/joinmarket-webui/joinmarket-webui/commit/c361837fd52100f36f61b13a00ddb935d550c4ce))
 * visual warning when selecting non cj-out UTXOs for fidelity bond ([#392](https://github.com/joinmarket-webui/joinmarket-webui/issues/392)) ([bad9a57](https://github.com/joinmarket-webui/joinmarket-webui/commit/bad9a5741ad15e9c8608582a99c963875ae51bfb))
 
 ### [0.0.8](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.7...v0.0.8) (2022-06-28)
