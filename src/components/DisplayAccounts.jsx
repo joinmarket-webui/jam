@@ -21,7 +21,7 @@ export default function DisplayAccounts({ accounts, ...props }) {
                 <rb.Row className="w-100 me-1">
                   <rb.Col xs={'auto'}>
                     <h5 className="mb-0">
-                      {t('current_wallet_advanced.account')} {account}
+                      {t('current_wallet_advanced.account')} #{account}
                     </h5>
                   </rb.Col>
                   <rb.Col className="d-flex align-items-center justify-content-end">

@@ -126,7 +126,7 @@
     "button_show_utxos": "Show UTXOs",
     "button_hide_utxos": "Hide UTXOs",
     "alert_no_utxos": "No UTXOs available.",
-    "account": "Account",
+    "account": "Jar",
     "error_freeze_failed": "Request failed.",
     "label_locked_until": "Locked until",
     "label_frozen": "frozen",
