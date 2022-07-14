@@ -255,8 +255,8 @@
       "title": "Earnings Report"
     },
     "fidelity_bond": {
-      "error_freezing_utxos": "Could not freeze utxos.",
-      "error_unfreezing_utxos": "Could not unfreeze utxos.",
+      "error_freezing_utxos": "Could not freeze UTXOs.",
+      "error_unfreezing_utxos": "Could not unfreeze UTXOs.",
       "error_loading_address": "Could not load time-locked address.",
       "error_creating_fidelity_bond": "The transaction to create the fidelity bond failed.",
       "error_reloading_wallet": "Could not reload the wallet.",
