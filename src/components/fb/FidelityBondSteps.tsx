@@ -278,8 +278,8 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
     },
     {
       icon: <Sprite symbol="jar-open-fill-50" width="18" height="18" className={styles.confirmationStepIcon} />,
-      label: t('earn.fidelity_bond.review_inputs.label_jar', { jar }),
-      content: `Jar #${jar}`,
+      label: t('earn.fidelity_bond.review_inputs.label_jar'),
+      content: t('earn.fidelity_bond.review_inputs.label_jar_n', { jar }),
     },
     {
       icon: <Sprite symbol="coins" width="18" height="18" className={styles.confirmationStepIcon} />,
@@ -339,7 +339,7 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
 
   return (
     <div className="d-flex flex-column gap-3">
-      <Done text="Fidelity bond created." />
+      <Done text={t('earn.fidelity_bond.create_fidelity_bond.success_text')} />
 
       <div className="d-flex flex-column align-items-start gap-4">
         {fbUtxo !== null && (

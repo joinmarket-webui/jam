@@ -305,10 +305,8 @@ export default function Earn() {
           {!serviceInfo?.coinjoinInProgress && (
             <>
               <PageTitle
-                title={'Create a Fidelity Bond'}
-                subtitle={
-                  'Fidelity bonds prevent Sybil attacks by deliberately increasing the cost of creating cryptographic identities. Creating a fidelity bond will increase your chances of being picked for a collaborative transaction.'
-                }
+                title={fidelityBonds.length > 0 ? t('earn.title_fidelity_bond_exists') : t('earn.title_fidelity_bonds')}
+                subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
                 {fidelityBonds.length > 0 &&
