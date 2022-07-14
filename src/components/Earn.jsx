@@ -305,7 +305,7 @@ export default function Earn() {
           {!serviceInfo?.coinjoinInProgress && (
             <>
               <PageTitle
-                title={'Create a Fidelity Bond'}
+                title={fidelityBonds.length > 0 ? 'Your Fidelity Bonds' : 'Create a Fidelity Bond'}
                 subtitle={
                   'A fidelity bond is a long-term deposit that makes cryptographic identities deliberately costly. By cryptographically locking up funds for a specific duration, you signal that you are a serious market participant and increase the chance of your offers being taken.'
                 }
