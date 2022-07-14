@@ -150,7 +150,7 @@ const UtxoCard = ({
       )}
       {!isLoading && utxoIsLocked && (
         <div className={cx('utxoLabel', 'utxoFidelityBond')}>
-          <Sprite symbol="lock" width="18" height="18" />
+          <Sprite symbol="timelock" width="18" height="18" />
           <div>{t('earn.fidelity_bond.select_utxos.utxo_card.label_locked')}</div>
         </div>
       )}
@@ -327,7 +327,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
       <hr className="my-0" />
       <UtxoSummary
         title={t('earn.fidelity_bond.review_inputs.label_selected_utxos')}
-        icon={<Sprite symbol="lock" width="18" height="18" className={styles.utxoSummaryIconLock} />}
+        icon={<Sprite symbol="timelock" width="18" height="18" className={styles.utxoSummaryIconLock} />}
         utxos={selectedUtxos}
       />
     </div>
