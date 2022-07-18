@@ -11,8 +11,6 @@ To function, the web UI needs to connect to an instance of JoinMarket with [the 
 
 You don't need to worry about that, though.
 To ease development and testing, we provide a Docker setup that runs JoinMarket and its API service in a regtest setup.
-It isn't needed to dig deeper into how it works to use it.
-However, if you want to find out more about it, see [docker/regtest/readme.md](docker/regtest/readme.md).
 
 ## Submitting a Pull Request
 
@@ -22,23 +20,26 @@ However, if you want to find out more about it, see [docker/regtest/readme.md](d
 git clone git@github.com:<your-username>/joinmarket-webui.git
 ```
 
-Start the JoinMarket HTTP API service in regtest:
-
-```sh
-docker-compose --file docker/regtest/docker-compose.yml up
-```
-
-Initialize the regtest setup. This creates and funds a wallet `funded` with password `test`.
-
-```sh
-docker/regtest/init-setup.sh
-```
-
 Install dependencies:
 
 ```sh
 npm install
 ```
+
+Start the JoinMarket HTTP API service in regtest.
+It isn't needed to dig deeper into how it works to use it.
+However, if you want to find out more about it, see [docker/regtest/readme.md](docker/regtest/readme.md).
+
+```sh
+npm run regtest:up
+```
+
+Initialize the regtest setup:
+
+```sh
+npm run regtest:init
+```
+This creates and funds a wallet `funded` with password `test`.
 
 Start the UI on port 3000:
 
@@ -75,23 +76,26 @@ Checkout the version you want to test. If you want to test the cutting edge deve
 git fetch --tags git checkout <version>
 ```
 
-Start the JoinMarket HTTP API service in regtest:
-
-```sh
-docker-compose --file docker/regtest/docker-compose.yml up
-```
-
-Initialize the regtest setup. This creates and funds a wallet `funded` with password `test`.
-
-```sh
-docker/regtest/init-setup.sh
-```
-
 Install dependencies:
 
 ```sh
 npm install
 ```
+
+Start the JoinMarket HTTP API service in regtest.
+It isn't needed to dig deeper into how it works to use it.
+However, if you want to find out more about it, see [docker/regtest/readme.md](docker/regtest/readme.md).
+
+```sh
+npm run regtest:up
+```
+
+Initialize the regtest setup:
+
+```sh
+npm run regtest:init
+```
+This creates and funds a wallet `funded` with password `test`.
 
 Start the UI on port 3000:
 
