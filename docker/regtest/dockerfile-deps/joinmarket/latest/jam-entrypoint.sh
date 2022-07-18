@@ -1,13 +1,16 @@
 #!/bin/bash
 set -e
 
-export JM_ONION_SERVING_HOST
-JM_ONION_SERVING_HOST="$(/sbin/ip route|awk '/src/ { print $9 }')"
-
 # ensure 'logs' directory exists
 mkdir --parents "${DATADIR}/logs"
 
-# First we restore the default cfg as created by wallet-tool.py generate
+# assign `jm_onion_serving_host` if not explicitly provided
+if [ -z "${JM_ONION_SERVING_HOST}" ]; then
+    export JM_ONION_SERVING_HOST
+    JM_ONION_SERVING_HOST="$(/sbin/ip route|awk '/src/ { print $9 }')"
+fi
+
+# restore the default config
 if [ ! -f "$CONFIG" ]; then
     cp "$DEFAULT_CONFIG" "$CONFIG"
 fi
