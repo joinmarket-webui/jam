@@ -23,9 +23,10 @@ services:
       jm_rpc_password: joinmarket
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
       #jm_socks5: "false" # will _not_ connect to local irc over tor
-      jm_onion_serving_port: 28383
+      #jm_onion_serving_port: 28383
+      jm_onion_serving_host: 127.0.0.1
     expose:
-      - 28383 # payjoin server / onion serving port
+      #- 28383 # payjoin server / onion serving port
       - 62601 # obwatch
       - 27183 # joinmarketd
       - 28183 # jmwalletd api
@@ -34,7 +35,7 @@ services:
       - "62601:62601"
       - "28183:28183"
       - "28283:28283"
-      - "28383:28383"
+      #- "28383:28383"
     volumes:
       - "joinmarket_datadir:/root/.joinmarket"
       - "nbxplorer_datadir:/root/.nbxplorer"
@@ -66,34 +67,25 @@ services:
       jm_rpc_password: joinmarket2
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
       #jm_socks5: "false" # will _not_ connect to local irc over tor
-      #jm_socks5_host: tor
-      #jm_socks5_port: 9050
-      #jm_tor_control_host: tor
-      #jm_tor_control_port: 9051
-      #jm_onion_socks5_host: tor
-      #jm_onion_socks5_port: 9050
-      #jm_onion_serving_host: tor
-      jm_onion_serving_port: 29383
+      jm_onion_serving_host: 127.0.0.1
     expose:
       - 80    # nginx
       - 62601 # obwatch
       - 27183 # joinmarketd
       - 28183 # jmwalletd api
       - 28283 # jmwalletd websocket
-      - 29383  # payjoin server / onion serving port
+      #- 29383  # payjoin server / onion serving port
     ports:
       - "29183:28183"
       - "29283:28283"
-      - "29383:29383"
+      #- "29383:29383"
       - "29080:80"
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
       - "nbxplorer_datadir:/root/.nbxplorer"
-      #- "tor_datadir:/home/tor/.tor"
     depends_on:
       - bitcoind
       - nbxplorer
-      #- tor
       #- irc
 
   joinmarket_directory_node:
@@ -125,11 +117,6 @@ services:
     restart: unless-stopped
     image: btcpayserver/bitcoin:22.0-1
     environment:
-      HIDDENSERVICE_NAME: BTC-P2P,BTC-RPC
-      BTC-P2P_HIDDENSERVICE_VIRTUAL_PORT: 8333
-      BTC-P2P_HIDDENSERVICE_PORT: 39388
-      BTC-RPC_HIDDENSERVICE_VIRTUAL_PORT: 8332
-      BTC-RPC_HIDDENSERVICE_PORT: 43782
       BITCOIN_NETWORK: ${NBITCOIN_NETWORK:-regtest}
       BITCOIN_WALLETDIR: "/walletdata"
       BITCOIN_EXTRA_ARGS: |
@@ -149,10 +136,7 @@ services:
         zmqpubrawblock=tcp://0.0.0.0:28332
         zmqpubrawtx=tcp://0.0.0.0:28333
         zmqpubhashblock=tcp://0.0.0.0:28334
-        # tor
-        dns=1
-        #onion=tor:9050
-        #torcontrol=tor:9051
+        dns=0
         # do not automatically create tor hidden service
         listenonion=0
         # rpcauth (user=regtest; password=regtest)
@@ -172,9 +156,6 @@ services:
     volumes:
       - "bitcoin_datadir:/data"
       - "bitcoin_wallet_datadir:/walletdata"
-      #- "tor_datadir:/home/tor/.tor"
-    #depends_on:
-      #- tor
 
   nbxplorer:
     container_name: jm_regtest_nbxplorer
@@ -198,24 +179,6 @@ services:
       - "bitcoin_datadir:/root/.bitcoin"
     depends_on:
       - bitcoind
-      #- tor
-
-  #tor:
-  #  container_name: jm_regtest_tor
-  #  restart: unless-stopped
-  #  image: btcpayserver/tor:0.4.6.5
-  #  environment:
-  #    TOR_PASSWORD: changeme
-  #    TOR_ADDITIONAL_CONFIG: /usr/local/etc/tor/torrc-2
-  #    TOR_EXTRA_ARGS: |
-  #      CookieAuthentication 1
-  #  expose:
-  #    - 9050  # SOCKS
-  #    - 9051  # Tor Control
-  #  volumes:
-  #    - "tor_datadir:/home/tor/.tor"
-  #    - "tor_torrcdir:/usr/local/etc/tor"
-  #    - "tor_servicesdir:/var/lib/tor/hidden_services"
 
   nginx:
     container_name: jm_regtest_nginx_test_basepath
@@ -235,6 +198,3 @@ volumes:
   joinmarket2_datadir:
   joinmarket_directory_node_datadir:
   irc_datadir:
-  tor_datadir:
-  tor_torrcdir:
-  tor_servicesdir:
