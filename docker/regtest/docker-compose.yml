@@ -23,10 +23,7 @@ services:
       jm_rpc_password: joinmarket
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
       #jm_socks5: "false" # will _not_ connect to local irc over tor
-      #jm_onion_serving_port: 28383
-      jm_onion_serving_host: 127.0.0.1
     expose:
-      #- 28383 # payjoin server / onion serving port
       - 62601 # obwatch
       - 27183 # joinmarketd
       - 28183 # jmwalletd api
@@ -35,7 +32,6 @@ services:
       - "62601:62601"
       - "28183:28183"
       - "28283:28283"
-      #- "28383:28383"
     volumes:
       - "joinmarket_datadir:/root/.joinmarket"
       - "nbxplorer_datadir:/root/.nbxplorer"
@@ -67,18 +63,15 @@ services:
       jm_rpc_password: joinmarket2
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
       #jm_socks5: "false" # will _not_ connect to local irc over tor
-      jm_onion_serving_host: 127.0.0.1
     expose:
       - 80    # nginx
       - 62601 # obwatch
       - 27183 # joinmarketd
       - 28183 # jmwalletd api
       - 28283 # jmwalletd websocket
-      #- 29383  # payjoin server / onion serving port
     ports:
       - "29183:28183"
       - "29283:28283"
-      #- "29383:29383"
       - "29080:80"
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
