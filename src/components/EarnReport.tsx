@@ -16,15 +16,35 @@ const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTable
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const reportHeadingMap: { [name: string]: string } = {
-    timestamp: t('earn.report.heading_timestamp'),
-    'cj amount/satoshi': t('earn.report.heading_cj_amount'),
-    'my input count': t('earn.report.heading_input_count'),
-    'my input value/satoshi': t('earn.report.heading_input_value'),
-    'cjfee/satoshi': t('earn.report.heading_cj_fee'),
-    'earned/satoshi': t('earn.report.heading_earned'),
-    'confirm time/min': t('earn.report.heading_confirm_time'),
-    'notes\n': t('earn.report.heading_notes'),
+  const reportHeadingMap: { [name: string]: { heading: string; format?: string } } = {
+    timestamp: {
+      heading: t('earn.report.heading_timestamp'),
+    },
+    'cj amount/satoshi': {
+      heading: t('earn.report.heading_cj_amount'),
+      format: 'balance',
+    },
+    'my input count': {
+      heading: t('earn.report.heading_input_count'),
+    },
+    'my input value/satoshi': {
+      heading: t('earn.report.heading_input_value'),
+      format: 'balance',
+    },
+    'cjfee/satoshi': {
+      heading: t('earn.report.heading_cj_fee'),
+      format: 'balance',
+    },
+    'earned/satoshi': {
+      heading: t('earn.report.heading_earned'),
+      format: 'balance',
+    },
+    'confirm time/min': {
+      heading: t('earn.report.heading_confirm_time'),
+    },
+    'notes\n': {
+      heading: t('earn.report.heading_notes'),
+    },
   }
 
   const empty = !lines || lines.length < 2
@@ -49,7 +69,7 @@ const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTable
             <thead>
               <tr>
                 {headers.map((name, index) => (
-                  <th key={`header_${index}`}>{reportHeadingMap[name] || name}</th>
+                  <th key={`header_${index}`}>{reportHeadingMap[name]?.heading || name}</th>
                 ))}
               </tr>
             </thead>
@@ -58,7 +78,7 @@ const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTable
                 <tr key={`tr_${trIndex}`}>
                   {line.map((val, tdIndex) => (
                     <td key={`td_${tdIndex}`}>
-                      {headers[tdIndex] && headers[tdIndex].includes('satoshi') ? (
+                      {headers[tdIndex] && reportHeadingMap[headers[tdIndex]]?.format === 'balance' ? (
                         <Balance valueString={val} convertToUnit={settings.unit} showBalance={settings.showBalance} />
                       ) : (
                         val
