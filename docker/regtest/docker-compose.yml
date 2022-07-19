@@ -22,7 +22,7 @@ services:
       jm_rpc_user: joinmarket
       jm_rpc_password: joinmarket
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      #jm_socks5: "false" # will _not_ connect to local irc over tor
+      jm_socks5: "false" # will _not_ connect to local irc over tor
     expose:
       - 62601 # obwatch
       - 27183 # joinmarketd
@@ -38,7 +38,7 @@ services:
     depends_on:
       - bitcoind
       - nbxplorer
-      #- irc
+      - irc
 
   joinmarket2:
     container_name: jm_regtest_joinmarket2
@@ -62,7 +62,7 @@ services:
       jm_rpc_user: joinmarket2
       jm_rpc_password: joinmarket2
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      #jm_socks5: "false" # will _not_ connect to local irc over tor
+      jm_socks5: "false" # will _not_ connect to local irc over tor
     expose:
       - 80    # nginx
       - 62601 # obwatch
@@ -79,7 +79,7 @@ services:
     depends_on:
       - bitcoind
       - nbxplorer
-      #- irc
+      - irc
 
   joinmarket_directory_node:
     container_name: jm_regtest_joinmarket_directory_node
@@ -96,14 +96,14 @@ services:
       - "joinmarket_directory_node_datadir:/root/.joinmarket"
       - "./out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
 
-  #irc:
-  #  container_name: jm_regtest_irc
-  #  restart: unless-stopped
-  #  image: ghcr.io/ergochat/ergo:stable
-  #  expose:
-  #    - 6667
-  #  volumes:
-  #    - "irc_datadir:/ircd"
+  irc:
+    container_name: jm_regtest_irc
+    restart: unless-stopped
+    image: ghcr.io/ergochat/ergo:stable
+    expose:
+      - 6667
+    volumes:
+      - "irc_datadir:/ircd"
 
   bitcoind:
     container_name: jm_regtest_bitcoind
