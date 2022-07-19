@@ -1,4 +1,4 @@
-FROM ghcr.io/joinmarket-webui/joinmarket-webui-dev-standalone:master
+FROM ghcr.io/joinmarket-webui/joinmarket-webui-dev-standalone:dev-with-local-tor-from-repo
 
 COPY default.cfg ${DEFAULT_CONFIG}
 
