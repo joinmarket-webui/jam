@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import * as Api from '../libs/JmWalletApi'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
+import Balance from './Balance'
 import styles from './EarnReport.module.css'
 
 interface YielgenReportTableProps {
@@ -14,6 +15,17 @@ interface YielgenReportTableProps {
 const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
+
+  const reportHeadingMap: { [name: string]: string } = {
+    timestamp: t('earn.report.heading_timestamp'),
+    'cj amount/satoshi': t('earn.report.heading_cj_amount'),
+    'my input count': t('earn.report.heading_input_count'),
+    'my input value/satoshi': t('earn.report.heading_input_value'),
+    'cjfee/satoshi': t('earn.report.heading_cj_fee'),
+    'earned/satoshi': t('earn.report.heading_earned'),
+    'confirm time/min': t('earn.report.heading_confirm_time'),
+    'notes\n': t('earn.report.heading_notes'),
+  }
 
   const empty = !lines || lines.length < 2
   const headers = empty ? [] : lines[0].split(',')
@@ -37,7 +49,7 @@ const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTable
             <thead>
               <tr>
                 {headers.map((name, index) => (
-                  <th key={`header_${index}`}>{name}</th>
+                  <th key={`header_${index}`}>{reportHeadingMap[name] || name}</th>
                 ))}
               </tr>
             </thead>
@@ -45,18 +57,17 @@ const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTable
               {visibleLines.map((line, trIndex) => (
                 <tr key={`tr_${trIndex}`}>
                   {line.map((val, tdIndex) => (
-                    <td key={`td_${tdIndex}`}>{val}</td>
+                    <td key={`td_${tdIndex}`}>
+                      {headers[tdIndex] && headers[tdIndex].includes('satoshi') ? (
+                        <Balance valueString={val} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+                      ) : (
+                        val
+                      )}
+                    </td>
                   ))}
                 </tr>
               ))}
             </tbody>
-            <tfoot>
-              <tr>
-                {headers.map((name, index) => (
-                  <th key={`footer_${index}`}>{name}</th>
-                ))}
-              </tr>
-            </tfoot>
           </rb.Table>
           <div className="my-1 d-flex justify-content-end">
             <small>

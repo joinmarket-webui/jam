@@ -252,7 +252,15 @@
     "text_stopping": "Stopping",
     "button_show_report": "Show earnings report",
     "report": {
-      "title": "Earnings Report"
+      "title": "Earnings Report",
+      "heading_timestamp": "Timestamp",
+      "heading_cj_amount": "Transaction Amount",
+      "heading_input_count": "No. of UTXOs input by me",
+      "heading_input_value": "Amount input by me",
+      "heading_cj_fee": "CoinJoin Fee",
+      "heading_earned": "Earned",
+      "heading_confirm_time": "Confirmation Time (mins)",
+      "heading_notes": "Notes"
     },
     "title_fidelity_bonds": "Create a Fidelity Bond",
     "title_fidelity_bond_exists": "Your Fidelity Bonds",
