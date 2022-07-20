@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
@@ -531,12 +531,23 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           </div>
           <Sprite symbol={isExpanded ? 'caret-up' : 'plus'} width="20" height="20" />
         </div>
-        {!otherFidelityBondExists && (
-          <div className="d-flex align-items-center justify-content-center gap-4 px-3 mt-3">
-            <Sprite className={styles.subtitleJar} symbol="fb-clock" width="46px" height="74px" />
-            <div className={styles.subtitle}>{t('earn.fidelity_bond.subtitle')}</div>
-          </div>
-        )}
+        <div className={styles.subtitle}>
+          {otherFidelityBondExists ? (
+            <Trans i18nKey="earn.fidelity_bond.subtitle_fidelity_bond_exists">
+              <a
+                onClick={(e) => e.stopPropagation()}
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long"
+              >
+                {/* i18n placeholder */}
+              </a>
+            </Trans>
+          ) : (
+            <div className="d-flex align-items-center justify-content-center gap-4 px-3 mt-3">
+              <Sprite className={styles.subtitleJar} symbol="fb-clock" width="46px" height="74px" />
+              {t('earn.fidelity_bond.subtitle')}
+            </div>
+          )}
+        </div>
       </div>
       <rb.Collapse in={isExpanded}>
         <div>
