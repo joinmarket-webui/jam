@@ -266,7 +266,7 @@ export default function Send() {
   const [isSweep, setIsSweep] = useState(false)
   const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
   const [destinationJar, setDestinationJar] = useState(null)
-  const [destinationIsReusedAddress, setDesitnationIsReusedAddress] = useState(false)
+  const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
@@ -429,12 +429,12 @@ export default function Send() {
   useEffect(() => {
     if (walletInfo?.addressSummary[destination]) {
       if (walletInfo?.addressSummary[destination].status !== 'new') {
-        setDesitnationIsReusedAddress(true)
+        setDestinationIsReusedAddress(true)
         return
       }
     }
 
-    setDesitnationIsReusedAddress(false)
+    setDestinationIsReusedAddress(false)
   }, [walletInfo, destination])
 
   const sendPayment = async (account, destination, amount_sats) => {
