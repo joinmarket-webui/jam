@@ -427,7 +427,7 @@ export default function Send() {
   }, [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t])
 
   useEffect(() => {
-    if (walletInfo?.addressSummary[destination]) {
+    if (destination !== null && walletInfo?.addressSummary[destination]) {
       if (walletInfo?.addressSummary[destination].status !== 'new') {
         setDestinationIsReusedAddress(true)
         return
