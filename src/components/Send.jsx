@@ -310,6 +310,7 @@ export default function Send() {
   useEffect(() => {
     if (
       isValidAddress(destination) &&
+      !destinationIsReusedAddress &&
       isValidAccount(account) &&
       isValidAmount(amount, isSweep) &&
       (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true) &&
@@ -328,6 +329,7 @@ export default function Send() {
     isCoinjoin,
     isSweep,
     coinjoinPreconditionSummary,
+    destinationIsReusedAddress,
   ])
 
   useEffect(() => {
