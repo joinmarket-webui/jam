@@ -266,6 +266,7 @@ export default function Send() {
   const [isSweep, setIsSweep] = useState(false)
   const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
   const [destinationJar, setDestinationJar] = useState(null)
+  const [destinationIsReusedAddress, setDesitnationIsReusedAddress] = useState(false)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
@@ -424,6 +425,17 @@ export default function Send() {
 
     return () => abortCtrl.abort()
   }, [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t])
+
+  useEffect(() => {
+    if (walletInfo?.addressSummary[destination]) {
+      if (walletInfo?.addressSummary[destination].status !== 'new') {
+        setDesitnationIsReusedAddress(true)
+        return
+      }
+    }
+
+    setDesitnationIsReusedAddress(false)
+  }, [walletInfo, destination])
 
   const sendPayment = async (account, destination, amount_sats) => {
     setAlert(null)
@@ -807,42 +819,55 @@ export default function Send() {
                     })}
                     value={destinationJar !== null ? `Jar #${destinationJar} (${destination})` : destination || ''}
                     required
-                    onChange={(e) => setDestination(e.target.value)}
-                    isInvalid={destination !== null && !isValidAddress(destination)}
-                    disabled={isOperationDisabled || destinationJar !== null}
-                  />
-                  <rb.Button
-                    variant="outline-dark"
-                    className={styles['button-jar-selector']}
-                    onClick={() => {
-                      if (destinationJar !== null) {
-                        setDestinationJar(null)
-                        setDestination(INITIAL_DESTINATION)
+                    onChange={(e) => {
+                      const value = e.target.value
+                      if (value === '') {
+                        setDestination(null)
                       } else {
-                        setDestinationJarPickerShown(true)
+                        setDestination(e.target.value)
                       }
                     }}
-                    disabled={isOperationDisabled}
-                  >
-                    {destinationJar !== null ? (
-                      <div className="d-flex justify-content-center align-items-center">
-                        <Sprite symbol="cancel" width="26" height="26" />
-                      </div>
-                    ) : (
-                      <div className="d-flex justify-content-center align-items-center">
-                        <Sprite
-                          symbol="jar-closed-empty"
-                          width="28px"
-                          height="28px"
-                          style={{ paddingBottom: '0.2rem' }}
-                        />
-                      </div>
-                    )}
-                  </rb.Button>
+                    isInvalid={(destination !== null && !isValidAddress(destination)) || destinationIsReusedAddress}
+                    disabled={isOperationDisabled || destinationJar !== null}
+                  />
+                  {destinationIsReusedAddress && (
+                    <rb.Form.Control.Feedback type="invalid">
+                      {t('send.feedback_reused_address')}
+                    </rb.Form.Control.Feedback>
+                  )}
+                  {!destinationIsReusedAddress && (
+                    <rb.Button
+                      variant="outline-dark"
+                      className={styles['button-jar-selector']}
+                      onClick={() => {
+                        if (destinationJar !== null) {
+                          setDestinationJar(null)
+                          setDestination(INITIAL_DESTINATION)
+                        } else {
+                          setDestinationJarPickerShown(true)
+                        }
+                      }}
+                      disabled={isOperationDisabled}
+                    >
+                      {destinationJar !== null ? (
+                        <div className="d-flex justify-content-center align-items-center">
+                          <Sprite symbol="cancel" width="26" height="26" />
+                        </div>
+                      ) : (
+                        <div className="d-flex justify-content-center align-items-center">
+                          <Sprite
+                            symbol="jar-closed-empty"
+                            width="28px"
+                            height="28px"
+                            style={{ paddingBottom: '0.2rem' }}
+                          />
+                        </div>
+                      )}
+                    </rb.Button>
+                  )}
                 </>
               )}
             </div>
-            <rb.Form.Control.Feedback type="invalid">{t('send.feedback_invalid_recipient')}</rb.Form.Control.Feedback>
           </rb.Form.Group>
           <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
             <ToggleSwitch

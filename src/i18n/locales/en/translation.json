@@ -185,7 +185,7 @@
     "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
     "label_recipient": "Recipient",
     "placeholder_recipient": "Enter address or choose jar from wallet...",
-    "feedback_invalid_recipient": "Please provide a recipient address.",
+    "feedback_reused_address": "This address is already used. To preserve your privacy please chose another one.",
     "label_account": "Send from",
     "label_account_dev_mode": "Account to send from",
     "account_selector_option": "Jar {{ number }}",
