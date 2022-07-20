@@ -95,13 +95,20 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
               <rb.Button
                 key={number}
                 variant={settings.theme === 'light' ? 'white' : 'dark'}
-                className={`${styles['collaborators-selector-button']} p-2 border border-1 rounded text-center${
-                  !usesCustomNumCollaborators && numCollaborators === number
-                    ? settings.theme === 'light'
-                      ? ' border-dark'
-                      : ` ${styles['selected-dark']}`
-                    : ''
-                }`}
+                className={classnames(
+                  styles['collaborators-selector-button'],
+                  'p-2',
+                  'border',
+                  'border-1',
+                  'rounded',
+                  'text-center',
+                  {
+                    'border-dark':
+                      !usesCustomNumCollaborators && numCollaborators === number && settings.theme === 'light',
+                    [styles['selected-dark']]:
+                      !usesCustomNumCollaborators && numCollaborators === number && settings.theme !== 'light',
+                  }
+                )}
                 onClick={() => {
                   setUsesCustomNumCollaborators(false)
                   setNumCollaborators(number)
@@ -119,9 +126,18 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
             isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
             placeholder={t('send.input_num_collaborators_placeholder')}
             defaultValue=""
-            className={`${styles['collaborators-selector-input']} p-2 border border-1 rounded text-center${
-              usesCustomNumCollaborators ? (settings.theme === 'light' ? ' border-dark' : ' selected-dark') : ''
-            }`}
+            className={classnames(
+              styles['collaborators-selector-input'],
+              'p-2',
+              'border',
+              'border-1',
+              'rounded',
+              'text-center',
+              {
+                'border-dark': usesCustomNumCollaborators && settings.theme === 'light',
+                [styles['selected-dark']]: usesCustomNumCollaborators && settings.theme !== 'light',
+              }
+            )}
             onChange={(e) => {
               setUsesCustomNumCollaborators(true)
               validateAndSetCustomNumCollaborators(e.target.value)
