@@ -209,26 +209,30 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
           isSelected={true}
         />
       ))}
-      {fb.utxo.allAreFrozen(utxosToFreeze) ? (
-        <div className={styles.stepDescription}>
-          {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}
-        </div>
-      ) : (
-        <div className={styles.stepDescription}>
-          {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}{' '}
-          {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar })}
-        </div>
+      {utxosToFreeze.length > 0 && (
+        <>
+          {fb.utxo.allAreFrozen(utxosToFreeze) ? (
+            <div className={styles.stepDescription}>
+              {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}
+            </div>
+          ) : (
+            <div className={styles.stepDescription}>
+              {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}{' '}
+              {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar })}
+            </div>
+          )}
+          {utxosToFreeze.map((utxo, index) => (
+            <UtxoCard
+              key={index}
+              utxo={utxo}
+              status={walletInfo.addressSummary[utxo.address]?.status}
+              isSelectable={false}
+              isSelected={false}
+              isLoading={isLoading}
+            />
+          ))}
+        </>
       )}
-      {utxosToFreeze.map((utxo, index) => (
-        <UtxoCard
-          key={index}
-          utxo={utxo}
-          status={walletInfo.addressSummary[utxo.address]?.status}
-          isSelectable={false}
-          isSelected={false}
-          isLoading={isLoading}
-        />
-      ))}
     </div>
   )
 }
