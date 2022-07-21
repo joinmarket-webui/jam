@@ -178,7 +178,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
             // Note that two fidelity bonds with the same locktime will end up on the same address.
             // Therefore, this might not actually be the UTXO we just created.
             // Since we're using it only for displaying locktime and address, this should be fine though.
-            const fbUtxo = walletInfo.data.utxos.utxos.find((utxo) => utxo.address === timelockedAddress)
+            const fbUtxo = walletInfo.fidelityBondSummary.fbOutputs.find((utxo) => utxo.address === timelockedAddress)
 
             if (fbUtxo !== undefined) {
               setCreatedFidelityBondUtxo(fbUtxo)
