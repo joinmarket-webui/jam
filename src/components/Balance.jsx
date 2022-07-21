@@ -19,7 +19,7 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
   return (
     <span className="d-inline-flex align-items-center">
       {symbolIsPrefix && symbol}
-      <span className="d-inline-flex align-items-center slashed-zeroes">{value}</span>
+      <span className="d-inline-flex align-items-center slashed-zeroes balance-value">{value}</span>
       {!symbolIsPrefix && symbol}
     </span>
   )
@@ -101,8 +101,12 @@ export default function Balance({
     // Treat decimal numbers as btc.
     const valueIsBtc = !valueIsSats && !Number.isNaN(Number.parseFloat(valueString)) && valueString.indexOf('.') > -1
 
-    const btcSymbol = <span style={{ paddingRight: '0.1em' }}>{'\u20BF'}</span>
-    const satSymbol = <Sprite symbol="sats" width="1.2em" height="1.2em" />
+    const btcSymbol = (
+      <span className="balance-symbol" style={{ paddingRight: '0.1em' }}>
+        {'\u20BF'}
+      </span>
+    )
+    const satSymbol = <Sprite className="balance-symbol" symbol="sats" width="1.2em" height="1.2em" />
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
       return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueString)} symbolIsPrefix={true} />
