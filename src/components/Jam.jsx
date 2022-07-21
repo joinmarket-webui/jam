@@ -327,7 +327,7 @@ export default function Jam() {
                 </div>
                 <>
                   <Balance
-                    valueString={`${walletInfo.calculatedAvailableBalanceInSats}`}
+                    valueString={`${walletInfo.balanceSummary.calculatedAvailableBalanceInSats}`}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />
