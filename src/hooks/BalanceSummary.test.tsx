@@ -36,6 +36,7 @@ describe('BalanceSummary', () => {
     act(() => {
       balanceSummary = setup(
         {
+          balanceSummary: {} as WalletBalanceSummary,
           addressSummary: {},
           data: {
             utxos: {
@@ -66,6 +67,7 @@ describe('BalanceSummary', () => {
     act(() => {
       balanceSummary = setup(
         {
+          balanceSummary: {} as WalletBalanceSummary,
           addressSummary: {},
           data: {
             utxos: {
@@ -128,6 +130,7 @@ describe('BalanceSummary', () => {
     act(() => {
       balanceSummary = setup(
         {
+          balanceSummary: {} as WalletBalanceSummary,
           addressSummary: {},
           data: {
             utxos: {
