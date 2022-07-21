@@ -340,7 +340,7 @@
       "title": "Configure Fidelity Bond",
       "title_fidelity_bond_exists": "Configure Additional Bond",
       "subtitle": "Your sats will be time-locked by the Bitcoin protocol. It is impossible to move them before the bond is expired.",
-      "subtitle_fidelity_bond_exists": "When more than one fildelity bond exists, only the <0>the most valueable one</0> will be used.",
+      "subtitle_fidelity_bond_exists": "If more than one fildelity bond exists, only the <0>the most valueable one</0> will be used.",
       "text_maker_running": "Earn is active. Stop the service in order to create a Fidelity Bond.",
       "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
       "create_form": {
