@@ -3,6 +3,31 @@
   color: var(--bs-gray-600);
 }
 
+.jarsContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.jarsContainer :global .balance-value {
+  font-size: 0.7rem;
+}
+
+.jarsContainer :global .balance-symbol {
+  font-size: 0.7rem;
+}
+
+@media only screen and (min-width: 768px) {
+  .jarsContainer {
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
 .utxoCard {
   display: flex;
   align-items: center;
