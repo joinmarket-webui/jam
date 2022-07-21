@@ -536,6 +536,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
             <Trans i18nKey="earn.fidelity_bond.subtitle_fidelity_bond_exists">
               <a
                 onClick={(e) => e.stopPropagation()}
+                rel="noopener noreferrer"
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long"
               >
                 {/* i18n placeholder */}
