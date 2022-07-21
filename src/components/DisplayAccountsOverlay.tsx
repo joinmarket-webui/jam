@@ -70,7 +70,7 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
                 <Sprite symbol="caret-left" width="24" height="24" />
               </rb.Button>
               <div className={`${styles['accounts-overlay-header-title']}`}>
-                {t('current_wallet_advanced.account')} <span className="ml-1">{account.account}</span>
+                {t('current_wallet_advanced.account')} <span className="ms-1">#{account.account}</span>
               </div>
               <rb.Button
                 variant="link"
