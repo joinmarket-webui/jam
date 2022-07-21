@@ -7,7 +7,6 @@ import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
-import { useBalanceSummary } from '../hooks/BalanceSummary'
 import { COINJOIN_PRECONDITIONS, useCoinjoinPreconditionSummary } from '../hooks/CoinjoinPrecondition'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
@@ -46,7 +45,6 @@ export default function Jam() {
   const reloadServiceInfo = useReloadServiceInfo()
   const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const balanceSummary = useBalanceSummary(walletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -315,7 +313,7 @@ export default function Jam() {
               </>
             </rb.Alert>
           </rb.Fade>
-          {!collaborativeOperationRunning && balanceSummary && (
+          {!collaborativeOperationRunning && walletInfo && (
             <>
               <div className="d-flex align-items-center justify-content-between mb-4">
                 <div className="d-flex align-items-center gap-2">
@@ -329,7 +327,7 @@ export default function Jam() {
                 </div>
                 <>
                   <Balance
-                    valueString={`${balanceSummary.calculatedAvailableBalanceInSats}`}
+                    valueString={`${walletInfo.calculatedAvailableBalanceInSats}`}
                     convertToUnit={settings.unit}
                     showBalance={settings.showBalance}
                   />

@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { useBalanceSummary } from '../hooks/BalanceSummary'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
@@ -91,7 +90,6 @@ export default function Earn() {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
-  const balanceSummary = useBalanceSummary(currentWalletInfo)
 
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
   const [alert, setAlert] = useState(null)
@@ -316,11 +314,11 @@ export default function Earn() {
                   {!serviceInfo?.makerRunning &&
                     !isWaitingMakerStart &&
                     !isWaitingMakerStop &&
-                    (!isLoading && balanceSummary ? (
+                    (!isLoading && currentWalletInfo ? (
                       <CreateFidelityBond
                         otherFidelityBondExists={fidelityBonds.length > 0}
-                        accountBalances={balanceSummary?.accountBalances}
-                        totalBalance={balanceSummary?.totalBalance}
+                        accountBalances={currentWalletInfo.balanceSummary.accountBalances}
+                        totalBalance={currentWalletInfo.balanceSummary.totalBalance}
                         wallet={currentWallet}
                         walletInfo={currentWalletInfo}
                         onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
