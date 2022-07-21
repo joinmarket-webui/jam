@@ -90,7 +90,7 @@ const SelectJar = ({ accountBalances, totalBalance, utxos, selectedJar, onJarSel
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_jar.description')}</div>
-      <div className="d-flex justify-content-between">
+      <div className={styles.jarsContainer}>
         {sortedAccountBalances.map((account, index) => (
           <SelectableJar
             key={index}
