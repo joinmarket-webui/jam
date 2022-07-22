@@ -61,6 +61,17 @@ export default function CurrentWalletMagic() {
     () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
     [currentWalletInfo]
   )
+
+  const utxosByAccount = useMemo(() => {
+    const utxos = (currentWalletInfo && currentWalletInfo.data.utxos.utxos) || []
+    return utxos.reduce((res, utxo) => {
+      const { mixdepth } = utxo
+      res[mixdepth] = res[mixdepth] || []
+      res[mixdepth].push(utxo)
+      return res
+    }, {})
+  }, [currentWalletInfo])
+
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
@@ -107,6 +118,7 @@ export default function CurrentWalletMagic() {
       {accounts && (
         <DisplayAccountsOverlay
           accounts={accounts}
+          utxosByAccount={utxosByAccount}
           selectedAccountIndex={selectedAccountIndex}
           show={isAccountOverlayShown}
           onHide={() => setIsAccountOverlayShown(false)}
