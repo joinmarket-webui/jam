@@ -1,0 +1,10 @@
+.orderbook-overlay {
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1100 !important;
+}
+
+.orderbook-line-placeholder {
+  height: 2.625rem;
+  margin: 1px 0;
+}

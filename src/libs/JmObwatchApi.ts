@@ -1,6 +1,8 @@
+import { Helper as ApiHelper } from '../libs/JmWalletApi'
+
 const basePath = () => `${window.JM.PUBLIC_PATH}/obwatch`
 
-interface Order {
+export interface Order {
   type: string
   counterparty: string
   orderId: string
@@ -22,8 +24,13 @@ const ORDER_KEYS: (keyof Order)[] = [
   'bondValue',
 ]
 
-const parseOrderbook = (response: Response): Promise<Order[]> => {
-  return response.text().then((html) => {
+const parseOrderbook = (res: Response): Promise<Order[]> => {
+  if (!res.ok) {
+    // e.g. error is raised if ob-watcher is not running
+    return ApiHelper.throwError(res)
+  }
+
+  return res.text().then((html) => {
     var parser = new DOMParser()
     var doc = parser.parseFromString(html, 'text/html')
 

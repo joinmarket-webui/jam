@@ -251,6 +251,7 @@
     "text_starting": "Starting",
     "text_stopping": "Stopping",
     "button_show_report": "Show earnings report",
+    "button_show_orderbook": "Show orderbook",
     "report": {
       "title": "Earnings Report",
       "heading_timestamp": "Timestamp",
@@ -376,6 +377,22 @@
     "item_last": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
+    }
+  },
+  "orderbook": {
+    "title": "Orderbook",
+    "text_orderbook_summary": "{{ orderCount }} orders found by {{ counterpartyCount }} counterparties",
+    "alert_empty_orderbook": "Orderbook is empty",
+    "error_loading_orderbook_failed": "Error while loading the orderbook. Your current local setup might not support fetching the orderbook.",
+    "table": {
+      "heading_type": "Type",
+      "heading_counterparty": "Counterparty",
+      "heading_order_id": "Order ID",
+      "heading_fee": "Fee",
+      "heading_miner_fee_contribution": "Miner Fee Contribution",
+      "heading_minimum_size": "Min. Size",
+      "heading_maximum_size": "Max. Size",
+      "heading_bond_value": "Bond Value"
     }
   },
   "scheduler": {
