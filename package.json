@@ -45,6 +45,10 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
+    "@emotion/react": "^11.9.3",
+    "@table-library/react-table-library": "^4.0.10",
+    "install": "^0.13.0",
+    "npm": "^8.15.0",
     "serve": "13.0.2"
   },
   "scripts": {

@@ -119,6 +119,8 @@ export default function CurrentWalletMagic() {
         <DisplayAccountsOverlay
           accounts={accounts}
           utxosByAccount={utxosByAccount}
+          walletInfo={currentWalletInfo}
+          wallet={currentWallet}
           selectedAccountIndex={selectedAccountIndex}
           show={isAccountOverlayShown}
           onHide={() => setIsAccountOverlayShown(false)}

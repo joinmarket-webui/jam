@@ -1,3 +1,11 @@
+.utxoDetailModalBackdrop {
+  z-index: 1150 !important;
+}
+
+.utxoDetailModal {
+  z-index: 1200 !important;
+}
+
 .overlayContainer {
   width: 100vw !important;
   height: 100vh !important;
@@ -54,7 +62,81 @@
   border: none;
 }
 
+.overlayBody .accountItem :global .container-fluid {
+  padding-left: 0;
+}
+
 .utxoListContainer {
+}
+
+.utxoListContainer > .utxoListTitle {
   padding: 1rem 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
   background-color: white;
+}
+
+.utxoTableContainer {
+  background-color: white;
+  padding: 1rem 1.25rem;
+}
+
+.utxoTableContainer .utxoTableAddressCell {
+  word-break: break-all;
+}
+
+.utxoListButtonDetails {
+  font-size: inherit;
+}
+
+.utxoTag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--bs-gray-600);
+  padding: 0.1rem 0.3rem;
+  border: 2px solid var(--bs-gray-200);
+  border-radius: 0.3rem;
+  font-size: 0.6rem;
+}
+
+.utxoTagMarker {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 0.1rem;
+}
+
+.utxoTagMarker-addressstatus {
+  background-color: #f28482;
+}
+
+.utxoTagMarker-addresslabel {
+  background-color: #d65780;
+}
+
+.utxoTagMarker-locktime {
+  background-color: #f7cf09;
+}
+
+.iconFrozen {
+  /*color: #2d9cdb;*/
+}
+
+.iconLocked {
+  /*color: #f7cf09;*/
+  margin-bottom: 4px;
+}
+
+button.buttonFreezeUnfreeze {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 8rem;
+  padding: 0.25rem 0.3rem;
+}
+
+.buttonFreezeUnfreeze div {
+  font-size: 0.8rem;
+  font-weight: 500;
 }
