@@ -28,7 +28,7 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
       heading: t('orderbook.table.heading_counterparty'),
     },
     orderId: {
-      // example: "0"
+      // example: "0" (not unique!)
       heading: t('orderbook.table.heading_order_id'),
     },
     fee: {
@@ -84,8 +84,8 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.orderId}>
+              {orders.map((order, index) => (
+                <tr key={`order_${index}_${order.orderId}`}>
                   {columns.map((propName) => (
                     <td key={propName}>
                       {headingMap[propName] && headingMap[propName].render !== undefined
