@@ -384,6 +384,8 @@
     "text_orderbook_summary": "{{ orderCount }} orders found by {{ counterpartyCount }} counterparties",
     "alert_empty_orderbook": "Orderbook is empty",
     "error_loading_orderbook_failed": "Error while loading the orderbook. Your current local setup might not support fetching the orderbook.",
+    "text_offer_type_absolute": "absolute",
+    "text_offer_type_relative": "relative",
     "table": {
       "heading_type": "Type",
       "heading_counterparty": "Counterparty",

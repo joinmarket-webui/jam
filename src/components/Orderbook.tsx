@@ -14,6 +14,12 @@ interface OrderbookTableProps {
 
 type OrderPropName = keyof ObwatchApi.Order
 
+const withTooltip = (node: React.ReactElement, tooltip: string) => {
+  return (
+    <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
+  )
+}
+
 const OrderbookTable = ({ orders }: OrderbookTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -22,6 +28,15 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
     type: {
       // example: "Native SW Absolute Fee" or "Native SW Relative Fee"
       heading: t('orderbook.table.heading_type'),
+      render: (val) => {
+        if (val === 'Native SW Absolute Fee') {
+          return withTooltip(<rb.Badge bg="info">{t('orderbook.text_offer_type_absolute')}</rb.Badge>, val)
+        }
+        if (val === 'Native SW Relative Fee') {
+          return withTooltip(<rb.Badge bg="primary">{t('orderbook.text_offer_type_relative')}</rb.Badge>, val)
+        }
+        return <rb.Badge bg="secondary">{val}</rb.Badge>
+      },
     },
     counterparty: {
       // example: "J5Bv3JSxPFWm2Yjb"
