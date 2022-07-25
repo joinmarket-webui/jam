@@ -18,42 +18,43 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const headingMap: { [name in OrderPropName]: { heading: string; format?: string } } = {
+  const headingMap: { [name in OrderPropName]: { heading: string; render?: (val: string) => React.ReactNode } } = {
     type: {
+      // example: "Native SW Absolute Fee" or "Native SW Relative Fee"
       heading: t('orderbook.table.heading_type'),
-      // example: "Native SW Absolute Fee"
     },
     counterparty: {
-      heading: t('orderbook.table.heading_counterparty'),
       // example: "J5Bv3JSxPFWm2Yjb"
+      heading: t('orderbook.table.heading_counterparty'),
     },
     orderId: {
-      heading: t('orderbook.table.heading_order_id'),
       // example: "0"
+      heading: t('orderbook.table.heading_order_id'),
     },
     fee: {
+      // example: "0.00000250" (abs offers) or "0.000100%" (rel offers)
       heading: t('orderbook.table.heading_fee'),
-      format: 'balance',
-      // example: "0.00000250"
+      render: (val) =>
+        val.includes('%') ? <>{val}</> : <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
     },
     minerFeeContribution: {
-      heading: t('orderbook.table.heading_miner_fee_contribution'),
-      format: 'balance',
       // example: "0.00000000"
+      heading: t('orderbook.table.heading_miner_fee_contribution'),
+      render: (val) => <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
     },
     minimumSize: {
       heading: t('orderbook.table.heading_minimum_size'),
-      format: 'balance',
+      render: (val) => <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
       // example: "0.00027300"
     },
     maximumSize: {
-      heading: t('orderbook.table.heading_maximum_size'),
-      format: 'balance',
       // example: "2374.99972700"
+      heading: t('orderbook.table.heading_maximum_size'),
+      render: (val) => <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
     },
     bondValue: {
+      // example: "0" (no fb) or "0.0000052877962973"
       heading: t('orderbook.table.heading_bond_value'),
-      // example: "0"
     },
   }
 
@@ -87,11 +88,9 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
                 <tr key={order.orderId}>
                   {columns.map((propName) => (
                     <td key={propName}>
-                      {headingMap[propName] && headingMap[propName]?.format === 'balance' ? (
-                        <Balance valueString={order[propName]} convertToUnit={settings.unit} showBalance={true} />
-                      ) : (
-                        order[propName]
-                      )}
+                      {headingMap[propName] && headingMap[propName].render !== undefined
+                        ? headingMap[propName].render!(order[propName])
+                        : order[propName]}
                     </td>
                   ))}
                 </tr>
