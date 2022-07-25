@@ -137,7 +137,9 @@ export function Orderbook() {
       })
       .catch((e) => {
         if (abortCtrl.signal.aborted) return
-        const message = e.message || t('orderbook.error_loading_orderbook_failed')
+        const message = t('orderbook.error_loading_orderbook_failed', {
+          reason: e.message || 'Unknown reason',
+        })
         setAlert({ variant: 'danger', message })
       })
       .finally(() => {
