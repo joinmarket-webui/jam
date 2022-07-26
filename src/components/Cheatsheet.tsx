@@ -124,11 +124,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             <div className="small text-secondary">
               <Trans i18nKey="cheatsheet.item_last.description">
                 Still confused?{' '}
-                <a
-                  href="https://github.com/openoms/bitcoin-tutorials/blob/master/joinmarket/joinmarket_private_flow.md#a-private-flow-through-joinmarket"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href="https://jamdocs.org/interface/00-cheatsheet/" target="_blank" rel="noopener noreferrer">
                   Dig into the documentation
                 </a>
                 .
