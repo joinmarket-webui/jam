@@ -37,6 +37,7 @@ describe('BalanceSummary', () => {
       balanceSummary = setup(
         {
           addressSummary: {},
+          fidelityBondSummary: { fbOutputs: [] },
           data: {
             utxos: {
               utxos: [],
@@ -67,6 +68,7 @@ describe('BalanceSummary', () => {
       balanceSummary = setup(
         {
           addressSummary: {},
+          fidelityBondSummary: { fbOutputs: [] },
           data: {
             utxos: {
               utxos: [
@@ -129,6 +131,7 @@ describe('BalanceSummary', () => {
       balanceSummary = setup(
         {
           addressSummary: {},
+          fidelityBondSummary: { fbOutputs: [] },
           data: {
             utxos: {
               utxos: [
