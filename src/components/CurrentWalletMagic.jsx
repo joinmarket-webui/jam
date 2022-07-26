@@ -10,7 +10,6 @@ import { walletDisplayName } from '../utils'
 import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
-import { useBalanceSummary } from '../hooks/BalanceSummary'
 import { DisplayAccountsOverlay } from './DisplayAccountsOverlay'
 import { Jars } from './Jars'
 
@@ -50,7 +49,6 @@ export default function CurrentWalletMagic() {
   const settingsDispatch = useSettingsDispatch()
   const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
-  const balanceSummary = useBalanceSummary(currentWalletInfo)
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState(null)
@@ -66,7 +64,7 @@ export default function CurrentWalletMagic() {
 
   const onJarClicked = (accountIndex) => {
     if (accountIndex === 0) {
-      const isEmpty = Number(balanceSummary?.accountBalances[accountIndex]?.totalBalance) === 0
+      const isEmpty = Number(currentWalletInfo?.balanceSummary.accountBalances[accountIndex]?.totalBalance) === 0
 
       if (isEmpty) {
         navigate(routes.receive, { state: { account: accountIndex } })
@@ -115,7 +113,7 @@ export default function CurrentWalletMagic() {
       <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
         <WalletHeader
           name={currentWallet?.name}
-          balance={balanceSummary?.totalBalance}
+          balance={currentWalletInfo?.balanceSummary.totalBalance}
           unit={settings.unit}
           showBalance={settings.showBalance}
           loading={isLoading}
@@ -165,8 +163,8 @@ export default function CurrentWalletMagic() {
                 </rb.Placeholder>
               ) : (
                 <Jars
-                  accountBalances={balanceSummary?.accountBalances}
-                  totalBalance={balanceSummary?.totalBalance}
+                  accountBalances={currentWalletInfo?.balanceSummary.accountBalances}
+                  totalBalance={currentWalletInfo?.balanceSummary.totalBalance}
                   onClick={onJarClicked}
                 />
               )}

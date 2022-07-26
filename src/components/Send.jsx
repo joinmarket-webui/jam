@@ -13,7 +13,6 @@ import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } fr
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
-import { useBalanceSummary } from '../hooks/BalanceSummary'
 import { COINJOIN_PRECONDITIONS, useCoinjoinPreconditionSummary } from '../hooks/CoinjoinPrecondition'
 
 import * as Api from '../libs/JmWalletApi'
@@ -309,10 +308,9 @@ export default function Send() {
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
 
-  const balanceSummary = useBalanceSummary(walletInfo)
   const accountBalanceOrNull = useMemo(
-    () => (balanceSummary && balanceSummary.accountBalances[account]) || null,
-    [balanceSummary, account]
+    () => (walletInfo && walletInfo.balanceSummary.accountBalances[account]) || null,
+    [walletInfo, account]
   )
 
   const sourceJarUtxos = useMemo(() => {
@@ -708,12 +706,12 @@ export default function Send() {
           <CoinjoinPreconditionFailedAlert coinjoinPreconditionSummary={coinjoinPreconditionSummary} />
         )}
 
-        {!isLoading && balanceSummary && (
+        {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
             title={'Select a jar from your wallet to send the funds to.'}
-            accountBalances={balanceSummary?.accountBalances}
-            totalBalance={balanceSummary?.totalBalance}
+            accountBalances={walletInfo.balanceSummary.accountBalances}
+            totalBalance={walletInfo.balanceSummary.totalBalance}
             disabledJar={account}
             onCancel={() => setDestinationJarPickerShown(false)}
             onConfirm={(selectedJar) => {
@@ -755,8 +753,8 @@ export default function Send() {
                 isInvalid={!isValidAccount(account)}
                 disabled={isOperationDisabled}
               >
-                {balanceSummary &&
-                  Object.values(balanceSummary.accountBalances)
+                {walletInfo &&
+                  Object.values(walletInfo.balanceSummary.accountBalances)
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
                     .map(({ accountIndex, totalBalance, calculatedTotalBalanceInSats }) => (
                       <option key={accountIndex} value={accountIndex}>
