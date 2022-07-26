@@ -37,11 +37,11 @@
 }
 
 .earn hr {
-  background-color: rgba(222, 222, 222, 1);
+  border-color: rgba(222, 222, 222, 1);
   opacity: 100%;
 }
 
 :root[data-theme='dark'] .earn hr {
-  background-color: var(--bs-gray-800);
+  border-color: var(--bs-gray-800);
   opacity: 100%;
 }
