@@ -22,6 +22,8 @@
   background-color: transparent !important;
   border: none;
   padding-left: 0;
+  height: 3rem;
+  width: 100%;
 }
 
 .receive form input {
