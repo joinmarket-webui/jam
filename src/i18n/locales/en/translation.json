@@ -367,8 +367,8 @@
       "description": "A fidelity bond increases your chances of selling liquidity substantially."
     },
     "item_4": {
-      "title": "<0>Earn</0> yield by providing liquidity.",
-      "description": "Offer your sats to the marketplace. No trust or custody required—you are always in full control of your funds."
+      "title": "<0>Earn</0> sats by providing liquidity.",
+      "description": "Offer liquidity to the marketplace for a fee. No trust or custody required—you are always in full control of your funds."
     },
     "item_5": {
       "title": "<0>Send</0> a collaborative transaction to yourself.",
