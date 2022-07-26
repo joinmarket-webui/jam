@@ -95,7 +95,7 @@ input[type='number'] {
   color: var(--bs-white) !important;
 }
 
-:root[data-theme='dark'] .sweep-breakdoown-paragraph {
+:root[data-theme='dark'] .sweep-breakdown-paragraph {
   color: var(--bs-white) !important;
 }
 
