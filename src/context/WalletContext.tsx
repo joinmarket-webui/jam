@@ -3,6 +3,8 @@ import React, { createContext, useEffect, useCallback, useState, useContext, Pro
 import { getSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 
+import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
+
 export interface CurrentWallet {
   name: string
   token: string
@@ -69,7 +71,7 @@ export interface BranchEntry {
   extradata: string
 }
 
-type CombinedRawWalletData = {
+export type CombinedRawWalletData = {
   utxos: UtxosResponse
   display: WalletDisplayResponse
 }
@@ -88,6 +90,7 @@ type FidenlityBondSummary = {
 }
 
 export interface WalletInfo {
+  balanceSummary: WalletBalanceSummary
   addressSummary: AddressSummary
   fidelityBondSummary: FidenlityBondSummary
   data: CombinedRawWalletData
@@ -151,10 +154,12 @@ const loadWalletInfoData = async ({
 }
 
 const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
+  const balanceSummary = toBalanceSummary(data)
   const addressSummary = toAddressSummary(data)
   const fidelityBondSummary = toFidelityBondSummary(data)
 
   return {
+    balanceSummary,
     addressSummary,
     fidelityBondSummary,
     data,
