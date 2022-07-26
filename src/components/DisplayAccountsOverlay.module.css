@@ -16,8 +16,8 @@
 
 .accounts-overlay-header-title {
   display: inline-flex;
-  justify-content: space-between;
-  width: 8ch;
+  justify-content: center;
+  min-width: 8ch;
   margin: 0 0.5rem;
 }
 

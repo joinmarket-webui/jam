@@ -9,6 +9,9 @@
 }
 
 .header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   cursor: pointer;
 }
 
@@ -20,6 +23,10 @@
   flex-shrink: 1;
   font-size: 0.9rem;
   color: var(--bs-gray-600);
+}
+
+.header .subtitle a {
+  color: inherit;
 }
 
 .header .title {
