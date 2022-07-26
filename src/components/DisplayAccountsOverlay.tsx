@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
@@ -26,33 +26,36 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
     setAccountIndex(selectedAccountIndex)
   }, [selectedAccountIndex])
 
-  const nextAccount = () => {
-    const currentIndex = account === null ? 0 : accounts.indexOf(account)
-    setAccountIndex(currentIndex + 1 >= accounts.length ? 0 : currentIndex + 1)
-  }
-  const previousAccount = () => {
-    const currentIndex = account === null ? 0 : accounts.indexOf(account)
-    setAccountIndex(currentIndex - 1 < 0 ? accounts.length - 1 : currentIndex - 1)
-  }
+  const nextAccount = useCallback(
+    () => setAccountIndex((current) => (current + 1 >= accounts.length ? 0 : current + 1)),
+    [accounts]
+  )
+  const previousAccount = useCallback(
+    () => setAccountIndex((current) => (current - 1 < 0 ? accounts.length - 1 : current - 1)),
+    [accounts]
+  )
 
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (e.code === 'ArrowLeft') previousAccount()
-    else if (e.code === 'ArrowRight') nextAccount()
-  }
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.code === 'ArrowLeft') previousAccount()
+      else if (e.code === 'ArrowRight') nextAccount()
+    },
+    [previousAccount, nextAccount]
+  )
+
+  useEffect(() => {
+    if (!show) return
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [show, onKeyDown])
 
   if (!account) {
     return <></>
   }
 
   return (
-    <rb.Offcanvas
-      className={styles['accounts-overlay']}
-      show={show}
-      onHide={onHide}
-      placement="bottom"
-      tabIndex={-1}
-      onKeyDown={onKeyDown}
-    >
+    <rb.Offcanvas className={styles['accounts-overlay']} show={show} onHide={onHide} placement="bottom" tabIndex={-1}>
       <rb.Offcanvas.Header className={styles['accounts-overlay-header']}>
         <div className="d-flex flex-1">
           <rb.Col>
@@ -70,7 +73,7 @@ export function DisplayAccountsOverlay({ accounts, selectedAccountIndex = 0, sho
                 <Sprite symbol="caret-left" width="24" height="24" />
               </rb.Button>
               <div className={`${styles['accounts-overlay-header-title']}`}>
-                {t('current_wallet_advanced.account')} <span className="ml-1">{account.account}</span>
+                {t('current_wallet_advanced.account')} <span className="ms-1">#{account.account}</span>
               </div>
               <rb.Button
                 variant="link"

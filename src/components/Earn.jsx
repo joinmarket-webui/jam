@@ -155,10 +155,8 @@ export default function Earn() {
 
     const reloadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
     const reloadingCurrentWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).then((info) => {
-      if (info && !abortCtrl.signal.aborted) {
-        const unspentOutputs = info.data.utxos.utxos
-        const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
-        setFidelityBonds(fbOutputs)
+      if (!abortCtrl.signal.aborted) {
+        setFidelityBonds(info.fidelityBondSummary.fbOutputs)
       }
     })
 
@@ -204,13 +202,7 @@ export default function Earn() {
         resolve(reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
       }, delay)
     })
-      .then((info) => {
-        if (info) {
-          const unspentOutputs = info.data.utxos.utxos
-          const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
-          setFidelityBonds(fbOutputs)
-        }
-      })
+      .then((info) => setFidelityBonds(info.fidelityBondSummary.fbOutputs))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
