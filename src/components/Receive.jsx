@@ -112,7 +112,7 @@ export default function Receive() {
           <rb.Button
             variant={`${settings.theme}`}
             className={`${styles['settings-btn']} d-flex align-items-center`}
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => setShowSettings((current) => !current)}
           >
             {t('receive.button_settings')}
             <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
@@ -163,10 +163,10 @@ export default function Receive() {
               </rb.Form.Group>
             </div>
           )}
-          <hr />
+          <hr className="m-0" />
         </div>
 
-        <div className="mt-2 d-flex justify-content-center">
+        <div className="mt-4 d-flex justify-content-center">
           <rb.Button
             variant="outline-dark"
             type="submit"
