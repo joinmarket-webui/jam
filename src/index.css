@@ -609,7 +609,7 @@ h2 {
 }
 
 :root[data-theme='dark'] .link-dark {
-  color: var(--bs-white);
+  color: var(--bs-white) !important;
 }
 
 :root[data-theme='dark'] .toast {
