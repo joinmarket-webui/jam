@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnames from 'classnames'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
@@ -12,8 +12,6 @@ import * as fb from '../fb/utils'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import styles from './UtxoList.module.css'
-
-const cx = classnames.bind(styles)
 
 const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
   new: 'normal',
@@ -216,7 +214,7 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
                   <Cell>
                     <div className={styles.utxoTagList}>
                       {utxoTags(toUtxo(item), walletInfo).map((tag, index) => (
-                        <div className={classnames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
+                        <div key={index} className={classnames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
                           <div />
                           <div>{tag.tag}</div>
                         </div>

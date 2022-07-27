@@ -200,6 +200,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     [props.accounts]
   )
 
+  useEffect(() => setAccountIndex(props.initialAccountIndex), [props.initialAccountIndex])
+
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.code === 'ArrowLeft') previousAccount()
