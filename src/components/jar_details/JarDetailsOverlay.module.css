@@ -180,3 +180,33 @@
   background-color: var(--bs-gray-600) !important;
   border-color: var(--bs-gray-600);
 }
+
+.overlayBody .accountItem {
+  margin-bottom: 1rem;
+  box-shadow: 0px 1px 2px var(--bs-gray-400);
+  border: none;
+  border-radius: 0.5rem !important;
+  background-color: var(--bs-gray-100);
+}
+
+:root[data-theme='dark']
+  .overlayBody
+  .accountItem
+  :global
+  .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info) {
+  border-color: var(--bs-gray-700) !important;
+}
+
+:root[data-theme='dark'] .overlayBody .accountItem {
+  background-color: var(--bs-gray-800) !important;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.overlayBody .accountItem > h2 > button {
+  border-radius: 0.5rem !important;
+  background-color: var(--bs-gray-100);
+}
+
+.overlayBody .accountItem :global .container-fluid {
+  padding-left: 0;
+}

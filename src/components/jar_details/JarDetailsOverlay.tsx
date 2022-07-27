@@ -9,6 +9,7 @@ import Balance from '../Balance'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
 import { UtxoList } from './UtxoList'
+import { DisplayBranchHeader, DisplayBranchBody } from '../DisplayBranch'
 import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {
@@ -322,27 +323,44 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
           )}
           <rb.Row className="justify-content-center">
             <rb.Col>
-              <div className={styles.utxoListContainer}>
-                <div className={styles.utxoListTitleBar}>
-                  <div>{utxoListTitle()}</div>
+              {selectedTab === TABS.UTXOS ? (
+                <div className={styles.utxoListContainer}>
+                  <div className={styles.utxoListTitleBar}>
+                    <div>{utxoListTitle()}</div>
+                    {(props.utxosByAccount[accountIndex] || []).length > 0 && (
+                      <div className={styles.freezeUnfreezeButtonsContainer}>
+                        {freezeUnfreezeButton({ freeze: true })}
+                        {freezeUnfreezeButton({ freeze: false })}
+                      </div>
+                    )}
+                  </div>
                   {(props.utxosByAccount[accountIndex] || []).length > 0 && (
-                    <div className={styles.freezeUnfreezeButtonsContainer}>
-                      {freezeUnfreezeButton({ freeze: true })}
-                      {freezeUnfreezeButton({ freeze: false })}
+                    <div className="px-md-3">
+                      <UtxoList
+                        utxos={props.utxosByAccount[accountIndex] || []}
+                        walletInfo={props.walletInfo}
+                        setSelectedUtxoIds={setSelectedUtxoIds}
+                        setDetailUtxo={setDetailUtxo}
+                      />
                     </div>
                   )}
                 </div>
-                {(props.utxosByAccount[accountIndex] || []).length > 0 && (
-                  <div className="px-md-3">
-                    <UtxoList
-                      utxos={props.utxosByAccount[accountIndex] || []}
-                      walletInfo={props.walletInfo}
-                      setSelectedUtxoIds={setSelectedUtxoIds}
-                      setDetailUtxo={setDetailUtxo}
-                    />
-                  </div>
-                )}
-              </div>
+              ) : (
+                <div className={styles.utxoListContainer}>
+                  <rb.Accordion flush>
+                    {account.branches.map((branch, index) => (
+                      <rb.Accordion.Item className={styles.accountItem} key={branch.branch} eventKey={`${index}`}>
+                        <rb.Accordion.Header>
+                          <DisplayBranchHeader branch={branch} />
+                        </rb.Accordion.Header>
+                        <rb.Accordion.Body>
+                          <DisplayBranchBody branch={branch} />
+                        </rb.Accordion.Body>
+                      </rb.Accordion.Item>
+                    ))}
+                  </rb.Accordion>
+                </div>
+              )}
             </rb.Col>
           </rb.Row>
         </rb.Container>
