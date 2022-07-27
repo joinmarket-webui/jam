@@ -11,7 +11,7 @@ import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
 import { useBalanceSummary } from '../hooks/BalanceSummary'
-import { DisplayAccountsOverlay } from './DisplayAccountsOverlay'
+import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
 import { Jars } from './Jars'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
@@ -116,13 +116,13 @@ export default function CurrentWalletMagic() {
       )}
 
       {accounts && (
-        <DisplayAccountsOverlay
+        <JarDetailsOverlay
           accounts={accounts}
+          initialAccountIndex={selectedAccountIndex}
           utxosByAccount={utxosByAccount}
           walletInfo={currentWalletInfo}
           wallet={currentWallet}
-          selectedAccountIndex={selectedAccountIndex}
-          show={isAccountOverlayShown}
+          isShown={isAccountOverlayShown}
           onHide={() => setIsAccountOverlayShown(false)}
         />
       )}
