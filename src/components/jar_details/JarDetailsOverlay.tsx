@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
+import Alert from '../Alert'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
 import { UtxoList } from './UtxoList'
@@ -12,6 +13,8 @@ const TABS = {
   UTXOS: 'UTXOS',
   ACCOUNT_DETAILS: 'ACCOUNT_DETAILS',
 }
+
+type Alert = { message: string; variant: string; dismissible: boolean }
 
 interface JarDetailsOverlayProps {
   accounts: Account[]
@@ -77,6 +80,7 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide }: Heade
 const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
+  const [alert, setAlert] = useState<Alert | null>(null)
   const [accountIndex, setAccountIndex] = useState(props.initialAccountIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
   const [isLoadingFreeze, setIsLoadingFreeze] = useState(false)
@@ -133,7 +137,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     Promise.all(freezeCalls)
       .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
       .catch((err) => {
-        // setAlert({ variant: 'danger', message: err.message, dismissible: true })
+        setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
       .finally(() => {
         freeze ? setIsLoadingFreeze(false) : setIsLoadingUnfreeze(false)
@@ -195,6 +199,18 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body className={styles.overlayBody}>
         <rb.Container className="py-4 py-sm-5">
+          {alert && (
+            <rb.Row>
+              <rb.Col>
+                <Alert
+                  variant={alert.variant}
+                  dismissible={true}
+                  message={alert.message}
+                  onDismissed={() => setAlert(null)}
+                />
+              </rb.Col>
+            </rb.Row>
+          )}
           <rb.Row className="justify-content-center">
             <rb.Col>
               <div className={styles.utxoListContainer}>
