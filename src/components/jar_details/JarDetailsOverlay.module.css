@@ -5,12 +5,16 @@
 }
 
 .overlayHeader {
-  min-height: 75px;
-  max-height: 75px;
-
   border-bottom: 1px solid var(--bs-body-bg);
   box-shadow: 0px 1px 5px var(--bs-gray-400);
   z-index: 1000;
+}
+
+@media only screen and (min-width: 768px) {
+  .overlayHeader {
+    min-height: 75px;
+    max-height: 75px;
+  }
 }
 
 :root[data-theme='dark'] .overlayHeader {
@@ -60,4 +64,84 @@
 
 :root[data-theme='dark'] .overlayBody {
   background-color: var(--bs-gray-800);
+}
+
+.overlayBody .utxoListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  background-color: var(--bs-body-bg);
+}
+
+@media only screen and (min-width: 768px) {
+  .overlayBody .utxoListContainer {
+    padding: 2rem 3rem 3rem 3rem;
+    border-radius: 0.5rem;
+  }
+}
+
+.overlayBody .utxoListContainer > .utxoListTitleBar {
+  min-height: 3.6rem;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0 0 0.8rem 0;
+  background-color: var(--bs-gray-100);
+}
+
+@media only screen and (min-width: 768px) {
+  .overlayBody .utxoListContainer > .utxoListTitleBar {
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border-radius: 0.6rem;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .overlayBody .utxoListContainer > .utxoListTitleBar {
+    flex-direction: row;
+  }
+}
+
+:root[data-theme='dark'] .overlayBody .utxoListContainer > .utxoListTitleBar {
+  background-color: var(--bs-gray-800);
+}
+
+.overlayBody .utxoListContainer > .utxoListTitleBar > .freezeUnfreezeButtonsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.overlayBody .utxoListContainer > .utxoListTitleBar > .freezeUnfreezeButtonsContainer > button {
+  width: 8rem;
+  font-size: 0.6rem;
+  padding: 0.3rem 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+  background-color: white;
+  border: 1px solid var(--bs-gray-400);
+  color: var(--bs-body-color);
+  border-radius: 0.35rem;
+}
+
+@media only screen and (min-width: 768px) {
+  .overlayBody .utxoListContainer > .utxoListTitleBar > .freezeUnfreezeButtonsContainer > button {
+    width: 10rem;
+    font-size: 0.8rem;
+  }
+}
+
+:root[data-theme='dark']
+  .overlayBody
+  .utxoListContainer
+  > .utxoListTitleBar
+  > .freezeUnfreezeButtonsContainer
+  > button {
+  background-color: var(--bs-gray-600) !important;
+  border-color: var(--bs-gray-600);
 }

@@ -1,0 +1,70 @@
+.utxoList > table {
+  margin-bottom: 0;
+  color: var(--bg-body-color);
+}
+
+.utxoList .headerCoinsIcon {
+  margin-bottom: 1px;
+}
+
+.utxoList .frozenLockedTag > .iconFrozen {
+  margin-bottom: 2px;
+}
+
+.utxoList .frozenLockedTag > .iconLocked {
+  margin-bottom: 3px;
+}
+
+.utxoList .utxoTagList {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.utxoList .utxoTagList > .utxoTag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  border: 1px solid var(--bs-body-color);
+  border-radius: 0.2rem;
+  padding: 0.1rem 0.3rem;
+}
+
+.utxoList .utxoTagList > .utxoTag > div:first-of-type {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 0.1rem;
+}
+
+.utxoList .utxoTagList > .utxoTag.utxoTag-normal > div:first-of-type {
+  display: none;
+}
+
+.utxoList .utxoTagList > .utxoTag.utxoTag-danger > div:first-of-type {
+  background-color: var(--bs-danger);
+}
+
+.utxoList .utxoTagList > .utxoTag.utxoTag-warning > div:first-of-type {
+  background-color: var(--bs-warning);
+}
+
+.utxoList .utxoTagList > .utxoTag.utxoTag-success > div:first-of-type {
+  background-color: var(--bs-success);
+}
+
+.utxoList .utxoListButtonDetails {
+  font-size: 0.9rem;
+}
+
+.utxoList .utxoListButtonDetails:hover {
+  color: var(--bg-body-color) !important;
+}
+
+.utxoList :global tr.row-select-selected > td {
+  background-color: var(--bs-gray-100);
+}
+
+:root[data-theme='dark'] .utxoList :global tr.row-select-selected > td {
+  background-color: var(--bs-gray-800);
+}
