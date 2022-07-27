@@ -1,3 +1,38 @@
+.utxoDetailModalBackdrop {
+  z-index: 1300 !important;
+}
+
+.utxoDetailModal {
+  z-index: 1400 !important;
+}
+
+.modalHeader {
+  display: flex !important;
+  justify-content: flex-start !important;
+  background-color: transparent !important;
+  padding: 1.25rem !important;
+}
+
+.modalTitle {
+  width: 100%;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: var(--bs-body-color) !important;
+}
+
+.modalTitle > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle .cancelButton {
+  padding: 0 0 0 1rem;
+  color: var(--bs-body-color);
+  background-color: transparent !important;
+  border: none;
+}
+
 .overlayContainer {
   width: 100vw !important;
   height: 100vh !important;
@@ -7,7 +42,7 @@
 .overlayHeader {
   border-bottom: 1px solid var(--bs-body-bg);
   box-shadow: 0px 1px 5px var(--bs-gray-400);
-  z-index: 1000;
+  z-index: 1200;
 }
 
 @media only screen and (min-width: 768px) {

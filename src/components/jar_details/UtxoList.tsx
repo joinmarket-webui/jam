@@ -57,9 +57,10 @@ interface UtxoListProps {
   utxos: Array<Utxo>
   walletInfo: WalletInfo
   setSelectedUtxoIds: (selectedUtxoIds: Array<string>) => void
+  setDetailUtxo: (utxo: Utxo) => void
 }
 
-const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds }: UtxoListProps) => {
+const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: UtxoListProps) => {
   const settings = useSettings()
 
   const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
@@ -223,7 +224,11 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds }: UtxoListProps) => {
                     </div>
                   </Cell>
                   <Cell>
-                    <rb.Button className={styles.utxoListButtonDetails} variant="link" onClick={() => {}}>
+                    <rb.Button
+                      className={styles.utxoListButtonDetails}
+                      variant="link"
+                      onClick={() => setDetailUtxo(toUtxo(item))}
+                    >
                       Details
                     </rb.Button>
                   </Cell>
