@@ -482,7 +482,7 @@ export default function Earn() {
                       <hr className="m-0" />
                     </div>
                   )}
-                  <div class="mt-4">
+                  <div className="mt-4">
                     <rb.Button
                       variant="dark"
                       type="submit"
