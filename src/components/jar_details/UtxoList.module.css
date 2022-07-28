@@ -78,6 +78,14 @@
   color: var(--bg-body-color) !important;
 }
 
+.utxoList .utxoListButtonDetails:focus {
+  color: var(--bg-body-color) !important;
+}
+
+.utxoList .utxoListButtonDetails:active {
+  color: var(--bg-body-color) !important;
+}
+
 .utxoList :global tr.row-select-selected > td {
   background-color: var(--bs-gray-100);
 }
