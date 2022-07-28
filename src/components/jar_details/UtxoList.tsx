@@ -223,14 +223,14 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
                         styles[`utxoConfirmations-${toUtxo(item).confirmations}`]
                       )}
                     >
-                      {toUtxo(item).confirmations === 0 && <Sprite symbol="confs-0" width="20" height="20" />}
-                      {toUtxo(item).confirmations === 1 && <Sprite symbol="confs-1" width="20" height="20" />}
-                      {toUtxo(item).confirmations === 2 && <Sprite symbol="confs-2" width="20" height="20" />}
-                      {toUtxo(item).confirmations === 3 && <Sprite symbol="confs-3" width="20" height="20" />}
-                      {toUtxo(item).confirmations === 4 && <Sprite symbol="confs-4" width="20" height="20" />}
-                      {toUtxo(item).confirmations === 5 && <Sprite symbol="confs-5" width="20" height="20" />}
-                      {toUtxo(item).confirmations >= 6 && <Sprite symbol="confs-full" width="20" height="20" />}
-                      <div>{toUtxo(item).confirmations}</div>
+                      {item.confirmations === 0 && <Sprite symbol="confs-0" width="20" height="20" />}
+                      {item.confirmations === 1 && <Sprite symbol="confs-1" width="20" height="20" />}
+                      {item.confirmations === 2 && <Sprite symbol="confs-2" width="20" height="20" />}
+                      {item.confirmations === 3 && <Sprite symbol="confs-3" width="20" height="20" />}
+                      {item.confirmations === 4 && <Sprite symbol="confs-4" width="20" height="20" />}
+                      {item.confirmations === 5 && <Sprite symbol="confs-5" width="20" height="20" />}
+                      {item.confirmations >= 6 && <Sprite symbol="confs-full" width="20" height="20" />}
+                      <div>{item.confirmations}</div>
                     </div>
                   </Cell>
                   <Cell>
