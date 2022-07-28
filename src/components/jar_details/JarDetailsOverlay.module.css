@@ -193,6 +193,7 @@
 }
 
 .overlayBody .accountItem {
+  color: var(--bs-body-color);
   margin-bottom: 1rem;
   box-shadow: 0px 1px 2px var(--bs-gray-400);
   border: none;
