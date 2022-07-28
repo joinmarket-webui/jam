@@ -110,7 +110,7 @@
 
 @media only screen and (min-width: 768px) {
   .overlayBody .tabContainer {
-    padding: 2rem 3rem 3rem 3rem;
+    padding: 2rem 3rem;
     border-radius: 0.5rem;
   }
 }
@@ -198,6 +198,9 @@
   border: none;
   border-radius: 0.5rem !important;
   background-color: var(--bs-gray-100);
+}
+.overlayBody .accountItem:last-child {
+  margin-bottom: 0;
 }
 
 :root[data-theme='dark']

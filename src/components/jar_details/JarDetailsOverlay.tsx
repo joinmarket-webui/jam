@@ -382,7 +382,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                     )}
                   </div>
                   {(props.utxosByAccount[accountIndex] || []).length > 0 && (
-                    <div className="px-md-3">
+                    <div className="px-md-3 pb-2">
                       <UtxoList
                         utxos={props.utxosByAccount[accountIndex] || []}
                         walletInfo={props.walletInfo}
