@@ -101,7 +101,7 @@
   background-color: var(--bs-gray-800);
 }
 
-.overlayBody .utxoListContainer {
+.overlayBody .tabContainer {
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
@@ -109,13 +109,13 @@
 }
 
 @media only screen and (min-width: 768px) {
-  .overlayBody .utxoListContainer {
+  .overlayBody .tabContainer {
     padding: 2rem 3rem 3rem 3rem;
     border-radius: 0.5rem;
   }
 }
 
-.overlayBody .utxoListContainer > .utxoListTitleBar {
+.overlayBody .tabContainer > .utxoListTitleBar {
   min-height: 3.6rem;
   display: flex;
   justify-content: space-between;
@@ -127,7 +127,7 @@
 }
 
 @media only screen and (min-width: 768px) {
-  .overlayBody .utxoListContainer > .utxoListTitleBar {
+  .overlayBody .tabContainer > .utxoListTitleBar {
     align-items: center;
     padding: 0.8rem 1rem;
     border-radius: 0.6rem;
@@ -135,22 +135,22 @@
 }
 
 @media only screen and (min-width: 768px) {
-  .overlayBody .utxoListContainer > .utxoListTitleBar {
+  .overlayBody .tabContainer > .utxoListTitleBar {
     flex-direction: row;
   }
 }
 
-:root[data-theme='dark'] .overlayBody .utxoListContainer > .utxoListTitleBar {
+:root[data-theme='dark'] .overlayBody .tabContainer > .utxoListTitleBar {
   background-color: var(--bs-gray-800);
 }
 
-.overlayBody .utxoListContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer {
+.overlayBody .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
 }
 
-.overlayBody .utxoListContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+.overlayBody .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
   width: 8rem;
   font-size: 0.6rem;
   padding: 0.3rem 0.5rem;
@@ -164,34 +164,29 @@
   border-radius: 0.35rem;
 }
 
-.overlayBody .utxoListContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
+.overlayBody .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
   background-color: var(--bs-btn-hover-bg);
   border-color: var(--bs-btn-hover-border-color);
 }
 
 @media only screen and (min-width: 768px) {
-  .overlayBody .utxoListContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+  .overlayBody .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
     width: 10rem;
     font-size: 0.8rem;
   }
 }
 
-:root[data-theme='dark'] .overlayBody .utxoListContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+:root[data-theme='dark'] .overlayBody .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
   background-color: var(--bs-gray-600) !important;
   border-color: var(--bs-gray-600);
 }
 
-:root[data-theme='dark']
-  .overlayBody
-  .utxoListContainer
-  > .utxoListTitleBar
-  .freezeUnfreezeButtonsContainer
-  > button:hover {
+:root[data-theme='dark'] .overlayBody .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
   background-color: var(--bs-gray-700) !important;
   border-color: var(--bs-gray-700);
 }
 
-.overlayBody .utxoListContainer > .utxoListTitleBar .refreshButton {
+.overlayBody .tabContainer > .utxoListTitleBar .refreshButton {
   width: 2rem;
   padding: 0.1rem;
   border: none;

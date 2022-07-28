@@ -368,7 +368,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
           <rb.Row className="justify-content-center">
             <rb.Col>
               {selectedTab === TABS.UTXOS ? (
-                <div className={styles.utxoListContainer}>
+                <div className={styles.tabContainer}>
                   <div className={styles.utxoListTitleBar}>
                     <div className="d-flex justify-content-center align-items-center gap-2">
                       {refreshButton()}
@@ -393,7 +393,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                   )}
                 </div>
               ) : (
-                <div className={styles.utxoListContainer}>
+                <div className={styles.tabContainer}>
                   <rb.Accordion flush>
                     {account.branches.map((branch, index) => (
                       <rb.Accordion.Item className={styles.accountItem} key={branch.branch} eventKey={`${index}`}>
