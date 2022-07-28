@@ -410,5 +410,38 @@
   "modal": {
     "confirm_button_accept": "Confirm",
     "confirm_button_reject": "Cancel"
+  },
+  "jar_details": {
+    "title_tab_utxos": "UTXOs",
+    "title_tab_account": "Jar Details",
+    "utxo_list": {
+      "title_no_utxos": "No UTXOs in Jar {{ jar }}",
+      "title_1_utxo": "1 UTXO in Jar {{ jar }}",
+      "title_num_utxos": "{{ num }} UTXOs in Jar {{ jar }}",
+      "button_freeze": "Freeze selected",
+      "button_unfreeze": "Unfreeze selected",
+      "button_freeze_loading": "Freezing...",
+      "button_unfreeze_loading": "Unfreezing...",
+      "utxo_tag_frozen": "frozen",
+      "utxo_tag_locktime": "locked until {{ locktime }}",
+      "column_title_balance": "Value",
+      "column_title_address": "Address",
+      "column_title_confirmations": "Confs.",
+      "column_title_label_and_status": "Tags",
+      "row_button_details": "Details",
+      "utxo_detail_label_id": "UTXO Id",
+      "utxo_detail_label_address": "Address",
+      "utxo_detail_label_path": "Path",
+      "utxo_detail_label_label": "Address label",
+      "utxo_detail_label_value": "Value",
+      "utxo_detail_label_tries": "Tries",
+      "utxo_detail_label_tries_remaining": "Tries remaining",
+      "utxo_detail_label_jar": "Jar",
+      "utxo_detail_label_is_external": "Is external",
+      "utxo_detail_label_confirmations": "Confirmations",
+      "utxo_detail_label_is_frozen": "Is frozen",
+      "utxo_detail_label_locktime": "Locktime",
+      "utxo_detail_label_status": "Address status"
+    }
   }
 }

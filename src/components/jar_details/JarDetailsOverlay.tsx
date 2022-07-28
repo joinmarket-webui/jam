@@ -48,8 +48,8 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide }: Heade
   const { t } = useTranslation()
 
   const tabs = [
-    { label: 'UTXOs', value: TABS.UTXOS },
-    { label: 'Account Details', value: TABS.ACCOUNT_DETAILS },
+    { label: t('jar_details.title_tab_utxos'), value: TABS.UTXOS },
+    { label: t('jar_details.title_tab_account'), value: TABS.ACCOUNT_DETAILS },
   ]
 
   return (
@@ -88,6 +88,7 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide }: Heade
 }
 
 const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps) => {
+  const { t } = useTranslation()
   const settings = useSettings()
 
   return (
@@ -120,20 +121,20 @@ const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps)
       <rb.Modal.Body>
         <div className="d-flex flex-column gap-3">
           <div>
-            <strong>UTXO Id</strong>: <code>{utxo.utxo}</code>
+            <strong>{t('jar_details.utxo_list.utxo_detail_label_id')}</strong>: <code>{utxo.utxo}</code>
             <div>
-              <strong>Address</strong>: <code>{utxo.address}</code>
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_address')}</strong>: <code>{utxo.address}</code>
             </div>
             <div>
-              <strong>Path</strong>: <code>{utxo.path}</code>
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_path')}</strong>: <code>{utxo.path}</code>
             </div>
             {utxo.label && (
               <div>
-                <strong>Label</strong>: {utxo.label}
+                <strong>{t('jar_details.utxo_list.utxo_detail_label_label')}</strong>: {utxo.label}
               </div>
             )}
             <div>
-              <strong>Value</strong>:{' '}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_value')}</strong>:{' '}
               <Balance
                 valueString={utxo.value.toString()}
                 convertToUnit={settings.unit}
@@ -141,30 +142,31 @@ const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps)
               />
             </div>
             <div>
-              <strong>Tries</strong>: {utxo.tries}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_tries')}</strong>: {utxo.tries}
             </div>
             <div>
-              <strong>Tries remaining</strong>: {utxo.tries_remaining}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_tries_remaining')}</strong>: {utxo.tries_remaining}
             </div>
             <div>
-              <strong>External</strong>: {utxo.external ? 'Yes' : 'No'}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_is_external')}</strong>:{' '}
+              {utxo.external ? 'Yes' : 'No'}
             </div>
             <div>
-              <strong>Mixdepth</strong>: {utxo.mixdepth}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_jar')}</strong>: {utxo.mixdepth}
             </div>
             <div>
-              <strong>Confirmations</strong>: {utxo.confirmations}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_confirmations')}</strong>: {utxo.confirmations}
             </div>
             <div>
-              <strong>Frozen</strong>: {utxo.frozen ? 'Yes' : 'No'}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_is_frozen')}</strong>: {utxo.frozen ? 'Yes' : 'No'}
             </div>
             {utxo.locktime && (
               <div>
-                <strong>Locktime</strong>: {utxo.locktime}
+                <strong>{t('jar_details.utxo_list.utxo_detail_label_locktime')}</strong>: {utxo.locktime}
               </div>
             )}
             <div>
-              <strong>Address Status</strong>: {status}
+              <strong>{t('jar_details.utxo_list.utxo_detail_label_status')}</strong>: {status}
             </div>
           </div>
         </div>
@@ -179,6 +181,7 @@ const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps)
 }
 
 const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
+  const { t } = useTranslation()
   const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
@@ -255,7 +258,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     const freezeCalls = selectedUtxos.map((utxo) =>
       Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
         if (!res.ok) {
-          return Api.Helper.throwError(res, freeze ? 'error_freezing_utxos' : 'error_unfreezing_utxos')
+          return Api.Helper.throwError(
+            res,
+            freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos')
+          )
         }
       })
     )
@@ -273,10 +279,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const utxoListTitle = () => {
     const utxos = props.utxosByAccount[accountIndex] || []
 
-    if (utxos.length === 0) return `No UTXOs in Jar #${accountIndex}`
-    if (utxos.length === 1) return `1 UTXO in Jar #${accountIndex}`
+    if (utxos.length === 0) return t('jar_details.utxo_list.title_no_utxos', { jar: accountIndex })
+    if (utxos.length === 1) return t('jar_details.utxo_list.title_1_utxo', { jar: accountIndex })
 
-    return `${utxos.length} UTXOs in Jar #${accountIndex}`
+    return t('jar_details.utxo_list.title_num_utxos', { num: utxos.length, jar: accountIndex })
   }
 
   const refreshButton = () => {
@@ -312,12 +318,16 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         {isLoading ? (
           <>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />
-            <div>{freeze ? 'Freezing...' : 'Unfreezing...'}</div>
+            <div>
+              {freeze
+                ? t('jar_details.utxo_list.button_freeze_loading')
+                : t('jar_details.utxo_list.button_unfreeze_loading')}
+            </div>
           </>
         ) : (
           <>
             <Sprite symbol="snowflake" width="16" height="16" />
-            <div>{freeze ? 'Freeze selected' : 'Unfreeze selected'}</div>
+            <div>{freeze ? t('jar_details.utxo_list.button_freeze') : t('jar_details.utxo_list.button_unfreeze')}</div>
           </>
         )}
       </rb.Button>

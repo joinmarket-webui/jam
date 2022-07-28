@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnames from 'classnames'
+import { useTranslation } from 'react-i18next'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useRowSelect, HeaderCellSelect, CellSelect, SelectTypes } from '@table-library/react-table-library/select'
 import { useSort, HeaderCellSort } from '@table-library/react-table-library/sort'
@@ -63,6 +64,7 @@ interface UtxoListProps {
 }
 
 const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: UtxoListProps) => {
+  const { t } = useTranslation()
   const settings = useSettings()
 
   const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
@@ -95,10 +97,11 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
 
     let tags = []
 
-    if (utxo.frozen) tags.push({ tag: 'frozen', color: 'normal' })
+    if (utxo.frozen) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_frozen'), color: 'normal' })
     if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
     if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
-    if (fb.utxo.isLocked(utxo) && locktime) tags.push({ tag: `locked until ${locktime}`, color: 'normal' })
+    if (fb.utxo.isLocked(utxo) && locktime)
+      tags.push({ tag: t('jar_details.utxo_list.utxo_tag_locktime', { locktime }), color: 'normal' })
 
     return tags
   }
@@ -194,10 +197,12 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
                 <HeaderCellSort sortKey={SORT_KEYS.frozenOrLocked}>
                   <Sprite symbol="coins" width="20" height="20" className={styles.headerCoinsIcon} />
                 </HeaderCellSort>
-                <HeaderCellSort sortKey={SORT_KEYS.value}>Value</HeaderCellSort>
-                <HeaderCell>Address</HeaderCell>
-                <HeaderCell>Confs.</HeaderCell>
-                <HeaderCell>Tags</HeaderCell>
+                <HeaderCellSort sortKey={SORT_KEYS.value}>
+                  {t('jar_details.utxo_list.column_title_balance')}
+                </HeaderCellSort>
+                <HeaderCell>{t('jar_details.utxo_list.column_title_address')}</HeaderCell>
+                <HeaderCell>{t('jar_details.utxo_list.column_title_confirmations')}</HeaderCell>
+                <HeaderCell>{t('jar_details.utxo_list.column_title_label_and_status')}</HeaderCell>
                 <HeaderCell></HeaderCell>
               </HeaderRow>
             </Header>
@@ -249,7 +254,7 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
                       variant="link"
                       onClick={() => setDetailUtxo(toUtxo(item))}
                     >
-                      Details
+                      {t('jar_details.utxo_list.row_button_details')}
                     </rb.Button>
                   </Cell>
                 </Row>
