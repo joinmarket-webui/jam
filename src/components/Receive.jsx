@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
-import { useBalanceSummary } from '../hooks/BalanceSummary'
 import * as Api from '../libs/JmWalletApi'
 
 import { BitcoinQR } from './BitcoinQR'
@@ -22,7 +21,6 @@ export default function Receive() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
-  const balanceSummary = useBalanceSummary(walletInfo)
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -33,9 +31,11 @@ export default function Receive() {
   const [showSettings, setShowSettings] = useState(false)
 
   const sortedAccountBalances = useMemo(() => {
-    if (!balanceSummary) return []
-    return Object.values(balanceSummary.accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
-  }, [balanceSummary])
+    if (!walletInfo) return []
+    return Object.values(walletInfo.balanceSummary.accountBalances).sort(
+      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex
+    )
+  }, [walletInfo])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -112,14 +112,14 @@ export default function Receive() {
           <rb.Button
             variant={`${settings.theme}`}
             className={`${styles['settings-btn']} d-flex align-items-center`}
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => setShowSettings((current) => !current)}
           >
             {t('receive.button_settings')}
             <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
           </rb.Button>
           {showSettings && (
             <div className="my-4">
-              {!balanceSummary || sortedAccountBalances.length === 0 ? (
+              {!walletInfo || sortedAccountBalances.length === 0 ? (
                 <rb.Placeholder as="div" animation="wave">
                   <rb.Placeholder className={styles.jarsPlaceholder} />
                 </rb.Placeholder>
@@ -132,7 +132,7 @@ export default function Receive() {
                       balance={it.totalBalance}
                       isSelectable={true}
                       isSelected={it.accountIndex === selectedJarIndex}
-                      fillLevel={calculateFillLevel(it.totalBalance, balanceSummary.totalBalance)}
+                      fillLevel={calculateFillLevel(it.totalBalance, walletInfo.balanceSummary.totalBalance)}
                       onClick={() => setSelectedJarIndex(it.accountIndex)}
                     />
                   ))}
@@ -163,10 +163,10 @@ export default function Receive() {
               </rb.Form.Group>
             </div>
           )}
-          <hr />
+          <hr className="m-0" />
         </div>
 
-        <div className="mt-2 d-flex justify-content-center">
+        <div className="mt-4 d-flex justify-content-center">
           <rb.Button
             variant="outline-dark"
             type="submit"

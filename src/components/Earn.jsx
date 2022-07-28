@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { useBalanceSummary } from '../hooks/BalanceSummary'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
@@ -91,9 +90,8 @@ export default function Earn() {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
-  const balanceSummary = useBalanceSummary(currentWalletInfo)
 
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -157,10 +155,8 @@ export default function Earn() {
 
     const reloadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
     const reloadingCurrentWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).then((info) => {
-      if (info && !abortCtrl.signal.aborted) {
-        const unspentOutputs = info.data.utxos.utxos
-        const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
-        setFidelityBonds(fbOutputs)
+      if (!abortCtrl.signal.aborted) {
+        setFidelityBonds(info.fidelityBondSummary.fbOutputs)
       }
     })
 
@@ -206,13 +202,7 @@ export default function Earn() {
         resolve(reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
       }, delay)
     })
-      .then((info) => {
-        if (info) {
-          const unspentOutputs = info.data.utxos.utxos
-          const fbOutputs = unspentOutputs.filter((utxo) => utxo.locktime)
-          setFidelityBonds(fbOutputs)
-        }
-      })
+      .then((info) => setFidelityBonds(info.fidelityBondSummary.fbOutputs))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
@@ -316,11 +306,11 @@ export default function Earn() {
                   {!serviceInfo?.makerRunning &&
                     !isWaitingMakerStart &&
                     !isWaitingMakerStop &&
-                    (!isLoading && balanceSummary ? (
+                    (!isLoading && currentWalletInfo ? (
                       <CreateFidelityBond
                         otherFidelityBondExists={fidelityBonds.length > 0}
-                        accountBalances={balanceSummary?.accountBalances}
-                        totalBalance={balanceSummary?.totalBalance}
+                        accountBalances={currentWalletInfo.balanceSummary.accountBalances}
+                        totalBalance={currentWalletInfo.balanceSummary.totalBalance}
                         wallet={currentWallet}
                         walletInfo={currentWalletInfo}
                         onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
@@ -343,17 +333,17 @@ export default function Earn() {
                       <rb.Button
                         variant={`${settings.theme}`}
                         className={`${styles['settings-btn']} d-flex align-items-center`}
-                        onClick={() => setShowAdvancedSettings((current) => !current)}
+                        onClick={() => setShowSettings((current) => !current)}
                       >
                         {t('earn.button_settings')}
                         <Sprite
-                          symbol={`caret-${showAdvancedSettings ? 'up' : 'down'}`}
+                          symbol={`caret-${showSettings ? 'up' : 'down'}`}
                           className="ms-1"
                           width="20"
                           height="20"
                         />
                       </rb.Button>
-                      {showAdvancedSettings && (
+                      {showSettings && (
                         <div className="my-4">
                           <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
                             <SegmentedTabs
@@ -492,33 +482,35 @@ export default function Earn() {
                       <hr className="m-0" />
                     </div>
                   )}
-                  <rb.Button
-                    variant="dark"
-                    type="submit"
-                    className="mt-4"
-                    disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
-                  >
-                    <div className="d-flex justify-content-center align-items-center">
-                      {(isWaitingMakerStart || isWaitingMakerStop) && (
-                        <rb.Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                          className="me-2"
-                        />
-                      )}
-                      {isWaitingMakerStart || isWaitingMakerStop ? (
-                        <>
-                          {isWaitingMakerStart && t('earn.text_starting')}
-                          {isWaitingMakerStop && t('earn.text_stopping')}
-                        </>
-                      ) : (
-                        <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
-                      )}
-                    </div>
-                  </rb.Button>
+                  <div class="mt-4">
+                    <rb.Button
+                      variant="dark"
+                      type="submit"
+                      className={styles['earn-btn']}
+                      disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        {(isWaitingMakerStart || isWaitingMakerStop) && (
+                          <rb.Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            className="me-2"
+                          />
+                        )}
+                        {isWaitingMakerStart || isWaitingMakerStop ? (
+                          <>
+                            {isWaitingMakerStart && t('earn.text_starting')}
+                            {isWaitingMakerStop && t('earn.text_stopping')}
+                          </>
+                        ) : (
+                          <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
+                        )}
+                      </div>
+                    </rb.Button>
+                  </div>
                 </rb.Form>
               )}
             </Formik>

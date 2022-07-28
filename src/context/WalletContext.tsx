@@ -3,6 +3,8 @@ import React, { createContext, useEffect, useCallback, useState, useContext, Pro
 import { getSession } from '../session'
 import * as Api from '../libs/JmWalletApi'
 
+import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
+
 export interface CurrentWallet {
   name: string
   token: string
@@ -69,7 +71,7 @@ export interface BranchEntry {
   extradata: string
 }
 
-type CombinedRawWalletData = {
+export type CombinedRawWalletData = {
   utxos: UtxosResponse
   display: WalletDisplayResponse
 }
@@ -83,8 +85,14 @@ type AddressSummary = {
   [key: Api.BitcoinAddress]: AddressInfo
 }
 
+type FidenlityBondSummary = {
+  fbOutputs: Utxos
+}
+
 export interface WalletInfo {
+  balanceSummary: WalletBalanceSummary
   addressSummary: AddressSummary
+  fidelityBondSummary: FidenlityBondSummary
   data: CombinedRawWalletData
 }
 
@@ -104,6 +112,13 @@ const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
       acc[address] = { address, status }
       return acc
     }, {} as AddressSummary)
+}
+
+const toFidelityBondSummary = (data: CombinedRawWalletData): FidenlityBondSummary => {
+  const fbOutputs = data.utxos.utxos.filter((utxo) => utxo.locktime)
+  return {
+    fbOutputs,
+  }
 }
 
 const WalletContext = createContext<WalletContextEntry | undefined>(undefined)
@@ -139,10 +154,14 @@ const loadWalletInfoData = async ({
 }
 
 const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
+  const balanceSummary = toBalanceSummary(data)
   const addressSummary = toAddressSummary(data)
+  const fidelityBondSummary = toFidelityBondSummary(data)
 
   return {
+    balanceSummary,
     addressSummary,
+    fidelityBondSummary,
     data,
   }
 }

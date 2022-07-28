@@ -17,7 +17,7 @@ const TABS = {
   ACCOUNT_DETAILS: 'ACCOUNT_DETAILS',
 }
 
-type Alert = { message: string; variant: string; dismissible: boolean }
+type AlertContent = { message: string; variant: string; dismissible: boolean }
 
 interface HeaderProps {
   account: Account
@@ -181,7 +181,7 @@ const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps)
 const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
-  const [alert, setAlert] = useState<Alert | null>(null)
+  const [alert, setAlert] = useState<AlertContent | null>(null)
   const [accountIndex, setAccountIndex] = useState(props.initialAccountIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
   const [isLoadingFreeze, setIsLoadingFreeze] = useState(false)
