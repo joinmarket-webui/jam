@@ -219,6 +219,7 @@
 .overlayBody .accountItem > h2 > button {
   border-radius: 0.5rem !important;
   background-color: var(--bs-gray-100);
+  box-shadow: none;
 }
 
 .overlayBody .accountItem :global .container-fluid {
