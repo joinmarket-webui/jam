@@ -179,11 +179,13 @@ const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps)
 }
 
 const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
+  const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [alert, setAlert] = useState<AlertContent | null>(null)
   const [accountIndex, setAccountIndex] = useState(props.initialAccountIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
+  const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isLoadingFreeze, setIsLoadingFreeze] = useState(false)
   const [isLoadingUnfreeze, setIsLoadingUnfreeze] = useState(false)
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
@@ -217,13 +219,33 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [props.isShown, onKeyDown])
 
+  const refreshUtxos = async () => {
+    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
+
+    setAlert(null)
+    setIsLoadingRefresh(true)
+
+    const abortCtrl = new AbortController()
+
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message, dismissible: true })
+      })
+      .finally(() => setIsLoadingRefresh(false))
+
+    return () => abortCtrl.abort()
+  }
+
   const changeSelectedUtxoFreeze = async (freeze: boolean) => {
+    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
+
     if (selectedUtxoIds.length <= 0) return
 
     const selectedUtxos = (props.utxosByAccount[accountIndex] || []).filter((utxo: Utxo) =>
       selectedUtxoIds.includes(utxo.utxo)
     )
 
+    setAlert(null)
     freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
 
     const abortCtrl = new AbortController()
@@ -257,11 +279,31 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return `${utxos.length} UTXOs in Jar #${accountIndex}`
   }
 
-  const freezeUnfreezeButton = ({ freeze }: { freeze: boolean }) => {
-    const isLoading = freeze ? isLoadingFreeze : isLoadingUnfreeze
+  const refreshButton = () => {
     return (
       <rb.Button
-        disabled={freeze ? isLoadingUnfreeze : isLoadingFreeze}
+        className={styles.refreshButton}
+        disabled={isLoadingUnfreeze || isLoadingFreeze}
+        variant={settings.theme}
+        onClick={() => {
+          refreshUtxos()
+        }}
+      >
+        {isLoadingRefresh ? (
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+        ) : (
+          <Sprite symbol="refresh" width="24" height="24" />
+        )}
+      </rb.Button>
+    )
+  }
+
+  const freezeUnfreezeButton = ({ freeze }: { freeze: boolean }) => {
+    const isLoading = freeze ? isLoadingFreeze : isLoadingUnfreeze
+
+    return (
+      <rb.Button
+        disabled={isLoadingRefresh || (freeze ? isLoadingUnfreeze : isLoadingFreeze)}
         variant="light"
         onClick={() => {
           changeSelectedUtxoFreeze(freeze)
@@ -328,7 +370,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
               {selectedTab === TABS.UTXOS ? (
                 <div className={styles.utxoListContainer}>
                   <div className={styles.utxoListTitleBar}>
-                    <div>{utxoListTitle()}</div>
+                    <div className="d-flex justify-content-center align-items-center gap-2">
+                      {refreshButton()}
+                      {utxoListTitle()}
+                    </div>
                     {(props.utxosByAccount[accountIndex] || []).length > 0 && (
                       <div className={styles.freezeUnfreezeButtonsContainer}>
                         {freezeUnfreezeButton({ freeze: true })}

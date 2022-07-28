@@ -30,7 +30,7 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 4fr 3fr 1fr;
+    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 4fr 4rem 3fr 1fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -41,6 +41,10 @@ const TABLE_THEME = {
   Cell: `
     &:nth-of-type(2) {
       text-align: center;
+    }
+    &:nth-of-type(5) > div {
+      display: flex;
+      justify-content: center;
     }
   `,
   Row: `
@@ -192,6 +196,7 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
                 </HeaderCellSort>
                 <HeaderCellSort sortKey={SORT_KEYS.value}>Value</HeaderCellSort>
                 <HeaderCell>Address</HeaderCell>
+                <HeaderCell>Confs.</HeaderCell>
                 <HeaderCell>Tags</HeaderCell>
                 <HeaderCell></HeaderCell>
               </HeaderRow>
@@ -210,6 +215,23 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
                   </Cell>
                   <Cell>
                     <code>{toUtxo(item).address}</code>
+                  </Cell>
+                  <Cell>
+                    <div
+                      className={classnames(
+                        styles.utxoConfirmations,
+                        styles[`utxoConfirmations-${toUtxo(item).confirmations}`]
+                      )}
+                    >
+                      {toUtxo(item).confirmations === 0 && <Sprite symbol="confs-0" width="20" height="20" />}
+                      {toUtxo(item).confirmations === 1 && <Sprite symbol="confs-1" width="20" height="20" />}
+                      {toUtxo(item).confirmations === 2 && <Sprite symbol="confs-2" width="20" height="20" />}
+                      {toUtxo(item).confirmations === 3 && <Sprite symbol="confs-3" width="20" height="20" />}
+                      {toUtxo(item).confirmations === 4 && <Sprite symbol="confs-4" width="20" height="20" />}
+                      {toUtxo(item).confirmations === 5 && <Sprite symbol="confs-5" width="20" height="20" />}
+                      {toUtxo(item).confirmations >= 6 && <Sprite symbol="confs-full" width="20" height="20" />}
+                      <div>{toUtxo(item).confirmations}</div>
+                    </div>
                   </Cell>
                   <Cell>
                     <div className={styles.utxoTagList}>
