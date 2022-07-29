@@ -511,16 +511,9 @@ h2 {
   --bs-body-bg-rgb: 33, 37, 41;
   --bs-body-color: var(--bs-white);
   --bs-body-bg: var(--bs-gray-900);
+  --bs-border-color: var(--bs-gray-800);
   --bs-gray-dark: #16191c;
   --bs-black: #000;
-}
-
-:root[data-theme='dark'] .border-top,
-:root[data-theme='dark'] .border-bottom,
-:root[data-theme='dark'] .border-left,
-:root[data-theme='dark'] .border-right,
-:root[data-theme='dark'] .border {
-  border-color: var(--bs-gray-800) !important;
 }
 
 :root[data-theme='dark'] a.nav-link.active {
@@ -546,20 +539,22 @@ h2 {
   border-color: var(--bs-gray-dark) !important;
 }
 
-:root[data-theme='dark'] .accordion-item {
-  background: transparent !important;
-  border-color: var(--bs-gray-800) !important;
+:root[data-theme='dark'] .accordion {
+  --bs-accordion-color: var(--bs-white);
+  --bs-accordion-bg: transparent;
 }
 
-:root[data-theme='dark'] .accordion-button,
-:root[data-theme='dark'] .btn-outline-dark {
-  color: var(--bs-white);
-  background: transparent !important;
-  border-color: var(--bs-gray-800);
+:root[data-theme='dark'] .accordion-button {
+  color: var(--bs-accordion-color);
 }
 
 :root[data-theme='dark'] .accordion-button.collapsed::after {
   background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23fff%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
+}
+
+:root[data-theme='dark'] .btn-outline-dark {
+  color: var(--bs-white);
+  border-color: var(--bs-gray-800);
 }
 
 :root[data-theme='dark'] .btn-outline-dark:hover {
@@ -584,18 +579,8 @@ h2 {
   background-color: var(--bs-gray-900);
 }
 
-:root[data-theme='dark'] .modal-header,
-:root[data-theme='dark'] .modal-footer {
-  border-color: var(--bs-gray-800) !important;
-}
-
 :root[data-theme='dark'] .modal-header .btn-close {
   background-color: var(--bs-gray-900) !important;
-}
-
-:root[data-theme='dark'] .table,
-:root[data-theme='dark'] .table > :not(:first-child) {
-  border-color: var(--bs-gray-800) !important;
 }
 
 :root[data-theme='dark'] .form-control:disabled,
