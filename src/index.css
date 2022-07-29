@@ -517,7 +517,7 @@ h2 {
 }
 
 :root[data-theme='dark'] a.nav-link.active {
-  border-color: white !important;
+  border-color: var(--bs-white) !important;
 }
 
 :root[data-theme='dark'] .card {
@@ -527,6 +527,10 @@ h2 {
 :root[data-theme='dark']
   .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info) {
   border-color: var(--bs-gray-800) !important;
+}
+
+:root[data-theme='dark'] .btn {
+  --bs-btn-color: var(--bs-white);
 }
 
 :root[data-theme='dark'] .btn-dark {
