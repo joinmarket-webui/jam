@@ -1,18 +1,79 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
+import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
+import * as TableTypes from '@table-library/react-table-library/types/table'
+import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, TFunction } from 'react-i18next'
 import * as ObwatchApi from '../libs/JmObwatchApi'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import styles from './Orderbook.module.css'
+import Sprite from './Sprite'
 
-interface OrderbookTableProps {
-  orders: ObwatchApi.Order[]
-  maxAmountOfRows?: number
+const SORT_KEYS = {
+  type: 'TYPE',
+  counterparty: 'COUNTERPARTY',
+  fee: 'FEE',
+  minimumSize: 'MINIMUM_SIZE',
+  maximumSize: 'MAXIMUM_SIZE',
+  minerFeeContribution: 'MINER_FEE_CONTRIBUTION',
+  bondValue: 'BOND_VALUE',
 }
 
-type OrderPropName = keyof ObwatchApi.Order
+const TABLE_THEME = {
+  Table: `
+    --data-table-library_grid-template-columns: 1fr 1fr 6rem 1fr 2fr 2fr 2fr 2fr;
+    font-size: 0.9rem;
+  `,
+  BaseCell: `
+    &:nth-of-type(1) button {
+      display: flex;
+      justify-content: center;
+    }
+    &:nth-of-type(4) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(5) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(6) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(7) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(8) button {
+      display: flex;
+      justify-content: end;
+    }
+  `,
+  Cell: `
+    &:nth-of-type(1) {
+      text-align: center;
+    }
+    &:nth-of-type(4) {
+      text-align: right;
+    }
+    &:nth-of-type(5) {
+      text-align: right;
+    }
+    &:nth-of-type(6) {
+      text-align: right;
+    }
+    &:nth-of-type(7) {
+      text-align: right;
+    }
+    &:nth-of-type(8) {
+      text-align: right;
+    }
+  `,
+}
 
 const withTooltip = (node: React.ReactElement, tooltip: string) => {
   return (
@@ -20,60 +81,96 @@ const withTooltip = (node: React.ReactElement, tooltip: string) => {
   )
 }
 
+// `TableNode` is known to have same properties as `ObwatchApi.Order`, hence prefer casting over object destructuring
+const toOrder = (tableNode: TableTypes.TableNode): ObwatchApi.Order => tableNode as unknown as ObwatchApi.Order
+
+const renderOrderType = (val: string, t: TFunction<'translation', undefined>) => {
+  if (val === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
+    return withTooltip(<rb.Badge bg="info">{t('orderbook.text_offer_type_absolute')}</rb.Badge>, val)
+  }
+  if (val === ObwatchApi.RELATIVE_ORDER_TYPE_VAL) {
+    return withTooltip(<rb.Badge bg="primary">{t('orderbook.text_offer_type_relative')}</rb.Badge>, val)
+  }
+  return <rb.Badge bg="secondary">{val}</rb.Badge>
+}
+
+const renderOrderFee = (val: string, settings: any) => {
+  return val.includes('%') ? <>{val}</> : <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />
+}
+
+interface OrderbookTableProps {
+  orders: ObwatchApi.Order[]
+}
+
 const OrderbookTable = ({ orders }: OrderbookTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const headingMap: { [name in OrderPropName]: { heading: string; render?: (val: string) => React.ReactNode } } = {
-    type: {
-      // example: "Native SW Absolute Fee" or "Native SW Relative Fee"
-      heading: t('orderbook.table.heading_type'),
-      render: (val) => {
-        if (val === 'Native SW Absolute Fee') {
-          return withTooltip(<rb.Badge bg="info">{t('orderbook.text_offer_type_absolute')}</rb.Badge>, val)
-        }
-        if (val === 'Native SW Relative Fee') {
-          return withTooltip(<rb.Badge bg="primary">{t('orderbook.text_offer_type_relative')}</rb.Badge>, val)
-        }
-        return <rb.Badge bg="secondary">{val}</rb.Badge>
+  const tableData: TableTypes.Data = useMemo(
+    () => ({
+      nodes: orders.map((order: ObwatchApi.Order) => ({
+        ...order,
+        id: `order_${order.counterparty}_${order.orderId}`,
+      })),
+    }),
+    [orders]
+  )
+
+  const tableTheme = useTheme(TABLE_THEME)
+
+  const tableSort = useSort(
+    tableData,
+    {
+      state: {
+        sortKey: SORT_KEYS.minimumSize,
+        reverse: false,
       },
     },
-    counterparty: {
-      // example: "J5Bv3JSxPFWm2Yjb"
-      heading: t('orderbook.table.heading_counterparty'),
-    },
-    orderId: {
-      // example: "0" (not unique!)
-      heading: t('orderbook.table.heading_order_id'),
-    },
-    fee: {
-      // example: "0.00000250" (abs offers) or "0.000100%" (rel offers)
-      heading: t('orderbook.table.heading_fee'),
-      render: (val) =>
-        val.includes('%') ? <>{val}</> : <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
-    },
-    minerFeeContribution: {
-      // example: "0.00000000"
-      heading: t('orderbook.table.heading_miner_fee_contribution'),
-      render: (val) => <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
-    },
-    minimumSize: {
-      heading: t('orderbook.table.heading_minimum_size'),
-      render: (val) => <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
-      // example: "0.00027300"
-    },
-    maximumSize: {
-      // example: "2374.99972700"
-      heading: t('orderbook.table.heading_maximum_size'),
-      render: (val) => <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />,
-    },
-    bondValue: {
-      // example: "0" (no fb) or "0.0000052877962973"
-      heading: t('orderbook.table.heading_bond_value'),
-    },
-  }
+    {
+      sortIcon: {
+        margin: '4px',
+        iconDefault: <Sprite symbol="caret-right" width="20" height="20" />,
+        iconUp: <Sprite symbol="caret-up" width="20" height="20" />,
+        iconDown: <Sprite symbol="caret-down" width="20" height="20" />,
+      },
+      sortToggleType: SortToggleType.AlternateWithReset,
+      sortFns: {
+        [SORT_KEYS.type]: (array) => array.sort((a, b) => a.type.localeCompare(b.type)),
+        [SORT_KEYS.fee]: (array) =>
+          array.sort((a, b) => {
+            const aOrder = toOrder(a)
+            const bOrder = toOrder(b)
 
-  const columns: OrderPropName[] = Object.keys(headingMap) as OrderPropName[]
+            if (aOrder.type !== bOrder.type) {
+              return aOrder.type === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL ? 1 : -1
+            }
+
+            if (aOrder.type === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
+              return +aOrder.fee - +bOrder.fee
+            } else {
+              const aIndexOfPercent = aOrder.fee.indexOf('%')
+              const bIndexOfPercent = bOrder.fee.indexOf('%')
+
+              if (aIndexOfPercent > 0 && bIndexOfPercent > 0) {
+                return +aOrder.fee.substring(0, aIndexOfPercent) - +bOrder.fee.substring(0, bIndexOfPercent)
+              }
+            }
+
+            return 0
+          }),
+        [SORT_KEYS.minimumSize]: (array) => array.sort((a, b) => a.minimumSize - b.minimumSize),
+        [SORT_KEYS.maximumSize]: (array) => array.sort((a, b) => a.maximumSize - b.maximumSize),
+        [SORT_KEYS.minerFeeContribution]: (array) =>
+          array.sort((a, b) => a.minerFeeContribution - b.minerFeeContribution),
+        [SORT_KEYS.counterparty]: (array) =>
+          array.sort((a, b) => {
+            const val = a.counterparty.localeCompare(b.counterparty)
+            return val !== 0 ? val : +a.orderId - +b.orderId
+          }),
+        [SORT_KEYS.bondValue]: (array) => array.sort((a, b) => a.bondValue - b.bondValue),
+      },
+    }
+  )
   const counterpartyCount = new Set(orders.map((it) => it.counterparty)).size
 
   return (
@@ -90,28 +187,61 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
               })}
             </small>
           </div>
-          <rb.Table striped bordered hover variant={settings.theme} responsive>
-            <thead>
-              <tr>
-                {Object.values(headingMap).map((header, index) => (
-                  <th key={`header_${index}`}>{header.heading}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order, index) => (
-                <tr key={`order_${index}_${order.orderId}`}>
-                  {columns.map((propName) => (
-                    <td key={propName}>
-                      {headingMap[propName] && headingMap[propName].render !== undefined
-                        ? headingMap[propName].render!(order[propName])
-                        : order[propName]}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </rb.Table>
+          <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
+            {(tableList) => (
+              <>
+                <Header>
+                  <HeaderRow>
+                    <HeaderCellSort sortKey={SORT_KEYS.type}>{t('orderbook.table.heading_type')}</HeaderCellSort>
+                    <HeaderCellSort sortKey={SORT_KEYS.counterparty}>
+                      {t('orderbook.table.heading_counterparty')}
+                    </HeaderCellSort>
+                    <HeaderCell>{t('orderbook.table.heading_order_id')}</HeaderCell>
+                    <HeaderCellSort sortKey={SORT_KEYS.fee}>{t('orderbook.table.heading_fee')}</HeaderCellSort>
+                    <HeaderCellSort sortKey={SORT_KEYS.minimumSize}>
+                      {t('orderbook.table.heading_minimum_size')}
+                    </HeaderCellSort>
+                    <HeaderCellSort sortKey={SORT_KEYS.maximumSize}>
+                      {t('orderbook.table.heading_maximum_size')}
+                    </HeaderCellSort>
+                    <HeaderCellSort sortKey={SORT_KEYS.minerFeeContribution}>
+                      {t('orderbook.table.heading_miner_fee_contribution')}
+                    </HeaderCellSort>
+                    <HeaderCellSort sortKey={SORT_KEYS.bondValue}>
+                      {t('orderbook.table.heading_bond_value')}
+                    </HeaderCellSort>
+                  </HeaderRow>
+                </Header>
+                <Body>
+                  {tableList.map((item) => {
+                    const order = toOrder(item)
+                    return (
+                      <Row key={item.id} item={item}>
+                        <Cell>{renderOrderType(order.type, t)}</Cell>
+                        <Cell>{order.counterparty}</Cell>
+                        <Cell>{order.orderId}</Cell>
+                        <Cell>{renderOrderFee(order.fee, settings)}</Cell>
+                        <Cell>
+                          <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
+                        </Cell>
+                        <Cell>
+                          <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
+                        </Cell>
+                        <Cell>
+                          <Balance
+                            valueString={order.minerFeeContribution}
+                            convertToUnit={settings.unit}
+                            showBalance={true}
+                          />
+                        </Cell>
+                        <Cell>{order.bondValue}</Cell>
+                      </Row>
+                    )
+                  })}
+                </Body>
+              </>
+            )}
+          </Table>
         </div>
       )}
     </>
