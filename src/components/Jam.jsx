@@ -350,25 +350,33 @@ export default function Jam() {
                 const isValidAddress = (candidate) => {
                   return typeof candidate !== 'undefined' && candidate !== ''
                 }
+                const isAddressReused = (destination, inputAddresses) => {
+                  if (!destination) return false
+                  const duplicateEntry = inputAddresses.filter((it) => it === destination).length > 1
+                  const alreadyUsed =
+                    walletInfo?.addressSummary[destination] && walletInfo?.addressSummary[destination]?.status !== 'new'
 
-                if (!isValidAddress(values.dest1)) {
-                  errors.dest1 = t('scheduler.error_invalid_destionation_address')
-                }
-                if (!isValidAddress(values.dest2)) {
-                  errors.dest2 = t('scheduler.error_invalid_destionation_address')
-                }
-                if (!isValidAddress(values.dest3)) {
-                  errors.dest3 = t('scheduler.error_invalid_destionation_address')
+                  return alreadyUsed || duplicateEntry
                 }
 
-                const validAddresses = Array(3)
+                const addressDict = Array(3)
                   .fill('')
-                  .map((_, index) => values[`dest${index + 1}`])
-                  .filter((it) => isValidAddress(it))
-                const uniqueValidAddresses = [...new Set(validAddresses)]
-                if (validAddresses.length !== uniqueValidAddresses.length) {
-                  errors.addressReuse = t('scheduler.error_address_reuse')
-                }
+                  .map((_, index) => {
+                    const key = `dest${index + 1}`
+                    return {
+                      key,
+                      address: values[key],
+                    }
+                  })
+                const addresses = addressDict.map((it) => it.address)
+
+                addressDict.forEach((addressEntry) => {
+                  if (!isValidAddress(addressEntry.address)) {
+                    errors[addressEntry.key] = t('scheduler.feedback_invalid_destination_address')
+                  } else if (isAddressReused(addressEntry.address, addresses)) {
+                    errors[addressEntry.key] = t('scheduler.feedback_reused_destination_address')
+                  }
+                })
 
                 return errors
               }}
@@ -457,10 +465,10 @@ export default function Jam() {
                               isInvalid={touched[`dest${i}`] && !!errors[`dest${i}`]}
                               className={`${styles.input} slashed-zeroes`}
                             />
+                            <rb.Form.Control.Feedback type="invalid">{errors[`dest${i}`]}</rb.Form.Control.Feedback>
                           </rb.Form.Group>
                         )
                       })}
-                    {errors && errors.addressReuse && <rb.Alert variant="danger">{errors.addressReuse}</rb.Alert>}
                     {!collaborativeOperationRunning && (
                       <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
                     )}
