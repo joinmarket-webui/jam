@@ -24,11 +24,11 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 1fr 1fr 6rem 1fr 2fr 2fr 2fr 2fr;
+    --data-table-library_grid-template-columns: 1fr 5rem 1fr 1fr 2fr 2fr 2fr 2fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
-    &:nth-of-type(1) button {
+    &:nth-of-type(3) button {
       display: flex;
       justify-content: center;
     }
@@ -54,7 +54,7 @@ const TABLE_THEME = {
     }
   `,
   Cell: `
-    &:nth-of-type(1) {
+    &:nth-of-type(3) {
       text-align: center;
     }
     &:nth-of-type(4) {
@@ -105,16 +105,31 @@ interface OrderbookTableProps {
 const OrderbookTable = ({ orders }: OrderbookTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
+  const [search, setSearch] = useState('')
 
-  const tableData: TableTypes.Data = useMemo(
-    () => ({
-      nodes: orders.map((order: ObwatchApi.Order) => ({
+  const tableData: TableTypes.Data = useMemo(() => {
+    const searchVal = search.replace('.', '').toLowerCase()
+    const nodes = orders
+      .filter((order) => {
+        if (search === '') return true
+        return (
+          order.type.toLowerCase().includes(searchVal) ||
+          order.counterparty.toLowerCase().includes(searchVal) ||
+          order.fee.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.orderId.toLowerCase().includes(searchVal)
+        )
+      })
+      .map((order) => ({
         ...order,
-        id: `order_${order.counterparty}_${order.orderId}`,
-      })),
-    }),
-    [orders]
-  )
+        id: `${order.counterparty}_${order.orderId}`,
+      }))
+
+    return { nodes }
+  }, [orders, search])
 
   const tableTheme = useTheme(TABLE_THEME)
 
@@ -179,24 +194,41 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
         <rb.Alert variant="info">{t('orderbook.alert_empty_orderbook')}</rb.Alert>
       ) : (
         <div>
-          <div className="mb-2 d-flex justify-content-start">
-            <small>
-              {t('orderbook.text_orderbook_summary', {
-                counterpartyCount,
-                orderCount: orders.length,
+          <div className="mb-2 small">
+            {t('orderbook.text_orderbook_summary', {
+              counterpartyCount,
+              orderCount: orders.length,
+            })}
+            <span className={`${search === '' ? 'invisible' : 'visible'}`}>
+              {` `}(
+              {t('orderbook.text_orderbook_filter_count', {
+                filterCount: tableData.nodes.length,
               })}
-            </small>
+              )
+            </span>
           </div>
+          <div className="mb-2 mb-md-4 d-grid justify-content-end">
+            <rb.Form.Group className="d-flex justify-content-center align-items-center" controlId="search">
+              <rb.Form.Label className="m-0 pe-2 d-none">{t('orderbook.label_search')}</rb.Form.Label>
+              <rb.Form.Control
+                name="search"
+                placeholder={t('orderbook.placeholder_search')}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </rb.Form.Group>
+          </div>
+
           <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
             {(tableList) => (
               <>
                 <Header>
                   <HeaderRow>
-                    <HeaderCellSort sortKey={SORT_KEYS.type}>{t('orderbook.table.heading_type')}</HeaderCellSort>
                     <HeaderCellSort sortKey={SORT_KEYS.counterparty}>
                       {t('orderbook.table.heading_counterparty')}
                     </HeaderCellSort>
                     <HeaderCell>{t('orderbook.table.heading_order_id')}</HeaderCell>
+                    <HeaderCellSort sortKey={SORT_KEYS.type}>{t('orderbook.table.heading_type')}</HeaderCellSort>
                     <HeaderCellSort sortKey={SORT_KEYS.fee}>{t('orderbook.table.heading_fee')}</HeaderCellSort>
                     <HeaderCellSort sortKey={SORT_KEYS.minimumSize}>
                       {t('orderbook.table.heading_minimum_size')}
@@ -217,9 +249,9 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
                     const order = toOrder(item)
                     return (
                       <Row key={item.id} item={item}>
-                        <Cell>{renderOrderType(order.type, t)}</Cell>
                         <Cell>{order.counterparty}</Cell>
                         <Cell>{order.orderId}</Cell>
+                        <Cell>{renderOrderType(order.type, t)}</Cell>
                         <Cell>{renderOrderFee(order.fee, settings)}</Cell>
                         <Cell>
                           <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
