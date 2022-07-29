@@ -352,9 +352,10 @@ export default function Jam() {
                 }
                 const isAddressReused = (destination, inputAddresses) => {
                   if (!destination) return false
+
+                  const knownAddress = walletInfo?.addressSummary[destination] || false
+                  const alreadyUsed = knownAddress && walletInfo?.addressSummary[destination]?.status !== 'new'
                   const duplicateEntry = inputAddresses.filter((it) => it === destination).length > 1
-                  const alreadyUsed =
-                    walletInfo?.addressSummary[destination] && walletInfo?.addressSummary[destination]?.status !== 'new'
 
                   return alreadyUsed || duplicateEntry
                 }
