@@ -91,7 +91,7 @@ export default function Earn() {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
 
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -333,17 +333,17 @@ export default function Earn() {
                       <rb.Button
                         variant={`${settings.theme}`}
                         className={`${styles['settings-btn']} d-flex align-items-center`}
-                        onClick={() => setShowAdvancedSettings((current) => !current)}
+                        onClick={() => setShowSettings((current) => !current)}
                       >
                         {t('earn.button_settings')}
                         <Sprite
-                          symbol={`caret-${showAdvancedSettings ? 'up' : 'down'}`}
+                          symbol={`caret-${showSettings ? 'up' : 'down'}`}
                           className="ms-1"
                           width="20"
                           height="20"
                         />
                       </rb.Button>
-                      {showAdvancedSettings && (
+                      {showSettings && (
                         <div className="my-4">
                           <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
                             <SegmentedTabs
@@ -482,33 +482,35 @@ export default function Earn() {
                       <hr className="m-0" />
                     </div>
                   )}
-                  <rb.Button
-                    variant="dark"
-                    type="submit"
-                    className="mt-4"
-                    disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
-                  >
-                    <div className="d-flex justify-content-center align-items-center">
-                      {(isWaitingMakerStart || isWaitingMakerStop) && (
-                        <rb.Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                          className="me-2"
-                        />
-                      )}
-                      {isWaitingMakerStart || isWaitingMakerStop ? (
-                        <>
-                          {isWaitingMakerStart && t('earn.text_starting')}
-                          {isWaitingMakerStop && t('earn.text_stopping')}
-                        </>
-                      ) : (
-                        <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
-                      )}
-                    </div>
-                  </rb.Button>
+                  <div class="mt-4">
+                    <rb.Button
+                      variant="dark"
+                      type="submit"
+                      className={styles['earn-btn']}
+                      disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        {(isWaitingMakerStart || isWaitingMakerStop) && (
+                          <rb.Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            className="me-2"
+                          />
+                        )}
+                        {isWaitingMakerStart || isWaitingMakerStop ? (
+                          <>
+                            {isWaitingMakerStart && t('earn.text_starting')}
+                            {isWaitingMakerStop && t('earn.text_stopping')}
+                          </>
+                        ) : (
+                          <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
+                        )}
+                      </div>
+                    </rb.Button>
+                  </div>
                 </rb.Form>
               )}
             </Formik>
