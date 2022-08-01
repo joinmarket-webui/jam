@@ -273,7 +273,7 @@ export default function Settings({ stopWallet }) {
         <div className={styles['section-title']}>{t('settings.section_title_community')}</div>
         <div className={styles['settings-links']}>
           <a
-            href="https://github.com/joinmarket-webui/joinmarket-webui"
+            href="https://github.com/joinmarket-webui/jam"
             target="_blank"
             rel="noopener noreferrer"
             className="link-dark"
