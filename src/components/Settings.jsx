@@ -212,7 +212,7 @@ export default function Settings({ stopWallet }) {
                 )
               })}
               <rb.Dropdown.Item
-                href="https://github.com/joinmarket-webui/joinmarket-webui/tree/master/src/i18n/README.md"
+                href="https://github.com/joinmarket-webui/jam/tree/master/src/i18n/README.md"
                 target="_blank"
                 rel="noopener noreferrer"
               >

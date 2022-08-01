@@ -74,7 +74,7 @@ export default function Onboarding() {
             <Trans i18nKey="onboarding.splashscreen_warning_text">
               While JoinMarket is tried and tested, Jam is not. It is in a beta stage, so use with caution.
               <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui/issues"
+                href="https://github.com/joinmarket-webui/jam/issues"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="link-secondary"
