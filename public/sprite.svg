@@ -300,7 +300,4 @@
         <circle cx="12" cy="16" r="2.8565371" style="stroke-width:0.9" />
         <path stroke-linecap="round" stroke-linejoin="round" d="m 11.978949,14.689354 v 1.680316 l 0.940978,0.940976" style="stroke-width:0.9" />
     </symbol>
-    <symbol id="file" viewBox="0 0 24 24" fill="currentColor">
-        <path fill-rule="evenodd" d="M13 4H7.5A1.5 1.5 0 006 5.5v13A1.5 1.5 0 007.5 20h9a1.5 1.5 0 001.5-1.5V9h-.004L13 4zm-1 1.604V9.75c0 .138.112.25.25.25h4.146a.25.25 0 00.177-.427l-4.146-4.146a.25.25 0 00-.427.177z" clip-rule="evenodd"></path>
-    </symbol>
 </svg>
