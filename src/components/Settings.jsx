@@ -283,6 +283,17 @@ export default function Settings({ stopWallet }) {
               {t('settings.github')}
             </div>
           </a>
+          <a
+            href="https://matrix.to/#/%23jam:matrix.dergigi.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="link-dark"
+          >
+            <div className="d-flex align-items-center">
+              <Sprite symbol="matrix" width="24" height="24" className="me-2 p-1" />
+              {t('settings.matrix')}
+            </div>
+          </a>
           <a href="https://t.me/JoinMarketWebUI" target="_blank" rel="noopener noreferrer" className="link-dark">
             <div className="d-flex align-items-center">
               <Sprite symbol="telegram" width="24" height="24" className="me-2 p-1" />
