@@ -289,6 +289,12 @@ export default function Settings({ stopWallet }) {
               {t('settings.telegram')}
             </div>
           </a>
+          <a href="https://twitter.com/jamapporg" target="_blank" rel="noopener noreferrer" className="link-dark">
+            <div className="d-flex align-items-center">
+              <Sprite symbol="twitter" width="24" height="24" className="me-2 p-1" />
+              {t('settings.jam_twitter')}
+            </div>
+          </a>
           <a href="https://twitter.com/joinmarket" target="_blank" rel="noopener noreferrer" className="link-dark">
             <div className="d-flex align-items-center">
               <Sprite symbol="twitter" width="24" height="24" className="me-2 p-1" />
