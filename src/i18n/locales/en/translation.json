@@ -161,8 +161,10 @@
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "github": "GitHub",
+    "matrix": "Matrix",
     "telegram": "Telegram",
     "jm_twitter": "JoinMarket Twitter",
+    "jam_twitter": "Jam Twitter",
     "confirm_locking_modal_title": "Lock Wallet",
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background."
