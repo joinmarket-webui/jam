@@ -272,6 +272,12 @@ export default function Settings({ stopWallet }) {
 
         <div className={styles['section-title']}>{t('settings.section_title_community')}</div>
         <div className={styles['settings-links']}>
+          <a href="https://jamdocs.org" target="_blank" rel="noopener noreferrer" className="link-dark">
+            <div className="d-flex align-items-center">
+              <Sprite symbol="file" width="24" height="24" className="me-2 p-1" />
+              {t('settings.documentation')}
+            </div>
+          </a>
           <a
             href="https://github.com/joinmarket-webui/joinmarket-webui"
             target="_blank"
