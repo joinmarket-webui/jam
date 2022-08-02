@@ -2,9 +2,11 @@ FROM python:3.9.7-slim-bullseye
 
 RUN apt-get update \
     && apt-get install -qq --no-install-recommends tini procps vim git iproute2 supervisor \
+       # joinmarket dependencies
        curl build-essential automake pkg-config libtool python3-dev python3-pip python3-setuptools libltdl-dev \
+       # tor dependencies
        libevent-dev libssl-dev zlib1g-dev \
-    && rm -rf /var/lib/apt/lists/*
+       && rm -rf /var/lib/apt/lists/*
 
 ENV REPO https://github.com/JoinMarket-Org/joinmarket-clientserver
 ENV REPO_BRANCH master
