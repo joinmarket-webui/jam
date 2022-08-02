@@ -17,11 +17,10 @@
 
 .address-copy-button {
   text-align: left !important;
-  padding: 0 !important;
+  padding: 0 var(--bs-btn-padding-y) !important;
 }
 
 .address-copy-button .sprite {
-  min-width: 2rem;
   margin-left: 0.25rem !important;
 }
 

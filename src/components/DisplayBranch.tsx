@@ -68,7 +68,7 @@ export function DisplayBranchBody({ branch }: DisplayBranchProps) {
   const { branch: detailsString, entries } = branch
   const xpub: string | undefined = detailsString.split('\t')[2]
   return (
-    <rb.Container fluid>
+    <rb.Container className="mb-2" fluid>
       <rb.Row>
         <rb.Col>
           {xpub && (
