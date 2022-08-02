@@ -59,20 +59,7 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initial
     <>
       <div className="w-100 d-flex flex-column flex-md-row gap-3">
         <div className="d-flex align-items-center flex-1">
-          <rb.Button variant="link" className="unstyled ps-0 ms-auto mx-md-0 me-auto" onClick={onHide}>
-            <span>{t('global.close')}</span>
-          </rb.Button>
-        </div>
-        <div className="d-flex align-items-center flex-grow-1 flex-shrink-0">
-          <SegmentedTabs
-            name="jarDetailsTab"
-            tabs={tabs}
-            onChange={(tab, checked) => checked && setTab(tab.value)}
-            initialValue={initialTab}
-          />
-        </div>
-        <div className="d-flex flex-1">
-          <div className="d-flex align-items-center ms-auto me-auto me-md-0">
+          <div className="d-flex align-items-center ms-auto me-auto ms-md-0">
             <rb.Button variant="link" className={styles.accountStepperButton} onClick={() => previousAccount()}>
               <Sprite symbol="caret-left" width="20" height="20" />
             </rb.Button>
@@ -84,6 +71,19 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initial
               <Sprite symbol="caret-right" width="20" height="20" />
             </rb.Button>
           </div>
+        </div>
+        <div className="d-flex align-items-center flex-grow-1 flex-shrink-0">
+          <SegmentedTabs
+            name="jarDetailsTab"
+            tabs={tabs}
+            onChange={(tab, checked) => checked && setTab(tab.value)}
+            initialValue={initialTab}
+          />
+        </div>
+        <div className="d-flex flex-1">
+          <rb.Button variant="link" className="unstyled pe-0 ms-auto me-auto me-md-0" onClick={onHide}>
+            <Sprite symbol="cancel" width="32" height="32" />
+          </rb.Button>
         </div>
       </div>
     </>
