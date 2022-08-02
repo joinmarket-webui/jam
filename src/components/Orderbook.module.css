@@ -2,3 +2,14 @@
   height: 2.625rem;
   margin: 1px 0;
 }
+
+.orderbookContainer {
+  background-color: var(--bs-body-bg);
+}
+
+@media only screen and (min-width: 768px) {
+  .orderbookContainer {
+    border-radius: 0.5rem;
+    padding: 2rem;
+  }
+}

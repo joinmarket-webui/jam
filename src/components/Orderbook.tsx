@@ -332,8 +332,10 @@ export function Orderbook() {
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
           {orders && (
             <rb.Row>
-              <rb.Col className="mb-3">
-                <OrderbookTable orders={orders} />
+              <rb.Col>
+                <div className={styles.orderbookContainer}>
+                  <OrderbookTable orders={orders} />
+                </div>
               </rb.Col>
             </rb.Row>
           )}
