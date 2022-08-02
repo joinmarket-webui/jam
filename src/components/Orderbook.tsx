@@ -316,7 +316,7 @@ export function Orderbook() {
   }, [t])
 
   return (
-    <div>
+    <rb.Container className="py-4 py-sm-5">
       {!isInitialized && isLoading ? (
         Array(5)
           .fill('')
@@ -339,7 +339,7 @@ export function Orderbook() {
           )}
         </>
       )}
-    </div>
+    </rb.Container>
   )
 }
 
