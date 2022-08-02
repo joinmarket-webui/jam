@@ -39,6 +39,14 @@ const TABLE_THEME = {
     &:nth-of-type(1) {
       text-align: center;
     }
+    &:nth-of-type(3) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(5) button {
+      display: flex;
+      justify-content: center;
+    }
   `,
   Cell: `
     &:nth-of-type(2) {
