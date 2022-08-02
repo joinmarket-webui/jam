@@ -189,7 +189,7 @@ export default function App() {
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
             <div className="warning-hint text-start text-secondary d-none d-md-block pe-1">
               <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui/tags"
+                href="https://github.com/joinmarket-webui/jam/tags"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="d-flex align-items-center text-secondary"
@@ -200,7 +200,7 @@ export default function App() {
             </div>
             <div className="d-flex gap-2 pe-2">
               <a
-                href="https://github.com/joinmarket-webui/joinmarket-webui"
+                href="https://github.com/joinmarket-webui/jam"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="d-flex align-items-center text-secondary"
