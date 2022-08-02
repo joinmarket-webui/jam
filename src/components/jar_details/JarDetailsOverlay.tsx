@@ -5,6 +5,7 @@ import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import { useServiceInfo } from '../../context/ServiceInfoContext'
+import * as fb from '../fb/utils'
 import Alert from '../Alert'
 import Balance from '../Balance'
 import Sprite from '../Sprite'
@@ -229,6 +230,13 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     [serviceInfo]
   )
 
+  const canBeFrozenOrUnfrozen = (utxo: Utxo) => {
+    const isUnfreezeEnabled = !fb.utxo.isLocked(utxo)
+    const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
+
+    return allowedToExecute
+  }
+
   const refreshUtxos = async () => {
     if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
 
@@ -262,7 +270,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
     const { name: walletName, token } = props.wallet
 
-    const freezeCalls = selectedUtxos.map((utxo) =>
+    const freezeCalls = selectedUtxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
       Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
         if (!res.ok) {
           return Api.Helper.throwError(
