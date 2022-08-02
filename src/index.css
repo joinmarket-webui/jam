@@ -285,6 +285,7 @@ main {
 
 .unstyled {
   text-decoration: none !important;
+  color: inherit !important;
 }
 
 /* Navbar Styles */
@@ -534,7 +535,7 @@ h2 {
   border-color: var(--bs-gray-800) !important;
 }
 
-:root[data-theme='dark'] .btn {
+:root[data-theme='dark'] .btn:not(.btn-light) {
   --bs-btn-color: var(--bs-white);
 }
 
