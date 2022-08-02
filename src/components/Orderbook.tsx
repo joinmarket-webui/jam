@@ -365,7 +365,7 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <rb.Container className="py-4 py-sm-5">
+        <rb.Container fluid="md" className="py-4 py-sm-5">
           <Orderbook />
         </rb.Container>
       </rb.Offcanvas.Body>

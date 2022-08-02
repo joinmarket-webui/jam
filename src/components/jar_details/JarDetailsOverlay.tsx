@@ -373,7 +373,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <rb.Container className="py-4 py-sm-5">
+        <rb.Container fluid="md" className="py-4 py-sm-5">
           {alert && (
             <rb.Row>
               <rb.Col>
