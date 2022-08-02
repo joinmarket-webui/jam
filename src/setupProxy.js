@@ -28,4 +28,13 @@ module.exports = (app) => {
       ws: true,
     })
   )
+
+  app.use(
+    createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
+      target: 'http://localhost:62601',
+      pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
+      changeOrigin: true,
+      secure: false,
+    })
+  )
 }

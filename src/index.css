@@ -426,6 +426,11 @@ h2 {
   background-color: var(--bs-gray-400);
 }
 
+.tooltip {
+  /* allow tooltips in navbar and overlays */
+  z-index: 1200;
+}
+
 /* Wallets Styles */
 
 .wallets a.wallet-name {

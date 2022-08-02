@@ -11,8 +11,10 @@ import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
 import { EarnReportOverlay } from './EarnReport'
+import { isFeatureEnabled } from '../constants/features'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
+import { OrderbookOverlay } from './Orderbook'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -99,6 +101,7 @@ export default function Earn() {
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
+  const [isShowOrderbook, setIsShowOrderbook] = useState(false)
   const [fidelityBonds, setFidelityBonds] = useState([])
 
   const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
@@ -518,6 +521,20 @@ export default function Earn() {
         </rb.Col>
       </rb.Row>
       <rb.Row className="mt-5 mb-3">
+        {isFeatureEnabled('orderbook') && (
+          <rb.Col className="d-flex justify-content-center">
+            <OrderbookOverlay show={isShowOrderbook} onHide={() => setIsShowOrderbook(false)} />
+
+            <rb.Button
+              variant="outline-dark"
+              className="border-0 mb-2 d-inline-flex align-items-center"
+              onClick={() => setIsShowOrderbook(true)}
+            >
+              <Sprite symbol="globe" width="24" height="24" className="me-2" />
+              {t('earn.button_show_orderbook')}
+            </rb.Button>
+          </rb.Col>
+        )}
         <rb.Col className="d-flex justify-content-center">
           <EarnReportOverlay show={isShowReport} onHide={() => setIsShowReport(false)} />
 
