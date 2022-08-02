@@ -294,6 +294,15 @@ main {
   z-index: 1100 !important;
 }
 
+.offcanvas-fullscreen .offcanvas-body {
+  background-color: var(--bs-gray-100);
+  padding: 0;
+}
+
+:root[data-theme='dark'] .offcanvas-fullscreen .offcanvas-body {
+  background-color: var(--bs-gray-800);
+}
+
 /* Navbar Styles */
 
 #mainNav .nav-link {
