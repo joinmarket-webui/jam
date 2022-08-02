@@ -274,7 +274,7 @@ export default function Settings({ stopWallet }) {
         <div className={styles['settings-links']}>
           <a href="https://jamdocs.org" target="_blank" rel="noopener noreferrer" className="link-dark">
             <div className="d-flex align-items-center">
-              <Sprite symbol="file" width="24" height="24" className="me-2 p-1" />
+              <Sprite symbol="file" width="24" height="24" className="me-2" />
               {t('settings.documentation')}
             </div>
           </a>
