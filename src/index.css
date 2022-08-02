@@ -288,6 +288,12 @@ main {
   color: inherit !important;
 }
 
+.offcanvas-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1100 !important;
+}
+
 /* Navbar Styles */
 
 #mainNav .nav-link {

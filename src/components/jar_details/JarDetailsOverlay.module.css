@@ -33,12 +33,6 @@
   border: none;
 }
 
-.overlayContainer {
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 1100 !important;
-}
-
 .overlayHeader {
   border-bottom: 1px solid var(--bs-body-bg);
   box-shadow: 0px 1px 5px var(--bs-gray-400);

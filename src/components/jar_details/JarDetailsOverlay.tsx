@@ -352,7 +352,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
   return (
     <rb.Offcanvas
-      className={styles.overlayContainer}
+      className="offcanvas-fullscreen"
       show={props.isShown}
       onHide={() => {
         props.onHide()

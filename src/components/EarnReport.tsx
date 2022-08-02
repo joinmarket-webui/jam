@@ -173,7 +173,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const { t } = useTranslation()
 
   return (
-    <rb.Offcanvas className={styles['report-overlay']} show={show} onHide={onHide} placement="bottom">
+    <rb.Offcanvas className="offcanvas-fullscreen" show={show} onHide={onHide} placement="bottom">
       <rb.Offcanvas.Header closeButton>
         <rb.Offcanvas.Title>{t('earn.report.title')}</rb.Offcanvas.Title>
       </rb.Offcanvas.Header>

@@ -347,7 +347,7 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
   const { t } = useTranslation()
 
   return (
-    <rb.Offcanvas className={styles['orderbook-overlay']} show={show} onHide={onHide} placement="bottom">
+    <rb.Offcanvas className="offcanvas-fullscreen" show={show} onHide={onHide} placement="bottom">
       <rb.Offcanvas.Header closeButton>
         <rb.Offcanvas.Title>{t('orderbook.title')}</rb.Offcanvas.Title>
       </rb.Offcanvas.Header>
