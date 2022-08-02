@@ -173,7 +173,7 @@ const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps)
       </rb.Modal.Body>
       <rb.Modal.Footer className="d-flex justify-content-center">
         <rb.Button variant="light" onClick={close} className="w-25 d-flex justify-content-center align-items-center">
-          Close
+          <span>{t('global.close')}</span>
         </rb.Button>
       </rb.Modal.Footer>
     </rb.Modal>
