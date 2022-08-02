@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
+import { useServiceInfo } from '../../context/ServiceInfoContext'
 import Alert from '../Alert'
 import Balance from '../Balance'
 import Sprite from '../Sprite'
@@ -184,6 +185,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+  const serviceInfo = useServiceInfo()
 
   const [alert, setAlert] = useState<AlertContent | null>(null)
   const [accountIndex, setAccountIndex] = useState(props.initialAccountIndex)
@@ -222,6 +224,11 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [props.isShown, onKeyDown])
 
+  const isTakerOrMakerRunning = useCallback(
+    () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
+    [serviceInfo]
+  )
+
   const refreshUtxos = async () => {
     if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
 
@@ -240,7 +247,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }
 
   const changeSelectedUtxoFreeze = async (freeze: boolean) => {
-    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
+    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning()) return
 
     if (selectedUtxoIds.length <= 0) return
 
@@ -309,7 +316,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
     return (
       <rb.Button
-        disabled={isLoadingRefresh || (freeze ? isLoadingUnfreeze : isLoadingFreeze)}
+        disabled={isTakerOrMakerRunning() || isLoadingRefresh || (freeze ? isLoadingUnfreeze : isLoadingFreeze)}
         variant="light"
         onClick={() => {
           changeSelectedUtxoFreeze(freeze)
