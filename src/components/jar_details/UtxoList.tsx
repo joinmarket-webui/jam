@@ -77,21 +77,17 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
     var rawStatus = walletInfo.addressSummary[utxo.address]?.status
 
     var status: string | null = null
-    var locktime: string | null = null
+    var locktime: string | undefined = utxo.locktime
 
-    if (rawStatus) {
-      const indexOfLockedTag = rawStatus.indexOf('[LOCKED]')
+    // If a UTXO is locked, it's status will be the locktime.
+    // Since we already have the locktime (see above), we don't need to parse it again.
+    if (rawStatus && !utxo.locktime) {
+      const indexOfOtherTag = rawStatus.indexOf('[')
 
-      if (indexOfLockedTag !== -1) {
-        locktime = rawStatus.substring(0, indexOfLockedTag).trim()
+      if (indexOfOtherTag !== -1) {
+        status = rawStatus.substring(0, indexOfOtherTag).trim()
       } else {
-        const indexOfOtherTag = rawStatus.indexOf('[')
-
-        if (indexOfOtherTag !== -1) {
-          status = rawStatus.substring(0, indexOfOtherTag).trim()
-        } else {
-          status = rawStatus
-        }
+        status = rawStatus
       }
     }
 
