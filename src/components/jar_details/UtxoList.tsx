@@ -44,6 +44,9 @@ const TABLE_THEME = {
     &:nth-of-type(2) {
       text-align: center;
     }
+    &:nth-of-type(3) {
+      text-align: right;
+    }
     &:nth-of-type(5) > div {
       display: flex;
       justify-content: center;
