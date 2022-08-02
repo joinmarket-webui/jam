@@ -11,7 +11,9 @@
   },
   "homepage": ".",
   "devDependencies": {
+    "@emotion/react": "^11.9.3",
     "@popperjs/core": "^2.11.5",
+    "@table-library/react-table-library": "^4.0.10",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^13.5.0",
@@ -97,6 +99,9 @@
       "Math",
       "localStorage"
     ],
-    "clearMocks": true
+    "clearMocks": true,
+    "transformIgnorePatterns": [
+      "node_modules/(?!@table-library)"
+    ]
   }
 }

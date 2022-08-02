@@ -10,7 +10,7 @@ import { walletDisplayName } from '../utils'
 import styles from './CurrentWalletMagic.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
-import { DisplayAccountsOverlay } from './DisplayAccountsOverlay'
+import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
 import { Jars } from './Jars'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
@@ -59,6 +59,17 @@ export default function CurrentWalletMagic() {
     () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
     [currentWalletInfo]
   )
+
+  const utxosByAccount = useMemo(() => {
+    const utxos = (currentWalletInfo && currentWalletInfo.data.utxos.utxos) || []
+    return utxos.reduce((res, utxo) => {
+      const { mixdepth } = utxo
+      res[mixdepth] = res[mixdepth] || []
+      res[mixdepth].push(utxo)
+      return res
+    }, {})
+  }, [currentWalletInfo])
+
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
@@ -102,11 +113,14 @@ export default function CurrentWalletMagic() {
         </rb.Row>
       )}
 
-      {accounts && (
-        <DisplayAccountsOverlay
+      {accounts && isAccountOverlayShown && (
+        <JarDetailsOverlay
           accounts={accounts}
-          selectedAccountIndex={selectedAccountIndex}
-          show={isAccountOverlayShown}
+          initialAccountIndex={selectedAccountIndex}
+          utxosByAccount={utxosByAccount}
+          walletInfo={currentWalletInfo}
+          wallet={currentWallet}
+          isShown={isAccountOverlayShown}
           onHide={() => setIsAccountOverlayShown(false)}
         />
       )}

@@ -285,6 +285,7 @@ main {
 
 .unstyled {
   text-decoration: none !important;
+  color: inherit !important;
 }
 
 /* Navbar Styles */

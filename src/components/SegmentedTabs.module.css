@@ -5,6 +5,13 @@
   width: 100%;
 }
 
+.segmented-tab > label {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 :root[data-theme='dark'] .segmented-tabs {
   color: var(--bs-gray-100);
   background-color: var(--bs-gray-800);
