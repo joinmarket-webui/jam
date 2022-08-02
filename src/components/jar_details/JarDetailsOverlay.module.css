@@ -1,3 +1,7 @@
+.overlayContainer {
+  color: inherit;
+}
+
 .utxoDetailModalBackdrop {
   z-index: 1300 !important;
 }
@@ -33,28 +37,7 @@
   border: none;
 }
 
-.overlayHeader {
-  border-bottom: 1px solid var(--bs-body-bg);
-  box-shadow: 0px 1px 5px var(--bs-gray-400);
-  z-index: 1200;
-}
-
-@media only screen and (min-width: 768px) {
-  .overlayHeader {
-    min-height: 75px;
-    max-height: 75px;
-  }
-}
-
-:root[data-theme='dark'] .overlayHeader {
-  box-shadow: 0px 1px 5px var(--bs-gray-900);
-}
-
-.overlayHeader button:hover {
-  color: inherit;
-}
-
-.overlayHeader .accountStepperTitle {
+.overlayContainer .accountStepperTitle {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -63,11 +46,11 @@
   color: var(--bs-gray-800);
 }
 
-:root[data-theme='dark'] .overlayHeader .accountStepperTitle {
+:root[data-theme='dark'] .overlayContainer .accountStepperTitle {
   color: var(--bs-gray-400);
 }
 
-.overlayHeader .accountStepperButton {
+.overlayContainer .accountStepperButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -80,21 +63,21 @@
   height: 1.5rem;
 }
 
-.overlayHeader .accountStepperButton:focus {
+.overlayContainer .accountStepperButton:focus {
   color: var(--bs-gray-600);
 }
 
-.overlayHeader .accountStepperButton:active {
+.overlayContainer .accountStepperButton:active {
   color: var(--bs-gray-600);
 }
 
-:root[data-theme='dark'] .overlayHeader .accountStepperButton {
+:root[data-theme='dark'] .accountStepperButton {
   background-color: var(--bs-gray-600);
   box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.5) !important;
   color: var(--bs-body-color);
 }
 
-.tabContainer {
+.overlayContainer .tabContainer {
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
@@ -102,13 +85,13 @@
 }
 
 @media only screen and (min-width: 768px) {
-  .tabContainer {
+  .overlayContainer .tabContainer {
     padding: 2rem 3rem;
     border-radius: 0.5rem;
   }
 }
 
-.tabContainer > .utxoListTitleBar {
+.overlayContainer .tabContainer > .utxoListTitleBar {
   min-height: 3.6rem;
   display: flex;
   justify-content: space-between;
@@ -120,7 +103,7 @@
 }
 
 @media only screen and (min-width: 768px) {
-  .tabContainer > .utxoListTitleBar {
+  .overlayContainer .tabContainer > .utxoListTitleBar {
     align-items: center;
     padding: 0.8rem 1rem;
     border-radius: 0.6rem;
@@ -128,22 +111,22 @@
 }
 
 @media only screen and (min-width: 768px) {
-  .tabContainer > .utxoListTitleBar {
+  .overlayContainer .tabContainer > .utxoListTitleBar {
     flex-direction: row;
   }
 }
 
-:root[data-theme='dark'] .tabContainer > .utxoListTitleBar {
+:root[data-theme='dark'] .overlayContainer .tabContainer > .utxoListTitleBar {
   background-color: var(--bs-gray-800);
 }
 
-.tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer {
+.overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
 }
 
-.tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+.overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
   width: 8rem;
   font-size: 0.6rem;
   padding: 0.3rem 0.5rem;
@@ -157,64 +140,70 @@
   border-radius: 0.35rem;
 }
 
-.tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
+.overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
   background-color: var(--bs-btn-hover-bg);
   border-color: var(--bs-btn-hover-border-color);
 }
 
 @media only screen and (min-width: 768px) {
-  .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+  .overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
     width: 10rem;
     font-size: 0.8rem;
   }
 }
 
-:root[data-theme='dark'] .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+:root[data-theme='dark'] .overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
   background-color: var(--bs-gray-600) !important;
   border-color: var(--bs-gray-600);
 }
 
-:root[data-theme='dark'] .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
+:root[data-theme='dark']
+  .overlayContainer
+  .tabContainer
+  > .utxoListTitleBar
+  .freezeUnfreezeButtonsContainer
+  > button:hover {
   background-color: var(--bs-gray-700) !important;
   border-color: var(--bs-gray-700);
 }
 
-.tabContainer > .utxoListTitleBar .refreshButton {
+.overlayContainer .tabContainer > .utxoListTitleBar .refreshButton {
   width: 2rem;
   padding: 0.1rem;
   border: none;
 }
 
-.accountItem {
+.overlayContainer .accountItem {
   color: var(--bs-body-color);
   margin-bottom: 1rem;
   box-shadow: 0px 1px 2px var(--bs-gray-400);
-  border: none;
+  border: none !important;
   border-radius: 0.5rem !important;
   background-color: var(--bs-gray-100);
 }
-.accountItem:last-child {
+.overlayContainer .accountItem:last-child {
   margin-bottom: 0;
 }
 
 :root[data-theme='dark']
+  .overlayContainer
   .accountItem
   :global
   .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info) {
   border-color: var(--bs-gray-700) !important;
 }
 
-:root[data-theme='dark'] .accountItem {
+:root[data-theme='dark'] .overlayContainer .accountItem {
   background-color: var(--bs-gray-800) !important;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.accountItem > h2 > button {
+.overlayContainer .accountItem > h2 > button {
   border-radius: 0.5rem !important;
   background-color: var(--bs-gray-100);
   box-shadow: none;
 }
 
-.accountItem :global .container-fluid {
+.overlayContainer .accountItem :global .container-fluid {
   padding-left: 0;
 }
