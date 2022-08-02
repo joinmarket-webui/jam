@@ -113,7 +113,7 @@ export default function CurrentWalletMagic() {
         </rb.Row>
       )}
 
-      {accounts && (
+      {accounts && isAccountOverlayShown && (
         <JarDetailsOverlay
           accounts={accounts}
           initialAccountIndex={selectedAccountIndex}

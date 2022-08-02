@@ -27,6 +27,7 @@ interface HeaderProps {
   previousAccount: () => void
   setTab: (tab: string) => void
   onHide: () => void
+  initialTab: string
 }
 
 interface UtxoDetailModalProps {
@@ -46,7 +47,7 @@ interface JarDetailsOverlayProps {
   onHide: () => void
 }
 
-const Header = ({ account, nextAccount, previousAccount, setTab, onHide }: HeaderProps) => {
+const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initialTab }: HeaderProps) => {
   const { t } = useTranslation()
 
   const tabs = [
@@ -67,7 +68,7 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide }: Heade
             name="jarDetailsTab"
             tabs={tabs}
             onChange={(tab, checked) => checked && setTab(tab.value)}
-            initialValue={TABS.UTXOS}
+            initialValue={initialTab}
           />
         </div>
         <div className="d-flex flex-1">
@@ -353,7 +354,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     <rb.Offcanvas
       className={styles.overlayContainer}
       show={props.isShown}
-      onHide={props.onHide}
+      onHide={() => {
+        props.onHide()
+      }}
       keyboard={false}
       placement="bottom"
     >
@@ -365,6 +368,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
             previousAccount={previousAccount}
             setTab={setSelectedTab}
             onHide={props.onHide}
+            initialTab={selectedTab}
           />
         </rb.Container>
       </rb.Offcanvas.Header>
