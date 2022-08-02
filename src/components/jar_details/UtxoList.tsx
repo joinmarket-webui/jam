@@ -27,11 +27,12 @@ const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
 const SORT_KEYS = {
   frozenOrLocked: 'FROZEN_OR_LOCKED',
   value: 'VALUE',
+  confirmations: 'CONFIRMATIONS',
 }
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 4fr 4rem 3fr 1fr;
+    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 4fr 6rem 3fr 1fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -155,6 +156,7 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
             return 0
           }),
         [SORT_KEYS.value]: (array) => array.sort((a, b) => a.value - b.value),
+        [SORT_KEYS.confirmations]: (array) => array.sort((a, b) => a.confirmations - b.confirmations),
       },
     }
   )
@@ -197,7 +199,9 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
                   {t('jar_details.utxo_list.column_title_balance')}
                 </HeaderCellSort>
                 <HeaderCell>{t('jar_details.utxo_list.column_title_address')}</HeaderCell>
-                <HeaderCell>{t('jar_details.utxo_list.column_title_confirmations')}</HeaderCell>
+                <HeaderCellSort sortKey={SORT_KEYS.confirmations}>
+                  {t('jar_details.utxo_list.column_title_confirmations')}
+                </HeaderCellSort>
                 <HeaderCell>{t('jar_details.utxo_list.column_title_label_and_status')}</HeaderCell>
                 <HeaderCell></HeaderCell>
               </HeaderRow>
