@@ -44,7 +44,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
 
   return (
     <rb.Offcanvas className={styles.cheatsheet} show={show} onHide={onHide} placement="bottom" onClick={onHide}>
-      <rb.Offcanvas.Header closeButton>
+      <rb.Offcanvas.Header>
         <rb.Stack>
           <rb.Offcanvas.Title>{t('cheatsheet.title')}</rb.Offcanvas.Title>
           <div className="small text-secondary">
@@ -64,6 +64,9 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             </Trans>
           </div>
         </rb.Stack>
+        <rb.Button variant="link" className="unstyled p-0 mb-auto" onClick={onHide}>
+          <Sprite symbol="cancel" width="32" height="32" />
+        </rb.Button>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
         <rb.Stack className="mb-4" gap={4}>

@@ -316,7 +316,7 @@ export function Orderbook() {
   }, [t])
 
   return (
-    <rb.Container className="py-4 py-sm-5">
+    <>
       {!isInitialized && isLoading ? (
         Array(5)
           .fill('')
@@ -339,7 +339,7 @@ export function Orderbook() {
           )}
         </>
       )}
-    </rb.Container>
+    </>
   )
 }
 
@@ -348,11 +348,24 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
 
   return (
     <rb.Offcanvas className="offcanvas-fullscreen" show={show} onHide={onHide} placement="bottom">
-      <rb.Offcanvas.Header closeButton>
-        <rb.Offcanvas.Title>{t('orderbook.title')}</rb.Offcanvas.Title>
+      <rb.Offcanvas.Header>
+        <rb.Container>
+          <div className="w-100 d-flex">
+            <div className="d-flex align-items-center flex-1">
+              <rb.Offcanvas.Title>{t('orderbook.title')}</rb.Offcanvas.Title>
+            </div>
+            <div>
+              <rb.Button variant="link" className="unstyled pe-0 ms-auto me-auto me-md-0" onClick={onHide}>
+                <Sprite symbol="cancel" width="32" height="32" />
+              </rb.Button>
+            </div>
+          </div>
+        </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <Orderbook />
+        <rb.Container className="py-4 py-sm-5">
+          <Orderbook />
+        </rb.Container>
       </rb.Offcanvas.Body>
     </rb.Offcanvas>
   )
