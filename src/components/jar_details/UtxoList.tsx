@@ -4,7 +4,7 @@ import classnames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useRowSelect, HeaderCellSelect, CellSelect, SelectTypes } from '@table-library/react-table-library/select'
-import { useSort, HeaderCellSort } from '@table-library/react-table-library/sort'
+import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
 import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import { useSettings } from '../../context/SettingsContext'
@@ -142,6 +142,7 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
         iconUp: <Sprite symbol="caret-up" width="20" height="20" />,
         iconDown: <Sprite symbol="caret-down" width="20" height="20" />,
       },
+      sortToggleType: SortToggleType.AlternateWithReset,
       sortFns: {
         [SORT_KEYS.frozenOrLocked]: (array) =>
           array.sort((a, b) => {
