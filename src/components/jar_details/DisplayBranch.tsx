@@ -2,13 +2,13 @@ import React from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 // @ts-ignore
-import Balance from './Balance'
+import Balance from '../Balance'
 // @ts-ignore
-import { useSettings } from '../context/SettingsContext'
-import { Branch, BranchEntry } from '../context/WalletContext'
+import { useSettings } from '../../context/SettingsContext'
+import { Branch, BranchEntry } from '../../context/WalletContext'
 import styles from './DisplayBranch.module.css'
-import { CopyButton } from './CopyButton'
-import Sprite from './Sprite'
+import { CopyButton } from '../CopyButton'
+import Sprite from '../Sprite'
 
 const toHdPathIndex = (hdPath: string) => {
   const indexOfLastSeparator = hdPath.lastIndexOf('/')

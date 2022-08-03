@@ -8,8 +8,7 @@ import Jam from './Jam'
 import Send from './Send'
 import Earn from './Earn'
 import Receive from './Receive'
-import CurrentWalletMagic from './CurrentWalletMagic'
-import CurrentWalletAdvanced from './CurrentWalletAdvanced'
+import MainWalletView from './MainWalletView'
 import Settings from './Settings'
 import Navbar from './Navbar'
 import Layout from './Layout'
@@ -135,16 +134,9 @@ export default function App() {
                   </>
                 )}
               </Route>
-              {currentWallet && !settings.useAdvancedWalletMode && (
-                <Route element={<Layout />}>
-                  <Route path={routes.wallet} element={<CurrentWalletMagic />} />
-                </Route>
-              )}
-              {currentWallet && settings.useAdvancedWalletMode && (
-                <Route element={<Layout variant="wide" />}>
-                  <Route path={routes.wallet} element={<CurrentWalletAdvanced />} />
-                </Route>
-              )}
+              <Route element={<Layout />}>
+                <Route path={routes.wallet} element={<MainWalletView />} />
+              </Route>
               <Route path="*" element={<Navigate to={routes.home} replace={true} />} />
             </>
           )}

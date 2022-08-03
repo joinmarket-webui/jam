@@ -187,15 +187,6 @@ export default function Settings({ stopWallet }) {
             {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
           </rb.Button>
 
-          <rb.Button
-            variant="outline-dark"
-            className={styles['settings-btn']}
-            onClick={(e) => settingsDispatch({ useAdvancedWalletMode: !settings.useAdvancedWalletMode })}
-          >
-            <Sprite symbol={settings.useAdvancedWalletMode ? 'wand' : 'console'} width="24" height="24" />
-            {settings.useAdvancedWalletMode ? t('settings.use_normal_mode') : t('settings.use_dev_mode')}
-          </rb.Button>
-
           <rb.Dropdown>
             <rb.Dropdown.Toggle variant="outline-dark" className={styles['settings-btn']}>
               <Sprite symbol="globe" width="24" height="24" />
