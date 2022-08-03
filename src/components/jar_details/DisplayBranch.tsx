@@ -50,8 +50,8 @@ export function DisplayBranchHeader({ branch }: DisplayBranchProps) {
       <rb.Row className="w-100 align-items-center">
         <rb.Col>
           <div className={styles['branch-title']}>
-            {type === 'external addresses' && <>{t('current_wallet_advanced.account_heading_external_addresses')}</>}
-            {type === 'internal addresses' && <>{t('current_wallet_advanced.account_heading_internal_addresses')}</>}
+            {type === 'external addresses' && <>{t('current_wallet.account_heading_external_addresses')}</>}
+            {type === 'internal addresses' && <>{t('current_wallet.account_heading_internal_addresses')}</>}
             {!['internal addresses', 'external addresses'].includes(type) && <>{type}</>}
           </div>
           <code className="text-secondary text-break">{derivation}</code>
