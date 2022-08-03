@@ -164,7 +164,11 @@
 }
 
 .overlayContainer .tabContainer > .utxoListTitleBar .refreshButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 2rem;
+  height: 2rem;
   padding: 0.1rem;
   border: none;
 }

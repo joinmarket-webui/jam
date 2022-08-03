@@ -221,12 +221,14 @@ const OrderbookTable = ({ tableData }: OrderbookTableProps) => {
 
 interface OrderbookProps {
   orders: ObwatchApi.Order[]
-  refresh: () => void
+  refresh: (abortCtrl: AbortController) => Promise<void>
 }
 
 export function Orderbook({ orders, refresh }: OrderbookProps) {
   const { t } = useTranslation()
+  const settings = useSettings()
   const [search, setSearch] = useState('')
+  const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
 
   const tableData: TableTypes.Data = useMemo(() => {
@@ -257,6 +259,27 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
     <div className={styles.orderbookContainer}>
       <div className={styles.titleBar}>
         <div className="d-flex justify-content-center align-items-center gap-2">
+          <rb.Button
+            className={styles.refreshButton}
+            variant={settings.theme}
+            onClick={() => {
+              if (isLoadingRefresh) return
+
+              setIsLoadingRefresh(true)
+
+              const abortCtrl = new AbortController()
+              refresh(abortCtrl).finally(() => {
+                // as refreshing is fast most of the time, add a short delay to avoid flickering
+                setTimeout(() => setIsLoadingRefresh(false), 250)
+              })
+            }}
+          >
+            {isLoadingRefresh ? (
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+            ) : (
+              <Sprite symbol="refresh" width="24" height="24" />
+            )}
+          </rb.Button>
           <div className="small">
             {t('orderbook.text_orderbook_summary', {
               counterpartyCount,
@@ -301,38 +324,41 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [orders, setOrders] = useState<ObwatchApi.Order[] | null>(null)
 
-  const refresh = useCallback(() => {
-    setIsLoading(true)
+  const refresh = useCallback(
+    (abortCtrl: AbortController) => {
+      return ObwatchApi.fetchOrderbook({ signal: abortCtrl.signal })
+        .then((orders) => {
+          if (abortCtrl.signal.aborted) return
 
-    const abortCtrl = new AbortController()
-
-    ObwatchApi.fetchOrderbook({ signal: abortCtrl.signal })
-      .then((orders) => {
-        if (abortCtrl.signal.aborted) return
-        setOrders(orders)
-      })
-      .catch((e) => {
-        if (abortCtrl.signal.aborted) return
-        const message = t('orderbook.error_loading_orderbook_failed', {
-          reason: e.message || 'Unknown reason',
+          setOrders(orders)
+          setAlert(null)
         })
-        setAlert({ variant: 'danger', message })
-      })
-      .finally(() => {
-        if (abortCtrl.signal.aborted) return
-        setIsLoading(false)
-        setIsInitialized(true)
-      })
-
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [t])
+        .catch((e) => {
+          if (abortCtrl.signal.aborted) return
+          const message = t('orderbook.error_loading_orderbook_failed', {
+            reason: e.message || 'Unknown reason',
+          })
+          setAlert({ variant: 'danger', message })
+        })
+    },
+    [t]
+  )
 
   useEffect(() => {
     if (!show) return
 
-    refresh()
+    const abortCtrl = new AbortController()
+
+    setIsLoading(true)
+    refresh(abortCtrl).finally(() => {
+      if (abortCtrl.signal.aborted) return
+      setIsLoading(false)
+      setIsInitialized(true)
+    })
+
+    return () => {
+      abortCtrl.abort()
+    }
   }, [show, refresh])
 
   return (

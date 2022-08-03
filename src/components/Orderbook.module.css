@@ -44,3 +44,13 @@
 :root[data-theme='dark'] .overlayContainer .orderbookContainer > .titleBar {
   background-color: var(--bs-gray-800);
 }
+
+.overlayContainer .orderbookContainer > .titleBar .refreshButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0.1rem;
+  border: none;
+}
