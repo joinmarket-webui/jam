@@ -16,7 +16,6 @@ describe('<Settings />', () => {
     expect(screen.queryByText(/settings.(show|hide)_balance/)).toBeVisible()
     expect(screen.queryByText(/settings.use_(sats|bitcoin)/)).toBeVisible()
     expect(screen.queryByText(/settings.use_(dark|light)_theme/)).toBeVisible()
-    expect(screen.queryByText(/settings.use_(normal|dev)_mode/)).toBeVisible()
     expect(screen.queryByText(/English/)).toBeVisible()
 
     expect(screen.getByText('settings.section_title_wallet')).toBeVisible()
