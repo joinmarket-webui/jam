@@ -143,7 +143,7 @@ export function EarnReport() {
   }, [t])
 
   return (
-    <div className="earn-report">
+    <>
       {!isInitialized && isLoading ? (
         Array(5)
           .fill('')
@@ -159,14 +159,16 @@ export function EarnReport() {
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
           {yieldgenReportLines && (
             <rb.Row>
-              <rb.Col className="mb-3">
-                <YieldgenReportTable lines={yieldgenReportLines} />
+              <rb.Col>
+                <div className={styles.earnReportContainer}>
+                  <YieldgenReportTable lines={yieldgenReportLines} />
+                </div>
               </rb.Col>
             </rb.Row>
           )}
         </>
       )}
-    </div>
+    </>
   )
 }
 
