@@ -3,12 +3,12 @@
   margin: 1px 0;
 }
 
-.orderbookContainer {
+.overlayContainer .orderbookContainer {
   background-color: var(--bs-body-bg);
 }
 
 @media only screen and (min-width: 768px) {
-  .orderbookContainer {
+  .overlayContainer .orderbookContainer {
     border-radius: 0.5rem;
     padding: 2rem;
   }

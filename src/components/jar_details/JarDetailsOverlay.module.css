@@ -1,7 +1,3 @@
-.overlayContainer {
-  color: inherit;
-}
-
 .utxoDetailModalBackdrop {
   z-index: 1300 !important;
 }
