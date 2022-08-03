@@ -11,7 +11,7 @@ import Balance from '../Balance'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
 import { UtxoList } from './UtxoList'
-import { DisplayBranchHeader, DisplayBranchBody } from '../DisplayBranch'
+import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
 import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {

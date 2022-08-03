@@ -737,9 +737,7 @@ export default function Send() {
 
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
-            <rb.Form.Label>
-              {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
-            </rb.Form.Label>
+            <rb.Form.Label>{t('send.label_account')}</rb.Form.Label>
             {isLoading ? (
               <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder xs={12} className={styles['input-loader']} />
@@ -758,9 +756,7 @@ export default function Send() {
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
                     .map(({ accountIndex, totalBalance, calculatedTotalBalanceInSats }) => (
                       <option key={accountIndex} value={accountIndex}>
-                        {settings.useAdvancedWalletMode
-                          ? t('send.account_selector_option_dev_mode', { number: accountIndex })
-                          : t('send.account_selector_option', { number: accountIndex })}{' '}
+                        {t('send.account_selector_option', { number: accountIndex })}{' '}
                         {settings.showBalance &&
                           (settings.unit === 'sats'
                             ? `(${formatSats(calculatedTotalBalanceInSats)} sats)`
