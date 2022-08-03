@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
 import * as TableTypes from '@table-library/react-table-library/types/table'
@@ -99,37 +99,12 @@ const renderOrderFee = (val: string, settings: any) => {
 }
 
 interface OrderbookTableProps {
-  orders: ObwatchApi.Order[]
+  tableData: TableTypes.Data
 }
 
-const OrderbookTable = ({ orders }: OrderbookTableProps) => {
+const OrderbookTable = ({ tableData }: OrderbookTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
-  const [search, setSearch] = useState('')
-
-  const tableData: TableTypes.Data = useMemo(() => {
-    const searchVal = search.replace('.', '').toLowerCase()
-    const nodes = orders
-      .filter((order) => {
-        if (search === '') return true
-        return (
-          order.type.toLowerCase().includes(searchVal) ||
-          order.counterparty.toLowerCase().includes(searchVal) ||
-          order.fee.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.orderId.toLowerCase().includes(searchVal)
-        )
-      })
-      .map((order) => ({
-        ...order,
-        id: `${order.counterparty}_${order.orderId}`,
-      }))
-
-    return { nodes }
-  }, [orders, search])
 
   const tableTheme = useTheme(TABLE_THEME)
 
@@ -186,15 +161,103 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
       },
     }
   )
-  const counterpartyCount = new Set(orders.map((it) => it.counterparty)).size
 
   return (
-    <>
-      {orders.length === 0 ? (
-        <rb.Alert variant="info">{t('orderbook.alert_empty_orderbook')}</rb.Alert>
-      ) : (
-        <div>
-          <div className="mb-2 small">
+    <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
+      {(tableList) => (
+        <>
+          <Header>
+            <HeaderRow>
+              <HeaderCellSort sortKey={SORT_KEYS.counterparty}>
+                {t('orderbook.table.heading_counterparty')}
+              </HeaderCellSort>
+              <HeaderCell>{t('orderbook.table.heading_order_id')}</HeaderCell>
+              <HeaderCellSort sortKey={SORT_KEYS.type}>{t('orderbook.table.heading_type')}</HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.fee}>{t('orderbook.table.heading_fee')}</HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.minimumSize}>
+                {t('orderbook.table.heading_minimum_size')}
+              </HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.maximumSize}>
+                {t('orderbook.table.heading_maximum_size')}
+              </HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.minerFeeContribution}>
+                {t('orderbook.table.heading_miner_fee_contribution')}
+              </HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.bondValue}>{t('orderbook.table.heading_bond_value')}</HeaderCellSort>
+            </HeaderRow>
+          </Header>
+          <Body>
+            {tableList.map((item) => {
+              const order = toOrder(item)
+              return (
+                <Row key={item.id} item={item}>
+                  <Cell>{order.counterparty}</Cell>
+                  <Cell>{order.orderId}</Cell>
+                  <Cell>{renderOrderType(order.type, t)}</Cell>
+                  <Cell>{renderOrderFee(order.fee, settings)}</Cell>
+                  <Cell>
+                    <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
+                  </Cell>
+                  <Cell>
+                    <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
+                  </Cell>
+                  <Cell>
+                    <Balance
+                      valueString={order.minerFeeContribution}
+                      convertToUnit={settings.unit}
+                      showBalance={true}
+                    />
+                  </Cell>
+                  <Cell>{order.bondValue}</Cell>
+                </Row>
+              )
+            })}
+          </Body>
+        </>
+      )}
+    </Table>
+  )
+}
+
+interface OrderbookProps {
+  orders: ObwatchApi.Order[]
+  refresh: () => void
+}
+
+export function Orderbook({ orders, refresh }: OrderbookProps) {
+  const { t } = useTranslation()
+  const [search, setSearch] = useState('')
+  const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
+
+  const tableData: TableTypes.Data = useMemo(() => {
+    const searchVal = search.replace('.', '').toLowerCase()
+    const nodes = orders
+      .filter((order) => {
+        if (search === '') return true
+        return (
+          order.type.toLowerCase().includes(searchVal) ||
+          order.counterparty.toLowerCase().includes(searchVal) ||
+          order.fee.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
+          order.orderId.toLowerCase().includes(searchVal)
+        )
+      })
+      .map((order) => ({
+        ...order,
+        id: `${order.counterparty}_${order.orderId}`,
+      }))
+
+    return { nodes }
+  }, [orders, search])
+
+  return (
+    <div className={styles.orderbookContainer}>
+      <div className={styles.titleBar}>
+        <div className="d-flex justify-content-center align-items-center gap-2">
+          <div className="small">
             {t('orderbook.text_orderbook_summary', {
               counterpartyCount,
               orderCount: orders.length,
@@ -207,87 +270,38 @@ const OrderbookTable = ({ orders }: OrderbookTableProps) => {
               )
             </span>
           </div>
-          <div className="mb-2 mb-md-4 d-grid justify-content-end">
-            <rb.Form.Group className="d-flex justify-content-center align-items-center" controlId="search">
-              <rb.Form.Label className="m-0 pe-2 d-none">{t('orderbook.label_search')}</rb.Form.Label>
-              <rb.Form.Control
-                name="search"
-                placeholder={t('orderbook.placeholder_search')}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </rb.Form.Group>
-          </div>
-
-          <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
-            {(tableList) => (
-              <>
-                <Header>
-                  <HeaderRow>
-                    <HeaderCellSort sortKey={SORT_KEYS.counterparty}>
-                      {t('orderbook.table.heading_counterparty')}
-                    </HeaderCellSort>
-                    <HeaderCell>{t('orderbook.table.heading_order_id')}</HeaderCell>
-                    <HeaderCellSort sortKey={SORT_KEYS.type}>{t('orderbook.table.heading_type')}</HeaderCellSort>
-                    <HeaderCellSort sortKey={SORT_KEYS.fee}>{t('orderbook.table.heading_fee')}</HeaderCellSort>
-                    <HeaderCellSort sortKey={SORT_KEYS.minimumSize}>
-                      {t('orderbook.table.heading_minimum_size')}
-                    </HeaderCellSort>
-                    <HeaderCellSort sortKey={SORT_KEYS.maximumSize}>
-                      {t('orderbook.table.heading_maximum_size')}
-                    </HeaderCellSort>
-                    <HeaderCellSort sortKey={SORT_KEYS.minerFeeContribution}>
-                      {t('orderbook.table.heading_miner_fee_contribution')}
-                    </HeaderCellSort>
-                    <HeaderCellSort sortKey={SORT_KEYS.bondValue}>
-                      {t('orderbook.table.heading_bond_value')}
-                    </HeaderCellSort>
-                  </HeaderRow>
-                </Header>
-                <Body>
-                  {tableList.map((item) => {
-                    const order = toOrder(item)
-                    return (
-                      <Row key={item.id} item={item}>
-                        <Cell>{order.counterparty}</Cell>
-                        <Cell>{order.orderId}</Cell>
-                        <Cell>{renderOrderType(order.type, t)}</Cell>
-                        <Cell>{renderOrderFee(order.fee, settings)}</Cell>
-                        <Cell>
-                          <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
-                        </Cell>
-                        <Cell>
-                          <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
-                        </Cell>
-                        <Cell>
-                          <Balance
-                            valueString={order.minerFeeContribution}
-                            convertToUnit={settings.unit}
-                            showBalance={true}
-                          />
-                        </Cell>
-                        <Cell>{order.bondValue}</Cell>
-                      </Row>
-                    )
-                  })}
-                </Body>
-              </>
-            )}
-          </Table>
         </div>
-      )}
-    </>
+        <div>
+          <rb.Form.Group controlId="search">
+            <rb.Form.Label className="m-0 pe-2 d-none">{t('orderbook.label_search')}</rb.Form.Label>
+            <rb.Form.Control
+              name="search"
+              placeholder={t('orderbook.placeholder_search')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </rb.Form.Group>
+        </div>
+      </div>
+      <div className="px-md-3 pb-2">
+        {orders.length === 0 ? (
+          <rb.Alert variant="info">{t('orderbook.alert_empty_orderbook')}</rb.Alert>
+        ) : (
+          <OrderbookTable tableData={tableData} />
+        )}
+      </div>
+    </div>
   )
 }
 
-export function Orderbook() {
+export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
   const { t } = useTranslation()
   const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [orders, setOrders] = useState<ObwatchApi.Order[] | null>(null)
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     setIsLoading(true)
 
     const abortCtrl = new AbortController()
@@ -315,38 +329,11 @@ export function Orderbook() {
     }
   }, [t])
 
-  return (
-    <>
-      {!isInitialized && isLoading ? (
-        Array(5)
-          .fill('')
-          .map((_, index) => {
-            return (
-              <rb.Placeholder key={index} as="div" animation="wave">
-                <rb.Placeholder xs={12} className={styles['orderbook-line-placeholder']} />
-              </rb.Placeholder>
-            )
-          })
-      ) : (
-        <>
-          {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-          {orders && (
-            <rb.Row>
-              <rb.Col>
-                <div className={styles.orderbookContainer}>
-                  <OrderbookTable orders={orders} />
-                </div>
-              </rb.Col>
-            </rb.Row>
-          )}
-        </>
-      )}
-    </>
-  )
-}
+  useEffect(() => {
+    if (!show) return
 
-export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
-  const { t } = useTranslation()
+    refresh()
+  }, [show, refresh])
 
   return (
     <rb.Offcanvas
@@ -371,7 +358,28 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
         <rb.Container fluid="md" className="py-4 py-sm-5">
-          <Orderbook />
+          {!isInitialized && isLoading ? (
+            Array(5)
+              .fill('')
+              .map((_, index) => {
+                return (
+                  <rb.Placeholder key={index} as="div" animation="wave">
+                    <rb.Placeholder xs={12} className={styles['orderbook-line-placeholder']} />
+                  </rb.Placeholder>
+                )
+              })
+          ) : (
+            <>
+              {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+              {orders && (
+                <rb.Row>
+                  <rb.Col>
+                    <Orderbook orders={orders} refresh={refresh} />
+                  </rb.Col>
+                </rb.Row>
+              )}
+            </>
+          )}
         </rb.Container>
       </rb.Offcanvas.Body>
     </rb.Offcanvas>

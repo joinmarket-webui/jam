@@ -82,7 +82,7 @@
 
 @media only screen and (min-width: 768px) {
   .overlayContainer .tabContainer {
-    padding: 2rem 3rem;
+    padding: 2rem;
     border-radius: 0.5rem;
   }
 }
