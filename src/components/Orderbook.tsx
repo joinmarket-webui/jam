@@ -285,13 +285,15 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
               counterpartyCount,
               orderCount: orders.length,
             })}
-            <span className={`${search === '' ? 'invisible' : 'visible'}`}>
-              {` `}(
-              {t('orderbook.text_orderbook_filter_count', {
-                filterCount: tableData.nodes.length,
-              })}
-              )
-            </span>
+            {search && (
+              <>
+                <br />(
+                {t('orderbook.text_orderbook_filter_count', {
+                  filterCount: tableData.nodes.length,
+                })}
+                )
+              </>
+            )}
           </div>
         </div>
         <div>
