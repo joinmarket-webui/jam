@@ -170,7 +170,7 @@ export default function App() {
                     onClick={() => setShowCheatsheet(true)}
                   >
                     <div className="d-flex justify-content-center align-items-center">
-                      <Sprite symbol="file" width="24" height="24" />
+                      <Sprite symbol="file-outline" width="24" height="24" />
                       <div className="ps-0">{t('footer.cheatsheet')}</div>
                     </div>
                   </rb.Button>
