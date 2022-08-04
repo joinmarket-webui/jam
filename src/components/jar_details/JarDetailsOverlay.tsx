@@ -352,7 +352,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
   return (
     <rb.Offcanvas
-      className={styles.overlayContainer}
+      className={`offcanvas-fullscreen ${styles.overlayContainer}`}
       show={props.isShown}
       onHide={() => {
         props.onHide()
@@ -360,7 +360,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       keyboard={false}
       placement="bottom"
     >
-      <rb.Offcanvas.Header className={styles.overlayHeader}>
+      <rb.Offcanvas.Header>
         <rb.Container>
           <Header
             account={account}
@@ -372,8 +372,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
           />
         </rb.Container>
       </rb.Offcanvas.Header>
-      <rb.Offcanvas.Body className={styles.overlayBody}>
-        <rb.Container className="py-4 py-sm-5">
+      <rb.Offcanvas.Body>
+        <rb.Container fluid="md" className="py-4 py-sm-5">
           {alert && (
             <rb.Row>
               <rb.Col>
