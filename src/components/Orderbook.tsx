@@ -229,7 +229,6 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
   const settings = useSettings()
   const [search, setSearch] = useState('')
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
-  const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
 
   const tableData: TableTypes.Data = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
@@ -255,6 +254,12 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
 
     return { nodes }
   }, [orders, search])
+
+  const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
+  const counterpartyCountFiltered = useMemo(
+    () => new Set(tableData.nodes.map((it) => it.counterparty)).size,
+    [tableData]
+  )
 
   return (
     <div className={styles.orderbookContainer}>
@@ -282,17 +287,19 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
             )}
           </rb.Button>
           <div className="small">
-            {t('orderbook.text_orderbook_summary', {
-              counterpartyCount,
-              orderCount: orders.length,
-            })}
-            {search && (
+            {search === '' ? (
               <>
-                <br />(
-                {t('orderbook.text_orderbook_filter_count', {
-                  filterCount: tableData.nodes.length,
+                {t('orderbook.text_orderbook_summary', {
+                  counterpartyCount,
+                  orderCount: orders.length,
                 })}
-                )
+              </>
+            ) : (
+              <>
+                {t('orderbook.text_orderbook_summary_filtered', {
+                  counterpartyCount: counterpartyCountFiltered,
+                  orderCount: tableData.nodes.length,
+                })}
               </>
             )}
           </div>
