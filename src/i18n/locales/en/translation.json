@@ -193,7 +193,8 @@
       "label_amount": "Amount",
       "label_recipient": "Recipient",
       "label_num_collaborators": "Collaborators",
-      "text_privacy_warning": "Payment without privacy improvement!"
+      "text_collaborative_tx_enabled": "Payment with privacy improvement",
+      "text_collaborative_tx_disabled": "Payment without privacy improvement"
     },
     "coinjoin_precondition": {
       "hint_missing_utxos": "To execute a collaborative transaction you need at least one UTXO with <2>{{ minConfirmations }}</2> confirmations in the source jar. Select another jar to send from or fund this jar and wait for <6>{{ minConfirmations }}</6> blocks.",

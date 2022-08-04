@@ -940,35 +940,38 @@ export default function Send() {
           }}
         >
           <rb.Container class="mt-2">
+            <rb.Row className="mt-2 mb-3">
+              <rb.Col xs={12} className="text-center">
+                {isCoinjoin ? (
+                  <strong className="text-success">{t('send.confirm_modal.text_collaborative_tx_enabled')}</strong>
+                ) : (
+                  <strong className="text-danger">{t('send.confirm_modal.text_collaborative_tx_disabled')}</strong>
+                )}
+              </rb.Col>
+            </rb.Row>
             <rb.Row>
-              <rb.Col xs={4} className="text-end">
+              <rb.Col xs={3} className="text-end">
                 <strong>{t('send.confirm_modal.label_recipient')}</strong>
               </rb.Col>
-              <rb.Col xs={8} className="text-start text-break slashed-zeroes">
+              <rb.Col xs={9} className="text-start text-break slashed-zeroes">
                 {destination}
               </rb.Col>
             </rb.Row>
             <rb.Row>
-              <rb.Col xs={4} className="text-end">
+              <rb.Col xs={3} className="text-end">
                 <strong>{t('send.confirm_modal.label_amount')}</strong>
               </rb.Col>
-              <rb.Col xs={8} className="text-start">
+              <rb.Col xs={9} className="text-start">
                 <Balance valueString={amountFieldValue().toString()} convertToUnit={settings.unit} showBalance={true} />
               </rb.Col>
             </rb.Row>
-            {isCoinjoin ? (
+            {isCoinjoin && (
               <rb.Row>
-                <rb.Col xs={4} className="text-end">
+                <rb.Col xs={3} className="text-end">
                   <strong>{t('send.confirm_modal.label_num_collaborators')}</strong>
                 </rb.Col>
-                <rb.Col xs={8} className="text-start">
+                <rb.Col xs={9} className="text-start">
                   {numCollaborators}
-                </rb.Col>
-              </rb.Row>
-            ) : (
-              <rb.Row className="mt-4 mb-2">
-                <rb.Col xs={12} className="text-center text-danger">
-                  <strong>{t('send.confirm_modal.text_privacy_warning')}</strong>
                 </rb.Col>
               </rb.Row>
             )}
