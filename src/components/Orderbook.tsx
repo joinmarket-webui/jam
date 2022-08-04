@@ -82,7 +82,7 @@ const withTooltip = (node: React.ReactElement, tooltip: string) => {
 }
 
 // `TableNode` is known to have same properties as `ObwatchApi.Order`, hence prefer casting over object destructuring
-const toOrder = (tableNode: TableTypes.TableNode): ObwatchApi.Order => tableNode as unknown as ObwatchApi.Order
+const toOrder = (tableNode: TableTypes.TableNode) => tableNode as unknown as ObwatchApi.Order
 
 const renderOrderType = (val: string, t: TFunction<'translation', undefined>) => {
   if (val === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
@@ -377,7 +377,7 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
               <rb.Offcanvas.Title>{t('orderbook.title')}</rb.Offcanvas.Title>
             </div>
             <div>
-              <rb.Button variant="link" className="unstyled pe-0 ms-auto me-auto me-md-0" onClick={onHide}>
+              <rb.Button variant="link" className="unstyled pe-0" onClick={onHide}>
                 <Sprite symbol="cancel" width="32" height="32" />
               </rb.Button>
             </div>

@@ -189,7 +189,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
               <rb.Offcanvas.Title>{t('earn.report.title')}</rb.Offcanvas.Title>
             </div>
             <div>
-              <rb.Button variant="link" className="unstyled pe-0 ms-auto me-auto me-md-0" onClick={onHide}>
+              <rb.Button variant="link" className="unstyled pe-0" onClick={onHide}>
                 <Sprite symbol="cancel" width="32" height="32" />
               </rb.Button>
             </div>
