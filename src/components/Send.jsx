@@ -951,6 +951,16 @@ export default function Send() {
             </rb.Row>
             <rb.Row>
               <rb.Col xs={3} className="text-end">
+                <strong>{t('send.confirm_modal.label_source_jar')}</strong>
+              </rb.Col>
+              <rb.Col xs={9} className="text-start">
+                {t('send.confirm_modal.text_source_jar', {
+                  jarId: `#${account}`,
+                })}
+              </rb.Col>
+            </rb.Row>
+            <rb.Row>
+              <rb.Col xs={3} className="text-end">
                 <strong>{t('send.confirm_modal.label_recipient')}</strong>
               </rb.Col>
               <rb.Col xs={9} className="text-start text-break slashed-zeroes">
@@ -968,7 +978,7 @@ export default function Send() {
                       </rb.Popover>
                     }
                   >
-                    <div class="d-inline-flex align-items-center">
+                    <div className="d-inline-flex align-items-center">
                       <strong>{t('send.confirm_modal.label_amount')}</strong>
                       <span className="ms-1">
                         <Sprite className={styles.infoIcon} symbol="info" width="18" height="18" />
@@ -982,13 +992,12 @@ export default function Send() {
               <rb.Col xs={9} className="text-start">
                 {isSweep ? (
                   <Trans i18nKey="send.confirm_modal.text_sweep_balance">
-                    Sweep jar (approx.{' '}
+                    Sweep
                     <Balance
                       valueString={amountFieldValue().toString()}
                       convertToUnit={settings.unit}
                       showBalance={true}
                     />
-                    )
                   </Trans>
                 ) : (
                   <Balance

@@ -194,6 +194,8 @@
       "text_sweep_balance": "Sweep whole jar (approx. <1></1>)",
       "text_sweep_info_popover": "The exact transaction amount can only be calculated by JoinMarket at the point when the transaction is made.",
       "label_recipient": "Recipient",
+      "label_source_jar": "Send from",
+      "text_source_jar": "Jar {{ jarId }}",
       "label_num_collaborators": "Collaborators",
       "text_collaborative_tx_enabled": "Payment with privacy improvement",
       "text_collaborative_tx_disabled": "Payment without privacy improvement"
