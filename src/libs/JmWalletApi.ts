@@ -259,6 +259,28 @@ const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext,
   })
 }
 
+/**
+ * Fetch the contents of JM's yigen-statement.csv file.
+ *
+ * @param signal AbortSignal
+ * @returns object with prop `yigen_data` representing contents of yigen-statement.csv as array of strings
+ *
+ * e.g.
+ * ```json
+ * {
+ *  "yigen_data": [
+ *    "timestamp,cj amount/satoshi,my input count,my input value/satoshi,cjfee/satoshi,earned/satoshi,confirm time/min,notes\n",
+ *    "2009/01/03 02:54:42,,,,,,,Connected\n",
+ *    "2009/01/09 02:55:13,14999992400,4,20000000000,250,250,60.17,\n",
+ *    "2009/01/09 03:02:48,11093696866,3,15000007850,250,250,12.17,\n",
+ *    "2009/02/01 17:31:03,3906287184,1,5000000000,250,250,30.08,\n",
+ *    "2009/02/04 16:22:18,9687053174,2,10000000000,250,250,0.0,\n",
+ *    "2009/02/12 22:01:57,1406636022,1,2500000000,250,250,4.08,\n",
+ *    "2009/03/07 09:38:12,9687049154,2,10000000000,250,250,0.0,\n"
+ *  ]
+ * }
+ * ```
+ */
 const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/yieldgen/report`, {
     signal,

@@ -249,6 +249,12 @@
     "button_show_orderbook": "Show orderbook",
     "report": {
       "title": "Earnings Report",
+      "text_report_summary_one": "{{ count }} entry",
+      "text_report_summary_other": "{{ count }} entries",
+      "text_report_summary_filtered_one": "found {{ count }} entry",
+      "text_report_summary_filtered_other": "found {{ count }} entries",
+      "label_search": "Search",
+      "placeholder_search": "Search",
       "heading_timestamp": "Timestamp",
       "heading_cj_amount": "Transaction Amount",
       "heading_input_count": "No. of UTXOs input by me",

@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
+import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
+import * as TableTypes from '@table-library/react-table-library/types/table'
+import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import * as Api from '../libs/JmWalletApi'
@@ -8,172 +12,385 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import styles from './EarnReport.module.css'
 
-interface YielgenReportTableProps {
-  lines: string[]
-  maxAmountOfRows?: number
+const SORT_KEYS = {
+  timestamp: 'TIMESTAMP',
+  cjTotalAmountInSats: 'CJ_TOTAL_AMOUNT_IN_SATS',
+  inputCount: 'INPUT_COUNT',
+  inputAmountInSats: 'INPUT_AMOUNT_IN_SATS',
+  feeInSats: 'FEE_IN_SATS',
+  earnedAmountInSats: 'EARNED_AMOUNT_IN_SATS',
+  confirmDurationInMinutes: 'CONF_DURATION_IN_MINUTES',
 }
 
-const YieldgenReportTable = ({ lines, maxAmountOfRows = 15 }: YielgenReportTableProps) => {
+const TABLE_THEME = {
+  Table: `
+    --data-table-library_grid-template-columns: 1fr 1fr 9rem 1fr 1fr 1fr 1fr 1fr;
+    font-size: 0.9rem;
+  `,
+  BaseCell: `
+    &:nth-of-type(2) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(3) button {
+      display: flex;
+      justify-content: center;
+    }
+    &:nth-of-type(4) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(5) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(6) button {
+      display: flex;
+      justify-content: end;
+    }
+    &:nth-of-type(7) button {
+      display: flex;
+      justify-content: center;
+    }
+  `,
+  Cell: `
+    &:nth-of-type(2) {
+      text-align: right;
+    }
+    &:nth-of-type(3) {
+      text-align: center;
+    }
+    &:nth-of-type(4) {
+      text-align: right;
+    }
+    &:nth-of-type(5) {
+      text-align: right;
+    }
+    &:nth-of-type(6) {
+      text-align: right;
+    }
+    &:nth-of-type(7) {
+      text-align: center;
+    }
+  `,
+}
+
+type Minutes = number
+
+interface EarnReportEntry {
+  timestamp: Date
+  cjTotalAmount: Api.AmountSats | null
+  inputCount: number | null
+  inputAmount: Api.AmountSats | null
+  fee: Api.AmountSats | null
+  earnedAmount: Api.AmountSats | null
+  confirmationDuration: Minutes | null
+  notes: string | null
+}
+
+// in the form of yyyy/MM/dd HH:mm:ss - e.g 2009/01/03 02:54:42
+type RawYielgenTimestamp = string
+
+const parseYieldgenTimestamp = (val: RawYielgenTimestamp) => {
+  // adding the timezone manually will display the date in the users timezone correctly
+  return new Date(Date.parse(`${val} GMT`))
+}
+
+const yieldgenReportLineToEarnReportEntry = (line: string): EarnReportEntry | null => {
+  if (!line.includes(',')) return null
+
+  const values = line.split(',')
+
+  // be defensive here - we cannot handle lines with unexpected values
+  if (values.length < 8) return null
+
+  return {
+    timestamp: parseYieldgenTimestamp(values[0]),
+    cjTotalAmount: values[1] !== '' ? parseInt(values[1], 10) : null,
+    inputCount: values[2] !== '' ? parseInt(values[2], 10) : null,
+    inputAmount: values[3] !== '' ? parseInt(values[3], 10) : null,
+    fee: values[4] !== '' ? parseInt(values[4], 10) : null,
+    earnedAmount: values[5] !== '' ? parseInt(values[5], 10) : null,
+    confirmationDuration: values[6] !== '' ? parseFloat(values[6]) : null,
+    notes: values[7] !== '' ? values[7] : null,
+  }
+}
+
+type YieldgenReportLinesWithHeader = string[]
+
+const yieldgenReportToEarnReportEntries = (lines: YieldgenReportLinesWithHeader) => {
+  const empty = lines.length < 2 // report is "empty" if it just contains the header line
+  const linesWithoutHeader = empty ? [] : lines.slice(1, lines.length)
+
+  return linesWithoutHeader
+    .map((line) => yieldgenReportLineToEarnReportEntry(line))
+    .filter((entry) => entry !== null)
+    .map((entry) => entry!)
+}
+
+// `TableNode` is known to have same properties as `EarnReportEntry`, hence prefer casting over object destructuring
+const toEarnReportEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as EarnReportEntry
+
+interface EarnReportTableProps {
+  tableData: TableTypes.Data
+}
+
+const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const reportHeadingMap: { [name: string]: { heading: string; format?: string } } = {
-    timestamp: {
-      heading: t('earn.report.heading_timestamp'),
-    },
-    'cj amount/satoshi': {
-      heading: t('earn.report.heading_cj_amount'),
-      format: 'balance',
-    },
-    'my input count': {
-      heading: t('earn.report.heading_input_count'),
-    },
-    'my input value/satoshi': {
-      heading: t('earn.report.heading_input_value'),
-      format: 'balance',
-    },
-    'cjfee/satoshi': {
-      heading: t('earn.report.heading_cj_fee'),
-      format: 'balance',
-    },
-    'earned/satoshi': {
-      heading: t('earn.report.heading_earned'),
-      format: 'balance',
-    },
-    'confirm time/min': {
-      heading: t('earn.report.heading_confirm_time'),
-    },
-    'notes\n': {
-      heading: t('earn.report.heading_notes'),
-    },
-  }
+  const tableTheme = useTheme(TABLE_THEME)
 
-  const empty = !lines || lines.length < 2
-  const headers = empty ? [] : lines[0].split(',')
-
-  const linesWithoutHeader = empty
-    ? []
-    : lines
-        .slice(1, lines.length)
-        .map((line) => line.split(','))
-        .reverse()
-
-  const visibleLines = linesWithoutHeader.slice(0, maxAmountOfRows)
+  const tableSort = useSort(
+    tableData,
+    {
+      state: {
+        sortKey: SORT_KEYS.timestamp,
+        reverse: true,
+      },
+    },
+    {
+      sortIcon: {
+        margin: '4px',
+        iconDefault: <Sprite symbol="caret-right" width="20" height="20" />,
+        iconUp: <Sprite symbol="caret-up" width="20" height="20" />,
+        iconDown: <Sprite symbol="caret-down" width="20" height="20" />,
+      },
+      sortToggleType: SortToggleType.AlternateWithReset,
+      sortFns: {
+        [SORT_KEYS.timestamp]: (array) => array.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
+        [SORT_KEYS.cjTotalAmountInSats]: (array) => array.sort((a, b) => +a.cjTotalAmount - +b.cjTotalAmount),
+        [SORT_KEYS.inputCount]: (array) => array.sort((a, b) => +a.inputCount - +b.inputCount),
+        [SORT_KEYS.inputAmountInSats]: (array) => array.sort((a, b) => +a.inputAmount - +b.inputAmount),
+        [SORT_KEYS.feeInSats]: (array) => array.sort((a, b) => +a.fee - +b.fee),
+        [SORT_KEYS.earnedAmountInSats]: (array) => array.sort((a, b) => +a.earnedAmount - +b.earnedAmount),
+        [SORT_KEYS.confirmDurationInMinutes]: (array) =>
+          array.sort((a, b) => +a.confirmationDuration - +b.confirmationDuration),
+      },
+    }
+  )
 
   return (
-    <>
-      {empty ? (
-        <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>
-      ) : (
-        <div>
-          <rb.Table striped bordered hover variant={settings.theme} responsive>
-            <thead>
-              <tr>
-                {headers.map((name, index) => (
-                  <th key={`header_${index}`}>{reportHeadingMap[name]?.heading || name}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {visibleLines.map((line, trIndex) => (
-                <tr key={`tr_${trIndex}`}>
-                  {line.map((val, tdIndex) => (
-                    <td key={`td_${tdIndex}`}>
-                      {headers[tdIndex] && reportHeadingMap[headers[tdIndex]]?.format === 'balance' ? (
-                        <Balance valueString={val} convertToUnit={settings.unit} showBalance={settings.showBalance} />
-                      ) : (
-                        val
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </rb.Table>
-          <div className="my-1 d-flex justify-content-end">
-            <small>
-              {t('earn.text_report_length', {
-                visibleLines: visibleLines.length,
-                linesWithoutHeader: linesWithoutHeader.length,
-              })}
-            </small>
-          </div>
-        </div>
+    <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
+      {(tableList) => (
+        <>
+          <Header>
+            <HeaderRow>
+              <HeaderCellSort sortKey={SORT_KEYS.timestamp}>{t('earn.report.heading_timestamp')}</HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.cjTotalAmountInSats}>
+                {t('earn.report.heading_cj_amount')}
+              </HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.inputCount}>{t('earn.report.heading_input_count')}</HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.inputAmountInSats}>
+                {t('earn.report.heading_input_value')}
+              </HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.feeInSats}>{t('earn.report.heading_cj_fee')}</HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.earnedAmountInSats}>{t('earn.report.heading_earned')}</HeaderCellSort>
+              <HeaderCellSort sortKey={SORT_KEYS.confirmDurationInMinutes}>
+                {t('earn.report.heading_confirm_time')}
+              </HeaderCellSort>
+              <HeaderCell>{t('earn.report.heading_notes')}</HeaderCell>
+            </HeaderRow>
+          </Header>
+          <Body>
+            {tableList.map((item) => {
+              const entry = toEarnReportEntry(item)
+              return (
+                <Row key={item.id} item={item}>
+                  <Cell>{entry.timestamp.toLocaleString()}</Cell>
+                  <Cell>
+                    <Balance
+                      valueString={entry.cjTotalAmount?.toString() || ''}
+                      convertToUnit={settings.unit}
+                      showBalance={true}
+                    />
+                  </Cell>
+                  <Cell>{entry.inputCount}</Cell>
+                  <Cell>
+                    <Balance
+                      valueString={entry.inputAmount?.toString() || ''}
+                      convertToUnit={settings.unit}
+                      showBalance={true}
+                    />
+                  </Cell>
+                  <Cell>
+                    <Balance
+                      valueString={entry.fee?.toString() || ''}
+                      convertToUnit={settings.unit}
+                      showBalance={true}
+                    />
+                  </Cell>
+                  <Cell>
+                    <Balance
+                      valueString={entry.earnedAmount?.toString() || ''}
+                      convertToUnit={settings.unit}
+                      showBalance={true}
+                    />
+                  </Cell>
+                  <Cell>{entry.confirmationDuration}</Cell>
+                  <Cell>{entry.notes}</Cell>
+                </Row>
+              )
+            })}
+          </Body>
+        </>
       )}
-    </>
+    </Table>
   )
 }
 
-export function EarnReport() {
+interface EarnReportProps {
+  entries: EarnReportEntry[]
+  refresh: (signal: AbortSignal) => Promise<void>
+}
+
+export function EarnReport({ entries, refresh }: EarnReportProps) {
   const { t } = useTranslation()
-  const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
-  const [isInitialized, setIsInitialized] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [yieldgenReportLines, setYieldgenReportLines] = useState<string[] | null>(null)
+  const settings = useSettings()
+  const [search, setSearch] = useState('')
+  const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
 
-  useEffect(() => {
-    setIsLoading(true)
-
-    const abortCtrl = new AbortController()
-
-    Api.getYieldgenReport({ signal: abortCtrl.signal })
-      .then((res) => {
-        if (res.ok) return res.json()
-        // 404 is returned till the maker is started at least once
-        if (res.status === 404) return { yigen_data: [] }
-        return Api.Helper.throwError(res, t('earn.error_loading_report_failed'))
-      })
-      .then((data) => {
-        if (abortCtrl.signal.aborted) return
-        setYieldgenReportLines(data.yigen_data)
-      })
-      .catch((e) => {
-        if (abortCtrl.signal.aborted) return
-        setAlert({ variant: 'danger', message: e.message })
-      })
-      .finally(() => {
-        if (abortCtrl.signal.aborted) return
-        setIsLoading(false)
-        setIsInitialized(true)
-      })
-
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [t])
-
-  return (
-    <>
-      {!isInitialized && isLoading ? (
-        Array(5)
-          .fill('')
-          .map((_, index) => {
+  const tableData: TableTypes.Data = useMemo(() => {
+    const searchVal = search.replace('.', '').toLowerCase()
+    const filteredEntries =
+      searchVal === ''
+        ? entries
+        : entries.filter((entry) => {
             return (
-              <rb.Placeholder key={index} as="div" animation="wave">
-                <rb.Placeholder xs={12} className={styles['report-line-placeholder']} />
-              </rb.Placeholder>
+              entry.timestamp.toLocaleString().toLowerCase().includes(searchVal) ||
+              entry.cjTotalAmount?.toString().includes(searchVal) ||
+              entry.inputCount?.toString().includes(searchVal) ||
+              entry.inputAmount?.toString().includes(searchVal) ||
+              entry.fee?.toString().includes(searchVal) ||
+              entry.earnedAmount?.toString().includes(searchVal) ||
+              entry.inputCount?.toString().includes(searchVal) ||
+              entry.confirmationDuration?.toString().includes(searchVal) ||
+              entry.notes?.toLowerCase().includes(searchVal)
             )
           })
-      ) : (
-        <>
-          {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-          {yieldgenReportLines && (
-            <rb.Row>
-              <rb.Col>
-                <div className={styles.earnReportContainer}>
-                  <YieldgenReportTable lines={yieldgenReportLines} />
-                </div>
-              </rb.Col>
-            </rb.Row>
-          )}
-        </>
-      )}
-    </>
+    const nodes = filteredEntries.map((entry, index) => ({
+      ...entry,
+      id: `${index}`,
+    }))
+
+    return { nodes }
+  }, [entries, search])
+
+  return (
+    <div className={styles.earnReportContainer}>
+      <div className={styles.titleBar}>
+        <div className="d-flex justify-content-center align-items-center gap-2">
+          <rb.Button
+            className={styles.refreshButton}
+            variant={settings.theme}
+            onClick={() => {
+              if (isLoadingRefresh) return
+
+              setIsLoadingRefresh(true)
+
+              const abortCtrl = new AbortController()
+              refresh(abortCtrl.signal).finally(() => {
+                // as refreshing is fast most of the time, add a short delay to avoid flickering
+                setTimeout(() => setIsLoadingRefresh(false), 250)
+              })
+            }}
+          >
+            {isLoadingRefresh ? (
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+            ) : (
+              <Sprite symbol="refresh" width="24" height="24" />
+            )}
+          </rb.Button>
+          <div className="small">
+            {search === '' ? (
+              <>
+                {t('earn.report.text_report_summary', {
+                  count: entries.length,
+                })}
+              </>
+            ) : (
+              <>
+                {t('earn.report.text_report_summary_filtered', {
+                  count: tableData.nodes.length,
+                })}
+              </>
+            )}
+          </div>
+        </div>
+        <div>
+          <rb.Form.Group controlId="search">
+            <rb.Form.Label className="m-0 pe-2 d-none">{t('earn.report.label_search')}</rb.Form.Label>
+            <rb.Form.Control
+              name="search"
+              placeholder={t('earn.report.placeholder_search')}
+              value={search}
+              disabled={isLoadingRefresh}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </rb.Form.Group>
+        </div>
+      </div>
+      <div className="px-md-3 pb-2">
+        {entries.length === 0 ? (
+          <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>
+        ) : (
+          <EarnReportTable tableData={tableData} />
+        )}
+      </div>
+    </div>
   )
 }
 
 export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const { t } = useTranslation()
+  const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [entries, setEntries] = useState<EarnReportEntry[] | null>(null)
+
+  const refresh = useCallback(
+    (signal: AbortSignal) => {
+      return Api.getYieldgenReport({ signal })
+        .then((res) => {
+          if (res.ok) return res.json()
+          // 404 is returned till the maker is started at least once
+          if (res.status === 404) return { yigen_data: [] }
+          return Api.Helper.throwError(res)
+        })
+        .then((data) => data.yigen_data as YieldgenReportLinesWithHeader)
+        .then((linesWithHeader) => yieldgenReportToEarnReportEntries(linesWithHeader))
+        .then((earnReportEntries) => {
+          if (signal.aborted) return
+          setAlert(null)
+          setEntries(earnReportEntries)
+        })
+        .catch((e) => {
+          if (signal.aborted) return
+          const message = t('earn.error_loading_report_failed', {
+            reason: e.message || 'Unknown reason',
+          })
+          setAlert({ variant: 'danger', message })
+        })
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    if (!show) return
+
+    const abortCtrl = new AbortController()
+
+    setIsLoading(true)
+    refresh(abortCtrl.signal).finally(() => {
+      if (abortCtrl.signal.aborted) return
+      setIsLoading(false)
+      setIsInitialized(true)
+    })
+
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [show, refresh])
 
   return (
     <rb.Offcanvas
@@ -198,7 +415,28 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
         <rb.Container fluid="md" className="py-4 py-sm-5">
-          <EarnReport />
+          {!isInitialized && isLoading ? (
+            Array(5)
+              .fill('')
+              .map((_, index) => {
+                return (
+                  <rb.Placeholder key={index} as="div" animation="wave">
+                    <rb.Placeholder xs={12} className={styles['report-line-placeholder']} />
+                  </rb.Placeholder>
+                )
+              })
+          ) : (
+            <>
+              {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+              {entries && (
+                <rb.Row>
+                  <rb.Col>
+                    <EarnReport entries={entries} refresh={refresh} />
+                  </rb.Col>
+                </rb.Row>
+              )}
+            </>
+          )}
         </rb.Container>
       </rb.Offcanvas.Body>
     </rb.Offcanvas>
