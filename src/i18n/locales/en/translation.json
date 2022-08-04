@@ -191,7 +191,7 @@
     "confirm_modal": {
       "title": "Confirm payment",
       "label_amount": "Amount",
-      "text_sweep_balance": "Sweep whole jar (approx. <1></1>)",
+      "text_sweep_balance": "Sweep whole jar (<1></1>)",
       "text_sweep_info_popover": "The exact transaction amount can only be calculated by JoinMarket at the point when the transaction is made.",
       "label_recipient": "Recipient",
       "label_source_jar": "Send from",

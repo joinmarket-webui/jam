@@ -969,36 +969,32 @@ export default function Send() {
             </rb.Row>
             <rb.Row>
               <rb.Col xs={3} className="text-end">
-                {isSweep ? (
-                  <rb.OverlayTrigger
-                    placement="right"
-                    overlay={
-                      <rb.Popover>
-                        <rb.Popover.Body>{t('send.confirm_modal.text_sweep_info_popover')}</rb.Popover.Body>
-                      </rb.Popover>
-                    }
-                  >
-                    <div className="d-inline-flex align-items-center">
-                      <strong>{t('send.confirm_modal.label_amount')}</strong>
-                      <span className="ms-1">
-                        <Sprite className={styles.infoIcon} symbol="info" width="18" height="18" />
-                      </span>
-                    </div>
-                  </rb.OverlayTrigger>
-                ) : (
-                  <strong>{t('send.confirm_modal.label_amount')}</strong>
-                )}
+                <strong>{t('send.confirm_modal.label_amount')}</strong>
               </rb.Col>
               <rb.Col xs={9} className="text-start">
                 {isSweep ? (
-                  <Trans i18nKey="send.confirm_modal.text_sweep_balance">
-                    Sweep
-                    <Balance
-                      valueString={amountFieldValue().toString()}
-                      convertToUnit={settings.unit}
-                      showBalance={true}
-                    />
-                  </Trans>
+                  <div className="d-flex justify-content-start align-items-center">
+                    <Trans i18nKey="send.confirm_modal.text_sweep_balance">
+                      Sweep
+                      <Balance
+                        valueString={amountFieldValue().toString()}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Trans>
+                    <rb.OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <rb.Popover>
+                          <rb.Popover.Body>{t('send.confirm_modal.text_sweep_info_popover')}</rb.Popover.Body>
+                        </rb.Popover>
+                      }
+                    >
+                      <div className="d-inline-flex align-items-center">
+                        <Sprite className={styles.infoIcon} symbol="info" width="13" height="13" />
+                      </div>
+                    </rb.OverlayTrigger>
+                  </div>
                 ) : (
                   <Balance
                     valueString={amountFieldValue().toString()}
