@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
+import { usePagination, Pagination } from '@table-library/react-table-library/pagination'
 import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
@@ -123,6 +124,95 @@ const yieldgenReportToEarnReportEntries = (lines: YieldgenReportLinesWithHeader)
 // `TableNode` is known to have same properties as `EarnReportEntry`, hence prefer casting over object destructuring
 const toEarnReportEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as EarnReportEntry
 
+interface TablePaginationProps {
+  tableData: TableTypes.Data
+  pagination: Pagination
+  itemsPerPage: number[]
+  allowShowAll?: boolean
+}
+
+const TablePagination = ({ tableData, pagination, itemsPerPage, allowShowAll = true }: TablePaginationProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="mt-4 mb-4 mb-md-0 d-flex justify-content-between flex-column flex-md-row">
+      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-2 order-md-1">
+        {t('earn.report.pagination.items_per_page.label')}
+        <rb.Form.Select
+          aria-label={t('earn.report.pagination.items_per_page.label')}
+          className="ms-2 d-inline-block w-auto"
+          defaultValue={itemsPerPage[0]}
+          onChange={(e) => {
+            const value = parseInt(e.target.value, 10)
+            const pageSize = value > 0 ? value : tableData.nodes.length
+            pagination.fns.onSetSize(pageSize)
+          }}
+        >
+          {itemsPerPage.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+          {allowShowAll && (
+            <option value={-1}>{t('earn.report.pagination.items_per_page.text_option_show_all')}</option>
+          )}
+        </rb.Form.Select>
+      </div>
+
+      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-1 order-md-2">
+        <rb.Button
+          variant={'outline-dark'}
+          className="ms-1"
+          disabled={pagination.state.page === 0}
+          onClick={() => pagination.fns.onSetPage(0)}
+        >
+          {t('earn.report.pagination.page_selector.label_first')}
+        </rb.Button>
+        <rb.Button
+          variant="outline-dark"
+          className="ms-1"
+          disabled={pagination.state.page === 0}
+          onClick={() => pagination.fns.onSetPage(pagination.state.page - 1)}
+        >
+          {t('earn.report.pagination.page_selector.label_previous')}
+        </rb.Button>
+        <rb.Form.Select
+          aria-label={t('earn.report.pagination.page_selector.label')}
+          className="ms-1 d-inline-block w-auto h-auto"
+          value={pagination.state.page}
+          onChange={(e) => {
+            const value = parseInt(e.target.value, 10)
+            const page = value > 0 ? value : 0
+            pagination.fns.onSetPage(page)
+          }}
+        >
+          {pagination.state.getPages(tableData.nodes).map((_: any, index: number) => (
+            <option key={index} value={index}>
+              {index + 1}
+            </option>
+          ))}
+        </rb.Form.Select>
+        <rb.Button
+          variant="outline-dark"
+          className="ms-1"
+          disabled={pagination.state.page + 1 === pagination.state.getTotalPages(tableData.nodes)}
+          onClick={() => pagination.fns.onSetPage(pagination.state.page + 1)}
+        >
+          {t('earn.report.pagination.page_selector.label_next')}
+        </rb.Button>
+        <rb.Button
+          variant="outline-dark"
+          className="ms-1"
+          disabled={pagination.state.page + 1 === pagination.state.getTotalPages(tableData.nodes)}
+          onClick={() => pagination.fns.onSetPage(pagination.state.getTotalPages(tableData.nodes) - 1)}
+        >
+          {t('earn.report.pagination.page_selector.label_last')}
+        </rb.Button>
+      </div>
+    </div>
+  )
+}
+
 interface EarnReportTableProps {
   tableData: TableTypes.Data
 }
@@ -160,68 +250,87 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
     }
   )
 
+  const itemsPerPage = [25, 50, 100]
+  const pagination = usePagination(tableData, {
+    state: {
+      page: 0,
+      size: itemsPerPage[0],
+    },
+  })
+
   return (
-    <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
-      {(tableList) => (
-        <>
-          <Header>
-            <HeaderRow>
-              <HeaderCellSort sortKey={SORT_KEYS.timestamp}>{t('earn.report.heading_timestamp')}</HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.cjTotalAmountInSats}>
-                {t('earn.report.heading_cj_amount')}
-              </HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.inputCount}>{t('earn.report.heading_input_count')}</HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.inputAmountInSats}>
-                {t('earn.report.heading_input_value')}
-              </HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.feeInSats}>{t('earn.report.heading_cj_fee')}</HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.earnedAmountInSats}>{t('earn.report.heading_earned')}</HeaderCellSort>
-              <HeaderCell>{t('earn.report.heading_notes')}</HeaderCell>
-            </HeaderRow>
-          </Header>
-          <Body>
-            {tableList.map((item) => {
-              const entry = toEarnReportEntry(item)
-              return (
-                <Row key={item.id} item={item}>
-                  <Cell>{entry.timestamp.toLocaleString()}</Cell>
-                  <Cell>
-                    <Balance
-                      valueString={entry.cjTotalAmount?.toString() || ''}
-                      convertToUnit={settings.unit}
-                      showBalance={true}
-                    />
-                  </Cell>
-                  <Cell>{entry.inputCount}</Cell>
-                  <Cell>
-                    <Balance
-                      valueString={entry.inputAmount?.toString() || ''}
-                      convertToUnit={settings.unit}
-                      showBalance={true}
-                    />
-                  </Cell>
-                  <Cell>
-                    <Balance
-                      valueString={entry.fee?.toString() || ''}
-                      convertToUnit={settings.unit}
-                      showBalance={true}
-                    />
-                  </Cell>
-                  <Cell>
-                    <Balance
-                      valueString={entry.earnedAmount?.toString() || ''}
-                      convertToUnit={settings.unit}
-                      showBalance={true}
-                    />
-                  </Cell>
-                  <Cell>{entry.notes}</Cell>
-                </Row>
-              )
-            })}
-          </Body>
-        </>
-      )}
-    </Table>
+    <>
+      <Table
+        data={tableData}
+        theme={tableTheme}
+        pagination={pagination}
+        sort={tableSort}
+        layout={{ custom: true, horizontalScroll: true }}
+      >
+        {(tableList) => (
+          <>
+            <Header>
+              <HeaderRow>
+                <HeaderCellSort sortKey={SORT_KEYS.timestamp}>{t('earn.report.heading_timestamp')}</HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.cjTotalAmountInSats}>
+                  {t('earn.report.heading_cj_amount')}
+                </HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.inputCount}>{t('earn.report.heading_input_count')}</HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.inputAmountInSats}>
+                  {t('earn.report.heading_input_value')}
+                </HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.feeInSats}>{t('earn.report.heading_cj_fee')}</HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.earnedAmountInSats}>
+                  {t('earn.report.heading_earned')}
+                </HeaderCellSort>
+                <HeaderCell>{t('earn.report.heading_notes')}</HeaderCell>
+              </HeaderRow>
+            </Header>
+            <Body>
+              {tableList.map((item) => {
+                const entry = toEarnReportEntry(item)
+                return (
+                  <Row key={item.id} item={item}>
+                    <Cell>{entry.timestamp.toLocaleString()}</Cell>
+                    <Cell>
+                      <Balance
+                        valueString={entry.cjTotalAmount?.toString() || ''}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Cell>
+                    <Cell>{entry.inputCount}</Cell>
+                    <Cell>
+                      <Balance
+                        valueString={entry.inputAmount?.toString() || ''}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Cell>
+                    <Cell>
+                      <Balance
+                        valueString={entry.fee?.toString() || ''}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Cell>
+                    <Cell>
+                      <Balance
+                        valueString={entry.earnedAmount?.toString() || ''}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Cell>
+                    <Cell>{entry.notes}</Cell>
+                  </Row>
+                )
+              })}
+            </Body>
+          </>
+        )}
+      </Table>
+      <TablePagination pagination={pagination} tableData={tableData} itemsPerPage={itemsPerPage} />
+    </>
   )
 }
 
