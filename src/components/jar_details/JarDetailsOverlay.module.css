@@ -231,6 +231,10 @@
   box-shadow: none;
 }
 
+:root[data-theme='dark'] .overlayBody .accountItem > h2 > button {
+  background-color: var(--bs-accordion-bg);
+}
+
 .overlayBody .accountItem :global .container-fluid {
   padding-left: 0;
 }
