@@ -278,7 +278,12 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
     {
       icon: <Sprite symbol="clock" width="18" height="18" className={styles.confirmationStepIcon} />,
       label: t('earn.fidelity_bond.review_inputs.label_lock_date'),
-      content: <>{new Date(lockDate).toUTCString()}</>,
+      content: (
+        <>
+          {new Date(lockDate).toUTCString()} (
+          {fb.time.humanizedTimeInterval(fb.time.timeInterval({ to: fb.lockdate.toTimestamp(lockDate) }))})
+        </>
+      ),
     },
     {
       icon: <Sprite symbol="jar-open-fill-50" width="18" height="18" className={styles.confirmationStepIcon} />,
@@ -354,7 +359,12 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
                 <div className={styles.confirmationStepLabel}>
                   {t('earn.fidelity_bond.create_fidelity_bond.label_lock_date')}
                 </div>
-                <div className={styles.confirmationStepContent}>{fbUtxo.locktime}</div>
+                {fbUtxo.locktime && (
+                  <div className={styles.confirmationStepContent}>
+                    {fbUtxo.locktime} (
+                    {fb.time.humanizedTimeInterval(fb.time.timeInterval({ to: new Date(fbUtxo.locktime).getTime() }))})
+                  </div>
+                )}
               </div>
             </div>
             <div className="d-flex align-items-center gap-2">

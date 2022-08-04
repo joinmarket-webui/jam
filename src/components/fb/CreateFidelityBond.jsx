@@ -510,18 +510,25 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
   return (
     <div className={styles.container}>
       {alert && <Alert {...alert} className="mt-0" onDismissed={() => setAlert(null)} />}
-      <ConfirmModal
-        isShown={showConfirmInputsModal}
-        title={t('earn.fidelity_bond.confirm_modal.title')}
-        onCancel={() => setShowConfirmInputsModal(false)}
-        onConfirm={() => {
-          setStep(steps.createFidelityBond)
-          setShowConfirmInputsModal(false)
-          directSweepToFidelityBond(selectedJar, timelockedAddress)
-        }}
-      >
-        {t('earn.fidelity_bond.confirm_modal.body', { date: new Date(lockDate).toUTCString() })}
-      </ConfirmModal>
+      {lockDate && (
+        <ConfirmModal
+          isShown={showConfirmInputsModal}
+          title={t('earn.fidelity_bond.confirm_modal.title')}
+          onCancel={() => setShowConfirmInputsModal(false)}
+          onConfirm={() => {
+            setStep(steps.createFidelityBond)
+            setShowConfirmInputsModal(false)
+            directSweepToFidelityBond(selectedJar, timelockedAddress)
+          }}
+        >
+          {t('earn.fidelity_bond.confirm_modal.body', {
+            date: new Date(lockDate).toUTCString(),
+            humanziedDuration: fb.time.humanizedTimeInterval(
+              fb.time.timeInterval({ to: fb.lockdate.toTimestamp(lockDate) })
+            ),
+          })}
+        </ConfirmModal>
+      )}
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
         <div className="d-flex justify-content-between align-items-center">
           <div className={styles.title}>

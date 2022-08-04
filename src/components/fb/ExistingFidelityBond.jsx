@@ -3,6 +3,7 @@ import { useSettings } from '../../context/SettingsContext'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { CopyButton } from '../CopyButton'
+import * as fb from './utils'
 import styles from './ExistingFidelityBond.module.css'
 
 const ExistingFidelityBond = ({ utxo }) => {
@@ -28,7 +29,10 @@ const ExistingFidelityBond = ({ utxo }) => {
             <Sprite symbol="clock" width="18" height="18" className={styles.icon} />
             <div className="d-flex flex-column">
               <div className={styles.label}>Locked until</div>
-              <div className={styles.content}>{utxo.locktime}</div>
+              <div className={styles.content}>
+                {utxo.locktime} (
+                {fb.time.humanizedTimeInterval(fb.time.timeInterval({ to: new Date(utxo.locktime).getTime() }))})
+              </div>
             </div>
           </div>
           <div className="d-flex align-items-center gap-2">

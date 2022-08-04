@@ -331,7 +331,7 @@
       },
       "confirm_modal": {
         "title": "Create fidelity bond and time-lock funds?",
-        "body": "It will be impossible to spend time-locked funds until the fidelity bond expires. Date of expiration is {{date}}"
+        "body": "It will be impossible to spend time-locked funds until the fidelity bond expires {{ humanziedDuration }}. Date of expiration is {{date}}."
       },
       "title": "Configure Fidelity Bond",
       "title_fidelity_bond_exists": "Configure Additional Bond",
