@@ -19,12 +19,11 @@ const SORT_KEYS = {
   inputAmountInSats: 'INPUT_AMOUNT_IN_SATS',
   feeInSats: 'FEE_IN_SATS',
   earnedAmountInSats: 'EARNED_AMOUNT_IN_SATS',
-  confirmDurationInMinutes: 'CONF_DURATION_IN_MINUTES',
 }
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 1fr 1fr 9rem 1fr 1fr 1fr 1fr 1fr;
+    --data-table-library_grid-template-columns: 1fr 1fr 9rem 1fr 1fr 1fr 1fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -48,10 +47,6 @@ const TABLE_THEME = {
       display: flex;
       justify-content: end;
     }
-    &:nth-of-type(7) button {
-      display: flex;
-      justify-content: center;
-    }
   `,
   Cell: `
     &:nth-of-type(2) {
@@ -68,9 +63,6 @@ const TABLE_THEME = {
     }
     &:nth-of-type(6) {
       text-align: right;
-    }
-    &:nth-of-type(7) {
-      text-align: center;
     }
   `,
 }
@@ -164,8 +156,6 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
         [SORT_KEYS.inputAmountInSats]: (array) => array.sort((a, b) => +a.inputAmount - +b.inputAmount),
         [SORT_KEYS.feeInSats]: (array) => array.sort((a, b) => +a.fee - +b.fee),
         [SORT_KEYS.earnedAmountInSats]: (array) => array.sort((a, b) => +a.earnedAmount - +b.earnedAmount),
-        [SORT_KEYS.confirmDurationInMinutes]: (array) =>
-          array.sort((a, b) => +a.confirmationDuration - +b.confirmationDuration),
       },
     }
   )
@@ -186,9 +176,6 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
               </HeaderCellSort>
               <HeaderCellSort sortKey={SORT_KEYS.feeInSats}>{t('earn.report.heading_cj_fee')}</HeaderCellSort>
               <HeaderCellSort sortKey={SORT_KEYS.earnedAmountInSats}>{t('earn.report.heading_earned')}</HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.confirmDurationInMinutes}>
-                {t('earn.report.heading_confirm_time')}
-              </HeaderCellSort>
               <HeaderCell>{t('earn.report.heading_notes')}</HeaderCell>
             </HeaderRow>
           </Header>
@@ -227,7 +214,6 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
                       showBalance={true}
                     />
                   </Cell>
-                  <Cell>{entry.confirmationDuration}</Cell>
                   <Cell>{entry.notes}</Cell>
                 </Row>
               )
