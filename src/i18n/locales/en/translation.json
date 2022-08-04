@@ -257,7 +257,7 @@
       "placeholder_search": "Search",
       "heading_timestamp": "Timestamp",
       "heading_cj_amount": "Transaction Amount",
-      "heading_input_count": "No. of UTXOs input by me",
+      "heading_input_count": "No. of inputs by me",
       "heading_input_value": "Amount input by me",
       "heading_cj_fee": "CoinJoin Fee",
       "heading_earned": "Earned",
