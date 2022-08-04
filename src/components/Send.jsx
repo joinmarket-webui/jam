@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
@@ -19,6 +19,7 @@ import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
+import { ConfirmModal } from './Modal'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -297,6 +298,9 @@ export default function Send() {
     [isInitializing, waitForUtxosToBeSpent]
   )
 
+  const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
+  const submitButtonRef = useRef(null)
+
   useEffect(() => {
     setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
   }, [isCoinjoinInProgress])
@@ -542,10 +546,19 @@ export default function Send() {
 
     if (isLoading || isOperationDisabled) return
 
+    setPaymentSuccessfulInfoAlert(null)
+
     const form = e.currentTarget
     const isValid = formIsValid
 
     if (isValid) {
+      if (!showConfirmInputsModal) {
+        setShowConfirmInputsModal(true)
+        return
+      }
+
+      setShowConfirmInputsModal(false)
+
       const counterparties = parseInt(numCollaborators, 10)
 
       if (isSweep && amount !== 0) {
@@ -900,6 +913,7 @@ export default function Send() {
           />
         )}
         <rb.Button
+          ref={submitButtonRef}
           variant={isCoinjoin ? 'dark' : 'danger'}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
@@ -917,6 +931,49 @@ export default function Send() {
             t('send.button_send_without_improved_privacy')
           )}
         </rb.Button>
+        <ConfirmModal
+          isShown={showConfirmInputsModal}
+          title={t('send.confirm_modal.title')}
+          onCancel={() => setShowConfirmInputsModal(false)}
+          onConfirm={() => {
+            submitButtonRef.current?.click()
+          }}
+        >
+          <rb.Container class="mt-2">
+            <rb.Row>
+              <rb.Col xs={4} className="text-end">
+                <strong>{t('send.confirm_modal.label_recipient')}</strong>
+              </rb.Col>
+              <rb.Col xs={8} className="text-start text-break slashed-zeroes">
+                {destination}
+              </rb.Col>
+            </rb.Row>
+            <rb.Row>
+              <rb.Col xs={4} className="text-end">
+                <strong>{t('send.confirm_modal.label_amount')}</strong>
+              </rb.Col>
+              <rb.Col xs={8} className="text-start">
+                <Balance valueString={amountFieldValue().toString()} convertToUnit={settings.unit} showBalance={true} />
+              </rb.Col>
+            </rb.Row>
+            {isCoinjoin ? (
+              <rb.Row>
+                <rb.Col xs={4} className="text-end">
+                  <strong>{t('send.confirm_modal.label_num_collaborators')}</strong>
+                </rb.Col>
+                <rb.Col xs={8} className="text-start">
+                  {numCollaborators}
+                </rb.Col>
+              </rb.Row>
+            ) : (
+              <rb.Row className="mt-4 mb-2">
+                <rb.Col xs={12} className="text-center text-danger">
+                  <strong>{t('send.confirm_modal.text_privacy_warning')}</strong>
+                </rb.Col>
+              </rb.Row>
+            )}
+          </rb.Container>
+        </ConfirmModal>
       </div>
     </>
   )
