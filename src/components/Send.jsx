@@ -779,54 +779,6 @@ export default function Send() {
               </rb.Form.Select>
             )}
           </rb.Form.Group>
-          <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
-            <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
-            <div className="position-relative">
-              {isLoading ? (
-                <rb.Placeholder as="div" animation="wave">
-                  <rb.Placeholder xs={12} className={styles['input-loader']} />
-                </rb.Placeholder>
-              ) : (
-                <>
-                  <rb.Form.Control
-                    name="amount"
-                    type="number"
-                    value={amountFieldValue()}
-                    className={`${styles.input} slashed-zeroes`}
-                    min={1}
-                    placeholder={t('send.placeholder_amount')}
-                    required
-                    onChange={(e) => setAmount(parseInt(e.target.value, 10))}
-                    isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
-                    disabled={isSweep || isOperationDisabled}
-                  />
-                  <rb.Button
-                    variant="outline-dark"
-                    className={styles['button-sweep']}
-                    onClick={() => setIsSweep(!isSweep)}
-                    disabled={isOperationDisabled}
-                  >
-                    {isSweep ? (
-                      <div className={styles['button-sweep-item']}>{t('send.button_clear_sweep')}</div>
-                    ) : (
-                      <div className={styles['button-sweep-item']}>
-                        <Sprite symbol="sweep" width="24px" height="24px" />
-                        {t('send.button_sweep')}
-                      </div>
-                    )}
-                  </rb.Button>
-                </>
-              )}
-            </div>
-            <rb.Form.Control.Feedback
-              className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
-              form="send-form"
-              type="invalid"
-            >
-              {t('send.feedback_invalid_amount')}
-            </rb.Form.Control.Feedback>
-            {isSweep && frozenOrLockedWarning()}
-          </rb.Form.Group>
           <rb.Form.Group className="mb-4" controlId="destination">
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
             <div className="position-relative">
@@ -893,6 +845,54 @@ export default function Send() {
                 </>
               )}
             </div>
+          </rb.Form.Group>
+          <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
+            <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
+            <div className="position-relative">
+              {isLoading ? (
+                <rb.Placeholder as="div" animation="wave">
+                  <rb.Placeholder xs={12} className={styles['input-loader']} />
+                </rb.Placeholder>
+              ) : (
+                <>
+                  <rb.Form.Control
+                    name="amount"
+                    type="number"
+                    value={amountFieldValue()}
+                    className={`${styles.input} slashed-zeroes`}
+                    min={1}
+                    placeholder={t('send.placeholder_amount')}
+                    required
+                    onChange={(e) => setAmount(parseInt(e.target.value, 10))}
+                    isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
+                    disabled={isSweep || isOperationDisabled}
+                  />
+                  <rb.Button
+                    variant="outline-dark"
+                    className={styles['button-sweep']}
+                    onClick={() => setIsSweep(!isSweep)}
+                    disabled={isOperationDisabled}
+                  >
+                    {isSweep ? (
+                      <div className={styles['button-sweep-item']}>{t('send.button_clear_sweep')}</div>
+                    ) : (
+                      <div className={styles['button-sweep-item']}>
+                        <Sprite symbol="sweep" width="24px" height="24px" />
+                        {t('send.button_sweep')}
+                      </div>
+                    )}
+                  </rb.Button>
+                </>
+              )}
+            </div>
+            <rb.Form.Control.Feedback
+              className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
+              form="send-form"
+              type="invalid"
+            >
+              {t('send.feedback_invalid_amount')}
+            </rb.Form.Control.Feedback>
+            {isSweep && frozenOrLockedWarning()}
           </rb.Form.Group>
           <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
             <ToggleSwitch
