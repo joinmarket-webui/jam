@@ -233,24 +233,25 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
 
   const tableData: TableTypes.Data = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
-    const nodes = orders
-      .filter((order) => {
-        if (search === '') return true
-        return (
-          order.type.toLowerCase().includes(searchVal) ||
-          order.counterparty.toLowerCase().includes(searchVal) ||
-          order.fee.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
-          order.orderId.toLowerCase().includes(searchVal)
-        )
-      })
-      .map((order) => ({
-        ...order,
-        id: `${order.counterparty}_${order.orderId}`,
-      }))
+    const filteredOrders =
+      searchVal === ''
+        ? orders
+        : orders.filter((order) => {
+            return (
+              order.type.toLowerCase().includes(searchVal) ||
+              order.counterparty.toLowerCase().includes(searchVal) ||
+              order.fee.replace('.', '').toLowerCase().includes(searchVal) ||
+              order.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+              order.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+              order.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
+              order.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
+              order.orderId.toLowerCase().includes(searchVal)
+            )
+          })
+    const nodes = filteredOrders.map((order) => ({
+      ...order,
+      id: `${order.counterparty}_${order.orderId}`,
+    }))
 
     return { nodes }
   }, [orders, search])
