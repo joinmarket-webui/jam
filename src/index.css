@@ -288,6 +288,43 @@ main {
   color: inherit !important;
 }
 
+/* Fullscreen Overlays */
+.offcanvas-fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1100 !important;
+}
+
+.offcanvas-fullscreen .offcanvas-header {
+  border-bottom: 1px solid var(--bs-body-bg);
+  box-shadow: 0px 1px 5px var(--bs-gray-400);
+  z-index: 1200;
+}
+
+@media only screen and (min-width: 768px) {
+  .offcanvas-fullscreen .offcanvas-header {
+    min-height: 75px;
+    max-height: 75px;
+  }
+}
+
+:root[data-theme='dark'] .offcanvas-fullscreen .offcanvas-header {
+  box-shadow: 0px 1px 5px var(--bs-gray-900);
+}
+
+.offcanvas-fullscreen .offcanvas-header button:hover {
+  color: inherit;
+}
+
+.offcanvas-fullscreen .offcanvas-body {
+  background-color: var(--bs-gray-100);
+  padding: 0;
+}
+
+:root[data-theme='dark'] .offcanvas-fullscreen .offcanvas-body {
+  background-color: var(--bs-gray-800);
+}
+
 /* Navbar Styles */
 
 #mainNav .nav-link {

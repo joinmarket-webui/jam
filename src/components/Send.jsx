@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
@@ -19,6 +19,7 @@ import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
+import { ConfirmModal } from './Modal'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -297,6 +298,9 @@ export default function Send() {
     [isInitializing, waitForUtxosToBeSpent]
   )
 
+  const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
+  const submitButtonRef = useRef(null)
+
   useEffect(() => {
     setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
   }, [isCoinjoinInProgress])
@@ -542,10 +546,19 @@ export default function Send() {
 
     if (isLoading || isOperationDisabled) return
 
+    setPaymentSuccessfulInfoAlert(null)
+
     const form = e.currentTarget
     const isValid = formIsValid
 
     if (isValid) {
+      if (!showConfirmInputsModal) {
+        setShowConfirmInputsModal(true)
+        return
+      }
+
+      setShowConfirmInputsModal(false)
+
       const counterparties = parseInt(numCollaborators, 10)
 
       if (isSweep && amount !== 0) {
@@ -737,9 +750,7 @@ export default function Send() {
 
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
-            <rb.Form.Label>
-              {settings.useAdvancedWalletMode ? t('send.label_account_dev_mode') : t('send.label_account')}
-            </rb.Form.Label>
+            <rb.Form.Label>{t('send.label_account')}</rb.Form.Label>
             {isLoading ? (
               <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder xs={12} className={styles['input-loader']} />
@@ -758,9 +769,7 @@ export default function Send() {
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
                     .map(({ accountIndex, totalBalance, calculatedTotalBalanceInSats }) => (
                       <option key={accountIndex} value={accountIndex}>
-                        {settings.useAdvancedWalletMode
-                          ? t('send.account_selector_option_dev_mode', { number: accountIndex })
-                          : t('send.account_selector_option', { number: accountIndex })}{' '}
+                        {t('send.account_selector_option', { number: accountIndex })}{' '}
                         {settings.showBalance &&
                           (settings.unit === 'sats'
                             ? `(${formatSats(calculatedTotalBalanceInSats)} sats)`
@@ -769,54 +778,6 @@ export default function Send() {
                     ))}
               </rb.Form.Select>
             )}
-          </rb.Form.Group>
-          <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
-            <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
-            <div className="position-relative">
-              {isLoading ? (
-                <rb.Placeholder as="div" animation="wave">
-                  <rb.Placeholder xs={12} className={styles['input-loader']} />
-                </rb.Placeholder>
-              ) : (
-                <>
-                  <rb.Form.Control
-                    name="amount"
-                    type="number"
-                    value={amountFieldValue()}
-                    className={`${styles.input} slashed-zeroes`}
-                    min={1}
-                    placeholder={t('send.placeholder_amount')}
-                    required
-                    onChange={(e) => setAmount(parseInt(e.target.value, 10))}
-                    isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
-                    disabled={isSweep || isOperationDisabled}
-                  />
-                  <rb.Button
-                    variant="outline-dark"
-                    className={styles['button-sweep']}
-                    onClick={() => setIsSweep(!isSweep)}
-                    disabled={isOperationDisabled}
-                  >
-                    {isSweep ? (
-                      <div className={styles['button-sweep-item']}>{t('send.button_clear_sweep')}</div>
-                    ) : (
-                      <div className={styles['button-sweep-item']}>
-                        <Sprite symbol="sweep" width="24px" height="24px" />
-                        {t('send.button_sweep')}
-                      </div>
-                    )}
-                  </rb.Button>
-                </>
-              )}
-            </div>
-            <rb.Form.Control.Feedback
-              className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
-              form="send-form"
-              type="invalid"
-            >
-              {t('send.feedback_invalid_amount')}
-            </rb.Form.Control.Feedback>
-            {isSweep && frozenOrLockedWarning()}
           </rb.Form.Group>
           <rb.Form.Group className="mb-4" controlId="destination">
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
@@ -885,6 +846,54 @@ export default function Send() {
               )}
             </div>
           </rb.Form.Group>
+          <rb.Form.Group className={isSweep ? 'mb-0' : 'mb-4'} controlId="amount">
+            <rb.Form.Label form="send-form">{t('send.label_amount')}</rb.Form.Label>
+            <div className="position-relative">
+              {isLoading ? (
+                <rb.Placeholder as="div" animation="wave">
+                  <rb.Placeholder xs={12} className={styles['input-loader']} />
+                </rb.Placeholder>
+              ) : (
+                <>
+                  <rb.Form.Control
+                    name="amount"
+                    type="number"
+                    value={amountFieldValue()}
+                    className={`${styles.input} slashed-zeroes`}
+                    min={1}
+                    placeholder={t('send.placeholder_amount')}
+                    required
+                    onChange={(e) => setAmount(parseInt(e.target.value, 10))}
+                    isInvalid={amount !== null && !isValidAmount(amount, isSweep)}
+                    disabled={isSweep || isOperationDisabled}
+                  />
+                  <rb.Button
+                    variant="outline-dark"
+                    className={styles['button-sweep']}
+                    onClick={() => setIsSweep(!isSweep)}
+                    disabled={isOperationDisabled}
+                  >
+                    {isSweep ? (
+                      <div className={styles['button-sweep-item']}>{t('send.button_clear_sweep')}</div>
+                    ) : (
+                      <div className={styles['button-sweep-item']}>
+                        <Sprite symbol="sweep" width="24px" height="24px" />
+                        {t('send.button_sweep')}
+                      </div>
+                    )}
+                  </rb.Button>
+                </>
+              )}
+            </div>
+            <rb.Form.Control.Feedback
+              className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
+              form="send-form"
+              type="invalid"
+            >
+              {t('send.feedback_invalid_amount')}
+            </rb.Form.Control.Feedback>
+            {isSweep && frozenOrLockedWarning()}
+          </rb.Form.Group>
           <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
             <ToggleSwitch
               label={t('send.toggle_coinjoin')}
@@ -904,6 +913,7 @@ export default function Send() {
           />
         )}
         <rb.Button
+          ref={submitButtonRef}
           variant={isCoinjoin ? 'dark' : 'danger'}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
@@ -921,6 +931,91 @@ export default function Send() {
             t('send.button_send_without_improved_privacy')
           )}
         </rb.Button>
+        <ConfirmModal
+          isShown={showConfirmInputsModal}
+          title={t('send.confirm_modal.title')}
+          onCancel={() => setShowConfirmInputsModal(false)}
+          onConfirm={() => {
+            submitButtonRef.current?.click()
+          }}
+        >
+          <rb.Container className="mt-2">
+            <rb.Row className="mt-2 mb-3">
+              <rb.Col xs={12} className="text-center">
+                {isCoinjoin ? (
+                  <strong className="text-success">{t('send.confirm_modal.text_collaborative_tx_enabled')}</strong>
+                ) : (
+                  <strong className="text-danger">{t('send.confirm_modal.text_collaborative_tx_disabled')}</strong>
+                )}
+              </rb.Col>
+            </rb.Row>
+            <rb.Row>
+              <rb.Col xs={3} className="text-end">
+                <strong>{t('send.confirm_modal.label_source_jar')}</strong>
+              </rb.Col>
+              <rb.Col xs={9} className="text-start">
+                {t('send.confirm_modal.text_source_jar', {
+                  jarId: `#${account}`,
+                })}
+              </rb.Col>
+            </rb.Row>
+            <rb.Row>
+              <rb.Col xs={3} className="text-end">
+                <strong>{t('send.confirm_modal.label_recipient')}</strong>
+              </rb.Col>
+              <rb.Col xs={9} className="text-start text-break slashed-zeroes">
+                {destination}
+              </rb.Col>
+            </rb.Row>
+            <rb.Row>
+              <rb.Col xs={3} className="text-end">
+                <strong>{t('send.confirm_modal.label_amount')}</strong>
+              </rb.Col>
+              <rb.Col xs={9} className="text-start">
+                {isSweep ? (
+                  <div className="d-flex justify-content-start align-items-center">
+                    <Trans i18nKey="send.confirm_modal.text_sweep_balance">
+                      Sweep
+                      <Balance
+                        valueString={amountFieldValue().toString()}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Trans>
+                    <rb.OverlayTrigger
+                      placement="right"
+                      overlay={
+                        <rb.Popover>
+                          <rb.Popover.Body>{t('send.confirm_modal.text_sweep_info_popover')}</rb.Popover.Body>
+                        </rb.Popover>
+                      }
+                    >
+                      <div className="d-inline-flex align-items-center">
+                        <Sprite className={styles.infoIcon} symbol="info" width="13" height="13" />
+                      </div>
+                    </rb.OverlayTrigger>
+                  </div>
+                ) : (
+                  <Balance
+                    valueString={amountFieldValue().toString()}
+                    convertToUnit={settings.unit}
+                    showBalance={true}
+                  />
+                )}
+              </rb.Col>
+            </rb.Row>
+            {isCoinjoin && (
+              <rb.Row>
+                <rb.Col xs={3} className="text-end">
+                  <strong>{t('send.confirm_modal.label_num_collaborators')}</strong>
+                </rb.Col>
+                <rb.Col xs={9} className="text-start">
+                  {numCollaborators}
+                </rb.Col>
+              </rb.Row>
+            )}
+          </rb.Container>
+        </ConfirmModal>
       </div>
     </>
   )

@@ -19,7 +19,6 @@ export const toYearsRange = (min: number, max: number): YearsRange => {
 // A maximum of years for a timelock to be accepted.
 // This is useful in simple mode - when it should be prevented that users
 // lock up their coins for an awful amount of time by accident.
-// In "advanced" mode, this can be dropped or increased substantially.
 export const DEFAULT_MAX_TIMELOCK_YEARS = 10
 export const DEFAULT_TIMELOCK_YEARS_RANGE = toYearsRange(0, DEFAULT_MAX_TIMELOCK_YEARS)
 

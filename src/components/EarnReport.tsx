@@ -5,6 +5,7 @@ import * as Api from '../libs/JmWalletApi'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
+import Sprite from './Sprite'
 import styles from './EarnReport.module.css'
 
 interface YielgenReportTableProps {
@@ -142,7 +143,7 @@ export function EarnReport() {
   }, [t])
 
   return (
-    <div className="earn-report">
+    <>
       {!isInitialized && isLoading ? (
         Array(5)
           .fill('')
@@ -158,14 +159,16 @@ export function EarnReport() {
           {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
           {yieldgenReportLines && (
             <rb.Row>
-              <rb.Col className="mb-3">
-                <YieldgenReportTable lines={yieldgenReportLines} />
+              <rb.Col>
+                <div className={styles.earnReportContainer}>
+                  <YieldgenReportTable lines={yieldgenReportLines} />
+                </div>
               </rb.Col>
             </rb.Row>
           )}
         </>
       )}
-    </div>
+    </>
   )
 }
 
@@ -173,12 +176,30 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const { t } = useTranslation()
 
   return (
-    <rb.Offcanvas className={styles['report-overlay']} show={show} onHide={onHide} placement="bottom">
-      <rb.Offcanvas.Header closeButton>
-        <rb.Offcanvas.Title>{t('earn.report.title')}</rb.Offcanvas.Title>
+    <rb.Offcanvas
+      className={`offcanvas-fullscreen ${styles.overlayContainer}`}
+      show={show}
+      onHide={onHide}
+      placement="bottom"
+    >
+      <rb.Offcanvas.Header>
+        <rb.Container>
+          <div className="w-100 d-flex">
+            <div className="d-flex align-items-center flex-1">
+              <rb.Offcanvas.Title>{t('earn.report.title')}</rb.Offcanvas.Title>
+            </div>
+            <div>
+              <rb.Button variant="link" className="unstyled pe-0" onClick={onHide}>
+                <Sprite symbol="cancel" width="32" height="32" />
+              </rb.Button>
+            </div>
+          </div>
+        </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <EarnReport />
+        <rb.Container fluid="md" className="py-4 py-sm-5">
+          <EarnReport />
+        </rb.Container>
       </rb.Offcanvas.Body>
     </rb.Offcanvas>
   )

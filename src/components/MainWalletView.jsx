@@ -7,7 +7,7 @@ import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } fr
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
-import styles from './CurrentWalletMagic.module.css'
+import styles from './MainWalletView.module.css'
 import { ExtendedLink } from './ExtendedLink'
 import { routes } from '../constants/routes'
 import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
@@ -41,7 +41,7 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   )
 }
 
-export default function CurrentWalletMagic() {
+export default function MainWalletView() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
