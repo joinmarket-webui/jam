@@ -304,6 +304,7 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
               name="search"
               placeholder={t('orderbook.placeholder_search')}
               value={search}
+              disabled={isLoadingRefresh}
               onChange={(e) => setSearch(e.target.value)}
             />
           </rb.Form.Group>
