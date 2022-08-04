@@ -939,7 +939,7 @@ export default function Send() {
             submitButtonRef.current?.click()
           }}
         >
-          <rb.Container class="mt-2">
+          <rb.Container className="mt-2">
             <rb.Row className="mt-2 mb-3">
               <rb.Col xs={12} className="text-center">
                 {isCoinjoin ? (
@@ -959,10 +959,44 @@ export default function Send() {
             </rb.Row>
             <rb.Row>
               <rb.Col xs={3} className="text-end">
-                <strong>{t('send.confirm_modal.label_amount')}</strong>
+                {isSweep ? (
+                  <rb.OverlayTrigger
+                    placement="right"
+                    overlay={
+                      <rb.Popover>
+                        <rb.Popover.Body>{t('send.confirm_modal.text_sweep_info_popover')}</rb.Popover.Body>
+                      </rb.Popover>
+                    }
+                  >
+                    <div class="d-inline-flex align-items-center">
+                      <strong>{t('send.confirm_modal.label_amount')}</strong>
+                      <span className="ms-1">
+                        <Sprite className={styles.infoIcon} symbol="info" width="18" height="18" />
+                      </span>
+                    </div>
+                  </rb.OverlayTrigger>
+                ) : (
+                  <strong>{t('send.confirm_modal.label_amount')}</strong>
+                )}
               </rb.Col>
               <rb.Col xs={9} className="text-start">
-                <Balance valueString={amountFieldValue().toString()} convertToUnit={settings.unit} showBalance={true} />
+                {isSweep ? (
+                  <Trans i18nKey="send.confirm_modal.text_sweep_balance">
+                    Sweep jar (approx.{' '}
+                    <Balance
+                      valueString={amountFieldValue().toString()}
+                      convertToUnit={settings.unit}
+                      showBalance={true}
+                    />
+                    )
+                  </Trans>
+                ) : (
+                  <Balance
+                    valueString={amountFieldValue().toString()}
+                    convertToUnit={settings.unit}
+                    showBalance={true}
+                  />
+                )}
               </rb.Col>
             </rb.Row>
             {isCoinjoin && (
