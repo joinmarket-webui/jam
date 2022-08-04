@@ -2,15 +2,18 @@ import { Helper as ApiHelper } from '../libs/JmWalletApi'
 
 const basePath = () => `${window.JM.PUBLIC_PATH}/obwatch`
 
+export const ABSOLUTE_ORDER_TYPE_VAL = 'Native SW Absolute Fee'
+export const RELATIVE_ORDER_TYPE_VAL = 'Native SW Relative Fee'
+
 export interface Order {
-  type: string
-  counterparty: string
-  orderId: string
-  fee: string
-  minerFeeContribution: string
-  minimumSize: string
-  maximumSize: string
-  bondValue: string
+  type: string // example: "Native SW Absolute Fee" or "Native SW Relative Fee"
+  counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
+  orderId: string // example: "0" (not unique!)
+  fee: string // example: "0.00000250" (abs offers) or "0.000100%" (rel offers)
+  minerFeeContribution: string // example: "0.00000000"
+  minimumSize: string // example: "0.00027300"
+  maximumSize: string // example: "2374.99972700"
+  bondValue: string // example: "0" (no fb) or "0.0000052877962973"
 }
 
 const ORDER_KEYS: (keyof Order)[] = [

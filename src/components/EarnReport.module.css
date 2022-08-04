@@ -1,10 +1,15 @@
-.report-overlay {
-  width: 100vw !important;
-  height: 100vh !important;
-  z-index: 1100 !important;
-}
-
 .report-line-placeholder {
   height: 2.625rem;
   margin: 1px 0;
+}
+
+.overlayContainer .earnReportContainer {
+  background-color: var(--bs-body-bg);
+}
+
+@media only screen and (min-width: 768px) {
+  .overlayContainer .earnReportContainer {
+    border-radius: 0.5rem;
+    padding: 2rem;
+  }
 }
