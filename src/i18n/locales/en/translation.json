@@ -365,7 +365,7 @@
   "orderbook": {
     "title": "Orderbook",
     "text_orderbook_summary": "{{ orderCount }} orders by {{ counterpartyCount }} counterparties",
-    "text_orderbook_summary_filtered": "{{ orderCount }} orders by {{ counterpartyCount }} counterparties (filtered)",
+    "text_orderbook_summary_filtered": "found {{ orderCount }} orders by {{ counterpartyCount }} counterparties",
     "alert_empty_orderbook": "Orderbook is empty",
     "error_loading_orderbook_failed": "Error while loading the orderbook. Your current local setup might not support fetching the orderbook. Reason: {{ reason }}",
     "text_offer_type_absolute": "absolute",
