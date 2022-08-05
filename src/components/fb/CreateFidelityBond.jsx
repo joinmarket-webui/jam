@@ -35,7 +35,7 @@ const steps = {
 
 const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo, onDone }) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -510,18 +510,26 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
   return (
     <div className={styles.container}>
       {alert && <Alert {...alert} className="mt-0" onDismissed={() => setAlert(null)} />}
-      <ConfirmModal
-        isShown={showConfirmInputsModal}
-        title={t('earn.fidelity_bond.confirm_modal.title')}
-        onCancel={() => setShowConfirmInputsModal(false)}
-        onConfirm={() => {
-          setStep(steps.createFidelityBond)
-          setShowConfirmInputsModal(false)
-          directSweepToFidelityBond(selectedJar, timelockedAddress)
-        }}
-      >
-        {t('earn.fidelity_bond.confirm_modal.body', { date: new Date(lockDate).toUTCString() })}
-      </ConfirmModal>
+      {lockDate && (
+        <ConfirmModal
+          isShown={showConfirmInputsModal}
+          title={t('earn.fidelity_bond.confirm_modal.title')}
+          onCancel={() => setShowConfirmInputsModal(false)}
+          onConfirm={() => {
+            setStep(steps.createFidelityBond)
+            setShowConfirmInputsModal(false)
+            directSweepToFidelityBond(selectedJar, timelockedAddress)
+          }}
+        >
+          {t('earn.fidelity_bond.confirm_modal.body', {
+            date: new Date(lockDate).toUTCString(),
+            humanReadableDuration: fb.time.humanReadableDuration({
+              to: fb.lockdate.toTimestamp(lockDate),
+              locale: i18n.resolvedLanguage || i18n.language,
+            }),
+          })}
+        </ConfirmModal>
+      )}
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
         <div className="d-flex justify-content-between align-items-center">
           <div className={styles.title}>

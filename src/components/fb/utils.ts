@@ -3,6 +3,7 @@ import { Utxo } from '../../context/WalletContext'
 
 type Milliseconds = number
 type Seconds = number
+type TimeInterval = number
 
 export type YearsRange = {
   min: number
@@ -104,4 +105,57 @@ export const utxo = (() => {
   }
 
   return { isEqual, isInList, utxosToFreeze, allAreFrozen, isLocked }
+})()
+
+export const time = (() => {
+  type Unit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
+
+  // These values don't need to be exact.
+  // They are only used to approximate a human readable
+  // representation of a time interval--e.g. "in 2 months".
+  const UNIT_MILLIS: { [key in Unit]: Milliseconds } = {
+    year: 24 * 60 * 60 * 1_000 * 365,
+    month: (24 * 60 * 60 * 1_000 * 365) / 12, // ~30.42 days
+    day: 24 * 60 * 60 * 1_000,
+    hour: 60 * 60 * 1_000,
+    minute: 60 * 1_000,
+    second: 1_000,
+  }
+
+  const humanReadableDuration = ({
+    from = Date.now(),
+    to,
+    locale = 'en',
+  }: {
+    from?: Milliseconds
+    to: Milliseconds
+    locale?: string
+  }) => humanReadableTimeInterval(timeInterval({ from, to }), locale)
+
+  const timeInterval = ({ from = Date.now(), to }: { from?: Milliseconds; to: Milliseconds }): TimeInterval => {
+    return to - from
+  }
+
+  const humanReadableTimeInterval = (timeInterval: TimeInterval, locale: string = 'en') => {
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'always', style: 'long' })
+
+    const sortedUnits = (Object.keys(UNIT_MILLIS) as Unit[])
+      .sort((lhs, rhs) => UNIT_MILLIS[lhs] - UNIT_MILLIS[rhs])
+      .reverse()
+
+    for (const unit of sortedUnits) {
+      const limit = UNIT_MILLIS[unit]
+
+      if (Math.abs(timeInterval) > limit) {
+        return rtf.format(Math.round(timeInterval / limit), unit)
+      }
+    }
+
+    return rtf.format(Math.round(timeInterval / UNIT_MILLIS['second']), 'second')
+  }
+
+  return {
+    timeInterval,
+    humanReadableDuration,
+  }
 })()
