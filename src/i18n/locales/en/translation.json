@@ -5,7 +5,22 @@
     "button_copy_text_confirmed": "Copied",
     "next": "Next",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "table": {
+      "pagination": {
+        "items_per_page": {
+          "label": "Items per page",
+          "text_option_show_all": "All"
+        },
+        "page_selector": {
+          "label": "Page",
+          "label_first": "First",
+          "label_previous": "Previous",
+          "label_next": "Next",
+          "label_last": "Last"
+        }
+      }
+    }
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}"
