@@ -23,7 +23,7 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2fr 2fr 1fr 2fr 2fr 2fr 2fr;
+    --data-table-library_grid-template-columns: 2fr 2fr 2fr 1fr 2fr 2fr 2fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -152,11 +152,11 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
       sortToggleType: SortToggleType.AlternateWithReset,
       sortFns: {
         [SORT_KEYS.timestamp]: (array) => array.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
+        [SORT_KEYS.earnedAmountInSats]: (array) => array.sort((a, b) => +a.earnedAmount - +b.earnedAmount),
         [SORT_KEYS.cjTotalAmountInSats]: (array) => array.sort((a, b) => +a.cjTotalAmount - +b.cjTotalAmount),
         [SORT_KEYS.inputCount]: (array) => array.sort((a, b) => +a.inputCount - +b.inputCount),
         [SORT_KEYS.inputAmountInSats]: (array) => array.sort((a, b) => +a.inputAmount - +b.inputAmount),
         [SORT_KEYS.feeInSats]: (array) => array.sort((a, b) => +a.fee - +b.fee),
-        [SORT_KEYS.earnedAmountInSats]: (array) => array.sort((a, b) => +a.earnedAmount - +b.earnedAmount),
       },
     }
   )
@@ -169,6 +169,9 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
             <Header>
               <HeaderRow>
                 <HeaderCellSort sortKey={SORT_KEYS.timestamp}>{t('earn.report.heading_timestamp')}</HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.earnedAmountInSats}>
+                  {t('earn.report.heading_earned')}
+                </HeaderCellSort>
                 <HeaderCellSort sortKey={SORT_KEYS.cjTotalAmountInSats}>
                   {t('earn.report.heading_cj_amount')}
                 </HeaderCellSort>
@@ -177,9 +180,6 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
                   {t('earn.report.heading_input_value')}
                 </HeaderCellSort>
                 <HeaderCellSort sortKey={SORT_KEYS.feeInSats}>{t('earn.report.heading_cj_fee')}</HeaderCellSort>
-                <HeaderCellSort sortKey={SORT_KEYS.earnedAmountInSats}>
-                  {t('earn.report.heading_earned')}
-                </HeaderCellSort>
                 <HeaderCell>{t('earn.report.heading_notes')}</HeaderCell>
               </HeaderRow>
             </Header>
@@ -189,6 +189,13 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
                 return (
                   <Row key={item.id} item={item}>
                     <Cell>{entry.timestamp.toLocaleString()}</Cell>
+                    <Cell>
+                      <Balance
+                        valueString={entry.earnedAmount?.toString() || ''}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Cell>
                     <Cell>
                       <Balance
                         valueString={entry.cjTotalAmount?.toString() || ''}
@@ -207,13 +214,6 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
                     <Cell>
                       <Balance
                         valueString={entry.fee?.toString() || ''}
-                        convertToUnit={settings.unit}
-                        showBalance={true}
-                      />
-                    </Cell>
-                    <Cell>
-                      <Balance
-                        valueString={entry.earnedAmount?.toString() || ''}
                         convertToUnit={settings.unit}
                         showBalance={true}
                       />
