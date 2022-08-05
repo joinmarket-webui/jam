@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.0.10](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.9...v0.0.10) (2022-08-05)
+
+#### Fixed
+
+* accordion bg color ([#449](https://github.com/joinmarket-webui/joinmarket-webui/issues/449)) ([c3159a2](https://github.com/joinmarket-webui/joinmarket-webui/commit/c3159a252e55f754fbbe4a0f40fc05ddcd0b5fe2))
+* cheatsheet icon ([#447](https://github.com/joinmarket-webui/joinmarket-webui/issues/447)) ([1113e21](https://github.com/joinmarket-webui/joinmarket-webui/commit/1113e21147a171a778e3439ee8df5474dce840dd))
+* color of light-button in dark mode ([#442](https://github.com/joinmarket-webui/joinmarket-webui/issues/442)) ([f27a27a](https://github.com/joinmarket-webui/joinmarket-webui/commit/f27a27a93df4f070b9f308d75409290dd9357eff))
+* color of selected collaborators-selector-input ([#410](https://github.com/joinmarket-webui/joinmarket-webui/issues/410)) ([a51cdbe](https://github.com/joinmarket-webui/joinmarket-webui/commit/a51cdbe53e30fc3436764f1cdd5d81c0b7cc6e0d))
+* do not display freeze info when all utxos have been selected ([#420](https://github.com/joinmarket-webui/joinmarket-webui/issues/420)) ([662faf2](https://github.com/joinmarket-webui/joinmarket-webui/commit/662faf2c5523c073385a81053ff5bd861429d039))
+* docs icon in settings ([#439](https://github.com/joinmarket-webui/joinmarket-webui/issues/439)) ([c4a76fa](https://github.com/joinmarket-webui/joinmarket-webui/commit/c4a76fa967365c6d39cbf974c9838c7d17163a15))
+* invalid DOM property 'class' on Earn page ([#431](https://github.com/joinmarket-webui/joinmarket-webui/issues/431)) ([3d3706f](https://github.com/joinmarket-webui/joinmarket-webui/commit/3d3706f5b2df715dd20e3b03d1be034b3de6d67e))
+* jar spacing ([#417](https://github.com/joinmarket-webui/joinmarket-webui/issues/417)) ([484afbc](https://github.com/joinmarket-webui/joinmarket-webui/commit/484afbc8eabee75fc8896e868ff559c479dc1380))
+* remove logs ([#452](https://github.com/joinmarket-webui/joinmarket-webui/issues/452)) ([2097b35](https://github.com/joinmarket-webui/joinmarket-webui/commit/2097b35a5bd4a5cba40864e52814bc10927bfceb))
+* spacing in jar overlay header and `onKeyDown` ([#421](https://github.com/joinmarket-webui/joinmarket-webui/issues/421)) ([24c0107](https://github.com/joinmarket-webui/joinmarket-webui/commit/24c01070365cbfcfc52d6cddad73d866bbbcf0dc))
+* text and border colors after bootstrap update ([#432](https://github.com/joinmarket-webui/joinmarket-webui/issues/432)) ([96a401c](https://github.com/joinmarket-webui/joinmarket-webui/commit/96a401ccadaa5609c61162f739bf8eca5b5367c0))
+
+#### Added
+
+* ability to sort and filter orderbook ([#434](https://github.com/joinmarket-webui/joinmarket-webui/issues/434)) ([952e24b](https://github.com/joinmarket-webui/joinmarket-webui/commit/952e24b2e9e4362a05e2eba2b2b9e19c398586e9))
+* add description for second fidelity bond ([#414](https://github.com/joinmarket-webui/joinmarket-webui/issues/414)) ([ad50747](https://github.com/joinmarket-webui/joinmarket-webui/commit/ad5074781831918156869bb51c6aa967b1d5c88e))
+* add sorting and filtering to earn report ([#451](https://github.com/joinmarket-webui/joinmarket-webui/issues/451)) ([bd8fd97](https://github.com/joinmarket-webui/joinmarket-webui/commit/bd8fd974f565ca525ac94aa9e1f51f7592ce7f6e))
+* **cheatsheet:** link to jamdocs.org ([#427](https://github.com/joinmarket-webui/joinmarket-webui/issues/427)) ([b442d58](https://github.com/joinmarket-webui/joinmarket-webui/commit/b442d58b61c8ff24f65bb6c12c295cdda195e0a1))
+* **cheatsheet:** link to jamdocs.org ([#429](https://github.com/joinmarket-webui/joinmarket-webui/issues/429)) ([05c908d](https://github.com/joinmarket-webui/joinmarket-webui/commit/05c908d6f6a671e19d41021cd883cf9483dc4052))
+* **cheatsheet:** re-word to remove 'yield' ([#426](https://github.com/joinmarket-webui/joinmarket-webui/issues/426)) ([893dfd0](https://github.com/joinmarket-webui/joinmarket-webui/commit/893dfd03978909ecff36a9aa0aedd084e9b1c669)), closes [#326](https://github.com/joinmarket-webui/joinmarket-webui/issues/326)
+* enable orderbook for all users ([#445](https://github.com/joinmarket-webui/joinmarket-webui/issues/445)) ([2d9d13e](https://github.com/joinmarket-webui/joinmarket-webui/commit/2d9d13ea907bde1c5f49a1344fca80defcfd4b57))
+* human readable locktime duration for fidelity bonds ([#450](https://github.com/joinmarket-webui/joinmarket-webui/issues/450)) ([9d8e656](https://github.com/joinmarket-webui/joinmarket-webui/commit/9d8e65698ef44b46ddf7bc4b1c32490a135781af))
+* improve earn report ([#409](https://github.com/joinmarket-webui/joinmarket-webui/issues/409)) ([dc36271](https://github.com/joinmarket-webui/joinmarket-webui/commit/dc36271aa61d2790eae8fcf7b79e06cd2610a3f3))
+* Orderbook ([#422](https://github.com/joinmarket-webui/joinmarket-webui/issues/422)) ([2406c04](https://github.com/joinmarket-webui/joinmarket-webui/commit/2406c04a7aad901393df7eb65dc2427587a3a8bc))
+* payment confirm modal ([#446](https://github.com/joinmarket-webui/joinmarket-webui/issues/446)) ([29eca37](https://github.com/joinmarket-webui/joinmarket-webui/commit/29eca37535b026d2c3eddb87170c8345bf287bc2))
+* prevent address reuse on Jam page ([#433](https://github.com/joinmarket-webui/joinmarket-webui/issues/433)) ([6a8830f](https://github.com/joinmarket-webui/joinmarket-webui/commit/6a8830f28d01aa6312dff6a53f70c7df3882f827))
+* **settings:** add link to Matrix and Jam's twitter ([#436](https://github.com/joinmarket-webui/joinmarket-webui/issues/436)) ([ca3cc20](https://github.com/joinmarket-webui/joinmarket-webui/commit/ca3cc20e15c41176b2aff1fedb8f871b63764ba9))
+* **settings:** add links to docs ([#437](https://github.com/joinmarket-webui/joinmarket-webui/issues/437)) ([01515d7](https://github.com/joinmarket-webui/joinmarket-webui/commit/01515d7f1432b10c5d532ac20446be720507cabd))
+* show address reuse warning ([#411](https://github.com/joinmarket-webui/joinmarket-webui/issues/411)) ([b2faeb7](https://github.com/joinmarket-webui/joinmarket-webui/commit/b2faeb747613beb74060e55b15c7f701e2ff6caa))
+* utxo list ([#430](https://github.com/joinmarket-webui/joinmarket-webui/issues/430)) ([61a3956](https://github.com/joinmarket-webui/joinmarket-webui/commit/61a39566f657353f4fd08851e1479724433e888a))
+
 ### [0.0.9](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.8...v0.0.9) (2022-07-14)
 
 #### Fixed
