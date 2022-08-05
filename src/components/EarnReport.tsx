@@ -110,7 +110,8 @@ const yieldgenReportLineToEarnReportEntry = (line: string): EarnReportEntry | nu
 
 type YieldgenReportLinesWithHeader = string[]
 
-const yieldgenReportToEarnReportEntries = (lines: YieldgenReportLinesWithHeader) => {
+// exported for tests only
+export const yieldgenReportToEarnReportEntries = (lines: YieldgenReportLinesWithHeader) => {
   const empty = lines.length < 2 // report is "empty" if it just contains the header line
   const linesWithoutHeader = empty ? [] : lines.slice(1, lines.length)
 
