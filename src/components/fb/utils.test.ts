@@ -202,8 +202,6 @@ describe('utils', () => {
 
     const oneWeek = Date.UTC(1970, 0, 8)
     const oneDay = Date.UTC(1970, 0, 2)
-    const oneAndAHalfYear = Date.UTC(1971, 6)
-    const twoYears = Date.UTC(1072, 0)
 
     const oneDayFromNow = now + oneDay
     const oneWeekFromNow = now + oneWeek
