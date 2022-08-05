@@ -30,8 +30,7 @@ const ExistingFidelityBond = ({ utxo }) => {
             <div className="d-flex flex-column">
               <div className={styles.label}>Locked until</div>
               <div className={styles.content}>
-                {utxo.locktime} (
-                {fb.time.humanizedTimeInterval(fb.time.timeInterval({ to: new Date(utxo.locktime).getTime() }))})
+                {utxo.locktime} ({fb.time.humanReadableDuration({ to: new Date(utxo.locktime).getTime() })}
               </div>
             </div>
           </div>

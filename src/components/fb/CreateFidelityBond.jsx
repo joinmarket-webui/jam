@@ -523,9 +523,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         >
           {t('earn.fidelity_bond.confirm_modal.body', {
             date: new Date(lockDate).toUTCString(),
-            humanziedDuration: fb.time.humanizedTimeInterval(
-              fb.time.timeInterval({ to: fb.lockdate.toTimestamp(lockDate) })
-            ),
+            humanReadableDuration: fb.time.humanReadableDuration({ to: fb.lockdate.toTimestamp(lockDate) }),
           })}
         </ConfirmModal>
       )}

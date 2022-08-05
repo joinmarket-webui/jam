@@ -280,8 +280,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
       label: t('earn.fidelity_bond.review_inputs.label_lock_date'),
       content: (
         <>
-          {new Date(lockDate).toUTCString()} (
-          {fb.time.humanizedTimeInterval(fb.time.timeInterval({ to: fb.lockdate.toTimestamp(lockDate) }))})
+          {new Date(lockDate).toUTCString()}({fb.time.humanReadableDuration({ to: fb.lockdate.toTimestamp(lockDate) })})
         </>
       ),
     },
@@ -361,8 +360,7 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
                 </div>
                 {fbUtxo.locktime && (
                   <div className={styles.confirmationStepContent}>
-                    {fbUtxo.locktime} (
-                    {fb.time.humanizedTimeInterval(fb.time.timeInterval({ to: new Date(fbUtxo.locktime).getTime() }))})
+                    {fbUtxo.locktime} ({fb.time.humanReadableDuration({ to: new Date(fbUtxo.locktime).getTime() })})
                   </div>
                 )}
               </div>

@@ -122,11 +122,21 @@ export const time = (() => {
     second: 1_000,
   }
 
+  const humanReadableDuration = ({
+    from = Date.now(),
+    to,
+    locale = 'end',
+  }: {
+    from?: Milliseconds
+    to: Milliseconds
+    locale?: string
+  }) => humanReadableTimeInterval(timeInterval({ from, to }), locale)
+
   const timeInterval = ({ from = Date.now(), to }: { from?: Milliseconds; to: Milliseconds }): TimeInterval => {
     return to - from
   }
 
-  const humanizedTimeInterval = (timeInterval: TimeInterval, locale: string = 'en') => {
+  const humanReadableTimeInterval = (timeInterval: TimeInterval, locale: string = 'en') => {
     const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'always', style: 'long' })
 
     const sortedUnits = (Object.keys(UNIT_MILLIS) as Unit[])
@@ -146,6 +156,6 @@ export const time = (() => {
 
   return {
     timeInterval,
-    humanizedTimeInterval,
+    humanReadableDuration,
   }
 })()
