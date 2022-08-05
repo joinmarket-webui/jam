@@ -206,8 +206,8 @@ describe('utils', () => {
     const oneDayFromNow = now + oneDay
     const oneWeekFromNow = now + oneWeek
     const fourWeeksFromNow = now + 4 * oneWeek
-    const oneMonthFromNow = Date.UTC(2009, 1, 3)
-    const twoMonthsFromNow = Date.UTC(2009, 2, 3)
+    const oneMonthFromNow = now + Date.UTC(1970, 1)
+    const twoMonthsFromNow = now + Date.UTC(1970, 2)
     const oneAndAHalfYearFromNow = now + Date.UTC(1971, 6)
     const twoYearsFromNow = now + Date.UTC(1972, 0)
 
