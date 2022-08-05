@@ -68,6 +68,8 @@ const TABLE_THEME = {
   `,
 }
 
+const TABLE_PAGE_SIZES = [25, 50, 100]
+
 type Minutes = number
 
 interface EarnReportEntry {
@@ -127,11 +129,11 @@ const toEarnReportEntry = (tableNode: TableTypes.TableNode) => tableNode as unkn
 interface TablePaginationProps {
   tableData: TableTypes.Data
   pagination: Pagination
-  itemsPerPage: number[]
+  pageSizes: number[]
   allowShowAll?: boolean
 }
 
-const TablePagination = ({ tableData, pagination, itemsPerPage, allowShowAll = true }: TablePaginationProps) => {
+const TablePagination = ({ tableData, pagination, pageSizes, allowShowAll = true }: TablePaginationProps) => {
   const { t } = useTranslation()
 
   return (
@@ -141,14 +143,14 @@ const TablePagination = ({ tableData, pagination, itemsPerPage, allowShowAll = t
         <rb.Form.Select
           aria-label={t('earn.report.pagination.items_per_page.label')}
           className="ms-2 d-inline-block w-auto"
-          defaultValue={itemsPerPage[0]}
+          defaultValue={pageSizes[0]}
           onChange={(e) => {
             const value = parseInt(e.target.value, 10)
             const pageSize = value > 0 ? value : tableData.nodes.length
             pagination.fns.onSetSize(pageSize)
           }}
         >
-          {itemsPerPage.map((size) => (
+          {pageSizes.map((size) => (
             <option key={size} value={size}>
               {size}
             </option>
@@ -250,11 +252,10 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
     }
   )
 
-  const itemsPerPage = [25, 50, 100]
   const pagination = usePagination(tableData, {
     state: {
       page: 0,
-      size: itemsPerPage[0],
+      size: TABLE_PAGE_SIZES[0],
     },
   })
 
@@ -329,7 +330,7 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
           </>
         )}
       </Table>
-      <TablePagination pagination={pagination} tableData={tableData} itemsPerPage={itemsPerPage} />
+      <TablePagination pagination={pagination} tableData={tableData} pageSizes={TABLE_PAGE_SIZES} />
     </>
   )
 }
