@@ -125,7 +125,7 @@ export const time = (() => {
   const humanReadableDuration = ({
     from = Date.now(),
     to,
-    locale = 'end',
+    locale = 'en',
   }: {
     from?: Milliseconds
     to: Milliseconds
