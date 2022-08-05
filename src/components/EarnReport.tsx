@@ -34,7 +34,7 @@ const TABLE_THEME = {
     }
     &:nth-of-type(3) button {
       display: flex;
-      justify-content: center;
+      justify-content: end;
     }
     &:nth-of-type(4) button {
       display: flex;
@@ -54,7 +54,7 @@ const TABLE_THEME = {
       text-align: right;
     }
     &:nth-of-type(3) {
-      text-align: center;
+      text-align: right;
     }
     &:nth-of-type(4) {
       text-align: right;
