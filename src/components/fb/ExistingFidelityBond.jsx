@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
@@ -8,6 +9,10 @@ import styles from './ExistingFidelityBond.module.css'
 
 const ExistingFidelityBond = ({ utxo }) => {
   const settings = useSettings()
+  const { i18n } = useTranslation()
+
+  console.log(i18n.resolvedLanguage)
+  console.log(i18n.language)
 
   return (
     <div className={styles.container}>
@@ -30,7 +35,12 @@ const ExistingFidelityBond = ({ utxo }) => {
             <div className="d-flex flex-column">
               <div className={styles.label}>Locked until</div>
               <div className={styles.content}>
-                {utxo.locktime} ({fb.time.humanReadableDuration({ to: new Date(utxo.locktime).getTime() })})
+                {utxo.locktime} (
+                {fb.time.humanReadableDuration({
+                  to: new Date(utxo.locktime).getTime(),
+                  locale: i18n.resolvedLanguage || i18n.language,
+                })}
+                )
               </div>
             </div>
           </div>

@@ -272,7 +272,7 @@ const UtxoSummary = ({ title, icon, utxos }: { title: string; icon: React.ReactE
 
 const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }: ReviewInputsProps) => {
   const settings = useSettings()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const confirmationItems = [
     {
@@ -280,7 +280,12 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
       label: t('earn.fidelity_bond.review_inputs.label_lock_date'),
       content: (
         <>
-          {new Date(lockDate).toUTCString()}({fb.time.humanReadableDuration({ to: fb.lockdate.toTimestamp(lockDate) })})
+          {new Date(lockDate).toUTCString()}(
+          {fb.time.humanReadableDuration({
+            to: fb.lockdate.toTimestamp(lockDate),
+            locale: i18n.resolvedLanguage || i18n.language,
+          })}
+          )
         </>
       ),
     },
@@ -343,7 +348,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
 }
 
 const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   return (
     <div className="d-flex flex-column gap-3">
@@ -360,7 +365,12 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
                 </div>
                 {fbUtxo.locktime && (
                   <div className={styles.confirmationStepContent}>
-                    {fbUtxo.locktime} ({fb.time.humanReadableDuration({ to: new Date(fbUtxo.locktime).getTime() })})
+                    {fbUtxo.locktime} (
+                    {fb.time.humanReadableDuration({
+                      to: new Date(fbUtxo.locktime).getTime(),
+                      locale: i18n.resolvedLanguage || i18n.language,
+                    })}
+                    )
                   </div>
                 )}
               </div>

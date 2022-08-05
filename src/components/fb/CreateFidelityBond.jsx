@@ -35,7 +35,7 @@ const steps = {
 
 const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo, onDone }) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -523,7 +523,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         >
           {t('earn.fidelity_bond.confirm_modal.body', {
             date: new Date(lockDate).toUTCString(),
-            humanReadableDuration: fb.time.humanReadableDuration({ to: fb.lockdate.toTimestamp(lockDate) }),
+            humanReadableDuration: fb.time.humanReadableDuration({
+              to: fb.lockdate.toTimestamp(lockDate),
+              locale: i18n.resolvedLanguage || i18n.language,
+            }),
           })}
         </ConfirmModal>
       )}
