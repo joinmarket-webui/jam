@@ -261,20 +261,7 @@
       "heading_input_value": "My Input Amount",
       "heading_cj_fee": "CoinJoin Fee",
       "heading_earned": "Earned",
-      "heading_notes": "Notes",
-      "pagination": {
-        "items_per_page": {
-          "label": "Items per page",
-          "text_option_show_all": "All"
-        },
-        "page_selector": {
-          "label": "Page",
-          "label_first": "First",
-          "label_previous": "Previous",
-          "label_next": "Next",
-          "label_last": "Last"
-        }
-      }
+      "heading_notes": "Notes"
     },
     "title_fidelity_bonds": "Create a Fidelity Bond",
     "title_fidelity_bond_exists": "Your Fidelity Bonds",
