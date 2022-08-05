@@ -11,9 +11,6 @@ const ExistingFidelityBond = ({ utxo }) => {
   const settings = useSettings()
   const { i18n } = useTranslation()
 
-  console.log(i18n.resolvedLanguage)
-  console.log(i18n.language)
-
   return (
     <div className={styles.container}>
       <div className="d-flex justify-content-between align-items-center">
