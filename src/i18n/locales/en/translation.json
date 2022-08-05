@@ -257,11 +257,10 @@
       "placeholder_search": "Search",
       "heading_timestamp": "Timestamp",
       "heading_cj_amount": "Transaction Amount",
-      "heading_input_count": "Inputs by me",
-      "heading_input_value": "Amount input by me",
+      "heading_input_count": "My Inputs",
+      "heading_input_value": "My Input Amount",
       "heading_cj_fee": "CoinJoin Fee",
       "heading_earned": "Earned",
-      "heading_confirm_time": "Confirmation Time (mins)",
       "heading_notes": "Notes",
       "pagination": {
         "items_per_page": {

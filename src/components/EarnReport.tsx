@@ -24,7 +24,7 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    --data-table-library_grid-template-columns: 2fr 2fr 1fr 2fr 2fr 2fr 2fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
