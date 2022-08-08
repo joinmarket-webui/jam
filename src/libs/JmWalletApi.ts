@@ -243,8 +243,7 @@ const postDirectSend = async ({ token, signal, walletName }: WalletRequestContex
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    // docs say "integer", but "midxdepth" must serialize as string!
-    body: JSON.stringify({ ...req, mixdepth: String(req.mixdepth) }),
+    body: JSON.stringify(req),
     signal,
   })
 }
@@ -253,8 +252,7 @@ const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext,
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/coinjoin`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    // docs say "integer", but "midxdepth" must serialize as string!
-    body: JSON.stringify({ ...req, mixdepth: String(req.mixdepth) }),
+    body: JSON.stringify(req),
     signal,
   })
 }
