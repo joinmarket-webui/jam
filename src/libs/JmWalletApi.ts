@@ -12,8 +12,8 @@
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
-type ApiToken = string
-type WalletName = string
+export type ApiToken = string
+export type WalletName = `${string}.jmdat`
 
 type Mixdepth = number
 export type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
