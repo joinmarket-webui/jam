@@ -63,7 +63,7 @@ else
     ## 200 OK
     ## {}
     msg "Starting maker service for wallet $wallet_name.."  
-    start_maker_request_payload="{\"txfee\":0,\"cjfee_a\":250,\"cjfee_r\":0.0003,\"ordertype\":\"sw0absoffer\",\"minsize\":10000}"
+    start_maker_request_payload="{\"txfee\":\"0\",\"cjfee_a\":\"250\",\"cjfee_r\":\"0.0003\",\"ordertype\":\"sw0absoffer\",\"minsize\":\"1\"}"
 
     start_maker_result=$(curl "$base_url/api/v1/wallet/$wallet_name/maker/start" --silent --show-error --insecure -H "$auth_header" --data "$start_maker_request_payload" | jq ".")
 
