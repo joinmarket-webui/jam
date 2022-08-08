@@ -1,8 +1,10 @@
+import { WalletName, ApiToken } from './libs/JmWalletApi'
+
 const SESSION_KEY = 'joinmarket'
 
 export interface SessionItem {
-  name: string
-  token: string
+  name: WalletName
+  token: ApiToken
 }
 
 export const setSession = (session: SessionItem) => sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
