@@ -14,6 +14,7 @@ import { EarnReportOverlay } from './EarnReport'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
 import { OrderbookOverlay } from './Orderbook'
+import Balance from './Balance'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -81,6 +82,99 @@ const factorToPercentage = (val, precision = 6) => {
   // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
+}
+
+const renderOrderType = (val, t) => {
+  if (val.includes('absoffer')) {
+    return <rb.Badge bg="info">{t('earn.current.text_offer_type_absolute')}</rb.Badge>
+  }
+  if (val.includes('reloffer')) {
+    return <rb.Badge bg="primary">{t('earn.current.text_offer_type_relative')}</rb.Badge>
+  }
+  return <rb.Badge bg="secondary">{val}</rb.Badge>
+}
+
+function CurrentOffer({ offer, nickname }) {
+  const { t } = useTranslation()
+  const settings = useSettings()
+
+  return (
+    <div className={styles.offerContainer}>
+      <div className="d-flex justify-content-between align-items-center">
+        <div className={styles.offerTitle}>{t('earn.current.title', { id: offer.oid })}</div>
+        <div className="d-flex align-items-center gap-1">{renderOrderType(offer.ordertype, t)}</div>
+      </div>
+      <rb.Container className="mt-2">
+        <rb.Row className="mb-2">
+          <rb.Col xs={12}>
+            <div className={styles.offerLabel}>{t('earn.current.text_nickname')}</div>
+            <div>{nickname}</div>
+          </rb.Col>
+        </rb.Row>
+        <rb.Row>
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_cjfee')}</div>
+              <div>
+                {offer.ordertype.includes('reloffer') ? (
+                  <>{offer.cjfee}%</>
+                ) : (
+                  <>
+                    <Balance
+                      valueString={String(offer.cjfee)}
+                      convertToUnit={settings.unit}
+                      showBalance={settings.showBalance}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          </rb.Col>
+
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_minsize')}</div>
+              <div>
+                <Balance
+                  valueString={String(offer.minsize)}
+                  convertToUnit={settings.unit}
+                  showBalance={settings.showBalance}
+                />
+              </div>
+            </div>
+          </rb.Col>
+        </rb.Row>
+
+        <rb.Row>
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_txfee')}</div>
+              <div>
+                <Balance
+                  valueString={String(offer.txfee)}
+                  convertToUnit={settings.unit}
+                  showBalance={settings.showBalance}
+                />
+              </div>
+            </div>
+          </rb.Col>
+
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_maxsize')}</div>
+              <div>
+                <Balance
+                  valueString={String(offer.maxsize)}
+                  convertToUnit={settings.unit}
+                  showBalance={settings.showBalance}
+                />
+              </div>
+            </div>
+          </rb.Col>
+        </rb.Row>
+      </rb.Container>
+    </div>
+  )
 }
 
 export default function Earn() {
@@ -294,6 +388,13 @@ export default function Earn() {
             !serviceInfo?.makerRunning &&
             !isWaitingMakerStart &&
             !isWaitingMakerStop && <p className="text-secondary mb-4">{t('earn.market_explainer')}</p>}
+          {serviceInfo?.makerRunning && serviceInfo?.offers && serviceInfo?.nickname && (
+            <>
+              {serviceInfo.offers.map((offer, index) => (
+                <CurrentOffer key={index} offer={offer} nickname={serviceInfo.nickname} />
+              ))}
+            </>
+          )}
           {!serviceInfo?.coinjoinInProgress && (
             <>
               <PageTitle

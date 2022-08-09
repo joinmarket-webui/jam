@@ -247,6 +247,16 @@
     "text_stopping": "Stopping",
     "button_show_report": "Show earnings report",
     "button_show_orderbook": "Show orderbook",
+    "current": {
+      "title": "Active Offer #{{ id }}",
+      "text_nickname": "Nym",
+      "text_cjfee": "Fee",
+      "text_minsize": "Minimum Size",
+      "text_maxsize": "Maximum Size",
+      "text_txfee": "Transaction Fee",
+      "text_offer_type_absolute": "absolute",
+      "text_offer_type_relative": "relative"
+    },
     "report": {
       "title": "Earnings Report",
       "text_report_summary_one": "{{ count }} entry",
