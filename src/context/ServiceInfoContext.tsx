@@ -10,19 +10,35 @@ import * as Api from '../libs/JmWalletApi'
 // interval in milliseconds for periodic session requests
 const SESSION_REQUEST_INTERVAL = 10_000
 
+interface Offer {
+  oid: number
+  ordertype: string
+  minsize: Api.AmountSats
+  maxsize: Api.AmountSats
+  txfee: Api.AmountSats
+  cjfee: string
+}
+
 interface JmSessionData {
   session: boolean
   maker_running: boolean
   coinjoin_in_process: boolean
   wallet_name: Api.WalletName | 'None'
+  offer_list: Offer[] | null
+  nickname: string | null
 }
 
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
-type WalletName = { walletName: Api.WalletName | null }
 
-type ServiceInfo = SessionFlag & MakerRunningFlag & CoinjoinInProgressFlag & WalletName
+type ServiceInfo = SessionFlag &
+  MakerRunningFlag &
+  CoinjoinInProgressFlag & {
+    walletName: Api.WalletName | null
+    offers: Offer[] | null
+    nickname: string | null
+  }
 type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag
 
 interface ServiceInfoContextEntry {
@@ -82,9 +98,18 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             maker_running: makerRunning,
             coinjoin_in_process: coinjoinInProgress,
             wallet_name: walletNameOrNoneString,
+            offer_list: offers,
+            nickname,
           } = data
           const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
-          return { sessionActive, makerRunning, coinjoinInProgress, walletName: activeWalletName } as ServiceInfo
+          return {
+            walletName: activeWalletName,
+            sessionActive,
+            makerRunning,
+            coinjoinInProgress,
+            offers,
+            nickname,
+          } as ServiceInfo
         })
 
       fetchSessionInProgress.current = fetch
