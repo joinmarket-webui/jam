@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
+import { usePagination } from '@table-library/react-table-library/pagination'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
 import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
@@ -11,6 +12,7 @@ import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import styles from './EarnReport.module.css'
+import TablePagination from './TablePagination'
 
 const SORT_KEYS = {
   timestamp: 'TIMESTAMP',
@@ -84,7 +86,7 @@ interface EarnReportEntry {
 type RawYielgenTimestamp = string
 
 const parseYieldgenTimestamp = (val: RawYielgenTimestamp) => {
-  // adding the timezone manually will display the date in the users timezone correctly
+  // adding the timezone manually so that the date displays with the users timezone
   return new Date(Date.parse(`${val} GMT`))
 }
 
@@ -112,7 +114,7 @@ type YieldgenReportLinesWithHeader = string[]
 
 // exported for tests only
 export const yieldgenReportToEarnReportEntries = (lines: YieldgenReportLinesWithHeader) => {
-  const empty = lines.length < 2 // report is "empty" if it just contains the header line
+  const empty = lines.length <= 1 // report is "empty" if it just contains the header line
   const linesWithoutHeader = empty ? [] : lines.slice(1, lines.length)
 
   return linesWithoutHeader
@@ -125,17 +127,23 @@ export const yieldgenReportToEarnReportEntries = (lines: YieldgenReportLinesWith
 const toEarnReportEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as EarnReportEntry
 
 interface EarnReportTableProps {
-  tableData: TableTypes.Data
+  data: TableTypes.Data
 }
 
-const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
+const EarnReportTable = ({ data }: EarnReportTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
   const tableTheme = useTheme(TABLE_THEME)
+  const pagination = usePagination(data, {
+    state: {
+      page: 0,
+      size: 25,
+    },
+  })
 
   const tableSort = useSort(
-    tableData,
+    data,
     {
       state: {
         sortKey: SORT_KEYS.timestamp,
@@ -163,7 +171,13 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
 
   return (
     <>
-      <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
+      <Table
+        data={data}
+        theme={tableTheme}
+        pagination={pagination}
+        sort={tableSort}
+        layout={{ custom: true, horizontalScroll: true }}
+      >
         {(tableList) => (
           <>
             <Header>
@@ -226,6 +240,9 @@ const EarnReportTable = ({ tableData }: EarnReportTableProps) => {
           </>
         )}
       </Table>
+      <div className="mt-4 mb-4 mb-md-0">
+        <TablePagination data={data} pagination={pagination} />
+      </div>
     </>
   )
 }
@@ -325,7 +342,7 @@ export function EarnReport({ entries, refresh }: EarnReportProps) {
         {entries.length === 0 ? (
           <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>
         ) : (
-          <EarnReportTable tableData={tableData} />
+          <EarnReportTable data={tableData} />
         )}
       </div>
     </div>
