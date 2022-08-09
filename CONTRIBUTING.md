@@ -39,7 +39,7 @@ Initialize the regtest setup:
 ```sh
 npm run regtest:init
 ```
-This creates and funds a wallet `funded` with password `test`.
+This creates and funds a wallet `Satoshi` with password `test`.
 
 Start the UI on port 3000:
 
@@ -95,7 +95,7 @@ Initialize the regtest setup:
 ```sh
 npm run regtest:init
 ```
-This creates and funds a wallet `funded` with password `test`.
+This creates and funds a wallet `Satoshi` with password `test`.
 
 Start the UI on port 3000:
 

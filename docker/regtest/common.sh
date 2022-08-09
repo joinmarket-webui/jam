@@ -66,7 +66,7 @@ is_docker_container_running() {
 ## Response: 
 ## 200 OK
 ## {
-##    "walletname": "funded.jmdat", 
+##    "walletname": "Satoshi.jmdat",
 ##    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ## }
 unlock_wallet() {
@@ -96,7 +96,7 @@ unlock_wallet() {
 ## Response: 
 ## 200 OK
 ## {
-##  "walletname": "funded.jmdat",
+##  "walletname": "Satoshi.jmdat",
 ##  "already_locked": false
 ## }
 lock_wallet() {
@@ -120,7 +120,7 @@ lock_wallet() {
 ## Response: 
 ## 200 OK
 ## {
-##    "walletname": "funded.jmdat", 
+##    "walletname": "Satoshi.jmdat",
 ##    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...", 
 ##    "seedphrase": "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
 ## }
@@ -176,7 +176,7 @@ fetch_new_address() {
 ## Response:
 ## 200 OK
 ## {
-##    "wallets": ["funded.jmdat", "test0.jmdat", "test1.jmdat", "test2.jmdat"]
+##    "wallets": ["Satoshi.jmdat", "test0.jmdat", "test1.jmdat", "test2.jmdat"]
 ## }
 ##
 fetch_available_wallets() {
