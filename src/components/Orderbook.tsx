@@ -5,6 +5,7 @@ import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
 import { useTranslation, TFunction } from 'react-i18next'
+import { Helper as ApiHelper } from '../libs/JmWalletApi'
 import * as ObwatchApi from '../libs/JmObwatchApi'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
@@ -337,7 +338,15 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
-      return ObwatchApi.fetchOrderbook({ signal })
+      return ObwatchApi.refreshOrderbook({ signal })
+        .then((res) => {
+          if (!res.ok) {
+            // e.g. error is raised if ob-watcher is not running
+            return ApiHelper.throwError(res)
+          }
+
+          return ObwatchApi.fetchOrderbook({ signal })
+        })
         .then((orders) => {
           if (signal.aborted) return
 
