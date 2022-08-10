@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -34,7 +34,7 @@ const WalletPreview = ({ wallet, totalBalance, unit, showBalance }) => {
   )
 }
 
-const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
+const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransactionRunning, onClick }) => {
   const { t } = useTranslation()
 
   return (
@@ -61,7 +61,7 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
         >
           <div className="d-flex align-items-start">
             {t('Jam')}
-            <TabActivityIndicator isOn={cjRunning} />
+            <TabActivityIndicator isOn={schedulerRunning} />
           </div>
         </NavLink>
       </rb.Nav.Item>
@@ -89,23 +89,32 @@ const CenterNav = ({ makerRunning, cjRunning, onClick }) => {
             'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
           }
         >
-          {t('navbar.tab_send')}
+          <div className="d-flex align-items-start">
+            {t('navbar.tab_send')}
+            <TabActivityIndicator isOn={singleCollaborativeTransactionRunning} />
+          </div>
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>
   )
 }
 
-const TrailingNav = ({ coinjoinInProgess, onClick }) => {
+const TrailingNav = ({ joiningRoute, onClick }) => {
   const { t } = useTranslation()
 
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
-      {coinjoinInProgess && (
-        <rb.Nav.Item className="d-flex align-items-center justify-content-center pe-2">
+      {joiningRoute && (
+        <rb.Nav.Item className="d-flex align-items-center pe-2">
           <div className="d-flex align-items-center px-0">
-            <rb.Navbar.Text>{t('navbar.joining_in_progress')}</rb.Navbar.Text>
-            <JoiningIndicator isOn={coinjoinInProgess} className="navbar-text" />
+            <NavLink to={joiningRoute} onClick={onClick} className="nav-link">
+              <rb.Navbar.Text className="d-md-none">{t('navbar.joining_in_progress')}</rb.Navbar.Text>
+              <JoiningIndicator
+                isOn={true}
+                className="navbar-text text-success"
+                title={t('navbar.joining_in_progress')}
+              />
+            </NavLink>
           </div>
         </rb.Nav.Item>
       )}
@@ -135,6 +144,19 @@ export default function Navbar() {
   const sessionConnectionError = useSessionConnectionError()
 
   const [isExpanded, setIsExpanded] = useState(false)
+
+  const joiningRoute = useMemo(() => {
+    if (!serviceInfo) return null
+
+    if (serviceInfo.coinjoinInProgress) {
+      return serviceInfo.schedule ? routes.jam : routes.send
+    }
+    if (serviceInfo.makerRunning) {
+      return routes.earn
+    }
+
+    return null
+  }, [serviceInfo])
 
   const height = '75px'
 
@@ -224,21 +246,27 @@ export default function Navbar() {
                   <rb.Offcanvas.Body>
                     <CenterNav
                       makerRunning={serviceInfo?.makerRunning}
-                      cjRunning={serviceInfo?.coinjoinInProgress}
+                      schedulerRunning={serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null}
+                      singleCollaborativeTransactionRunning={
+                        serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null
+                      }
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
-                    <TrailingNav
-                      coinjoinInProgess={serviceInfo?.coinjoinInProgress}
-                      onClick={() => setIsExpanded(!isExpanded)}
-                    />
+                    <TrailingNav joiningRoute={joiningRoute} onClick={() => setIsExpanded(!isExpanded)} />
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
-                  <CenterNav makerRunning={serviceInfo?.makerRunning} cjRunning={serviceInfo?.coinjoinInProgress} />
+                  <CenterNav
+                    makerRunning={serviceInfo?.makerRunning}
+                    schedulerRunning={serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null}
+                    singleCollaborativeTransactionRunning={
+                      serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null
+                    }
+                  />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">
-                    <TrailingNav coinjoinInProgess={serviceInfo?.coinjoinInProgress} />
+                    <TrailingNav joiningRoute={joiningRoute} />
                   </div>
                 </rb.Container>
               </>
