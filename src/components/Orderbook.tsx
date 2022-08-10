@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
+import { usePagination } from '@table-library/react-table-library/pagination'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
 import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
@@ -9,8 +10,9 @@ import * as ObwatchApi from '../libs/JmObwatchApi'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
-import styles from './Orderbook.module.css'
 import Sprite from './Sprite'
+import TablePagination from './TablePagination'
+import styles from './Orderbook.module.css'
 
 const SORT_KEYS = {
   type: 'TYPE',
@@ -99,17 +101,23 @@ const renderOrderFee = (val: string, settings: any) => {
 }
 
 interface OrderbookTableProps {
-  tableData: TableTypes.Data
+  data: TableTypes.Data
 }
 
-const OrderbookTable = ({ tableData }: OrderbookTableProps) => {
+const OrderbookTable = ({ data }: OrderbookTableProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
   const tableTheme = useTheme(TABLE_THEME)
+  const pagination = usePagination(data, {
+    state: {
+      page: 0,
+      size: 25,
+    },
+  })
 
   const tableSort = useSort(
-    tableData,
+    data,
     {
       state: {
         sortKey: SORT_KEYS.minimumSize,
@@ -163,59 +171,70 @@ const OrderbookTable = ({ tableData }: OrderbookTableProps) => {
   )
 
   return (
-    <Table data={tableData} theme={tableTheme} sort={tableSort} layout={{ custom: true, horizontalScroll: true }}>
-      {(tableList) => (
-        <>
-          <Header>
-            <HeaderRow>
-              <HeaderCellSort sortKey={SORT_KEYS.counterparty}>
-                {t('orderbook.table.heading_counterparty')}
-              </HeaderCellSort>
-              <HeaderCell>{t('orderbook.table.heading_order_id')}</HeaderCell>
-              <HeaderCellSort sortKey={SORT_KEYS.type}>{t('orderbook.table.heading_type')}</HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.fee}>{t('orderbook.table.heading_fee')}</HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.minimumSize}>
-                {t('orderbook.table.heading_minimum_size')}
-              </HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.maximumSize}>
-                {t('orderbook.table.heading_maximum_size')}
-              </HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.minerFeeContribution}>
-                {t('orderbook.table.heading_miner_fee_contribution')}
-              </HeaderCellSort>
-              <HeaderCellSort sortKey={SORT_KEYS.bondValue}>{t('orderbook.table.heading_bond_value')}</HeaderCellSort>
-            </HeaderRow>
-          </Header>
-          <Body>
-            {tableList.map((item) => {
-              const order = toOrder(item)
-              return (
-                <Row key={item.id} item={item}>
-                  <Cell>{order.counterparty}</Cell>
-                  <Cell>{order.orderId}</Cell>
-                  <Cell>{renderOrderType(order.type, t)}</Cell>
-                  <Cell>{renderOrderFee(order.fee, settings)}</Cell>
-                  <Cell>
-                    <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
-                  </Cell>
-                  <Cell>
-                    <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
-                  </Cell>
-                  <Cell>
-                    <Balance
-                      valueString={order.minerFeeContribution}
-                      convertToUnit={settings.unit}
-                      showBalance={true}
-                    />
-                  </Cell>
-                  <Cell>{order.bondValue}</Cell>
-                </Row>
-              )
-            })}
-          </Body>
-        </>
-      )}
-    </Table>
+    <>
+      <Table
+        data={data}
+        theme={tableTheme}
+        pagination={pagination}
+        sort={tableSort}
+        layout={{ custom: true, horizontalScroll: true }}
+      >
+        {(tableList) => (
+          <>
+            <Header>
+              <HeaderRow>
+                <HeaderCellSort sortKey={SORT_KEYS.counterparty}>
+                  {t('orderbook.table.heading_counterparty')}
+                </HeaderCellSort>
+                <HeaderCell>{t('orderbook.table.heading_order_id')}</HeaderCell>
+                <HeaderCellSort sortKey={SORT_KEYS.type}>{t('orderbook.table.heading_type')}</HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.fee}>{t('orderbook.table.heading_fee')}</HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.minimumSize}>
+                  {t('orderbook.table.heading_minimum_size')}
+                </HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.maximumSize}>
+                  {t('orderbook.table.heading_maximum_size')}
+                </HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.minerFeeContribution}>
+                  {t('orderbook.table.heading_miner_fee_contribution')}
+                </HeaderCellSort>
+                <HeaderCellSort sortKey={SORT_KEYS.bondValue}>{t('orderbook.table.heading_bond_value')}</HeaderCellSort>
+              </HeaderRow>
+            </Header>
+            <Body>
+              {tableList.map((item) => {
+                const order = toOrder(item)
+                return (
+                  <Row key={item.id} item={item}>
+                    <Cell>{order.counterparty}</Cell>
+                    <Cell>{order.orderId}</Cell>
+                    <Cell>{renderOrderType(order.type, t)}</Cell>
+                    <Cell>{renderOrderFee(order.fee, settings)}</Cell>
+                    <Cell>
+                      <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
+                    </Cell>
+                    <Cell>
+                      <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
+                    </Cell>
+                    <Cell>
+                      <Balance
+                        valueString={order.minerFeeContribution}
+                        convertToUnit={settings.unit}
+                        showBalance={true}
+                      />
+                    </Cell>
+                    <Cell>{order.bondValue}</Cell>
+                  </Row>
+                )
+              })}
+            </Body>
+          </>
+        )}
+      </Table>
+      <div className="mt-4 mb-4 mb-md-0">
+        <TablePagination data={data} pagination={pagination} />
+      </div>
+    </>
   )
 }
 
@@ -321,7 +340,7 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
         {orders.length === 0 ? (
           <rb.Alert variant="info">{t('orderbook.alert_empty_orderbook')}</rb.Alert>
         ) : (
-          <OrderbookTable tableData={tableData} />
+          <OrderbookTable data={tableData} />
         )}
       </div>
     </div>
