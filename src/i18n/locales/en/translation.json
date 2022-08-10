@@ -455,9 +455,9 @@
     "title_tab_utxos": "UTXOs",
     "title_tab_account": "Jar Details",
     "utxo_list": {
-      "title_no_utxos": "No UTXOs in Jar {{ jar }}",
-      "title_1_utxo": "1 UTXO in Jar {{ jar }}",
-      "title_num_utxos": "{{ num }} UTXOs in Jar {{ jar }}",
+      "title_zero": "No UTXOs in Jar {{ jar }}",
+      "title_one": "{{ count }} UTXO in Jar {{ jar }}",
+      "title_other": "{{ count }} UTXOs in Jar {{ jar }}",
       "button_freeze": "Freeze selected",
       "button_unfreeze": "Unfreeze selected",
       "button_freeze_loading": "Freezing...",
