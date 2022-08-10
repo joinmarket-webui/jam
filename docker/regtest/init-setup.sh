@@ -27,7 +27,7 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 
 base_url='https://localhost:29183'
-wallet_name='funded.jmdat'
+wallet_name='Satoshi.jmdat'
 wallet_password='test'
 
 msg "Attempt to start maker service for wallet $wallet_name in secondary container.."

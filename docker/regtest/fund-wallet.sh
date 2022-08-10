@@ -17,13 +17,13 @@ usage() {
 Usage: fund-wallet.sh [-h] [-v] [-w wallet_name] [-p password] [-m mixdepth] [-b blocks]
 
 A helper script to fund your joinmarket regtest wallet.
-Executed without parameters, it will mine a single block to wallet 'funded.jmdat' in mixdepth 0.
+Executed without parameters, it will mine a single block to wallet 'Satoshi.jmdat' in mixdepth 0.
 If the given wallet does not exist, it will be created.
 
 Available options:
     -h, --help           Print this help and exit
     -v, --verbose        Print script debug info
-    -w, --wallet-name    Wallet name (default: funded.jmdat)
+    -w, --wallet-name    Wallet name (default: Satoshi.jmdat)
     -p, --password       Wallet password (default: test)
     -m, --mixdepth       Mixdepth used (0 - 4) (default: 0)
     -b, --blocks         Amount of blocks (default: 1)
@@ -31,13 +31,13 @@ Available options:
     -c, --container      Target container (default: jm_regtest_joinmarket)
 
 Examples:
-    # Mine 42 blocks to wallet 'funded.jmdat' in mixdepth 0
+    # Mine 42 blocks to wallet 'Satoshi.jmdat' in mixdepth 0
     $(basename "${BASH_SOURCE[0]}") --blocks 42
 
-    # Mine 5 blocks to wallet 'satoshi.jmdat' with password 'correctbatteryhorsestaple' in mixdepth 3
-    $(basename "${BASH_SOURCE[0]}") --wallet-name satoshi.jmdat --mixdepth 3 --blocks 5 --password correctbatteryhorsestaple
+    # Mine 5 blocks to wallet 'Satoshi.jmdat' with password 'correctbatteryhorsestaple' in mixdepth 3
+    $(basename "${BASH_SOURCE[0]}") --wallet-name 'Satoshi\'s Wallet.jmdat' --mixdepth 3 --blocks 5 --password correctbatteryhorsestaple
 
-    # Mine one block (unmatured) to wallet 'funded.jmdat' of container 'jm_regtest_joinmarket2'
+    # Mine one block (unmatured) to wallet 'Satoshi.jmdat' of container 'jm_regtest_joinmarket2'
     $(basename "${BASH_SOURCE[0]}") --container jm_regtest_joinmarket2 --unmatured
 
 EOF
@@ -47,7 +47,7 @@ EOF
 parse_params() {
   # default values of variables set from params
   wallet_password='test'
-  wallet_name='funded.jmdat'
+  wallet_name='Satoshi.jmdat'
   mixdepth='0'
   blocks='1'
   unmatured=false
@@ -116,7 +116,7 @@ parse_params "$@"
 
 # ----------------------------------------
 
-msg "Trying to fund wallet $wallet_name.."
+msg "Trying to fund wallet '$wallet_name'.."
 
 [ -z "$(is_docker_container_running "jm_regtest_bitcoind")" ] && die "Please make sure bitcoin container 'jm_regtest_bitcoind' is running."
 [ -z "$(is_docker_container_running "$container")" ] && die "Please make sure joinmarket container '$container' is running."
@@ -138,25 +138,25 @@ if [ "$target_wallet_exists" = "1" ]; then
     # --------------------------
     # Unlock existing wallet
     # --------------------------
-    msg "Wallet $wallet_name already exists - unlocking.."
+    msg "Wallet '$wallet_name' already exists - unlocking.."
 
     unlock_result=$(unlock_wallet "$base_url" "$wallet_name" "$wallet_password")
 
     auth_token=$(jq -r '.token' <<< "$unlock_result")
 
-    msg_success "Successfully unlocked wallet $wallet_name."
+    msg_success "Successfully unlocked wallet '$wallet_name'."
 else
     # --------------------------
     # Create new wallet
     # --------------------------
-    msg "Wallet $wallet_name does not exist - creating.."
+    msg "Wallet '$wallet_name' does not exist - creating.."
 
     create_result=$(create_wallet "$base_url" "$wallet_name" "$wallet_password")
 
     seedphrase=$(jq -r '.seedphrase' <<< "$create_result")
     auth_token=$(jq -r '.token' <<< "$create_result")
 
-    msg_success "Successfully created wallet $wallet_name."
+    msg_success "Successfully created wallet '$wallet_name'."
     msg_highlight "Write down the seedphrase: $seedphrase"
 fi
 
@@ -168,7 +168,7 @@ auth_header="Authorization: Bearer $auth_token"
 # --------------------------
 # Fetch new address
 # --------------------------
-msg "Fetching new funding address from wallet $wallet_name in mixdepth $mixdepth"
+msg "Fetching new funding address from wallet '$wallet_name' in mixdepth $mixdepth"
 
 address=$(fetch_new_address "$base_url" "$auth_header" "$wallet_name" "$mixdepth")
 
@@ -183,11 +183,11 @@ fi
 # --------------------------
 # Lock wallet
 # --------------------------
-msg "Locking wallet $wallet_name"
+msg "Locking wallet '$wallet_name'"
 
 lock_result=$(lock_wallet "$base_url" "$auth_header" "$wallet_name")
 
-msg_success "Successfully locked wallet $wallet_name."
+msg_success "Successfully locked wallet '$wallet_name'."
 
 # In case an address could not be fetched, exit hard now.
 [ "$address" = "null" ] && die "No address found."

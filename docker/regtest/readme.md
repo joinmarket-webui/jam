@@ -114,7 +114,7 @@ Some helper scripts are included to make recurring tasks and interaction with th
 This script helps in providing both JoinMarket containers a wallet with spendable coins and starting the Maker Service in the secondary container.
 Its main goal is to make CoinJoin transactions possible in the regtest environment.
 It should be run immediately after the Docker setup is successfully started so you can start developing right away.
-A wallet named `funded.jmdat` with password `test` will be created if it does not exist.
+A wallet named `Satoshi.jmdat` with password `test` will be created if it does not exist.
 
 ```sh
 # fund wallets and start maker service in secondary container
@@ -123,10 +123,10 @@ A wallet named `funded.jmdat` with password `test` will be created if it does no
 
 ```text
 [...]
-Attempt to start maker for wallet funded.jmdat in secondary container ..
+Attempt to start maker for wallet 'Satoshi.jmdat' in secondary container ..
 [...]
-Starting maker service for wallet funded.jmdat
-Successfully started maker for wallet funded.jmdat in secondary container.
+Starting maker service for wallet 'Satoshi.jmdat'
+Successfully started maker for wallet 'Satoshi.jmdat' in secondary container.
 [...]
 ```
 
@@ -170,7 +170,7 @@ See the help page for examples and more usage information:
 
 #### Funding regtest wallet
 
-Executed without parameters the script will create one _spendable_ coinbase output to a wallet named 'funded.jmdat'.
+Executed without parameters the script will create one _spendable_ coinbase output to a wallet named 'Satoshi.jmdat'.
 If the wallet does not exist, it will be created. See the following output:
 
 ```sh
@@ -178,29 +178,29 @@ If the wallet does not exist, it will be created. See the following output:
 ```
 
 ```text
-Trying to fund wallet funded.jmdat..
+Trying to fund wallet 'Satoshi.jmdat'..
 [...]
 Successfully generated 1 blocks with rewards to bcrt1qyz7wql00gghwk25er08re3dhtv66h20h8gtgsp
 ```
 
 Control various parameters by passing options to the script.
 
-e.g. "Mine 5 blocks to wallet `satoshi.jmdat` with password `correctbatteryhorsestaple` in mixdepth 3"
+e.g. "Mine 5 blocks to wallet `Satoshi.jmdat` with password `correctbatteryhorsestaple` in mixdepth 3"
 
 ```sh
-[user@home regtest]$ ./fund-wallet.sh --blocks 5 --wallet-name satoshi.jmdat --password correctbatteryhorsestaple --mixdepth 3
+[user@home regtest]$ ./fund-wallet.sh --blocks 5 --wallet-name Satoshi.jmdat --password correctbatteryhorsestaple --mixdepth 3
 ```
 
 ```text
-Trying to fund wallet satoshi.jmdat..
+Trying to fund wallet 'Satoshi.jmdat'..
 Successfully established connection to jmwalletd
-Wallet satoshi.jmdat does not exist - creating..
-Successfully created wallet satoshi.jmdat.
+Wallet 'Satoshi.jmdat' does not exist - creating..
+Successfully created wallet 'Satoshi.jmdat'.
 Write down the seedphrase: abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about
-Fetching new funding address from wallet satoshi.jmdat in mixdepth 3
+Fetching new funding address from wallet 'Satoshi.jmdat' in mixdepth 3
 Successfully fetched new funding address bcrt1qs0aqmzxjq96jk8hhmta5jfn339dk4cme074lq3
-Locking wallet satoshi.jmdat
-Successfully locked wallet satoshi.jmdat.
+Locking wallet 'Satoshi.jmdat'
+Successfully locked wallet 'Satoshi.jmdat'.
 Generating 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339dk4cme074lq3
 Successfully generated 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339dk4cme074lq3
 ```
