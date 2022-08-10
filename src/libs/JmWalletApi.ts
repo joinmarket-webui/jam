@@ -102,7 +102,6 @@ interface StartSchedulerRequest {
 }
 
 interface TumblerOptions {
-  mixdepthsrc?: number
   restart?: boolean
   schedulefile?: string
   addrcount?: number
