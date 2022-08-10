@@ -396,8 +396,10 @@
   },
   "orderbook": {
     "title": "Orderbook",
-    "text_orderbook_summary": "{{ orderCount }} orders by {{ counterpartyCount }} counterparties",
-    "text_orderbook_summary_filtered": "found {{ orderCount }} orders by {{ counterpartyCount }} counterparties",
+    "text_orderbook_summary_one": "{{ count }} order by {{ counterpartyCount }} conterparty",
+    "text_orderbook_summary_other": "{{ count }} orders by {{ counterpartyCount }} conterparties",
+    "text_orderbook_summary_filtered_one": "found {{ count }} order by {{ counterpartyCount }} conterparty",
+    "text_orderbook_summary_filtered_other": "found {{ count }} order by {{ counterpartyCount }} conterparty",
     "alert_empty_orderbook": "Orderbook is empty",
     "error_loading_orderbook_failed": "Error while loading the orderbook. Your current local setup might not support fetching the orderbook. Reason: {{ reason }}",
     "text_offer_type_absolute": "absolute",

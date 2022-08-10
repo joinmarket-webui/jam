@@ -290,15 +290,15 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
             {search === '' ? (
               <>
                 {t('orderbook.text_orderbook_summary', {
+                  count: orders.length,
                   counterpartyCount,
-                  orderCount: orders.length,
                 })}
               </>
             ) : (
               <>
                 {t('orderbook.text_orderbook_summary_filtered', {
+                  count: tableData.nodes.length,
                   counterpartyCount: counterpartyCountFiltered,
-                  orderCount: tableData.nodes.length,
                 })}
               </>
             )}
