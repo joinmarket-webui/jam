@@ -10,6 +10,28 @@ import * as Api from '../libs/JmWalletApi'
 // interval in milliseconds for periodic session requests
 const SESSION_REQUEST_INTERVAL = 10_000
 
+type AmountFraction = number
+type AmountCounterparties = number
+type SchedulerDestinationAddress = 'INTERNAL' | Api.BitcoinAddress
+type WaitTimeInMinutes = number
+type Rounding = number
+type StateFlag = 0 | 1 | Api.TxId
+
+// [mixdepth, amount-fraction, N-counterparties (requested), destination address, wait time in minutes, rounding, flag indicating incomplete/broadcast/completed (0/txid/1)]
+// e.g.
+// - [ 2, 0.2456498211214867, 4, "INTERNAL", 0.01, 16, 1 ]
+// - [ 3, 0, 8, "bcrt1qpnv3nze7u6ecw63mn06ksxh497a3lryagh233q", 0.04, 16, 0 ]
+type ScheduleEntry = [
+  Api.Mixdepth,
+  AmountFraction,
+  AmountCounterparties,
+  SchedulerDestinationAddress,
+  WaitTimeInMinutes,
+  Rounding,
+  StateFlag
+]
+type Schedule = ScheduleEntry[]
+
 interface Offer {
   oid: number
   ordertype: string
@@ -24,6 +46,7 @@ interface JmSessionData {
   maker_running: boolean
   coinjoin_in_process: boolean
   wallet_name: Api.WalletName | 'None'
+  schedule: Schedule | null
   offer_list: Offer[] | null
   nickname: string | null
 }
@@ -99,6 +122,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             coinjoin_in_process: coinjoinInProgress,
             wallet_name: walletNameOrNoneString,
             offer_list: offers,
+            schedule,
             nickname,
           } = data
           const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
@@ -107,6 +131,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             sessionActive,
             makerRunning,
             coinjoinInProgress,
+            schedule,
             offers,
             nickname,
           } as ServiceInfo

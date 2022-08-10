@@ -15,12 +15,12 @@ const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 export type ApiToken = string
 export type WalletName = `${string}.jmdat`
 
-type Mixdepth = number
+export type Mixdepth = number
 export type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
 export type BitcoinAddress = string
 
 type Vout = number
-type TxId = string
+export type TxId = string
 export type UtxoId = `${TxId}:${Vout}`
 
 type WithWalletName = {
