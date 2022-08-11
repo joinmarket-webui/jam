@@ -1,7 +1,7 @@
 FROM python:3.9.7-slim-bullseye
 
 RUN apt-get update \
-    && apt-get install -qq --no-install-recommends tini procps vim git iproute2 supervisor \
+    && apt-get install -qq --no-install-recommends gnupg tini procps vim git iproute2 supervisor \
        # joinmarket dependencies
        curl build-essential automake pkg-config libtool python3-dev python3-pip python3-setuptools libltdl-dev \
        tor \
