@@ -14,13 +14,13 @@ interface JmSessionData {
   session: boolean
   maker_running: boolean
   coinjoin_in_process: boolean
-  wallet_name: string
+  wallet_name: Api.WalletName | 'None'
 }
 
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
-type WalletName = { walletName: string | null }
+type WalletName = { walletName: Api.WalletName | null }
 
 type ServiceInfo = SessionFlag & MakerRunningFlag & CoinjoinInProgressFlag & WalletName
 type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag
@@ -74,7 +74,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
         }
       }
 
-      const fetch = Api.getSession({ signal })
+      const fetch = Api.getSession({ signal, token: currentWallet?.token })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data: JmSessionData) => {
           const {
