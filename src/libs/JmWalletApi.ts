@@ -224,7 +224,7 @@ const postMakerStart = async ({ token, signal, walletName }: WalletRequestContex
     headers: { ...Authorization(token) },
     body: JSON.stringify({
       ...req,
-      // we enforce type-safety for the following properties, but their values must actually passed as string!
+      // We enforce type-safety for the following properties, but their values must actually be passed as string!
       cjfee_a: String(req.cjfee_a),
       cjfee_r: String(req.cjfee_r),
       minsize: String(req.minsize),
