@@ -211,7 +211,6 @@ export default function Jam() {
         stage1_timelambda_increase: 1.0,
         liquiditywait: 10,
         waittime: 1.0,
-        mixdepthsrc: 0,
       }
     }
 
