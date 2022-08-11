@@ -1,4 +1,4 @@
-FROM python:3.9.7-slim-bullseye
+FROM debian:bullseye-20220801-slim
 
 RUN apt-get update \
     && apt-get install -qq --no-install-recommends gnupg tini procps vim git iproute2 supervisor \
