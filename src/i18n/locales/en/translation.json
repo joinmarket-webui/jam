@@ -259,7 +259,6 @@
       "heading_cj_amount": "Transaction Amount",
       "heading_input_count": "My Inputs",
       "heading_input_value": "My Input Amount",
-      "heading_cj_fee": "CoinJoin Fee",
       "heading_earned": "Earned",
       "heading_notes": "Notes"
     },
