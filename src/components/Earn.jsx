@@ -384,13 +384,18 @@ export default function Earn() {
             !serviceInfo?.makerRunning &&
             !isWaitingMakerStart &&
             !isWaitingMakerStop && <p className="text-secondary mb-4">{t('earn.market_explainer')}</p>}
-          {serviceInfo?.makerRunning && serviceInfo?.offers && serviceInfo?.nickname && (
-            <>
-              {serviceInfo.offers.map((offer, index) => (
-                <CurrentOffer key={index} offer={offer} nickname={serviceInfo.nickname} />
-              ))}
-            </>
-          )}
+          {serviceInfo?.makerRunning &&
+            (serviceInfo?.offers && serviceInfo?.nickname ? (
+              <>
+                {serviceInfo.offers.map((offer, index) => (
+                  <CurrentOffer key={index} offer={offer} nickname={serviceInfo.nickname} />
+                ))}
+              </>
+            ) : (
+              <rb.Placeholder as="div" animation="wave">
+                <rb.Placeholder xs={12} className={styles.offerLoader} />
+              </rb.Placeholder>
+            ))}
           {!serviceInfo?.coinjoinInProgress && (
             <>
               <PageTitle
@@ -416,7 +421,7 @@ export default function Earn() {
                       />
                     ) : (
                       <rb.Placeholder as="div" animation="wave">
-                        <rb.Placeholder xs={12} className={styles['fb-loader']} />
+                        <rb.Placeholder xs={12} className={styles.fidelityBondsLoader} />
                       </rb.Placeholder>
                     ))}
                 </>

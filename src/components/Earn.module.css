@@ -3,7 +3,7 @@
   border-radius: 0.25rem;
 }
 
-.earn .fb-loader {
+.earn .fidelityBondsLoader {
   height: 11rem;
   border-radius: 0.25rem;
 }
@@ -45,6 +45,12 @@
 :root[data-theme='dark'] .earn hr {
   border-color: var(--bs-gray-800);
   opacity: 100%;
+}
+
+.offerLoader {
+  height: 10rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .offerContainer {
