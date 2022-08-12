@@ -13,7 +13,7 @@
           "text_option_show_all": "All"
         },
         "page_selector": {
-          "label": "Page",
+          "label_current": "Page",
           "label_first": "First",
           "label_previous": "Previous",
           "label_next": "Next",

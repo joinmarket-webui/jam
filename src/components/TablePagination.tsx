@@ -3,6 +3,8 @@ import { Pagination } from '@table-library/react-table-library/pagination'
 import * as TableTypes from '@table-library/react-table-library/types/table'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import Sprite from './Sprite'
+import styles from './TablePagination.module.css'
 
 const DEFAULT_PAGE_SIZES = [25, 50, 100]
 const DEFAULT_ALLOW_SHOW_ALL = true
@@ -24,11 +26,11 @@ export default function TablePagination({
 
   return (
     <div className="d-flex justify-content-between flex-column flex-md-row">
-      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-2 order-md-1">
-        {t('global.table.pagination.items_per_page.label')}
+      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-2 order-md-1 gap-2">
+        <div className="flex-shrink-0">{t('global.table.pagination.items_per_page.label')}</div>
         <rb.Form.Select
           aria-label={t('global.table.pagination.items_per_page.label')}
-          className="ms-2 d-inline-block w-auto"
+          className={styles.paginationSelect}
           defaultValue={pageSizes[0]}
           onChange={(e) => {
             const value = parseInt(e.target.value, 10)
@@ -47,26 +49,29 @@ export default function TablePagination({
         </rb.Form.Select>
       </div>
 
-      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-1 order-md-2">
+      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-1 order-md-2 gap-1">
         <rb.Button
+          aria-label={t('global.table.pagination.page_selector.label_first')}
           variant={'outline-dark'}
-          className="ms-1"
+          className={styles.paginationButton}
           disabled={pagination.state.page === 0}
           onClick={() => pagination.fns.onSetPage(0)}
         >
-          {t('global.table.pagination.page_selector.label_first')}
+          <Sprite symbol="caret-left" width="18" height="18" />
+          <Sprite symbol="caret-left" width="18" height="18" />
         </rb.Button>
         <rb.Button
+          aria-label={t('global.table.pagination.page_selector.label_previous')}
           variant="outline-dark"
-          className="ms-1"
+          className={styles.paginationButton}
           disabled={pagination.state.page === 0}
           onClick={() => pagination.fns.onSetPage(pagination.state.page - 1)}
         >
-          {t('global.table.pagination.page_selector.label_previous')}
+          <Sprite symbol="caret-left" width="18" height="18" />
         </rb.Button>
         <rb.Form.Select
-          aria-label={t('global.table.pagination.page_selector.label')}
-          className="ms-1 d-inline-block w-auto h-auto"
+          aria-label={t('global.table.pagination.page_selector.label_current')}
+          className={styles.paginationSelect}
           value={pagination.state.page}
           onChange={(e) => {
             const value = parseInt(e.target.value, 10)
@@ -81,20 +86,23 @@ export default function TablePagination({
           ))}
         </rb.Form.Select>
         <rb.Button
+          aria-label={t('global.table.pagination.page_selector.label_next')}
           variant="outline-dark"
-          className="ms-1"
+          className={styles.paginationButton}
           disabled={pagination.state.page + 1 === pagination.state.getTotalPages(data.nodes)}
           onClick={() => pagination.fns.onSetPage(pagination.state.page + 1)}
         >
-          {t('global.table.pagination.page_selector.label_next')}
+          <Sprite symbol="caret-right" width="18" height="18" />
         </rb.Button>
         <rb.Button
+          aria-label={t('global.table.pagination.page_selector.label_last')}
           variant="outline-dark"
-          className="ms-1"
+          className={styles.paginationButton}
           disabled={pagination.state.page + 1 === pagination.state.getTotalPages(data.nodes)}
           onClick={() => pagination.fns.onSetPage(pagination.state.getTotalPages(data.nodes) - 1)}
         >
-          {t('global.table.pagination.page_selector.label_last')}
+          <Sprite symbol="caret-right" width="18" height="18" />
+          <Sprite symbol="caret-right" width="18" height="18" />
         </rb.Button>
       </div>
     </div>
