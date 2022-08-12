@@ -394,7 +394,7 @@ export default function Earn() {
           {!serviceInfo?.coinjoinInProgress && (
             <>
               <PageTitle
-                title={fidelityBonds.length > 0 ? t('earn.title_fidelity_bond_exists') : t('earn.title_fidelity_bonds')}
+                title={t('earn.title_fidelity_bonds', { count: fidelityBonds.length })}
                 subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
