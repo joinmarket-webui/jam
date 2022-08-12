@@ -73,4 +73,11 @@ const fetchOrderbook = async ({ signal }: { signal: AbortSignal }) => {
   }).then((res) => parseOrderbook(res))
 }
 
-export { fetchOrderbook }
+const refreshOrderbook = async ({ signal }: { signal: AbortSignal }) => {
+  return await fetch(`${basePath()}/refreshorderbook`, {
+    method: 'POST',
+    signal,
+  })
+}
+
+export { fetchOrderbook, refreshOrderbook }

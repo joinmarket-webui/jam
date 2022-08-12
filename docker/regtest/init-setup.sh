@@ -27,7 +27,7 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
 
 base_url='https://localhost:29183'
-wallet_name='funded.jmdat'
+wallet_name='Satoshi.jmdat'
 wallet_password='test'
 
 msg "Attempt to start maker service for wallet $wallet_name in secondary container.."
@@ -63,7 +63,7 @@ else
     ## 200 OK
     ## {}
     msg "Starting maker service for wallet $wallet_name.."  
-    start_maker_request_payload="{\"txfee\":0,\"cjfee_a\":250,\"cjfee_r\":0.0003,\"ordertype\":\"sw0absoffer\",\"minsize\":10000}"
+    start_maker_request_payload="{\"txfee\":\"0\",\"cjfee_a\":\"250\",\"cjfee_r\":\"0.0003\",\"ordertype\":\"sw0absoffer\",\"minsize\":\"1\"}"
 
     start_maker_result=$(curl "$base_url/api/v1/wallet/$wallet_name/maker/start" --silent --show-error --insecure -H "$auth_header" --data "$start_maker_request_payload" | jq ".")
 
