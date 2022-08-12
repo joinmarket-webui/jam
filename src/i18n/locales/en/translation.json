@@ -247,8 +247,6 @@
     "button_show_report": "Show earnings report",
     "button_show_orderbook": "Show orderbook",
     "current": {
-      "title": "Active Offer #{{ id }}",
-      "text_nickname": "Nym",
       "text_cjfee": "Fee",
       "text_minsize": "Minimum Size",
       "text_maxsize": "Maximum Size",

@@ -101,17 +101,13 @@ function CurrentOffer({ offer, nickname }) {
   return (
     <div className={styles.offerContainer}>
       <div className="d-flex justify-content-between align-items-center">
-        <div className={styles.offerTitle}>{t('earn.current.title', { id: offer.oid })}</div>
+        <div className={styles.offerTitle}>
+          {nickname}:{offer.oid}
+        </div>
         <div className="d-flex align-items-center gap-1">{renderOrderType(offer.ordertype, t)}</div>
       </div>
       <rb.Container className="mt-2">
-        <rb.Row className="mb-2">
-          <rb.Col xs={12}>
-            <div className={styles.offerLabel}>{t('earn.current.text_nickname')}</div>
-            <div>{nickname}</div>
-          </rb.Col>
-        </rb.Row>
-        <rb.Row>
+        <rb.Row className="mb-1">
           <rb.Col xs={6}>
             <div className="d-flex flex-column">
               <div className={styles.offerLabel}>{t('earn.current.text_cjfee')}</div>
