@@ -91,7 +91,7 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransact
         >
           <div className="d-flex align-items-start">
             {t('navbar.tab_send')}
-            <TabActivityIndicator isOn={singleCollaborativeTransactionRunning} />
+            <TabActivityIndicator isOn={singleCollaborativeTransactionRunning} className="ms-1" />
           </div>
         </NavLink>
       </rb.Nav.Item>
