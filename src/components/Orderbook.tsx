@@ -6,6 +6,7 @@ import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
 import { useTranslation, TFunction } from 'react-i18next'
+import { Helper as ApiHelper } from '../libs/JmWalletApi'
 import * as ObwatchApi from '../libs/JmObwatchApi'
 // @ts-ignore
 import { useSettings } from '../context/SettingsContext'
@@ -240,7 +241,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
 
 interface OrderbookProps {
   orders: ObwatchApi.Order[]
-  refresh: (abortCtrl: AbortController) => Promise<void>
+  refresh: (signal: AbortSignal) => Promise<void>
 }
 
 export function Orderbook({ orders, refresh }: OrderbookProps) {
@@ -293,7 +294,7 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
               setIsLoadingRefresh(true)
 
               const abortCtrl = new AbortController()
-              refresh(abortCtrl).finally(() => {
+              refresh(abortCtrl.signal).finally(() => {
                 // as refreshing is fast most of the time, add a short delay to avoid flickering
                 setTimeout(() => setIsLoadingRefresh(false), 250)
               })
@@ -355,16 +356,24 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
   const [orders, setOrders] = useState<ObwatchApi.Order[] | null>(null)
 
   const refresh = useCallback(
-    (abortCtrl: AbortController) => {
-      return ObwatchApi.fetchOrderbook({ signal: abortCtrl.signal })
+    (signal: AbortSignal) => {
+      return ObwatchApi.refreshOrderbook({ signal })
+        .then((res) => {
+          if (!res.ok) {
+            // e.g. error is raised if ob-watcher is not running
+            return ApiHelper.throwError(res)
+          }
+
+          return ObwatchApi.fetchOrderbook({ signal })
+        })
         .then((orders) => {
-          if (abortCtrl.signal.aborted) return
+          if (signal.aborted) return
 
           setOrders(orders)
           setAlert(null)
         })
         .catch((e) => {
-          if (abortCtrl.signal.aborted) return
+          if (signal.aborted) return
           const message = t('orderbook.error_loading_orderbook_failed', {
             reason: e.message || 'Unknown reason',
           })
@@ -380,7 +389,7 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
     const abortCtrl = new AbortController()
 
     setIsLoading(true)
-    refresh(abortCtrl).finally(() => {
+    refresh(abortCtrl.signal).finally(() => {
       if (abortCtrl.signal.aborted) return
       setIsLoading(false)
       setIsInitialized(true)

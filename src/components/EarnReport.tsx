@@ -19,13 +19,12 @@ const SORT_KEYS = {
   cjTotalAmountInSats: 'CJ_TOTAL_AMOUNT_IN_SATS',
   inputCount: 'INPUT_COUNT',
   inputAmountInSats: 'INPUT_AMOUNT_IN_SATS',
-  feeInSats: 'FEE_IN_SATS',
   earnedAmountInSats: 'EARNED_AMOUNT_IN_SATS',
 }
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2fr 2fr 2fr 1fr 2fr 2fr 2fr;
+    --data-table-library_grid-template-columns: 2fr 2fr 2fr 1fr 2fr 2fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -45,10 +44,6 @@ const TABLE_THEME = {
       display: flex;
       justify-content: end;
     }
-    &:nth-of-type(6) button {
-      display: flex;
-      justify-content: end;
-    }
   `,
   Cell: `
     &:nth-of-type(2) {
@@ -61,9 +56,6 @@ const TABLE_THEME = {
       text-align: right;
     }
     &:nth-of-type(5) {
-      text-align: right;
-    }
-    &:nth-of-type(6) {
       text-align: right;
     }
   `,
@@ -164,7 +156,6 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
         [SORT_KEYS.cjTotalAmountInSats]: (array) => array.sort((a, b) => +a.cjTotalAmount - +b.cjTotalAmount),
         [SORT_KEYS.inputCount]: (array) => array.sort((a, b) => +a.inputCount - +b.inputCount),
         [SORT_KEYS.inputAmountInSats]: (array) => array.sort((a, b) => +a.inputAmount - +b.inputAmount),
-        [SORT_KEYS.feeInSats]: (array) => array.sort((a, b) => +a.fee - +b.fee),
       },
     }
   )
@@ -193,7 +184,6 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
                 <HeaderCellSort sortKey={SORT_KEYS.inputAmountInSats}>
                   {t('earn.report.heading_input_value')}
                 </HeaderCellSort>
-                <HeaderCellSort sortKey={SORT_KEYS.feeInSats}>{t('earn.report.heading_cj_fee')}</HeaderCellSort>
                 <HeaderCell>{t('earn.report.heading_notes')}</HeaderCell>
               </HeaderRow>
             </Header>
@@ -221,13 +211,6 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
                     <Cell>
                       <Balance
                         valueString={entry.inputAmount?.toString() || ''}
-                        convertToUnit={settings.unit}
-                        showBalance={true}
-                      />
-                    </Cell>
-                    <Cell>
-                      <Balance
-                        valueString={entry.fee?.toString() || ''}
                         convertToUnit={settings.unit}
                         showBalance={true}
                       />
@@ -269,10 +252,8 @@ export function EarnReport({ entries, refresh }: EarnReportProps) {
               entry.cjTotalAmount?.toString().includes(searchVal) ||
               entry.inputCount?.toString().includes(searchVal) ||
               entry.inputAmount?.toString().includes(searchVal) ||
-              entry.fee?.toString().includes(searchVal) ||
               entry.earnedAmount?.toString().includes(searchVal) ||
               entry.inputCount?.toString().includes(searchVal) ||
-              entry.confirmationDuration?.toString().includes(searchVal) ||
               entry.notes?.toLowerCase().includes(searchVal)
             )
           })

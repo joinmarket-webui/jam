@@ -12,15 +12,15 @@
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
-type ApiToken = string
-type WalletName = string
+export type ApiToken = string
+export type WalletName = `${string}.jmdat`
 
-type Mixdepth = number
+export type Mixdepth = number
 export type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
 export type BitcoinAddress = string
 
 type Vout = number
-type TxId = string
+export type TxId = string
 export type UtxoId = `${TxId}:${Vout}`
 
 type WithWalletName = {
@@ -102,7 +102,6 @@ interface StartSchedulerRequest {
 }
 
 interface TumblerOptions {
-  mixdepthsrc?: number
   restart?: boolean
   schedulefile?: string
   addrcount?: number
@@ -222,7 +221,14 @@ const postMakerStart = async ({ token, signal, walletName }: WalletRequestContex
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/maker/start`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    body: JSON.stringify({ ...req, txfee: '0' }),
+    body: JSON.stringify({
+      ...req,
+      // We enforce type-safety for the following properties, but their values must actually be passed as string!
+      cjfee_a: String(req.cjfee_a),
+      cjfee_r: String(req.cjfee_r),
+      minsize: String(req.minsize),
+      txfee: String(0),
+    }),
     signal,
   })
 }
@@ -243,8 +249,7 @@ const postDirectSend = async ({ token, signal, walletName }: WalletRequestContex
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    // docs say "integer", but "midxdepth" must serialize as string!
-    body: JSON.stringify({ ...req, mixdepth: String(req.mixdepth) }),
+    body: JSON.stringify(req),
     signal,
   })
 }
@@ -253,8 +258,7 @@ const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext,
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/coinjoin`, {
     method: 'POST',
     headers: { ...Authorization(token) },
-    // docs say "integer", but "midxdepth" must serialize as string!
-    body: JSON.stringify({ ...req, mixdepth: String(req.mixdepth) }),
+    body: JSON.stringify(req),
     signal,
   })
 }

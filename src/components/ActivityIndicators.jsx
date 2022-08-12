@@ -1,5 +1,6 @@
 import React from 'react'
 import Sprite from './Sprite'
+import classnames from 'classnames/bind'
 
 function ActivityIndicator({ isOn, children }) {
   return (
@@ -19,9 +20,9 @@ export function JoiningIndicator({ isOn, size = 30, className, ...props }) {
   )
 }
 
-export function TabActivityIndicator({ isOn }) {
+export function TabActivityIndicator({ isOn, className }) {
   return (
-    <span className="earn-indicator">
+    <span className={classnames('earn-indicator', className)}>
       <ActivityIndicator isOn={isOn} />
     </span>
   )

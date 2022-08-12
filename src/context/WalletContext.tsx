@@ -6,8 +6,8 @@ import * as Api from '../libs/JmWalletApi'
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
 
 export interface CurrentWallet {
-  name: string
-  token: string
+  name: Api.WalletName
+  token: Api.ApiToken
 }
 
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
