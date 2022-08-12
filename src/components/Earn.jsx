@@ -113,7 +113,7 @@ function CurrentOffer({ offer, nickname }) {
               <div className={styles.offerLabel}>{t('earn.current.text_cjfee')}</div>
               <div>
                 {offer.ordertype.includes('reloffer') ? (
-                  <>{offer.cjfee}%</>
+                  <>{factorToPercentage(offer.cjfee)}%</>
                 ) : (
                   <>
                     <Balance
