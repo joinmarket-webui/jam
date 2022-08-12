@@ -29,8 +29,11 @@ const RELOAD_FIDELITY_BONDS_DELAY_MS = 2_000
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-const isRelativeOffer = (offertype) => offertype === OFFERTYPE_REL
-const isAbsoluteOffer = (offertype) => offertype === OFFERTYPE_ABS
+// can be any of ['sw0reloffer', 'swreloffer', 'reloffer']
+const isRelativeOffer = (offertype) => offertype.includes('reloffer')
+
+// can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
+const isAbsoluteOffer = (offertype) => offertype.includes('absoffer')
 
 const FORM_INPUT_LOCAL_STORAGE_KEYS = {
   offertype: 'jm-offertype',
@@ -85,10 +88,10 @@ const factorToPercentage = (val, precision = 6) => {
 }
 
 const renderOrderType = (val, t) => {
-  if (val.includes('absoffer')) {
+  if (isAbsoluteOffer(val)) {
     return <rb.Badge bg="info">{t('earn.current.text_offer_type_absolute')}</rb.Badge>
   }
-  if (val.includes('reloffer')) {
+  if (isRelativeOffer(val)) {
     return <rb.Badge bg="primary">{t('earn.current.text_offer_type_relative')}</rb.Badge>
   }
   return <rb.Badge bg="secondary">{val}</rb.Badge>
@@ -112,7 +115,7 @@ function CurrentOffer({ offer, nickname }) {
             <div className="d-flex flex-column">
               <div className={styles.offerLabel}>{t('earn.current.text_cjfee')}</div>
               <div>
-                {offer.ordertype.includes('reloffer') ? (
+                {isRelativeOffer(offer.ordertype) ? (
                   <>{factorToPercentage(offer.cjfee)}%</>
                 ) : (
                   <>
