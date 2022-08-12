@@ -59,6 +59,7 @@ type ServiceInfo = SessionFlag &
   MakerRunningFlag &
   CoinjoinInProgressFlag & {
     walletName: Api.WalletName | null
+    schedule: Schedule | null
     offers: Offer[] | null
     nickname: string | null
   }
@@ -115,7 +116,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
 
       const fetch = Api.getSession({ signal, token: currentWallet?.token })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-        .then((data: JmSessionData) => {
+        .then((data: JmSessionData): ServiceInfo => {
           const {
             session: sessionActive,
             maker_running: makerRunning,
@@ -134,7 +135,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             schedule,
             offers,
             nickname,
-          } as ServiceInfo
+          }
         })
 
       fetchSessionInProgress.current = fetch
