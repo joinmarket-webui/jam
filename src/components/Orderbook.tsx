@@ -191,7 +191,7 @@ const OrderbookTable = ({ tableData }: OrderbookTableProps) => {
             {tableList.map((item) => {
               const order = toOrder(item)
               return (
-                <Row key={item.id} item={item}>
+                <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
                   <Cell>{order.counterparty}</Cell>
                   <Cell>{order.orderId}</Cell>
                   <Cell>{renderOrderType(order.type, t)}</Cell>
@@ -223,13 +223,16 @@ const OrderbookTable = ({ tableData }: OrderbookTableProps) => {
 interface OrderbookProps {
   orders: ObwatchApi.Order[]
   refresh: (signal: AbortSignal) => Promise<void>
+  nickname?: string
 }
 
-export function Orderbook({ orders, refresh }: OrderbookProps) {
+export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
   const { t } = useTranslation()
   const settings = useSettings()
   const [search, setSearch] = useState('')
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
+  const [isHighlightOwnOffers, setIsHighlightOwnOffers] = useState(false)
+  const [highlightedOrders, setHighlightedOrders] = useState<ObwatchApi.Order[]>([])
 
   const tableData: TableTypes.Data = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
@@ -251,16 +254,25 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
     const nodes = filteredOrders.map((order) => ({
       ...order,
       id: `${order.counterparty}_${order.orderId}`,
+      _highlighted: highlightedOrders.includes(order),
     }))
 
     return { nodes }
-  }, [orders, search])
+  }, [orders, search, highlightedOrders])
 
   const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
   const counterpartyCountFiltered = useMemo(
     () => new Set(tableData.nodes.map((it) => it.counterparty)).size,
     [tableData]
   )
+
+  useEffect(() => {
+    if (!nickname || !isHighlightOwnOffers) {
+      setHighlightedOrders([])
+    } else {
+      setHighlightedOrders(orders.filter((it) => it.counterparty === nickname))
+    }
+  }, [orders, nickname, isHighlightOwnOffers])
 
   return (
     <div className={styles.orderbookContainer}>
@@ -318,18 +330,37 @@ export function Orderbook({ orders, refresh }: OrderbookProps) {
           </rb.Form.Group>
         </div>
       </div>
+
       <div className="px-md-3 pb-2">
         {orders.length === 0 ? (
           <rb.Alert variant="info">{t('orderbook.alert_empty_orderbook')}</rb.Alert>
         ) : (
-          <OrderbookTable tableData={tableData} />
+          <>
+            {nickname && (
+              <div className="mb-3">
+                <rb.Form.Check
+                  type="checkbox"
+                  id="highlight-own-offers"
+                  label={t('orderbook.label_highlight_own_orders')}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setIsHighlightOwnOffers(e.target.checked)
+                  }}
+                />
+              </div>
+            )}
+            <OrderbookTable tableData={tableData} />
+          </>
         )}
       </div>
     </div>
   )
 }
 
-export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
+type OrderbookOverlayProps = rb.OffcanvasProps & {
+  nickname?: string
+}
+
+export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayProps) {
   const { t } = useTranslation()
   const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
@@ -420,7 +451,7 @@ export function OrderbookOverlay({ show, onHide }: rb.OffcanvasProps) {
               {orders && (
                 <rb.Row>
                   <rb.Col>
-                    <Orderbook orders={orders} refresh={refresh} />
+                    <Orderbook nickname={nickname} orders={orders} refresh={refresh} />
                   </rb.Col>
                 </rb.Row>
               )}
