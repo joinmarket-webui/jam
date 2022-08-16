@@ -22,6 +22,7 @@ import Onboarding from './Onboarding'
 import Cheatsheet from './Cheatsheet'
 import { routes } from '../constants/routes'
 import packageInfo from '../../package.json'
+import { fetchJamLog } from '../libs/JamApi'
 
 export default function App() {
   const { t } = useTranslation()
@@ -37,6 +38,10 @@ export default function App() {
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
   const cheatsheetEnabled = useMemo(() => !!currentWallet, [currentWallet])
+
+  useEffect(() => {
+    fetchJamLog({ token: currentWallet?.token, fileName: 'jmwalletd_stdout.log' }).catch((e) => console.error(e))
+  }, [])
 
   const startWallet = useCallback(
     (name, token) => {
