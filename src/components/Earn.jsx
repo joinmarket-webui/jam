@@ -104,7 +104,7 @@ function CurrentOffer({ offer, nickname }) {
   return (
     <div className={styles.offerContainer}>
       <div className="d-flex justify-content-between align-items-center">
-        <div className={styles.offerTitle}>
+        <div className={`${styles.offerTitle} slashed-zeroes`}>
           {nickname}:{offer.oid}
         </div>
         <div className="d-flex align-items-center gap-1">{renderOrderType(offer.ordertype, t)}</div>
