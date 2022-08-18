@@ -62,9 +62,26 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
     }
   }, [fillLevel, isOpen])
 
+  const jarFlavor = useMemo(() => {
+    switch (index) {
+      case 0:
+        return styles.apricotJam
+      case 1:
+        return styles.blueberryJam
+      case 2:
+        return styles.cherryJam
+      case 3:
+        return styles.dateJam
+      case 4:
+        return styles.elderberryJam
+      default:
+        return styles.neutralJam
+    }
+  }, [fillLevel, isOpen])
+
   return (
     <div className={styles.jarContainer}>
-      <Sprite className={styles.jarSprite} symbol={jarSymbol} width="32px" height="48px" />
+      <Sprite className={`${styles.jarSprite} ${jarFlavor}`} symbol={jarSymbol} width="32px" height="48px" />
       <div className={styles.jarIndex}>{'#' + index}</div>
       <div className={styles.jarBalance}>
         <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />

@@ -8,6 +8,26 @@
   margin: 0 0 0.25rem 0;
 }
 
+.apricotJam {
+  --jamColor: #ffb765;
+}
+
+.blueberryJam {
+  --jamColor: #6a9bff;
+}
+
+.cherryJam {
+  --jamColor: #ff636b;
+}
+
+.dateJam {
+  --jamColor: #ff422c;
+}
+
+.elderberryJam {
+  --jamColor: #0c80b9;
+}
+
 .jarIndex {
   font-size: 0.8rem;
   color: var(--bs-gray-600);
