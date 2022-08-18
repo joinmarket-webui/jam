@@ -290,7 +290,7 @@
         "text_primary_button": "Next",
         "text_primary_button_unsafe": "Select potentially less private UTXOs",
         "text_secondary_button": "Cancel",
-        "description": "Select one or more UTXOs from Jar #{{ jar }} to use for the fidelity bond.",
+        "description": "Select one or more UTXOs from Jar {{ jar }} to use for the fidelity bond.",
         "utxo_card": {
           "confirmations": "{{ confs }} Confirmations",
           "label_frozen": "frozen",
@@ -305,7 +305,7 @@
         "text_secondary_button": "Cancel",
         "description_selected_utxos": "Selected UTXOs:",
         "description_unselected_utxos": "The following UTXOs will not be used for the fidelity bond:",
-        "description_selected_utxos_to_freeze": "They will be frozen to remain in Jar #{{ jar }}. You can unfreeze them anytime after creating the bond."
+        "description_selected_utxos_to_freeze": "They will be frozen to remain in Jar {{ jar }}. You can unfreeze them anytime after creating the bond."
       },
       "review_inputs": {
         "text_primary_button": "Create fidelity bond",
@@ -314,7 +314,7 @@
         "description": "You configured the fidelity bond as follows:",
         "label_lock_date": "Locked until",
         "label_jar": "Funded from",
-        "label_jar_n": "Jar #{{ jar }}",
+        "label_jar_n": "Jar {{ jar }}",
         "label_amount": "Amount to be locked",
         "label_address": "Funds will be time-locked and sent to",
         "label_selected_utxos": "UTXOs that will be time-locked:"
