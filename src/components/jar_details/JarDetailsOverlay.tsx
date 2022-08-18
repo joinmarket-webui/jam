@@ -13,6 +13,7 @@ import SegmentedTabs from '../SegmentedTabs'
 import { UtxoList } from './UtxoList'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
 import styles from './JarDetailsOverlay.module.css'
+import { jarInitial } from '../jars/Jar'
 
 const TABS = {
   UTXOS: 'UTXOS',
@@ -65,7 +66,9 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initial
             </rb.Button>
             <div className={styles.accountStepperTitle}>
               <Sprite symbol="jar-open-fill-50" width="20" height="20" />
-              <span className="slashed-zeroes">#{account.account}</span>
+              <span className="slashed-zeroes">
+                <strong>{jarInitial(Number(account.account))}</strong>
+              </span>
             </div>
             <rb.Button variant="link" className={styles.accountStepperButton} onClick={() => nextAccount()}>
               <Sprite symbol="caret-right" width="20" height="20" />
@@ -295,10 +298,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const utxoListTitle = () => {
     const utxos = props.utxosByAccount[accountIndex] || []
 
-    if (utxos.length === 0) return t('jar_details.utxo_list.title_no_utxos', { jar: accountIndex })
-    if (utxos.length === 1) return t('jar_details.utxo_list.title_1_utxo', { jar: accountIndex })
+    if (utxos.length === 0) return t('jar_details.utxo_list.title_no_utxos', { jar: jarInitial(accountIndex) })
+    if (utxos.length === 1) return t('jar_details.utxo_list.title_1_utxo', { jar: jarInitial(accountIndex) })
 
-    return t('jar_details.utxo_list.title_num_utxos', { num: utxos.length, jar: accountIndex })
+    return t('jar_details.utxo_list.title_num_utxos', { num: utxos.length, jar: jarInitial(accountIndex) })
   }
 
   const refreshButton = () => {

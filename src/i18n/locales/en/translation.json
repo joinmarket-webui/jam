@@ -172,7 +172,6 @@
     "placeholder_recipient": "Enter address or choose jar from wallet...",
     "feedback_reused_address": "This address is already used. To preserve your privacy please choose another one.",
     "label_account": "Send from",
-    "account_selector_option": "Jar {{ number }}",
     "label_amount": "Amount in sats",
     "placeholder_amount": "Enter amount...",
     "feedback_invalid_amount": "Please provide a valid amount.",
@@ -290,7 +289,7 @@
         "text_primary_button": "Next",
         "text_primary_button_unsafe": "Select potentially less private UTXOs",
         "text_secondary_button": "Cancel",
-        "description": "Select one or more UTXOs from Jar #{{ jar }} to use for the fidelity bond.",
+        "description": "Select one or more UTXOs from Jar {{ jar }} to use for the fidelity bond.",
         "utxo_card": {
           "confirmations": "{{ confs }} Confirmations",
           "label_frozen": "frozen",
@@ -305,7 +304,7 @@
         "text_secondary_button": "Cancel",
         "description_selected_utxos": "Selected UTXOs:",
         "description_unselected_utxos": "The following UTXOs will not be used for the fidelity bond:",
-        "description_selected_utxos_to_freeze": "They will be frozen to remain in Jar #{{ jar }}. You can unfreeze them anytime after creating the bond."
+        "description_selected_utxos_to_freeze": "They will be frozen to remain in Jar {{ jar }}. You can unfreeze them anytime after creating the bond."
       },
       "review_inputs": {
         "text_primary_button": "Create fidelity bond",
@@ -314,7 +313,7 @@
         "description": "You configured the fidelity bond as follows:",
         "label_lock_date": "Locked until",
         "label_jar": "Funded from",
-        "label_jar_n": "Jar #{{ jar }}",
+        "label_jar_n": "Jar {{ jar }}",
         "label_amount": "Amount to be locked",
         "label_address": "Funds will be time-locked and sent to",
         "label_selected_utxos": "UTXOs that will be time-locked:"
@@ -424,9 +423,9 @@
     "progress_current_state": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> to process...",
     "progress_done": "All transactions completed successfully. The scheduler will stop soon.",
     "precondition": {
-      "hint_missing_utxos": "To run the scheduler you need at least one UTXO with <2>{{ minConfirmations }}</2> confirmations in Jar #0. Fund your wallet and wait for <6>{{ minConfirmations }}</6> blocks.",
-      "hint_missing_confirmations": "The scheduler requires one of your UTXOs in Jar #0 to have <2>{{ minConfirmations }}</2> or more confirmations. Wait for <6>{{ amountOfMissingConfirmations }}</6> more block(s).",
-      "hint_missing_overall_retries": "You've tried running the scheduler unsuccessfully too many times in a row. For security reasons, you need a fresh UTXO in Jar #0 to try again. See <2>the docs</2> for more information."
+      "hint_missing_utxos": "To run the scheduler you need at least one UTXO with <2>{{ minConfirmations }}</2> confirmations in Jar A. Fund your wallet and wait for <6>{{ minConfirmations }}</6> blocks.",
+      "hint_missing_confirmations": "The scheduler requires one of your UTXOs in Jar A to have <2>{{ minConfirmations }}</2> or more confirmations. Wait for <6>{{ amountOfMissingConfirmations }}</6> more block(s).",
+      "hint_missing_overall_retries": "You've tried running the scheduler unsuccessfully too many times in a row. For security reasons, you need a fresh UTXO in Jar A to try again. See <2>the docs</2> for more information."
     }
   },
   "modal": {
