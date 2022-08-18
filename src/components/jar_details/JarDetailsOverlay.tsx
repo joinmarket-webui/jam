@@ -13,6 +13,7 @@ import SegmentedTabs from '../SegmentedTabs'
 import { UtxoList } from './UtxoList'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
 import styles from './JarDetailsOverlay.module.css'
+import { jarName, jarInitial } from '../jars/Jar'
 
 const TABS = {
   UTXOS: 'UTXOS',
@@ -295,10 +296,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const utxoListTitle = () => {
     const utxos = props.utxosByAccount[accountIndex] || []
 
-    if (utxos.length === 0) return t('jar_details.utxo_list.title_no_utxos', { jar: accountIndex })
-    if (utxos.length === 1) return t('jar_details.utxo_list.title_1_utxo', { jar: accountIndex })
+    if (utxos.length === 0) return t('jar_details.utxo_list.title_no_utxos', { jar: jarInitial(accountIndex) })
+    if (utxos.length === 1) return t('jar_details.utxo_list.title_1_utxo', { jar: jarInitial(accountIndex) })
 
-    return t('jar_details.utxo_list.title_num_utxos', { num: utxos.length, jar: accountIndex })
+    return t('jar_details.utxo_list.title_num_utxos', { num: utxos.length, jar: jarInitial(accountIndex) })
   }
 
   const refreshButton = () => {
