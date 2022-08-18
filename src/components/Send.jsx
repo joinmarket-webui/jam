@@ -20,6 +20,7 @@ import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
 import { ConfirmModal } from './Modal'
+import { jarInitial, jarName } from './jars/Jar'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -769,7 +770,7 @@ export default function Send() {
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
                     .map(({ accountIndex, totalBalance, calculatedTotalBalanceInSats }) => (
                       <option key={accountIndex} value={accountIndex}>
-                        {t('send.account_selector_option', { number: accountIndex })}{' '}
+                        {jarName(accountIndex)}{' '}
                         {settings.showBalance &&
                           (settings.unit === 'sats'
                             ? `(${formatSats(calculatedTotalBalanceInSats)} sats)`
@@ -794,7 +795,7 @@ export default function Send() {
                     className={classnames('slashed-zeroes', styles['input'], {
                       [styles['jar-input']]: destinationJar !== null,
                     })}
-                    value={destinationJar !== null ? `Jar #${destinationJar} (${destination})` : destination || ''}
+                    value={destinationJar !== null ? `${jarName(destinationJar)} (${destination})` : destination || ''}
                     required
                     onChange={(e) => {
                       const value = e.target.value
@@ -954,9 +955,7 @@ export default function Send() {
                 <strong>{t('send.confirm_modal.label_source_jar')}</strong>
               </rb.Col>
               <rb.Col xs={9} className="text-start">
-                {t('send.confirm_modal.text_source_jar', {
-                  jarId: `#${account}`,
-                })}
+                {t('send.confirm_modal.text_source_jar', { jarId: jarInitial(account) })}
               </rb.Col>
             </rb.Row>
             <rb.Row>

@@ -8,9 +8,33 @@
   margin: 0 0 0.25rem 0;
 }
 
+.apricotJam {
+  --jamColor: #ffb765;
+}
+
+.blueberryJam {
+  --jamColor: #6a9bff;
+}
+
+.cherryJam {
+  --jamColor: #ff636b;
+}
+
+.dateJam {
+  --jamColor: #964b00;
+}
+
+.elderberryJam {
+  --jamColor: #7b3183;
+}
+
 .jarIndex {
   font-size: 0.8rem;
   color: var(--bs-gray-600);
+}
+
+.jarIndex::first-letter {
+  font-weight: bold;
 }
 
 .jarBalance {
