@@ -521,7 +521,11 @@ export default function Earn() {
       </rb.Row>
       <rb.Row className="mt-5 mb-3">
         <rb.Col className="d-flex justify-content-center">
-          <OrderbookOverlay show={isShowOrderbook} onHide={() => setIsShowOrderbook(false)} />
+          <OrderbookOverlay
+            show={isShowOrderbook}
+            onHide={() => setIsShowOrderbook(false)}
+            nickname={serviceInfo?.nickname}
+          />
           <rb.Button
             variant="outline-dark"
             className="border-0 mb-2 d-inline-flex align-items-center"
