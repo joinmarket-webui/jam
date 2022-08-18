@@ -20,6 +20,7 @@ import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
 import { ConfirmModal } from './Modal'
+import { jarInitial } from './jars/Jar'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -954,9 +955,7 @@ export default function Send() {
                 <strong>{t('send.confirm_modal.label_source_jar')}</strong>
               </rb.Col>
               <rb.Col xs={9} className="text-start">
-                {t('send.confirm_modal.text_source_jar', {
-                  jarId: `#${account}`,
-                })}
+                {t('send.confirm_modal.text_source_jar', { jarId: jarInitial(account) })}
               </rb.Col>
             </rb.Row>
             <rb.Row>
