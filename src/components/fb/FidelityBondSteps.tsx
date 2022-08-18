@@ -170,7 +170,9 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
 
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_utxos.description', jarInitial(jar))}</div>
+      <div className={styles.stepDescription}>
+        {t('earn.fidelity_bond.select_utxos.description', { jar: jarInitial(jar) })}
+      </div>
       {utxos.map((utxo, index) => {
         return (
           <UtxoCard
@@ -293,7 +295,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
     {
       icon: <Sprite symbol="jar-open-fill-50" width="18" height="18" className={styles.confirmationStepIcon} />,
       label: t('earn.fidelity_bond.review_inputs.label_jar'),
-      content: t('earn.fidelity_bond.review_inputs.label_jar_n', jarInitial(jar)),
+      content: t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: jarInitial(jar) }),
     },
     {
       icon: <Sprite symbol="coins" width="18" height="18" className={styles.confirmationStepIcon} />,
