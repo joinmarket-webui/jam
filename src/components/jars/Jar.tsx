@@ -43,6 +43,40 @@ const calculateFillLevel = (accountBalance: number, totalBalance: number): JarFi
   return 0
 }
 
+const jarName = (index: Number) => {
+  switch (index) {
+    case 0:
+      return 'Apricot'
+    case 1:
+      return 'Blueberry'
+    case 2:
+      return 'Cherry'
+    case 3:
+      return 'Date'
+    case 4:
+      return 'Elderberry'
+    default:
+      return 'Jam'
+  }
+}
+
+const jarInitial = (index: Number) => {
+  switch (index) {
+    case 0:
+      return 'A'
+    case 1:
+      return 'B'
+    case 2:
+      return 'C'
+    case 3:
+      return 'D'
+    case 4:
+      return 'E'
+    default:
+      return 'X'
+  }
+}
+
 /**
  * A jar with index and balance.
  */
@@ -62,7 +96,7 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
     }
   }, [fillLevel, isOpen])
 
-  const jarFlavor = useMemo(() => {
+  const flavorStyle = useMemo(() => {
     switch (index) {
       case 0:
         return styles.apricotJam
@@ -79,32 +113,16 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
     }
   }, [index])
 
-  const jarName = useMemo(() => {
-    switch (index) {
-      case 0:
-        return 'Apricot'
-      case 1:
-        return 'Blueberry'
-      case 2:
-        return 'Cherry'
-      case 3:
-        return 'Date'
-      case 4:
-        return 'Elderberry'
-      default:
-        return 'Jam'
-    }
-  }, [index])
-
-  const jarInitial = Array.from(jarName)[0]
-  const jarInitialRemoved = jarName.slice(1)
+  const flavorName = jarName(index)
+  const flavorInitial = jarInitial(index)
+  const flavorInitialRemoved = flavorName.slice(1)
 
   return (
     <div className={styles.jarContainer}>
-      <Sprite className={`${styles.jarSprite} ${jarFlavor}`} symbol={jarSymbol} width="32px" height="48px" />
+      <Sprite className={`${styles.jarSprite} ${flavorStyle}`} symbol={jarSymbol} width="32px" height="48px" />
       <div className={styles.jarIndex}>
-        <strong>{jarInitial}</strong>
-        {jarInitialRemoved}
+        <strong>{flavorInitial}</strong>
+        {flavorInitialRemoved}
       </div>
       <div className={styles.jarBalance}>
         <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
@@ -179,4 +197,4 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
   )
 }
 
-export { calculateFillLevel, SelectableJar, OpenableJar }
+export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial }
