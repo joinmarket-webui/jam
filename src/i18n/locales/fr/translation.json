@@ -5,6 +5,7 @@
     "tab_send": "Envoyer",
     "tab_receive": "Recevoir",
     "tab_earn": "Générer",
+    "joining_in_progress": "Brouillage",
     "menu_mobile": "Menu",
     "menu_mobile_settings": "Réglages"
   },
@@ -168,8 +169,6 @@
     "feedback_invalid_recipient": "Veuillez indiquer l'adresse du destinataire.",
     "label_account": "Niveau de confidentialité à envoyer à partir de",
     "label_account_dev_mode": "Compte à partir duquel envoyer",
-    "account_selector_option": "Niveau de confidentialité {{ number }}",
-    "account_selector_option_dev_mode": "Compte  {{ number }}",
     "label_amount": "Montant en sats",
     "placeholder_amount": "Entrez le montant...",
     "feedback_invalid_amount": "Veuillez fournir un montant valide.",
