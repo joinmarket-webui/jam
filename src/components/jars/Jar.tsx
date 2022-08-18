@@ -77,7 +77,7 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
       default:
         return styles.neutralJam
     }
-  }, [fillLevel, isOpen])
+  }, [index])
 
   return (
     <div className={styles.jarContainer}>
