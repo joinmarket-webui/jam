@@ -33,6 +33,10 @@
   color: var(--bs-gray-600);
 }
 
+.jarIndex::first-letter {
+  font-weight: bold;
+}
+
 .jarBalance {
   display: inline-flex;
   justify-content: center;

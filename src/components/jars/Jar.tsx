@@ -114,16 +114,11 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
   }, [index])
 
   const flavorName = jarName(index)
-  const flavorInitial = jarInitial(index)
-  const flavorInitialRemoved = flavorName.slice(1)
 
   return (
     <div className={styles.jarContainer}>
       <Sprite className={`${styles.jarSprite} ${flavorStyle}`} symbol={jarSymbol} width="32px" height="48px" />
-      <div className={styles.jarIndex}>
-        <strong>{flavorInitial}</strong>
-        {flavorInitialRemoved}
-      </div>
+      <div className={styles.jarIndex}>{flavorName}</div>
       <div className={styles.jarBalance}>
         <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
       </div>
