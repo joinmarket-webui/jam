@@ -66,7 +66,9 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initial
             </rb.Button>
             <div className={styles.accountStepperTitle}>
               <Sprite symbol="jar-open-fill-50" width="20" height="20" />
-              <span className="slashed-zeroes">#{account.account}</span>
+              <span className="slashed-zeroes">
+                <strong>{jarInitial(Number(account.account))}</strong>
+              </span>
             </div>
             <rb.Button variant="link" className={styles.accountStepperButton} onClick={() => nextAccount()}>
               <Sprite symbol="caret-right" width="20" height="20" />
