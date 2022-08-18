@@ -221,7 +221,7 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
           ) : (
             <div className={styles.stepDescription}>
               {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}{' '}
-              {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', jarInitial(jar))}
+              {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar: jarInitial(jar) })}
             </div>
           )}
           {utxosToFreeze.map((utxo, index) => (
