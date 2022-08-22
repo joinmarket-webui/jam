@@ -2,11 +2,30 @@ const { createProxyMiddleware } = require('http-proxy-middleware')
 
 const { PUBLIC_URL = '' } = process.env
 
+const __TEST_LOG_FEATURE = true
+
+const SECONDARY_CONTAINER_JAM_API_PORT = 29080
+
+const PRIMARY_CONTAINER = {
+  apiPort: 28183,
+  websocketPort: 28283,
+  obwatcherPort: 62601,
+}
+const SECONDARY_CONTAINER = {
+  apiPort: 29183,
+  websocketPort: 29283,
+  obwatcherPort: 72601,
+}
+
+let target = PRIMARY_CONTAINER
+if (__TEST_LOG_FEATURE) {
+  target = SECONDARY_CONTAINER
+}
+
 module.exports = (app) => {
   app.use(
     createProxyMiddleware(`${PUBLIC_URL}/api/`, {
-      //target: 'https://localhost:28183',
-      target: 'https://localhost:29183',
+      target: `https://localhost:${target.apiPort}`,
       pathRewrite: { [`^${PUBLIC_URL}`]: '' },
       changeOrigin: true,
       secure: false,
@@ -21,8 +40,7 @@ module.exports = (app) => {
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md#websocket
   app.use(
     createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
-      //target: 'https://localhost:28283',
-      target: 'https://localhost:29283',
+      target: `https://localhost:${target.websocketPort}`,
       pathRewrite: { [`^${PUBLIC_URL}/jmws`]: '' },
       changeOrigin: true,
       secure: false,
@@ -32,18 +50,20 @@ module.exports = (app) => {
 
   app.use(
     createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
-      target: 'http://localhost:62601',
+      target: `https://localhost:${target.obwatcherPort}`,
       pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
       changeOrigin: true,
       secure: false,
     })
   )
 
-  app.use(
-    createProxyMiddleware(`${PUBLIC_URL}/jam/api/v0/`, {
-      target: 'http://localhost:29080',
-      changeOrigin: true,
-      secure: false,
-    })
-  )
+  if (__TEST_LOG_FEATURE) {
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/jam/api/v0/`, {
+        target: `http://localhost:${SECONDARY_CONTAINER_JAM_API_PORT}`,
+        changeOrigin: true,
+        secure: false,
+      })
+    )
+  }
 }

@@ -70,6 +70,7 @@ services:
       - 28183 # jmwalletd api
       - 28283 # jmwalletd websocket
     ports:
+      - "72601:62601"
       - "29183:28183"
       - "29283:28283"
       - "29080:80"
