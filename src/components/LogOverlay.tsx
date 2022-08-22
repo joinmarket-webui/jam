@@ -11,11 +11,6 @@ import styles from './LogOverlay.module.css'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
 
-interface LogContentProps {
-  content: string
-  refresh: (signal: AbortSignal) => Promise<void>
-}
-
 type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR'
 type LogLine = {
   level: LogLevel
@@ -43,29 +38,24 @@ export const getLogLevel = (line: string): LogLevel => {
   }
 }
 
-export function LogContent({ content, refresh }: LogContentProps) {
+interface LogContentProps {
+  logLines: LogLine[]
+  refresh: (signal: AbortSignal) => Promise<void>
+}
+
+export function LogContent({ logLines, refresh }: LogContentProps) {
   const logContentDivRef = useRef<HTMLDivElement>(null)
   const settings = useSettings()
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
 
-  const logLines: LogLine[] = useMemo(() => {
-    const lines = content.split('\n')
-    return lines.map((line) => {
-      return {
-        level: getLogLevel(line),
-        content: line,
-      }
-    })
-  }, [content])
-
   useEffect(() => {
-    if (!content || !logContentDivRef.current) return
+    if (logLines.length === 0 || !logContentDivRef.current) return
 
     logContentDivRef.current.scroll({
       top: logContentDivRef.current.scrollHeight,
       behavior: 'smooth',
     })
-  }, [content, logContentDivRef])
+  }, [logLines, logContentDivRef])
 
   return (
     <div className={styles.logContentContainer}>
@@ -117,7 +107,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
   const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [content, setContent] = useState<string | null>(null)
+  const [logLines, setLogLines] = useState<LogLine[] | null>(null)
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
@@ -127,7 +117,14 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
         .then((data) => {
           if (signal.aborted) return
           setAlert(null)
-          setContent(data)
+
+          const lines = (data ? data.split('\n') : []).map((line) => {
+            return {
+              level: getLogLevel(line),
+              content: line,
+            }
+          })
+          setLogLines(lines)
         })
         .catch((err) => {
           if (signal.aborted) return
@@ -143,7 +140,11 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
   )
 
   useEffect(() => {
-    if (!show) return
+    if (!show) {
+      // don't keep content in memory longer than necessary
+      setLogLines(null)
+      return
+    }
 
     const abortCtrl = new AbortController()
 
@@ -195,10 +196,10 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
           ) : (
             <>
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-              {content && (
+              {logLines && (
                 <rb.Row>
                   <rb.Col>
-                    <LogContent content={content} refresh={refresh} />
+                    <LogContent logLines={logLines} refresh={refresh} />
                   </rb.Col>
                 </rb.Row>
               )}
