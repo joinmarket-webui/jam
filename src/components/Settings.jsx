@@ -281,7 +281,7 @@ export default function Settings({ stopWallet }) {
             </div>
           </a>
           <a
-            href="https://matrix.to/#/%23jam:matrix.dergigi.com"
+            href="https://matrix.to/#/%23jam:bitcoin.kyoto"
             target="_blank"
             rel="noopener noreferrer"
             className="link-dark"

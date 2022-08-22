@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { TabActivityIndicator } from './ActivityIndicators'
+import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
@@ -99,11 +99,25 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransact
   )
 }
 
-const TrailingNav = ({ onClick }) => {
+const TrailingNav = ({ joiningRoute, onClick }) => {
   const { t } = useTranslation()
 
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
+      {joiningRoute && (
+        <rb.Nav.Item className="d-flex align-items-center pe-2">
+          <div className="d-flex align-items-center px-0">
+            <NavLink to={joiningRoute} onClick={onClick} className="nav-link">
+              <rb.Navbar.Text className="d-md-none">{t('navbar.joining_in_progress')}</rb.Navbar.Text>
+              <JoiningIndicator
+                isOn={true}
+                className="navbar-text text-success"
+                title={t('navbar.joining_in_progress')}
+              />
+            </NavLink>
+          </div>
+        </rb.Nav.Item>
+      )}
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.settings}
@@ -130,6 +144,19 @@ export default function Navbar() {
   const sessionConnectionError = useSessionConnectionError()
 
   const [isExpanded, setIsExpanded] = useState(false)
+
+  const joiningRoute = useMemo(() => {
+    if (!serviceInfo) return null
+
+    if (serviceInfo.coinjoinInProgress) {
+      return serviceInfo.schedule ? routes.jam : routes.send
+    }
+    if (serviceInfo.makerRunning) {
+      return routes.earn
+    }
+
+    return null
+  }, [serviceInfo])
 
   const height = '75px'
 
@@ -225,7 +252,7 @@ export default function Navbar() {
                       }
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
-                    <TrailingNav onClick={() => setIsExpanded(!isExpanded)} />
+                    <TrailingNav joiningRoute={joiningRoute} onClick={() => setIsExpanded(!isExpanded)} />
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
@@ -239,7 +266,7 @@ export default function Navbar() {
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
                   <div className="ms-auto d-flex align-items-stretch">
-                    <TrailingNav />
+                    <TrailingNav joiningRoute={joiningRoute} />
                   </div>
                 </rb.Container>
               </>

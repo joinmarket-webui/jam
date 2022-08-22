@@ -13,6 +13,7 @@ import { CopyButton } from '../CopyButton'
 import LockdateForm from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
+import { jarInitial } from '../jars/Jar'
 
 const cx = classnamesBind.bind(styles)
 
@@ -169,7 +170,9 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
 
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_utxos.description', { jar })}</div>
+      <div className={styles.stepDescription}>
+        {t('earn.fidelity_bond.select_utxos.description', { jar: jarInitial(jar) })}
+      </div>
       {utxos.map((utxo, index) => {
         return (
           <UtxoCard
@@ -218,7 +221,7 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
           ) : (
             <div className={styles.stepDescription}>
               {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}{' '}
-              {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar })}
+              {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar: jarInitial(jar) })}
             </div>
           )}
           {utxosToFreeze.map((utxo, index) => (
@@ -292,7 +295,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
     {
       icon: <Sprite symbol="jar-open-fill-50" width="18" height="18" className={styles.confirmationStepIcon} />,
       label: t('earn.fidelity_bond.review_inputs.label_jar'),
-      content: t('earn.fidelity_bond.review_inputs.label_jar_n', { jar }),
+      content: t('earn.fidelity_bond.review_inputs.label_jar_n', { jar: jarInitial(jar) }),
     },
     {
       icon: <Sprite symbol="coins" width="18" height="18" className={styles.confirmationStepIcon} />,

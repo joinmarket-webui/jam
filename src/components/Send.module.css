@@ -45,6 +45,10 @@ input[type='number'] {
   padding: 0.2rem 0.5rem !important;
 }
 
+:global .position-relative .form-control.is-invalid + button {
+  right: 2.1875rem !important;
+}
+
 :root[data-theme='dark'] .button-sweep {
   color: var(--bs-gray-800) !important;
 }

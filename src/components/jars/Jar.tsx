@@ -43,6 +43,40 @@ const calculateFillLevel = (accountBalance: number, totalBalance: number): JarFi
   return 0
 }
 
+const jarName = (index: Number) => {
+  switch (index) {
+    case 0:
+      return 'Apricot'
+    case 1:
+      return 'Blueberry'
+    case 2:
+      return 'Cherry'
+    case 3:
+      return 'Date'
+    case 4:
+      return 'Elderberry'
+    default:
+      return 'Jam'
+  }
+}
+
+const jarInitial = (index: Number) => {
+  switch (index) {
+    case 0:
+      return 'A'
+    case 1:
+      return 'B'
+    case 2:
+      return 'C'
+    case 3:
+      return 'D'
+    case 4:
+      return 'E'
+    default:
+      return 'X'
+  }
+}
+
 /**
  * A jar with index and balance.
  */
@@ -62,10 +96,29 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
     }
   }, [fillLevel, isOpen])
 
+  const flavorStyle = useMemo(() => {
+    switch (index) {
+      case 0:
+        return styles.apricotJam
+      case 1:
+        return styles.blueberryJam
+      case 2:
+        return styles.cherryJam
+      case 3:
+        return styles.dateJam
+      case 4:
+        return styles.elderberryJam
+      default:
+        return styles.neutralJam
+    }
+  }, [index])
+
+  const flavorName = jarName(index)
+
   return (
     <div className={styles.jarContainer}>
-      <Sprite className={styles.jarSprite} symbol={jarSymbol} width="32px" height="48px" />
-      <div className={styles.jarIndex}>{'#' + index}</div>
+      <Sprite className={`${styles.jarSprite} ${flavorStyle}`} symbol={jarSymbol} width="32px" height="48px" />
+      <div className={styles.jarIndex}>{flavorName}</div>
       <div className={styles.jarBalance}>
         <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
       </div>
@@ -139,4 +192,4 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
   )
 }
 
-export { calculateFillLevel, SelectableJar, OpenableJar }
+export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial }

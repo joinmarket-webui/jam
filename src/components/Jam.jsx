@@ -21,7 +21,6 @@ import styles from './Jam.module.css'
 // Length of this array must be 3 for now.
 const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
 // Interval in milliseconds between requests to reload the schedule.
-const SCHEDULE_REQUEST_INTERVAL = process.env.NODE_ENV === 'development' ? 10_000 : 60_000
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const SCHEDULER_START_ACCOUNT = 0
@@ -51,7 +50,6 @@ export default function Jam() {
   const [isLoading, setIsLoading] = useState(true)
   const [destinationIsExternal, setDestinationIsExternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
-  const [schedule, setSchedule] = useState(null)
 
   const startJarUtxos = useMemo(() => {
     if (!walletInfo) return null
@@ -135,56 +133,12 @@ export default function Jam() {
   }, [reloadServiceInfo, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    const coinjoinInProgress = serviceInfo && serviceInfo.coinjoinInProgress
-    const makerRunning = serviceInfo && serviceInfo.makerRunning
+    setCollaborativeOperationRunning(serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false)
 
-    setCollaborativeOperationRunning(coinjoinInProgress || makerRunning)
+    if (serviceInfo?.schedule && process.env.NODE_ENV === 'development') {
+      console.table(serviceInfo.schedule)
+    }
   }, [serviceInfo])
-
-  const reloadSchedule = useCallback(
-    ({ signal }) => {
-      return Api.getSchedule({ walletName: wallet.name, token: wallet.token, signal })
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-        .then((data) => {
-          if (!signal.aborted) {
-            process.env.NODE_ENV === 'development' && console.log(data.schedule)
-            setSchedule(data.schedule)
-          }
-        })
-        .catch((err) => {
-          if (err.response?.status === 404) {
-            // Not finding a schedule is not an error.
-            // It means a single collaborative transaction is running.
-            // Those have no schedule.
-            return
-          }
-
-          const message = err.message || t('scheduler.error_loading_schedule_failed')
-          !signal.aborted && setAlert({ variant: 'danger', message })
-        })
-    },
-    [wallet, t]
-  )
-
-  useEffect(() => {
-    if (!collaborativeOperationRunning) {
-      return
-    }
-
-    const abortCtrl = new AbortController()
-
-    const load = () => {
-      reloadSchedule({ signal: abortCtrl.signal }).catch((err) => console.error(err))
-    }
-
-    load()
-
-    const interval = setInterval(load, SCHEDULE_REQUEST_INTERVAL)
-    return () => {
-      clearInterval(interval)
-      abortCtrl.abort()
-    }
-  }, [collaborativeOperationRunning, reloadSchedule])
 
   const startSchedule = async (values) => {
     if (isLoading || collaborativeOperationRunning || !isSchedulerPreconditionsFulfilled) {
@@ -214,8 +168,10 @@ export default function Jam() {
       }
     }
 
-    return Api.postSchedulerStart({ walletName: wallet.name, token: wallet.token }, body)
+    const abortCtrl = new AbortController()
+    return Api.postSchedulerStart({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }, body)
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
+      .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .then((_) => setCollaborativeOperationRunning(true))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
@@ -231,10 +187,12 @@ export default function Jam() {
     setAlert(null)
     setIsLoading(true)
 
-    return Api.getSchedulerStop({ walletName: wallet.name, token: wallet.token })
+    const abortCtrl = new AbortController()
+    return Api.getSchedulerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
-      .then((_) => setCollaborativeOperationRunning(false))
       .then((_) => new Promise((r) => setTimeout(r, SCHEDULER_STOP_RESPONSE_DELAY_MS)))
+      .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
+      .then((_) => setCollaborativeOperationRunning(false))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
@@ -252,12 +210,12 @@ export default function Jam() {
         </rb.Placeholder>
       ) : (
         <>
-          {collaborativeOperationRunning && schedule && (
+          {collaborativeOperationRunning && serviceInfo?.schedule && (
             <div className="mb-4">
-              <ScheduleProgress schedule={schedule} />
+              <ScheduleProgress schedule={serviceInfo.schedule} />
             </div>
           )}
-          {collaborativeOperationRunning && !schedule && (
+          {collaborativeOperationRunning && serviceInfo && !serviceInfo.schedule && (
             <rb.Alert variant="info" className="mb-4">
               {t('send.text_coinjoin_already_running')}
             </rb.Alert>
@@ -336,7 +294,7 @@ export default function Jam() {
             </>
           )}
           {((!collaborativeOperationRunning && walletInfo && serviceInfo) ||
-            (collaborativeOperationRunning && schedule)) && (
+            (collaborativeOperationRunning && serviceInfo?.schedule)) && (
             <Formik
               initialValues={initialFormValues}
               validate={(values) => {
