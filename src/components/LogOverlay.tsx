@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Helper as ApiHelper } from '../libs/JmWalletApi'
@@ -16,9 +16,46 @@ interface LogContentProps {
   refresh: (signal: AbortSignal) => Promise<void>
 }
 
+type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR'
+type LogLine = {
+  level: LogLevel
+  content: string
+}
+
+// exported for tests only
+export const getLogLevel = (line: string): LogLevel => {
+  // a line can - but does not necessarily need to - follow pattern "[date] [level] [text]"
+  // e.g. 2009-01-03 19:04:10,057 [INFO] ...
+  if (line.length <= 30 || line.charAt(24) !== '[') return 'INFO'
+
+  const level = line.substring(25, 29)
+  switch (level) {
+    case 'DEBU':
+      return 'DEBUG'
+    case 'INFO':
+      return 'INFO'
+    case 'WARN':
+      return 'WARNING'
+    case 'ERRO':
+      return 'ERROR'
+    default:
+      return 'INFO'
+  }
+}
+
 export function LogContent({ content, refresh }: LogContentProps) {
   const settings = useSettings()
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
+
+  const logLines: LogLine[] = useMemo(() => {
+    const lines = content.split('\n')
+    return lines.map((line) => {
+      return {
+        level: getLogLevel(line),
+        content: line,
+      }
+    })
+  }, [content])
 
   return (
     <div className={styles.logContentContainer}>
@@ -48,7 +85,14 @@ export function LogContent({ content, refresh }: LogContentProps) {
         </div>
       </div>
       <div className="px-md-3 pb-2">
-        <pre className={styles.logContent}>{content}</pre>
+        <div className={styles.logContent}>
+          {logLines.map((line, index) => (
+            <code key={index} className={styles[line.level]}>
+              {line.content}
+              <br />
+            </code>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -68,6 +112,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
   const refresh = useCallback(
     (signal: AbortSignal) => {
       return fetchLog({ token: currentWallet.token, signal, fileName: JMWALLETD_LOG_FILE_NAME })
+        .then((res) => (res.headers.get('Content-Type') === 'text/plain' ? res : ApiHelper.throwError(res)))
         .then((res) => (res.ok ? res.text() : ApiHelper.throwError(res)))
         .then((data) => {
           if (signal.aborted) return
