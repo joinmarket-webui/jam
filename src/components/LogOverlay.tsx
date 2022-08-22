@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Helper as ApiHelper } from '../libs/JmWalletApi'
@@ -44,6 +44,7 @@ export const getLogLevel = (line: string): LogLevel => {
 }
 
 export function LogContent({ content, refresh }: LogContentProps) {
+  const logContentDivRef = useRef<HTMLDivElement>(null)
   const settings = useSettings()
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
 
@@ -56,6 +57,15 @@ export function LogContent({ content, refresh }: LogContentProps) {
       }
     })
   }, [content])
+
+  useEffect(() => {
+    if (!content || !logContentDivRef.current) return
+
+    logContentDivRef.current.scroll({
+      top: logContentDivRef.current.scrollHeight,
+      behavior: 'smooth',
+    })
+  }, [content, logContentDivRef])
 
   return (
     <div className={styles.logContentContainer}>
@@ -85,7 +95,7 @@ export function LogContent({ content, refresh }: LogContentProps) {
         </div>
       </div>
       <div className="px-md-3 pb-2">
-        <div className={styles.logContent}>
+        <div ref={logContentDivRef} className={styles.logContent}>
           {logLines.map((line, index) => (
             <code key={index} className={styles[line.level]}>
               {line.content}
