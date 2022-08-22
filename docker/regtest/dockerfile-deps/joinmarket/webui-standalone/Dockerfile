@@ -1,5 +1,5 @@
 #FROM ghcr.io/joinmarket-webui/joinmarket-webui-dev-standalone:master
-FROM joinmarket-webui/jam-standalone-logs:latest
+FROM joinmarket-webui/jam-standalone-logs1:latest
 
 COPY default.cfg ${DEFAULT_CONFIG}
 

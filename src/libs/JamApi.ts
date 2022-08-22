@@ -1,20 +1,33 @@
 import { ApiToken, Helper as ApiHelper } from '../libs/JmWalletApi'
 
-const basePath = () => `${window.JM.PUBLIC_PATH}/jam/log`
+const basePath = () => `${window.JM.PUBLIC_PATH}/jam/api/v0`
 
-const fetchJamLog = async ({
-  token,
-  signal,
-  fileName,
-}: {
-  token: ApiToken
+interface ApiRequestContext {
   signal?: AbortSignal
-  fileName: string
-}) => {
-  return await fetch(`${basePath()}/${fileName}`, {
+}
+
+interface AuthApiRequestContext extends ApiRequestContext {
+  token: ApiToken
+}
+
+const fetchFeatures = async ({ token, signal }: AuthApiRequestContext) => {
+  return await fetch(`${basePath()}/features`, {
     headers: { ...ApiHelper.buildAuthHeader(token) },
     signal,
   })
 }
 
-export { fetchJamLog }
+const fetchLog = async ({
+  token,
+  signal,
+  fileName,
+}: AuthApiRequestContext & {
+  fileName: string
+}) => {
+  return await fetch(`${basePath()}/log/${fileName}`, {
+    headers: { ...ApiHelper.buildAuthHeader(token) },
+    signal,
+  })
+}
+
+export { fetchFeatures, fetchLog }

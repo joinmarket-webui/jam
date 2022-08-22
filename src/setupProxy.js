@@ -40,7 +40,7 @@ module.exports = (app) => {
   )
 
   app.use(
-    createProxyMiddleware(`${PUBLIC_URL}/jam/log/`, {
+    createProxyMiddleware(`${PUBLIC_URL}/jam/api/v0/`, {
       target: 'http://localhost:29080',
       changeOrigin: true,
       secure: false,
