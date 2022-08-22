@@ -23,9 +23,6 @@ import Cheatsheet from './Cheatsheet'
 import { routes } from '../constants/routes'
 import packageInfo from '../../package.json'
 
-import { Helper as ApiHelper } from '../libs/JmWalletApi'
-import { fetchLog, fetchFeatures } from '../libs/JamApi'
-
 export default function App() {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -40,27 +37,6 @@ export default function App() {
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
   const cheatsheetEnabled = useMemo(() => !!currentWallet, [currentWallet])
-
-  useEffect(() => {
-    const abortCtrl = new AbortController()
-    fetchFeatures({ token: currentWallet?.token, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : ApiHelper.throwError(res)))
-      .then((data) => data.features)
-      .then((features) => {
-        if (!features.logs) {
-          console.warn('Features "logs" is not enabled')
-        } else {
-          fetchLog({ token: currentWallet?.token, signal: abortCtrl.signal, fileName: 'jmwalletd_stdout.log' }).catch(
-            (e) => console.error(e)
-          )
-        }
-      })
-      .catch((e) => console.error(e))
-
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [currentWallet])
 
   const startWallet = useCallback(
     (name, token) => {
