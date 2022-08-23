@@ -204,7 +204,7 @@ export default function Settings({ stopWallet }) {
           <rb.Button
             variant="outline-dark"
             className={styles['settings-btn']}
-            onClick={(e) => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
+            onClick={() => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
           >
             <Sprite symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]} width="24" height="24" />
             {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
@@ -235,14 +235,9 @@ export default function Settings({ stopWallet }) {
             </rb.Dropdown.Menu>
           </rb.Dropdown>
 
-          {currentWallet && (
+          {currentWallet && showLogsEnabled && (
             <>
-              <rb.Button
-                variant="outline-dark"
-                className={styles['settings-btn']}
-                onClick={(_) => setShowingLogs(true)}
-                disabled={!showLogsEnabled}
-              >
+              <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={() => setShowingLogs(true)}>
                 <Sprite symbol="console" width="24" height="24" />
                 {t('settings.show_logs')}
               </rb.Button>
