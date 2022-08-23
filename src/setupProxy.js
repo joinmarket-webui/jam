@@ -1,6 +1,6 @@
 const { createProxyMiddleware } = require('http-proxy-middleware')
 
-const { PUBLIC_URL = '' } = process.env
+const { PUBLIC_URL = '', JAM_TARGET_CONTAINER = 'PRIMARY' } = process.env
 
 const PRIMARY_CONTAINER = {
   apiPort: 28183,
@@ -10,12 +10,7 @@ const PRIMARY_CONTAINER = {
 
 const SECONDARY_CONTAINER_JAM_API_PORT = 29080
 
-const __TEST_LOG_FEATURE = false
-
-let target = 'PRIMARY'
-if (__TEST_LOG_FEATURE) {
-  target = 'SECONDARY'
-}
+const target = JAM_TARGET_CONTAINER.toUpperCase()
 
 module.exports = (app) => {
   if (target === 'PRIMARY') {
