@@ -1,4 +1,4 @@
-import { Helper as ApiHelper } from '../libs/JmWalletApi'
+import { Helper as ApiHelper, AmountSats } from '../libs/JmWalletApi'
 
 const basePath = () => `${window.JM.PUBLIC_PATH}/obwatch`
 
@@ -67,10 +67,34 @@ const parseOrderbook = (res: Response): Promise<Order[]> => {
 }
 
 // TODO: why is "orderbook.json" always empty? -> Parse HTML in the meantime.. ¯\_(ツ)_/¯
-const fetchOrderbook = async ({ signal }: { signal: AbortSignal }) => {
+const fetchOrderbookByHtml = async ({ signal }: { signal: AbortSignal }) => {
   return await fetch(`${basePath()}/`, {
     signal,
   }).then((res) => parseOrderbook(res))
+}
+const fetchOrderbook = fetchOrderbookByHtml
+
+export interface Offer {
+  counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
+  oid: number // example: 0 (not unique!)
+  ordertype: string // example: "sw0absoffer" or "sw0reloffer"
+  minsize: AmountSats // example: 27300
+  maxsize: AmountSats // example: 237499972700
+  txfee: AmountSats // example: 0
+  cjfee: AmountSats | string // example: 250 (abs offers) or "0.00017" (rel offers)
+  fidelity_bond_value: number // example: 0 (no fb) or 0.0000052877962973
+}
+
+const orderbookJson = async ({ signal }: { signal: AbortSignal }) => {
+  return await fetch(`${basePath()}/orderbook.json`, {
+    signal,
+  })
+}
+
+const fetchOffers = async (options: { signal: AbortSignal }) => {
+  return orderbookJson(options)
+    .then((res) => (res.ok ? res.json() : ApiHelper.throwError(res)))
+    .then((res) => (res.offers || []) as Offer[])
 }
 
 const refreshOrderbook = async ({ signal }: { signal: AbortSignal }) => {
@@ -80,4 +104,4 @@ const refreshOrderbook = async ({ signal }: { signal: AbortSignal }) => {
   })
 }
 
-export { fetchOrderbook, refreshOrderbook }
+export { fetchOrderbook, orderbookJson, fetchOffers, refreshOrderbook }
