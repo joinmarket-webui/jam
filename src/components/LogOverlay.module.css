@@ -57,23 +57,7 @@
 }
 
 .logContent {
+  min-height: 300px;
   max-height: 50vh;
   overflow: scroll;
-}
-
-.logContent code.DEBUG {
-  color: var(--bs-gray-700) !important;
-}
-:root[data-theme='dark'] .logContent code.DEBUG {
-  color: var(--bs-gray-500) !important;
-}
-
-.logContent code.INFO {
-  color: var(--bs-info) !important;
-}
-.logContent code.WARNING {
-  color: var(--bs-warning) !important;
-}
-.logContent code.ERROR {
-  color: var(--bs-danger) !important;
 }
