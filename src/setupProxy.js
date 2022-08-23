@@ -23,7 +23,7 @@ module.exports = (app) => {
      * The primary container *does not run* nginx!
      * Requests must be adapted:
      * - remove path prefix "PUBLIC_URL" (if present)
-     * - proxy requests to correct target service
+     * - proxy API requests to correct target service
      * - rewrite paths to match target service paths
      * - translate header "x-jm-authorization" to "Authorization"
      */
@@ -36,7 +36,6 @@ module.exports = (app) => {
         ws: true,
       })
     )
-
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/api/`, {
         target: `https://localhost:${PRIMARY_CONTAINER.apiPort}`,
@@ -50,7 +49,6 @@ module.exports = (app) => {
         },
       })
     )
-
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
         target: `https://localhost:${PRIMARY_CONTAINER.obwatcherPort}`,
