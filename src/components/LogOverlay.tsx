@@ -80,7 +80,6 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
   const refresh = useCallback(
     (signal: AbortSignal) => {
       return fetchLog({ token: currentWallet.token, signal, fileName: JMWALLETD_LOG_FILE_NAME })
-        .then((res) => (res.headers.get('Content-Type') === 'text/plain' ? res : ApiHelper.throwError(res)))
         .then((res) => (res.ok ? res.text() : ApiHelper.throwError(res)))
         .then((data) => {
           if (signal.aborted) return
@@ -89,8 +88,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
         })
         .catch((err) => {
           if (signal.aborted) return
-          const message = err.message || t('logs.error_loading_logs_failed')
-          setAlert({ variant: 'danger', message })
+          setAlert({ variant: 'danger', message: t('logs.error_loading_logs_failed') })
         })
         .finally(() => {
           if (signal.aborted) return

@@ -148,8 +148,14 @@ export default function Settings({ stopWallet }) {
     fetchFeatures({ token: currentWallet?.token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
       .then((data) => data && data.features)
-      .then((features) => features && setShowLogsEnabled(features.logs))
-      .catch((e) => setShowLogsEnabled(false))
+      .then((features) => {
+        if (abortCtrl.signal.aborted) return
+        setShowLogsEnabled(features && features.logs === true)
+      })
+      .catch((_) => {
+        if (abortCtrl.signal.aborted) return
+        setShowLogsEnabled(false)
+      })
 
     return () => {
       abortCtrl.abort()
