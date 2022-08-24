@@ -63,53 +63,15 @@ export default function Jam() {
     [schedulerPreconditionSummary]
   )
 
-  // Returns one fresh address for each requested mixdepth.
-  const getNewAddressesForAccounts = useCallback(
-    (mixdepths) => {
-      if (mixdepths.length !== 3) {
-        throw new Error('Can only handle 3 destination addresses for now.')
-      }
-      if (!walletInfo) {
-        throw new Error('Wallet info is not available.')
-      }
-      return mixdepths.map((mixdepth) => {
-        const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
-          return branch.branch.split('\t')[0] === 'external addresses'
-        })
-
-        const newEntry = externalBranch.entries.find((entry) => entry.status === 'new')
-
-        if (!newEntry) {
-          throw new Error(`Cannot find a fresh address in mixdepth ${mixdepth}`)
-        }
-
-        return newEntry.address
-      })
-    },
-    [walletInfo]
-  )
-
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
 
   const initialFormValues = useMemo(() => {
     const addressCount = 3
 
-    let destinationAddresses = []
-    if (destinationIsExternal) {
-      // prefill with empty addresses
-      destinationAddresses = Array(addressCount).fill('')
-    } else {
-      try {
-        // prefill with addresses marked as "new"
-        destinationAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
-      } catch (e) {
-        // on error initialize with empty addresses - form validation will do the rest
-        destinationAddresses = Array(addressCount).fill('')
-      }
-    }
+    let destinationAddresses = Array(addressCount).fill('')
 
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
-  }, [destinationIsExternal, getNewAddressesForAccounts])
+  }, [destinationIsExternal])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -364,35 +326,6 @@ export default function Jam() {
                   <rb.Form onSubmit={handleSubmit} noValidate>
                     {!collaborativeOperationRunning && (
                       <>
-                        <rb.Form.Group className="mb-4" controlId="offertype">
-                          <ToggleSwitch
-                            label={t('scheduler.toggle_internal_destination_title')}
-                            subtitle={t('scheduler.toggle_internal_destination_subtitle')}
-                            toggledOn={destinationIsExternal}
-                            onToggle={async (isToggled) => {
-                              if (!isToggled) {
-                                try {
-                                  const newAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
-                                  setFieldValue('dest1', newAddresses[0], true)
-                                  setFieldValue('dest2', newAddresses[1], true)
-                                  setFieldValue('dest3', newAddresses[2], true)
-                                } catch (e) {
-                                  console.error('Could not get internal addresses.', e)
-                                  setFieldValue('dest1', '', true)
-                                  setFieldValue('dest2', '', true)
-                                  setFieldValue('dest3', '', true)
-                                }
-                              } else {
-                                setFieldValue('dest1', '', false)
-                                setFieldValue('dest2', '', false)
-                                setFieldValue('dest3', '', false)
-                              }
-
-                              setDestinationIsExternal(isToggled)
-                            }}
-                            disabled={isSubmitting}
-                          />
-                        </rb.Form.Group>
                         {isDebugFeatureEnabled('insecureScheduleTesting') && (
                           <rb.Form.Group className="mb-4" controlId="offertype">
                             <ToggleSwitch
