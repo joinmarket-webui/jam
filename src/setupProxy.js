@@ -1,21 +1,30 @@
 const { createProxyMiddleware } = require('http-proxy-middleware')
 
-const { PUBLIC_URL = '', JAM_TARGET_CONTAINER = 'PRIMARY' } = process.env
+const BACKEND_NATIVE = 'native'
+const BACKEND_STANDALONE = 'jam-standalone'
+const SUPPORTED_BACKENDS = [BACKEND_NATIVE, BACKEND_STANDALONE]
 
-const PRIMARY_CONTAINER = {
-  apiPort: 28183,
-  websocketPort: 28283,
-  obwatcherPort: 62601,
-}
-
-const SECONDARY_CONTAINER_JAM_API_PORT = 29080
-
-const target = JAM_TARGET_CONTAINER.toUpperCase()
+const {
+  PUBLIC_URL = '',
+  JAM_BACKEND = 'native',
+  JMWALLETD_API_PORT = '28183',
+  JMWALLETD_WEBSOCKET_PORT = '28283',
+  JMOBWATCH_PORT = '62601',
+  JAM_API_PORT = undefined,
+} = process.env
 
 module.exports = (app) => {
-  if (target === 'PRIMARY') {
+  if (!SUPPORTED_BACKENDS.includes(JAM_BACKEND)) {
+    throw new Error(`Unsupported backend: Use one of ${SUPPORTED_BACKENDS}`)
+  }
+
+  if (JAM_BACKEND === BACKEND_STANDALONE && JAM_API_PORT === undefined) {
+    throw new Error('Unsupported port: Please specify a valid JAM_API_PORT')
+  }
+
+  if (JAM_BACKEND === BACKEND_NATIVE) {
     /**
-     * The primary container *does not run* nginx!
+     * The "native" installation *does not run* a webserver!
      * Requests must be adapted:
      * - remove path prefix "PUBLIC_URL" (if present)
      * - proxy API requests to correct target service
@@ -24,7 +33,7 @@ module.exports = (app) => {
      */
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
-        target: `https://localhost:${PRIMARY_CONTAINER.websocketPort}`,
+        target: `https://localhost:${JMWALLETD_WEBSOCKET_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}/jmws`]: '' },
         changeOrigin: true,
         secure: false,
@@ -33,7 +42,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/api/`, {
-        target: `https://localhost:${PRIMARY_CONTAINER.apiPort}`,
+        target: `https://localhost:${JMWALLETD_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -46,22 +55,22 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
-        target: `https://localhost:${PRIMARY_CONTAINER.obwatcherPort}`,
+        target: `http://localhost:${JMOBWATCH_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
         changeOrigin: true,
         secure: false,
       })
     )
-  } else if (target === 'SECONDARY') {
+  } else if (JAM_BACKEND === BACKEND_STANDALONE) {
     /**
-     * The secondary container has the nginx ("Jam API") running!
+     * `standalone` backend has a webserver ("Jam API") running!
      * Requests must be adapted:
      * - remove path prefix "PUBLIC_URL" (if present)
      * - proxy all API requests to "Jam API"
      */
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
-        target: `http://localhost:${SECONDARY_CONTAINER_JAM_API_PORT}`,
+        target: `http://localhost:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -70,7 +79,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/api/`, {
-        target: `http://localhost:${SECONDARY_CONTAINER_JAM_API_PORT}`,
+        target: `http://localhost:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -78,7 +87,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
-        target: `http://localhost:${SECONDARY_CONTAINER_JAM_API_PORT}`,
+        target: `http://localhost:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -86,7 +95,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/jam/`, {
-        target: `http://localhost:${SECONDARY_CONTAINER_JAM_API_PORT}`,
+        target: `http://localhost:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
