@@ -105,7 +105,7 @@ export default function Jam() {
     }
 
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
-  }, [getNewAddressesForAccounts])
+  }, [useInsecureTestingSettings, getNewAddressesForAccounts])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
