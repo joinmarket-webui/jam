@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import classnames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
+import { usePagination } from '@table-library/react-table-library/pagination'
 import { useRowSelect, HeaderCellSelect, CellSelect, SelectTypes } from '@table-library/react-table-library/select'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
 import * as TableTypes from '@table-library/react-table-library/types/table'
@@ -12,6 +13,7 @@ import { Utxo, WalletInfo } from '../../context/WalletContext'
 import * as fb from '../fb/utils'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
+import TablePagination from '../TablePagination'
 import styles from './UtxoList.module.css'
 
 const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
@@ -122,6 +124,12 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
   )
 
   const tableTheme = useTheme(TABLE_THEME)
+  const pagination = usePagination(tableData, {
+    state: {
+      page: 0,
+      size: 25,
+    },
+  })
 
   const onTableSelectChange = (action: any, state: any) => {
     setSelectedUtxoIds(state.ids)
@@ -195,6 +203,7 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
       <Table
         data={tableData}
         theme={tableTheme}
+        pagination={pagination}
         select={tableSelect}
         sort={tableSort}
         layout={{ custom: true, horizontalScroll: true }}
@@ -275,6 +284,9 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
           </>
         )}
       </Table>
+      <div className="mt-4 mb-4 mb-md-0">
+        <TablePagination data={tableData} pagination={pagination} />
+      </div>
     </div>
   )
 }

@@ -64,7 +64,10 @@ interface WalletUnlockRequest {
   password: string
 }
 
-type OrderType = 'sw0reloffer' | 'sw0absoffer'
+// only support starting the maker with native segwit offers
+type RelOfferType = 'sw0reloffer'
+type AbsOfferType = 'sw0absoffer'
+type OrderType = RelOfferType | AbsOfferType
 
 interface StartMakerRequest {
   cjfee_a: AmountSats

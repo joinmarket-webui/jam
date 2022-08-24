@@ -5,7 +5,22 @@
     "button_copy_text_confirmed": "Copied",
     "next": "Next",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "table": {
+      "pagination": {
+        "items_per_page": {
+          "label": "Items per page",
+          "text_option_show_all": "All"
+        },
+        "page_selector": {
+          "label_current": "Page",
+          "label_first": "First",
+          "label_previous": "Previous",
+          "label_next": "Next",
+          "label_last": "Last"
+        }
+      }
+    }
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}"
@@ -251,6 +266,14 @@
     "text_stopping": "Stopping",
     "button_show_report": "Show earnings report",
     "button_show_orderbook": "Show orderbook",
+    "current": {
+      "text_cjfee": "Fee",
+      "text_minsize": "Minimum Size",
+      "text_maxsize": "Maximum Size",
+      "text_txfee": "Transaction Fee",
+      "text_offer_type_absolute": "absolute",
+      "text_offer_type_relative": "relative"
+    },
     "report": {
       "title": "Earnings Report",
       "text_report_summary_one": "{{ count }} entry",
@@ -266,8 +289,9 @@
       "heading_earned": "Earned",
       "heading_notes": "Notes"
     },
-    "title_fidelity_bonds": "Create a Fidelity Bond",
-    "title_fidelity_bond_exists": "Your Fidelity Bonds",
+    "title_fidelity_bonds_zero": "Create a Fidelity Bond",
+    "title_fidelity_bonds_one": "Your Fidelity Bond",
+    "title_fidelity_bonds_other": "Your Fidelity Bonds",
     "subtitle_fidelity_bonds": "A fidelity bond is a long-term deposit that makes cryptographic identities deliberately costly. By cryptographically locking up funds for a specific duration, you signal that you are a serious market participant and increase the chance of your offers being taken.",
     "fidelity_bond": {
       "error_freezing_utxos": "Could not freeze UTXOs.",
@@ -384,8 +408,10 @@
   },
   "orderbook": {
     "title": "Orderbook",
-    "text_orderbook_summary": "{{ orderCount }} orders by {{ counterpartyCount }} counterparties",
-    "text_orderbook_summary_filtered": "found {{ orderCount }} orders by {{ counterpartyCount }} counterparties",
+    "text_orderbook_summary_one": "{{ count }} order by {{ counterpartyCount }} conterparty",
+    "text_orderbook_summary_other": "{{ count }} orders by {{ counterpartyCount }} conterparties",
+    "text_orderbook_summary_filtered_one": "found {{ count }} order by {{ counterpartyCount }} conterparty",
+    "text_orderbook_summary_filtered_other": "found {{ count }} orders by {{ counterpartyCount }} conterparties",
     "alert_empty_orderbook": "Orderbook is empty",
     "error_loading_orderbook_failed": "Error while loading the orderbook. Your current local setup might not support fetching the orderbook. Reason: {{ reason }}",
     "text_offer_type_absolute": "absolute",
@@ -441,9 +467,9 @@
     "title_tab_utxos": "UTXOs",
     "title_tab_account": "Jar Details",
     "utxo_list": {
-      "title_no_utxos": "No UTXOs in Jar {{ jar }}",
-      "title_1_utxo": "1 UTXO in Jar {{ jar }}",
-      "title_num_utxos": "{{ num }} UTXOs in Jar {{ jar }}",
+      "title_zero": "No UTXOs in Jar {{ jar }}",
+      "title_one": "{{ count }} UTXO in Jar {{ jar }}",
+      "title_other": "{{ count }} UTXOs in Jar {{ jar }}",
       "button_freeze": "Freeze selected",
       "button_unfreeze": "Unfreeze selected",
       "button_freeze_loading": "Freezing...",

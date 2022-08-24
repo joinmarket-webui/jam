@@ -1,0 +1,24 @@
+.paginationSelect {
+  height: 32px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-color: var(--bs-btn-border-color) !important;
+}
+
+:root[data-theme='dark'] .paginationSelect {
+  color: var(--bs-btn-color);
+  background-color: transparent;
+  border-color: var(--bs-gray-800) !important;
+}
+
+.paginationButton {
+  height: 32px;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 var(--bs-btn-padding-x) !important;
+}
+
+.paginationButton svg:nth-child(2) {
+  margin-left: -12px;
+}
