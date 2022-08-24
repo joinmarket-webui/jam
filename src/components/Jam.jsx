@@ -48,7 +48,6 @@ export default function Jam() {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [destinationIsExternal, setDestinationIsExternal] = useState(false)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
 
   const startJarUtxos = useMemo(() => {
@@ -106,7 +105,7 @@ export default function Jam() {
     }
 
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
-  }, [destinationIsExternal, getNewAddressesForAccounts])
+  }, [getNewAddressesForAccounts])
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -388,8 +387,6 @@ export default function Jam() {
                                   setFieldValue('dest2', '', false)
                                   setFieldValue('dest3', '', false)
                                 }
-
-                                setDestinationIsExternal(isToggled)
                               }}
                               disabled={isSubmitting}
                             />
