@@ -14,6 +14,7 @@ import { EarnReportOverlay } from './EarnReport'
 import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
 import { OrderbookOverlay } from './Orderbook'
+import Balance from './Balance'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -28,8 +29,11 @@ const RELOAD_FIDELITY_BONDS_DELAY_MS = 2_000
 const OFFERTYPE_REL = 'sw0reloffer'
 const OFFERTYPE_ABS = 'sw0absoffer'
 
-const isRelativeOffer = (offertype) => offertype === OFFERTYPE_REL
-const isAbsoluteOffer = (offertype) => offertype === OFFERTYPE_ABS
+// can be any of ['sw0reloffer', 'swreloffer', 'reloffer']
+const isRelativeOffer = (offertype) => offertype.includes('reloffer')
+
+// can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
+const isAbsoluteOffer = (offertype) => offertype.includes('absoffer')
 
 const FORM_INPUT_LOCAL_STORAGE_KEYS = {
   offertype: 'jm-offertype',
@@ -81,6 +85,95 @@ const factorToPercentage = (val, precision = 6) => {
   // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
+}
+
+const renderOrderType = (val, t) => {
+  if (isAbsoluteOffer(val)) {
+    return <rb.Badge bg="info">{t('earn.current.text_offer_type_absolute')}</rb.Badge>
+  }
+  if (isRelativeOffer(val)) {
+    return <rb.Badge bg="primary">{t('earn.current.text_offer_type_relative')}</rb.Badge>
+  }
+  return <rb.Badge bg="secondary">{val}</rb.Badge>
+}
+
+function CurrentOffer({ offer, nickname }) {
+  const { t } = useTranslation()
+  const settings = useSettings()
+
+  return (
+    <div className={styles.offerContainer}>
+      <div className="d-flex justify-content-between align-items-center">
+        <div className={`${styles.offerTitle} slashed-zeroes`}>
+          {nickname}:{offer.oid}
+        </div>
+        <div className="d-flex align-items-center gap-1">{renderOrderType(offer.ordertype, t)}</div>
+      </div>
+      <rb.Container className="mt-2">
+        <rb.Row className="mb-1">
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_cjfee')}</div>
+              <div>
+                {isRelativeOffer(offer.ordertype) ? (
+                  <>{factorToPercentage(offer.cjfee)}%</>
+                ) : (
+                  <>
+                    <Balance
+                      valueString={String(offer.cjfee)}
+                      convertToUnit={settings.unit}
+                      showBalance={settings.showBalance}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          </rb.Col>
+
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_minsize')}</div>
+              <div>
+                <Balance
+                  valueString={String(offer.minsize)}
+                  convertToUnit={settings.unit}
+                  showBalance={settings.showBalance}
+                />
+              </div>
+            </div>
+          </rb.Col>
+        </rb.Row>
+
+        <rb.Row>
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_txfee')}</div>
+              <div>
+                <Balance
+                  valueString={String(offer.txfee)}
+                  convertToUnit={settings.unit}
+                  showBalance={settings.showBalance}
+                />
+              </div>
+            </div>
+          </rb.Col>
+
+          <rb.Col xs={6}>
+            <div className="d-flex flex-column">
+              <div className={styles.offerLabel}>{t('earn.current.text_maxsize')}</div>
+              <div>
+                <Balance
+                  valueString={String(offer.maxsize)}
+                  convertToUnit={settings.unit}
+                  showBalance={settings.showBalance}
+                />
+              </div>
+            </div>
+          </rb.Col>
+        </rb.Row>
+      </rb.Container>
+    </div>
+  )
 }
 
 export default function Earn() {
@@ -294,10 +387,22 @@ export default function Earn() {
             !serviceInfo?.makerRunning &&
             !isWaitingMakerStart &&
             !isWaitingMakerStop && <p className="text-secondary mb-4">{t('earn.market_explainer')}</p>}
+          {serviceInfo?.makerRunning &&
+            (serviceInfo?.offers && serviceInfo?.nickname ? (
+              <>
+                {serviceInfo.offers.map((offer, index) => (
+                  <CurrentOffer key={index} offer={offer} nickname={serviceInfo.nickname} />
+                ))}
+              </>
+            ) : (
+              <rb.Placeholder as="div" animation="wave">
+                <rb.Placeholder xs={12} className={styles.offerLoader} />
+              </rb.Placeholder>
+            ))}
           {!serviceInfo?.coinjoinInProgress && (
             <>
               <PageTitle
-                title={fidelityBonds.length > 0 ? t('earn.title_fidelity_bond_exists') : t('earn.title_fidelity_bonds')}
+                title={t('earn.title_fidelity_bonds', { count: fidelityBonds.length })}
                 subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
@@ -319,7 +424,7 @@ export default function Earn() {
                       />
                     ) : (
                       <rb.Placeholder as="div" animation="wave">
-                        <rb.Placeholder xs={12} className={styles['fb-loader']} />
+                        <rb.Placeholder xs={12} className={styles.fidelityBondsLoader} />
                       </rb.Placeholder>
                     ))}
                 </>
