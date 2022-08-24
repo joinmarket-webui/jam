@@ -364,35 +364,6 @@ export default function Jam() {
                   <rb.Form onSubmit={handleSubmit} noValidate>
                     {!collaborativeOperationRunning && (
                       <>
-                        <rb.Form.Group className="mb-4" controlId="offertype">
-                          <ToggleSwitch
-                            label={t('scheduler.toggle_internal_destination_title')}
-                            subtitle={t('scheduler.toggle_internal_destination_subtitle')}
-                            toggledOn={destinationIsExternal}
-                            onToggle={async (isToggled) => {
-                              if (!isToggled) {
-                                try {
-                                  const newAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
-                                  setFieldValue('dest1', newAddresses[0], true)
-                                  setFieldValue('dest2', newAddresses[1], true)
-                                  setFieldValue('dest3', newAddresses[2], true)
-                                } catch (e) {
-                                  console.error('Could not get internal addresses.', e)
-                                  setFieldValue('dest1', '', true)
-                                  setFieldValue('dest2', '', true)
-                                  setFieldValue('dest3', '', true)
-                                }
-                              } else {
-                                setFieldValue('dest1', '', false)
-                                setFieldValue('dest2', '', false)
-                                setFieldValue('dest3', '', false)
-                              }
-
-                              setDestinationIsExternal(isToggled)
-                            }}
-                            disabled={isSubmitting}
-                          />
-                        </rb.Form.Group>
                         {isDebugFeatureEnabled('insecureScheduleTesting') && (
                           <rb.Form.Group className="mb-4" controlId="offertype">
                             <ToggleSwitch
@@ -401,7 +372,28 @@ export default function Jam() {
                                 "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
                               }
                               toggledOn={useInsecureTestingSettings}
-                              onToggle={(isToggled) => setUseInsecureTestingSettings(isToggled)}
+                              onToggle={async (isToggled) => {
+                                setUseInsecureTestingSettings(isToggled)
+                                if (isToggled) {
+                                  try {
+                                    const newAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
+                                    setFieldValue('dest1', newAddresses[0], true)
+                                    setFieldValue('dest2', newAddresses[1], true)
+                                    setFieldValue('dest3', newAddresses[2], true)
+                                  } catch (e) {
+                                    console.error('Could not get internal addresses.', e)
+                                    setFieldValue('dest1', '', true)
+                                    setFieldValue('dest2', '', true)
+                                    setFieldValue('dest3', '', true)
+                                  }
+                                } else {
+                                  setFieldValue('dest1', '', false)
+                                  setFieldValue('dest2', '', false)
+                                  setFieldValue('dest3', '', false)
+                                }
+
+                                setDestinationIsExternal(isToggled)
+                              }}
                               disabled={isSubmitting}
                             />
                           </rb.Form.Group>
@@ -409,7 +401,6 @@ export default function Jam() {
                       </>
                     )}
                     {!collaborativeOperationRunning &&
-                      destinationIsExternal &&
                       [1, 2, 3].map((i) => {
                         return (
                           <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>
