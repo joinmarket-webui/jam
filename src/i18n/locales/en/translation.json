@@ -436,8 +436,6 @@
     "description_destination_addresses": "The scheduler will send all available funds to multiple destinations, splitting them up in random chunks.",
     "feedback_invalid_destination_address": "Please enter valid a destination address.",
     "feedback_reused_destination_address": "This address is already used. To preserve your privacy please choose another one.",
-    "toggle_internal_destination_title": "Send to external wallet",
-    "toggle_internal_destination_subtitle": "Specify destination addresses to send funds to an external wallet.",
     "label_destination_input": "Destination {{ destination }}",
     "placeholder_destination_input": "Enter destination address...",
     "description_fees": "The scheduler will pay all occurring fees automatically.",
