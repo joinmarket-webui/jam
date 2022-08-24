@@ -5,7 +5,22 @@
     "button_copy_text_confirmed": "Copied",
     "next": "Next",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "table": {
+      "pagination": {
+        "items_per_page": {
+          "label": "Items per page",
+          "text_option_show_all": "All"
+        },
+        "page_selector": {
+          "label_current": "Page",
+          "label_first": "First",
+          "label_previous": "Previous",
+          "label_next": "Next",
+          "label_last": "Last"
+        }
+      }
+    }
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}"
@@ -388,8 +403,10 @@
   },
   "orderbook": {
     "title": "Orderbook",
-    "text_orderbook_summary": "{{ orderCount }} orders by {{ counterpartyCount }} counterparties",
-    "text_orderbook_summary_filtered": "found {{ orderCount }} orders by {{ counterpartyCount }} counterparties",
+    "text_orderbook_summary_one": "{{ count }} order by {{ counterpartyCount }} conterparty",
+    "text_orderbook_summary_other": "{{ count }} orders by {{ counterpartyCount }} conterparties",
+    "text_orderbook_summary_filtered_one": "found {{ count }} order by {{ counterpartyCount }} conterparty",
+    "text_orderbook_summary_filtered_other": "found {{ count }} orders by {{ counterpartyCount }} conterparties",
     "alert_empty_orderbook": "Orderbook is empty",
     "error_loading_orderbook_failed": "Error while loading the orderbook. Your current local setup might not support fetching the orderbook. Reason: {{ reason }}",
     "text_offer_type_absolute": "absolute",
@@ -445,9 +462,9 @@
     "title_tab_utxos": "UTXOs",
     "title_tab_account": "Jar Details",
     "utxo_list": {
-      "title_no_utxos": "No UTXOs in Jar {{ jar }}",
-      "title_1_utxo": "1 UTXO in Jar {{ jar }}",
-      "title_num_utxos": "{{ num }} UTXOs in Jar {{ jar }}",
+      "title_zero": "No UTXOs in Jar {{ jar }}",
+      "title_one": "{{ count }} UTXO in Jar {{ jar }}",
+      "title_other": "{{ count }} UTXOs in Jar {{ jar }}",
       "button_freeze": "Freeze selected",
       "button_unfreeze": "Unfreeze selected",
       "button_freeze_loading": "Freezing...",
