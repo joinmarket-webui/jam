@@ -94,11 +94,8 @@ export default function Jam() {
   const initialFormValues = useMemo(() => {
     const addressCount = 3
 
-    let destinationAddresses = []
-    if (destinationIsExternal) {
-      // prefill with empty addresses
-      destinationAddresses = Array(addressCount).fill('')
-    } else {
+    let destinationAddresses = Array(addressCount).fill('')
+    if (useInsecureTestingSettings) {
       try {
         // prefill with addresses marked as "new"
         destinationAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
