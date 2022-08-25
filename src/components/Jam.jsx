@@ -23,8 +23,6 @@ const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
 // Interval in milliseconds between requests to reload the schedule.
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
-const SCHEDULER_START_ACCOUNT = 0
-
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
 
@@ -50,13 +48,7 @@ export default function Jam() {
   const [isLoading, setIsLoading] = useState(true)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
 
-  const startJarUtxos = useMemo(() => {
-    if (!walletInfo) return null
-
-    return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === SCHEDULER_START_ACCOUNT)
-  }, [walletInfo])
-
-  const schedulerPreconditionSummary = useCoinjoinPreconditionSummary(startJarUtxos || [])
+  const schedulerPreconditionSummary = useCoinjoinPreconditionSummary(walletInfo?.data.utxos.utxos || [])
   const isSchedulerPreconditionsFulfilled = useMemo(
     () => schedulerPreconditionSummary.isFulfilled,
     [schedulerPreconditionSummary]
@@ -225,20 +217,19 @@ export default function Jam() {
               <>
                 {schedulerPreconditionSummary.numberOfMissingUtxos > 0 ? (
                   <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
-                    To run the scheduler you need at least one UTXO with{' '}
-                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-                    confirmations. Fund your wallet and wait for{' '}
-                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-                    blocks.
+                    To run the scheduler you need UTXOs with{' '}
+                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> confirmations.
+                    Fund your wallet and wait for{' '}
+                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> blocks.
                   </Trans>
                 ) : schedulerPreconditionSummary.amountOfMissingConfirmations > 0 ? (
                   <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
-                    The scheduler requires one of your UTXOs to have{' '}
+                    The scheduler requires your UTXOs to have{' '}
                     <strong>
                       {{
                         /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
                            (which is essential for parameterized translations to work). */
-                        minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+                        minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
                       }}
                     </strong>{' '}
                     or more confirmations. Wait for{' '}

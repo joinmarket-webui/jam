@@ -22,7 +22,7 @@ describe('useCoinjoinPreconditionSummary', () => {
     return returnVal
   }
 
-  it('should NOT be fulfilled on empty utxos', () => {
+  it('should NOT be fulfilled on empty (eligible) utxos', () => {
     let preconditionSummary: CoinjoinPreconditionSummary | undefined
 
     act(() => {
@@ -32,7 +32,24 @@ describe('useCoinjoinPreconditionSummary', () => {
     expect(preconditionSummary).toEqual({
       isFulfilled: false,
       numberOfMissingUtxos: COINJOIN_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
-      amountOfMissingConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+      amountOfMissingConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+      amountOfMissingOverallRetries: COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
+    })
+
+    act(() => {
+      preconditionSummary = setup([
+        {
+          frozen: true, // not eligible
+          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+          tries_remaining: COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
+        } as Utxo,
+      ]).data
+    })
+
+    expect(preconditionSummary).toEqual({
+      isFulfilled: false,
+      numberOfMissingUtxos: COINJOIN_PRECONDITIONS.MIN_NUMBER_OF_UTXOS,
+      amountOfMissingConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
       amountOfMissingOverallRetries: COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
     })
   })
@@ -44,8 +61,13 @@ describe('useCoinjoinPreconditionSummary', () => {
       preconditionSummary = setup([
         {
           frozen: false,
-          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
           tries_remaining: COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
+        } as Utxo,
+        {
+          frozen: true, // not eligible
+          confirmations: 0,
+          tries_remaining: 0,
         } as Utxo,
       ]).data
     })
@@ -65,13 +87,18 @@ describe('useCoinjoinPreconditionSummary', () => {
       preconditionSummary = setup([
         {
           frozen: false,
-          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO - 1,
+          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS - 1,
           tries_remaining: COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
         } as Utxo,
         {
           frozen: false,
-          confirmations: 0,
+          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
           tries_remaining: COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES,
+        } as Utxo,
+        {
+          frozen: true, // not eligible
+          confirmations: 0,
+          tries_remaining: 0,
         } as Utxo,
       ]).data
     })
@@ -91,12 +118,17 @@ describe('useCoinjoinPreconditionSummary', () => {
       preconditionSummary = setup([
         {
           frozen: false,
-          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
           tries_remaining: COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - 1,
         } as Utxo,
         {
           frozen: false,
-          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+          confirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+          tries_remaining: 0,
+        } as Utxo,
+        {
+          frozen: true, // not eligible
+          confirmations: 0,
           tries_remaining: 0,
         } as Utxo,
       ]).data

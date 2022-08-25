@@ -219,19 +219,19 @@ function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
       <>
         {coinjoinPreconditionSummary.numberOfMissingUtxos > 0 ? (
           <Trans i18nKey="send.coinjoin_precondition.hint_missing_utxos">
-            To execute a collaborative transaction you need at least one UTXO with{' '}
-            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-            confirmations in the source jar. Select another jar to send from or fund this jar and wait for{' '}
-            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong> blocks.
+            To execute a collaborative transaction you need UTXOs with{' '}
+            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> confirmations in the
+            source jar. Select another jar to send from or fund this jar and wait for{' '}
+            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> blocks.
           </Trans>
         ) : coinjoinPreconditionSummary.amountOfMissingConfirmations > 0 ? (
           <Trans i18nKey="send.coinjoin_precondition.hint_missing_confirmations">
-            A collaborative transaction requires one of your UTXOs to have{' '}
+            A collaborative transaction requires your UTXOs to have{' '}
             <strong>
               {{
                 /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
                  (which is essential for parameterized translations to work). */
-                minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
+                minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
               }}
             </strong>{' '}
             or more confirmations. Select another jar to send from or wait for{' '}

@@ -5,7 +5,7 @@ import { Utxos } from '../context/WalletContext'
 export const COINJOIN_PRECONDITIONS = {
   MIN_NUMBER_OF_UTXOS: 1, // min amount of utxos available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
-  MIN_CONFIRMATIONS_OF_SINGLE_UTXO: 5, // at least one utxo needs X confirmations
+  MIN_CONFIRMATIONS: 5, // all utxos needs X confirmations
   MIN_OVERALL_REMAINING_RETRIES: 1, // amount of overall retries available
 }
 
@@ -30,12 +30,11 @@ export const useCoinjoinPreconditionSummary = (utxos: Utxos): CoinjoinPreconditi
       COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
     )
 
-    const maxConfirmations =
-      eligibleUtxos.length === 0 ? 0 : eligibleUtxos.reduce((acc, utxo) => Math.max(acc, utxo.confirmations), 0)
-    const amountOfMissingConfirmations = Math.max(
-      0,
-      COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO - maxConfirmations
-    )
+    const minConfirmations =
+      eligibleUtxos.length === 0
+        ? 0
+        : eligibleUtxos.reduce((acc, utxo) => Math.min(acc, utxo.confirmations), eligibleUtxos[0].confirmations)
+    const amountOfMissingConfirmations = Math.max(0, COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS - minConfirmations)
 
     const isFulfilled =
       numberOfMissingUtxos === 0 && amountOfMissingOverallRetries === 0 && amountOfMissingConfirmations === 0
