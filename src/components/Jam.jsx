@@ -216,33 +216,23 @@ export default function Jam() {
             <rb.Alert variant="warning" className="mb-4">
               <>
                 {schedulerPreconditionSummary.numberOfMissingUtxos > 0 ? (
-                  <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
-                    To run the scheduler you need UTXOs with{' '}
-                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> confirmations.
-                    Fund your wallet and wait for{' '}
-                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> blocks.
-                  </Trans>
+                  <>
+                    {t('scheduler.precondition.hint_missing_utxos', {
+                      minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+                      amountOfMissingConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+                    })}
+                  </>
                 ) : schedulerPreconditionSummary.amountOfMissingConfirmations > 0 ? (
-                  <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
-                    The scheduler requires your UTXOs to have{' '}
-                    <strong>
-                      {{
-                        /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
-                           (which is essential for parameterized translations to work). */
-                        minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
-                      }}
-                    </strong>{' '}
-                    or more confirmations. Wait for{' '}
-                    <strong>
-                      {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
-                    </strong>{' '}
-                    more block(s).
-                  </Trans>
+                  <>
+                    {t('scheduler.precondition.hint_missing_confirmations', {
+                      minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+                      amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations,
+                    })}
+                  </>
                 ) : (
                   schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
                     <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
-                      You've tried running the scheduler unsuccessfully too many times in a row. For security reasons,
-                      you need a fresh UTXO to try again. See{' '}
+                      You tried too many times. See
                       <a
                         href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
                         target="_blank"
@@ -250,7 +240,7 @@ export default function Jam() {
                       >
                         the docs
                       </a>{' '}
-                      for more information.
+                      for more info.
                     </Trans>
                   )
                 )}

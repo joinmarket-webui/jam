@@ -214,37 +214,28 @@ function SweepAccordionToggle({ eventKey }) {
 }
 
 function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
+  const { t } = useTranslation()
   return (
     <rb.Alert variant="warning" className="mb-4">
       <>
         {coinjoinPreconditionSummary.numberOfMissingUtxos > 0 ? (
-          <Trans i18nKey="send.coinjoin_precondition.hint_missing_utxos">
-            To execute a collaborative transaction you need UTXOs with{' '}
-            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> confirmations in the
-            source jar. Select another jar to send from or fund this jar and wait for{' '}
-            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS }}</strong> blocks.
-          </Trans>
+          <>
+            {t('send.coinjoin_precondition.hint_missing_utxos', {
+              minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+              amountOfMissingConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+            })}
+          </>
         ) : coinjoinPreconditionSummary.amountOfMissingConfirmations > 0 ? (
-          <Trans i18nKey="send.coinjoin_precondition.hint_missing_confirmations">
-            A collaborative transaction requires your UTXOs to have{' '}
-            <strong>
-              {{
-                /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
-                 (which is essential for parameterized translations to work). */
-                minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
-              }}
-            </strong>{' '}
-            or more confirmations. Select another jar to send from or wait for{' '}
-            <strong>
-              {{ amountOfMissingConfirmations: coinjoinPreconditionSummary.amountOfMissingConfirmations }}
-            </strong>{' '}
-            more block(s).
-          </Trans>
+          <>
+            {t('send.coinjoin_precondition.hint_missing_confirmations', {
+              minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
+              amountOfMissingConfirmations: coinjoinPreconditionSummary.amountOfMissingConfirmations,
+            })}
+          </>
         ) : (
           coinjoinPreconditionSummary.amountOfMissingOverallRetries > 0 && (
-            <Trans i18nKey="send.coinjoin_precondition.hint_missing_overall_retries">
-              You've tried executing a collaborative transaction from this jar unsuccessfully too many times in a row.
-              For security reasons, you need a fresh UTXO to try again. See{' '}
+            <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
+              You tried too many times. See
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
                 target="_blank"
@@ -252,7 +243,7 @@ function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
               >
                 the docs
               </a>{' '}
-              for more information.
+              for more info.
             </Trans>
           )
         )}
