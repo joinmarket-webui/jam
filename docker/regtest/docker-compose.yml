@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      READY_FILE: /root/.nbxplorer/btc_fully_synched
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
       ENSURE_WALLET: "true"
       REMOVE_LOCK_FILES: "true"
       jm_rpc_wallet_file: jm_primary
@@ -34,10 +34,10 @@ services:
       - "28283:28283"
     volumes:
       - "joinmarket_datadir:/root/.joinmarket"
-      - "nbxplorer_datadir:/root/.nbxplorer"
+      - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
       - bitcoind
-      - nbxplorer
+      - bitcoind_regtest_initializer
       - irc
 
   joinmarket2:
@@ -47,7 +47,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      READY_FILE: /root/.nbxplorer/btc_fully_synched
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
       ENSURE_WALLET: "true"
       REMOVE_LOCK_FILES: "true"
       APP_USER: joinmarket
@@ -75,10 +75,10 @@ services:
       - "29080:80"
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
-      - "nbxplorer_datadir:/root/.nbxplorer"
+      - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
       - bitcoind
-      - nbxplorer
+      - bitcoind_regtest_initializer
       - irc
 
   joinmarket_directory_node:
@@ -99,7 +99,7 @@ services:
   irc:
     container_name: jm_regtest_irc
     restart: unless-stopped
-    image: ghcr.io/ergochat/ergo:stable
+    image: ghcr.io/ergochat/ergo:v2.10.0
     expose:
       - 6667
     volumes:
@@ -110,7 +110,7 @@ services:
     restart: unless-stopped
     image: btcpayserver/bitcoin:22.0-1
     environment:
-      BITCOIN_NETWORK: ${NBITCOIN_NETWORK:-regtest}
+      BITCOIN_NETWORK: regtest
       BITCOIN_WALLETDIR: "/walletdata"
       BITCOIN_EXTRA_ARGS: |
         rpcport=43782
@@ -138,8 +138,6 @@ services:
         rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
         # rpcauth (user=joinmarket2; password=joinmarket2)
         rpcauth=joinmarket2:521bf9f4468529d49c0a41f9c9f8fdbf$$63ae94a73d2aa45e7ee756945d9b1e469f9873ce026b815d676a748f777e0b8d
-        # rpcauth (user=nbxplorer; password=nbxplorer)
-        rpcauth=nbxplorer:8953867752ed07ca27bc0b1d7a10fa99$$e46553870d4a2c59753bfe453797be070ab4dbd5fdfc2fecdb7862ea0ae6b127
     expose:
       - 43782 # RPC
       - 39388 # P2P
@@ -150,28 +148,18 @@ services:
       - "bitcoin_datadir:/data"
       - "bitcoin_wallet_datadir:/walletdata"
 
-  nbxplorer:
-    container_name: jm_regtest_nbxplorer
-    restart: unless-stopped
-    image: nicolasdorier/nbxplorer:2.2.18
-    environment:
-      NBXPLORER_NOAUTH: 1
-      NBXPLORER_CHAINS: "btc"
-      NBXPLORER_BTCRPCURL: http://bitcoind:43782/
-      NBXPLORER_BTCRPCUSER: nbxplorer
-      NBXPLORER_BTCRPCPASSWORD: nbxplorer
-      NBXPLORER_BTCNODEENDPOINT: bitcoind:39388
-      NBXPLORER_NETWORK: ${NBITCOIN_NETWORK:-regtest}
-      NBXPLORER_BIND: 0.0.0.0:32838
-      NBXPLORER_TRIMEVENTS: 10000
-      NBXPLORER_SIGNALFILESDIR: /datadir
-    expose:
-      - 32838
-    volumes:
-      - "nbxplorer_datadir:/datadir"
-      - "bitcoin_datadir:/root/.bitcoin"
-    depends_on:
-      - bitcoind
+  bitcoind_regtest_initializer:
+      container_name: jm_regtest_bitcoind_initializer
+      build:
+        context: ./dockerfile-deps/bitcoin/regtest-initializer
+        dockerfile: Dockerfile
+      restart: on-failure
+      environment:
+        READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      volumes:
+        - "initializer_datadir:/root/.regtest-initializer"
+      depends_on:
+        - bitcoind
 
   nginx:
     container_name: jm_regtest_nginx_test_basepath
@@ -186,7 +174,7 @@ services:
 volumes:
   bitcoin_datadir:
   bitcoin_wallet_datadir:
-  nbxplorer_datadir:
+  initializer_datadir:
   joinmarket_datadir:
   joinmarket2_datadir:
   joinmarket_directory_node_datadir:
