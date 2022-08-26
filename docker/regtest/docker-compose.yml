@@ -108,7 +108,7 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: btcpayserver/bitcoin:22.0-1
+    image: btcpayserver/bitcoin:23.0
     environment:
       BITCOIN_NETWORK: regtest
       BITCOIN_WALLETDIR: "/walletdata"

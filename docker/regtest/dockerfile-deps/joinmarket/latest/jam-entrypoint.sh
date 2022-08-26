@@ -87,6 +87,7 @@ if [ "${ENSURE_WALLET}" = "true" ]; then
         \"method\":\"createwallet\",\
         \"params\":{\
             \"wallet_name\":\"${wallet_name}\",\
+            \"descriptors\":false,\
             \"load_on_startup\":true\
         }\
     }"
