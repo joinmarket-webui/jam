@@ -237,7 +237,7 @@ function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
             <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
               You tried too many times. See
               <a
-                href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
+                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md"
                 target="_blank"
                 rel="noopener noreferrer"
               >
