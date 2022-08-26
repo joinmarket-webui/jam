@@ -156,6 +156,10 @@ services:
       restart: on-failure
       environment:
         READY_FILE: /root/.regtest-initializer/btc_fully_synched
+        RPC_HOST: bitcoind
+        RPC_PORT: 43782
+        RPC_USER: regtest
+        RPC_PASSWORD: regtest
       volumes:
         - "initializer_datadir:/root/.regtest-initializer"
       depends_on:
