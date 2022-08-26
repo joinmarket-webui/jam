@@ -15,3 +15,4 @@ do
 	echo -n "."
 	sleep 1
 done
+echo "Successfully waited for ${BLOCKS} blocks to be reported."
