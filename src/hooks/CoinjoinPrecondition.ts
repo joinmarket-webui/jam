@@ -16,34 +16,33 @@ export interface CoinjoinPreconditionSummary {
   amountOfMissingOverallRetries: number
 }
 
+export const buildCoinjoinPreconditionSummary = (utxos: Utxos): CoinjoinPreconditionSummary => {
+  const eligibleUtxos = utxos.filter((it) => !it.frozen).filter((it) => !fb.utxo.isLocked(it))
+  const numberOfMissingUtxos = Math.max(0, COINJOIN_PRECONDITIONS.MIN_NUMBER_OF_UTXOS - eligibleUtxos.length)
+
+  const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
+  const amountOfMissingOverallRetries = Math.max(
+    0,
+    COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
+  )
+
+  const minConfirmations =
+    eligibleUtxos.length === 0
+      ? 0
+      : eligibleUtxos.reduce((acc, utxo) => Math.min(acc, utxo.confirmations), eligibleUtxos[0].confirmations)
+  const amountOfMissingConfirmations = Math.max(0, COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS - minConfirmations)
+
+  const isFulfilled =
+    numberOfMissingUtxos === 0 && amountOfMissingOverallRetries === 0 && amountOfMissingConfirmations === 0
+
+  return {
+    isFulfilled,
+    numberOfMissingUtxos,
+    amountOfMissingConfirmations,
+    amountOfMissingOverallRetries,
+  }
+}
+
 export const useCoinjoinPreconditionSummary = (utxos: Utxos): CoinjoinPreconditionSummary => {
-  const eligibleUtxos = useMemo(() => {
-    return utxos.filter((it) => !it.frozen).filter((it) => !fb.utxo.isLocked(it))
-  }, [utxos])
-
-  return useMemo(() => {
-    const numberOfMissingUtxos = Math.max(0, COINJOIN_PRECONDITIONS.MIN_NUMBER_OF_UTXOS - eligibleUtxos.length)
-
-    const overallRetriesRemaining = eligibleUtxos.reduce((acc, utxo) => acc + utxo.tries_remaining, 0)
-    const amountOfMissingOverallRetries = Math.max(
-      0,
-      COINJOIN_PRECONDITIONS.MIN_OVERALL_REMAINING_RETRIES - overallRetriesRemaining
-    )
-
-    const minConfirmations =
-      eligibleUtxos.length === 0
-        ? 0
-        : eligibleUtxos.reduce((acc, utxo) => Math.min(acc, utxo.confirmations), eligibleUtxos[0].confirmations)
-    const amountOfMissingConfirmations = Math.max(0, COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS - minConfirmations)
-
-    const isFulfilled =
-      numberOfMissingUtxos === 0 && amountOfMissingOverallRetries === 0 && amountOfMissingConfirmations === 0
-
-    return {
-      isFulfilled,
-      numberOfMissingUtxos,
-      amountOfMissingConfirmations,
-      amountOfMissingOverallRetries,
-    }
-  }, [eligibleUtxos])
+  return useMemo(() => buildCoinjoinPreconditionSummary(utxos), [utxos])
 }

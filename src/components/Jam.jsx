@@ -7,7 +7,11 @@ import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
-import { COINJOIN_PRECONDITIONS, useCoinjoinPreconditionSummary } from '../hooks/CoinjoinPrecondition'
+import {
+  COINJOIN_PRECONDITIONS,
+  buildCoinjoinPreconditionSummary,
+  useCoinjoinPreconditionSummary,
+} from '../hooks/CoinjoinPrecondition'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
