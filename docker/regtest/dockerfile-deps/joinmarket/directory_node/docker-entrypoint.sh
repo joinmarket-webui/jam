@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# ensure 'logs' directory exists
-mkdir --parents "${DATADIR}/logs"
+# ensure 'log' directory exists
+mkdir --parents /var/log/jam
 
 # First we restore the default cfg as created by wallet-tool.py generate
 if [ ! -f "$CONFIG" ]; then

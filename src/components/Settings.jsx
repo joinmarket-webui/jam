@@ -6,12 +6,14 @@ import Sprite from './Sprite'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import Alert from './Alert'
+import { LogOverlay } from './LogOverlay'
 import { ConfirmModal } from './Modal'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import { SATS, BTC, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import { fetchFeatures } from '../libs/JamApi'
 import { routes } from '../constants/routes'
 import languages from '../i18n/languages'
 import styles from './Settings.module.css'
@@ -91,6 +93,8 @@ export default function Settings({ stopWallet }) {
   const [showingSeed, setShowingSeed] = useState(false)
   const [lockingWallet, setLockingWallet] = useState(false)
   const [showConfirmLockModal, setShowConfirmLockModal] = useState(null)
+  const [showLogsEnabled, setShowLogsEnabled] = useState(false)
+  const [showingLogs, setShowingLogs] = useState(false)
   const [alert, setAlert] = useState(null)
 
   const { t } = useTranslation()
@@ -139,6 +143,25 @@ export default function Settings({ stopWallet }) {
     [currentWallet, stopWallet, navigate, serviceInfo]
   )
 
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+    fetchFeatures({ token: currentWallet?.token, signal: abortCtrl.signal })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((data) => data && data.features)
+      .then((features) => {
+        if (abortCtrl.signal.aborted) return
+        setShowLogsEnabled(features && features.logs === true)
+      })
+      .catch((_) => {
+        if (abortCtrl.signal.aborted) return
+        setShowLogsEnabled(false)
+      })
+
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [currentWallet])
+
   return (
     <div className={styles.settings}>
       <div className="d-flex flex-column gap-3">
@@ -181,7 +204,7 @@ export default function Settings({ stopWallet }) {
           <rb.Button
             variant="outline-dark"
             className={styles['settings-btn']}
-            onClick={(e) => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
+            onClick={() => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
           >
             <Sprite symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]} width="24" height="24" />
             {isLightTheme ? t('settings.use_dark_theme') : t('settings.use_light_theme')}
@@ -211,6 +234,16 @@ export default function Settings({ stopWallet }) {
               </rb.Dropdown.Item>
             </rb.Dropdown.Menu>
           </rb.Dropdown>
+
+          {currentWallet && showLogsEnabled && (
+            <>
+              <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={() => setShowingLogs(true)}>
+                <Sprite symbol="console" width="24" height="24" />
+                {t('settings.show_logs')}
+              </rb.Button>
+              <LogOverlay currentWallet={currentWallet} show={showingLogs} onHide={() => setShowingLogs(false)} />
+            </>
+          )}
         </div>
 
         <div className={styles['section-title']}>{t('settings.section_title_wallet')}</div>

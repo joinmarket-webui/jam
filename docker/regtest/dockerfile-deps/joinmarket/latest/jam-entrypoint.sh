@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# ensure 'logs' directory exists
-mkdir --parents "${DATADIR}/logs"
+# ensure 'log' directory exists
+mkdir --parents /var/log/jam
 
 # restore the default config
 if [ ! -f "$CONFIG" ]; then
@@ -70,7 +70,7 @@ for key in "${!jmenv[@]}"; do
 done
 
 if [ "${READY_FILE}" ] && [ "${READY_FILE}" != "false" ]; then
-    echo "Waiting $READY_FILE to be created..."
+    echo "Waiting for $READY_FILE to be created..."
     while [ ! -f "$READY_FILE" ]; do sleep 1; done
     echo "The chain is fully synched"
 fi
@@ -81,11 +81,28 @@ if [ "${ENSURE_WALLET}" = "true" ]; then
     wallet_name="${jmenv['rpc_wallet_file']}"
 
     echo "Creating wallet $wallet_name if missing..."
-    create_payload="{\"jsonrpc\":\"1.0\",\"id\":\"curl\",\"method\":\"createwallet\",\"params\":[\"${wallet_name}\"]}"
+    create_payload="{\
+        \"jsonrpc\":\"2.0\",\
+        \"id\":\"curl\",\
+        \"method\":\"createwallet\",\
+        \"params\":{\
+            \"wallet_name\":\"${wallet_name}\",\
+            \"descriptors\":false,\
+            \"load_on_startup\":true\
+        }\
+    }"
     curl --silent --user "${btcuser}" --data-binary "${create_payload}" "${btchost}" > /dev/null || true
 
     echo "Loading wallet $wallet_name..."
-    load_payload="{\"jsonrpc\":\"1.0\",\"id\":\"curl\",\"method\":\"loadwallet\",\"params\":[\"${wallet_name}\"]}"
+    load_payload="{\
+        \"jsonrpc\":\"2.0\",\
+        \"id\":\"curl\",\
+        \"method\":\"loadwallet\",\
+        \"params\":{\
+            \"filename\":\"${wallet_name}\",\
+            \"load_on_startup\":true\
+        }\
+    }"
     curl --silent --user "${btcuser}" --data-binary "${load_payload}" "${btchost}" > /dev/null || true
 fi
 

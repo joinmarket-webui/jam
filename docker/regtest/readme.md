@@ -4,6 +4,9 @@ This setup will help you set up a regtest environment quickly.
 It starts multiple JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
 Communication between these containers is done via Tor (if internet connection is available) and IRC (locally running container).
 
+Both containers will have a wallet named `Satoshi.jmdat` with password `test`.
+The second container has basic auth enabled (username `joinmarket` and password `joinmarket`).
+
 ## Common flow
 ```sh
 # (optional) once in a while rebuild the images
@@ -71,22 +74,26 @@ npm run regtest:mine
 
 ## Images
 
-The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is an adaption of [joinmarket-webui-standalone](https://github.com/joinmarket-webui/joinmarket-webui-docker/tree/master/standalone) with as little adaptations as possible.
+The [Docker setup](dockerfile-deps/joinmarket/latest/Dockerfile) is an adaption of [jam-standalone](https://github.com/joinmarket-webui/jam-docker/tree/master/standalone) with as little adaptations as possible.
 It will fetch the latest commit from the [`master` branch of the joinmarket-clientserver repo](https://github.com/JoinMarket-Org/joinmarket-clientserver/tree/master).
 Keep in mind: Building from `master` is not always reliable. This tradeoff is made to enable testing new features immediately by just rebuilding the images.
 
-The second JoinMarket container is based on `joinmarket-webui/joinmarket-webui-dev-standalone:master` which exposes an UI on port `29080`
+The second JoinMarket container is based on `joinmarket-webui/jam-dev-standalone:master` which exposes an UI on port `29080`
 (username `joinmarket` and pass `joinmarket` for Basic Authentication).
 This is useful if you want to perform regression tests.
 
 The third JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
 
-### Rebuild
+### Build
+```sh
+# building the images
+npm run regtest:build
+```
 
-In order to incorporate the current contents of `master` branch, simply rebuild the joinmarket images from scratch.
+In order to incorporate recent upstream changes (of the `master` branch), simply rebuild the setup from scratch.
 
 ```sh
-# rebuilding the images with contents of current master branch
+# download and recompile the images from scratch (without using docker cache)
 npm run regtest:rebuild
 ```
 
@@ -95,7 +102,7 @@ npm run regtest:rebuild
 ### Debug logs
 
 ```sh
-# logs and follows content of log file `.joinmarket/logs/jmwalletd_stdout.log` in primary joinmarket container
+# logs and follows content of log file in primary joinmarket container
 npm run regtest:logs:jmwalletd
 ```
 
@@ -203,19 +210,6 @@ Locking wallet 'Satoshi.jmdat'
 Successfully locked wallet 'Satoshi.jmdat'.
 Generating 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339dk4cme074lq3
 Successfully generated 5 blocks with rewards to bcrt1qs0aqmzxjq96jk8hhmta5jfn339dk4cme074lq3
-```
-
-## Troubleshooting
-
-### Joinmarket won't start in initial run
-
-Solution: Somehow nbxplorer does not notify joinmarket that the chain is fully synced in the initial run.
-Just shutdown all containers with `docker-compose down` wait for it to finish and run `docker-compose up` again (`docker-compose restart` did _not_ work sometimes!).
-Now you should see joinmarket coming up and see something like the following output:
-
-```log
-joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: jmwalletd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-joinmarket_1  | 2009-01-03 00:02:44,907 INFO success: ob-watcher entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 ```
 
 ## Resources

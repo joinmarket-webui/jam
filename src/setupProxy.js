@@ -1,40 +1,105 @@
 const { createProxyMiddleware } = require('http-proxy-middleware')
 
-const { PUBLIC_URL = '' } = process.env
+const BACKEND_NATIVE = 'native'
+const BACKEND_STANDALONE = 'jam-standalone'
+const SUPPORTED_BACKENDS = [BACKEND_NATIVE, BACKEND_STANDALONE]
+
+const {
+  PUBLIC_URL = '',
+  JAM_BACKEND = 'native',
+  JMWALLETD_API_PORT = '28183',
+  JMWALLETD_WEBSOCKET_PORT = '28283',
+  JMOBWATCH_PORT = '62601',
+  JAM_API_PORT = undefined,
+} = process.env
 
 module.exports = (app) => {
-  app.use(
-    createProxyMiddleware(`${PUBLIC_URL}/api/`, {
-      target: 'https://localhost:28183',
-      pathRewrite: { [`^${PUBLIC_URL}`]: '' },
-      changeOrigin: true,
-      secure: false,
-      ws: false,
-      onProxyReq: (proxyReq, req, res) => {
-        if (req.headers['x-jm-authorization']) {
-          proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
-        }
-      },
-    })
-  )
+  if (!SUPPORTED_BACKENDS.includes(JAM_BACKEND)) {
+    throw new Error(`Unsupported backend: Use one of ${SUPPORTED_BACKENDS}`)
+  }
 
-  // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/JSON-RPC-API-using-jmwalletd.md#websocket
-  app.use(
-    createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
-      target: 'https://localhost:28283',
-      pathRewrite: { [`^${PUBLIC_URL}/jmws`]: '' },
-      changeOrigin: true,
-      secure: false,
-      ws: true,
-    })
-  )
+  if (JAM_BACKEND === BACKEND_STANDALONE && JAM_API_PORT === undefined) {
+    throw new Error('Unsupported port: Please specify a valid JAM_API_PORT')
+  }
 
-  app.use(
-    createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
-      target: 'http://localhost:62601',
-      pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
-      changeOrigin: true,
-      secure: false,
-    })
-  )
+  if (JAM_BACKEND === BACKEND_NATIVE) {
+    /**
+     * The "native" installation *does not run* a webserver!
+     * Requests must be adapted:
+     * - remove path prefix "PUBLIC_URL" (if present)
+     * - proxy API requests to correct target service
+     * - rewrite paths to match target service paths
+     * - translate header "x-jm-authorization" to "Authorization"
+     */
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
+        target: `https://localhost:${JMWALLETD_WEBSOCKET_PORT}`,
+        pathRewrite: { [`^${PUBLIC_URL}/jmws`]: '' },
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      })
+    )
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/api/`, {
+        target: `https://localhost:${JMWALLETD_API_PORT}`,
+        pathRewrite: { [`^${PUBLIC_URL}`]: '' },
+        changeOrigin: true,
+        secure: false,
+        onProxyReq: (proxyReq, req, res) => {
+          if (req.headers['x-jm-authorization']) {
+            proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
+          }
+        },
+      })
+    )
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
+        target: `http://localhost:${JMOBWATCH_PORT}`,
+        pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
+        changeOrigin: true,
+        secure: false,
+      })
+    )
+  } else if (JAM_BACKEND === BACKEND_STANDALONE) {
+    /**
+     * `standalone` backend has a webserver ("Jam API") running!
+     * Requests must be adapted:
+     * - remove path prefix "PUBLIC_URL" (if present)
+     * - proxy all API requests to "Jam API"
+     */
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
+        target: `http://localhost:${JAM_API_PORT}`,
+        pathRewrite: { [`^${PUBLIC_URL}`]: '' },
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      })
+    )
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/api/`, {
+        target: `http://localhost:${JAM_API_PORT}`,
+        pathRewrite: { [`^${PUBLIC_URL}`]: '' },
+        changeOrigin: true,
+        secure: false,
+      })
+    )
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
+        target: `http://localhost:${JAM_API_PORT}`,
+        pathRewrite: { [`^${PUBLIC_URL}`]: '' },
+        changeOrigin: true,
+        secure: false,
+      })
+    )
+    app.use(
+      createProxyMiddleware(`${PUBLIC_URL}/jam/`, {
+        target: `http://localhost:${JAM_API_PORT}`,
+        pathRewrite: { [`^${PUBLIC_URL}`]: '' },
+        changeOrigin: true,
+        secure: false,
+      })
+    )
+  }
 }
