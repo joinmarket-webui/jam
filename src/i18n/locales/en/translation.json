@@ -151,6 +151,7 @@
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
+    "show_logs": "Show logs",
     "button_lock_wallet": "Lock wallet",
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
@@ -166,6 +167,10 @@
     "confirm_locking_modal_title": "Lock Wallet",
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background."
+  },
+  "logs": {
+    "title": "Logs",
+    "error_loading_logs_failed": "Could not retrieve log file."
   },
   "send": {
     "loading": "Loading",

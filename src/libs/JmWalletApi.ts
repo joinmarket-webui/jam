@@ -126,36 +126,76 @@ interface TumblerOptions {
   rounding_sigfig_weights?: number[]
 }
 
-/**
- * Construct a bearer authorization header object for the given token.
- *
- * The 'x-jm-authorization' header is forwarded as 'Authorization' header in
- * requests to jmwalletd by the reverse proxy.
- *
- * @param {ApiToken} token the bearer token
- * @returns an object containing the authorization header
- */
-const Authorization = (token: ApiToken) => {
-  return { 'x-jm-authorization': `Bearer ${token}` }
-}
+const Helper = (() => {
+  const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
+    try {
+      // The server will answer with a html response instead of json on certain errors.
+      // The situation is mitigated by parsing the returned html.
+      const isHtmlErrorMessage = response.headers && response.headers.get('content-type') === 'text/html'
+
+      if (isHtmlErrorMessage) {
+        return await response
+          .text()
+          .then((html) => {
+            var parser = new DOMParser()
+            var doc = parser.parseFromString(html, 'text/html')
+            return doc.title || fallbackReason
+          })
+          .then((reason) => `The server reported a problem: ${reason}`)
+      }
+
+      const { message }: ApiError = await response.json()
+      return message || fallbackReason
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Will use fallback reason - Error while extracting error message from api response:', err)
+      }
+
+      return fallbackReason
+    }
+  }
+
+  const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
+    throw new JmApiError(await extractErrorMessage(response, fallbackReason), response)
+  }
+
+  /**
+   * Construct a bearer authorization header object for the given token.
+   *
+   * The 'x-jm-authorization' header is forwarded as 'Authorization' header in
+   * requests to jmwalletd by the reverse proxy.
+   *
+   * @param {ApiToken} token the bearer token
+   * @returns an object containing the authorization header
+   */
+  const buildAuthHeader = (token: ApiToken) => {
+    return { 'x-jm-authorization': `Bearer ${token}` }
+  }
+
+  return {
+    throwError,
+    extractErrorMessage,
+    buildAuthHeader,
+  }
+})()
 
 const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {
   return await fetch(`${basePath()}/v1/session`, {
-    headers: token ? { ...Authorization(token) } : undefined,
+    headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
     signal,
   })
 }
 
 const getAddressNew = async ({ token, signal, walletName, mixdepth }: WalletRequestContext & WithMixdepth) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/address/new/${mixdepth}`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
 const getAddressTimelockNew = async ({ token, signal, walletName, lockdate }: WalletRequestContext & WithLockdate) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/address/timelock/new/${lockdate}`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
@@ -177,14 +217,14 @@ const postWalletCreate = async (req: CreateWalletRequest) => {
 
 const getWalletDisplay = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/display`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
 const getWalletSeed = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/getseed`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
@@ -197,7 +237,7 @@ const getWalletSeed = async ({ token, signal, walletName }: WalletRequestContext
  */
 const getWalletLock = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/lock`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
@@ -215,7 +255,7 @@ const postWalletUnlock = async (
 
 const getWalletUtxos = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/utxos`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
@@ -223,7 +263,7 @@ const getWalletUtxos = async ({ token, signal, walletName }: WalletRequestContex
 const postMakerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartMakerRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/maker/start`, {
     method: 'POST',
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({
       ...req,
       // We enforce type-safety for the following properties, but their values must actually be passed as string!
@@ -243,7 +283,7 @@ const postMakerStart = async ({ token, signal, walletName }: WalletRequestContex
  */
 const getMakerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/maker/stop`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
@@ -251,7 +291,7 @@ const getMakerStop = async ({ token, signal, walletName }: WalletRequestContext)
 const postDirectSend = async ({ token, signal, walletName }: WalletRequestContext, req: DirectSendRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/direct-send`, {
     method: 'POST',
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
     signal,
   })
@@ -260,7 +300,7 @@ const postDirectSend = async ({ token, signal, walletName }: WalletRequestContex
 const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext, req: DoCoinjoinRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/coinjoin`, {
     method: 'POST',
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
     signal,
   })
@@ -300,7 +340,7 @@ const postFreeze = async (
 ) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/freeze`, {
     method: 'POST',
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({
       'utxo-string': utxo,
       freeze,
@@ -312,7 +352,7 @@ const postFreeze = async (
 const postSchedulerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartSchedulerRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/schedule`, {
     method: 'POST',
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({ ...req }),
     signal,
   })
@@ -320,14 +360,14 @@ const postSchedulerStart = async ({ token, signal, walletName }: WalletRequestCo
 
 const getSchedulerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/stop`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
 const getSchedule = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/schedule`, {
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
@@ -340,7 +380,7 @@ const getSchedule = async ({ token, signal, walletName }: WalletRequestContext) 
 const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext, req: ConfigSetRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/configget`, {
     method: 'POST',
-    headers: { ...Authorization(token) },
+    headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
     signal,
   })
@@ -354,45 +394,6 @@ export class JmApiError extends Error {
     this.response = response
   }
 }
-
-const Helper = (() => {
-  const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
-    try {
-      // The server will answer with a html response instead of json on certain errors.
-      // The situation is mitigated by parsing the returned html.
-      const isHtmlErrorMessage = response.headers && response.headers.get('content-type') === 'text/html'
-
-      if (isHtmlErrorMessage) {
-        return await response
-          .text()
-          .then((html) => {
-            var parser = new DOMParser()
-            var doc = parser.parseFromString(html, 'text/html')
-            return doc.title || fallbackReason
-          })
-          .then((reason) => `The server reported a problem: ${reason}`)
-      }
-
-      const { message }: ApiError = await response.json()
-      return message || fallbackReason
-    } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Will use fallback reason - Error while extracting error message from api response:', err)
-      }
-
-      return fallbackReason
-    }
-  }
-
-  const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
-    throw new JmApiError(await extractErrorMessage(response, fallbackReason), response)
-  }
-
-  return {
-    throwError,
-    extractErrorMessage,
-  }
-})()
 
 export {
   postMakerStart,
