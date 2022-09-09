@@ -60,7 +60,7 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransact
           }
         >
           <div className="d-flex align-items-start">
-            {t('Jam')}
+            {t('Sweep')}
             <TabActivityIndicator isOn={schedulerRunning} />
           </div>
         </NavLink>
