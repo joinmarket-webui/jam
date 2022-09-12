@@ -5,19 +5,16 @@ type CoinjoinRequirementOptions = {
   minNumberOfUtxos: number // min amount of utxos available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.7/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
   minConfirmations: number // all utxos needs X confirmations
-  minValueFactor: number // value of utxos must be in certain range (e.g 0.2 := min valued utxo must not be less than 20% of most valued utxo)
 }
 
 export const DEFAULT_REQUIREMENT_OPTIONS: CoinjoinRequirementOptions = {
   minNumberOfUtxos: 1,
   minConfirmations: 5, // default of `taker_utxo_age` in jm config
-  minValueFactor: 0.2, // default of `taker_utxo_amtpercent` in jm config
 }
 
 export interface CoinjoinRequirementViolation {
   hasViolations: boolean
   utxosViolatingRetriesLeft: Utxos
-  utxosViolatingMinValue: Utxos
   utxosViolatingMinConfirmations: Utxos
 }
 
@@ -42,32 +39,22 @@ const filterUtxosViolatingTriesLeftRequirement = (utxos: Utxos) => {
   return utxos.filter((it) => it.tries_remaining === 0)
 }
 
-const filterUtxosViolatingMinValueRequirement = (utxos: Utxos, minValueFactor: number) => {
-  const transactionValue = utxos.reduce((acc, utxo) => acc + utxo.value, 0)
-  return utxos.filter((it) => it.value / minValueFactor < transactionValue)
-}
-
 const buildCoinjoinViolationSummaryForJar = (
   utxos: Utxos,
   options: CoinjoinRequirementOptions
 ): CoinjoinRequirementViolation => {
   const eligibleUtxos = filterEligibleUtxos(utxos)
   const utxosViolatingRetriesLeft = filterUtxosViolatingTriesLeftRequirement(eligibleUtxos)
-  const utxosViolatingMinValue = filterUtxosViolatingMinValueRequirement(eligibleUtxos, options.minValueFactor)
   const utxosViolatingMinConfirmations = filterUtxosViolatingMinConfirmationRequirement(
     eligibleUtxos,
     options.minConfirmations
   )
 
-  const hasViolations =
-    utxosViolatingRetriesLeft.length > 0 ||
-    utxosViolatingMinValue.length > 0 ||
-    utxosViolatingMinConfirmations.length > 0
+  const hasViolations = utxosViolatingRetriesLeft.length > 0 || utxosViolatingMinConfirmations.length > 0
 
   return {
     hasViolations,
     utxosViolatingRetriesLeft,
-    utxosViolatingMinValue,
     utxosViolatingMinConfirmations,
   }
 }
