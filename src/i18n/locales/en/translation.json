@@ -31,6 +31,7 @@
     "tab_send": "Send",
     "tab_receive": "Receive",
     "tab_earn": "Earn",
+    "tab_sweep": "Sweep",
     "joining_in_progress": "Jamming",
     "menu_mobile": "Menu",
     "menu_mobile_settings": "Settings"
@@ -436,7 +437,7 @@
     }
   },
   "scheduler": {
-    "title": "Jam Scheduler (Experimental)",
+    "title": "Scheduled Sweep (Experimental)",
     "subtitle": "Execute multiple transactions using random amounts and time intervals to increase the privacy of yourself and others. Every scheduled transaction is a collaborative transaction.",
     "error_starting_schedule_failed": "Starting the scheduler failed.",
     "error_stopping_schedule_failed": "Stopping the scheduler failed.",
