@@ -222,7 +222,6 @@ function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
           <>
             {t('send.coinjoin_precondition.hint_missing_utxos', {
               minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
-              amountOfMissingConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
             })}
           </>
         ) : coinjoinPreconditionSummary.amountOfMissingConfirmations > 0 ? (
@@ -234,7 +233,7 @@ function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
           </>
         ) : (
           coinjoinPreconditionSummary.amountOfMissingOverallRetries > 0 && (
-            <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
+            <Trans i18nKey="scheduler.precondition.hint_missing_retries">
               You tried too many times. See
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md"
