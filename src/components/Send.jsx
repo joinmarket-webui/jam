@@ -13,7 +13,7 @@ import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } fr
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
-import { DEFAULT_REQUIREMENT_OPTIONS, buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
+import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats } from '../utils'
@@ -277,16 +277,9 @@ export default function Send() {
     return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === account)
   }, [walletInfo, account])
 
-  const coinjoinPreconditionOptions = useMemo(() => {
-    return {
-      ...DEFAULT_REQUIREMENT_OPTIONS,
-      transactionAmount: amount >= 0 ? amount : undefined,
-    }
-  }, [amount])
-
   const coinjoinPreconditionSummary = useMemo(
-    () => buildCoinjoinRequirementSummary(sourceJarUtxos || [], coinjoinPreconditionOptions),
-    [sourceJarUtxos, coinjoinPreconditionOptions]
+    () => buildCoinjoinRequirementSummary(sourceJarUtxos || []),
+    [sourceJarUtxos]
   )
 
   useEffect(() => {

@@ -50,7 +50,7 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
         <rb.Alert variant="danger" ref={ref}>
           <>
             <Trans i18nKey={`${i18nPrefix}hint_missing_retries`}>
-              You tried too many times. See{' '}
+              You tried too many times. See
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.7/docs/SOURCING-COMMITMENTS.md"
                 target="_blank"
@@ -64,7 +64,7 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
             <br />
             <Trans i18nKey={`${i18nPrefix}hint_missing_retries_detail`} count={utxosViolatingRetriesLeft.length}>
               Following utxos have been used unsuccessfully too many times:
-              <ul className="mt-2 ps-2">
+              <ul className="mt-2 mb-0 ps-2">
                 {utxosViolatingRetriesLeft.map((utxo, index) => (
                   <li key={index} className="mb-2 slashed-zeroes small" style={{ display: 'inline-flex' }}>
                     <span className="pe-1" style={{ display: 'inline-flex' }}>

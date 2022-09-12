@@ -1,26 +1,20 @@
 import * as fb from '../components/fb/utils'
 import { Utxos } from '../context/WalletContext'
-import { AmountSats } from '../libs/JmWalletApi'
 
 export type CoinjoinRequirementOptions = {
   minNumberOfUtxos: number // min amount of utxos available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.7/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
   minConfirmations: number // all utxos needs X confirmations
-  minValueFactor: number // value of utxos must be in certain range (e.g 0.2 := min valued utxo must not be less than 20% of most valued utxo)
-  transactionAmount?: AmountSats
 }
 
 export const DEFAULT_REQUIREMENT_OPTIONS: CoinjoinRequirementOptions = {
   minNumberOfUtxos: 1,
   minConfirmations: 5, // default of `taker_utxo_age` in jm config
-  minValueFactor: 0.2, // default of `taker_utxo_amtpercent` in jm config
-  transactionAmount: undefined,
 }
 
 export interface CoinjoinRequirementViolation {
   hasViolations: boolean
   utxosViolatingRetriesLeft: Utxos
-  utxosViolatingMinValue: Utxos
   utxosViolatingMinConfirmations: Utxos
 }
 
@@ -42,17 +36,11 @@ const filterUtxosViolatingMinConfirmationRequirement = (utxos: Utxos, minConfirm
   return utxos.filter((it) => it.confirmations < minConfirmation)
 }
 
-const filterUtxosViolatingMinValueRequirement = (utxos: Utxos, options: CoinjoinRequirementOptions) => {
-  if (options.transactionAmount === undefined) return []
-
-  const isSweep = options.transactionAmount === 0
-  const amountInSats = isSweep ? utxos.reduce((acc, utxo) => acc + utxo.value, 0) : options.transactionAmount
-  return utxos.filter((it) => it.value / options.minValueFactor < amountInSats)
-}
-
 const filterUtxosViolatingTriesLeftRequirement = (utxos: Utxos) => {
   const utxoWithoutRetriesLeft = utxos.filter((it) => it.tries_remaining === 0)
-  return utxoWithoutRetriesLeft.length === utxos.length ? utxoWithoutRetriesLeft : []
+  const retriesAvailable = utxoWithoutRetriesLeft.length < utxos.length
+  // if at least one try is still available, the requirement is not violated (yet)
+  return retriesAvailable ? [] : utxoWithoutRetriesLeft
 }
 
 const buildCoinjoinViolationSummaryForJar = (
@@ -61,21 +49,16 @@ const buildCoinjoinViolationSummaryForJar = (
 ): CoinjoinRequirementViolation => {
   const eligibleUtxos = filterEligibleUtxos(utxos)
   const utxosViolatingRetriesLeft = filterUtxosViolatingTriesLeftRequirement(eligibleUtxos)
-  const utxosViolatingMinValue = filterUtxosViolatingMinValueRequirement(eligibleUtxos, options)
   const utxosViolatingMinConfirmations = filterUtxosViolatingMinConfirmationRequirement(
     eligibleUtxos,
     options.minConfirmations
   )
 
-  const hasViolations =
-    utxosViolatingRetriesLeft.length > 0 ||
-    utxosViolatingMinValue.length > 0 ||
-    utxosViolatingMinConfirmations.length > 0
+  const hasViolations = utxosViolatingRetriesLeft.length > 0 || utxosViolatingMinConfirmations.length > 0
 
   return {
     hasViolations,
     utxosViolatingRetriesLeft,
-    utxosViolatingMinValue,
     utxosViolatingMinConfirmations,
   }
 }
