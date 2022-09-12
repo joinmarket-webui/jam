@@ -13,13 +13,14 @@ import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } fr
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
-import { COINJOIN_PRECONDITIONS, useCoinjoinPreconditionSummary } from '../hooks/CoinjoinPrecondition'
+import { DEFAULT_REQUIREMENT_OPTIONS, buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
 import { ConfirmModal } from './Modal'
+import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
 import { jarInitial, jarName } from './jars/Jar'
 
 const IS_COINJOIN_DEFAULT_VAL = true
@@ -213,44 +214,6 @@ function SweepAccordionToggle({ eventKey }) {
   )
 }
 
-function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
-  const { t } = useTranslation()
-  return (
-    <rb.Alert variant="warning" className="mb-4">
-      <>
-        {coinjoinPreconditionSummary.numberOfMissingUtxos > 0 ? (
-          <>
-            {t('send.coinjoin_precondition.hint_missing_utxos', {
-              minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
-            })}
-          </>
-        ) : coinjoinPreconditionSummary.amountOfMissingConfirmations > 0 ? (
-          <>
-            {t('send.coinjoin_precondition.hint_missing_confirmations', {
-              minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS,
-              amountOfMissingConfirmations: coinjoinPreconditionSummary.amountOfMissingConfirmations,
-            })}
-          </>
-        ) : (
-          coinjoinPreconditionSummary.amountOfMissingOverallRetries > 0 && (
-            <Trans i18nKey="scheduler.precondition.hint_missing_retries">
-              You tried too many times. See
-              <a
-                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.6/docs/SOURCING-COMMITMENTS.md"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                the docs
-              </a>{' '}
-              for more info.
-            </Trans>
-          )
-        )}
-      </>
-    </rb.Alert>
-  )
-}
-
 export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
@@ -314,7 +277,17 @@ export default function Send() {
     return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === account)
   }, [walletInfo, account])
 
-  const coinjoinPreconditionSummary = useCoinjoinPreconditionSummary(sourceJarUtxos || [])
+  const coinjoinPreconditionOptions = useMemo(() => {
+    return {
+      ...DEFAULT_REQUIREMENT_OPTIONS,
+      transactionAmount: amount >= 0 ? amount : undefined,
+    }
+  }, [amount])
+
+  const coinjoinPreconditionSummary = useMemo(
+    () => buildCoinjoinRequirementSummary(sourceJarUtxos || [], coinjoinPreconditionOptions),
+    [sourceJarUtxos, coinjoinPreconditionOptions]
+  )
 
   useEffect(() => {
     if (
@@ -707,7 +680,12 @@ export default function Send() {
         )}
 
         {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
-          <CoinjoinPreconditionFailedAlert coinjoinPreconditionSummary={coinjoinPreconditionSummary} />
+          <div className="mb-4">
+            <CoinjoinPreconditionViolationAlert
+              summary={coinjoinPreconditionSummary}
+              i18nPrefix="send.coinjoin_precondition."
+            />
+          </div>
         )}
 
         {!isLoading && walletInfo && (

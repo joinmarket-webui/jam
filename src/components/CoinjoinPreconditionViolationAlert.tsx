@@ -10,10 +10,11 @@ import Balance from './Balance'
 
 interface CoinjoinPreconditionViolationAlertProps {
   summary: CoinjoinRequirementSummary
+  i18nPrefix?: string
 }
 
 export const CoinjoinPreconditionViolationAlert = forwardRef(
-  ({ summary }: CoinjoinPreconditionViolationAlertProps, ref: React.Ref<HTMLDivElement>) => {
+  ({ summary, i18nPrefix = '' }: CoinjoinPreconditionViolationAlertProps, ref: React.Ref<HTMLDivElement>) => {
     const { t } = useTranslation()
     const settings = useSettings()
 
@@ -22,7 +23,7 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
     if (summary.numberOfMissingUtxos > 0) {
       return (
         <rb.Alert variant="warning" ref={ref}>
-          {t('scheduler.precondition.hint_missing_utxos', {
+          {t(`${i18nPrefix}hint_missing_utxos`, {
             minConfirmations: summary.options.minConfirmations,
           })}
         </rb.Alert>
@@ -32,7 +33,7 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
     if (summary.numberOfMissingConfirmations > 0) {
       return (
         <rb.Alert variant="warning" ref={ref}>
-          {t('scheduler.precondition.hint_missing_confirmations', {
+          {t(`${i18nPrefix}hint_missing_confirmations`, {
             minConfirmations: summary.options.minConfirmations,
             amountOfMissingConfirmations: summary.numberOfMissingConfirmations,
           })}
@@ -48,8 +49,8 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
       return (
         <rb.Alert variant="danger" ref={ref}>
           <>
-            <Trans i18nKey="scheduler.precondition.hint_missing_retries">
-              You tried too many times. See
+            <Trans i18nKey={`${i18nPrefix}hint_missing_retries`}>
+              You tried too many times. See{' '}
               <a
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.7/docs/SOURCING-COMMITMENTS.md"
                 target="_blank"
@@ -61,10 +62,7 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
             </Trans>
             <br />
             <br />
-            <Trans
-              i18nKey="scheduler.precondition.hint_missing_retries_detail"
-              count={utxosViolatingRetriesLeft.length}
-            >
+            <Trans i18nKey={`${i18nPrefix}hint_missing_retries_detail`} count={utxosViolatingRetriesLeft.length}>
               Following utxos have been used unsuccessfully too many times:
               <ul className="mt-2 ps-2">
                 {utxosViolatingRetriesLeft.map((utxo, index) => (

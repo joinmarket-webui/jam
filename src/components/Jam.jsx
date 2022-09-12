@@ -218,7 +218,10 @@ export default function Jam() {
             unmountOnExit={true}
             className="mb-4"
           >
-            <CoinjoinPreconditionViolationAlert summary={schedulerPreconditionSummary} />
+            <CoinjoinPreconditionViolationAlert
+              summary={schedulerPreconditionSummary}
+              i18nPrefix="scheduler.precondition."
+            />
           </rb.Fade>
           {!collaborativeOperationRunning && walletInfo && (
             <>
