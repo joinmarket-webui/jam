@@ -9,7 +9,7 @@ describe('CoinjoinRequirements', () => {
 
     expect(preconditionSummary).toEqual({
       isFulfilled: false,
-      numberOfMissingUtxos: DEFAULT_REQUIREMENT_OPTIONS.minNumberOfUtxos,
+      numberOfMissingUtxos: defaultOptions.minNumberOfUtxos,
       numberOfMissingConfirmations: 0,
       options: defaultOptions,
       violations: [],
@@ -20,7 +20,7 @@ describe('CoinjoinRequirements', () => {
     const preconditionSummary = buildCoinjoinRequirementSummary([
       {
         frozen: true, // not eligible
-        confirmations: DEFAULT_REQUIREMENT_OPTIONS.minConfirmations,
+        confirmations: defaultOptions.minConfirmations,
         tries_remaining: 3,
       } as Utxo,
     ])
@@ -38,7 +38,7 @@ describe('CoinjoinRequirements', () => {
     const preconditionSummary = buildCoinjoinRequirementSummary([
       {
         frozen: false,
-        confirmations: DEFAULT_REQUIREMENT_OPTIONS.minConfirmations,
+        confirmations: defaultOptions.minConfirmations,
         tries_remaining: 1,
       } as Utxo,
       {
@@ -61,13 +61,13 @@ describe('CoinjoinRequirements', () => {
     let preconditionSummary = buildCoinjoinRequirementSummary([
       {
         frozen: false,
-        confirmations: DEFAULT_REQUIREMENT_OPTIONS.minConfirmations - 1,
+        confirmations: defaultOptions.minConfirmations - 1,
         tries_remaining: 1,
         mixdepth: 0,
       } as Utxo,
       {
         frozen: false,
-        confirmations: DEFAULT_REQUIREMENT_OPTIONS.minConfirmations,
+        confirmations: defaultOptions.minConfirmations,
         tries_remaining: 1,
         mixdepth: 0,
       } as Utxo,
@@ -90,7 +90,7 @@ describe('CoinjoinRequirements', () => {
           jarIndex: 0,
           utxosViolatingMinConfirmations: [
             {
-              confirmations: DEFAULT_REQUIREMENT_OPTIONS.minConfirmations - 1,
+              confirmations: defaultOptions.minConfirmations - 1,
               frozen: false,
               tries_remaining: 1,
               mixdepth: 0,
@@ -102,18 +102,18 @@ describe('CoinjoinRequirements', () => {
     })
   })
 
-  it('should NOT be fulfilled on utxos with to little remaining retries', () => {
+  it('should NOT be fulfilled on utxos without remaining retries', () => {
     let preconditionSummary = buildCoinjoinRequirementSummary([
       {
         frozen: false,
-        confirmations: DEFAULT_REQUIREMENT_OPTIONS.minConfirmations,
-        tries_remaining: 0,
+        confirmations: defaultOptions.minConfirmations,
+        tries_remaining: 0, // no retry
         mixdepth: 0,
       } as Utxo,
       {
         frozen: false,
-        confirmations: DEFAULT_REQUIREMENT_OPTIONS.minConfirmations,
-        tries_remaining: 0,
+        confirmations: defaultOptions.minConfirmations,
+        tries_remaining: 0, // no retry
         mixdepth: 0,
       } as Utxo,
       {
@@ -150,6 +150,50 @@ describe('CoinjoinRequirements', () => {
           ],
         },
       ],
+    })
+  })
+  it('should be fulfilled if at least one utxo has retries left in a jar', () => {
+    let preconditionSummary = buildCoinjoinRequirementSummary([
+      // 3 utxos in mixdepth 0
+      {
+        frozen: false,
+        confirmations: defaultOptions.minConfirmations,
+        tries_remaining: 0, // no retry
+        mixdepth: 0,
+      } as Utxo,
+      {
+        frozen: false,
+        confirmations: defaultOptions.minConfirmations,
+        tries_remaining: 0, // no retry
+        mixdepth: 0,
+      } as Utxo,
+      {
+        frozen: false,
+        confirmations: defaultOptions.minConfirmations,
+        tries_remaining: 1,
+        mixdepth: 0,
+      } as Utxo,
+      // 2 utxos in mixdepth 4
+      {
+        frozen: false,
+        confirmations: defaultOptions.minConfirmations,
+        tries_remaining: 0, // no retry
+        mixdepth: 4,
+      } as Utxo,
+      {
+        frozen: false,
+        confirmations: defaultOptions.minConfirmations,
+        tries_remaining: 1,
+        mixdepth: 4,
+      } as Utxo,
+    ])
+
+    expect(preconditionSummary).toEqual({
+      isFulfilled: true,
+      numberOfMissingUtxos: 0,
+      numberOfMissingConfirmations: 0,
+      options: defaultOptions,
+      violations: [],
     })
   })
 
