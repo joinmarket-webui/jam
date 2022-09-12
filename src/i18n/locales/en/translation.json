@@ -459,7 +459,7 @@
     "precondition": {
       "hint_missing_utxos": "To run the scheduler you need UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "The scheduler requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
-      "hint_missing_retries": "The scheduler failed to send transactions too many times in a row. See <1>the docs</1> for more information.",
+      "hint_missing_retries": "Failed at sourcing commitments too many times. See <1>the docs</1> for more information.",
       "hint_missing_retries_detail_one": "The following utxo has been used unsuccessfully too many times and cannot be reused: <1></1>",
       "hint_missing_retries_detail_other": "The following {{ count }} utxos have been used unsuccessfully too many times and cannot be reused: <1></1>",
       "nested_hint_wait_for_block": "Wait for one more block.",

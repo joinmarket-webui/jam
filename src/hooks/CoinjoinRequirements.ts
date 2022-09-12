@@ -1,7 +1,7 @@
 import * as fb from '../components/fb/utils'
 import { Utxos } from '../context/WalletContext'
 
-type CoinjoinRequirementOptions = {
+export type CoinjoinRequirementOptions = {
   minNumberOfUtxos: number // min amount of utxos available
   // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.7/docs/SOURCING-COMMITMENTS.md#wait-for-at-least-5-confirmations
   minConfirmations: number // all utxos needs X confirmations
@@ -22,6 +22,7 @@ export type CoinjoinRequirementViolationWithJarIndex = { jarIndex: number } & Co
 
 export interface CoinjoinRequirementSummary {
   isFulfilled: boolean
+  options: CoinjoinRequirementOptions
   numberOfMissingUtxos: number
   numberOfMissingConfirmations: number
   violations: CoinjoinRequirementViolationWithJarIndex[]
@@ -104,6 +105,7 @@ export const buildCoinjoinRequirementSummary = (
 
   return {
     isFulfilled,
+    options,
     numberOfMissingUtxos,
     numberOfMissingConfirmations,
     violations,

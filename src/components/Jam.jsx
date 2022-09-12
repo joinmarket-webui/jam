@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useCallback, useMemo, forwardRef } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
-import { DEFAULT_REQUIREMENT_OPTIONS, buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
+import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
+import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
@@ -15,8 +16,6 @@ import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
 
 import styles from './Jam.module.css'
-import { jarInitial } from './jars/Jar'
-import { shortenStringMiddle } from '../utils'
 
 // When running the scheduler with internal destination addresses, the funds
 // will end up on those 3 mixdepths (one UTXO each).
@@ -24,8 +23,6 @@ import { shortenStringMiddle } from '../utils'
 const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
 // Interval in milliseconds between requests to reload the schedule.
 const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
-
-const COINJOIN_REQUIREMENT_OPTIONS = DEFAULT_REQUIREMENT_OPTIONS
 
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
@@ -38,90 +35,6 @@ const ValuesListener = ({ handler }) => {
 
   return null
 }
-
-const CoinjoinRequirementViolationAlert = forwardRef(({ schedulerPreconditionSummary }, ref) => {
-  const { t } = useTranslation()
-  const settings = useSettings()
-
-  if (schedulerPreconditionSummary.isFulfilled) return <></>
-
-  if (schedulerPreconditionSummary.numberOfMissingUtxos > 0) {
-    return (
-      <rb.Alert variant="warning" className="mb-4" ref={ref}>
-        {t('scheduler.precondition.hint_missing_utxos', {
-          minConfirmations: COINJOIN_REQUIREMENT_OPTIONS.minConfirmations,
-        })}
-      </rb.Alert>
-    )
-  }
-
-  if (schedulerPreconditionSummary.numberOfMissingConfirmations > 0) {
-    return (
-      <rb.Alert variant="warning" className="mb-4" ref={ref}>
-        {t('scheduler.precondition.hint_missing_confirmations', {
-          minConfirmations: COINJOIN_REQUIREMENT_OPTIONS.minConfirmations,
-          amountOfMissingConfirmations: schedulerPreconditionSummary.numberOfMissingConfirmations,
-        })}
-      </rb.Alert>
-    )
-  }
-
-  const utxosViolatingRetriesLeft = schedulerPreconditionSummary.violations
-    .map((it) => it.utxosViolatingRetriesLeft)
-    .reduce((acc, utxos) => acc.concat(utxos), [])
-
-  if (utxosViolatingRetriesLeft.length > 0) {
-    return (
-      <rb.Alert variant="danger" className="mb-4" ref={ref}>
-        <>
-          <Trans i18nKey="scheduler.precondition.hint_missing_retries">
-            You tried too many times. See
-            <a
-              href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.7/docs/SOURCING-COMMITMENTS.md"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              the docs
-            </a>{' '}
-            for more info.
-          </Trans>
-          <br />
-          <br />
-          <Trans i18nKey="scheduler.precondition.hint_missing_retries_detail" count={utxosViolatingRetriesLeft.length}>
-            Following utxos have been used unsuccessfully too many times:
-            <ul className="mt-2 ps-2">
-              {utxosViolatingRetriesLeft.map((utxo, index) => (
-                <li key={index} className="mb-2 slashed-zeroes small" style={{ display: 'inline-flex' }}>
-                  <span className="pe-1" style={{ display: 'inline-flex' }}>
-                    <Sprite symbol="jar-closed-fill-50" width="20" height="20" />
-                    <span className="slashed-zeroes">
-                      <strong>{jarInitial(utxo.mixdepth)}</strong>
-                    </span>
-                    :
-                  </span>
-                  <div>
-                    <span>{utxo.address}</span>
-                    &nbsp;(
-                    <Balance
-                      valueString={`${utxo.value}`}
-                      convertToUnit={settings.unit}
-                      showBalance={settings.showBalance}
-                    />
-                    )
-                    <br />
-                    <small>{shortenStringMiddle(utxo.utxo, 32)}</small>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Trans>
-        </>
-      </rb.Alert>
-    )
-  }
-
-  return <></>
-})
 
 export default function Jam() {
   const { t } = useTranslation()
@@ -303,8 +216,9 @@ export default function Jam() {
             in={!collaborativeOperationRunning && !isSchedulerPreconditionsFulfilled}
             mountOnEnter={true}
             unmountOnExit={true}
+            className="mb-4"
           >
-            <CoinjoinRequirementViolationAlert schedulerPreconditionSummary={schedulerPreconditionSummary} />
+            <CoinjoinPreconditionViolationAlert summary={schedulerPreconditionSummary} />
           </rb.Fade>
           {!collaborativeOperationRunning && walletInfo && (
             <>
