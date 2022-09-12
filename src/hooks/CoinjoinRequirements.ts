@@ -37,7 +37,8 @@ const filterUtxosViolatingMinConfirmationRequirement = (utxos: Utxos, minConfirm
 }
 
 const filterUtxosViolatingTriesLeftRequirement = (utxos: Utxos) => {
-  return utxos.filter((it) => it.tries_remaining === 0)
+  const utxoWithoutRetriesLeft = utxos.filter((it) => it.tries_remaining === 0)
+  return utxoWithoutRetriesLeft.length === utxos.length ? utxoWithoutRetriesLeft : []
 }
 
 const buildCoinjoinViolationSummaryForJar = (
