@@ -80,7 +80,7 @@
   background-color: var(--bs-body-bg);
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 992px) {
   .overlayContainer .tabContainer {
     padding: 2rem;
     border-radius: 0.5rem;
@@ -94,21 +94,16 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
-  padding: 0 0 0.8rem 0;
+  padding: 0 0.5rem 0.8rem 0.5rem;
   background-color: var(--bs-gray-100);
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 992px) {
   .overlayContainer .tabContainer > .utxoListTitleBar {
+    flex-direction: row;
     align-items: center;
     padding: 0.8rem 1rem;
     border-radius: 0.6rem;
-  }
-}
-
-@media only screen and (min-width: 768px) {
-  .overlayContainer .tabContainer > .utxoListTitleBar {
-    flex-direction: row;
   }
 }
 
