@@ -47,7 +47,7 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
 
     if (utxosViolatingRetriesLeft.length > 0) {
       return (
-        <rb.Alert variant="danger" ref={ref}>
+        <rb.Alert variant="warning" ref={ref}>
           <>
             <Trans i18nKey={`${i18nPrefix}hint_missing_retries`}>
               You tried too many times. See
