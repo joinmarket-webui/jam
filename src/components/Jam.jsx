@@ -53,10 +53,6 @@ export default function Jam() {
     () => buildCoinjoinRequirementSummary(walletInfo?.data.utxos.utxos || []),
     [walletInfo]
   )
-  const isSchedulerPreconditionsFulfilled = useMemo(
-    () => schedulerPreconditionSummary.isFulfilled,
-    [schedulerPreconditionSummary]
-  )
 
   // Returns one fresh address for each requested mixdepth.
   const getNewAddressesForAccounts = useCallback(
@@ -133,7 +129,7 @@ export default function Jam() {
   }, [serviceInfo])
 
   const startSchedule = async (values) => {
-    if (isLoading || collaborativeOperationRunning || !isSchedulerPreconditionsFulfilled) {
+    if (isLoading || collaborativeOperationRunning) {
       return
     }
 
@@ -213,7 +209,7 @@ export default function Jam() {
             </rb.Alert>
           )}
           <rb.Fade
-            in={!collaborativeOperationRunning && !isSchedulerPreconditionsFulfilled}
+            in={!collaborativeOperationRunning && !schedulerPreconditionSummary.isFulfilled}
             mountOnEnter={true}
             unmountOnExit={true}
             className="mb-4"
@@ -376,11 +372,7 @@ export default function Jam() {
                       className={styles.submit}
                       variant="dark"
                       type="submit"
-                      disabled={
-                        isSubmitting ||
-                        isLoading ||
-                        (!collaborativeOperationRunning && (!isValid || !isSchedulerPreconditionsFulfilled))
-                      }
+                      disabled={isSubmitting || isLoading || (!collaborativeOperationRunning && !isValid)}
                     >
                       <div className="d-flex justify-content-center align-items-center">
                         {collaborativeOperationRunning ? t('scheduler.button_stop') : t('scheduler.button_start')}
