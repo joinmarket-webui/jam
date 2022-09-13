@@ -339,6 +339,7 @@
       "review_inputs": {
         "text_primary_button": "Create fidelity bond",
         "text_primary_button_unsafe": "Create fidelity bond with potentially less private UTXOs",
+        "text_primary_button_error": "Try again",
         "text_secondary_button": "Cancel",
         "description": "You configured the fidelity bond as follows:",
         "label_lock_date": "Locked until",
