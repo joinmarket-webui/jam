@@ -111,9 +111,9 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             <div className="small text-secondary">{t('cheatsheet.schedule.description')}</div>
           </ListItem>
           <ListItem number={'last'}>
-            <h6>{t('cheatsheet.item_last.title')}</h6>
+            <h6>{t('cheatsheet.repeat.title')}</h6>
             <div className="small text-secondary">
-              <Trans i18nKey="cheatsheet.item_last.description">
+              <Trans i18nKey="cheatsheet.repeat.description">
                 Still confused?{' '}
                 <a href="https://jamdocs.org/interface/00-cheatsheet/" target="_blank" rel="noopener noreferrer">
                   Dig into the documentation

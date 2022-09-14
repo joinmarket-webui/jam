@@ -402,7 +402,7 @@
       "title": "<0>Send</0> a collaborative transaction to yourself.",
       "description": "Collaborative transactions increase the privacy of yourself and others."
     },
-    "item_last": {
+    "repeat": {
       "title": "Go to step one and repeat.",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
