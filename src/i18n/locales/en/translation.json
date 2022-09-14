@@ -387,7 +387,7 @@
       "description": "Deposit some funds yourself or receive it from others."
     },
     "send": {
-      "title": "<0>Send</0> a collaborative transaction to another Jar.",
+      "title": "<0>Send</0> a collaborative transaction to another jar.",
       "description": "Collaborative transactions increase the privacy of yourself and others."
     },
     "bond": {

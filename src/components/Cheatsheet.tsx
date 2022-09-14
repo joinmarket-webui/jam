@@ -81,7 +81,7 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={2}>
             <h6>
               <Trans i18nKey="cheatsheet.send.title">
-                <Link to={routes.send}>Send</Link> a collaborative transaction to another Jar.
+                <Link to={routes.send}>Send</Link> a collaborative transaction to another jar.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.send.description')}</div>
