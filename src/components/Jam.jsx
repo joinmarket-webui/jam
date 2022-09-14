@@ -20,8 +20,6 @@ import styles from './Jam.module.css'
 // will end up on those 3 mixdepths (one UTXO each).
 // Length of this array must be 3 for now.
 const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
-// Interval in milliseconds between requests to reload the schedule.
-const SCHEDULER_STOP_RESPONSE_DELAY_MS = 2_000
 
 const SCHEDULER_START_ACCOUNT = 0
 
@@ -186,9 +184,13 @@ export default function Jam() {
     const abortCtrl = new AbortController()
     return Api.getSchedulerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
-      .then((_) => new Promise((r) => setTimeout(r, SCHEDULER_STOP_RESPONSE_DELAY_MS)))
-      .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .then((_) => setCollaborativeOperationRunning(false))
+      .then((_) =>
+        Promise.all([
+          reloadServiceInfo({ signal: abortCtrl.signal }),
+          reloadCurrentWalletInfo({ signal: abortCtrl.signal }),
+        ])
+      )
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
