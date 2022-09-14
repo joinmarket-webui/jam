@@ -80,11 +80,11 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           </ListItem>
           <ListItem number={2}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_5.title">
+              <Trans i18nKey="cheatsheet.send.title">
                 <Link to={routes.send}>Send</Link> a collaborative transaction to another Jar.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.send.description')}</div>
           </ListItem>
           <ListItem number={3}>
             <h6>
