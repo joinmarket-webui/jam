@@ -72,11 +72,11 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
         <rb.Stack className="mb-4" gap={4}>
           <ListItem number={1}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_1.title">
+              <Trans i18nKey="cheatsheet.receive.title">
                 <Link to={routes.receive}>Fund</Link> your wallet.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_1.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.receive.description')}</div>
           </ListItem>
           <ListItem number={2}>
             <h6>

@@ -382,7 +382,7 @@
   "cheatsheet": {
     "title": "The Cheatsheet",
     "description": "Follow the steps below to increase your financial privacy. It is advisable to switch from <2>earning as a maker</2> to <6>sending as a taker</6> back and forth. <10>Learn more.</10>",
-    "item_1": {
+    "receive": {
       "title": "<0>Fund</0> your wallet.",
       "description": "Deposit some funds yourself or receive it from others."
     },
