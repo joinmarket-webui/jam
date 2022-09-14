@@ -394,7 +394,7 @@
       "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
       "description": "A fidelity bond increases your chances of selling liquidity substantially."
     },
-    "item_4": {
+    "earn": {
       "title": "<0>Earn</0> sats by providing liquidity.",
       "description": "Offer liquidity to the marketplace for a fee. No trust or custody required—you are always in full control of your funds."
     },

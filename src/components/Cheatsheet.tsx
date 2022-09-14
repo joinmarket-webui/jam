@@ -96,11 +96,11 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           </ListItem>
           <ListItem number={4}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_4.title">
+              <Trans i18nKey="cheatsheet.earn.title">
                 <Link to={routes.earn}>Earn</Link> yield by providing liquidity.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.earn.description')}</div>
           </ListItem>
           <ListItem number={2}>
             <h6>
