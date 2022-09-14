@@ -88,11 +88,11 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           </ListItem>
           <ListItem number={3}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_3.title">
+              <Trans i18nKey="cheatsheet.bond.title">
                 Optional: <Link to={routes.earn}>Lock</Link> funds in a fidelity bond.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.bond.description')}</div>
           </ListItem>
           <ListItem number={4}>
             <h6>

@@ -390,7 +390,7 @@
       "title": "<0>Schedule</0> transactions.",
       "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
     },
-    "item_3": {
+    "bond": {
       "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
       "description": "A fidelity bond increases your chances of selling liquidity substantially."
     },
