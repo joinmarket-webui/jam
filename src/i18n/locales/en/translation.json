@@ -386,7 +386,7 @@
       "title": "<0>Fund</0> your wallet.",
       "description": "Deposit some funds yourself or receive it from others."
     },
-    "item_2": {
+    "schedule": {
       "title": "<0>Schedule</0> transactions.",
       "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
     },
