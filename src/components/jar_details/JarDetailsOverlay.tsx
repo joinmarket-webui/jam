@@ -84,7 +84,7 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initial
           />
         </div>
         <div className="d-flex flex-1">
-          <rb.Button variant="link" className="unstyled pe-0 ms-auto me-auto me-md-0" onClick={onHide}>
+          <rb.Button variant="link" className="unstyled px-0 ms-auto me-auto me-md-0" onClick={onHide}>
             <Sprite symbol="cancel" width="32" height="32" />
           </rb.Button>
         </div>
@@ -360,7 +360,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       placement="bottom"
     >
       <rb.Offcanvas.Header>
-        <rb.Container>
+        <rb.Container fluid="lg">
           <Header
             account={account}
             nextAccount={nextAccount}
@@ -372,7 +372,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <rb.Container fluid="md" className="py-4 py-sm-5">
+        <rb.Container fluid="lg" className="py-4 py-md-5">
           {alert && (
             <rb.Row>
               <rb.Col>
@@ -394,35 +394,35 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
             />
           )}
           <rb.Row className="justify-content-center">
-            <rb.Col>
-              {selectedTab === TABS.UTXOS ? (
-                <div className={styles.tabContainer}>
-                  <div className={styles.utxoListTitleBar}>
-                    <div className="d-flex justify-content-center align-items-center gap-2">
-                      {refreshButton()}
-                      {utxoListTitle()}
+            <rb.Col className="px-0">
+              <div className={styles.tabContainer}>
+                {selectedTab === TABS.UTXOS ? (
+                  <>
+                    <div className={styles.utxoListTitleBar}>
+                      <div className="d-flex justify-content-center align-items-center gap-2">
+                        {refreshButton()}
+                        {utxoListTitle()}
+                      </div>
+                      {(props.utxosByAccount[accountIndex] || []).length > 0 && (
+                        <div className={styles.freezeUnfreezeButtonsContainer}>
+                          {freezeUnfreezeButton({ freeze: true })}
+                          {freezeUnfreezeButton({ freeze: false })}
+                        </div>
+                      )}
                     </div>
                     {(props.utxosByAccount[accountIndex] || []).length > 0 && (
-                      <div className={styles.freezeUnfreezeButtonsContainer}>
-                        {freezeUnfreezeButton({ freeze: true })}
-                        {freezeUnfreezeButton({ freeze: false })}
+                      <div className="px-md-3 pb-2">
+                        <UtxoList
+                          utxos={props.utxosByAccount[accountIndex] || []}
+                          walletInfo={props.walletInfo}
+                          setSelectedUtxoIds={setSelectedUtxoIds}
+                          setDetailUtxo={setDetailUtxo}
+                        />
                       </div>
                     )}
-                  </div>
-                  {(props.utxosByAccount[accountIndex] || []).length > 0 && (
-                    <div className="px-md-3 pb-2">
-                      <UtxoList
-                        utxos={props.utxosByAccount[accountIndex] || []}
-                        walletInfo={props.walletInfo}
-                        setSelectedUtxoIds={setSelectedUtxoIds}
-                        setDetailUtxo={setDetailUtxo}
-                      />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className={styles.tabContainer}>
-                  <rb.Accordion flush>
+                  </>
+                ) : (
+                  <rb.Accordion flush className="p-3 p-lg-0">
                     {account.branches.map((branch, index) => (
                       <rb.Accordion.Item className={styles.accountItem} key={branch.branch} eventKey={`${index}`}>
                         <rb.Accordion.Header>
@@ -434,8 +434,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                       </rb.Accordion.Item>
                     ))}
                   </rb.Accordion>
-                </div>
-              )}
+                )}
+              </div>
             </rb.Col>
           </rb.Row>
         </rb.Container>

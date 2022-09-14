@@ -25,8 +25,8 @@ export default function TablePagination({
   const { t } = useTranslation()
 
   return (
-    <div className="d-flex justify-content-between flex-column flex-md-row">
-      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-2 order-md-1 gap-2">
+    <div className="d-flex justify-content-between flex-column flex-sm-row">
+      <div className="mt-3 mt-md-0 mx-3 mx-md-0 d-flex justify-content-center align-items-center order-2 order-md-1 gap-2">
         <div className="flex-shrink-0">{t('global.table.pagination.items_per_page.label')}</div>
         <rb.Form.Select
           aria-label={t('global.table.pagination.items_per_page.label')}
@@ -49,7 +49,7 @@ export default function TablePagination({
         </rb.Form.Select>
       </div>
 
-      <div className="mt-3 mt-md-0 ms-3 ms-md-0 d-flex justify-content-center align-items-center order-1 order-md-2 gap-1">
+      <div className="mt-3 mt-md-0 mx-3 mx-md-0 d-flex justify-content-center align-items-center order-1 order-md-2 gap-1">
         <rb.Button
           aria-label={t('global.table.pagination.page_selector.label_first')}
           variant={'outline-dark'}
