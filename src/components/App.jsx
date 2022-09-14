@@ -82,6 +82,7 @@ export default function App() {
                 />
                 {currentWallet && (
                   <>
+                    <Route path={routes.wallet} element={<MainWalletView />} />
                     <Route path={routes.jam} element={<Jam />} />
                     <Route path={routes.send} element={<Send />} />
                     <Route path={routes.earn} element={<Earn />} />
@@ -89,9 +90,6 @@ export default function App() {
                     <Route path={routes.settings} element={<Settings stopWallet={stopWallet} />} />
                   </>
                 )}
-              </Route>
-              <Route element={<Layout />}>
-                <Route path={routes.wallet} element={<MainWalletView />} />
               </Route>
               <Route path="*" element={<Navigate to={routes.home} replace={true} />} />
             </>

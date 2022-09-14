@@ -120,9 +120,13 @@ export default function Wallet({
               <rb.Card.Title>
                 {isActive ? (
                   <span style={{ position: 'relative' }}>
-                    <Link className="wallet-name" to={routes.wallet}>
-                      {walletDisplayName(name)}
-                    </Link>
+                    {lockWallet ? (
+                      <Link className="wallet-name" to={routes.wallet}>
+                        {walletDisplayName(name)}
+                      </Link>
+                    ) : (
+                      <>{walletDisplayName(name)}</>
+                    )}
                     {makerRunning && <TabActivityIndicator isOn={true} />}
                     {coinjoinInProgress && <JoiningIndicator isOn={true} className="text-success" />}
                   </span>
