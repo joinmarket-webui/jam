@@ -97,15 +97,15 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <ListItem number={4}>
             <h6>
               <Trans i18nKey="cheatsheet.earn.title">
-                <Link to={routes.earn}>Earn</Link> yield by providing liquidity.
+                <Link to={routes.earn}>Earn</Link> sats by providing liquidity.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.earn.description')}</div>
           </ListItem>
-          <ListItem number={2}>
+          <ListItem number={5}>
             <h6>
               <Trans i18nKey="cheatsheet.schedule.title">
-                <Link to={routes.jam}>Schedule</Link> transactions.
+                Schedule <Link to={routes.jam}>sweep</Link> transactions to empty your wallet.
               </Trans>
             </h6>
             <div className="small text-secondary">{t('cheatsheet.schedule.description')}</div>

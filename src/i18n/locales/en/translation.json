@@ -386,24 +386,24 @@
       "title": "<0>Fund</0> your wallet.",
       "description": "Deposit some funds yourself or receive it from others."
     },
-    "schedule": {
-      "title": "<0>Schedule</0> transactions.",
-      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
+    "send": {
+      "title": "<0>Send</0> a collaborative transaction to another Jar.",
+      "description": "Collaborative transactions increase the privacy of yourself and others."
     },
     "bond": {
       "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
-      "description": "A fidelity bond increases your chances of selling liquidity substantially."
+      "description": "A fidelity bond increases your chances of earning sats substantially."
     },
     "earn": {
       "title": "<0>Earn</0> sats by providing liquidity.",
       "description": "Offer liquidity to the marketplace for a fee. No trust or custody required—you are always in full control of your funds."
     },
-    "send": {
-      "title": "<0>Send</0> a collaborative transaction to yourself.",
-      "description": "Collaborative transactions increase the privacy of yourself and others."
+    "schedule": {
+      "title": "Schedule <1>sweep</1> transactions to empty your wallet.",
+      "description": "Automatically execute a series of collaborative transactions. You can sweep your funds to cold storage or use them to open lightning channels."
     },
     "repeat": {
-      "title": "Go to step one and repeat.",
+      "title": "Rinse and repeat!",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
   },
