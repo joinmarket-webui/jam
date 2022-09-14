@@ -80,11 +80,11 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           </ListItem>
           <ListItem number={2}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_2.title">
-                <Link to={routes.jam}>Schedule</Link> transactions.
+              <Trans i18nKey="cheatsheet.item_5.title">
+                <Link to={routes.send}>Send</Link> a collaborative transaction to another Jar.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
           </ListItem>
           <ListItem number={3}>
             <h6>
@@ -102,13 +102,13 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             </h6>
             <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
           </ListItem>
-          <ListItem number={5}>
+          <ListItem number={2}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_5.title">
-                <Link to={routes.send}>Send</Link> a collaborative transaction to yourself.
+              <Trans i18nKey="cheatsheet.item_2.title">
+                <Link to={routes.jam}>Schedule</Link> transactions.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
           </ListItem>
           <ListItem number={'last'}>
             <h6>{t('cheatsheet.item_last.title')}</h6>
