@@ -542,6 +542,24 @@ export default function Send() {
     return success
   }
 
+  const abortCoinjoin = async () => {
+    if (!isCoinjoinInProgress) return
+
+    setAlert(null)
+
+    const abortCtrl = new AbortController()
+    return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
+      .then((_) =>
+        Promise.all([
+          reloadServiceInfo({ signal: abortCtrl.signal }),
+          reloadCurrentWalletInfo({ signal: abortCtrl.signal }),
+        ])
+      )
+      .catch((err) => {
+        setAlert({ variant: 'danger', message: err.message })
+      })
+  }
+
   const onSubmit = async (e) => {
     e.preventDefault()
 
@@ -696,8 +714,12 @@ export default function Send() {
               </Link>
             )}
             {isCoinjoinInProgress && (
-              <rb.Alert variant="info" className="mb-4">
+              <rb.Alert variant="info" className="mb-4 d-flex align-items-center">
                 {t('send.text_coinjoin_already_running')}
+
+                <rb.Button variant={'outline-light'} className="ms-auto" onClick={() => abortCoinjoin()}>
+                  {t('global.abort')}
+                </rb.Button>
               </rb.Alert>
             )}
           </>
@@ -932,6 +954,7 @@ export default function Send() {
             t('send.button_send_without_improved_privacy')
           )}
         </rb.Button>
+
         <ConfirmModal
           isShown={showConfirmInputsModal}
           title={t('send.confirm_modal.title')}

@@ -6,6 +6,7 @@
     "next": "Next",
     "back": "Back",
     "close": "Close",
+    "abort": "Abort",
     "table": {
       "pagination": {
         "items_per_page": {

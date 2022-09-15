@@ -358,7 +358,7 @@ const postSchedulerStart = async ({ token, signal, walletName }: WalletRequestCo
   })
 }
 
-const getSchedulerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
+const getTakerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/stop`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
@@ -414,7 +414,7 @@ export {
   postConfigGet,
   getWalletSeed,
   postSchedulerStart,
-  getSchedulerStop,
+  getTakerStop,
   getSchedule,
   Helper,
 }

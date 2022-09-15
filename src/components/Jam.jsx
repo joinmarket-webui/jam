@@ -182,7 +182,7 @@ export default function Jam() {
     setIsLoading(true)
 
     const abortCtrl = new AbortController()
-    return Api.getSchedulerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
+    return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
       .then((_) => setCollaborativeOperationRunning(false))
       .then((_) =>
