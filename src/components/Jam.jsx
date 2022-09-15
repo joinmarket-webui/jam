@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
-import { COINJOIN_PRECONDITIONS, useCoinjoinPreconditionSummary } from '../hooks/CoinjoinPrecondition'
+import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
+import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
@@ -20,8 +21,6 @@ import styles from './Jam.module.css'
 // will end up on those 3 mixdepths (one UTXO each).
 // Length of this array must be 3 for now.
 const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
-
-const SCHEDULER_START_ACCOUNT = 0
 
 const ValuesListener = ({ handler }) => {
   const { values } = useFormikContext()
@@ -48,16 +47,9 @@ export default function Jam() {
   const [isLoading, setIsLoading] = useState(true)
   const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
 
-  const startJarUtxos = useMemo(() => {
-    if (!walletInfo) return null
-
-    return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === SCHEDULER_START_ACCOUNT)
-  }, [walletInfo])
-
-  const schedulerPreconditionSummary = useCoinjoinPreconditionSummary(startJarUtxos || [])
-  const isSchedulerPreconditionsFulfilled = useMemo(
-    () => schedulerPreconditionSummary.isFulfilled,
-    [schedulerPreconditionSummary]
+  const schedulerPreconditionSummary = useMemo(
+    () => buildCoinjoinRequirementSummary(walletInfo?.data.utxos.utxos || []),
+    [walletInfo]
   )
 
   // Returns one fresh address for each requested mixdepth.
@@ -135,7 +127,7 @@ export default function Jam() {
   }, [serviceInfo])
 
   const startSchedule = async (values) => {
-    if (isLoading || collaborativeOperationRunning || !isSchedulerPreconditionsFulfilled) {
+    if (isLoading || collaborativeOperationRunning) {
       return
     }
 
@@ -219,54 +211,15 @@ export default function Jam() {
             </rb.Alert>
           )}
           <rb.Fade
-            in={!collaborativeOperationRunning && !isSchedulerPreconditionsFulfilled}
+            in={!collaborativeOperationRunning && !schedulerPreconditionSummary.isFulfilled}
             mountOnEnter={true}
             unmountOnExit={true}
+            className="mb-4"
           >
-            <rb.Alert variant="warning" className="mb-4">
-              <>
-                {schedulerPreconditionSummary.numberOfMissingUtxos > 0 ? (
-                  <Trans i18nKey="scheduler.precondition.hint_missing_utxos">
-                    To run the scheduler you need at least one UTXO with{' '}
-                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-                    confirmations. Fund your wallet and wait for{' '}
-                    <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-                    blocks.
-                  </Trans>
-                ) : schedulerPreconditionSummary.amountOfMissingConfirmations > 0 ? (
-                  <Trans i18nKey="scheduler.precondition.hint_missing_confirmations">
-                    The scheduler requires one of your UTXOs to have{' '}
-                    <strong>
-                      {{
-                        /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
-                           (which is essential for parameterized translations to work). */
-                        minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
-                      }}
-                    </strong>{' '}
-                    or more confirmations. Wait for{' '}
-                    <strong>
-                      {{ amountOfMissingConfirmations: schedulerPreconditionSummary.amountOfMissingConfirmations }}
-                    </strong>{' '}
-                    more block(s).
-                  </Trans>
-                ) : (
-                  schedulerPreconditionSummary.amountOfMissingOverallRetries > 0 && (
-                    <Trans i18nKey="scheduler.precondition.hint_missing_overall_retries">
-                      You've tried running the scheduler unsuccessfully too many times in a row. For security reasons,
-                      you need a fresh UTXO to try again. See{' '}
-                      <a
-                        href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        the docs
-                      </a>{' '}
-                      for more information.
-                    </Trans>
-                  )
-                )}
-              </>
-            </rb.Alert>
+            <CoinjoinPreconditionViolationAlert
+              summary={schedulerPreconditionSummary}
+              i18nPrefix="scheduler.precondition."
+            />
           </rb.Fade>
           {!collaborativeOperationRunning && walletInfo && (
             <>
@@ -421,11 +374,7 @@ export default function Jam() {
                       className={styles.submit}
                       variant="dark"
                       type="submit"
-                      disabled={
-                        isSubmitting ||
-                        isLoading ||
-                        (!collaborativeOperationRunning && (!isValid || !isSchedulerPreconditionsFulfilled))
-                      }
+                      disabled={isSubmitting || isLoading || (!collaborativeOperationRunning && !isValid)}
                     >
                       <div className="d-flex justify-content-center align-items-center">
                         {collaborativeOperationRunning ? t('scheduler.button_stop') : t('scheduler.button_start')}

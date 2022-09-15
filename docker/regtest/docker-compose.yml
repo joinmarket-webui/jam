@@ -63,6 +63,8 @@ services:
       jm_rpc_password: joinmarket2
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
       jm_socks5: "false" # will _not_ connect to local irc over tor
+      jm_taker_utxo_retries: 1 # easier testing of commitment failures on regtest; default is 3
+      maker_timeout_sec: 10 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
     expose:
       - 80    # nginx
       - 62601 # obwatch
