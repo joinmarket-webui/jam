@@ -545,7 +545,7 @@ export default function Send() {
 
   useEffect(() => {
     // hide the abort mdoal, if a user wants to abort a running transaction,
-    // but the transaction failed or succeeded in the meantime,
+    // but the transaction failed or succeeded in the meantime
     if (showConfirmAbortModal && !isCoinjoinInProgress) {
       setShowConfirmAbortModal(false)
     }
@@ -566,16 +566,9 @@ export default function Send() {
     setAlert(null)
 
     const abortCtrl = new AbortController()
-    return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
-      .then((_) =>
-        Promise.all([
-          reloadServiceInfo({ signal: abortCtrl.signal }),
-          reloadCurrentWalletInfo({ signal: abortCtrl.signal }),
-        ])
-      )
-      .catch((err) => {
-        setAlert({ variant: 'danger', message: err.message })
-      })
+    return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }).catch((err) => {
+      setAlert({ variant: 'danger', message: err.message })
+    })
   }
 
   const onSubmit = async (e) => {
