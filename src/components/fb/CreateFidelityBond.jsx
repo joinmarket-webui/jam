@@ -265,7 +265,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         }
 
         if (timelockedAddress === null) {
-          return <div>{t('earn.fidelity_bond.error.loading_address')}</div>
+          return <div>{t('earn.fidelity_bond.error_loading_address')}</div>
         }
 
         return (
