@@ -13,13 +13,14 @@ import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } fr
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
-import { COINJOIN_PRECONDITIONS, useCoinjoinPreconditionSummary } from '../hooks/CoinjoinPrecondition'
+import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
 import styles from './Send.module.css'
 import { ConfirmModal } from './Modal'
+import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
 import { jarInitial, jarName } from './jars/Jar'
 
 const IS_COINJOIN_DEFAULT_VAL = true
@@ -213,54 +214,6 @@ function SweepAccordionToggle({ eventKey }) {
   )
 }
 
-function CoinjoinPreconditionFailedAlert({ coinjoinPreconditionSummary }) {
-  return (
-    <rb.Alert variant="warning" className="mb-4">
-      <>
-        {coinjoinPreconditionSummary.numberOfMissingUtxos > 0 ? (
-          <Trans i18nKey="send.coinjoin_precondition.hint_missing_utxos">
-            To execute a collaborative transaction you need at least one UTXO with{' '}
-            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong>{' '}
-            confirmations in the source jar. Select another jar to send from or fund this jar and wait for{' '}
-            <strong>{{ minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO }}</strong> blocks.
-          </Trans>
-        ) : coinjoinPreconditionSummary.amountOfMissingConfirmations > 0 ? (
-          <Trans i18nKey="send.coinjoin_precondition.hint_missing_confirmations">
-            A collaborative transaction requires one of your UTXOs to have{' '}
-            <strong>
-              {{
-                /* this comment is a hack for "prettier" and prevents the removal of "{' '}" 
-                 (which is essential for parameterized translations to work). */
-                minConfirmations: COINJOIN_PRECONDITIONS.MIN_CONFIRMATIONS_OF_SINGLE_UTXO,
-              }}
-            </strong>{' '}
-            or more confirmations. Select another jar to send from or wait for{' '}
-            <strong>
-              {{ amountOfMissingConfirmations: coinjoinPreconditionSummary.amountOfMissingConfirmations }}
-            </strong>{' '}
-            more block(s).
-          </Trans>
-        ) : (
-          coinjoinPreconditionSummary.amountOfMissingOverallRetries > 0 && (
-            <Trans i18nKey="send.coinjoin_precondition.hint_missing_overall_retries">
-              You've tried executing a collaborative transaction from this jar unsuccessfully too many times in a row.
-              For security reasons, you need a fresh UTXO to try again. See{' '}
-              <a
-                href="https://github.com/JoinMarket-Org/joinmarket/wiki/Sourcing-commitments-for-joins#sourcing-external-commitments"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                the docs
-              </a>{' '}
-              for more information.
-            </Trans>
-          )
-        )}
-      </>
-    </rb.Alert>
-  )
-}
-
 export default function Send() {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
@@ -325,7 +278,10 @@ export default function Send() {
     return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === account)
   }, [walletInfo, account])
 
-  const coinjoinPreconditionSummary = useCoinjoinPreconditionSummary(sourceJarUtxos || [])
+  const coinjoinPreconditionSummary = useMemo(
+    () => buildCoinjoinRequirementSummary(sourceJarUtxos || []),
+    [sourceJarUtxos]
+  )
 
   useEffect(() => {
     if (
@@ -755,7 +711,12 @@ export default function Send() {
         )}
 
         {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
-          <CoinjoinPreconditionFailedAlert coinjoinPreconditionSummary={coinjoinPreconditionSummary} />
+          <div className="mb-4">
+            <CoinjoinPreconditionViolationAlert
+              summary={coinjoinPreconditionSummary}
+              i18nPrefix="send.coinjoin_precondition."
+            />
+          </div>
         )}
 
         {!isLoading && walletInfo && (

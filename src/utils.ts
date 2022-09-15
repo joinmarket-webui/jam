@@ -38,3 +38,11 @@ export const formatBtc = (value: number) => {
 export const formatSats = (value: number) => {
   return SATS_FORMATTER.format(value)
 }
+
+export const shortenStringMiddle = (value: string, chars = 8, separator = '…') => {
+  const prefixLength = Math.max(Math.floor(chars / 2), 1)
+  if (value.length <= prefixLength * 2) {
+    return `${value}`
+  }
+  return `${value.substring(0, prefixLength)}${separator}${value.substring(value.length - prefixLength)}`
+}
