@@ -72,48 +72,48 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
         <rb.Stack className="mb-4" gap={4}>
           <ListItem number={1}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_1.title">
+              <Trans i18nKey="cheatsheet.receive.title">
                 <Link to={routes.receive}>Fund</Link> your wallet.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_1.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.receive.description')}</div>
           </ListItem>
           <ListItem number={2}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_2.title">
-                <Link to={routes.jam}>Schedule</Link> transactions.
+              <Trans i18nKey="cheatsheet.send.title">
+                <Link to={routes.send}>Send</Link> a collaborative transaction to another jar.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_2.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.send.description')}</div>
           </ListItem>
           <ListItem number={3}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_3.title">
+              <Trans i18nKey="cheatsheet.bond.title">
                 Optional: <Link to={routes.earn}>Lock</Link> funds in a fidelity bond.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_3.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.bond.description')}</div>
           </ListItem>
           <ListItem number={4}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_4.title">
-                <Link to={routes.earn}>Earn</Link> yield by providing liquidity.
+              <Trans i18nKey="cheatsheet.earn.title">
+                <Link to={routes.earn}>Earn</Link> sats by providing liquidity.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_4.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.earn.description')}</div>
           </ListItem>
           <ListItem number={5}>
             <h6>
-              <Trans i18nKey="cheatsheet.item_5.title">
-                <Link to={routes.send}>Send</Link> a collaborative transaction to yourself.
+              <Trans i18nKey="cheatsheet.schedule.title">
+                Schedule <Link to={routes.jam}>sweep</Link> transactions to empty your wallet.
               </Trans>
             </h6>
-            <div className="small text-secondary">{t('cheatsheet.item_5.description')}</div>
+            <div className="small text-secondary">{t('cheatsheet.schedule.description')}</div>
           </ListItem>
           <ListItem number={'last'}>
-            <h6>{t('cheatsheet.item_last.title')}</h6>
+            <h6>{t('cheatsheet.repeat.title')}</h6>
             <div className="small text-secondary">
-              <Trans i18nKey="cheatsheet.item_last.description">
+              <Trans i18nKey="cheatsheet.repeat.description">
                 Still confused?{' '}
                 <a href="https://jamdocs.org/interface/00-cheatsheet/" target="_blank" rel="noopener noreferrer">
                   Dig into the documentation

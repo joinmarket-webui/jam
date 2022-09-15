@@ -388,28 +388,28 @@
   "cheatsheet": {
     "title": "The Cheatsheet",
     "description": "Follow the steps below to increase your financial privacy. It is advisable to switch from <2>earning as a maker</2> to <6>sending as a taker</6> back and forth. <10>Learn more.</10>",
-    "item_1": {
+    "receive": {
       "title": "<0>Fund</0> your wallet.",
       "description": "Deposit some funds yourself or receive it from others."
     },
-    "item_2": {
-      "title": "<0>Schedule</0> transactions.",
-      "description": "Automatically plan and execute a series of collaborative transactions. You can also automatically sweep your funds to cold storage, or use them to open a lightning channel, for example."
+    "send": {
+      "title": "<0>Send</0> a collaborative transaction to another jar.",
+      "description": "Collaborative transactions increase the privacy of yourself and others."
     },
-    "item_3": {
+    "bond": {
       "title": "Optional: <1>Lock</1> funds in a fidelity bond.",
-      "description": "A fidelity bond increases your chances of selling liquidity substantially."
+      "description": "A fidelity bond increases your chances of earning sats substantially."
     },
-    "item_4": {
+    "earn": {
       "title": "<0>Earn</0> sats by providing liquidity.",
       "description": "Offer liquidity to the marketplace for a fee. No trust or custody required—you are always in full control of your funds."
     },
-    "item_5": {
-      "title": "<0>Send</0> a collaborative transaction to yourself.",
-      "description": "Collaborative transactions increase the privacy of yourself and others."
+    "schedule": {
+      "title": "Schedule <1>sweep</1> transactions to empty your wallet.",
+      "description": "Automatically execute a series of collaborative transactions. You can sweep your funds to cold storage or use them to open lightning channels."
     },
-    "item_last": {
-      "title": "Go to step one and repeat.",
+    "repeat": {
+      "title": "Rinse and repeat!",
       "description": "Still confused? Dig into the <2>documentation</2>."
     }
   },
