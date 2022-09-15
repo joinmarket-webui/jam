@@ -543,8 +543,19 @@ export default function Send() {
     return success
   }
 
+  useEffect(() => {
+    // hide the abort mdoal, if a user wants to abort a running transaction,
+    // but the transaction failed or succeeded in the meantime,
+    if (showConfirmAbortModal && !isCoinjoinInProgress) {
+      setShowConfirmAbortModal(false)
+    }
+  }, [isCoinjoinInProgress, showConfirmAbortModal])
+
   const abortCoinjoin = async () => {
-    if (!isCoinjoinInProgress) return
+    if (!isCoinjoinInProgress) {
+      setShowConfirmAbortModal(false)
+      return
+    }
 
     if (!showConfirmAbortModal) {
       setShowConfirmAbortModal(true)
@@ -552,7 +563,6 @@ export default function Send() {
     }
 
     setShowConfirmAbortModal(false)
-
     setAlert(null)
 
     const abortCtrl = new AbortController()
@@ -725,7 +735,12 @@ export default function Send() {
               <rb.Alert variant="info" className="mb-4 d-flex align-items-center">
                 {t('send.text_coinjoin_already_running')}
 
-                <rb.Button variant={'outline-light'} className="ms-auto" onClick={() => abortCoinjoin()}>
+                <rb.Button
+                  variant={'outline-light'}
+                  className="ms-auto"
+                  disabled={showConfirmAbortModal}
+                  onClick={() => abortCoinjoin()}
+                >
                   {t('global.abort')}
                 </rb.Button>
               </rb.Alert>
