@@ -252,7 +252,8 @@ export default function Send() {
     [isInitializing, waitForUtxosToBeSpent]
   )
 
-  const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
+  const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
   const submitButtonRef = useRef(null)
 
   useEffect(() => {
@@ -498,6 +499,34 @@ export default function Send() {
     return success
   }
 
+  useEffect(() => {
+    // hide the abort modal, if a user wants to abort a running transaction,
+    // but the transaction failed or succeeded in the meantime
+    if (showConfirmAbortModal && !isCoinjoinInProgress) {
+      setShowConfirmAbortModal(false)
+    }
+  }, [isCoinjoinInProgress, showConfirmAbortModal])
+
+  const abortCoinjoin = async () => {
+    if (!isCoinjoinInProgress) {
+      setShowConfirmAbortModal(false)
+      return
+    }
+
+    if (!showConfirmAbortModal) {
+      setShowConfirmAbortModal(true)
+      return
+    }
+
+    setShowConfirmAbortModal(false)
+    setAlert(null)
+
+    const abortCtrl = new AbortController()
+    return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }).catch((err) => {
+      setAlert({ variant: 'danger', message: err.message })
+    })
+  }
+
   const onSubmit = async (e) => {
     e.preventDefault()
 
@@ -509,12 +538,12 @@ export default function Send() {
     const isValid = formIsValid
 
     if (isValid) {
-      if (!showConfirmInputsModal) {
-        setShowConfirmInputsModal(true)
+      if (!showConfirmSendModal) {
+        setShowConfirmSendModal(true)
         return
       }
 
-      setShowConfirmInputsModal(false)
+      setShowConfirmSendModal(false)
 
       const counterparties = parseInt(numCollaborators, 10)
 
@@ -652,8 +681,17 @@ export default function Send() {
               </Link>
             )}
             {isCoinjoinInProgress && (
-              <rb.Alert variant="info" className="mb-4">
+              <rb.Alert variant="info" className="mb-4 d-flex align-items-center">
                 {t('send.text_coinjoin_already_running')}
+
+                <rb.Button
+                  variant={'outline-light'}
+                  className="ms-auto"
+                  disabled={showConfirmAbortModal}
+                  onClick={() => abortCoinjoin()}
+                >
+                  {t('global.abort')}
+                </rb.Button>
               </rb.Alert>
             )}
           </>
@@ -893,10 +931,20 @@ export default function Send() {
             t('send.button_send_without_improved_privacy')
           )}
         </rb.Button>
+
         <ConfirmModal
-          isShown={showConfirmInputsModal}
-          title={t('send.confirm_modal.title')}
-          onCancel={() => setShowConfirmInputsModal(false)}
+          isShown={showConfirmAbortModal}
+          title={t('send.confirm_abort_modal.title')}
+          onCancel={() => setShowConfirmAbortModal(false)}
+          onConfirm={() => abortCoinjoin()}
+        >
+          {t('send.confirm_abort_modal.text_body')}
+        </ConfirmModal>
+
+        <ConfirmModal
+          isShown={showConfirmSendModal}
+          title={t('send.confirm_send_modal.title')}
+          onCancel={() => setShowConfirmSendModal(false)}
           onConfirm={() => {
             submitButtonRef.current?.click()
           }}
@@ -905,23 +953,23 @@ export default function Send() {
             <rb.Row className="mt-2 mb-3">
               <rb.Col xs={12} className="text-center">
                 {isCoinjoin ? (
-                  <strong className="text-success">{t('send.confirm_modal.text_collaborative_tx_enabled')}</strong>
+                  <strong className="text-success">{t('send.confirm_send_modal.text_collaborative_tx_enabled')}</strong>
                 ) : (
-                  <strong className="text-danger">{t('send.confirm_modal.text_collaborative_tx_disabled')}</strong>
+                  <strong className="text-danger">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</strong>
                 )}
               </rb.Col>
             </rb.Row>
             <rb.Row>
               <rb.Col xs={3} className="text-end">
-                <strong>{t('send.confirm_modal.label_source_jar')}</strong>
+                <strong>{t('send.confirm_send_modal.label_source_jar')}</strong>
               </rb.Col>
               <rb.Col xs={9} className="text-start">
-                {t('send.confirm_modal.text_source_jar', { jarId: jarInitial(account) })}
+                {t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(account) })}
               </rb.Col>
             </rb.Row>
             <rb.Row>
               <rb.Col xs={3} className="text-end">
-                <strong>{t('send.confirm_modal.label_recipient')}</strong>
+                <strong>{t('send.confirm_send_modal.label_recipient')}</strong>
               </rb.Col>
               <rb.Col xs={9} className="text-start text-break slashed-zeroes">
                 {destination}
@@ -929,12 +977,12 @@ export default function Send() {
             </rb.Row>
             <rb.Row>
               <rb.Col xs={3} className="text-end">
-                <strong>{t('send.confirm_modal.label_amount')}</strong>
+                <strong>{t('send.confirm_send_modal.label_amount')}</strong>
               </rb.Col>
               <rb.Col xs={9} className="text-start">
                 {isSweep ? (
                   <div className="d-flex justify-content-start align-items-center">
-                    <Trans i18nKey="send.confirm_modal.text_sweep_balance">
+                    <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
                       Sweep
                       <Balance
                         valueString={amountFieldValue().toString()}
@@ -946,7 +994,7 @@ export default function Send() {
                       placement="right"
                       overlay={
                         <rb.Popover>
-                          <rb.Popover.Body>{t('send.confirm_modal.text_sweep_info_popover')}</rb.Popover.Body>
+                          <rb.Popover.Body>{t('send.confirm_send_modal.text_sweep_info_popover')}</rb.Popover.Body>
                         </rb.Popover>
                       }
                     >
@@ -967,7 +1015,7 @@ export default function Send() {
             {isCoinjoin && (
               <rb.Row>
                 <rb.Col xs={3} className="text-end">
-                  <strong>{t('send.confirm_modal.label_num_collaborators')}</strong>
+                  <strong>{t('send.confirm_send_modal.label_num_collaborators')}</strong>
                 </rb.Col>
                 <rb.Col xs={9} className="text-start">
                   {numCollaborators}
