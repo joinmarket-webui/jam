@@ -918,7 +918,11 @@ export default function Send() {
               {t('send.text_sending')}
             </div>
           ) : isCoinjoin ? (
-            t('send.button_send')
+            !coinjoinPreconditionSummary.isFulfilled ? (
+              t('send.button_send_despite_warning')
+            ) : (
+              t('send.button_send')
+            )
           ) : (
             t('send.button_send_without_improved_privacy')
           )}
