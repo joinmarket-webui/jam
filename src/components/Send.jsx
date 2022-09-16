@@ -252,10 +252,6 @@ export default function Send() {
     [isInitializing, waitForUtxosToBeSpent]
   )
 
-  const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
-  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
-  const submitButtonRef = useRef(null)
-
   useEffect(() => {
     setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
   }, [isCoinjoinInProgress])
@@ -282,6 +278,16 @@ export default function Send() {
     () => buildCoinjoinRequirementSummary(sourceJarUtxos || []),
     [sourceJarUtxos]
   )
+
+  const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
+  const submitButtonRef = useRef(null)
+  const submitButtonVariant = useMemo(() => {
+    if (isInitializing) return 'dark'
+    if (!isCoinjoin) return 'danger'
+    if (!coinjoinPreconditionSummary.isFulfilled) return 'warning'
+    return 'dark'
+  }, [isInitializing, isCoinjoin, coinjoinPreconditionSummary])
 
   useEffect(() => {
     if (
@@ -912,7 +918,7 @@ export default function Send() {
         )}
         <rb.Button
           ref={submitButtonRef}
-          variant={isCoinjoin ? 'dark' : 'danger'}
+          variant={submitButtonVariant}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
