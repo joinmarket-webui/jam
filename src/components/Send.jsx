@@ -240,7 +240,6 @@ export default function Send() {
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
-  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
 
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning || waitForUtxosToBeSpent.length > 0,
@@ -251,10 +250,6 @@ export default function Send() {
     () => isInitializing || waitForUtxosToBeSpent.length > 0,
     [isInitializing, waitForUtxosToBeSpent]
   )
-
-  useEffect(() => {
-    setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
-  }, [isCoinjoinInProgress])
 
   const [destination, setDestination] = useState(INITIAL_DESTINATION)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || INITIAL_ACCOUNT)
@@ -477,10 +472,6 @@ export default function Send() {
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setTakerStartedInfoAlert({
-          variant: 'success',
-          message: t('send.alert_coinjoin_started'),
-        })
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -709,9 +700,6 @@ export default function Send() {
 
         {paymentSuccessfulInfoAlert && (
           <rb.Alert variant={paymentSuccessfulInfoAlert.variant}>{paymentSuccessfulInfoAlert.message}</rb.Alert>
-        )}
-        {takerStartedInfoAlert && (
-          <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
         )}
 
         {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
