@@ -500,7 +500,7 @@ export default function Send() {
   }
 
   useEffect(() => {
-    // hide the abort mdoal, if a user wants to abort a running transaction,
+    // hide the abort modal, if a user wants to abort a running transaction,
     // but the transaction failed or succeeded in the meantime
     if (showConfirmAbortModal && !isCoinjoinInProgress) {
       setShowConfirmAbortModal(false)
