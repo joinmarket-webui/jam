@@ -240,7 +240,6 @@ export default function Send() {
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
-  const [takerStartedInfoAlert, setTakerStartedInfoAlert] = useState(null)
 
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning || waitForUtxosToBeSpent.length > 0,
@@ -251,14 +250,6 @@ export default function Send() {
     () => isInitializing || waitForUtxosToBeSpent.length > 0,
     [isInitializing, waitForUtxosToBeSpent]
   )
-
-  const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
-  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
-  const submitButtonRef = useRef(null)
-
-  useEffect(() => {
-    setTakerStartedInfoAlert((current) => (isCoinjoinInProgress ? current : null))
-  }, [isCoinjoinInProgress])
 
   const [destination, setDestination] = useState(INITIAL_DESTINATION)
   const [account, setAccount] = useState(parseInt(location.state?.account, 10) || INITIAL_ACCOUNT)
@@ -283,14 +274,23 @@ export default function Send() {
     [sourceJarUtxos]
   )
 
+  const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
+  const submitButtonRef = useRef(null)
+  const submitButtonVariant = useMemo(() => {
+    if (isInitializing) return 'dark'
+    if (!isCoinjoin) return 'danger'
+    if (!coinjoinPreconditionSummary.isFulfilled) return 'warning'
+    return 'dark'
+  }, [isInitializing, isCoinjoin, coinjoinPreconditionSummary])
+
   useEffect(() => {
     if (
       isValidAddress(destination) &&
       !destinationIsReusedAddress &&
       isValidAccount(account) &&
       isValidAmount(amount, isSweep) &&
-      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true) &&
-      (isCoinjoin ? coinjoinPreconditionSummary.isFulfilled : true)
+      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
     ) {
       setFormIsValid(true)
     } else {
@@ -304,7 +304,6 @@ export default function Send() {
     minNumCollaborators,
     isCoinjoin,
     isSweep,
-    coinjoinPreconditionSummary,
     destinationIsReusedAddress,
   ])
 
@@ -473,10 +472,6 @@ export default function Send() {
       if (res.ok) {
         const data = await res.json()
         console.log(data)
-        setTakerStartedInfoAlert({
-          variant: 'success',
-          message: t('send.alert_coinjoin_started'),
-        })
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -706,9 +701,6 @@ export default function Send() {
         {paymentSuccessfulInfoAlert && (
           <rb.Alert variant={paymentSuccessfulInfoAlert.variant}>{paymentSuccessfulInfoAlert.message}</rb.Alert>
         )}
-        {takerStartedInfoAlert && (
-          <rb.Alert variant={takerStartedInfoAlert.variant}>{takerStartedInfoAlert.message}</rb.Alert>
-        )}
 
         {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
           <div className="mb-4">
@@ -914,7 +906,7 @@ export default function Send() {
         )}
         <rb.Button
           ref={submitButtonRef}
-          variant={isCoinjoin ? 'dark' : 'danger'}
+          variant={submitButtonVariant}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
@@ -926,7 +918,11 @@ export default function Send() {
               {t('send.text_sending')}
             </div>
           ) : isCoinjoin ? (
-            t('send.button_send')
+            !coinjoinPreconditionSummary.isFulfilled ? (
+              t('send.button_send_despite_warning')
+            ) : (
+              t('send.button_send')
+            )
           ) : (
             t('send.button_send_without_improved_privacy')
           )}
