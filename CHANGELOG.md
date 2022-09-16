@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.10...v0.1.0) (2022-09-16)
+
+#### Fixed
+
+* create non-descriptor wallet ([#487](https://github.com/joinmarket-webui/joinmarket-webui/issues/487)) ([0d70415](https://github.com/joinmarket-webui/joinmarket-webui/commit/0d704158f4b41f1a1dc0adef058c13f6d6932190))
+* pass api token to session request ([#456](https://github.com/joinmarket-webui/joinmarket-webui/issues/456)) ([27e1a10](https://github.com/joinmarket-webui/joinmarket-webui/commit/27e1a10f63382b757baed53e98869b3ffbd2191d))
+* pass mixdepth prop as number in request body ([#457](https://github.com/joinmarket-webui/joinmarket-webui/issues/457)) ([155f9bd](https://github.com/joinmarket-webui/joinmarket-webui/commit/155f9bd55b4e385f49d49295ff52461f069f6b51))
+* precondition for collaborative transactions ([#485](https://github.com/joinmarket-webui/joinmarket-webui/issues/485)) ([db29235](https://github.com/joinmarket-webui/joinmarket-webui/commit/db292356f59de24bd80622d4a1eb57414d514e49))
+* proper margin for sweep button on invalid inputs ([#471](https://github.com/joinmarket-webui/joinmarket-webui/issues/471)) ([4a20c9f](https://github.com/joinmarket-webui/joinmarket-webui/commit/4a20c9fdd2eff40a2856d5c461dc4f18dba8f4f2))
+* re-add Joining icon ([#474](https://github.com/joinmarket-webui/joinmarket-webui/issues/474)) ([1d0f0cc](https://github.com/joinmarket-webui/joinmarket-webui/commit/1d0f0ccf5fc5e516d6781ee041588a43b7135070))
+* redirect to home if no wallet is active on route `/wallet` ([#492](https://github.com/joinmarket-webui/joinmarket-webui/issues/492)) ([2c3d6f7](https://github.com/joinmarket-webui/joinmarket-webui/commit/2c3d6f76feafd4400905dd66b5436a1fe93a0f09))
+* refresh orderbook ([#462](https://github.com/joinmarket-webui/joinmarket-webui/issues/462)) ([505e960](https://github.com/joinmarket-webui/joinmarket-webui/commit/505e9606f50d13d6d2b67f1002662254f94953bd))
+* reload wallet info after stopping scheduler manually ([#494](https://github.com/joinmarket-webui/joinmarket-webui/issues/494)) ([89698f2](https://github.com/joinmarket-webui/joinmarket-webui/commit/89698f27f56bb8d12894a9a9f0e6827cbf120837))
+* remove jar source from scheduler options ([#465](https://github.com/joinmarket-webui/joinmarket-webui/issues/465)) ([b743357](https://github.com/joinmarket-webui/joinmarket-webui/commit/b7433571e9f3fdc3eee4acdf454cd578895b71ec))
+* serialize values of `/maker/start` request body as strings ([#458](https://github.com/joinmarket-webui/joinmarket-webui/issues/458)) ([dd7943b](https://github.com/joinmarket-webui/joinmarket-webui/commit/dd7943b979d546821e1cd824e533e0b803688ce8))
+* **settings:** matrix link ([#473](https://github.com/joinmarket-webui/joinmarket-webui/issues/473)) ([250f523](https://github.com/joinmarket-webui/joinmarket-webui/commit/250f523422c292232ec4db0c376d7582e29c8862))
+
+#### Added
+
+* ability to retrieve logs ([#478](https://github.com/joinmarket-webui/joinmarket-webui/issues/478)) ([ace3734](https://github.com/joinmarket-webui/joinmarket-webui/commit/ace3734712518bec3868d6fefc921726a5c18b76))
+* abort collaborative transaction ([#497](https://github.com/joinmarket-webui/joinmarket-webui/issues/497)) ([80e40ff](https://github.com/joinmarket-webui/joinmarket-webui/commit/80e40ff51086e00e73de0fcf5cc977e8a1720cfc))
+* **cheatsheet:** update order ([#496](https://github.com/joinmarket-webui/joinmarket-webui/issues/496)) ([ff50e25](https://github.com/joinmarket-webui/joinmarket-webui/commit/ff50e25c11cc4600bc98b5799af0d0db4503186c))
+* click on active "joining" icon opens relevant screen ([#463](https://github.com/joinmarket-webui/joinmarket-webui/issues/463)) ([033babd](https://github.com/joinmarket-webui/joinmarket-webui/commit/033babd1ac1149343d9ef628aead754ac796208b))
+* colored jars with names ([#476](https://github.com/joinmarket-webui/joinmarket-webui/issues/476)) ([6a050f4](https://github.com/joinmarket-webui/joinmarket-webui/commit/6a050f4ccc60a74bb2f7cabf4792caea2a6267f5))
+* highlight own orders in orderbook ([#472](https://github.com/joinmarket-webui/joinmarket-webui/issues/472)) ([b19689d](https://github.com/joinmarket-webui/joinmarket-webui/commit/b19689de0c96b58d26931fb5cedfdd781bcc1d2b))
+* **jam:** remove "keep funds in jam" ([#484](https://github.com/joinmarket-webui/joinmarket-webui/issues/484)) ([5ada591](https://github.com/joinmarket-webui/joinmarket-webui/commit/5ada5911e1c161c1f949ada5cd2c0a851df02f68))
+* **navbar:** align app flow  ([#490](https://github.com/joinmarket-webui/joinmarket-webui/issues/490)) ([6322c44](https://github.com/joinmarket-webui/joinmarket-webui/commit/6322c44440e149409bfb84945f598c890d815150))
+* rename "Joining" to "Jamming" ([#475](https://github.com/joinmarket-webui/joinmarket-webui/issues/475)) ([077b62a](https://github.com/joinmarket-webui/joinmarket-webui/commit/077b62ab802ebf9c94eaf12312273795f53efc67))
+* **send:** warn users with send button if preconditions not met ([#498](https://github.com/joinmarket-webui/joinmarket-webui/issues/498)) ([5dd6ce6](https://github.com/joinmarket-webui/joinmarket-webui/commit/5dd6ce62d54fd2b6d8b5618ddc58bb90cacb623f))
+* show active offers ([#461](https://github.com/joinmarket-webui/joinmarket-webui/issues/461)) ([c355d41](https://github.com/joinmarket-webui/joinmarket-webui/commit/c355d41f8b4420d3746116094a2be1b58a33b8fb))
+
 ### [0.0.10](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.9...v0.0.10) (2022-08-05)
 
 #### Fixed
