@@ -187,7 +187,6 @@
     "error_loading_wallet_failed": "Loading wallet failed.",
     "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }}.",
-    "alert_coinjoin_started": "Collaborative transaction started",
     "text_maker_running": "Earn is active. Stop the service in order to send collaborative transactions.",
     "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
     "label_recipient": "Recipient",
