@@ -289,8 +289,7 @@ export default function Send() {
       !destinationIsReusedAddress &&
       isValidAccount(account) &&
       isValidAmount(amount, isSweep) &&
-      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true) &&
-      (isCoinjoin ? coinjoinPreconditionSummary.isFulfilled : true)
+      (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
     ) {
       setFormIsValid(true)
     } else {
@@ -304,7 +303,6 @@ export default function Send() {
     minNumCollaborators,
     isCoinjoin,
     isSweep,
-    coinjoinPreconditionSummary,
     destinationIsReusedAddress,
   ])
 
