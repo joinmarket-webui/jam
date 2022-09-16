@@ -277,12 +277,25 @@ export default function Send() {
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
   const submitButtonRef = useRef(null)
-  const submitButtonVariant = useMemo(() => {
-    if (isInitializing) return 'dark'
-    if (!isCoinjoin) return 'danger'
-    if (!coinjoinPreconditionSummary.isFulfilled) return 'warning'
-    return 'dark'
-  }, [isInitializing, isCoinjoin, coinjoinPreconditionSummary])
+  const submitButtonOptions = useMemo(() => {
+    if (!isInitializing) {
+      if (!isCoinjoin)
+        return {
+          variant: 'danger',
+          text: t('send.button_send_without_improved_privacy'),
+        }
+      if (!coinjoinPreconditionSummary.isFulfilled)
+        return {
+          variant: 'warning',
+          text: t('send.button_send_despite_warning'),
+        }
+    }
+
+    return {
+      variant: 'dark',
+      text: t('send.button_send'),
+    }
+  }, [isInitializing, isCoinjoin, coinjoinPreconditionSummary, t])
 
   useEffect(() => {
     if (
@@ -906,7 +919,7 @@ export default function Send() {
         )}
         <rb.Button
           ref={submitButtonRef}
-          variant={submitButtonVariant}
+          variant={submitButtonOptions.variant}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
           className={`${styles['button']} ${styles['send-button']} mt-4`}
@@ -917,14 +930,8 @@ export default function Send() {
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               {t('send.text_sending')}
             </div>
-          ) : isCoinjoin ? (
-            !coinjoinPreconditionSummary.isFulfilled ? (
-              t('send.button_send_despite_warning')
-            ) : (
-              t('send.button_send')
-            )
           ) : (
-            t('send.button_send_without_improved_privacy')
+            <>{submitButtonOptions.text}</>
           )}
         </rb.Button>
 
