@@ -2,10 +2,10 @@ import { PropsWithChildren } from 'react'
 import * as rb from 'react-bootstrap'
 import { Outlet } from 'react-router-dom'
 
-type LayoutVariant = 'wide' | undefined
+type LayoutVariant = 'wide' | ''
 
 interface ColProps {
-  variant: LayoutVariant
+  variant?: LayoutVariant
 }
 
 const Col = ({ variant, children }: PropsWithChildren<ColProps>) => {
@@ -21,7 +21,7 @@ const Col = ({ variant, children }: PropsWithChildren<ColProps>) => {
 }
 
 interface LayoutProps {
-  variant: LayoutVariant
+  variant?: LayoutVariant
 }
 
 const Layout = ({ variant }: LayoutProps) => {
