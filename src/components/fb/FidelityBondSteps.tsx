@@ -5,7 +5,7 @@ import * as Api from '../../libs/JmWalletApi'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import { AccountBalances, AccountBalanceSummary } from '../../context/BalanceSummary'
-import { Utxo, AddressStatus, WalletInfo } from '../../context/WalletContext'
+import { Utxo, AddressStatus, WalletInfo, BalanceString } from '../../context/WalletContext'
 import { calculateFillLevel, SelectableJar } from '../jars/Jar'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
@@ -13,7 +13,7 @@ import { CopyButton } from '../CopyButton'
 import LockdateForm from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
-import { jarInitial } from '../jars/Jar'
+import { JarIndex, jarInitial } from '../jars/Jar'
 
 const cx = classnamesBind.bind(styles)
 
@@ -24,10 +24,10 @@ interface SelectDateProps {
 
 interface SelectJarProps {
   accountBalances: AccountBalances
-  totalBalance: number
-  utxos: { [accountIndex: number]: Array<Utxo> }
-  selectedJar: number | null
-  onJarSelected: (accountIndex: number) => void
+  totalBalance: BalanceString
+  utxos: { [accountIndex: JarIndex]: Array<Utxo> }
+  selectedJar: JarIndex | null
+  onJarSelected: (jarIndex: JarIndex) => void
 }
 
 interface UtxoCardProps {
@@ -41,7 +41,7 @@ interface UtxoCardProps {
 
 interface SelectUtxosProps {
   walletInfo: WalletInfo
-  jar: number
+  jar: JarIndex
   utxos: Array<Utxo>
   selectedUtxos: Array<Utxo>
   onUtxoSelected: (utxo: Utxo) => void
@@ -50,7 +50,7 @@ interface SelectUtxosProps {
 
 interface FreezeUtxosProps {
   walletInfo: WalletInfo
-  jar: number
+  jar: JarIndex
   utxos: Array<Utxo>
   selectedUtxos: Array<Utxo>
   isLoading?: boolean
@@ -58,7 +58,7 @@ interface FreezeUtxosProps {
 
 interface ReviewInputsProps {
   lockDate: Api.Lockdate
-  jar: number
+  jar: JarIndex
   utxos: Array<Utxo>
   selectedUtxos: Array<Utxo>
   timelockedAddress: string
@@ -99,7 +99,7 @@ const SelectJar = ({ accountBalances, totalBalance, utxos, selectedJar, onJarSel
             balance={account.totalBalance}
             isSelectable={utxos[account.accountIndex] && utxos[account.accountIndex].length > 0}
             isSelected={selectedJar === account.accountIndex}
-            fillLevel={calculateFillLevel(Number.parseFloat(account.totalBalance), totalBalance)}
+            fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
             onClick={() => onJarSelected(account.accountIndex)}
           />
         ))}

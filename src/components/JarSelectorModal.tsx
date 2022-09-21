@@ -1,22 +1,34 @@
-import React, { useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import styles from './JarSelectorModal.module.css'
+import { JarIndex, calculateFillLevel, SelectableJar } from './jars/Jar'
+import { AccountBalances } from '../context/BalanceSummary'
+import { BalanceString } from '../context/WalletContext'
 import Sprite from './Sprite'
-import { calculateFillLevel, SelectableJar } from './jars/Jar'
+import styles from './JarSelectorModal.module.css'
+
+interface JarSelectorModalProps {
+  isShown: boolean
+  title: string
+  accountBalances: AccountBalances
+  totalBalance: BalanceString
+  disabledJar?: JarIndex
+  onCancel: () => void
+  onConfirm: (jarIndex: JarIndex) => void
+}
 
 export default function JarSelectorModal({
   isShown,
   title,
   accountBalances,
   totalBalance,
-  disabledJar = undefined,
+  disabledJar,
   onCancel,
   onConfirm,
-}) {
+}: JarSelectorModalProps) {
   const { t } = useTranslation()
 
-  const [selectedJar, setSelectedJar] = useState(null)
+  const [selectedJar, setSelectedJar] = useState<JarIndex | null>(null)
 
   const sortedAccountBalances = useMemo(() => {
     if (!accountBalances) return []
@@ -29,9 +41,10 @@ export default function JarSelectorModal({
   }
 
   const confirm = () => {
-    const jar = selectedJar
+    if (selectedJar === null) return
+
+    onConfirm(selectedJar)
     setSelectedJar(null)
-    onConfirm(jar)
   }
 
   return (
