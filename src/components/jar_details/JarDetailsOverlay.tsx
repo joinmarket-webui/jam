@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
@@ -6,7 +6,7 @@ import { useSettings } from '../../context/SettingsContext'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import { useServiceInfo } from '../../context/ServiceInfoContext'
 import * as fb from '../fb/utils'
-import Alert from '../Alert'
+import Alert, { SimpleMessageAlertProps } from '../Alert'
 import Balance from '../Balance'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
@@ -19,8 +19,6 @@ const TABS = {
   UTXOS: 'UTXOS',
   ACCOUNT_DETAILS: 'ACCOUNT_DETAILS',
 }
-
-type AlertContent = { message: string; variant: string; dismissible: boolean }
 
 interface HeaderProps {
   account: Account
@@ -192,7 +190,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
 
-  const [alert, setAlert] = useState<AlertContent | null>(null)
+  const [alert, setAlert] = useState<SimpleMessageAlertProps | null>(null)
   const [accountIndex, setAccountIndex] = useState(props.initialAccountIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
@@ -380,7 +378,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                   variant={alert.variant}
                   dismissible={true}
                   message={alert.message}
-                  onDismissed={() => setAlert(null)}
+                  onClose={() => setAlert(null)}
                 />
               </rb.Col>
             </rb.Row>
