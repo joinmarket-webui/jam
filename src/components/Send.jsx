@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
-import classnames from 'classnames/bind'
+import classNames from 'classnames'
 import PageTitle from './PageTitle'
 import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
@@ -97,7 +97,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
               <rb.Button
                 key={number}
                 variant={settings.theme === 'light' ? 'white' : 'dark'}
-                className={classnames(
+                className={classNames(
                   styles['collaborators-selector-button'],
                   'p-2',
                   'border',
@@ -128,7 +128,7 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
             isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
             placeholder={t('send.input_num_collaborators_placeholder')}
             defaultValue=""
-            className={classnames(
+            className={classNames(
               styles['collaborators-selector-input'],
               'p-2',
               'border',
@@ -796,7 +796,7 @@ export default function Send() {
                   <rb.Form.Control
                     name="destination"
                     placeholder={t('send.placeholder_recipient')}
-                    className={classnames('slashed-zeroes', styles['input'], {
+                    className={classNames('slashed-zeroes', styles['input'], {
                       [styles['jar-input']]: destinationJar !== null,
                     })}
                     value={destinationJar !== null ? `${jarName(destinationJar)} (${destination})` : destination || ''}

@@ -1,5 +1,5 @@
 import { PropsWithChildren } from 'react'
-import classnames from 'classnames/bind'
+import classNames from 'classnames'
 import Sprite from './Sprite'
 
 interface ActivityIndicatorProps {
@@ -37,7 +37,7 @@ interface TabActivityIndicatorProps {
 
 export function TabActivityIndicator({ isOn, className }: TabActivityIndicatorProps) {
   return (
-    <span className={classnames('earn-indicator', className)}>
+    <span className={classNames('earn-indicator', className)}>
       <ActivityIndicator isOn={isOn} />
     </span>
   )

@@ -1,13 +1,13 @@
 import { useState, useRef, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import classnames from 'classnames/bind'
+import classnamesBind from 'classnames/bind'
 import styles from './Jar.module.css'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { useSettings } from '../../context/SettingsContext'
 import { BalanceString } from '../../context/WalletContext'
 
-const cx = classnames.bind(styles)
+const classNames = classnamesBind.bind(styles)
 
 type JarIndex = number
 
@@ -146,7 +146,7 @@ const SelectableJar = ({
 }: JarProps & SelectableJarProps) => {
   return (
     <div
-      className={cx('selectableJarContainer', {
+      className={classNames('selectableJarContainer', {
         selectable: isSelectable,
         selected: isSelected,
       })}
