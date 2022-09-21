@@ -283,6 +283,10 @@ main {
   -o-font-feature-settings: 'tnum' on, 'lnum' on, 'zero' on, 'case' on, 'calt' off;
 }
 
+.break-word {
+  word-break: break-word;
+}
+
 .unstyled {
   text-decoration: none !important;
   color: inherit !important;

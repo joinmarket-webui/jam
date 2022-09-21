@@ -160,7 +160,7 @@
     "direct_payment_error_message_bad_request": " Veuillez vérifier soigneusement vos entrées.",
     "error_loading_wallet_failed": "Le chargement du portefeuille a échoué.",
     "error_loading_min_makers_failed": "Le chargement de la valeur de configuration 'minimum_makers' a échoué.",
-    "alert_payment_successful": "Paiement réussi : Envoyé {{ amount }} sats à {{ address }}.",
+    "alert_payment_successful": "Paiement réussi : Envoyé {{ amount }} sats à {{ address }} en transaction {{ txid }}.",
     "text_maker_running": "Générer est actif. Arrêtez le service afin d'envoyer des transactions collaboratives.",
     "text_coinjoin_already_running": "Une transaction collaborative est actuellement en cours.",
     "label_recipient": "Destinataire",

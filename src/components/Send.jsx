@@ -440,12 +440,16 @@ export default function Send() {
 
       if (res.ok) {
         const {
-          txinfo: { outputs, inputs },
+          txinfo: { outputs, inputs, txid },
         } = await res.json()
         const output = outputs.find((o) => o.address === destination)
         setPaymentSuccessfulInfoAlert({
           variant: 'success',
-          message: t('send.alert_payment_successful', { amount: output.value_sats, address: output.address }),
+          message: t('send.alert_payment_successful', {
+            amount: output.value_sats,
+            address: output.address,
+            txid,
+          }),
         })
         setWaitForUtxosToBeSpent(inputs.map((it) => it.outpoint))
         success = true
@@ -712,7 +716,9 @@ export default function Send() {
         )}
 
         {paymentSuccessfulInfoAlert && (
-          <rb.Alert variant={paymentSuccessfulInfoAlert.variant}>{paymentSuccessfulInfoAlert.message}</rb.Alert>
+          <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
+            {paymentSuccessfulInfoAlert.message}
+          </rb.Alert>
         )}
 
         {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
