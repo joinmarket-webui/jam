@@ -53,21 +53,6 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransact
       <div className="d-none d-md-flex align-items-center center-nav-link-divider">»</div>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
-          to={routes.earn}
-          onClick={onClick}
-          className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
-          }
-        >
-          <div className="d-flex align-items-start">
-            {t('navbar.tab_earn')}
-            <TabActivityIndicator isOn={makerRunning} />
-          </div>
-        </NavLink>
-      </rb.Nav.Item>
-      <div className="d-none d-md-flex align-items-center center-nav-link-divider">»</div>
-      <rb.Nav.Item className="d-flex align-items-stretch">
-        <NavLink
           to={routes.send}
           onClick={onClick}
           className={({ isActive }) =>
@@ -77,6 +62,21 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransact
           <div className="d-flex align-items-start">
             {t('navbar.tab_send')}
             <TabActivityIndicator isOn={singleCollaborativeTransactionRunning} className="ms-1" />
+          </div>
+        </NavLink>
+      </rb.Nav.Item>
+      <div className="d-none d-md-flex align-items-center center-nav-link-divider">»</div>
+      <rb.Nav.Item className="d-flex align-items-stretch">
+        <NavLink
+          to={routes.earn}
+          onClick={onClick}
+          className={({ isActive }) =>
+            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+          }
+        >
+          <div className="d-flex align-items-start">
+            {t('navbar.tab_earn')}
+            <TabActivityIndicator isOn={makerRunning} />
           </div>
         </NavLink>
       </rb.Nav.Item>
