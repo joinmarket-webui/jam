@@ -1,8 +1,14 @@
-import React from 'react'
+import { PropsWithChildren } from 'react'
 import * as rb from 'react-bootstrap'
 import { Outlet } from 'react-router-dom'
 
-const Col = ({ variant, children }) => {
+type LayoutVariant = 'wide' | undefined
+
+interface ColProps {
+  variant: LayoutVariant
+}
+
+const Col = ({ variant, children }: PropsWithChildren<ColProps>) => {
   if (variant === 'wide') {
     return <rb.Col>{children}</rb.Col>
   }
@@ -14,7 +20,11 @@ const Col = ({ variant, children }) => {
   )
 }
 
-const Layout = ({ variant }) => {
+interface LayoutProps {
+  variant: LayoutVariant
+}
+
+const Layout = ({ variant }: LayoutProps) => {
   return (
     <rb.Row className="justify-content-center">
       <Col variant={variant}>
