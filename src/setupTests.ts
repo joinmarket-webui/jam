@@ -38,7 +38,7 @@ global.__DEV__.addToAppSettings = () => {
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: (query) => ({
+    value: (query: string) => ({
       matches: false,
       media: query,
       onchange: null,
