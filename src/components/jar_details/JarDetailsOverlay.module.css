@@ -53,7 +53,7 @@
   }
 }
 
-.overlayContainer .tabContainer > .utxoListTitleBar {
+.overlayContainer .tabContainer .utxoListTitleBar {
   min-height: 3.6rem;
   display: flex;
   justify-content: space-between;
@@ -65,25 +65,39 @@
 }
 
 @media only screen and (min-width: 992px) {
-  .overlayContainer .tabContainer > .utxoListTitleBar {
-    flex-direction: row;
-    align-items: center;
+  .overlayContainer .tabContainer .utxoListTitleBar {
     padding: 0.8rem 1rem;
     border-radius: 0.6rem;
   }
 }
 
-:root[data-theme='dark'] .overlayContainer .tabContainer > .utxoListTitleBar {
+:root[data-theme='dark'] .overlayContainer .tabContainer .utxoListTitleBar {
   background-color: var(--bs-gray-800);
 }
 
-.overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer {
+.overlayContainer .tabContainer .utxoListTitleBar .operationsContainer {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+@media only screen and (min-width: 576px) {
+  .overlayContainer .tabContainer .utxoListTitleBar .operationsContainer {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
 }
 
-.overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+.overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
   width: 8rem;
   font-size: 0.6rem;
   padding: 0.3rem 0.5rem;
@@ -91,25 +105,25 @@
   justify-content: center;
   align-items: center;
   gap: 0.3rem;
-  background-color: white;
+  background-color: var(--bs-white);
   border: 1px solid var(--bs-gray-200);
   color: var(--bs-body-color);
   border-radius: 0.35rem;
 }
 
-.overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
+.overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
   background-color: var(--bs-btn-hover-bg);
   border-color: var(--bs-btn-hover-border-color);
 }
 
 @media only screen and (min-width: 768px) {
-  .overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+  .overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
     width: 10rem;
     font-size: 0.8rem;
   }
 }
 
-:root[data-theme='dark'] .overlayContainer .tabContainer > .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
+:root[data-theme='dark'] .overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
   background-color: var(--bs-gray-600) !important;
   border-color: var(--bs-gray-600);
 }
@@ -117,14 +131,14 @@
 :root[data-theme='dark']
   .overlayContainer
   .tabContainer
-  > .utxoListTitleBar
+  .utxoListTitleBar
   .freezeUnfreezeButtonsContainer
   > button:hover {
   background-color: var(--bs-gray-700) !important;
   border-color: var(--bs-gray-700);
 }
 
-.overlayContainer .tabContainer > .utxoListTitleBar .refreshButton {
+.overlayContainer .tabContainer .utxoListTitleBar .refreshButton {
   display: flex;
   justify-content: center;
   align-items: center;

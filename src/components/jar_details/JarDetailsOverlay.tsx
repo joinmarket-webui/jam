@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import { useServiceInfo } from '../../context/ServiceInfoContext'
 import * as fb from '../fb/utils'
 import Alert from '../Alert'
+import Balance from '../Balance'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
 import UtxoDetailModal from './UtxoDetailModule'
@@ -107,6 +108,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
     [utxos, selectedUtxoIds]
   )
+  const selectedUtxosBalance: Api.AmountSats = useMemo(() => {
+    return selectedUtxos.map((it) => it.value).reduce((acc, curr) => acc + curr, 0)
+  }, [selectedUtxos])
 
   const nextAccount = useCallback(
     () => setAccountIndex((current) => (current + 1 >= props.accounts.length ? 0 : current + 1)),
@@ -225,10 +229,12 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
   const freezeUnfreezeButton = ({ freeze }: { freeze: boolean }) => {
     const isLoading = freeze ? isLoadingFreeze : isLoadingUnfreeze
+    const isDisabled =
+      isLoadingRefresh || isLoadingFreeze || isLoadingUnfreeze || isTakerOrMakerRunning || selectedUtxos.length <= 0
 
     return (
       <rb.Button
-        disabled={isTakerOrMakerRunning || isLoadingRefresh || (freeze ? isLoadingUnfreeze : isLoadingFreeze)}
+        disabled={isDisabled}
         variant="light"
         onClick={() => {
           changeSelectedUtxoFreeze(freeze)
@@ -305,12 +311,25 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         {refreshButton()}
                         {utxoListTitle()}
                       </div>
-                      {utxos.length > 0 && (
-                        <div className={styles.freezeUnfreezeButtonsContainer}>
-                          {freezeUnfreezeButton({ freeze: true })}
-                          {freezeUnfreezeButton({ freeze: false })}
-                        </div>
-                      )}
+                      <div className={styles.operationsContainer}>
+                        {utxos.length > 0 && (
+                          <div className={styles.freezeUnfreezeButtonsContainer}>
+                            {freezeUnfreezeButton({ freeze: true })}
+                            {freezeUnfreezeButton({ freeze: false })}
+                          </div>
+                        )}
+                        {selectedUtxosBalance > 0 && (
+                          <div>
+                            <Trans i18nKey="jar_details.utxo_list.text_balance_sum_selected">
+                              <Balance
+                                valueString={String(selectedUtxosBalance)}
+                                convertToUnit={settings.unit}
+                                showBalance={settings.showBalance}
+                              />
+                            </Trans>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     {utxos.length > 0 && (
                       <div className="px-md-3 pb-2">
