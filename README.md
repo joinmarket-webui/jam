@@ -25,7 +25,6 @@ It aims to provide sensible defaults and be easy to use for beginners while stil
 - 💬 Join our [Matrix room](https://matrix.to/#/%23jam:bitcoin.kyoto).
 - 📚 Check out the [Documentation](https://jamdocs.org) and the [Wiki](https://github.com/joinmarket-webui/joinmarket-webui/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
 
-This project builds upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself: [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client).
 
 ## 📸
 
@@ -91,3 +90,7 @@ See [docs/developing.md](docs/developing.md) for additional developer docs.
 ## 💻 Running Locally
 
 See [docs/developing.md](docs/developing.md#running-the-webui-locally-and-connecting-to-a-remote-joinmarket-instance) for how to run Jam locally and connect it to a JoinMarket instance.
+
+## 🏛️ History
+
+This project builds upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself: [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client).
