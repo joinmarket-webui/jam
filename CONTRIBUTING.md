@@ -14,10 +14,10 @@ To ease development and testing, we provide a Docker setup that runs JoinMarket 
 
 ## Submitting a Pull Request
 
-[Fork](https://github.com/joinmarket-webui/joinmarket-webui/fork), then clone this repo:
+[Fork](https://github.com/joinmarket-webui/jam/fork), then clone this repo:
 
 ```sh
-git clone git@github.com:<your-username>/joinmarket-webui.git
+git clone git@github.com:<your-username>/jam.git
 ```
 
 Install dependencies:
@@ -49,7 +49,7 @@ npm start
 
 Make your changes and be sure to manually test them before submitting them to us.
 
-Once you're sure the changes work well, push to your fork and [submit a pull request](https://github.com/joinmarket-webui/joinmarket-webui/compare/).
+Once you're sure the changes work well, push to your fork and [submit a pull request](https://github.com/joinmarket-webui/jam/compare/).
 We will try to at least comment on your pull request within a couple of days. We may suggest some changes, improvements, or alternatives.
 
 Some things that will increase the chance that your pull request is accepted:
@@ -67,7 +67,7 @@ You can follow this convention for commits on your fork but this isn't a require
 Clone this repo:
 
 ```sh
-git clone git@github.com:joinmarket-webui/joinmarket-webui.git
+git clone git@github.com:joinmarket-webui/jam.git
 ```
 
 Checkout the version you want to test. If you want to test the cutting edge development version, simply skip this step and test directly on master.
@@ -107,8 +107,8 @@ Enjoy the test drive!
 
 ## Reporting Issues
 
-Reporting an issue is as easy as [opening one on GitHub](https://github.com/joinmarket-webui/joinmarket-webui/issues/new).
+Reporting an issue is as easy as [opening one on GitHub](https://github.com/joinmarket-webui/jam/issues/new).
 Be sure to provide a detailed description of what you think is wrong and add as much context as possible.
 If applicable, include step-by-step instruction on how to reproduce the issue.
-Before you submit an issue, please have a quick look at the [currently open issues](https://github.com/joinmarket-webui/joinmarket-webui/issues).
+Before you submit an issue, please have a quick look at the [currently open issues](https://github.com/joinmarket-webui/jam/issues).
 You might find that another person has already reported the same thing.

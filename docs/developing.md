@@ -116,7 +116,7 @@ Host raspiblitz
 In short:
 
 ```bash
-git clone https://github.com/joinmarket-webui/joinmarket-webui.git
-cd joinmarket-webui
+git clone https://github.com/joinmarket-webui/jam.git
+cd jam/
 npm install && npm start
 ```
