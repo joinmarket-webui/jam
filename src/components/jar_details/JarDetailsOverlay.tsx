@@ -202,6 +202,11 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const [detailUtxo, setDetailUtxo] = useState<Utxo | null>(null)
 
   const account = useMemo(() => props.accounts[accountIndex], [props.accounts, accountIndex])
+  const utxos = useMemo(() => props.utxosByAccount[accountIndex] || [], [props.utxosByAccount, accountIndex])
+  const selectedUtxos = useMemo(
+    () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
+    [utxos, selectedUtxoIds]
+  )
 
   const nextAccount = useCallback(
     () => setAccountIndex((current) => (current + 1 >= props.accounts.length ? 0 : current + 1)),
@@ -265,11 +270,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const changeSelectedUtxoFreeze = async (freeze: boolean) => {
     if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning) return
 
-    if (selectedUtxoIds.length <= 0) return
-
-    const selectedUtxos = (props.utxosByAccount[accountIndex] || []).filter((utxo: Utxo) =>
-      selectedUtxoIds.includes(utxo.utxo)
-    )
+    if (selectedUtxos.length <= 0) return
 
     setAlert(null)
     freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
@@ -300,7 +301,6 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }
 
   const utxoListTitle = () => {
-    const utxos = props.utxosByAccount[accountIndex] || []
     return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(accountIndex) })
   }
 
@@ -405,17 +405,17 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         {refreshButton()}
                         {utxoListTitle()}
                       </div>
-                      {(props.utxosByAccount[accountIndex] || []).length > 0 && (
+                      {utxos.length > 0 && (
                         <div className={styles.freezeUnfreezeButtonsContainer}>
                           {freezeUnfreezeButton({ freeze: true })}
                           {freezeUnfreezeButton({ freeze: false })}
                         </div>
                       )}
                     </div>
-                    {(props.utxosByAccount[accountIndex] || []).length > 0 && (
+                    {utxos.length > 0 && (
                       <div className="px-md-3 pb-2">
                         <UtxoList
-                          utxos={props.utxosByAccount[accountIndex] || []}
+                          utxos={utxos}
                           walletInfo={props.walletInfo}
                           selectState={{ ids: selectedUtxoIds }}
                           setSelectedUtxoIds={setSelectedUtxoIds}
