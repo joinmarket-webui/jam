@@ -83,7 +83,7 @@ We're aiming for a more stable version to be available as a one-click app instal
 This is a [free](https://www.gnu.org/licenses/license-list.html#Expat) and [open-source](https://opensource.org/licenses/MIT) software project and we love receiving pull-requests, bug reports, ideas, and feedback from everyone.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started participating in this project.
 
-### ⌨️ Developing
+### 🛠️ Developing
 
 See [docs/developing.md](docs/developing.md) for additional developer docs.
 
