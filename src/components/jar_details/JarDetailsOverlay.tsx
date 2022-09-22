@@ -229,7 +229,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [props.isShown, onKeyDown])
 
-  const isTakerOrMakerRunning = useCallback(
+  const isTakerOrMakerRunning = useMemo(
     () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
     [serviceInfo]
   )
@@ -259,7 +259,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }
 
   const changeSelectedUtxoFreeze = async (freeze: boolean) => {
-    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning()) return
+    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning) return
 
     if (selectedUtxoIds.length <= 0) return
 
@@ -304,7 +304,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return (
       <rb.Button
         className={styles.refreshButton}
-        disabled={isLoadingUnfreeze || isLoadingFreeze}
+        disabled={isLoadingRefresh || isLoadingUnfreeze || isLoadingFreeze}
         variant={settings.theme}
         onClick={() => {
           refreshUtxos()
@@ -324,7 +324,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
     return (
       <rb.Button
-        disabled={isTakerOrMakerRunning() || isLoadingRefresh || (freeze ? isLoadingUnfreeze : isLoadingFreeze)}
+        disabled={isTakerOrMakerRunning || isLoadingRefresh || (freeze ? isLoadingUnfreeze : isLoadingFreeze)}
         variant="light"
         onClick={() => {
           changeSelectedUtxoFreeze(freeze)
@@ -353,9 +353,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     <rb.Offcanvas
       className={`offcanvas-fullscreen ${styles.overlayContainer}`}
       show={props.isShown}
-      onHide={() => {
-        props.onHide()
-      }}
+      onHide={props.onHide}
       keyboard={false}
       placement="bottom"
     >
