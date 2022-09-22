@@ -287,7 +287,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
           </>
         )}
       </Table>
-      <div className="mt-4 mb-4 mb-md-0">
+      <div className="mt-4 mb-4 mb-lg-0">
         <TablePagination data={tableData} pagination={pagination} />
       </div>
     </div>

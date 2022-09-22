@@ -76,12 +76,13 @@
 .overlayContainer .tabContainer {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 0.5rem;
   background-color: var(--bs-body-bg);
 }
 
 @media only screen and (min-width: 992px) {
   .overlayContainer .tabContainer {
+    gap: 1.5rem;
     padding: 2rem;
     border-radius: 0.5rem;
   }
