@@ -79,4 +79,4 @@ const languages = [
 
 ## Translators
 
-Let us know [on Telegram](https://t.me/JoinMarketWebUI) or [GitHub](https://github.com/joinmarket-webui/joinmarket-webui/issues/new) if you would like to help out translating!
+Let us know [on Matrix](https://matrix.to/#/%23jam:bitcoin.kyoto) or [GitHub](https://github.com/joinmarket-webui/jam/issues/new) if you would like to help out translating!
