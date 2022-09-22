@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
@@ -12,8 +12,8 @@ import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
 import { UtxoList } from './UtxoList'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
-import styles from './JarDetailsOverlay.module.css'
 import { jarInitial } from '../jars/Jar'
+import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {
   UTXOS: 'UTXOS',
@@ -213,6 +213,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   )
 
   useEffect(() => setAccountIndex(props.initialAccountIndex), [props.initialAccountIndex])
+  useEffect(() => {
+    // reset selected utxos when switching jars
+    setSelectedUtxoIds([])
+  }, [accountIndex])
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -413,6 +417,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         <UtxoList
                           utxos={props.utxosByAccount[accountIndex] || []}
                           walletInfo={props.walletInfo}
+                          selectState={{ ids: selectedUtxoIds }}
                           setSelectedUtxoIds={setSelectedUtxoIds}
                           setDetailUtxo={setDetailUtxo}
                         />
