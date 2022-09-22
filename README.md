@@ -14,7 +14,7 @@
   <span> · </span>
   <a href="#-contribute">Contribute</a>
   <span> · </span>
-  <a href="#-development">Development</a>
+  <a href="#%EF%B8%8F-development">Development</a>
 </h3>
 
 ---
