@@ -312,14 +312,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         {utxoListTitle()}
                       </div>
                       <div className={styles.operationsContainer}>
-                        {utxos.length > 0 && (
-                          <div className={styles.freezeUnfreezeButtonsContainer}>
-                            {freezeUnfreezeButton({ freeze: true })}
-                            {freezeUnfreezeButton({ freeze: false })}
-                          </div>
-                        )}
                         {selectedUtxosBalance > 0 && (
-                          <div>
+                          <div className={styles.selectedUtxosSumContainer}>
                             <Trans i18nKey="jar_details.utxo_list.text_balance_sum_selected">
                               <Balance
                                 valueString={String(selectedUtxosBalance)}
@@ -327,6 +321,12 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                                 showBalance={settings.showBalance}
                               />
                             </Trans>
+                          </div>
+                        )}
+                        {utxos.length > 0 && (
+                          <div className={styles.freezeUnfreezeButtonsContainer}>
+                            {freezeUnfreezeButton({ freeze: true })}
+                            {freezeUnfreezeButton({ freeze: false })}
                           </div>
                         )}
                       </div>
