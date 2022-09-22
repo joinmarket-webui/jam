@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="docs/assets/readme-header-light.svg#gh-light-mode-only" alt="Jam – A friendly UI for JoinMarket">
-  <img src="docs/assets/readme-header-dark.svg#gh-dark-mode-only" alt="Jam – A friendly UI for JoinMarket">
+  <img src="docs/assets/readme-header-light.svg#gh-light-mode-only" alt="Jam: Your sats. Your privacy. Your profit.">
+  <img src="docs/assets/readme-header-dark.svg#gh-dark-mode-only" alt="Jam: Your sats. Your privacy. Your profit.">
 </div>
 
 <p align="center">
