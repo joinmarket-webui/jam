@@ -22,8 +22,8 @@
 Jam is a web interface for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) focusing on user-friendliness and ease-of-use.
 It aims to provide sensible defaults and be easy to use for beginners while still having the features advanced users expect.
 
-- 💬 Join our [Telegram group](https://t.me/JoinMarketWebUI).
-- 📚 Check out the [Wiki](https://github.com/joinmarket-webui/joinmarket-webui/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
+- 💬 Join our [Matrix room](https://matrix.to/#/%23jam:bitcoin.kyoto).
+- 📚 Check out the [Documentation](https://jamdocs.org) and the [Wiki](https://github.com/joinmarket-webui/joinmarket-webui/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
 
 This project builds upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself: [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client).
 
