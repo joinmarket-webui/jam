@@ -8,13 +8,13 @@
 </p>
 
 <h3 align="center">
-  <a href="#-integrations">Integrations</a>
+  <a href="#-installation">Installation</a>
   <span> · </span>
   <a href="#-features">Features</a>
   <span> · </span>
-  <a href="#-running-locally">Installation</a>
+  <a href="#-contribute">Contribute</a>
   <span> · </span>
-  <a href="#-participating">Development</a>
+  <a href="#-development">Development</a>
 </h3>
 
 ---
@@ -33,10 +33,10 @@ It aims to provide sensible defaults and be easy to use for beginners while stil
   <img src="docs/assets/screenshot-dark.png#gh-dark-mode-only" width="80%" alt="Jam Screenshot">
 </div>
 
-## 📦 Integrations
+## 📦 Installation
 
-We're aiming to make Jam available for different node systems.
-If your node of choice is missing, feel free to integrate it and let us know so we can add it here.
+We're aiming to make Jam available for different node systems to make installation as painless as possible.
+If your node system of choice is missing, feel free to integrate it and let us know so we can add it here.
 
 <table>
 <thead>
@@ -55,20 +55,7 @@ If your node of choice is missing, feel free to integrate it and let us know so 
 </tbody>
 </table>
 
-\*Jam is [available as CLI install in RaspiBlitz v1.7.2](https://github.com/rootzoll/raspiblitz/pull/2747). To install it, exit the Raspiblitz menu and run:
-
-```sh
-patch
-config.scripts/bonus.joinmarket-webui.sh on
-```
-
-To get information on how to connect to Jam run:
-
-```sh
-config.scripts/bonus.joinmarket-webui.sh menu
-```
-
-We're aiming for a more stable version to be available as a one-click app install with [RaspiBlitz v1.8.0](https://github.com/rootzoll/raspiblitz/issues/2891).
+Refer to [the installation docs](https://jamdocs.org/software/installation/) for more information on integrations as well as manual installation instructions.
 
 ## 🍊 Features
 
@@ -77,20 +64,22 @@ We're aiming for a more stable version to be available as a one-click app instal
 - [x] Running the yield generator
 - [x] Scheduled transactions
 - [x] Support for fidelity bonds
+- [ ] PayJoin support
 
-## 🧑‍💻 Participating
+Refer to the [milestones](https://github.com/joinmarket-webui/jam/milestones) for a rough roadmap. Feature requests are [tracked as issues](https://github.com/joinmarket-webui/jam/issues).
 
-This is a [free](https://www.gnu.org/licenses/license-list.html#Expat) and [open-source](https://opensource.org/licenses/MIT) software project and we love receiving pull-requests, bug reports, ideas, and feedback from everyone.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get started participating in this project.
+## 🧑‍💻 Contribute
 
-### 🛠️ Developing
+This is a [free and open-source](https://jamdocs.org/philosophy/01-free-software/) software project and we love receiving pull-requests, bug reports, ideas, and feedback from everyone.
 
-See [docs/developing.md](docs/developing.md) for additional developer docs.
+There are many ways you can contribute: testing, sharing ideas, writing documentation, creating tutorials, and—of course—writing code. Refer to the [general contribution guidelines](https://jamdocs.org/contribute/) to get started.
 
-## 💻 Running Locally
+## 🛠️ Development
 
-See [docs/developing.md](docs/developing.md#running-the-webui-locally-and-connecting-to-a-remote-joinmarket-instance) for how to run Jam locally and connect it to a JoinMarket instance.
+Want to get your hands dirty with code? Great! [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/developing.md](docs/developing.md) are where it's at.
 
 ## 🏛️ History
 
-This project builds upon work done by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [Adam](https://github.com/AdamISZ) (waxwing) himself: [JoinMarket-Org/jm-web-client](https://github.com/JoinMarket-Org/jm-web-client).
+This project builds upon the [jm-web-client](https://github.com/JoinMarket-Org/jm-web-client) which was developed by [Shobhitaa](https://github.com/shobhitaa), [Abhishek](https://github.com/abhishek0405), and [waxwing](https://github.com/AdamISZ) himself. Many people contributed over time, some of which are [listed here](https://github.com/joinmarket-webui/jam/graphs/contributors).
+
+Jam and JoinMarket are separate projects. For more information on JoinMarket, see the [JoinMarket GitHub Page](https://github.com/JoinMarket-Org/joinmarket-clientserver).
