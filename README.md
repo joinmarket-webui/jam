@@ -4,7 +4,7 @@
 </div>
 
 <p align="center">
-  <strong>⚠️ This is still work in progress. Use with caution. ⚠️</strong>
+  <strong>⚠️ Jam is beta software. Use with caution. ⚠️</strong>
 </p>
 
 <h3 align="center">
@@ -19,7 +19,7 @@
 
 ---
 
-Jam is a web UI for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) with focus on user-friendliness.
+Jam is a web interface for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) focusing on user-friendliness and ease-of-use.
 It aims to provide sensible defaults and be easy to use for beginners while still having the features advanced users expect.
 
 - 💬 Join our [Telegram group](https://t.me/JoinMarketWebUI).
