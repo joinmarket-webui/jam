@@ -84,17 +84,14 @@
   gap: 0.5rem;
 }
 
+.selectedUtxosSumContainer {
+  align-self: end;
+}
+
 @media only screen and (min-width: 576px) {
   .overlayContainer .tabContainer .utxoListTitleBar .operationsContainer {
     flex-direction: row;
     align-items: center;
-  }
-
-  .selectedUtxosSumContainer {
-    order: 2;
-  }
-  .freezeUnfreezeButtonsContainer {
-    order: 1;
   }
 }
 
