@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Your sats. Your privacy. Your profit.",
-  "repository": "git@github.com:joinmarket-webui/joinmarket-webui.git",
+  "repository": "git@github.com:joinmarket-webui/jam.git",
   "license": "MIT",
   "engines": {
     "node": ">=16.11.0",
