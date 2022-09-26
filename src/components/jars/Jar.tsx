@@ -1,17 +1,20 @@
-import React, { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import classnames from 'classnames/bind'
+import classnamesBind from 'classnames/bind'
 import styles from './Jar.module.css'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { useSettings } from '../../context/SettingsContext'
+import { BalanceString } from '../../context/WalletContext'
 
-const cx = classnames.bind(styles)
+const classNames = classnamesBind.bind(styles)
+
+type JarIndex = number
 
 type JarFillLevel = 0 | 1 | 2 | 3
 
 interface JarProps {
-  index: number
+  index: JarIndex
   balance: string
   fillLevel: JarFillLevel
   isOpen?: boolean
@@ -28,14 +31,18 @@ interface TooltipJarProps {
   onClick: () => void
 }
 
-/** Classifies the account balance into one of four groups:
+/**
+ * Classifies the account balance into one of four groups:
  *
  * - More than half of the total balance
  * - More than a quarter of the total balance
  * - Not empty
  * - Empty
  */
-const calculateFillLevel = (accountBalance: number, totalBalance: number): JarFillLevel => {
+const calculateFillLevel = (accountBalanceString: BalanceString, totalBalanceString: BalanceString): JarFillLevel => {
+  const accountBalance = Number.parseFloat(accountBalanceString)
+  const totalBalance = Number.parseFloat(totalBalanceString)
+
   if (accountBalance > totalBalance / 2) return 3
   if (accountBalance > totalBalance / 4) return 2
   if (accountBalance > 0) return 1
@@ -43,7 +50,7 @@ const calculateFillLevel = (accountBalance: number, totalBalance: number): JarFi
   return 0
 }
 
-const jarName = (index: Number) => {
+const jarName = (index: JarIndex) => {
   switch (index) {
     case 0:
       return 'Apricot'
@@ -60,7 +67,7 @@ const jarName = (index: Number) => {
   }
 }
 
-const jarInitial = (index: Number) => {
+const jarInitial = (index: JarIndex) => {
   switch (index) {
     case 0:
       return 'A'
@@ -139,7 +146,7 @@ const SelectableJar = ({
 }: JarProps & SelectableJarProps) => {
   return (
     <div
-      className={cx('selectableJarContainer', {
+      className={classNames('selectableJarContainer', {
         selectable: isSelectable,
         selected: isSelected,
       })}
@@ -192,4 +199,4 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
   )
 }
 
-export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial }
+export { calculateFillLevel, JarIndex, SelectableJar, OpenableJar, jarName, jarInitial }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import { Trans, useTranslation } from 'react-i18next'
@@ -509,7 +509,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
   return (
     <div className={styles.container}>
-      {alert && <Alert {...alert} className="mt-0" onDismissed={() => setAlert(null)} />}
+      {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(null)} />}
       {lockDate && (
         <ConfirmModal
           isShown={showConfirmInputsModal}

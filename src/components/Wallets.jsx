@@ -1,13 +1,13 @@
-import React, { useMemo, useEffect, useCallback, useState } from 'react'
+import { useMemo, useEffect, useCallback, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
-import classnames from 'classnames/bind'
+import classNames from 'classnames'
 import Sprite from './Sprite'
 import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
@@ -233,7 +233,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         <div className="d-flex justify-content-center">
           <Link
             to={routes.createWallet}
-            className={classnames('btn', 'mt-4', {
+            className={classNames('btn', 'mt-4', {
               'btn-lg': walletList?.length === 0,
               'btn-dark': walletList?.length === 0,
               'btn-outline-dark': !walletList || walletList.length > 0,
