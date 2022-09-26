@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
@@ -10,10 +10,11 @@ import Alert, { SimpleMessageAlertProps } from '../Alert'
 import Balance from '../Balance'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
+import UtxoDetailModal from './UtxoDetailModule'
 import { UtxoList } from './UtxoList'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
-import styles from './JarDetailsOverlay.module.css'
 import { jarInitial } from '../jars/Jar'
+import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {
   UTXOS: 'UTXOS',
@@ -27,13 +28,6 @@ interface HeaderProps {
   setTab: (tab: string) => void
   onHide: () => void
   initialTab: string
-}
-
-interface UtxoDetailModalProps {
-  utxo: Utxo
-  status: string | null
-  isShown: boolean
-  close: () => void
 }
 
 interface JarDetailsOverlayProps {
@@ -91,99 +85,6 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initial
   )
 }
 
-const UtxoDetailModal = ({ utxo, status, isShown, close }: UtxoDetailModalProps) => {
-  const { t } = useTranslation()
-  const settings = useSettings()
-
-  return (
-    <rb.Modal
-      show={isShown}
-      keyboard={true}
-      onEscapeKeyDown={close}
-      onHide={close}
-      centered={true}
-      animation={true}
-      className={styles.utxoDetailModal}
-      backdropClassName={styles.utxoDetailModalBackdrop}
-    >
-      <rb.Modal.Header className={styles.modalHeader}>
-        <rb.Modal.Title className={styles.modalTitle}>
-          <div>
-            <div>
-              <Balance
-                valueString={utxo.value.toString()}
-                convertToUnit={settings.unit}
-                showBalance={settings.showBalance}
-              />
-            </div>
-            <rb.Button onClick={close} className={styles.cancelButton}>
-              <Sprite symbol="cancel" width="26" height="26" />
-            </rb.Button>
-          </div>
-        </rb.Modal.Title>
-      </rb.Modal.Header>
-      <rb.Modal.Body>
-        <div className="d-flex flex-column gap-3">
-          <div>
-            <strong>{t('jar_details.utxo_list.utxo_detail_label_id')}</strong>: <code>{utxo.utxo}</code>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_address')}</strong>: <code>{utxo.address}</code>
-            </div>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_path')}</strong>: <code>{utxo.path}</code>
-            </div>
-            {utxo.label && (
-              <div>
-                <strong>{t('jar_details.utxo_list.utxo_detail_label_label')}</strong>: {utxo.label}
-              </div>
-            )}
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_value')}</strong>:{' '}
-              <Balance
-                valueString={utxo.value.toString()}
-                convertToUnit={settings.unit}
-                showBalance={settings.showBalance}
-              />
-            </div>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_tries')}</strong>: {utxo.tries}
-            </div>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_tries_remaining')}</strong>: {utxo.tries_remaining}
-            </div>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_is_external')}</strong>:{' '}
-              {utxo.external ? 'Yes' : 'No'}
-            </div>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_jar')}</strong>: {utxo.mixdepth}
-            </div>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_confirmations')}</strong>: {utxo.confirmations}
-            </div>
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_is_frozen')}</strong>: {utxo.frozen ? 'Yes' : 'No'}
-            </div>
-            {utxo.locktime && (
-              <div>
-                <strong>{t('jar_details.utxo_list.utxo_detail_label_locktime')}</strong>: {utxo.locktime}
-              </div>
-            )}
-            <div>
-              <strong>{t('jar_details.utxo_list.utxo_detail_label_status')}</strong>: {status}
-            </div>
-          </div>
-        </div>
-      </rb.Modal.Body>
-      <rb.Modal.Footer className="d-flex justify-content-center">
-        <rb.Button variant="light" onClick={close} className="w-25 d-flex justify-content-center align-items-center">
-          <span>{t('global.close')}</span>
-        </rb.Button>
-      </rb.Modal.Footer>
-    </rb.Modal>
-  )
-}
-
 const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -200,6 +101,14 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const [detailUtxo, setDetailUtxo] = useState<Utxo | null>(null)
 
   const account = useMemo(() => props.accounts[accountIndex], [props.accounts, accountIndex])
+  const utxos = useMemo(() => props.utxosByAccount[accountIndex] || [], [props.utxosByAccount, accountIndex])
+  const selectedUtxos = useMemo(
+    () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
+    [utxos, selectedUtxoIds]
+  )
+  const selectedUtxosBalance: Api.AmountSats = useMemo(() => {
+    return selectedUtxos.map((it) => it.value).reduce((acc, curr) => acc + curr, 0)
+  }, [selectedUtxos])
 
   const nextAccount = useCallback(
     () => setAccountIndex((current) => (current + 1 >= props.accounts.length ? 0 : current + 1)),
@@ -211,6 +120,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   )
 
   useEffect(() => setAccountIndex(props.initialAccountIndex), [props.initialAccountIndex])
+  useEffect(() => {
+    // reset selected utxos when switching jars
+    setSelectedUtxoIds([])
+  }, [accountIndex])
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -227,7 +140,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [props.isShown, onKeyDown])
 
-  const isTakerOrMakerRunning = useCallback(
+  const isTakerOrMakerRunning = useMemo(
     () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
     [serviceInfo]
   )
@@ -257,13 +170,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }
 
   const changeSelectedUtxoFreeze = async (freeze: boolean) => {
-    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning()) return
+    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning) return
 
-    if (selectedUtxoIds.length <= 0) return
-
-    const selectedUtxos = (props.utxosByAccount[accountIndex] || []).filter((utxo: Utxo) =>
-      selectedUtxoIds.includes(utxo.utxo)
-    )
+    if (selectedUtxos.length <= 0) return
 
     setAlert(null)
     freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
@@ -294,7 +203,6 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }
 
   const utxoListTitle = () => {
-    const utxos = props.utxosByAccount[accountIndex] || []
     return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(accountIndex) })
   }
 
@@ -302,7 +210,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return (
       <rb.Button
         className={styles.refreshButton}
-        disabled={isLoadingUnfreeze || isLoadingFreeze}
+        disabled={isLoadingRefresh || isLoadingUnfreeze || isLoadingFreeze}
         variant={settings.theme}
         onClick={() => {
           refreshUtxos()
@@ -319,10 +227,12 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
   const freezeUnfreezeButton = ({ freeze }: { freeze: boolean }) => {
     const isLoading = freeze ? isLoadingFreeze : isLoadingUnfreeze
+    const isDisabled =
+      isLoadingRefresh || isLoadingFreeze || isLoadingUnfreeze || isTakerOrMakerRunning || selectedUtxos.length <= 0
 
     return (
       <rb.Button
-        disabled={isTakerOrMakerRunning() || isLoadingRefresh || (freeze ? isLoadingUnfreeze : isLoadingFreeze)}
+        disabled={isDisabled}
         variant="light"
         onClick={() => {
           changeSelectedUtxoFreeze(freeze)
@@ -351,9 +261,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     <rb.Offcanvas
       className={`offcanvas-fullscreen ${styles.overlayContainer}`}
       show={props.isShown}
-      onHide={() => {
-        props.onHide()
-      }}
+      onHide={props.onHide}
       keyboard={false}
       placement="bottom"
     >
@@ -370,7 +278,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <rb.Container fluid="lg" className="py-4 py-md-5">
+        <rb.Container fluid="lg" className="py-3">
           {alert && (
             <rb.Row>
               <rb.Col>
@@ -401,18 +309,32 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         {refreshButton()}
                         {utxoListTitle()}
                       </div>
-                      {(props.utxosByAccount[accountIndex] || []).length > 0 && (
-                        <div className={styles.freezeUnfreezeButtonsContainer}>
-                          {freezeUnfreezeButton({ freeze: true })}
-                          {freezeUnfreezeButton({ freeze: false })}
-                        </div>
-                      )}
+                      <div className={styles.operationsContainer}>
+                        {utxos.length > 0 && (
+                          <div className={styles.freezeUnfreezeButtonsContainer}>
+                            {freezeUnfreezeButton({ freeze: true })}
+                            {freezeUnfreezeButton({ freeze: false })}
+                          </div>
+                        )}
+                        {selectedUtxosBalance > 0 && (
+                          <div className={styles.selectedUtxosSumContainer}>
+                            <Trans i18nKey="jar_details.utxo_list.text_balance_sum_selected">
+                              <Balance
+                                valueString={String(selectedUtxosBalance)}
+                                convertToUnit={settings.unit}
+                                showBalance={settings.showBalance}
+                              />
+                            </Trans>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {(props.utxosByAccount[accountIndex] || []).length > 0 && (
+                    {utxos.length > 0 && (
                       <div className="px-md-3 pb-2">
                         <UtxoList
-                          utxos={props.utxosByAccount[accountIndex] || []}
+                          utxos={utxos}
                           walletInfo={props.walletInfo}
+                          selectState={{ ids: selectedUtxoIds }}
                           setSelectedUtxoIds={setSelectedUtxoIds}
                           setDetailUtxo={setDetailUtxo}
                         />

@@ -482,13 +482,14 @@
   },
   "jar_details": {
     "title_tab_utxos": "UTXOs",
-    "title_tab_account": "Jar Details",
+    "title_tab_account": "Details",
     "utxo_list": {
       "title_zero": "No UTXOs in Jar {{ jar }}",
       "title_one": "{{ count }} UTXO in Jar {{ jar }}",
       "title_other": "{{ count }} UTXOs in Jar {{ jar }}",
-      "button_freeze": "Freeze selected",
-      "button_unfreeze": "Unfreeze selected",
+      "text_balance_sum_selected": "<0></0> selected",
+      "button_freeze": "Freeze",
+      "button_unfreeze": "Unfreeze",
       "button_freeze_loading": "Freezing...",
       "button_unfreeze_loading": "Unfreezing...",
       "utxo_tag_frozen": "frozen",

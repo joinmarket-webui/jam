@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnames from 'classnames'
 import { useTranslation } from 'react-i18next'
@@ -7,6 +7,7 @@ import { usePagination } from '@table-library/react-table-library/pagination'
 import { useRowSelect, HeaderCellSelect, CellSelect, SelectTypes } from '@table-library/react-table-library/select'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
 import * as TableTypes from '@table-library/react-table-library/types/table'
+import { State } from '@table-library/react-table-library/types/common'
 import { useTheme } from '@table-library/react-table-library/theme'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo, WalletInfo } from '../../context/WalletContext'
@@ -73,11 +74,12 @@ const TABLE_THEME = {
 interface UtxoListProps {
   utxos: Array<Utxo>
   walletInfo: WalletInfo
+  selectState: State
   setSelectedUtxoIds: (selectedUtxoIds: Array<string>) => void
   setDetailUtxo: (utxo: Utxo) => void
 }
 
-const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: UtxoListProps) => {
+const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetailUtxo }: UtxoListProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -131,13 +133,14 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
     },
   })
 
-  const onTableSelectChange = (action: any, state: any) => {
+  const onTableSelectChange = (action: any, state: State) => {
     setSelectedUtxoIds(state.ids)
   }
 
   const tableSelect = useRowSelect(
     tableData,
     {
+      state: selectState,
       onChange: onTableSelectChange,
     },
     {
@@ -284,7 +287,7 @@ const UtxoList = ({ utxos, walletInfo, setSelectedUtxoIds, setDetailUtxo }: Utxo
           </>
         )}
       </Table>
-      <div className="mt-4 mb-4 mb-md-0">
+      <div className="mt-4 mb-4 mb-lg-0">
         <TablePagination data={tableData} pagination={pagination} />
       </div>
     </div>
