@@ -2,7 +2,7 @@
 
 ###
 #
-# This script helps initializing the joinmarket docker containers.
+# This script helps initializing the JoinMarket docker containers.
 # Its main goal is to make CoinJoin transactions possible in the regtest environment.
 #
 # It has two responsibilities:
@@ -15,11 +15,12 @@ set -Eeuo pipefail
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
-# fund wallet in primary joinmarket container
+# fund wallet in primary JoinMarket container
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket --unmatured --blocks 3
 
-# fund wallet in secondary joinmarket container
-# this will get more coins than the primary one in order to successfully run the tumbler.py script
+# fund wallet in secondary JoinMarket container.
+# this will get more coins than the primary one in order to have enough liquidity
+# to run the scheduler (scheduled sweep) successfully multiple times.
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 50
 
 # make block rewards spendable: 100 + 5 (default of `taker_utxo_age`) + 1 = 106
@@ -38,7 +39,7 @@ msg "Attempt to start maker service for wallet $wallet_name in secondary contain
 if session_result=$(curl "$base_url/api/v1/session" --silent --show-error --insecure | jq "."); then
   msg_success "Successfully established connection to jmwalletd"
 else rc=$?
-  die "Could not connect to joinmarket. Please make sure jmwalletd is running inside container."
+  die "Could not connect to jmwalletd. Please make sure it is running inside container."
 fi
 
 maker_running=$(jq -r '.maker_running' <<< "$session_result")

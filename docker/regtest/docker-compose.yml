@@ -13,8 +13,6 @@ services:
       ENSURE_WALLET: "true"
       REMOVE_LOCK_FILES: "true"
       jm_rpc_wallet_file: jm_primary
-      jm_minimum_makers: 1
-      jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
       jm_rpc_host: bitcoind
@@ -22,10 +20,11 @@ services:
       jm_rpc_user: joinmarket
       jm_rpc_password: joinmarket
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      jm_socks5: "false" # will _not_ connect to local irc over tor
+      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
+      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
+      jm_maker_timeout_sec: 30 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
     expose:
       - 62601 # obwatch
-      - 27183 # joinmarketd
       - 28183 # jmwalletd api
       - 28283 # jmwalletd websocket
     ports:
@@ -53,8 +52,6 @@ services:
       APP_USER: joinmarket
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_secondary
-      jm_minimum_makers: 1
-      jm_tx_broadcast: self
       jm_blockchain_source: regtest
       jm_network: testnet
       jm_rpc_host: bitcoind
@@ -62,19 +59,14 @@ services:
       jm_rpc_user: joinmarket2
       jm_rpc_password: joinmarket2
       jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      jm_socks5: "false" # will _not_ connect to local irc over tor
-      jm_taker_utxo_retries: 1 # easier testing of commitment failures on regtest; default is 3
-      maker_timeout_sec: 10 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
+      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
+      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
     expose:
       - 80    # nginx
-      - 62601 # obwatch
-      - 27183 # joinmarketd
       - 28183 # jmwalletd api
-      - 28283 # jmwalletd websocket
     ports:
-      - "29183:28183"
-      - "29283:28283"
       - "29080:80"
+      - "29183:28183" # exposed for "init setup" routine
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
       - "initializer_datadir:/root/.regtest-initializer"
