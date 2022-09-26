@@ -17,77 +17,7 @@ import { fetchFeatures } from '../libs/JamApi'
 import { routes } from '../constants/routes'
 import languages from '../i18n/languages'
 import styles from './Settings.module.css'
-
-function SeedModal({ show = false, onHide }) {
-  const { t } = useTranslation()
-  const currentWallet = useCurrentWallet()
-  const [revealSeed, setRevealSeed] = useState(false)
-  const [seedError, setSeedError] = useState(false)
-  const [seed, setSeed] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const loadSeed = async () => {
-      setIsLoading(true)
-      try {
-        const { name: walletName, token } = currentWallet
-        const res = await Api.getWalletSeed({ walletName, token })
-        const { seedphrase } = await (res.ok ? res.json() : Api.Helper.throwError(res))
-
-        setIsLoading(false)
-        setSeed(seedphrase)
-      } catch (e) {
-        setIsLoading(false)
-        setSeedError(true)
-      }
-    }
-
-    if (show) {
-      loadSeed()
-    }
-  }, [show, currentWallet])
-
-  return (
-    <rb.Modal size="lg" show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
-      <rb.Modal.Header closeButton>
-        <rb.Modal.Title>{walletDisplayName(currentWallet.name)}</rb.Modal.Title>
-      </rb.Modal.Header>
-      <rb.Modal.Body>
-        <>
-          {isLoading && (
-            <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-            </div>
-          )}
-          {seedError && (
-            <div className="text-danger" style={{ marginLeft: '1rem' }}>
-              {t('settings.error_loading_seed_failed')}
-            </div>
-          )}
-          {seed && (
-            <>
-              <div className="mb-4">{t('settings.seed_modal_info_text')}</div>
-              <rb.Row className="justify-content-center align-items-center">
-                <rb.Col xs={12} md={10} className="mb-4">
-                  <Seedphrase seedphrase={seed} centered={true} isBlurred={!revealSeed} />
-                </rb.Col>
-              </rb.Row>
-              <div className="d-flex justify-content-center align-items-center">
-                <div className="mb-2">
-                  <ToggleSwitch
-                    label={t('settings.reveal_seed')}
-                    toggledOn={revealSeed}
-                    onToggle={(isToggled) => setRevealSeed(isToggled)}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-        </>
-      </rb.Modal.Body>
-    </rb.Modal>
-  )
-}
+import SeedModal from './settings/SeedModal'
 
 export default function Settings({ stopWallet }) {
   const [showingSeed, setShowingSeed] = useState(false)
@@ -248,11 +178,21 @@ export default function Settings({ stopWallet }) {
 
         <div className={styles['section-title']}>{t('settings.section_title_wallet')}</div>
         <div className={styles['settings-group-container']}>
-          <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
-            <Sprite symbol="mnemonic" width="24" height="24" />
-            {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
-          </rb.Button>
-          {showingSeed && <SeedModal show={showingSeed} onHide={() => setShowingSeed(false)} />}
+          {currentWallet && (
+            <>
+              <rb.Button
+                variant="outline-dark"
+                className={styles['settings-btn']}
+                onClick={(e) => setShowingSeed(true)}
+              >
+                <Sprite symbol="mnemonic" width="24" height="24" />
+                {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
+              </rb.Button>
+              {showingSeed && (
+                <SeedModal wallet={currentWallet} show={showingSeed} onHide={() => setShowingSeed(false)} />
+              )}
+            </>
+          )}
 
           <rb.Button
             variant="outline-dark"
