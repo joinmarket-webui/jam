@@ -487,7 +487,7 @@
       "title_zero": "No UTXOs in Jar {{ jar }}",
       "title_one": "{{ count }} UTXO in Jar {{ jar }}",
       "title_other": "{{ count }} UTXOs in Jar {{ jar }}",
-      "text_balance_sum_selected": "<0></0> totally selected",
+      "text_balance_sum_selected": "<0></0> selected",
       "button_freeze": "Freeze",
       "button_unfreeze": "Unfreeze",
       "button_freeze_loading": "Freezing...",
