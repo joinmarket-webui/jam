@@ -1,4 +1,4 @@
-import React from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import user from '@testing-library/user-event'
 import { render, screen, waitFor } from '../testUtils'
 import { act } from 'react-dom/test-utils'
@@ -22,7 +22,11 @@ describe('<CreateWallet />', () => {
 
   const setup = (props) => {
     const startWallet = props?.startWallet || NOOP
-    render(<CreateWallet startWallet={startWallet} />)
+    render(
+      <BrowserRouter>
+        <CreateWallet startWallet={startWallet} />
+      </BrowserRouter>
+    )
   }
 
   beforeEach(() => {
