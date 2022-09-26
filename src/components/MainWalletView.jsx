@@ -1,17 +1,17 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { walletDisplayName } from '../utils'
+import { routes } from '../constants/routes'
 import Balance from './Balance'
 import Sprite from './Sprite'
-import { walletDisplayName } from '../utils'
-import styles from './MainWalletView.module.css'
 import { ExtendedLink } from './ExtendedLink'
-import { routes } from '../constants/routes'
 import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
 import { Jars } from './Jars'
+import styles from './MainWalletView.module.css'
 
 const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   return (
