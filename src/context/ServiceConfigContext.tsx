@@ -8,9 +8,9 @@ interface JmConfigData {
   configvalue: string
 }
 
-type SectionKey = string
+export type SectionKey = string
 
-interface ServiceConfig {
+export interface ServiceConfig {
   [key: SectionKey]: Record<string, string | null>
 }
 
@@ -27,6 +27,11 @@ interface ServiceConfigUpdate {
 type LoadConfigValueProps = {
   signal: AbortSignal
   key: ConfigKey
+}
+
+type RefreshConfigValuesProps = {
+  signal: AbortSignal
+  keys: ConfigKey[]
 }
 
 const configReducer = (state: ServiceConfig, obj: ServiceConfigUpdate): ServiceConfig => {
@@ -63,7 +68,8 @@ const fetchConfigValues = async ({
 }
 
 interface ServiceConfigContextEntry {
-  loadConfigValue: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
+  loadConfigValueIfAbsent: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
+  refreshConfigValues: (props: RefreshConfigValuesProps) => Promise<ServiceConfig>
 }
 
 const ServiceConfigContext = createContext<ServiceConfigContextEntry | undefined>(undefined)
@@ -72,13 +78,13 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
   const serviceConfig = useRef<ServiceConfig | null>(null)
 
-  const updateServiceConfig = useCallback(
-    async ({ signal, configKeys }: { signal: AbortSignal; configKeys: ConfigKey[] }) => {
+  const refreshConfigValues = useCallback(
+    async ({ signal, keys }: RefreshConfigValuesProps) => {
       if (!currentWallet) {
         throw new Error('Cannot load config: Wallet not present')
       }
 
-      const configUpdates = fetchConfigValues({ signal, wallet: currentWallet, configKeys })
+      const configUpdates = fetchConfigValues({ signal, wallet: currentWallet, configKeys: keys })
       return configUpdates
         .then((updates) => updates.reduce(configReducer, serviceConfig.current || {}))
         .then((result) => {
@@ -108,14 +114,14 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
         }
       }
 
-      return updateServiceConfig({ signal, configKeys: [key] }).then((conf) => {
+      return refreshConfigValues({ signal, keys: [key] }).then((conf) => {
         return {
           key,
           value: conf[key.section][key.field],
         } as ServiceConfigUpdate
       })
     },
-    [updateServiceConfig]
+    [refreshConfigValues]
   )
 
   useEffect(() => {
@@ -126,7 +132,12 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
   }, [currentWallet])
 
   return (
-    <ServiceConfigContext.Provider value={{ loadConfigValue: loadConfigValueIfAbsent }}>
+    <ServiceConfigContext.Provider
+      value={{
+        loadConfigValueIfAbsent,
+        refreshConfigValues,
+      }}
+    >
       {children}
     </ServiceConfigContext.Provider>
   )
@@ -137,7 +148,15 @@ const useLoadConfigValue = () => {
   if (context === undefined) {
     throw new Error('useLoadConfigValue must be used within a ServiceConfigProvider')
   }
-  return context.loadConfigValue
+  return context.loadConfigValueIfAbsent
 }
 
-export { ServiceConfigContext, ServiceConfigProvider, useLoadConfigValue }
+const useRefreshConfigValues = () => {
+  const context = useContext(ServiceConfigContext)
+  if (context === undefined) {
+    throw new Error('useRefreshConfigValues must be used within a ServiceConfigProvider')
+  }
+  return context.refreshConfigValues
+}
+
+export { ServiceConfigContext, ServiceConfigProvider, useLoadConfigValue, useRefreshConfigValues }
