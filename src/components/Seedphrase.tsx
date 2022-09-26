@@ -1,7 +1,12 @@
-import React from 'react'
 import styles from './Seedphrase.module.css'
 
-export default function Seedphrase({ seedphrase, isBlurred = true, centered = false }) {
+interface SeedphraseProps {
+  seedphrase: string
+  isBlurred?: boolean
+  centered?: boolean
+}
+
+export default function Seedphrase({ seedphrase, isBlurred = true, centered = false }: SeedphraseProps) {
   return (
     <div
       className={`${styles.container} slashed-zeroes d-flex flex-wrap ${
