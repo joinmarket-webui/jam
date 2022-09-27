@@ -483,20 +483,29 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       </rb.Modal.Header>
       <rb.Modal.Body>
         <>
-          {isLoading && (
-            <div className="d-flex justify-content-center align-items-center">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-            </div>
-          )}
+          <div className="mb-4 small">{t('settings.fees.description')}</div>
           {loadError && (
-            <div className="text-danger" style={{ marginLeft: '1rem' }}>
+            <rb.Alert variant="danger" className="w-100">
               {t('settings.fees.error_loading_fee_config_failed')}
-            </div>
+            </rb.Alert>
           )}
-          {feeConfigValues && (
+          {isLoading ? (
             <>
-              <div className="mb-4 small">{t('settings.fees.description')}</div>
-              <FeeConfigForm ref={formRef} initialValues={feeConfigValues} validate={validate} onSubmit={submit} />
+              {Array(2)
+                .fill('')
+                .map((_, index) => {
+                  return (
+                    <rb.Placeholder key={index} as="div" animation="wave">
+                      <rb.Placeholder xs={12} className={styles.accordionLoader} />
+                    </rb.Placeholder>
+                  )
+                })}
+            </>
+          ) : (
+            <>
+              {feeConfigValues && (
+                <FeeConfigForm ref={formRef} initialValues={feeConfigValues} validate={validate} onSubmit={submit} />
+              )}
             </>
           )}
         </>

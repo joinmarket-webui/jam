@@ -1,3 +1,8 @@
+.feeConfigModal .accordionLoader {
+  height: 3.25rem;
+  margin: 1px 0;
+}
+
 .feeConfigModal form input:not([type='checkbox']) {
   height: 3.5rem;
 }
