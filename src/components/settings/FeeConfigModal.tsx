@@ -79,172 +79,178 @@ const FeeConfigForm = forwardRef(
           isSubmitting,
         }) => (
           <rb.Form ref={ref} onSubmit={handleSubmit} noValidate>
-            <rb.Form.Label>{t('settings.fees.label_tx_fees')}</rb.Form.Label>
-            {txFeesUnit && (
-              <rb.Form.Group className="mb-2 d-flex justify-content-center" controlId="offertype">
-                <SegmentedTabs
-                  name="txFeesUnit"
-                  tabs={[
-                    {
-                      label: t('settings.fees.radio_tx_fees_blocks'),
-                      value: 'blocks',
-                    },
-                    {
-                      label: t('settings.fees.radio_tx_fees_satspervbyte'),
-                      value: 'sats/kilo-vbyte',
-                    },
-                  ]}
-                  onChange={(tab, checked) => {
-                    const value = tab.value as TxFeeValueUnit
-                    setTxFeesUnit(value)
+            <rb.Accordion flush>
+              <rb.Accordion.Item eventKey="0">
+                <rb.Accordion.Header>{t('settings.fees.title_general_fee_settings')}</rb.Accordion.Header>
+                <rb.Accordion.Body>
+                  <rb.Form.Label>{t('settings.fees.label_tx_fees')}</rb.Form.Label>
+                  {txFeesUnit && (
+                    <rb.Form.Group className="my-2 d-flex justify-content-center" controlId="offertype">
+                      <SegmentedTabs
+                        name="txFeesUnit"
+                        tabs={[
+                          {
+                            label: t('settings.fees.radio_tx_fees_blocks'),
+                            value: 'blocks',
+                          },
+                          {
+                            label: t('settings.fees.radio_tx_fees_satspervbyte'),
+                            value: 'sats/kilo-vbyte',
+                          },
+                        ]}
+                        onChange={(tab) => {
+                          const value = tab.value as TxFeeValueUnit
+                          setTxFeesUnit(value)
 
-                    if (values.tx_fees) {
-                      if (value === 'sats/kilo-vbyte') {
-                        setFieldValue('tx_fees', values.tx_fees * 1_000, false)
-                      } else {
-                        setFieldValue('tx_fees', Math.round(values.tx_fees / 1_000), false)
-                      }
-                    }
-                    setTimeout(() => validateForm(), 4)
-                  }}
-                  initialValue={txFeesUnit}
-                  disabled={isSubmitting}
-                />
-              </rb.Form.Group>
-            )}
-            <rb.Form.Text className="d-block mb-2 text-secondary">
-              {t(
-                txFeesUnit === 'sats/kilo-vbyte'
-                  ? 'settings.fees.description_tx_fees_satspervbyte'
-                  : 'settings.fees.description_tx_fees_blocks'
-              )}
-            </rb.Form.Text>
-            <rb.Form.Group controlId="tx_fees" className="mb-4">
-              <rb.InputGroup>
-                <rb.InputGroup.Text id="txFees-addon1">
-                  {txFeesUnit === 'sats/kilo-vbyte' ? (
-                    <>
-                      <Sprite symbol="sats" width="24" height="24" />/ vB
-                    </>
-                  ) : (
-                    <Sprite symbol="block" width="24" height="24" name="Block" />
+                          if (values.tx_fees) {
+                            if (value === 'sats/kilo-vbyte') {
+                              setFieldValue('tx_fees', values.tx_fees * 1_000, false)
+                            } else {
+                              setFieldValue('tx_fees', Math.round(values.tx_fees / 1_000), false)
+                            }
+                          }
+                          setTimeout(() => validateForm(), 4)
+                        }}
+                        initialValue={txFeesUnit}
+                        disabled={isSubmitting}
+                      />
+                    </rb.Form.Group>
                   )}
-                </rb.InputGroup.Text>
+                  <rb.Form.Text>
+                    {t(
+                      txFeesUnit === 'sats/kilo-vbyte'
+                        ? 'settings.fees.description_tx_fees_satspervbyte'
+                        : 'settings.fees.description_tx_fees_blocks'
+                    )}
+                  </rb.Form.Text>
+                  <rb.Form.Group controlId="tx_fees" className="mb-4">
+                    <rb.InputGroup hasValidation>
+                      <rb.InputGroup.Text id="txFees-addon1">
+                        {txFeesUnit === 'sats/kilo-vbyte' ? (
+                          <>
+                            <Sprite symbol="sats" width="24" height="24" />/ vB
+                          </>
+                        ) : (
+                          <Sprite symbol="block" width="24" height="24" name="Block" />
+                        )}
+                      </rb.InputGroup.Text>
 
-                {txFeesUnit === 'sats/kilo-vbyte' ? (
-                  <rb.Form.Control
-                    aria-label={t('settings.fees.label_tx_fees')}
-                    className="slashed-zeroes"
-                    name="tx_fees"
-                    type="number"
-                    placeholder="1"
-                    value={values.tx_fees ? Number(values.tx_fees / 1_000) : values.tx_fees}
-                    disabled={isSubmitting}
-                    onBlur={handleBlur}
-                    isValid={touched.tx_fees && !errors.tx_fees}
-                    isInvalid={touched.tx_fees && !!errors.tx_fees}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value)
-                      setFieldValue('tx_fees', value * 1000, true)
-                    }}
-                    min={TX_FEES_SATSPERKILOVBYTE_MIN / 1000}
-                    step={0.001}
-                  />
-                ) : (
-                  <rb.Form.Control
-                    aria-label={t('settings.fees.label_tx_fees')}
-                    className="slashed-zeroes"
-                    name="tx_fees"
-                    type="number"
-                    placeholder="1"
-                    value={values.tx_fees}
-                    disabled={isSubmitting}
-                    onBlur={handleBlur}
-                    isValid={touched.tx_fees && !errors.tx_fees}
-                    isInvalid={touched.tx_fees && !!errors.tx_fees}
-                    onChange={handleChange}
-                    min={1}
-                    max={999}
-                    step={1}
-                  />
-                )}
-                <rb.Form.Control.Feedback type="invalid">{errors.tx_fees}</rb.Form.Control.Feedback>
-              </rb.InputGroup>
-            </rb.Form.Group>
+                      {txFeesUnit === 'sats/kilo-vbyte' ? (
+                        <rb.Form.Control
+                          aria-label={t('settings.fees.label_tx_fees')}
+                          className="slashed-zeroes"
+                          name="tx_fees"
+                          type="number"
+                          placeholder="1"
+                          value={values.tx_fees ? Number(values.tx_fees / 1_000) : values.tx_fees}
+                          disabled={isSubmitting}
+                          onBlur={handleBlur}
+                          isValid={touched.tx_fees && !errors.tx_fees}
+                          isInvalid={touched.tx_fees && !!errors.tx_fees}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value)
+                            setFieldValue('tx_fees', value * 1000, true)
+                          }}
+                          min={TX_FEES_SATSPERKILOVBYTE_MIN / 1000}
+                          step={0.001}
+                        />
+                      ) : (
+                        <rb.Form.Control
+                          aria-label={t('settings.fees.label_tx_fees')}
+                          className="slashed-zeroes"
+                          name="tx_fees"
+                          type="number"
+                          placeholder="1"
+                          value={values.tx_fees}
+                          disabled={isSubmitting}
+                          onBlur={handleBlur}
+                          isValid={touched.tx_fees && !errors.tx_fees}
+                          isInvalid={touched.tx_fees && !!errors.tx_fees}
+                          onChange={handleChange}
+                          min={1}
+                          max={999}
+                          step={1}
+                        />
+                      )}
+                      <rb.Form.Control.Feedback type="invalid">{errors.tx_fees}</rb.Form.Control.Feedback>
+                    </rb.InputGroup>
+                  </rb.Form.Group>
+                </rb.Accordion.Body>
+              </rb.Accordion.Item>
+              <rb.Accordion.Item eventKey="1">
+                <rb.Accordion.Header>{t('settings.fees.title_max_cj_fee_settings')}</rb.Accordion.Header>
+                <rb.Accordion.Body>
+                  <rb.Form.Text className="d-block mb-4">{t('settings.fees.subtitle_max_cj_fee')}</rb.Form.Text>
+                  <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
+                    <rb.Form.Label>{t('settings.fees.label_max_cj_fee_abs')}</rb.Form.Label>
+                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_abs')}</rb.Form.Text>
+                    <rb.InputGroup hasValidation>
+                      <rb.InputGroup.Text id="maxCjFeeAbs-addon1" className={styles.inputGroupText}>
+                        <Sprite symbol="sats" width="24" height="24" />
+                      </rb.InputGroup.Text>
+                      <rb.Form.Control
+                        aria-label={t('settings.fees.label_max_cj_fee_abs')}
+                        className="slashed-zeroes"
+                        name="max_cj_fee_abs"
+                        type="number"
+                        placeholder="1"
+                        value={values.max_cj_fee_abs}
+                        disabled={isSubmitting}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
+                        isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
+                        min={1}
+                        step={1_000}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_abs}</rb.Form.Control.Feedback>
+                    </rb.InputGroup>
+                  </rb.Form.Group>
 
-            <h6>{t('settings.fees.title_max_cj_fee')}</h6>
-            <rb.Form.Text className="d-block mb-2 text-secondary">
-              {t('settings.fees.subtitle_max_cj_fee')}
-            </rb.Form.Text>
-            <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
-              <rb.Form.Label>{t('settings.fees.label_max_cj_fee_abs')}</rb.Form.Label>
-              <rb.Form.Text className="d-block mb-2 text-secondary">
-                {t('settings.fees.description_max_cj_fee_abs')}
-              </rb.Form.Text>
-              <rb.InputGroup>
-                <rb.InputGroup.Text id="maxCjFeeAbs-addon1" className={styles.inputGroupText}>
-                  <Sprite symbol="sats" width="24" height="24" />
-                </rb.InputGroup.Text>
-                <rb.Form.Control
-                  aria-label={t('settings.fees.label_max_cj_fee_abs')}
-                  className="slashed-zeroes"
-                  name="max_cj_fee_abs"
-                  type="number"
-                  placeholder="1"
-                  value={values.max_cj_fee_abs}
-                  disabled={isSubmitting}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
-                  isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
-                  min={1}
-                  step={1_000}
-                />
-                <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_abs}</rb.Form.Control.Feedback>
-              </rb.InputGroup>
-            </rb.Form.Group>
-
-            <rb.Form.Group controlId="max_cj_fee_rel" className="mb-4">
-              <rb.Form.Label>
-                {t('settings.fees.label_max_cj_fee_rel', {
-                  fee:
-                    typeof values.max_cj_fee_rel === 'number' ? `(${factorToPercentage(values.max_cj_fee_rel)}%)` : '',
-                })}
-              </rb.Form.Label>
-              <rb.Form.Text className="d-block mb-2 text-secondary">
-                {t('settings.fees.description_max_cj_fee_rel')}
-              </rb.Form.Text>
-              <rb.InputGroup>
-                <rb.InputGroup.Text id="maxCjFeeRel-addon1" className={styles.inputGroupText}>
-                  %
-                </rb.InputGroup.Text>
-                <rb.Form.Control
-                  aria-label={t('settings.fees.label_max_cj_fee_rel', {
-                    fee:
-                      typeof values.max_cj_fee_rel === 'number'
-                        ? `(${factorToPercentage(values.max_cj_fee_rel)}%)`
-                        : '',
-                  })}
-                  className="slashed-zeroes"
-                  name="max_cj_fee_rel"
-                  type="number"
-                  placeholder="0"
-                  value={values.max_cj_fee_rel && factorToPercentage(values.max_cj_fee_rel)}
-                  disabled={isSubmitting}
-                  onBlur={handleBlur}
-                  isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
-                  isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value)
-                    setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
-                  }}
-                  min={0.0001}
-                  max={20}
-                  step={0.0001}
-                />
-                <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_rel}</rb.Form.Control.Feedback>
-              </rb.InputGroup>
-            </rb.Form.Group>
+                  <rb.Form.Group controlId="max_cj_fee_rel" className="mb-4">
+                    <rb.Form.Label>
+                      {t('settings.fees.label_max_cj_fee_rel', {
+                        fee:
+                          typeof values.max_cj_fee_rel === 'number'
+                            ? `(${factorToPercentage(values.max_cj_fee_rel)}%)`
+                            : '',
+                      })}
+                    </rb.Form.Label>
+                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_rel')}</rb.Form.Text>
+                    <rb.InputGroup hasValidation>
+                      <rb.InputGroup.Text id="maxCjFeeRel-addon1" className={styles.inputGroupText}>
+                        %
+                      </rb.InputGroup.Text>
+                      <rb.Form.Control
+                        aria-label={t('settings.fees.label_max_cj_fee_rel', {
+                          fee:
+                            typeof values.max_cj_fee_rel === 'number'
+                              ? `(${factorToPercentage(values.max_cj_fee_rel)}%)`
+                              : '',
+                        })}
+                        className="slashed-zeroes"
+                        name="max_cj_fee_rel"
+                        type="number"
+                        placeholder="0"
+                        value={values.max_cj_fee_rel && factorToPercentage(values.max_cj_fee_rel)}
+                        disabled={isSubmitting}
+                        onBlur={handleBlur}
+                        isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
+                        isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value)
+                          setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
+                        }}
+                        min={0.0001}
+                        max={20}
+                        step={0.0001}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_rel}</rb.Form.Control.Feedback>
+                    </rb.InputGroup>
+                  </rb.Form.Group>
+                </rb.Accordion.Body>
+              </rb.Accordion.Item>
+            </rb.Accordion>
           </rb.Form>
         )}
       </Formik>

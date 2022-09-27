@@ -3,7 +3,12 @@
 }
 
 .feeConfigModal form :global .form-label {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0 !important;
+}
+.feeConfigModal form :global .form-label ~ .form-text {
+  display: block;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
 }
 
 .inputGroupText {
