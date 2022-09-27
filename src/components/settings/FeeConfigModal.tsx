@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useCallback, useEffect, useMemo, useState } from 'react'
+import { forwardRef, useRef, useCallback, useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
@@ -7,10 +7,17 @@ import Sprite from '../Sprite'
 import styles from './FeeConfigModal.module.css'
 import SegmentedTabs from '../SegmentedTabs'
 
+type SatsPerKiloVByte = number
+
 const TX_FEES_BLOCKS_MIN = 1
 const TX_FEES_BLOCKS_MAX = 999
-const TX_FEES_SATSPERKILOVBYTE_MIN = 1_000
-const TX_FEES_SATSPERKILOVBYTE_MAX = 100_000
+const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
+const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 100_000 // 100 sats/vbyte - no enforcement by JM - this should be a "sane" max value
+const TX_FEES_FACTOR_DEFAULT_VAL = 0.2 // 20%
+const TX_FEES_FACTOR_MIN = 0.1 // 10% - no enforcement by JM - this should be a "sane" min value
+const TX_FEES_FACTOR_MAX = 1 // 100%
+const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
+const CJ_FEE_REL_MAX = 0.5 // 50% - no enforcement by JM - this should be a "sane" max value
 
 // TODO: move to utils
 const percentageToFactor = (val: number, precision = 6) => {
@@ -27,13 +34,18 @@ const factorToPercentage = (val: number, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
+const calcMinTxFeeValue = (txFeeFactor: number): SatsPerKiloVByte => {
+  return TX_FEES_SATSPERKILOVBYTE_MIN + TX_FEES_SATSPERKILOVBYTE_MIN * txFeeFactor
+}
+
 const FEE_KEYS = {
   tx_fees: { section: 'POLICY', field: 'tx_fees' },
   tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
-  //{ section: 'POLICY', field: 'absurd_fee_per_kb' },
-  //{ section: 'POLICY', field: 'max_sweep_fee_change' },
   max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },
   max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
+  // TODO: Should these values be also exposed?
+  //{ section: 'POLICY', field: 'absurd_fee_per_kb' },
+  //{ section: 'POLICY', field: 'max_sweep_fee_change' },
 }
 
 interface FeeConfigModalProps {
@@ -45,14 +57,15 @@ type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
 
 interface FeeValues {
   tx_fees?: number
+  tx_fees_factor?: number
   max_cj_fee_abs?: number
   max_cj_fee_rel?: number
 }
 
 interface FeeConfigFormProps {
-  onSubmit: (values: FeeValues) => void
-  validate: (values: FeeValues, feeValueUnit: TxFeeValueUnit) => FormikErrors<FeeValues>
   initialValues: FeeValues
+  validate: (values: FeeValues) => FormikErrors<FeeValues>
+  onSubmit: (values: FeeValues) => void
 }
 
 const FeeConfigForm = forwardRef(
@@ -63,10 +76,8 @@ const FeeConfigForm = forwardRef(
       initialValues.tx_fees && initialValues.tx_fees > 1_000 ? 'sats/kilo-vbyte' : 'blocks'
     )
 
-    const doValidate = useCallback((values: FeeValues) => validate(values, txFeesUnit), [validate, txFeesUnit])
-
     return (
-      <Formik initialValues={initialValues} validate={doValidate} onSubmit={onSubmit}>
+      <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
         {({
           handleSubmit,
           setFieldValue,
@@ -142,7 +153,7 @@ const FeeConfigForm = forwardRef(
                           name="tx_fees"
                           type="number"
                           placeholder="1"
-                          value={values.tx_fees ? Number(values.tx_fees / 1_000) : values.tx_fees}
+                          value={values.tx_fees ? Number(values.tx_fees / 1_000) : values.tx_fees || ''}
                           disabled={isSubmitting}
                           onBlur={handleBlur}
                           isValid={touched.tx_fees && !errors.tx_fees}
@@ -173,6 +184,48 @@ const FeeConfigForm = forwardRef(
                         />
                       )}
                       <rb.Form.Control.Feedback type="invalid">{errors.tx_fees}</rb.Form.Control.Feedback>
+                    </rb.InputGroup>
+                  </rb.Form.Group>
+
+                  <rb.Form.Group controlId="tx_fees_factor" className="mb-4">
+                    <rb.Form.Label>
+                      {t('settings.fees.label_tx_fees_factor', {
+                        fee:
+                          typeof values.tx_fees_factor === 'number'
+                            ? `(${factorToPercentage(values.tx_fees_factor)}%)`
+                            : '',
+                      })}
+                    </rb.Form.Label>
+                    <rb.Form.Text>{t('settings.fees.description_tx_fees_factor')}</rb.Form.Text>
+                    <rb.InputGroup hasValidation>
+                      <rb.InputGroup.Text id="txFeesFactor-addon1" className={styles.inputGroupText}>
+                        %
+                      </rb.InputGroup.Text>
+                      <rb.Form.Control
+                        aria-label={t('settings.fees.label_tx_fees_factor', {
+                          fee:
+                            typeof values.tx_fees_factor === 'number'
+                              ? `(${factorToPercentage(values.tx_fees_factor)}%)`
+                              : '',
+                        })}
+                        className="slashed-zeroes"
+                        name="tx_fees_factor"
+                        type="number"
+                        placeholder="0"
+                        value={(values.tx_fees_factor && factorToPercentage(values.tx_fees_factor)) || ''}
+                        disabled={isSubmitting}
+                        onBlur={handleBlur}
+                        isValid={touched.tx_fees_factor && !errors.tx_fees_factor}
+                        isInvalid={touched.tx_fees_factor && !!errors.tx_fees_factor}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value)
+                          setFieldValue('tx_fees_factor', percentageToFactor(value), true)
+                        }}
+                        min={factorToPercentage(TX_FEES_FACTOR_MIN)}
+                        max={factorToPercentage(TX_FEES_FACTOR_MAX)}
+                        step={0.01}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">{errors.tx_fees_factor}</rb.Form.Control.Feedback>
                     </rb.InputGroup>
                   </rb.Form.Group>
                 </rb.Accordion.Body>
@@ -232,7 +285,7 @@ const FeeConfigForm = forwardRef(
                         name="max_cj_fee_rel"
                         type="number"
                         placeholder="0"
-                        value={values.max_cj_fee_rel && factorToPercentage(values.max_cj_fee_rel)}
+                        value={(values.max_cj_fee_rel && factorToPercentage(values.max_cj_fee_rel)) || ''}
                         disabled={isSubmitting}
                         onBlur={handleBlur}
                         isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
@@ -241,8 +294,8 @@ const FeeConfigForm = forwardRef(
                           const value = parseFloat(e.target.value)
                           setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
                         }}
-                        min={0.0001}
-                        max={20}
+                        min={factorToPercentage(CJ_FEE_REL_MIN)}
+                        max={factorToPercentage(CJ_FEE_REL_MAX)}
                         step={0.0001}
                       />
                       <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_rel}</rb.Form.Control.Feedback>
@@ -266,11 +319,6 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | undefined>(undefined)
-  const [txFeesFactor, setTxFeesFactor] = useState<number>(0)
-  const minTxFeesInSatsPerKiloVByte = useMemo(
-    () => TX_FEES_SATSPERKILOVBYTE_MIN + TX_FEES_SATSPERKILOVBYTE_MIN * txFeesFactor,
-    [txFeesFactor]
-  )
   const [feeConfigValues, setFeeConfigValues] = useState<FeeValues | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -288,10 +336,10 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
         setIsLoading(false)
 
         const policy = serviceConfig['POLICY'] || {}
-        setTxFeesFactor(parseFloat(policy.tx_fees_factor || '0'))
 
         const feeValues: FeeValues = {
           tx_fees: parseInt(policy.tx_fees || '', 10) || undefined,
+          tx_fees_factor: parseFloat(policy.tx_fees_factor || `${TX_FEES_FACTOR_DEFAULT_VAL}`),
           max_cj_fee_abs: parseInt(policy.max_cj_fee_abs || '', 10) || undefined,
           max_cj_fee_rel: parseFloat(policy.max_cj_fee_rel || '') || undefined,
         }
@@ -318,9 +366,25 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
   }, [show, refreshConfigValues])
 
   const validate = useCallback(
-    (values: FeeValues, txFeesUnit: TxFeeValueUnit) => {
+    (values: FeeValues) => {
       const errors = {} as FormikErrors<FeeValues>
 
+      let minTxFeesInSatsPerKiloVByte = TX_FEES_SATSPERKILOVBYTE_MIN
+      if (
+        !values.tx_fees_factor ||
+        values.tx_fees_factor < TX_FEES_FACTOR_MIN ||
+        values.tx_fees_factor > TX_FEES_FACTOR_MAX
+      ) {
+        errors.tx_fees_factor = t('settings.fees.feedback_invalid_tx_fees_factor', {
+          min: `${factorToPercentage(TX_FEES_FACTOR_MIN)}%`,
+          max: `${factorToPercentage(TX_FEES_FACTOR_MAX)}%`,
+        })
+      } else {
+        minTxFeesInSatsPerKiloVByte = calcMinTxFeeValue(values.tx_fees_factor)
+      }
+
+      const txFeesUnit: TxFeeValueUnit =
+        values.tx_fees && values.tx_fees > TX_FEES_BLOCKS_MAX ? 'sats/kilo-vbyte' : 'blocks'
       if (txFeesUnit === 'sats/kilo-vbyte') {
         if (
           !values.tx_fees ||
@@ -328,8 +392,12 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
           values.tx_fees > TX_FEES_SATSPERKILOVBYTE_MAX
         ) {
           errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
-            min: minTxFeesInSatsPerKiloVByte / 1_000,
-            max: TX_FEES_SATSPERKILOVBYTE_MAX / 1_000,
+            min: (minTxFeesInSatsPerKiloVByte / 1_000).toLocaleString(undefined, {
+              maximumFractionDigits: Math.log10(1_000),
+            }),
+            max: (TX_FEES_SATSPERKILOVBYTE_MAX / 1_000).toLocaleString(undefined, {
+              maximumFractionDigits: Math.log10(1_000),
+            }),
           })
         }
       } else {
@@ -344,19 +412,22 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       if (!values.max_cj_fee_abs || values.max_cj_fee_abs <= 0) {
         errors.max_cj_fee_abs = t('settings.fees.feedback_invalid_max_cj_fee_abs')
       }
-      if (!values.max_cj_fee_rel || values.max_cj_fee_rel <= 0) {
-        errors.max_cj_fee_rel = t('settings.fees.feedback_invalid_max_cj_fee_rel')
+      if (!values.max_cj_fee_rel || values.max_cj_fee_rel <= CJ_FEE_REL_MIN || values.max_cj_fee_rel > CJ_FEE_REL_MAX) {
+        errors.max_cj_fee_rel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {
+          min: `${factorToPercentage(CJ_FEE_REL_MIN)}%`,
+          max: `${factorToPercentage(CJ_FEE_REL_MAX)}%`,
+        })
       }
       return errors
     },
-    [t, minTxFeesInSatsPerKiloVByte]
+    [t]
   )
 
   const cancel = () => {
     onHide()
   }
 
-  const confirm = async (feeValues: FeeValues) => {
+  const submit = async (feeValues: FeeValues) => {
     const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
     if (!allValuesPresent) return
 
@@ -366,6 +437,10 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       {
         key: FEE_KEYS.tx_fees,
         value: String(feeValues.tx_fees),
+      },
+      {
+        key: FEE_KEYS.tx_fees_factor,
+        value: String(feeValues.tx_fees_factor),
       },
       {
         key: FEE_KEYS.max_cj_fee_abs,
@@ -421,7 +496,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
           {feeConfigValues && (
             <>
               <div className="mb-4 small">{t('settings.fees.description')}</div>
-              <FeeConfigForm ref={formRef} onSubmit={confirm} validate={validate} initialValues={feeConfigValues} />
+              <FeeConfigForm ref={formRef} initialValues={feeConfigValues} validate={validate} onSubmit={submit} />
             </>
           )}
         </>
