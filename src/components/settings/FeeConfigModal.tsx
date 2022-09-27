@@ -257,7 +257,9 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
   const refreshConfigValues = useRefreshConfigValues()
   const updateConfigValues = useUpdateConfigValues()
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState(false)
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | undefined>(undefined)
   const [txFeesFactor, setTxFeesFactor] = useState<number>(0)
   const minTxFeesInSatsPerKiloVByte = useMemo(
     () => TX_FEES_SATSPERKILOVBYTE_MIN + TX_FEES_SATSPERKILOVBYTE_MIN * txFeesFactor,
@@ -268,6 +270,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
 
   useEffect(() => {
     const loadFeeValues = async (signal: AbortSignal) => {
+      setLoadError(false)
       setIsLoading(true)
 
       try {
@@ -298,6 +301,9 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     const abortCtrl = new AbortController()
     if (show) {
       loadFeeValues(abortCtrl.signal)
+    } else {
+      setLoadError(false)
+      setSaveErrorMessage(undefined)
     }
 
     return () => {
@@ -329,10 +335,10 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
         }
       }
 
-      if (!values.max_cj_fee_abs) {
+      if (!values.max_cj_fee_abs || values.max_cj_fee_abs <= 0) {
         errors.max_cj_fee_abs = t('settings.fees.feedback_invalid_max_cj_fee_abs')
       }
-      if (!values.max_cj_fee_rel) {
+      if (!values.max_cj_fee_rel || values.max_cj_fee_rel <= 0) {
         errors.max_cj_fee_rel = t('settings.fees.feedback_invalid_max_cj_fee_rel')
       }
       return errors
@@ -347,6 +353,8 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
   const confirm = async (feeValues: FeeValues) => {
     const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
     if (!allValuesPresent) return
+
+    setSaveErrorMessage(undefined)
 
     const updates = [
       {
@@ -363,13 +371,19 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       },
     ]
 
+    setIsSubmitting(true)
     try {
-      await updateConfigValues({
-        updates,
-      })
+      await updateConfigValues({ updates })
+
       onHide()
-    } catch (e) {
-      console.error(e)
+    } catch (err) {
+      setSaveErrorMessage(
+        t('settings.fees.error_saving_fee_config_failed', {
+          reason: err instanceof Error ? err.message : 'Unknown',
+        })
+      )
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -407,12 +421,32 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
         </>
       </rb.Modal.Body>
       <rb.Modal.Footer className={styles.modalFooter}>
-        <rb.Button variant="light" onClick={cancel} className="d-flex justify-content-center align-items-center">
-          {t('settings.fees.text_button_cancel')}
-        </rb.Button>
-        <rb.Button variant="dark" type="submit" disabled={isLoading} onClick={() => formRef.current?.requestSubmit()}>
-          {t('settings.fees.text_button_submit')}
-        </rb.Button>
+        {saveErrorMessage && (
+          <rb.Alert variant="danger" className="w-100">
+            {saveErrorMessage}
+          </rb.Alert>
+        )}
+        <div className={styles.buttonContainer}>
+          <rb.Button variant="light" onClick={cancel} className="d-flex justify-content-center align-items-center">
+            {t('settings.fees.text_button_cancel')}
+          </rb.Button>
+          <rb.Button
+            variant="dark"
+            type="submit"
+            className="d-flex justify-content-center align-items-center"
+            disabled={isLoading || isSubmitting}
+            onClick={() => formRef.current?.requestSubmit()}
+          >
+            {isSubmitting ? (
+              <>
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                {t('settings.fees.text_button_submitting')}
+              </>
+            ) : (
+              t('settings.fees.text_button_submit')
+            )}
+          </rb.Button>
+        </div>
       </rb.Modal.Footer>
     </rb.Modal>
   )

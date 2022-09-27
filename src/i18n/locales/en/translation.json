@@ -173,7 +173,7 @@
     "fees": {
       "title": "Fee configuration",
       "description": "Change the fee settings according to your needs. Please keep in mind, that these settings are only valid for the lifetime of the service. i.e. they will be reset to default values in case of reboot or instance shutdown.",
-      "radio_tx_fees_blocks": "targeted blocks",
+      "radio_tx_fees_blocks": "Targeted blocks",
       "radio_tx_fees_satspervbyte": "sats/vByte",
       "label_tx_fees": "Transaction fee",
       "description_tx_fees_blocks": "The fee estimate is based on a projection of how many sats are needed to get in one of the next N blocks. The cost estimate is high if you set N=1, meaning you want your transaction confirmed in the very next block. e.g. if you set it to 20 you are asking to use whatever Bitcoin Core thinks is a realistic fee to get confirmation within the next 20 blocks.",
@@ -189,7 +189,10 @@
       "description_max_cj_fee_rel": "Maximum relative collaborative transaction fee, in fractions of the value. e.g. if your amount is 2 BTC (200 million satoshi) and fee is 0.1%, the maximum fee allowed would be 0.002 BTC (200 000 satoshi).",
       "feedback_invalid_max_cj_fee_rel": "Please provide a valid maximum relative fee",
       "text_button_cancel": "Cancel",
-      "text_button_submit": "Save"
+      "text_button_submit": "Save",
+      "text_button_submitting": "Saving...",
+      "error_loading_fee_config_failed": "Error while loading fee config values. ",
+      "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}"
     }
   },
   "logs": {

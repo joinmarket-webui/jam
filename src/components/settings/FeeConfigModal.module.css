@@ -14,15 +14,15 @@
   font-size: 1.2rem;
 }
 
-.modalFooter {
+.modalFooter .buttonContainer {
+  width: 100%;
   display: flex !important;
   justify-content: center !important;
   gap: 1rem;
   background-color: transparent !important;
-  padding: 1rem 1.25rem 1.25rem 1.25rem !important;
 }
 
-.modalFooter :global .btn {
+.modalFooter .buttonContainer :global .btn {
   flex-grow: 1;
   min-height: 2.8rem;
   font-weight: 500;
