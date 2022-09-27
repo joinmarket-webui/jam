@@ -127,7 +127,7 @@ const FeeConfigForm = forwardRef(
                       <Sprite symbol="sats" width="24" height="24" />/ vB
                     </>
                   ) : (
-                    <>blocks</>
+                    <Sprite symbol="block" width="24" height="24" name="Block" />
                   )}
                 </rb.InputGroup.Text>
 

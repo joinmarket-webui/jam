@@ -176,7 +176,7 @@
       "radio_tx_fees_blocks": "Targeted blocks",
       "radio_tx_fees_satspervbyte": "sats/vByte",
       "label_tx_fees": "Transaction fee",
-      "description_tx_fees_blocks": "The fee estimate is based on a projection of how many sats are needed to get in one of the next N blocks. The cost estimate is high if you set N=1, meaning you want your transaction confirmed in the very next block. e.g. if you set it to 20 you are asking to use whatever Bitcoin Core thinks is a realistic fee to get confirmation within the next 20 blocks.",
+      "description_tx_fees_blocks": "The fee estimate is based on a projection of how many sats are needed to get in one of the next N blocks. e.g. if you set it to 20 you are asking to use whatever Bitcoin Core thinks is a realistic fee to get confirmation within the next 20 blocks.",
       "description_tx_fees_satspervbyte": "The fee in satoshi per vbyte used to pay for transactions. A transaction without privacy improvements with one input and two outputs is about 250 bytes, a collaborative transaction can be a multiple of that depending on the number of collaborators and their inputs.",
       "feedback_invalid_tx_fees_blocks": "Please provide a valid block target between {{ min }} and {{ max }}.",
       "feedback_invalid_tx_fees_satspervbyte": "Please provide a valid transaction fee in sats/vByte between {{ min }} and {{ max }}.",
