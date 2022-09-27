@@ -1,0 +1,30 @@
+.feeConfigModal form input:not([type='checkbox']) {
+  height: 3.5rem;
+}
+
+.feeConfigModal form :global .form-label {
+  margin-bottom: 0.25rem;
+}
+
+.inputGroupText {
+  width: 5ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.modalFooter {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1rem;
+  background-color: transparent !important;
+  padding: 1rem 1.25rem 1.25rem 1.25rem !important;
+}
+
+.modalFooter :global .btn {
+  flex-grow: 1;
+  min-height: 2.8rem;
+  font-weight: 500;
+  border-color: none !important;
+}

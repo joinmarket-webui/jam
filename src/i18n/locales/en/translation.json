@@ -154,6 +154,7 @@
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
     "show_logs": "Show logs",
+    "show_fee_config": "Show fee configuration",
     "button_lock_wallet": "Lock wallet",
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
@@ -168,7 +169,28 @@
     "jam_twitter": "Jam Twitter",
     "confirm_locking_modal_title": "Lock Wallet",
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
-    "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background."
+    "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
+    "fees": {
+      "title": "Fee configuration",
+      "description": "Change the fee settings according to your needs. Please keep in mind, that these settings are only valid for the lifetime of the service. i.e. they will be reset to default values in case of reboot or instance shutdown.",
+      "radio_tx_fees_blocks": "targeted blocks",
+      "radio_tx_fees_satspervbyte": "sats/vByte",
+      "label_tx_fees": "Transaction fee",
+      "description_tx_fees_blocks": "The fee estimate is based on a projection of how many sats are needed to get in one of the next N blocks. The cost estimate is high if you set N=1, meaning you want your transaction confirmed in the very next block. e.g. if you set it to 20 you are asking to use whatever Bitcoin Core thinks is a realistic fee to get confirmation within the next 20 blocks.",
+      "description_tx_fees_satspervbyte": "The fee in satoshi per vbyte used to pay for transactions. A transaction without privacy improvements with one input and two outputs is about 250 bytes, a collaborative transaction can be a multiple of that depending on the number of collaborators and their inputs.",
+      "feedback_invalid_tx_fees_blocks": "Please provide a valid block target between {{ min }} and {{ max }}.",
+      "feedback_invalid_tx_fees_satspervbyte": "Please provide a valid transaction fee in sats/vByte between {{ min }} and {{ max }}.",
+      "title_max_cj_fee": "Collaborative transaction fees limits",
+      "subtitle_max_cj_fee": "Both limits given in this section, relative and absolute, must be exceeded in order to not consider a certain offer.",
+      "label_max_cj_fee_abs": "Maximum absolute fee",
+      "description_max_cj_fee_abs": "Maximum absolute collaborative transaction fee in satoshi to pay to a single market maker for a transaction. e.g. if your max amount is 30 000 sats and you choose 9 makers, the maximum fee allowed would be 270 000 satoshi (0.0027 BTC).",
+      "feedback_invalid_max_cj_fee_abs": "Please provide a valid maximum relative fee",
+      "label_max_cj_fee_rel": "Maximum relative fee {{ fee }}",
+      "description_max_cj_fee_rel": "Maximum relative collaborative transaction fee, in fractions of the value. e.g. if your amount is 2 BTC (200 million satoshi) and fee is 0.1%, the maximum fee allowed would be 0.002 BTC (200 000 satoshi).",
+      "feedback_invalid_max_cj_fee_rel": "Please provide a valid maximum relative fee",
+      "text_button_cancel": "Cancel",
+      "text_button_submit": "Save"
+    }
   },
   "logs": {
     "title": "Logs",
