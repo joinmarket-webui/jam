@@ -154,7 +154,7 @@
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
     "show_logs": "Show logs",
-    "show_fee_config": "Set fee limits",
+    "show_fee_config": "Adjust fee limits",
     "button_lock_wallet": "Lock wallet",
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
