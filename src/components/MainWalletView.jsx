@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
-import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import { walletDisplayName } from '../utils'
@@ -41,13 +41,12 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
   )
 }
 
-export default function MainWalletView() {
+export default function MainWalletView({ wallet }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
-  const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
@@ -101,7 +100,7 @@ export default function MainWalletView() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, reloadCurrentWalletInfo, t])
+  }, [wallet, reloadCurrentWalletInfo, t])
 
   return (
     <div>
@@ -119,14 +118,14 @@ export default function MainWalletView() {
           initialAccountIndex={selectedAccountIndex}
           utxosByAccount={utxosByAccount}
           walletInfo={currentWalletInfo}
-          wallet={currentWallet}
+          wallet={wallet}
           isShown={isAccountOverlayShown}
           onHide={() => setIsAccountOverlayShown(false)}
         />
       )}
       <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
         <WalletHeader
-          name={currentWallet?.name}
+          name={wallet.name}
           balance={currentWalletInfo?.balanceSummary.totalBalance}
           unit={settings.unit}
           showBalance={settings.showBalance}
