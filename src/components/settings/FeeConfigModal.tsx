@@ -6,6 +6,7 @@ import { useRefreshConfigValues, useUpdateConfigValues } from '../../context/Ser
 import Sprite from '../Sprite'
 import styles from './FeeConfigModal.module.css'
 import SegmentedTabs from '../SegmentedTabs'
+import { factorToPercentage, percentageToFactor } from '../../utils'
 
 type SatsPerKiloVByte = number
 
@@ -18,21 +19,6 @@ const TX_FEES_FACTOR_MIN = 0.1 // 10% - no enforcement by JM - this should be a 
 const TX_FEES_FACTOR_MAX = 1 // 100%
 const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
 const CJ_FEE_REL_MAX = 0.5 // 50% - no enforcement by JM - this should be a "sane" max value
-
-// TODO: move to utils
-const percentageToFactor = (val: number, precision = 6) => {
-  // Value cannot just be divided
-  // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
-  // but: ✓ Number((0.0027 / 100).toFixed(6)) = 0.000027
-  return Number((val / 100).toFixed(precision))
-}
-
-const factorToPercentage = (val: number, precision = 6) => {
-  // Value cannot just be divided
-  // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
-  // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
-  return Number((val * 100).toFixed(precision))
-}
 
 const calcMinTxFeeValue = (txFeeFactor: number): SatsPerKiloVByte => {
   return TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE + TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE * txFeeFactor

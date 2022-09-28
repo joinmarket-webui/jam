@@ -46,3 +46,17 @@ export const shortenStringMiddle = (value: string, chars = 8, separator = '…')
   }
   return `${value.substring(0, prefixLength)}${separator}${value.substring(value.length - prefixLength)}`
 }
+
+export const percentageToFactor = (val: number, precision = 6) => {
+  // Value cannot just be divided
+  // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
+  // but: ✓ Number((0.0027 / 100).toFixed(6)) = 0.000027
+  return Number((val / 100).toFixed(precision))
+}
+
+export const factorToPercentage = (val: number, precision = 6) => {
+  // Value cannot just be divided
+  // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
+  // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
+  return Number((val * 100).toFixed(precision))
+}
