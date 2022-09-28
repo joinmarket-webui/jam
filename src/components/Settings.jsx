@@ -1,17 +1,14 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
-import Seedphrase from './Seedphrase'
-import ToggleSwitch from './ToggleSwitch'
 import Alert from './Alert'
 import { LogOverlay } from './LogOverlay'
 import { ConfirmModal } from './Modal'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
-import { useCurrentWallet } from '../context/WalletContext'
 import { useServiceInfo } from '../context/ServiceInfoContext'
-import { SATS, BTC, walletDisplayName } from '../utils'
+import { SATS, BTC } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { fetchFeatures } from '../libs/JamApi'
 import { routes } from '../constants/routes'
@@ -19,7 +16,7 @@ import languages from '../i18n/languages'
 import styles from './Settings.module.css'
 import SeedModal from './settings/SeedModal'
 
-export default function Settings({ stopWallet }) {
+export default function Settings({ wallet, stopWallet }) {
   const [showingSeed, setShowingSeed] = useState(false)
   const [lockingWallet, setLockingWallet] = useState(false)
   const [showConfirmLockModal, setShowConfirmLockModal] = useState(null)
@@ -31,7 +28,6 @@ export default function Settings({ stopWallet }) {
   const settings = useSettings()
   const settingsDispatch = useSettingsDispatch()
   const { i18n } = useTranslation()
-  const currentWallet = useCurrentWallet()
   const navigate = useNavigate()
   const serviceInfo = useServiceInfo()
 
@@ -55,7 +51,7 @@ export default function Settings({ stopWallet }) {
       setLockingWallet(true)
 
       try {
-        const { name: walletName, token } = currentWallet
+        const { name: walletName, token } = wallet
         const res = await Api.getWalletLock({ walletName, token })
 
         setLockingWallet(false)
@@ -70,12 +66,12 @@ export default function Settings({ stopWallet }) {
         setAlert({ variant: 'danger', dismissible: false, message: e.message })
       }
     },
-    [currentWallet, stopWallet, navigate, serviceInfo]
+    [wallet, stopWallet, navigate, serviceInfo]
   )
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    fetchFeatures({ token: currentWallet?.token, signal: abortCtrl.signal })
+    fetchFeatures({ token: wallet.token, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
       .then((data) => data && data.features)
       .then((features) => {
@@ -90,7 +86,7 @@ export default function Settings({ stopWallet }) {
     return () => {
       abortCtrl.abort()
     }
-  }, [currentWallet])
+  }, [wallet])
 
   return (
     <div className={styles.settings}>
@@ -165,34 +161,24 @@ export default function Settings({ stopWallet }) {
             </rb.Dropdown.Menu>
           </rb.Dropdown>
 
-          {currentWallet && showLogsEnabled && (
+          {showLogsEnabled && (
             <>
               <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={() => setShowingLogs(true)}>
                 <Sprite symbol="console" width="24" height="24" />
                 {t('settings.show_logs')}
               </rb.Button>
-              <LogOverlay currentWallet={currentWallet} show={showingLogs} onHide={() => setShowingLogs(false)} />
+              <LogOverlay currentWallet={wallet} show={showingLogs} onHide={() => setShowingLogs(false)} />
             </>
           )}
         </div>
 
         <div className={styles['section-title']}>{t('settings.section_title_wallet')}</div>
         <div className={styles['settings-group-container']}>
-          {currentWallet && (
-            <>
-              <rb.Button
-                variant="outline-dark"
-                className={styles['settings-btn']}
-                onClick={(e) => setShowingSeed(true)}
-              >
-                <Sprite symbol="mnemonic" width="24" height="24" />
-                {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
-              </rb.Button>
-              {showingSeed && (
-                <SeedModal wallet={currentWallet} show={showingSeed} onHide={() => setShowingSeed(false)} />
-              )}
-            </>
-          )}
+          <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
+            <Sprite symbol="mnemonic" width="24" height="24" />
+            {showingSeed ? t('settings.hide_seed') : t('settings.show_seed')}
+          </rb.Button>
+          {showingSeed && <SeedModal wallet={wallet} show={showingSeed} onHide={() => setShowingSeed(false)} />}
 
           <rb.Button
             variant="outline-dark"

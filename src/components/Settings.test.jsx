@@ -1,16 +1,25 @@
-import React from 'react'
 import { render, screen } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
 import Settings from './Settings'
 
+const dummyWalletName = 'dummy.jmdat'
+const dummyToken = 'dummyToken'
+
 describe('<Settings />', () => {
-  const setup = () => {
-    render(<Settings />)
+  const setup = ({ wallet }) => {
+    render(<Settings wallet={wallet} />)
   }
 
-  it('should render settings without errors', () => {
-    act(setup)
+  it('should render settings without errors', async () => {
+    await act(async () =>
+      setup({
+        wallet: {
+          name: dummyWalletName,
+          token: dummyToken,
+        },
+      })
+    )
 
     expect(screen.getByText('settings.title')).toBeVisible()
     expect(screen.queryByText(/settings.(show|hide)_balance/)).toBeVisible()
