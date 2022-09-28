@@ -86,7 +86,7 @@ export default function App() {
                     <Route path={routes.jam} element={<Jam wallet={currentWallet} />} />
                     <Route path={routes.send} element={<Send wallet={currentWallet} />} />
                     <Route path={routes.earn} element={<Earn wallet={currentWallet} />} />
-                    <Route path={routes.receive} element={<Receive />} />
+                    <Route path={routes.receive} element={<Receive wallet={currentWallet} />} />
                     <Route
                       path={routes.settings}
                       element={<Settings wallet={currentWallet} stopWallet={stopWallet} />}
