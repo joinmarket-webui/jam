@@ -9,7 +9,7 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import JarSelectorModal from './JarSelectorModal'
 
-import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
+import { useReloadCurrentWalletInfo, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
@@ -214,9 +214,8 @@ function SweepAccordionToggle({ eventKey }) {
   )
 }
 
-export default function Send() {
+export default function Send({ wallet }) {
   const { t } = useTranslation()
-  const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
 
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
