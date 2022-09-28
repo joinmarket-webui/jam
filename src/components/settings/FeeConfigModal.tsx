@@ -10,8 +10,8 @@ import SegmentedTabs from '../SegmentedTabs'
 type SatsPerKiloVByte = number
 
 const TX_FEES_BLOCKS_MIN = 1
-const TX_FEES_BLOCKS_MAX = 999
-const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
+const TX_FEES_BLOCKS_MAX = 1_000
+const TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
 const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 100_000 // 100 sats/vbyte - no enforcement by JM - this should be a "sane" max value
 const TX_FEES_FACTOR_DEFAULT_VAL = 0.2 // 20%
 const TX_FEES_FACTOR_MIN = 0.1 // 10% - no enforcement by JM - this should be a "sane" min value
@@ -35,7 +35,7 @@ const factorToPercentage = (val: number, precision = 6) => {
 }
 
 const calcMinTxFeeValue = (txFeeFactor: number): SatsPerKiloVByte => {
-  return TX_FEES_SATSPERKILOVBYTE_MIN + TX_FEES_SATSPERKILOVBYTE_MIN * txFeeFactor
+  return TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE + TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE * txFeeFactor
 }
 
 const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
@@ -164,7 +164,7 @@ const FeeConfigForm = forwardRef(
                           }}
                           isValid={touched.tx_fees && !errors.tx_fees}
                           isInvalid={touched.tx_fees && !!errors.tx_fees}
-                          min={TX_FEES_SATSPERKILOVBYTE_MIN / 1_000}
+                          min={TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE / 1_000}
                           step={0.001}
                         />
                       ) : (
@@ -408,7 +408,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     (values: FeeValues, txFeesUnit: TxFeeValueUnit) => {
       const errors = {} as FormikErrors<FeeValues>
 
-      let minTxFeesInSatsPerKiloVByte = TX_FEES_SATSPERKILOVBYTE_MIN
+      let minTxFeesInSatsPerKiloVByte = TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE
       if (
         !isValidNumber(values.tx_fees_factor) ||
         values.tx_fees_factor! < TX_FEES_FACTOR_MIN ||
@@ -425,6 +425,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       if (txFeesUnit === 'sats/kilo-vbyte') {
         if (
           !isValidNumber(values.tx_fees) ||
+          values.tx_fees! <= TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE ||
           values.tx_fees! < minTxFeesInSatsPerKiloVByte ||
           values.tx_fees! > TX_FEES_SATSPERKILOVBYTE_MAX
         ) {
@@ -444,8 +445,8 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
           values.tx_fees! > TX_FEES_BLOCKS_MAX
         ) {
           errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_blocks', {
-            min: TX_FEES_BLOCKS_MIN,
-            max: TX_FEES_BLOCKS_MAX,
+            min: TX_FEES_BLOCKS_MIN.toLocaleString(),
+            max: TX_FEES_BLOCKS_MAX.toLocaleString(),
           })
         }
       }
