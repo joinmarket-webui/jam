@@ -38,6 +38,8 @@ const calcMinTxFeeValue = (txFeeFactor: number): SatsPerKiloVByte => {
   return TX_FEES_SATSPERKILOVBYTE_MIN + TX_FEES_SATSPERKILOVBYTE_MIN * txFeeFactor
 }
 
+const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
+
 const FEE_KEYS = {
   tx_fees: { section: 'POLICY', field: 'tx_fees' },
   tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
@@ -153,16 +155,16 @@ const FeeConfigForm = forwardRef(
                           name="tx_fees"
                           type="number"
                           placeholder="1"
-                          value={values.tx_fees ? Number(values.tx_fees / 1_000) : values.tx_fees || ''}
+                          value={isValidNumber(values.tx_fees) ? values.tx_fees! / 1_000 : ''}
                           disabled={isSubmitting}
                           onBlur={handleBlur}
-                          isValid={touched.tx_fees && !errors.tx_fees}
-                          isInvalid={touched.tx_fees && !!errors.tx_fees}
                           onChange={(e) => {
                             const value = parseFloat(e.target.value)
-                            setFieldValue('tx_fees', value * 1000, true)
+                            setFieldValue('tx_fees', value * 1_000, true)
                           }}
-                          min={TX_FEES_SATSPERKILOVBYTE_MIN / 1000}
+                          isValid={touched.tx_fees && !errors.tx_fees}
+                          isInvalid={touched.tx_fees && !!errors.tx_fees}
+                          min={TX_FEES_SATSPERKILOVBYTE_MIN / 1_000}
                           step={0.001}
                         />
                       ) : (
@@ -175,9 +177,9 @@ const FeeConfigForm = forwardRef(
                           value={values.tx_fees}
                           disabled={isSubmitting}
                           onBlur={handleBlur}
+                          onChange={handleChange}
                           isValid={touched.tx_fees && !errors.tx_fees}
                           isInvalid={touched.tx_fees && !!errors.tx_fees}
-                          onChange={handleChange}
                           min={1}
                           max={999}
                           step={1}
@@ -190,10 +192,9 @@ const FeeConfigForm = forwardRef(
                   <rb.Form.Group controlId="tx_fees_factor" className="mb-4">
                     <rb.Form.Label>
                       {t('settings.fees.label_tx_fees_factor', {
-                        fee:
-                          typeof values.tx_fees_factor === 'number'
-                            ? `(${factorToPercentage(values.tx_fees_factor)}%)`
-                            : '',
+                        fee: isValidNumber(values.tx_fees_factor)
+                          ? `(${factorToPercentage(values.tx_fees_factor!)}%)`
+                          : '',
                       })}
                     </rb.Form.Label>
                     <rb.Form.Text>{t('settings.fees.description_tx_fees_factor')}</rb.Form.Text>
@@ -203,24 +204,23 @@ const FeeConfigForm = forwardRef(
                       </rb.InputGroup.Text>
                       <rb.Form.Control
                         aria-label={t('settings.fees.label_tx_fees_factor', {
-                          fee:
-                            typeof values.tx_fees_factor === 'number'
-                              ? `(${factorToPercentage(values.tx_fees_factor)}%)`
-                              : '',
+                          fee: isValidNumber(values.tx_fees_factor)
+                            ? `(${factorToPercentage(values.tx_fees_factor!)}%)`
+                            : '',
                         })}
                         className="slashed-zeroes"
                         name="tx_fees_factor"
                         type="number"
                         placeholder="0"
-                        value={(values.tx_fees_factor && factorToPercentage(values.tx_fees_factor)) || ''}
+                        value={isValidNumber(values.tx_fees_factor) ? factorToPercentage(values.tx_fees_factor!) : ''}
                         disabled={isSubmitting}
                         onBlur={handleBlur}
-                        isValid={touched.tx_fees_factor && !errors.tx_fees_factor}
-                        isInvalid={touched.tx_fees_factor && !!errors.tx_fees_factor}
                         onChange={(e) => {
                           const value = parseFloat(e.target.value)
                           setFieldValue('tx_fees_factor', percentageToFactor(value), true)
                         }}
+                        isValid={touched.tx_fees_factor && !errors.tx_fees_factor}
+                        isInvalid={touched.tx_fees_factor && !!errors.tx_fees_factor}
                         min={factorToPercentage(TX_FEES_FACTOR_MIN)}
                         max={factorToPercentage(TX_FEES_FACTOR_MAX)}
                         step={0.01}
@@ -249,8 +249,8 @@ const FeeConfigForm = forwardRef(
                         placeholder="1"
                         value={values.max_cj_fee_abs}
                         disabled={isSubmitting}
-                        onChange={handleChange}
                         onBlur={handleBlur}
+                        onChange={handleChange}
                         isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
                         isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
                         min={1}
@@ -263,10 +263,9 @@ const FeeConfigForm = forwardRef(
                   <rb.Form.Group controlId="max_cj_fee_rel" className="mb-4">
                     <rb.Form.Label>
                       {t('settings.fees.label_max_cj_fee_rel', {
-                        fee:
-                          typeof values.max_cj_fee_rel === 'number'
-                            ? `(${factorToPercentage(values.max_cj_fee_rel)}%)`
-                            : '',
+                        fee: isValidNumber(values.max_cj_fee_rel)
+                          ? `(${factorToPercentage(values.max_cj_fee_rel!)}%)`
+                          : '',
                       })}
                     </rb.Form.Label>
                     <rb.Form.Text>{t('settings.fees.description_max_cj_fee_rel')}</rb.Form.Text>
@@ -276,24 +275,23 @@ const FeeConfigForm = forwardRef(
                       </rb.InputGroup.Text>
                       <rb.Form.Control
                         aria-label={t('settings.fees.label_max_cj_fee_rel', {
-                          fee:
-                            typeof values.max_cj_fee_rel === 'number'
-                              ? `(${factorToPercentage(values.max_cj_fee_rel)}%)`
-                              : '',
+                          fee: isValidNumber(values.max_cj_fee_rel)
+                            ? `(${factorToPercentage(values.max_cj_fee_rel!)}%)`
+                            : '',
                         })}
                         className="slashed-zeroes"
                         name="max_cj_fee_rel"
                         type="number"
                         placeholder="0"
-                        value={(values.max_cj_fee_rel && factorToPercentage(values.max_cj_fee_rel)) || ''}
+                        value={isValidNumber(values.max_cj_fee_rel) ? factorToPercentage(values.max_cj_fee_rel!) : ''}
                         disabled={isSubmitting}
                         onBlur={handleBlur}
-                        isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
-                        isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
                         onChange={(e) => {
                           const value = parseFloat(e.target.value)
                           setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
                         }}
+                        isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
+                        isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
                         min={factorToPercentage(CJ_FEE_REL_MIN)}
                         max={factorToPercentage(CJ_FEE_REL_MAX)}
                         step={0.0001}
@@ -365,66 +363,6 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     }
   }, [show, refreshConfigValues])
 
-  const validate = useCallback(
-    (values: FeeValues, txFeesUnit: TxFeeValueUnit) => {
-      const errors = {} as FormikErrors<FeeValues>
-
-      let minTxFeesInSatsPerKiloVByte = TX_FEES_SATSPERKILOVBYTE_MIN
-      if (
-        !values.tx_fees_factor ||
-        values.tx_fees_factor < TX_FEES_FACTOR_MIN ||
-        values.tx_fees_factor > TX_FEES_FACTOR_MAX
-      ) {
-        errors.tx_fees_factor = t('settings.fees.feedback_invalid_tx_fees_factor', {
-          min: `${factorToPercentage(TX_FEES_FACTOR_MIN)}%`,
-          max: `${factorToPercentage(TX_FEES_FACTOR_MAX)}%`,
-        })
-      } else {
-        minTxFeesInSatsPerKiloVByte = calcMinTxFeeValue(values.tx_fees_factor)
-      }
-
-      if (txFeesUnit === 'sats/kilo-vbyte') {
-        if (
-          !values.tx_fees ||
-          values.tx_fees < minTxFeesInSatsPerKiloVByte ||
-          values.tx_fees > TX_FEES_SATSPERKILOVBYTE_MAX
-        ) {
-          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
-            min: (minTxFeesInSatsPerKiloVByte / 1_000).toLocaleString(undefined, {
-              maximumFractionDigits: Math.log10(1_000),
-            }),
-            max: (TX_FEES_SATSPERKILOVBYTE_MAX / 1_000).toLocaleString(undefined, {
-              maximumFractionDigits: Math.log10(1_000),
-            }),
-          })
-        }
-      } else {
-        if (!values.tx_fees || values.tx_fees < TX_FEES_BLOCKS_MIN || values.tx_fees > TX_FEES_BLOCKS_MAX) {
-          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_blocks', {
-            min: TX_FEES_BLOCKS_MIN,
-            max: TX_FEES_BLOCKS_MAX,
-          })
-        }
-      }
-
-      if (!values.max_cj_fee_abs || values.max_cj_fee_abs <= 0) {
-        errors.max_cj_fee_abs = t('settings.fees.feedback_invalid_max_cj_fee_abs')
-      }
-      if (!values.max_cj_fee_rel || values.max_cj_fee_rel <= CJ_FEE_REL_MIN || values.max_cj_fee_rel > CJ_FEE_REL_MAX) {
-        errors.max_cj_fee_rel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {
-          min: `${factorToPercentage(CJ_FEE_REL_MIN)}%`,
-          max: `${factorToPercentage(CJ_FEE_REL_MAX)}%`,
-        })
-      }
-      return errors
-    },
-    [t]
-  )
-
-  const cancel = () => {
-    onHide()
-  }
-
   const submit = async (feeValues: FeeValues) => {
     const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
     if (!allValuesPresent) return
@@ -464,6 +402,74 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
         })
       )
     }
+  }
+
+  const validate = useCallback(
+    (values: FeeValues, txFeesUnit: TxFeeValueUnit) => {
+      const errors = {} as FormikErrors<FeeValues>
+
+      let minTxFeesInSatsPerKiloVByte = TX_FEES_SATSPERKILOVBYTE_MIN
+      if (
+        !isValidNumber(values.tx_fees_factor) ||
+        values.tx_fees_factor! < TX_FEES_FACTOR_MIN ||
+        values.tx_fees_factor! > TX_FEES_FACTOR_MAX
+      ) {
+        errors.tx_fees_factor = t('settings.fees.feedback_invalid_tx_fees_factor', {
+          min: `${factorToPercentage(TX_FEES_FACTOR_MIN)}%`,
+          max: `${factorToPercentage(TX_FEES_FACTOR_MAX)}%`,
+        })
+      } else {
+        minTxFeesInSatsPerKiloVByte = calcMinTxFeeValue(values.tx_fees_factor!)
+      }
+
+      if (txFeesUnit === 'sats/kilo-vbyte') {
+        if (
+          !isValidNumber(values.tx_fees) ||
+          values.tx_fees! < minTxFeesInSatsPerKiloVByte ||
+          values.tx_fees! > TX_FEES_SATSPERKILOVBYTE_MAX
+        ) {
+          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
+            min: (minTxFeesInSatsPerKiloVByte / 1_000).toLocaleString(undefined, {
+              maximumFractionDigits: Math.log10(1_000),
+            }),
+            max: (TX_FEES_SATSPERKILOVBYTE_MAX / 1_000).toLocaleString(undefined, {
+              maximumFractionDigits: Math.log10(1_000),
+            }),
+          })
+        }
+      } else {
+        if (
+          !isValidNumber(values.tx_fees) ||
+          values.tx_fees! < TX_FEES_BLOCKS_MIN ||
+          values.tx_fees! > TX_FEES_BLOCKS_MAX
+        ) {
+          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_blocks', {
+            min: TX_FEES_BLOCKS_MIN,
+            max: TX_FEES_BLOCKS_MAX,
+          })
+        }
+      }
+
+      if (!isValidNumber(values.max_cj_fee_abs) || values.max_cj_fee_abs! <= 0) {
+        errors.max_cj_fee_abs = t('settings.fees.feedback_invalid_max_cj_fee_abs')
+      }
+      if (
+        !isValidNumber(values.max_cj_fee_rel) ||
+        values.max_cj_fee_rel! <= CJ_FEE_REL_MIN ||
+        values.max_cj_fee_rel! > CJ_FEE_REL_MAX
+      ) {
+        errors.max_cj_fee_rel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {
+          min: `${factorToPercentage(CJ_FEE_REL_MIN)}%`,
+          max: `${factorToPercentage(CJ_FEE_REL_MAX)}%`,
+        })
+      }
+      return errors
+    },
+    [t]
+  )
+
+  const cancel = () => {
+    onHide()
   }
 
   return (
