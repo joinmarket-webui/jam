@@ -5,7 +5,7 @@ import { Formik, useFormikContext } from 'formik'
 import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
@@ -34,12 +34,11 @@ const ValuesListener = ({ handler }) => {
   return null
 }
 
-export default function Jam() {
+export default function Jam({ wallet }) {
   const { t } = useTranslation()
   const settings = useSettings()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
-  const wallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
