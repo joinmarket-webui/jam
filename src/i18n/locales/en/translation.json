@@ -171,7 +171,7 @@
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "fees": {
-      "title": "Fee limits",
+      "title": "Fee Limits",
       "description": "Adjust the fee limits according to your needs. These settings will be reset to default values when the JoinMarket service restarts, e.g. on a system reboot.",
       "title_general_fee_settings": "Mining fees",
       "radio_tx_fees_blocks": "Targeted blocks",
