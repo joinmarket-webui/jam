@@ -64,7 +64,7 @@ interface FeeValues {
 
 interface FeeConfigFormProps {
   initialValues: FeeValues
-  validate: (values: FeeValues) => FormikErrors<FeeValues>
+  validate: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => FormikErrors<FeeValues>
   onSubmit: (values: FeeValues) => void
 }
 
@@ -77,7 +77,7 @@ const FeeConfigForm = forwardRef(
     )
 
     return (
-      <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+      <Formik initialValues={initialValues} validate={(values) => validate(values, txFeesUnit)} onSubmit={onSubmit}>
         {({
           handleSubmit,
           setFieldValue,
@@ -366,7 +366,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
   }, [show, refreshConfigValues])
 
   const validate = useCallback(
-    (values: FeeValues) => {
+    (values: FeeValues, txFeesUnit: TxFeeValueUnit) => {
       const errors = {} as FormikErrors<FeeValues>
 
       let minTxFeesInSatsPerKiloVByte = TX_FEES_SATSPERKILOVBYTE_MIN
@@ -383,8 +383,6 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
         minTxFeesInSatsPerKiloVByte = calcMinTxFeeValue(values.tx_fees_factor)
       }
 
-      const txFeesUnit: TxFeeValueUnit =
-        values.tx_fees && values.tx_fees > TX_FEES_BLOCKS_MAX ? 'sats/kilo-vbyte' : 'blocks'
       if (txFeesUnit === 'sats/kilo-vbyte') {
         if (
           !values.tx_fees ||
@@ -456,15 +454,15 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     try {
       await updateConfigValues({ updates })
 
+      setIsSubmitting(false)
       onHide()
     } catch (err) {
+      setIsSubmitting(false)
       setSaveErrorMessage(
         t('settings.fees.error_saving_fee_config_failed', {
           reason: err instanceof Error ? err.message : 'Unknown',
         })
       )
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
