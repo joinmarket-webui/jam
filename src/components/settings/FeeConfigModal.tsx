@@ -82,7 +82,6 @@ const FeeConfigForm = forwardRef(
               <rb.Accordion.Item eventKey="0">
                 <rb.Accordion.Header>{t('settings.fees.title_general_fee_settings')}</rb.Accordion.Header>
                 <rb.Accordion.Body>
-                  <rb.Form.Label>{t('settings.fees.label_tx_fees')}</rb.Form.Label>
                   {txFeesUnit && (
                     <rb.Form.Group className="my-2 d-flex justify-content-center" controlId="offertype">
                       <SegmentedTabs
