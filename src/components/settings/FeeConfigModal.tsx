@@ -3,10 +3,10 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import { useRefreshConfigValues, useUpdateConfigValues } from '../../context/ServiceConfigContext'
+import { factorToPercentage, percentageToFactor } from '../../utils'
 import Sprite from '../Sprite'
 import styles from './FeeConfigModal.module.css'
 import SegmentedTabs from '../SegmentedTabs'
-import { factorToPercentage, percentageToFactor } from '../../utils'
 
 type SatsPerKiloVByte = number
 
@@ -17,6 +17,8 @@ const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 100_000 // 100 sats/vbyte
 const TX_FEES_FACTOR_DEFAULT_VAL = 0.2 // 20%
 const TX_FEES_FACTOR_MIN = 0.1 // 10% - no enforcement by JM - this should be a "sane" min value
 const TX_FEES_FACTOR_MAX = 1 // 100%
+const CJ_FEE_ABS_MIN = 1
+const CJ_FEE_ABS_MAX = 100_000_000 // 1 BTC - no enforcement by JM - this should be a "sane" max value
 const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
 const CJ_FEE_REL_MAX = 0.5 // 50% - no enforcement by JM - this should be a "sane" max value
 
@@ -233,7 +235,7 @@ const FeeConfigForm = forwardRef(
                         name="max_cj_fee_abs"
                         type="number"
                         placeholder="1"
-                        value={values.max_cj_fee_abs}
+                        value={isValidNumber(values.max_cj_fee_abs) ? values.max_cj_fee_abs : ''}
                         disabled={isSubmitting}
                         onBlur={handleBlur}
                         onChange={(e) => {
@@ -242,8 +244,9 @@ const FeeConfigForm = forwardRef(
                         }}
                         isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
                         isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
-                        min={1}
-                        step={1_000}
+                        min={CJ_FEE_ABS_MIN}
+                        max={CJ_FEE_ABS_MAX}
+                        step={1}
                       />
                       <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_abs}</rb.Form.Control.Feedback>
                     </rb.InputGroup>
@@ -440,9 +443,17 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
         }
       }
 
-      if (!isValidNumber(values.max_cj_fee_abs) || values.max_cj_fee_abs! <= 0) {
-        errors.max_cj_fee_abs = t('settings.fees.feedback_invalid_max_cj_fee_abs')
+      if (
+        !isValidNumber(values.max_cj_fee_abs) ||
+        values.max_cj_fee_abs! < CJ_FEE_ABS_MIN ||
+        values.max_cj_fee_abs! > CJ_FEE_ABS_MAX
+      ) {
+        errors.max_cj_fee_abs = t('settings.fees.feedback_invalid_max_cj_fee_abs', {
+          min: CJ_FEE_ABS_MIN.toLocaleString(),
+          max: CJ_FEE_ABS_MAX.toLocaleString(),
+        })
       }
+
       if (
         !isValidNumber(values.max_cj_fee_rel) ||
         values.max_cj_fee_rel! <= CJ_FEE_REL_MIN ||

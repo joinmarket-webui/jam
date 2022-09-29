@@ -188,7 +188,7 @@
       "subtitle_max_cj_fee": "Both limits given in this section, relative and absolute, must be exceeded in order to not consider a certain offer.",
       "label_max_cj_fee_abs": "Maximum fee per collaborator (absolute)",
       "description_max_cj_fee_abs": "The maximum fee you are willing to pay per collaborator. Example: when set to 30,000 sats, the maximum fee in total would be 270,000 sats when using the default of 9 collaborators.",
-      "feedback_invalid_max_cj_fee_abs": "Please provide a valid maximum relative fee",
+      "feedback_invalid_max_cj_fee_abs": "Please provide a valid maximum absolute fee between {{ min }} and {{ max }}.",
       "label_max_cj_fee_rel": "Maximum fee per transaction {{ fee }}",
       "description_max_cj_fee_rel": "The maximum fee you are willing to pay for a collaborative transaction, as a percentage of the transaction amount. Example: if you send 2 million sats and the maximum fee is set to 0.1%, you will pay 2,000 sats at most.",
       "feedback_invalid_max_cj_fee_rel": "Please provide a valid maximum relative fee between {{ min }} and {{ max }}.",
