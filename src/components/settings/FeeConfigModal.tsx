@@ -236,7 +236,10 @@ const FeeConfigForm = forwardRef(
                         value={values.max_cj_fee_abs}
                         disabled={isSubmitting}
                         onBlur={handleBlur}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value, 10)
+                          setFieldValue('max_cj_fee_abs', value, true)
+                        }}
                         isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
                         isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
                         min={1}
