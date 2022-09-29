@@ -21,7 +21,7 @@ const TX_FEES_FACTOR_MAX = 1 // 100%
 const CJ_FEE_ABS_MIN = 1
 const CJ_FEE_ABS_MAX = 100_000_000 // 1 BTC - no enforcement by JM - this should be a "sane" max value
 const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
-const CJ_FEE_REL_MAX = 0.5 // 50% - no enforcement by JM - this should be a "sane" max value
+const CJ_FEE_REL_MAX = 0.2 // 20% - no enforcement by JM - this should be a "sane" max value
 
 const calcMinTxFeeValue = (txFeeFactor: number): SatsPerKiloVByte => {
   return TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE + TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE * txFeeFactor
