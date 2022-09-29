@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from 'react-router-dom'
 import { routes } from '../constants/routes'
 import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
@@ -40,6 +40,66 @@ export default function App() {
     setCurrentWallet(null)
   }, [setCurrentWallet])
 
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route
+        id="base"
+        element={
+          <>
+            <Navbar />
+            <rb.Container as="main" className="py-4 py-sm-5">
+              {sessionConnectionError && (
+                <rb.Alert variant="danger">
+                  {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
+                </rb.Alert>
+              )}
+
+              <Layout />
+            </rb.Container>
+            <Footer />
+          </>
+        }
+      >
+        {/**
+         * This sections defines all routes that can be displayed, even if the connection
+         * to the backend is down, e.g. "create-wallet" shows the seed quiz and it is important
+         * that it stays visible in case the backend becomes unavailable.
+         */}
+        <Route id="create-wallet" path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
+        {/**
+         * This section defines all routes that are displayed only if the backend is reachable.
+         */}
+        {!sessionConnectionError && (
+          <>
+            <Route
+              id="wallets"
+              path={routes.home}
+              element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
+            />
+            {currentWallet && (
+              <>
+                <Route id="wallet" path={routes.wallet} element={<MainWalletView wallet={currentWallet} />} />
+                <Route id="jam" path={routes.jam} element={<Jam wallet={currentWallet} />} />
+                <Route id="send" path={routes.send} element={<Send wallet={currentWallet} />} />
+                <Route id="earn" path={routes.earn} element={<Earn wallet={currentWallet} />} />
+                <Route id="receive" path={routes.receive} element={<Receive wallet={currentWallet} />} />
+                <Route
+                  id="settings"
+                  path={routes.settings}
+                  element={<Settings wallet={currentWallet} stopWallet={stopWallet} />}
+                />
+              </>
+            )}
+            <Route id="404" path="*" element={<Navigate to={routes.home} replace={true} />} />
+          </>
+        )}
+      </Route>
+    ),
+    {
+      basename: window.JM.PUBLIC_PATH,
+    }
+  )
+
   if (settings.showOnboarding === true) {
     return (
       <rb.Container className="onboarding my-5">
@@ -52,54 +112,5 @@ export default function App() {
     )
   }
 
-  return (
-    <>
-      <Navbar />
-      <rb.Container as="main" className="py-4 py-sm-5">
-        {sessionConnectionError && (
-          <rb.Alert variant="danger">
-            {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
-          </rb.Alert>
-        )}
-        <Routes>
-          {/**
-           * This sections defines all routes that can be displayed, even if the connection
-           * to the backend is down, e.g. "create-wallet" shows the seed quiz and it is important
-           * that it stays visible in case the backend becomes unavailable.
-           */}
-          <Route element={<Layout />}>
-            <Route path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
-          </Route>
-          {/**
-           * This section defines all routes that are displayed only if the backend is reachable.
-           */}
-          {!sessionConnectionError && (
-            <>
-              <Route element={<Layout />}>
-                <Route
-                  path={routes.home}
-                  element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
-                />
-                {currentWallet && (
-                  <>
-                    <Route path={routes.wallet} element={<MainWalletView wallet={currentWallet} />} />
-                    <Route path={routes.jam} element={<Jam wallet={currentWallet} />} />
-                    <Route path={routes.send} element={<Send wallet={currentWallet} />} />
-                    <Route path={routes.earn} element={<Earn wallet={currentWallet} />} />
-                    <Route path={routes.receive} element={<Receive wallet={currentWallet} />} />
-                    <Route
-                      path={routes.settings}
-                      element={<Settings wallet={currentWallet} stopWallet={stopWallet} />}
-                    />
-                  </>
-                )}
-              </Route>
-              <Route path="*" element={<Navigate to={routes.home} replace={true} />} />
-            </>
-          )}
-        </Routes>
-      </rb.Container>
-      <Footer />
-    </>
-  )
+  return <RouterProvider router={router} />
 }

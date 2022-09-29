@@ -1,3 +1,4 @@
+import { BrowserRouter } from 'react-router-dom'
 import { render, screen } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
@@ -8,7 +9,11 @@ const dummyToken = 'dummyToken'
 
 describe('<Settings />', () => {
   const setup = ({ wallet }) => {
-    render(<Settings wallet={wallet} />)
+    render(
+      <BrowserRouter>
+        <Settings wallet={wallet} />
+      </BrowserRouter>
+    )
   }
 
   it('should render settings without errors', async () => {

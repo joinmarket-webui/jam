@@ -1,4 +1,4 @@
-import React from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import { render, screen, waitFor } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
@@ -28,14 +28,16 @@ describe('<Wallet />', () => {
     coinjoinInProgress = false,
   }) => {
     render(
-      <Wallet
-        name={name}
-        lockWallet={lockWallet}
-        unlockWallet={unlockWallet}
-        isActive={isActive}
-        coinjoinInProgress={coinjoinInProgress}
-        makerRunning={makerRunning}
-      />
+      <BrowserRouter>
+        <Wallet
+          name={name}
+          lockWallet={lockWallet}
+          unlockWallet={unlockWallet}
+          isActive={isActive}
+          coinjoinInProgress={coinjoinInProgress}
+          makerRunning={makerRunning}
+        />
+      </BrowserRouter>
     )
   }
 
