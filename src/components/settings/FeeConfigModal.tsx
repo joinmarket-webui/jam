@@ -13,7 +13,8 @@ type SatsPerKiloVByte = number
 const TX_FEES_BLOCKS_MIN = 1
 const TX_FEES_BLOCKS_MAX = 1_000
 const TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
-const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 100_000 // 100 sats/vbyte - no enforcement by JM - this should be a "sane" max value
+// 350 sats/vbyte - no enforcement by JM - this should be a "sane" max value (taken default value of "absurd_fee_per_kb")
+const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 350_000
 const TX_FEES_FACTOR_DEFAULT_VAL = 0.2 // 20%
 const TX_FEES_FACTOR_MIN = 0 // 0%
 const TX_FEES_FACTOR_MAX = 1 // 100%
@@ -68,17 +69,7 @@ const FeeConfigForm = forwardRef(
 
     return (
       <Formik initialValues={initialValues} validate={(values) => validate(values, txFeesUnit)} onSubmit={onSubmit}>
-        {({
-          handleSubmit,
-          setFieldValue,
-          handleChange,
-          handleBlur,
-          validateForm,
-          values,
-          touched,
-          errors,
-          isSubmitting,
-        }) => (
+        {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
           <rb.Form ref={ref} onSubmit={handleSubmit} noValidate>
             <rb.Accordion flush>
               <rb.Accordion.Item eventKey="0">
@@ -153,6 +144,7 @@ const FeeConfigForm = forwardRef(
                           isValid={touched.tx_fees && !errors.tx_fees}
                           isInvalid={touched.tx_fees && !!errors.tx_fees}
                           min={TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE / 1_000}
+                          max={TX_FEES_SATSPERKILOVBYTE_MAX / 1_000}
                           step={0.001}
                         />
                       ) : (
