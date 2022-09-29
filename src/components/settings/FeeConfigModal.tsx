@@ -12,9 +12,10 @@ type SatsPerKiloVByte = number
 
 const TX_FEES_BLOCKS_MIN = 1
 const TX_FEES_BLOCKS_MAX = 1_000
-const TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
+const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
 // 350 sats/vbyte - no enforcement by JM - this should be a "sane" max value (taken default value of "absurd_fee_per_kb")
 const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 350_000
+const TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN = 1_001 // actual min of `tx_fees` if unit is sats/kilo-vbyte
 const TX_FEES_FACTOR_DEFAULT_VAL = 0.2 // 20%
 const TX_FEES_FACTOR_MIN = 0 // 0%
 const TX_FEES_FACTOR_MAX = 1 // 100%
@@ -22,10 +23,6 @@ const CJ_FEE_ABS_MIN = 1
 const CJ_FEE_ABS_MAX = 100_000_000 // 1 BTC - no enforcement by JM - this should be a "sane" max value
 const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
 const CJ_FEE_REL_MAX = 0.2 // 20% - no enforcement by JM - this should be a "sane" max value
-
-const calcMinTxFeeValue = (txFeeFactor: number): SatsPerKiloVByte => {
-  return TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE + TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE * txFeeFactor
-}
 
 const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
 
@@ -56,7 +53,7 @@ interface FeeValues {
 interface FeeConfigFormProps {
   initialValues: FeeValues
   validate: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => FormikErrors<FeeValues>
-  onSubmit: (values: FeeValues) => void
+  onSubmit: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => void
 }
 
 const FeeConfigForm = forwardRef(
@@ -68,7 +65,11 @@ const FeeConfigForm = forwardRef(
     )
 
     return (
-      <Formik initialValues={initialValues} validate={(values) => validate(values, txFeesUnit)} onSubmit={onSubmit}>
+      <Formik
+        initialValues={initialValues}
+        validate={(values) => validate(values, txFeesUnit)}
+        onSubmit={(values) => onSubmit(values, txFeesUnit)}
+      >
         {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
           <rb.Form ref={ref} onSubmit={handleSubmit} noValidate>
             <rb.Accordion flush>
@@ -143,7 +144,7 @@ const FeeConfigForm = forwardRef(
                           }}
                           isValid={touched.tx_fees && !errors.tx_fees}
                           isInvalid={touched.tx_fees && !!errors.tx_fees}
-                          min={TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE / 1_000}
+                          min={TX_FEES_SATSPERKILOVBYTE_MIN / 1_000}
                           max={TX_FEES_SATSPERKILOVBYTE_MAX / 1_000}
                           step={0.001}
                         />
@@ -350,16 +351,24 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     }
   }, [show, refreshConfigValues])
 
-  const submit = async (feeValues: FeeValues) => {
+  const submit = async (feeValues: FeeValues, txFeesUnit: TxFeeValueUnit) => {
     const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
     if (!allValuesPresent) return
 
-    setSaveErrorMessage(undefined)
+    let adjustedTxFees = feeValues.tx_fees!
+    if (txFeesUnit === 'sats/kilo-vbyte') {
+      // There is one special case for value `tx_fees`:
+      // Users are allowed to specify the value in "sats/vbyte", but this might
+      // be interpreted by JM as "targetd blocks". This adaption makes sure
+      // that it is in fact closer to what the user actually expects, albeit it
+      // can be surprising that the value is slightly different as specified.
+      adjustedTxFees = Math.max(adjustedTxFees, TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN)
+    }
 
     const updates = [
       {
         key: FEE_KEYS.tx_fees,
-        value: String(feeValues.tx_fees),
+        value: String(adjustedTxFees),
       },
       {
         key: FEE_KEYS.tx_fees_factor,
@@ -375,6 +384,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       },
     ]
 
+    setSaveErrorMessage(undefined)
     setIsSubmitting(true)
     try {
       await updateConfigValues({ updates })
@@ -395,7 +405,6 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     (values: FeeValues, txFeesUnit: TxFeeValueUnit) => {
       const errors = {} as FormikErrors<FeeValues>
 
-      let minTxFeesInSatsPerKiloVByte = TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE
       if (
         !isValidNumber(values.tx_fees_factor) ||
         values.tx_fees_factor! < TX_FEES_FACTOR_MIN ||
@@ -405,19 +414,16 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
           min: `${factorToPercentage(TX_FEES_FACTOR_MIN)}%`,
           max: `${factorToPercentage(TX_FEES_FACTOR_MAX)}%`,
         })
-      } else {
-        minTxFeesInSatsPerKiloVByte = calcMinTxFeeValue(values.tx_fees_factor!)
       }
 
       if (txFeesUnit === 'sats/kilo-vbyte') {
         if (
           !isValidNumber(values.tx_fees) ||
-          values.tx_fees! <= TX_FEES_SATSPERKILOVBYTE_MIN_EXCLUSIVE ||
-          values.tx_fees! < minTxFeesInSatsPerKiloVByte ||
+          values.tx_fees! < TX_FEES_SATSPERKILOVBYTE_MIN ||
           values.tx_fees! > TX_FEES_SATSPERKILOVBYTE_MAX
         ) {
           errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
-            min: (minTxFeesInSatsPerKiloVByte / 1_000).toLocaleString(undefined, {
+            min: (TX_FEES_SATSPERKILOVBYTE_MIN / 1_000).toLocaleString(undefined, {
               maximumFractionDigits: Math.log10(1_000),
             }),
             max: (TX_FEES_SATSPERKILOVBYTE_MAX / 1_000).toLocaleString(undefined, {
