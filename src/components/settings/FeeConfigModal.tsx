@@ -162,14 +162,17 @@ const FeeConfigForm = forwardRef(
                           name="tx_fees"
                           type="number"
                           placeholder="1"
-                          value={values.tx_fees}
+                          value={isValidNumber(values.tx_fees) ? values.tx_fees : ''}
                           disabled={isSubmitting}
                           onBlur={handleBlur}
-                          onChange={handleChange}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value, 10)
+                            setFieldValue('tx_fees', value, true)
+                          }}
                           isValid={touched.tx_fees && !errors.tx_fees}
                           isInvalid={touched.tx_fees && !!errors.tx_fees}
-                          min={1}
-                          max={999}
+                          min={TX_FEES_BLOCKS_MIN}
+                          max={TX_FEES_BLOCKS_MAX}
                           step={1}
                         />
                       )}
