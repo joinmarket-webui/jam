@@ -58,7 +58,7 @@ interface FeeConfigFormProps {
 
 const FeeConfigForm = forwardRef(
   ({ onSubmit, validate, initialValues }: FeeConfigFormProps, ref: React.Ref<HTMLFormElement>) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
 
     const [txFeesUnit, setTxFeesUnit] = useState<TxFeeValueUnit>(
       initialValues.tx_fees && initialValues.tx_fees > 1_000 ? 'sats/kilo-vbyte' : 'blocks'
@@ -71,7 +71,7 @@ const FeeConfigForm = forwardRef(
         onSubmit={(values) => onSubmit(values, txFeesUnit)}
       >
         {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
-          <rb.Form ref={ref} onSubmit={handleSubmit} noValidate>
+          <rb.Form ref={ref} onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
             <rb.Accordion flush>
               <rb.Accordion.Item eventKey="0">
                 <rb.Accordion.Header>{t('settings.fees.title_general_fee_settings')}</rb.Accordion.Header>
