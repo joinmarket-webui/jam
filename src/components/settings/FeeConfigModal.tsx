@@ -262,11 +262,7 @@ const FeeConfigForm = forwardRef(
                         %
                       </rb.InputGroup.Text>
                       <rb.Form.Control
-                        aria-label={t('settings.fees.label_max_cj_fee_rel', {
-                          fee: isValidNumber(values.max_cj_fee_rel)
-                            ? `(${factorToPercentage(values.max_cj_fee_rel!)}%)`
-                            : '',
-                        })}
+                        aria-label={t('settings.fees.label_max_cj_fee_rel')}
                         className="slashed-zeroes"
                         name="max_cj_fee_rel"
                         type="number"
