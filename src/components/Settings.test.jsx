@@ -1,4 +1,5 @@
-import React from 'react'
+import { BrowserRouter } from 'react-router-dom'
+
 import { render, screen } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
@@ -6,7 +7,11 @@ import Settings from './Settings'
 
 describe('<Settings />', () => {
   const setup = () => {
-    render(<Settings />)
+    render(
+      <BrowserRouter>
+        <Settings />
+      </BrowserRouter>
+    )
   }
 
   it('should render settings without errors', () => {
