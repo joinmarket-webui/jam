@@ -31,9 +31,6 @@ const FEE_KEYS = {
   tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
   max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },
   max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
-  // TODO: Should these values be also exposed?
-  //{ section: 'POLICY', field: 'absurd_fee_per_kb' },
-  //{ section: 'POLICY', field: 'max_sweep_fee_change' },
 }
 
 interface FeeConfigModalProps {
