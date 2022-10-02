@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { BrowserRouter } from 'react-router-dom'
 // @ts-ignore
 import App from './components/App'
 // @ts-ignore
@@ -17,19 +16,17 @@ import './i18n/config'
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter basename={window.JM.PUBLIC_PATH}>
-      <SettingsProvider>
-        <WalletProvider>
-          <ServiceConfigProvider>
-            <WebsocketProvider>
-              <ServiceInfoProvider>
-                <App />
-              </ServiceInfoProvider>
-            </WebsocketProvider>
-          </ServiceConfigProvider>
-        </WalletProvider>
-      </SettingsProvider>
-    </BrowserRouter>
+    <SettingsProvider>
+      <WalletProvider>
+        <ServiceConfigProvider>
+          <WebsocketProvider>
+            <ServiceInfoProvider>
+              <App />
+            </ServiceInfoProvider>
+          </WebsocketProvider>
+        </ServiceConfigProvider>
+      </WalletProvider>
+    </SettingsProvider>
   </React.StrictMode>,
   document.getElementById('root')
 )

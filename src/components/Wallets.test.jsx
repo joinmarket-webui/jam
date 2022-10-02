@@ -1,4 +1,4 @@
-import React from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import { render, screen, waitFor, waitForElementToBeRemoved } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
@@ -28,7 +28,11 @@ describe('<Wallets />', () => {
   const mockStopWallet = jest.fn()
 
   const setup = ({ currentWallet = null }) => {
-    render(<Wallets currentWallet={currentWallet} startWallet={mockStartWallet} stopWallet={mockStopWallet} />)
+    render(
+      <BrowserRouter>
+        <Wallets currentWallet={currentWallet} startWallet={mockStartWallet} stopWallet={mockStopWallet} />
+      </BrowserRouter>
+    )
   }
 
   beforeEach(() => {
