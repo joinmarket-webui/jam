@@ -2,6 +2,7 @@ import { forwardRef, useRef, useCallback, useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
+import classNames from 'classnames'
 import { useRefreshConfigValues, useUpdateConfigValues } from '../../context/ServiceConfigContext'
 import { factorToPercentage, percentageToFactor } from '../../utils'
 import Sprite from '../Sprite'
@@ -71,7 +72,15 @@ const FeeConfigForm = forwardRef(
           <rb.Form ref={ref} onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
             <rb.Accordion flush>
               <rb.Accordion.Item eventKey="0">
-                <rb.Accordion.Header>{t('settings.fees.title_general_fee_settings')}</rb.Accordion.Header>
+                <rb.Accordion.Header>
+                  <span
+                    className={classNames({
+                      'text-danger': !!errors.tx_fees || !!errors.tx_fees_factor,
+                    })}
+                  >
+                    {t('settings.fees.title_general_fee_settings')}
+                  </span>
+                </rb.Accordion.Header>
                 <rb.Accordion.Body>
                   <rb.Form.Label>{t('settings.fees.label_tx_fees')}</rb.Form.Label>
                   {txFeesUnit && (
@@ -212,7 +221,15 @@ const FeeConfigForm = forwardRef(
                 </rb.Accordion.Body>
               </rb.Accordion.Item>
               <rb.Accordion.Item eventKey="1">
-                <rb.Accordion.Header>{t('settings.fees.title_max_cj_fee_settings')}</rb.Accordion.Header>
+                <rb.Accordion.Header>
+                  <span
+                    className={classNames({
+                      'text-danger': !!errors.max_cj_fee_abs || !!errors.max_cj_fee_rel,
+                    })}
+                  >
+                    {t('settings.fees.title_max_cj_fee_settings')}
+                  </span>
+                </rb.Accordion.Header>
                 <rb.Accordion.Body>
                   <rb.Form.Text className="d-block mb-4">{t('settings.fees.subtitle_max_cj_fee')}</rb.Form.Text>
                   <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
