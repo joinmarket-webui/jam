@@ -16,6 +16,11 @@
   margin-bottom: 0.5rem !important;
 }
 
+.infoIcon {
+  border: 1px solid;
+  border-radius: 50%;
+}
+
 .inputGroupText {
   width: 5ch;
   display: inline-flex;

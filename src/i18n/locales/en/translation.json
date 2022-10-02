@@ -185,7 +185,7 @@
       "description_tx_fees_factor": "Random fees improve privacy. The percentage is to be understood as a +/- around the base fee. Example: If you set the base fee to 10 sats/vByte and the randomization to 30%, a value between 7 and 13 sats/vByte will be used. Default: 20%.",
       "feedback_invalid_tx_fees_factor": "Please provide a valid fee randomization value between {{ min }} and {{ max }}.",
       "title_max_cj_fee_settings": "Collaborator fees",
-      "subtitle_max_cj_fee": "Note: An order will be rejected only if both limits are exceeded.",
+      "subtitle_max_cj_fee": "Note: An offer will be rejected only if both limits are exceeded.",
       "label_max_cj_fee_abs": "Absolute limit (per collaborator)",
       "description_max_cj_fee_abs": "The maximum fee you are willing to pay per collaborator. Example: when set to 3,000 sats, the maximum fee in total would be 27,000 sats when using the default of 9 collaborators.",
       "feedback_invalid_max_cj_fee_abs": "Please provide a valid maximum absolute fee between {{ min }} and {{ max }}.",

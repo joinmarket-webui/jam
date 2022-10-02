@@ -231,7 +231,10 @@ const FeeConfigForm = forwardRef(
                   </span>
                 </rb.Accordion.Header>
                 <rb.Accordion.Body>
-                  <rb.Form.Text className="d-block mb-4">{t('settings.fees.subtitle_max_cj_fee')}</rb.Form.Text>
+                  <rb.Form.Text className="d-flex align-items-center mb-4">
+                    <Sprite className={classNames(styles.infoIcon, 'me-1')} symbol="info" width="18" height="18" />
+                    {t('settings.fees.subtitle_max_cj_fee')}
+                  </rb.Form.Text>
                   <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
                     <rb.Form.Label>{t('settings.fees.label_max_cj_fee_abs')}</rb.Form.Label>
                     <rb.Form.Text>{t('settings.fees.description_max_cj_fee_abs')}</rb.Form.Text>
