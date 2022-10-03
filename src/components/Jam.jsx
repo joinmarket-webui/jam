@@ -45,7 +45,12 @@ export default function Jam() {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
+  const [isWaitingSchedulerStart, setIsWaitingSchedulerStart] = useState(false)
+  const [isWaitingSchedulerStop, setIsWaitingSchedulerStop] = useState(false)
+  const collaborativeOperationRunning = useMemo(
+    () => serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false,
+    [serviceInfo]
+  )
 
   const schedulerPreconditionSummary = useMemo(
     () => buildCoinjoinRequirementSummary(walletInfo?.data.utxos.utxos || []),
@@ -119,9 +124,12 @@ export default function Jam() {
   }, [reloadServiceInfo, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    setCollaborativeOperationRunning(serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false)
+    if (!serviceInfo) return
 
-    if (serviceInfo?.schedule && process.env.NODE_ENV === 'development') {
+    setIsWaitingSchedulerStart((current) => (current && serviceInfo.schedule ? false : current))
+    setIsWaitingSchedulerStop((current) => (current && !serviceInfo.schedule ? false : current))
+
+    if (serviceInfo.schedule && process.env.NODE_ENV === 'development') {
       console.table(serviceInfo.schedule)
     }
   }, [serviceInfo])
@@ -133,6 +141,7 @@ export default function Jam() {
 
     setAlert(null)
     setIsLoading(true)
+    setIsWaitingSchedulerStart(true)
 
     const destinations = [values.dest1, values.dest2, values.dest3]
 
@@ -158,11 +167,15 @@ export default function Jam() {
     return Api.postSchedulerStart({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }, body)
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
       .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
-      .then((_) => setCollaborativeOperationRunning(true))
       .catch((err) => {
+        if (abortCtrl.signal.aborted) return
         setAlert({ variant: 'danger', message: err.message })
+        setIsWaitingSchedulerStart(false)
       })
-      .finally(() => setIsLoading(false))
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsLoading(false)
+      })
   }
 
   const stopSchedule = async () => {
@@ -172,11 +185,11 @@ export default function Jam() {
 
     setAlert(null)
     setIsLoading(true)
+    setIsWaitingSchedulerStop(true)
 
     const abortCtrl = new AbortController()
     return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
-      .then((_) => setCollaborativeOperationRunning(false))
       .then((_) =>
         Promise.all([
           reloadServiceInfo({ signal: abortCtrl.signal }),
@@ -184,9 +197,14 @@ export default function Jam() {
         ])
       )
       .catch((err) => {
+        if (abortCtrl.signal.aborted) return
         setAlert({ variant: 'danger', message: err.message })
+        setIsWaitingSchedulerStop(false)
       })
-      .finally(() => setIsLoading(false))
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsLoading(false)
+      })
   }
 
   return (
@@ -194,7 +212,7 @@ export default function Jam() {
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-      {isLoading ? (
+      {isLoading || isWaitingSchedulerStart || isWaitingSchedulerStop ? (
         <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder xs={12} className={styles['input-loader']} />
         </rb.Placeholder>
