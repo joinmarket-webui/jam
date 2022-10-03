@@ -372,7 +372,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     if (txFeesUnit === 'sats/kilo-vbyte') {
       // There is one special case for value `tx_fees`:
       // Users are allowed to specify the value in "sats/vbyte", but this might
-      // be interpreted by JM as "targetd blocks". This adaption makes sure
+      // be interpreted by JM as "targeted blocks". This adaption makes sure
       // that it is in fact closer to what the user actually expects, albeit it
       // can be surprising that the value is slightly different as specified.
       adjustedTxFees = Math.max(adjustedTxFees, TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN)
