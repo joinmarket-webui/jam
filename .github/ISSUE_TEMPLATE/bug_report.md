@@ -28,4 +28,4 @@ A clear and concise description of what the bug is and what actually happens.
 **Additional context**
 
 Add any other context about the problem here to help explain your problem.
-e.g. error logs or screenshots if applicable.
+e.g. error logs or screenshots if applicable. Make sure to remove any confidential information before sharing screenshots or logs.
