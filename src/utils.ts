@@ -55,7 +55,7 @@ export const percentageToFactor = (val: number, precision = 6) => {
 }
 
 export const factorToPercentage = (val: number, precision = 6) => {
-  // Value cannot just be divided
+  // Value cannot just be multiplied
   // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
