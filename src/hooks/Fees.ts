@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useRefreshConfigValues } from '../context/ServiceConfigContext'
 import { AmountSats } from '../libs/JmWalletApi'
+import { isValidNumber } from '../utils'
 
 export type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
 
@@ -35,11 +36,16 @@ export const useLoadFeeConfigValues = () => {
 
       const policy = serviceConfig['POLICY'] || {}
 
+      const parsedTxFees = parseInt(policy.tx_fees || '', 10)
+      const parsedTxFeesFactor = parseFloat(policy.tx_fees_factor || '')
+      const parsedMaxFeeAbs = parseInt(policy.max_cj_fee_abs || '', 10)
+      const parsedMaxFeeRel = parseFloat(policy.max_cj_fee_rel || '')
+
       const feeValues: FeeValues = {
-        tx_fees: parseInt(policy.tx_fees || '', 10) || undefined,
-        tx_fees_factor: parseFloat(policy.tx_fees_factor || '') || undefined,
-        max_cj_fee_abs: parseInt(policy.max_cj_fee_abs || '', 10) || undefined,
-        max_cj_fee_rel: parseFloat(policy.max_cj_fee_rel || '') || undefined,
+        tx_fees: isValidNumber(parsedTxFees) ? parsedTxFees : undefined,
+        tx_fees_factor: isValidNumber(parsedTxFeesFactor) ? parsedTxFeesFactor : undefined,
+        max_cj_fee_abs: isValidNumber(parsedMaxFeeAbs) ? parsedMaxFeeAbs : undefined,
+        max_cj_fee_rel: isValidNumber(parsedMaxFeeRel) ? parsedMaxFeeRel : undefined,
       }
       return feeValues
     },
