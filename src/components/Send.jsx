@@ -13,10 +13,11 @@ import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } fr
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
+import { estimateMaxCollaboratorFee, useLoadFeeConfigValues } from '../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
-import { SATS, formatBtc, formatSats } from '../utils'
+import { SATS, formatBtc, formatSats, isValidNumber } from '../utils'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
@@ -53,17 +54,17 @@ const isValidAddress = (candidate) => {
 
 const isValidAccount = (candidate) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && parsed >= 0
+  return isValidNumber(parsed) && parsed >= 0
 }
 
 const isValidAmount = (candidate, isSweep) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && (isSweep ? parsed === 0 : parsed > 0)
+  return isValidNumber(parsed) && (isSweep ? parsed === 0 : parsed > 0)
 }
 
 const isValidNumCollaborators = (candidate, minNumCollaborators) => {
   const parsed = parseInt(candidate, 10)
-  return !isNaN(parsed) && parsed >= minNumCollaborators && parsed <= 99
+  return isValidNumber(parsed) && parsed >= minNumCollaborators && parsed <= 99
 }
 
 const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators, disabled = false }) => {
@@ -220,10 +221,21 @@ function PaymentConfirmModal({
   title,
   onCancel,
   onConfirm,
-  data: { sourceJarId, destination, amount, isSweep, isCoinjoin, numCollaborators },
+  data: { sourceJarId, destination, amount, isSweep, isCoinjoin, numCollaborators, feeConfigValues },
 }) {
   const { t } = useTranslation()
   const settings = useSettings()
+
+  const estimatedMaxCollaboratorFee = useMemo(() => {
+    if (!amount || !isCoinjoin || !numCollaborators || !feeConfigValues) return null
+    if (!isValidNumber(feeConfigValues.max_cj_fee_abs) || !isValidNumber(feeConfigValues.max_cj_fee_rel)) return null
+    return estimateMaxCollaboratorFee({
+      amount,
+      collaborators: numCollaborators,
+      maxFeeAbs: feeConfigValues.max_cj_fee_abs,
+      maxFeeRel: feeConfigValues.max_cj_fee_rel,
+    })
+  }, [amount, isCoinjoin, feeConfigValues, numCollaborators])
 
   return (
     <ConfirmModal isShown={isShown} title={title} onCancel={onCancel} onConfirm={onConfirm}>
@@ -238,28 +250,28 @@ function PaymentConfirmModal({
           </rb.Col>
         </rb.Row>
         <rb.Row>
-          <rb.Col xs={3} className="text-end">
+          <rb.Col xs={4} md={3} className="text-end">
             <strong>{t('send.confirm_send_modal.label_source_jar')}</strong>
           </rb.Col>
-          <rb.Col xs={9} className="text-start">
+          <rb.Col xs={8} md={9} className="text-start">
             {t('send.confirm_send_modal.text_source_jar', { jarId: sourceJarId })}
           </rb.Col>
         </rb.Row>
         <rb.Row>
-          <rb.Col xs={3} className="text-end">
+          <rb.Col xs={4} md={3} className="text-end">
             <strong>{t('send.confirm_send_modal.label_recipient')}</strong>
           </rb.Col>
-          <rb.Col xs={9} className="text-start text-break slashed-zeroes">
+          <rb.Col xs={8} md={9} className="text-start text-break slashed-zeroes">
             {destination}
           </rb.Col>
         </rb.Row>
         <rb.Row>
-          <rb.Col xs={3} className="text-end">
+          <rb.Col xs={4} md={3} className="text-end">
             <strong>{t('send.confirm_send_modal.label_amount')}</strong>
           </rb.Col>
-          <rb.Col xs={9} className="text-start">
+          <rb.Col xs={8} md={9} className="text-start">
             {isSweep ? (
-              <div className="d-flex justify-content-start align-items-center">
+              <>
                 <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
                   Sweep
                   <Balance valueString={amount} convertToUnit={settings.unit} showBalance={true} />
@@ -276,7 +288,7 @@ function PaymentConfirmModal({
                     <Sprite className={styles.infoIcon} symbol="info" width="13" height="13" />
                   </div>
                 </rb.OverlayTrigger>
-              </div>
+              </>
             ) : (
               <Balance valueString={amount} convertToUnit={settings.unit} showBalance={true} />
             )}
@@ -284,11 +296,42 @@ function PaymentConfirmModal({
         </rb.Row>
         {isCoinjoin && (
           <rb.Row>
-            <rb.Col xs={3} className="text-end">
+            <rb.Col xs={4} md={3} className="text-end">
               <strong>{t('send.confirm_send_modal.label_num_collaborators')}</strong>
             </rb.Col>
-            <rb.Col xs={9} className="text-start">
+            <rb.Col xs={8} md={9} className="text-start">
               {numCollaborators}
+            </rb.Col>
+          </rb.Row>
+        )}
+        {estimatedMaxCollaboratorFee && (
+          <rb.Row>
+            <rb.Col xs={4} md={3} className="text-end">
+              <strong>{t('send.confirm_send_modal.label_estimated_max_collaborator_fee')}</strong>
+            </rb.Col>
+            <rb.Col xs={8} md={9} className="d-inline-flex align-items-center text-start">
+              <div>
+                <Balance
+                  valueString={`${estimatedMaxCollaboratorFee}`}
+                  convertToUnit={settings.unit}
+                  showBalance={true}
+                />
+
+                <rb.OverlayTrigger
+                  placement="right"
+                  overlay={
+                    <rb.Popover>
+                      <rb.Popover.Body>
+                        {t('send.confirm_send_modal.text_estimated_max_collaborator_fee_info_popover')}
+                      </rb.Popover.Body>
+                    </rb.Popover>
+                  }
+                >
+                  <div className="d-inline-flex align-items-center">
+                    <Sprite className={styles.infoIcon} symbol="info" width="13" height="13" />
+                  </div>
+                </rb.OverlayTrigger>
+              </div>
             </rb.Col>
           </rb.Row>
         )}
@@ -306,6 +349,7 @@ export default function Send() {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const loadConfigValue = useLoadConfigValue()
+  const loadFeeConfigValues = useLoadFeeConfigValues()
   const settings = useSettings()
   const location = useLocation()
 
@@ -320,6 +364,8 @@ export default function Send() {
   const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
   const [destinationJar, setDestinationJar] = useState(null)
   const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
+
+  const [feeConfigValues, setFeeConfigValues] = useState(null)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
@@ -492,12 +538,24 @@ export default function Send() {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
       })
 
-    Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
+    const loadFeeValues = loadFeeConfigValues(abortCtrl.signal)
+      .then((data) => {
+        if (abortCtrl.signal.aborted) return
+        setFeeConfigValues(data)
+      })
+      .catch((e) => {
+        if (abortCtrl.signal.aborted) return
+        // As fee config is not essential, don't raise an error on purpose.
+        // Fee settings cannot be displayed, but making a payment is still possible.
+        setFeeConfigValues(null)
+      })
+
+    Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig, loadFeeValues]).finally(
       () => !abortCtrl.signal.aborted && setIsInitializing(false)
     )
 
     return () => abortCtrl.abort()
-  }, [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t])
+  }, [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, loadFeeConfigValues, t])
 
   useEffect(() => {
     if (destination !== null && walletInfo?.addressSummary[destination]) {
@@ -665,7 +723,7 @@ export default function Send() {
   }
 
   const amountFieldValue = () => {
-    if (amount === null || Number.isNaN(amount)) return ''
+    if (amount === null || !isValidNumber(amount)) return ''
 
     if (isSweep) {
       if (!accountBalanceOrNull) return ''
@@ -1047,6 +1105,7 @@ export default function Send() {
             isSweep,
             isCoinjoin,
             numCollaborators,
+            feeConfigValues,
           }}
         />
       </div>

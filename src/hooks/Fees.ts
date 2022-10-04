@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useRefreshConfigValues } from '../context/ServiceConfigContext'
+import { AmountSats } from '../libs/JmWalletApi'
 
 export const FEE_CONFIG_KEYS = {
   tx_fees: { section: 'POLICY', field: 'tx_fees' },
@@ -37,4 +38,21 @@ export const useLoadFeeConfigValues = () => {
     },
     [refreshConfigValues]
   )
+}
+
+interface EstimatMaxCollaboratorFeeProps {
+  amount: AmountSats
+  collaborators: number
+  maxFeeAbs: AmountSats
+  maxFeeRel: number // e.g. 0.001 for 0.1%
+}
+
+export const estimateMaxCollaboratorFee = ({
+  amount,
+  collaborators,
+  maxFeeAbs,
+  maxFeeRel,
+}: EstimatMaxCollaboratorFeeProps) => {
+  const maxFeePerCollaborator = Math.max(Math.ceil(amount * maxFeeRel), maxFeeAbs)
+  return collaborators > 0 ? Math.min(maxFeePerCollaborator * collaborators, amount) : 0
 }

@@ -248,7 +248,9 @@
       "text_source_jar": "Jar {{ jarId }}",
       "label_num_collaborators": "Collaborators",
       "text_collaborative_tx_enabled": "Payment with privacy improvement",
-      "text_collaborative_tx_disabled": "Payment without privacy improvement"
+      "text_collaborative_tx_disabled": "Payment without privacy improvement",
+      "label_estimated_max_collaborator_fee": "Estimated Max. Collaborator Fee",
+      "text_estimated_max_collaborator_fee_info_popover": "This value represents a maximum upper limit. The actual fee is likely to be much lower."
     },
     "confirm_abort_modal": {
       "title": "Abort payment",

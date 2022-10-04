@@ -5,7 +5,7 @@ import { Formik, FormikErrors } from 'formik'
 import classNames from 'classnames'
 import { FEE_CONFIG_KEYS, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
-import { factorToPercentage, percentageToFactor } from '../../utils'
+import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
 import styles from './FeeConfigModal.module.css'
@@ -24,8 +24,6 @@ const CJ_FEE_ABS_MIN = 1
 const CJ_FEE_ABS_MAX = 1_000_000 // 0.01 BTC - no enforcement by JM - this should be a "sane" max value
 const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
 const CJ_FEE_REL_MAX = 0.05 // 5% - no enforcement by JM - this should be a "sane" max value
-
-const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
 
 interface FeeConfigModalProps {
   show: boolean

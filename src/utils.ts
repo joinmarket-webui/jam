@@ -60,3 +60,5 @@ export const factorToPercentage = (val: number, precision = 6) => {
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
 }
+
+export const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
