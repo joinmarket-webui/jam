@@ -17,6 +17,7 @@ import { fetchFeatures } from '../libs/JamApi'
 import { routes } from '../constants/routes'
 import languages from '../i18n/languages'
 import styles from './Settings.module.css'
+import FeeConfigModal from './settings/FeeConfigModal'
 
 function SeedModal({ show = false, onHide }) {
   const { t } = useTranslation()
@@ -91,6 +92,7 @@ function SeedModal({ show = false, onHide }) {
 
 export default function Settings({ stopWallet }) {
   const [showingSeed, setShowingSeed] = useState(false)
+  const [showingFeeConfig, setShowingFeeConfig] = useState(false)
   const [lockingWallet, setLockingWallet] = useState(false)
   const [showConfirmLockModal, setShowConfirmLockModal] = useState(null)
   const [showLogsEnabled, setShowLogsEnabled] = useState(false)
@@ -234,6 +236,20 @@ export default function Settings({ stopWallet }) {
               </rb.Dropdown.Item>
             </rb.Dropdown.Menu>
           </rb.Dropdown>
+
+          {currentWallet && (
+            <>
+              <rb.Button
+                variant="outline-dark"
+                className={styles['settings-btn']}
+                onClick={(e) => setShowingFeeConfig(true)}
+              >
+                <Sprite symbol="coins" width="24" height="24" />
+                {t('settings.show_fee_config')}
+              </rb.Button>
+              {showingFeeConfig && <FeeConfigModal show={showingFeeConfig} onHide={() => setShowingFeeConfig(false)} />}
+            </>
+          )}
 
           {currentWallet && showLogsEnabled && (
             <>
