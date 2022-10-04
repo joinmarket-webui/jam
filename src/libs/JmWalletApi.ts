@@ -97,6 +97,12 @@ interface FreezeRequest {
 interface ConfigSetRequest {
   section: string
   field: string
+  value: string
+}
+
+interface ConfigGetRequest {
+  section: string
+  field: string
 }
 
 interface StartSchedulerRequest {
@@ -373,11 +379,23 @@ const getSchedule = async ({ token, signal, walletName }: WalletRequestContext) 
 }
 
 /**
+ * Change a config variable (for the duration of this backend daemon process instance).
+ */
+const postConfigSet = async ({ token, signal, walletName }: WalletRequestContext, req: ConfigSetRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/configset`, {
+    method: 'POST',
+    headers: { ...Helper.buildAuthHeader(token) },
+    body: JSON.stringify(req),
+    signal,
+  })
+}
+
+/**
  * Get the value of a specific config setting. Note that values are always returned as string.
  *
  * @returns an object with property `configvalue` as string
  */
-const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext, req: ConfigSetRequest) => {
+const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext, req: ConfigGetRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/configget`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
@@ -411,6 +429,7 @@ export {
   getWalletUtxos,
   getYieldgenReport,
   postFreeze,
+  postConfigSet,
   postConfigGet,
   getWalletSeed,
   postSchedulerStart,
