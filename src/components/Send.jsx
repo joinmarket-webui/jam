@@ -18,10 +18,11 @@ import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats } from '../utils'
 import { routes } from '../constants/routes'
-import styles from './Send.module.css'
 import { ConfirmModal } from './Modal'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
 import { jarInitial, jarName } from './jars/Jar'
+
+import styles from './Send.module.css'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -211,6 +212,88 @@ function SweepAccordionToggle({ eventKey }) {
     <button type="button" className={styles['accordion-button']} onClick={rb.useAccordionButton(eventKey)}>
       {t('send.button_sweep_amount_breakdown')}
     </button>
+  )
+}
+
+function PaymentConfirmModal({
+  isShown,
+  title,
+  onCancel,
+  onConfirm,
+  data: { sourceJarId, destination, amount, isSweep, isCoinjoin, numCollaborators },
+}) {
+  const { t } = useTranslation()
+  const settings = useSettings()
+
+  return (
+    <ConfirmModal isShown={isShown} title={title} onCancel={onCancel} onConfirm={onConfirm}>
+      <rb.Container className="mt-2">
+        <rb.Row className="mt-2 mb-3">
+          <rb.Col xs={12} className="text-center">
+            {isCoinjoin ? (
+              <strong className="text-success">{t('send.confirm_send_modal.text_collaborative_tx_enabled')}</strong>
+            ) : (
+              <strong className="text-danger">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</strong>
+            )}
+          </rb.Col>
+        </rb.Row>
+        <rb.Row>
+          <rb.Col xs={3} className="text-end">
+            <strong>{t('send.confirm_send_modal.label_source_jar')}</strong>
+          </rb.Col>
+          <rb.Col xs={9} className="text-start">
+            {t('send.confirm_send_modal.text_source_jar', { jarId: sourceJarId })}
+          </rb.Col>
+        </rb.Row>
+        <rb.Row>
+          <rb.Col xs={3} className="text-end">
+            <strong>{t('send.confirm_send_modal.label_recipient')}</strong>
+          </rb.Col>
+          <rb.Col xs={9} className="text-start text-break slashed-zeroes">
+            {destination}
+          </rb.Col>
+        </rb.Row>
+        <rb.Row>
+          <rb.Col xs={3} className="text-end">
+            <strong>{t('send.confirm_send_modal.label_amount')}</strong>
+          </rb.Col>
+          <rb.Col xs={9} className="text-start">
+            {isSweep ? (
+              <div className="d-flex justify-content-start align-items-center">
+                <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
+                  Sweep
+                  <Balance valueString={amount} convertToUnit={settings.unit} showBalance={true} />
+                </Trans>
+                <rb.OverlayTrigger
+                  placement="right"
+                  overlay={
+                    <rb.Popover>
+                      <rb.Popover.Body>{t('send.confirm_send_modal.text_sweep_info_popover')}</rb.Popover.Body>
+                    </rb.Popover>
+                  }
+                >
+                  <div className="d-inline-flex align-items-center">
+                    <Sprite className={styles.infoIcon} symbol="info" width="13" height="13" />
+                  </div>
+                </rb.OverlayTrigger>
+              </div>
+            ) : (
+              <Balance valueString={amount} convertToUnit={settings.unit} showBalance={true} />
+            )}
+          </rb.Col>
+        </rb.Row>
+        {isCoinjoin && (
+          <rb.Row>
+            <rb.Col xs={3} className="text-end">
+              <strong>{t('send.confirm_send_modal.label_num_collaborators')}</strong>
+            </rb.Col>
+            <rb.Col xs={9} className="text-start">
+              {numCollaborators}
+            </rb.Col>
+          </rb.Row>
+        )}
+      </rb.Container>
+    </ConfirmModal>
   )
 }
 
@@ -950,89 +1033,22 @@ export default function Send() {
           {t('send.confirm_abort_modal.text_body')}
         </ConfirmModal>
 
-        <ConfirmModal
+        <PaymentConfirmModal
           isShown={showConfirmSendModal}
           title={t('send.confirm_send_modal.title')}
           onCancel={() => setShowConfirmSendModal(false)}
           onConfirm={() => {
             submitButtonRef.current?.click()
           }}
-        >
-          <rb.Container className="mt-2">
-            <rb.Row className="mt-2 mb-3">
-              <rb.Col xs={12} className="text-center">
-                {isCoinjoin ? (
-                  <strong className="text-success">{t('send.confirm_send_modal.text_collaborative_tx_enabled')}</strong>
-                ) : (
-                  <strong className="text-danger">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</strong>
-                )}
-              </rb.Col>
-            </rb.Row>
-            <rb.Row>
-              <rb.Col xs={3} className="text-end">
-                <strong>{t('send.confirm_send_modal.label_source_jar')}</strong>
-              </rb.Col>
-              <rb.Col xs={9} className="text-start">
-                {t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(account) })}
-              </rb.Col>
-            </rb.Row>
-            <rb.Row>
-              <rb.Col xs={3} className="text-end">
-                <strong>{t('send.confirm_send_modal.label_recipient')}</strong>
-              </rb.Col>
-              <rb.Col xs={9} className="text-start text-break slashed-zeroes">
-                {destination}
-              </rb.Col>
-            </rb.Row>
-            <rb.Row>
-              <rb.Col xs={3} className="text-end">
-                <strong>{t('send.confirm_send_modal.label_amount')}</strong>
-              </rb.Col>
-              <rb.Col xs={9} className="text-start">
-                {isSweep ? (
-                  <div className="d-flex justify-content-start align-items-center">
-                    <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
-                      Sweep
-                      <Balance
-                        valueString={amountFieldValue().toString()}
-                        convertToUnit={settings.unit}
-                        showBalance={true}
-                      />
-                    </Trans>
-                    <rb.OverlayTrigger
-                      placement="right"
-                      overlay={
-                        <rb.Popover>
-                          <rb.Popover.Body>{t('send.confirm_send_modal.text_sweep_info_popover')}</rb.Popover.Body>
-                        </rb.Popover>
-                      }
-                    >
-                      <div className="d-inline-flex align-items-center">
-                        <Sprite className={styles.infoIcon} symbol="info" width="13" height="13" />
-                      </div>
-                    </rb.OverlayTrigger>
-                  </div>
-                ) : (
-                  <Balance
-                    valueString={amountFieldValue().toString()}
-                    convertToUnit={settings.unit}
-                    showBalance={true}
-                  />
-                )}
-              </rb.Col>
-            </rb.Row>
-            {isCoinjoin && (
-              <rb.Row>
-                <rb.Col xs={3} className="text-end">
-                  <strong>{t('send.confirm_send_modal.label_num_collaborators')}</strong>
-                </rb.Col>
-                <rb.Col xs={9} className="text-start">
-                  {numCollaborators}
-                </rb.Col>
-              </rb.Row>
-            )}
-          </rb.Container>
-        </ConfirmModal>
+          data={{
+            sourceJarId: jarInitial(account),
+            destination,
+            amount: amountFieldValue().toString(),
+            isSweep,
+            isCoinjoin,
+            numCollaborators,
+          }}
+        />
       </div>
     </>
   )
