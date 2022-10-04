@@ -17,7 +17,7 @@ import { estimateMaxCollaboratorFee, useLoadFeeConfigValues } from '../hooks/Fee
 import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
-import { SATS, formatBtc, formatSats, isValidNumber } from '../utils'
+import { SATS, formatBtc, formatSats, isValidNumber, factorToPercentage } from '../utils'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
@@ -235,7 +235,37 @@ function PaymentConfirmModal({
       maxFeeAbs: feeConfigValues.max_cj_fee_abs,
       maxFeeRel: feeConfigValues.max_cj_fee_rel,
     })
-  }, [amount, isCoinjoin, feeConfigValues, numCollaborators])
+  }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
+
+  const miningFeeText = useMemo(() => {
+    if (!feeConfigValues) return null
+    if (!isValidNumber(feeConfigValues.tx_fees) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
+
+    const unitInSatsPerKiloVByte = feeConfigValues.tx_fees > 1_000
+    if (!unitInSatsPerKiloVByte) {
+      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
+    }
+    const feeInSatsPerVByte = feeConfigValues.tx_fees / 1_000
+    if (feeConfigValues.tx_fees_factor === 0) {
+      return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
+        value: feeInSatsPerVByte.toLocaleString(undefined, {
+          maximumFractionDigits: Math.log10(1_000),
+        }),
+      })
+    }
+
+    const minFeeSatsPerByte = Math.max(1, feeInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor))
+    const maxFeeSatsPerByte = feeInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor)
+
+    return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
+      min: minFeeSatsPerByte.toLocaleString(undefined, {
+        maximumFractionDigits: 1,
+      }),
+      max: maxFeeSatsPerByte.toLocaleString(undefined, {
+        maximumFractionDigits: 1,
+      }),
+    })
+  }, [t, feeConfigValues])
 
   return (
     <ConfirmModal isShown={isShown} title={title} onCancel={onCancel} onConfirm={onConfirm}>
@@ -294,6 +324,17 @@ function PaymentConfirmModal({
             )}
           </rb.Col>
         </rb.Row>
+
+        {miningFeeText && (
+          <rb.Row>
+            <rb.Col xs={4} md={3} className="text-end">
+              <strong>{t('send.confirm_send_modal.label_miner_fee')}</strong>
+            </rb.Col>
+            <rb.Col xs={8} md={9} className="text-start">
+              {miningFeeText}
+            </rb.Col>
+          </rb.Row>
+        )}
         {isCoinjoin && (
           <rb.Row>
             <rb.Col xs={4} md={3} className="text-end">
