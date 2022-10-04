@@ -1,4 +1,23 @@
-import { estimateMaxCollaboratorFee } from './Fees'
+import { toTxFeeValueUnit, estimateMaxCollaboratorFee } from './Fees'
+
+describe('toTxFeeValueUnit', () => {
+  it('should return correct unit', () => {
+    expect(toTxFeeValueUnit(undefined)).toBe(undefined)
+    expect(toTxFeeValueUnit(NaN)).toBe(undefined)
+    expect(toTxFeeValueUnit(-1)).toBe(undefined)
+    expect(toTxFeeValueUnit(0)).toBe(undefined)
+    expect(toTxFeeValueUnit(1.1)).toBe(undefined)
+    expect(toTxFeeValueUnit(1_001.1)).toBe(undefined)
+
+    expect(toTxFeeValueUnit(1)).toBe('blocks')
+    expect(toTxFeeValueUnit(999)).toBe('blocks')
+    expect(toTxFeeValueUnit(1_000)).toBe('blocks')
+
+    expect(toTxFeeValueUnit(1_001)).toBe('sats/kilo-vbyte')
+    expect(toTxFeeValueUnit(1001 + Math.round(Math.random() * 1_000_000))).toBe('sats/kilo-vbyte')
+    expect(toTxFeeValueUnit(Number.MAX_SAFE_INTEGER)).toBe('sats/kilo-vbyte')
+  })
+})
 
 describe('estimateMaxCollaboratorFee', () => {
   it('should return estimate based on max fee', () => {

@@ -13,11 +13,11 @@ import { useReloadCurrentWalletInfo, useCurrentWallet, useCurrentWalletInfo } fr
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
-import { estimateMaxCollaboratorFee, useLoadFeeConfigValues } from '../hooks/Fees'
+import { estimateMaxCollaboratorFee, toTxFeeValueUnit, useLoadFeeConfigValues } from '../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
-import { SATS, formatBtc, formatSats, isValidNumber, factorToPercentage } from '../utils'
+import { SATS, formatBtc, formatSats, isValidNumber } from '../utils'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
@@ -241,30 +241,33 @@ function PaymentConfirmModal({
     if (!feeConfigValues) return null
     if (!isValidNumber(feeConfigValues.tx_fees) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
 
-    const unitInSatsPerKiloVByte = feeConfigValues.tx_fees > 1_000
-    if (!unitInSatsPerKiloVByte) {
+    const unit = toTxFeeValueUnit(feeConfigValues.tx_fees)
+    if (!unit) {
+      return null
+    } else if (unit === 'blocks') {
       return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
-    }
-    const feeInSatsPerVByte = feeConfigValues.tx_fees / 1_000
-    if (feeConfigValues.tx_fees_factor === 0) {
-      return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
-        value: feeInSatsPerVByte.toLocaleString(undefined, {
-          maximumFractionDigits: Math.log10(1_000),
+    } else {
+      const feeTargetInSatsPerVByte = feeConfigValues.tx_fees / 1_000
+      if (feeConfigValues.tx_fees_factor === 0) {
+        return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
+          value: feeTargetInSatsPerVByte.toLocaleString(undefined, {
+            maximumFractionDigits: Math.log10(1_000),
+          }),
+        })
+      }
+
+      const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor))
+      const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor)
+
+      return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
+        min: minFeeSatsPerVByte.toLocaleString(undefined, {
+          maximumFractionDigits: 1,
+        }),
+        max: maxFeeSatsPerVByte.toLocaleString(undefined, {
+          maximumFractionDigits: 1,
         }),
       })
     }
-
-    const minFeeSatsPerByte = Math.max(1, feeInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor))
-    const maxFeeSatsPerByte = feeInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor)
-
-    return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
-      min: minFeeSatsPerByte.toLocaleString(undefined, {
-        maximumFractionDigits: 1,
-      }),
-      max: maxFeeSatsPerByte.toLocaleString(undefined, {
-        maximumFractionDigits: 1,
-      }),
-    })
   }, [t, feeConfigValues])
 
   return (

@@ -3,7 +3,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import classNames from 'classnames'
-import { FEE_CONFIG_KEYS, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
+import { FEE_CONFIG_KEYS, TxFeeValueUnit, toTxFeeValueUnit, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
 import Sprite from '../Sprite'
@@ -30,8 +30,6 @@ interface FeeConfigModalProps {
   onHide: () => void
 }
 
-type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
-
 interface FeeConfigFormProps {
   initialValues: FeeValues
   validate: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => FormikErrors<FeeValues>
@@ -42,9 +40,7 @@ const FeeConfigForm = forwardRef(
   ({ onSubmit, validate, initialValues }: FeeConfigFormProps, ref: React.Ref<HTMLFormElement>) => {
     const { t, i18n } = useTranslation()
 
-    const [txFeesUnit, setTxFeesUnit] = useState<TxFeeValueUnit>(
-      initialValues.tx_fees && initialValues.tx_fees > 1_000 ? 'sats/kilo-vbyte' : 'blocks'
-    )
+    const [txFeesUnit, setTxFeesUnit] = useState<TxFeeValueUnit>(toTxFeeValueUnit(initialValues.tx_fees) || 'blocks')
 
     return (
       <Formik

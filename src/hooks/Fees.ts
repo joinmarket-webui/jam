@@ -2,6 +2,13 @@ import { useCallback } from 'react'
 import { useRefreshConfigValues } from '../context/ServiceConfigContext'
 import { AmountSats } from '../libs/JmWalletApi'
 
+export type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
+
+export const toTxFeeValueUnit = (val?: number): TxFeeValueUnit | undefined => {
+  if (val === undefined || !Number.isInteger(val) || val < 1) return undefined
+  return val <= 1_000 ? 'blocks' : 'sats/kilo-vbyte'
+}
+
 export const FEE_CONFIG_KEYS = {
   tx_fees: { section: 'POLICY', field: 'tx_fees' },
   tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
