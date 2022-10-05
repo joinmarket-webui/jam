@@ -3,11 +3,12 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import classNames from 'classnames'
-import { useRefreshConfigValues, useUpdateConfigValues } from '../../context/ServiceConfigContext'
-import { factorToPercentage, percentageToFactor } from '../../utils'
+import { FEE_CONFIG_KEYS, TxFeeValueUnit, toTxFeeValueUnit, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
+import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
+import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
 import Sprite from '../Sprite'
-import styles from './FeeConfigModal.module.css'
 import SegmentedTabs from '../SegmentedTabs'
+import styles from './FeeConfigModal.module.css'
 
 type SatsPerKiloVByte = number
 
@@ -17,7 +18,6 @@ const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
 // 350 sats/vbyte - no enforcement by JM - this should be a "sane" max value (taken default value of "absurd_fee_per_kb")
 const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 350_000
 const TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN = 1_001 // actual min of `tx_fees` if unit is sats/kilo-vbyte
-const TX_FEES_FACTOR_DEFAULT_VAL = 0.2 // 20%
 const TX_FEES_FACTOR_MIN = 0 // 0%
 const TX_FEES_FACTOR_MAX = 1 // 100%
 const CJ_FEE_ABS_MIN = 1
@@ -25,27 +25,9 @@ const CJ_FEE_ABS_MAX = 1_000_000 // 0.01 BTC - no enforcement by JM - this shoul
 const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
 const CJ_FEE_REL_MAX = 0.05 // 5% - no enforcement by JM - this should be a "sane" max value
 
-const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
-
-const FEE_KEYS = {
-  tx_fees: { section: 'POLICY', field: 'tx_fees' },
-  tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
-  max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },
-  max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
-}
-
 interface FeeConfigModalProps {
   show: boolean
   onHide: () => void
-}
-
-type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
-
-interface FeeValues {
-  tx_fees?: number
-  tx_fees_factor?: number
-  max_cj_fee_abs?: number
-  max_cj_fee_rel?: number
 }
 
 interface FeeConfigFormProps {
@@ -58,9 +40,7 @@ const FeeConfigForm = forwardRef(
   ({ onSubmit, validate, initialValues }: FeeConfigFormProps, ref: React.Ref<HTMLFormElement>) => {
     const { t, i18n } = useTranslation()
 
-    const [txFeesUnit, setTxFeesUnit] = useState<TxFeeValueUnit>(
-      initialValues.tx_fees && initialValues.tx_fees > 1_000 ? 'sats/kilo-vbyte' : 'blocks'
-    )
+    const [txFeesUnit, setTxFeesUnit] = useState<TxFeeValueUnit>(toTxFeeValueUnit(initialValues.tx_fees) || 'blocks')
 
     return (
       <Formik
@@ -312,8 +292,8 @@ const FeeConfigForm = forwardRef(
 
 export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
   const { t } = useTranslation()
-  const refreshConfigValues = useRefreshConfigValues()
   const updateConfigValues = useUpdateConfigValues()
+  const loadFeeConfigValues = useLoadFeeConfigValues()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState(false)
@@ -322,47 +302,31 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    const loadFeeValues = async (signal: AbortSignal) => {
-      setLoadError(false)
-      setIsLoading(true)
-
-      try {
-        const serviceConfig = await refreshConfigValues({
-          signal,
-          keys: Object.values(FEE_KEYS),
-        })
-
-        setIsLoading(false)
-
-        const policy = serviceConfig['POLICY'] || {}
-
-        const feeValues: FeeValues = {
-          tx_fees: parseInt(policy.tx_fees || '', 10) || undefined,
-          tx_fees_factor: parseFloat(policy.tx_fees_factor || `${TX_FEES_FACTOR_DEFAULT_VAL}`),
-          max_cj_fee_abs: parseInt(policy.max_cj_fee_abs || '', 10) || undefined,
-          max_cj_fee_rel: parseFloat(policy.max_cj_fee_rel || '') || undefined,
-        }
-        setFeeConfigValues(feeValues)
-      } catch (e) {
-        if (!signal.aborted) {
-          setIsLoading(false)
-          setLoadError(true)
-        }
-      }
-    }
+    setLoadError(false)
 
     const abortCtrl = new AbortController()
     if (show) {
-      loadFeeValues(abortCtrl.signal)
+      setIsLoading(true)
+
+      loadFeeConfigValues(abortCtrl.signal)
+        .then((val) => {
+          if (abortCtrl.signal.aborted) return
+          setIsLoading(false)
+          setFeeConfigValues(val)
+        })
+        .catch((e) => {
+          if (abortCtrl.signal.aborted) return
+          setIsLoading(false)
+          setLoadError(true)
+        })
     } else {
-      setLoadError(false)
       setSaveErrorMessage(undefined)
     }
 
     return () => {
       abortCtrl.abort()
     }
-  }, [show, refreshConfigValues])
+  }, [show, loadFeeConfigValues])
 
   const submit = async (feeValues: FeeValues, txFeesUnit: TxFeeValueUnit) => {
     const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
@@ -380,19 +344,19 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
 
     const updates = [
       {
-        key: FEE_KEYS.tx_fees,
+        key: FEE_CONFIG_KEYS.tx_fees,
         value: String(adjustedTxFees),
       },
       {
-        key: FEE_KEYS.tx_fees_factor,
+        key: FEE_CONFIG_KEYS.tx_fees_factor,
         value: String(feeValues.tx_fees_factor),
       },
       {
-        key: FEE_KEYS.max_cj_fee_abs,
+        key: FEE_CONFIG_KEYS.max_cj_fee_abs,
         value: String(feeValues.max_cj_fee_abs),
       },
       {
-        key: FEE_KEYS.max_cj_fee_rel,
+        key: FEE_CONFIG_KEYS.max_cj_fee_rel,
         value: String(feeValues.max_cj_fee_rel),
       },
     ]
