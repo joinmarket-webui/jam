@@ -254,8 +254,8 @@
       "label_miner_fee": "Mining fee",
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
-      "text_miner_fee_in_targeted_blocks_one": "High priority (next block)",
-      "text_miner_fee_in_targeted_blocks_other": "To be included in {{ count }} blocks or earlier"
+      "text_miner_fee_in_targeted_blocks_one": "High priority estimate (next block)",
+      "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks"
     },
     "confirm_abort_modal": {
       "title": "Abort payment",
