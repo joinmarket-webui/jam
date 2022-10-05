@@ -188,7 +188,7 @@ export default function Jam() {
         mixdepthcount: 2,
         mintxcount: 1,
         txcountparams: [1, 0],
-        timelambda: 0.000001, // zero not allowed, set as low as possible
+        timelambda: 0.025, // 0.025 minutes := 1.5 seconds
         stage1_timelambda_increase: 1.0,
         liquiditywait: 10,
         waittime: 0.0,
@@ -365,18 +365,15 @@ export default function Jam() {
                                     })
                                   } catch (e) {
                                     console.error('Could not get internal addresses.', e)
-                                    Array(DEST_ADDRESS_TEST)
-                                      .fill('')
-                                      .forEach((blank, index) => {
-                                        setFieldValue(`dest${index + 1}`, blank, true)
-                                      })
+
+                                    addressValueKeys(DEST_ADDRESS_TEST).forEach((key) => {
+                                      setFieldValue(key, '', true)
+                                    })
                                   }
                                 } else {
-                                  Array(DEST_ADDRESS_PROD)
-                                    .fill('')
-                                    .forEach((blank, index) => {
-                                      setFieldValue(`dest${index + 1}`, blank, false)
-                                    })
+                                  addressValueKeys(DEST_ADDRESS_PROD).forEach((key) => {
+                                    setFieldValue(key, '', false)
+                                  })
                                 }
                               }}
                               disabled={isSubmitting}
