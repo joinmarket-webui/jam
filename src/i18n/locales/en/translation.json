@@ -251,7 +251,7 @@
       "text_collaborative_tx_disabled": "Payment without privacy improvement",
       "label_estimated_max_collaborator_fee": "Estimated Max. Collaborator Fee",
       "text_estimated_max_collaborator_fee_info_popover": "This value represents a maximum upper limit. The actual fee is likely to be much lower.",
-      "label_miner_fee": "Mining fee target",
+      "label_miner_fee": "Mining fee",
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "Next block",
