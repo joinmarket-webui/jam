@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
@@ -17,8 +17,8 @@ import ScheduleProgress from './ScheduleProgress'
 
 import styles from './Jam.module.css'
 
-const DEST_ADDRESS_PROD = 3
-const DEST_ADDRESS_TEST = 1
+const DEST_ADDRESS_COUNT_PROD = 3
+const DEST_ADDRESS_COUNT_TEST = 1
 
 const addressValueKeys = (addressCount) =>
   Array(addressCount)
@@ -87,7 +87,7 @@ export default function Jam() {
 
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const addressCount = useMemo(
-    () => (useInsecureTestingSettings ? DEST_ADDRESS_TEST : DEST_ADDRESS_PROD),
+    () => (useInsecureTestingSettings ? DEST_ADDRESS_COUNT_TEST : DEST_ADDRESS_COUNT_PROD),
     [useInsecureTestingSettings]
   )
 
@@ -185,7 +185,7 @@ export default function Jam() {
         addrcount: addressCount,
         minmakercount: 1,
         makercountrange: [1, 0],
-        mixdepthcount: 2,
+        mixdepthcount: addressCount,
         mintxcount: 1,
         txcountparams: [1, 0],
         timelambda: 0.025, // 0.025 minutes := 1.5 seconds
@@ -359,19 +359,19 @@ export default function Jam() {
                                 setUseInsecureTestingSettings(isToggled)
                                 if (isToggled) {
                                   try {
-                                    const newAddresses = getNewAddresses(DEST_ADDRESS_TEST)
+                                    const newAddresses = getNewAddresses(DEST_ADDRESS_COUNT_TEST)
                                     newAddresses.forEach((newAddress, index) => {
                                       setFieldValue(`dest${index + 1}`, newAddress, true)
                                     })
                                   } catch (e) {
                                     console.error('Could not get internal addresses.', e)
 
-                                    addressValueKeys(DEST_ADDRESS_TEST).forEach((key) => {
+                                    addressValueKeys(DEST_ADDRESS_COUNT_TEST).forEach((key) => {
                                       setFieldValue(key, '', true)
                                     })
                                   }
                                 } else {
-                                  addressValueKeys(DEST_ADDRESS_PROD).forEach((key) => {
+                                  addressValueKeys(DEST_ADDRESS_COUNT_PROD).forEach((key) => {
                                     setFieldValue(key, '', false)
                                   })
                                 }
