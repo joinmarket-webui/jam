@@ -355,12 +355,12 @@ function PaymentConfirmModal({
             </rb.Col>
             <rb.Col xs={8} md={9} className="d-inline-flex align-items-center text-start">
               <div>
+                &le;
                 <Balance
                   valueString={`${estimatedMaxCollaboratorFee}`}
                   convertToUnit={settings.unit}
                   showBalance={true}
                 />
-
                 <rb.OverlayTrigger
                   placement="right"
                   overlay={
