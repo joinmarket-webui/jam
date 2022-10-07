@@ -32,7 +32,7 @@ const TX_FEES_FACTOR_MIN = 0 // 0%
 /**
  * For the same reasons as stated above (comment for `TX_FEES_SATSPERKILOVBYTE_MIN`),
  * the maximum randomization factor must not be too high.
- * Settling on 50% as a reasonable compromise this the problem is addressed.
+ * Settling on 50% as a reasonable compromise until this problem is addressed.
  * Once resolved, this can be set to 100% again.
  */
 const TX_FEES_FACTOR_MAX = 0.5 // 50%
