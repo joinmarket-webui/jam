@@ -172,7 +172,7 @@
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "fees": {
       "title": "Fee Limits",
-      "description": "Adjust mining fees and collaborator fees according to your needs. Mining fees relate to transaction priority and depend on mempool conditions. Collaborator fees relate to liquidity price and depend on market conditions. Total fees paid for each transaction depend on the amount of collaborators. Additional collaborators increase privacy, but also fees. These settings will be reset to default values when the JoinMarket service restarts, e.g. on a system reboot.",
+      "description": "Adjust mining fees and collaborator fees according to your needs. Mining fees relate to transaction priority and depend on mempool conditions. Collaborator fees relate to liquidity price and depend on market conditions. Total fees paid for each transaction depend on the amount of collaborators. Additional collaborators increase privacy, but also fees. These settings will be reset to default values when the JoinMarket service restarts, e.g. on a system reboot. For more information, <1>see the documentation on fees</1>.",
       "title_general_fee_settings": "Mining fees",
       "radio_tx_fees_blocks": "Block target",
       "radio_tx_fees_satspervbyte": "sats/vByte",
