@@ -1,6 +1,6 @@
 import { forwardRef, useRef, useCallback, useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import classNames from 'classnames'
 import { FEE_CONFIG_KEYS, TxFeeValueUnit, toTxFeeValueUnit, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
@@ -482,7 +482,20 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       </rb.Modal.Header>
       <rb.Modal.Body>
         <>
-          <div className="mb-4 small">{t('settings.fees.description')}</div>
+          <div className="mb-4 small">
+            <Trans i18nKey="settings.fees.description">
+              Fee description. See
+              <a
+                href="https://jamdocs.org/market/fees/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link-dark"
+              >
+                this link
+              </a>
+              for more information.
+            </Trans>
+          </div>
           {loadError && (
             <rb.Alert variant="danger" className="w-100">
               {t('settings.fees.error_loading_fee_config_failed')}
