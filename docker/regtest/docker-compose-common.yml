@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+
+  joinmarket_native:
+    build:
+      context: ./dockerfile-deps/joinmarket/latest
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      ENSURE_WALLET: "true"
+      REMOVE_LOCK_FILES: "true"
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
+      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
+      jm_maker_timeout_sec: 30 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
+    expose:
+      - 62601 # obwatch
+      - 28183 # jmwalletd api
+      - 28283 # jmwalletd websocket
+
+  joinmarket_jam_standalone:
+    build:
+      context: ./dockerfile-deps/joinmarket/webui-standalone
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      ENSURE_WALLET: "true"
+      REMOVE_LOCK_FILES: "true"
+      jm_blockchain_source: regtest
+      jm_network: testnet
+      jm_rpc_host: bitcoind
+      jm_rpc_port: 43782
+      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
+      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
+      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
+    expose:
+      - 80    # nginx
+      - 28183 # jmwalletd api

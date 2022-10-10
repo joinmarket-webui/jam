@@ -189,7 +189,7 @@ fetch_available_wallets() {
 }
 
 # --------------------------
-# Verify no open session
+# Fetch Session Information
 # --------------------------
 ## API: GET /api/v1/session
 ## 
@@ -202,10 +202,20 @@ fetch_available_wallets() {
 ##    "wallet_name": "None"
 ## }
 ##
+fetch_session() {
+    local base_url; base_url=${1:-}
+    local session_result; session_result="$(curl "$base_url/api/v1/session" --silent --show-error --insecure | jq ".")"
+
+    echo "$session_result"
+}
+
+# --------------------------
+# Verify no open session
+# --------------------------
 verify_no_open_session_or_throw() {
     local base_url; base_url=${1:-}
 
-    if session_result=$(curl "$base_url/api/v1/session" --silent --show-error --insecure | jq "."); then
+    if session_result=$(fetch_session "$base_url"); then
       msg_success "Successfully established connection to jmwalletd"
     else rc=$?
       die "Could not connect to joinmarket. Please make sure jmwalletd is running inside container."
@@ -215,4 +225,13 @@ verify_no_open_session_or_throw() {
     [ "$(jq -r '.wallet_name' <<< "$session_result")" != "None" ] && die "Please make sure no wallet is active."
 
     return 0
+}
+
+is_maker_running() {
+  local base_url; base_url=${1:-}
+
+  local session_result; session_result=$(fetch_session "$base_url")
+  local maker_running; maker_running=$(jq -r '.maker_running' <<< "$session_result")
+
+  echo "$maker_running"
 }

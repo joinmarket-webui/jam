@@ -4,29 +4,13 @@ services:
 
   joinmarket:
     container_name: jm_regtest_joinmarket
-    build:
-      context: ./dockerfile-deps/joinmarket/latest
-      dockerfile: Dockerfile
-    restart: unless-stopped
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_native
     environment:
-      READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      ENSURE_WALLET: "true"
-      REMOVE_LOCK_FILES: "true"
       jm_rpc_wallet_file: jm_primary
-      jm_blockchain_source: regtest
-      jm_network: testnet
-      jm_rpc_host: bitcoind
-      jm_rpc_port: 43782
       jm_rpc_user: joinmarket
       jm_rpc_password: joinmarket
-      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
-      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
-      jm_maker_timeout_sec: 30 # easier testing of maker timeouts on regtest (and "Stall Monitor" retries); default is 60
-    expose:
-      - 62601 # obwatch
-      - 28183 # jmwalletd api
-      - 28283 # jmwalletd websocket
     ports:
       - "62601:62601"
       - "28183:28183"
@@ -41,34 +25,40 @@ services:
 
   joinmarket2:
     container_name: jm_regtest_joinmarket2
-    build:
-      context: ./dockerfile-deps/joinmarket/webui-standalone
-      dockerfile: Dockerfile
-    restart: unless-stopped
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_jam_standalone
     environment:
-      READY_FILE: /root/.regtest-initializer/btc_fully_synched
-      ENSURE_WALLET: "true"
-      REMOVE_LOCK_FILES: "true"
       APP_USER: joinmarket
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_secondary
-      jm_blockchain_source: regtest
-      jm_network: testnet
-      jm_rpc_host: bitcoind
-      jm_rpc_port: 43782
       jm_rpc_user: joinmarket2
       jm_rpc_password: joinmarket2
-      jm_directory_nodes: ${JM_DIRECTORY_NODES:?You must set the onion address generated in prepare step to your .env file}
-      jm_minimum_makers: 1 # necessary to do coinjoins with this regtest setup; default is 4
-      jm_taker_utxo_age: 1 # faster testing of scheduler runs; default is 5
-    expose:
-      - 80    # nginx
-      - 28183 # jmwalletd api
     ports:
       - "29080:80"
       - "29183:28183" # exposed for "init setup" routine
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
+      - "initializer_datadir:/root/.regtest-initializer"
+    depends_on:
+      - bitcoind
+      - bitcoind_regtest_initializer
+      - irc
+
+  joinmarket3:
+    container_name: jm_regtest_joinmarket3
+    extends:
+      file: docker-compose-common.yml
+      service: joinmarket_jam_standalone
+    environment:
+      jm_rpc_wallet_file: jm_tertiary
+      jm_rpc_user: joinmarket2
+      jm_rpc_password: joinmarket2
+    ports:
+      - "30080:80"
+      - "30183:28183" # exposed for "init setup" routine
+    volumes:
+      - "joinmarket3_datadir:/root/.joinmarket"
       - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
       - bitcoind
@@ -175,5 +165,6 @@ volumes:
   initializer_datadir:
   joinmarket_datadir:
   joinmarket2_datadir:
+  joinmarket3_datadir:
   joinmarket_directory_node_datadir:
   irc_datadir:
