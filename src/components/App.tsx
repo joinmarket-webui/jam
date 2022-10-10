@@ -78,12 +78,16 @@ export default function App() {
             />
             {currentWallet && (
               <>
-                <Route id="wallet" path={routes.wallet} element={<MainWalletView />} />
-                <Route id="jam" path={routes.jam} element={<Jam />} />
-                <Route id="send" path={routes.send} element={<Send />} />
-                <Route id="earn" path={routes.earn} element={<Earn />} />
-                <Route id="receive" path={routes.receive} element={<Receive />} />
-                <Route id="settings" path={routes.settings} element={<Settings stopWallet={stopWallet} />} />
+                <Route id="wallet" path={routes.wallet} element={<MainWalletView wallet={currentWallet} />} />
+                <Route id="jam" path={routes.jam} element={<Jam wallet={currentWallet} />} />
+                <Route id="send" path={routes.send} element={<Send wallet={currentWallet} />} />
+                <Route id="earn" path={routes.earn} element={<Earn wallet={currentWallet} />} />
+                <Route id="receive" path={routes.receive} element={<Receive wallet={currentWallet} />} />
+                <Route
+                  id="settings"
+                  path={routes.settings}
+                  element={<Settings wallet={currentWallet} stopWallet={stopWallet} />}
+                />
               </>
             )}
             <Route id="404" path="*" element={<Navigate to={routes.home} replace={true} />} />

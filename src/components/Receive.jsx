@@ -3,7 +3,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 
 import { BitcoinQR } from './BitcoinQR'
@@ -14,15 +14,14 @@ import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
 import styles from './Receive.module.css'
 import { SelectableJar, calculateFillLevel } from './jars/Jar'
 
-export default function Receive() {
+export default function Receive({ wallet }) {
   const { t } = useTranslation()
   const location = useLocation()
   const settings = useSettings()
-  const currentWallet = useCurrentWallet()
   const walletInfo = useCurrentWalletInfo()
   const [validated, setValidated] = useState(false)
   const [alert, setAlert] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [selectedJarIndex, setSelectedJarIndex] = useState(parseInt(location.state?.account, 10) || 0)
@@ -38,7 +37,7 @@ export default function Receive() {
 
   useEffect(() => {
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = currentWallet
+    const { name: walletName, token } = wallet
 
     setAlert(null)
     setIsLoading(true)
@@ -54,7 +53,7 @@ export default function Receive() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [selectedJarIndex, currentWallet, addressCount, t])
+  }, [wallet, selectedJarIndex, addressCount, t])
 
   const onSubmit = (e) => {
     e.preventDefault()

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
@@ -163,10 +163,9 @@ function CurrentOffer({ offer, nickname }) {
   )
 }
 
-export default function Earn() {
+export default function Earn({ wallet }) {
   const { t } = useTranslation()
   const settings = useSettings()
-  const currentWallet = useCurrentWallet()
   const currentWalletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
@@ -187,7 +186,7 @@ export default function Earn() {
     setIsSending(true)
     setIsWaitingMakerStart(true)
 
-    const { name: walletName, token } = currentWallet
+    const { name: walletName, token } = wallet
     const data = {
       ordertype,
       minsize,
@@ -214,7 +213,7 @@ export default function Earn() {
     setIsSending(true)
     setIsWaitingMakerStop(true)
 
-    const { name: walletName, token } = currentWallet
+    const { name: walletName, token } = wallet
 
     // There is no response data to check if maker got stopped:
     // Wait for the websocket or session response!
@@ -249,7 +248,7 @@ export default function Earn() {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [currentWallet, isSending, reloadServiceInfo, reloadCurrentWalletInfo])
+  }, [wallet, isSending, reloadServiceInfo, reloadCurrentWalletInfo])
 
   useEffect(() => {
     if (isSending) return
@@ -405,7 +404,7 @@ export default function Earn() {
                         otherFidelityBondExists={fidelityBonds.length > 0}
                         accountBalances={currentWalletInfo.balanceSummary.accountBalances}
                         totalBalance={currentWalletInfo.balanceSummary.totalBalance}
-                        wallet={currentWallet}
+                        wallet={wallet}
                         walletInfo={currentWalletInfo}
                         onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
                       />
