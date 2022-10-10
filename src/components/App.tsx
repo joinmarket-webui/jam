@@ -1,7 +1,14 @@
 import { useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { createBrowserRouter, createRoutesFromElements, Navigate, Route, RouterProvider } from 'react-router-dom'
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Navigate,
+  Route,
+  RouterProvider,
+  Outlet,
+} from 'react-router-dom'
 import { routes } from '../constants/routes'
 import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
@@ -48,13 +55,9 @@ export default function App() {
           <>
             <Navbar />
             <rb.Container as="main" className="py-4 py-sm-5">
-              {sessionConnectionError && (
-                <rb.Alert variant="danger">
-                  {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
-                </rb.Alert>
-              )}
-
-              <Layout />
+              <Layout>
+                <Outlet />
+              </Layout>
             </rb.Container>
             <Footer />
           </>
@@ -66,11 +69,22 @@ export default function App() {
          * that it stays visible in case the backend becomes unavailable.
          */}
         <Route id="create-wallet" path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
-        {/**
-         * This section defines all routes that are displayed only if the backend is reachable.
-         */}
-        {!sessionConnectionError && (
+
+        {sessionConnectionError ? (
+          <Route
+            id="404"
+            path="*"
+            element={
+              <rb.Alert variant="danger">
+                {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
+              </rb.Alert>
+            }
+          />
+        ) : (
           <>
+            {/**
+             * This section defines all routes that are displayed only if the backend is reachable.
+             */}
             <Route
               id="wallets"
               path={routes.home}
