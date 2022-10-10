@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.1.1](https://github.com/joinmarket-webui/jam/compare/v0.1.0...v0.1.1) (2022-10-07)
+
+#### Added
+
+* basic fee settings ([#522](https://github.com/joinmarket-webui/jam/issues/522)) ([54dd396](https://github.com/joinmarket-webui/jam/commit/54dd3969d954112af46d746e7fcc6e78db2ef32f))
+* display fee settings on Send page ([#532](https://github.com/joinmarket-webui/jam/issues/532)) ([26f911a](https://github.com/joinmarket-webui/jam/commit/26f911aea80f472d6f9484a1187e27f7dffe1ec2))
+* **jar:** show sum of selected utxos ([#514](https://github.com/joinmarket-webui/jam/issues/514)) ([85d131c](https://github.com/joinmarket-webui/jam/commit/85d131cf75ba614245de450492bdde1905a6b51c))
+* **send:** show txid on successful direct-send ([#510](https://github.com/joinmarket-webui/jam/issues/510)) ([13496a0](https://github.com/joinmarket-webui/jam/commit/13496a0a066bebb6f8d8b4ef72e25a00f7f347ac))
+
+#### Fixed
+
+* **fees:** mitigate construction of non-forwardable transactions ([#536](https://github.com/joinmarket-webui/jam/issues/536)) ([f2f3944](https://github.com/joinmarket-webui/jam/commit/f2f39444ccd59d4a5a440286a425d1b1fd7c238d))
+* **navbar:** send before earn ([#507](https://github.com/joinmarket-webui/jam/issues/507)) ([c1fb2bc](https://github.com/joinmarket-webui/jam/commit/c1fb2bc68008980087581d4a0d845624f6816b85))
+* **readme:** link to development heading ([0351367](https://github.com/joinmarket-webui/jam/commit/0351367e2971b9717221fa705953d444ff37c587))
+* **settings:** consistent case ([#511](https://github.com/joinmarket-webui/jam/issues/511)) ([e4bd89c](https://github.com/joinmarket-webui/jam/commit/e4bd89c648ea27cd9fb4dd996248eacff0172586))
+* **sweep:** reload wallet info after scheduled sweep ([#530](https://github.com/joinmarket-webui/jam/issues/530)) ([0757280](https://github.com/joinmarket-webui/jam/commit/0757280bf1d1e3b46fdf50c6bcd6268ae379714d))
+* **sweep:** wait for scheduler start/stop ([#529](https://github.com/joinmarket-webui/jam/issues/529)) ([509a15e](https://github.com/joinmarket-webui/jam/commit/509a15e90a5dc58971256eab9cf7d8be1fe796ad))
+
 ## [0.1.0](https://github.com/joinmarket-webui/joinmarket-webui/compare/v0.0.10...v0.1.0) (2022-09-16)
 
 #### Fixed

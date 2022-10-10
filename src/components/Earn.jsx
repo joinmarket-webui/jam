@@ -15,6 +15,7 @@ import * as Api from '../libs/JmWalletApi'
 import styles from './Earn.module.css'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
+import { factorToPercentage, percentageToFactor } from '../utils'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -72,20 +73,6 @@ const initialFormValues = (settings) => ({
     parseInt(window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize), 10) ||
     FORM_INPUT_DEFAULT_VALUES.minsize,
 })
-
-const percentageToFactor = (val, precision = 6) => {
-  // Value cannot just be divided
-  // e.g. ✗ 0.0027 / 100 == 0.000027000000000000002
-  // but: ✓ Number((0.0027 / 100).toFixed(6)) = 0.000027
-  return Number((val / 100).toFixed(precision))
-}
-
-const factorToPercentage = (val, precision = 6) => {
-  // Value cannot just be divided
-  // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
-  // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
-  return Number((val * 100).toFixed(precision))
-}
 
 const renderOrderType = (val, t) => {
   if (isAbsoluteOffer(val)) {

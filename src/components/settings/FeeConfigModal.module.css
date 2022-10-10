@@ -1,0 +1,45 @@
+.feeConfigModal .accordionLoader {
+  height: 3.25rem;
+  margin: 1px 0;
+}
+
+.feeConfigModal form input:not([type='checkbox']) {
+  height: 3.5rem;
+}
+
+.feeConfigModal form :global .form-label {
+  margin-bottom: 0 !important;
+}
+.feeConfigModal form :global .form-label ~ .form-text {
+  display: block;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.infoIcon {
+  border: 1px solid;
+  border-radius: 50%;
+}
+
+.inputGroupText {
+  width: 5ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}
+
+.modalFooter .buttonContainer {
+  width: 100%;
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1rem;
+  background-color: transparent !important;
+}
+
+.modalFooter .buttonContainer :global .btn {
+  flex-grow: 1;
+  min-height: 2.8rem;
+  font-weight: 500;
+  border-color: none !important;
+}

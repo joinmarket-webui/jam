@@ -535,21 +535,14 @@ h2 {
   cursor: not-allowed;
 }
 
-/* Account Overlay */
-
-.accordion-header .accordion-button:not(.collapsed) {
-  /* Disable coloring for expanded headers */
-  color: var(--bs-black);
-  background-color: transparent;
-}
-
-.accordion-header .accordion-button:not(.collapsed)::after {
-  /* Disable coloring for expanded headers */
-  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23212529%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
-}
-
-:root[data-theme='dark'] .accordion-header .accordion-button:not(.collapsed)::after {
-  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23fff%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
+.accordion {
+  --bs-accordion-color: var(--bs-black);
+  --bs-accordion-active-color: var(--bs-black);
+  --bs-accordion-bg: transparent;
+  --bs-accordion-active-bg: transparent;
+  --bs-accordion-btn-color: var(--bs-black);
+  --bs-accordion-btn-icon: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23212529%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
+  --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
 }
 
 /* Theme overrides */
@@ -561,6 +554,14 @@ h2 {
   --bs-border-color: var(--bs-gray-800);
   --bs-gray-dark: #16191c;
   --bs-black: #000;
+}
+
+:root[data-theme='dark'] .accordion {
+  --bs-accordion-color: var(--bs-white);
+  --bs-accordion-active-color: var(--bs-white);
+  --bs-accordion-btn-color: var(--bs-white);
+  --bs-accordion-btn-icon: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23fff%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
+  --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
 }
 
 :root[data-theme='dark'] a.nav-link.active {
@@ -588,19 +589,6 @@ h2 {
 :root[data-theme='dark'] .btn-dark:hover {
   background-color: var(--bs-gray-dark);
   border-color: var(--bs-gray-dark) !important;
-}
-
-:root[data-theme='dark'] .accordion {
-  --bs-accordion-color: var(--bs-white);
-  --bs-accordion-bg: transparent;
-}
-
-:root[data-theme='dark'] .accordion-button {
-  color: var(--bs-accordion-color);
-}
-
-:root[data-theme='dark'] .accordion-button.collapsed::after {
-  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23fff%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
 }
 
 :root[data-theme='dark'] .btn-outline-dark {

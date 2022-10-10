@@ -44,7 +44,13 @@ export default function Jam({ wallet }) {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [collaborativeOperationRunning, setCollaborativeOperationRunning] = useState(false)
+  const [schedule, setSchedule] = useState(null)
+  const [isWaitingSchedulerStart, setIsWaitingSchedulerStart] = useState(false)
+  const [isWaitingSchedulerStop, setIsWaitingSchedulerStop] = useState(false)
+  const collaborativeOperationRunning = useMemo(
+    () => serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false,
+    [serviceInfo]
+  )
 
   const schedulerPreconditionSummary = useMemo(
     () => buildCoinjoinRequirementSummary(walletInfo?.data.utxos.utxos || []),
@@ -97,33 +103,63 @@ export default function Jam({ wallet }) {
   }, [useInsecureTestingSettings, getNewAddressesForAccounts])
 
   useEffect(() => {
-    const abortCtrl = new AbortController()
-
     setAlert(null)
     setIsLoading(true)
 
+    const abortCtrl = new AbortController()
     const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
+      if (abortCtrl.signal.aborted) return
       const message = err.message || t('send.error_loading_wallet_failed')
-      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      setAlert({ variant: 'danger', message })
     })
 
     const loadingWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => {
+      if (abortCtrl.signal.aborted) return
       const message = err.message || t('send.error_loading_wallet_failed')
-      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      setAlert({ variant: 'danger', message })
     })
 
-    Promise.all([loadingServiceInfo, loadingWalletInfo]).finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+    Promise.all([loadingServiceInfo, loadingWalletInfo]).finally(() => {
+      if (abortCtrl.signal.aborted) return
+      setIsLoading(false)
+    })
 
-    return () => abortCtrl.abort()
+    return () => {
+      abortCtrl.abort()
+    }
   }, [reloadServiceInfo, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
-    setCollaborativeOperationRunning(serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false)
+    if (!serviceInfo) return
 
-    if (serviceInfo?.schedule && process.env.NODE_ENV === 'development') {
-      console.table(serviceInfo.schedule)
+    const scheduleUpdate = serviceInfo.schedule
+    setSchedule(scheduleUpdate)
+
+    setIsWaitingSchedulerStart((current) => (current && scheduleUpdate ? false : current))
+    setIsWaitingSchedulerStop((current) => (current && !scheduleUpdate ? false : current))
+
+    if (scheduleUpdate && process.env.NODE_ENV === 'development') {
+      console.table(scheduleUpdate)
     }
   }, [serviceInfo])
+
+  useEffect(() => {
+    // Due to polling, using `collaborativeOperationRunning` instead of
+    // `schedule` here, as a schedule object might still be present when
+    // the scheduler is actually not running anymore. Reload wallet data
+    // only when no collaborative operation is running anymore.
+    if (collaborativeOperationRunning) return
+
+    setIsLoading(true)
+    const abortCtrl = new AbortController()
+    reloadCurrentWalletInfo({ signal: abortCtrl.signal }).finally(() => {
+      if (abortCtrl.signal.aborted) return
+      setIsLoading(false)
+    })
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [collaborativeOperationRunning, reloadCurrentWalletInfo])
 
   const startSchedule = async (values) => {
     if (isLoading || collaborativeOperationRunning) {
@@ -131,7 +167,7 @@ export default function Jam({ wallet }) {
     }
 
     setAlert(null)
-    setIsLoading(true)
+    setIsWaitingSchedulerStart(true)
 
     const destinations = [values.dest1, values.dest2, values.dest3]
 
@@ -157,11 +193,11 @@ export default function Jam({ wallet }) {
     return Api.postSchedulerStart({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }, body)
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
       .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
-      .then((_) => setCollaborativeOperationRunning(true))
       .catch((err) => {
+        if (abortCtrl.signal.aborted) return
         setAlert({ variant: 'danger', message: err.message })
+        setIsWaitingSchedulerStart(false)
       })
-      .finally(() => setIsLoading(false))
   }
 
   const stopSchedule = async () => {
@@ -170,22 +206,17 @@ export default function Jam({ wallet }) {
     }
 
     setAlert(null)
-    setIsLoading(true)
+    setIsWaitingSchedulerStop(true)
 
     const abortCtrl = new AbortController()
     return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
-      .then((_) => setCollaborativeOperationRunning(false))
-      .then((_) =>
-        Promise.all([
-          reloadServiceInfo({ signal: abortCtrl.signal }),
-          reloadCurrentWalletInfo({ signal: abortCtrl.signal }),
-        ])
-      )
+      .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .catch((err) => {
+        if (abortCtrl.signal.aborted) return
         setAlert({ variant: 'danger', message: err.message })
+        setIsWaitingSchedulerStop(false)
       })
-      .finally(() => setIsLoading(false))
   }
 
   return (
@@ -193,21 +224,20 @@ export default function Jam({ wallet }) {
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
 
-      {isLoading ? (
+      {isLoading || isWaitingSchedulerStart || isWaitingSchedulerStop ? (
         <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder xs={12} className={styles['input-loader']} />
         </rb.Placeholder>
       ) : (
         <>
-          {collaborativeOperationRunning && serviceInfo?.schedule && (
+          {collaborativeOperationRunning && (
             <div className="mb-4">
-              <ScheduleProgress schedule={serviceInfo.schedule} />
+              {schedule ? (
+                <ScheduleProgress schedule={schedule} />
+              ) : (
+                <rb.Alert variant="info">{t('send.text_coinjoin_already_running')}</rb.Alert>
+              )}
             </div>
-          )}
-          {collaborativeOperationRunning && serviceInfo && !serviceInfo.schedule && (
-            <rb.Alert variant="info" className="mb-4">
-              {t('send.text_coinjoin_already_running')}
-            </rb.Alert>
           )}
           <rb.Fade
             in={!collaborativeOperationRunning && !schedulerPreconditionSummary.isFulfilled}
@@ -244,7 +274,7 @@ export default function Jam({ wallet }) {
             </>
           )}
           {((!collaborativeOperationRunning && walletInfo && serviceInfo) ||
-            (collaborativeOperationRunning && serviceInfo?.schedule)) && (
+            (collaborativeOperationRunning && schedule)) && (
             <Formik
               initialValues={initialFormValues}
               validate={(values) => {

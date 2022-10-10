@@ -15,21 +15,22 @@ import { routes } from '../constants/routes'
 import languages from '../i18n/languages'
 import styles from './Settings.module.css'
 import SeedModal from './settings/SeedModal'
+import FeeConfigModal from './settings/FeeConfigModal'
 
 export default function Settings({ wallet, stopWallet }) {
+  const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
+  const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
+  const serviceInfo = useServiceInfo()
+
   const [showingSeed, setShowingSeed] = useState(false)
+  const [showingFeeConfig, setShowingFeeConfig] = useState(false)
   const [lockingWallet, setLockingWallet] = useState(false)
   const [showConfirmLockModal, setShowConfirmLockModal] = useState(null)
   const [showLogsEnabled, setShowLogsEnabled] = useState(false)
   const [showingLogs, setShowingLogs] = useState(false)
   const [alert, setAlert] = useState(null)
-
-  const { t } = useTranslation()
-  const settings = useSettings()
-  const settingsDispatch = useSettingsDispatch()
-  const { i18n } = useTranslation()
-  const navigate = useNavigate()
-  const serviceInfo = useServiceInfo()
 
   const setTheme = (theme) => {
     if (window.JM.THEMES.includes(theme)) {
@@ -160,6 +161,16 @@ export default function Settings({ wallet, stopWallet }) {
               </rb.Dropdown.Item>
             </rb.Dropdown.Menu>
           </rb.Dropdown>
+
+          <rb.Button
+            variant="outline-dark"
+            className={styles['settings-btn']}
+            onClick={(e) => setShowingFeeConfig(true)}
+          >
+            <Sprite symbol="coins" width="24" height="24" />
+            {t('settings.show_fee_config')}
+          </rb.Button>
+          {showingFeeConfig && <FeeConfigModal show={showingFeeConfig} onHide={() => setShowingFeeConfig(false)} />}
 
           {showLogsEnabled && (
             <>

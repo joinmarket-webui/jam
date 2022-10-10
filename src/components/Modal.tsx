@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react'
+import { ReactNode, PropsWithChildren } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import styles from './Modal.module.css'
@@ -6,7 +6,7 @@ import Sprite from './Sprite'
 
 interface ConfirmModalProps {
   isShown: boolean
-  title: React.ReactNode | string
+  title: ReactNode | string
   onCancel: () => void
   onConfirm: () => void
 }

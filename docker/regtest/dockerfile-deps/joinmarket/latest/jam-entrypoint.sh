@@ -53,6 +53,12 @@ done < <(env -0)
 # ensure a wallet name is present
 jmenv['rpc_wallet_file']=${jmenv['rpc_wallet_file']:-'jm_webui_default'}
 
+# Make sure `max_cj_fee_abs` and `max_cj_fee_rel` are set
+# `max_cj_fee_abs` between 5000 - 10000 sats if not provided
+jmenv['max_cj_fee_abs']=${jmenv['max_cj_fee_abs']:-"$(shuf -i 5000-10000 -n1)"}
+# `max_cj_fee_rel` between 0.01 - 0.03% if not provided
+jmenv['max_cj_fee_rel']=${jmenv['max_cj_fee_rel']:-"0.000$((RANDOM%3+1))"}
+
 # adapt 'blockchain_source' if missing and we're in regtest mode
 if [ "${jmenv['network']}" = "regtest" ] && [ "${jmenv['blockchain_source']}" = "" ]; then
     jmenv['blockchain_source']='regtest'
