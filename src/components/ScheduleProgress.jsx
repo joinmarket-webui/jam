@@ -34,7 +34,10 @@ const scheduleToSteps = (schedule) => {
   // Calculate total wait time. Ignores the last element since there's no reason in waiting after the last element completed.
   // This is a lower bound estimate for the time the whole scheduler run will take since it doesn't take into account the time
   // it takes to find and talk to makers and wait for tx confirmations on the timechain.
-  const totalWaitTime = schedule.slice(0, schedule.length - 1).reduce((acc, tx) => acc + tx[4] * 60, 0)
+  const totalWaitTime = Math.max(
+    1,
+    schedule.slice(0, schedule.length - 1).reduce((acc, tx) => acc + tx[4] * 60, 0)
+  )
   // Distribute the tx's on the progress bar relative to the waittime after the previous tx completes.
   const txs = schedule.map((tx, i) => {
     const minWidth = 8
@@ -43,7 +46,7 @@ const scheduleToSteps = (schedule) => {
       return { width: minWidth }
     }
 
-    const proportionalWidth = ((schedule[i - 1][4] * 60) / totalWaitTime) * 100
+    const proportionalWidth = ((Math.max(1, schedule[i - 1][4]) * 60) / totalWaitTime) * 100
 
     return { width: Math.max(proportionalWidth, minWidth) }
   })
@@ -86,7 +89,7 @@ const ScheduleProgress = ({ schedule }) => {
     <div className="d-flex flex-column gap-3">
       <div>
         <p className="mb-1">
-          {Math.ceil(steps.totalWaitTime / 60 / 60) === 1 ? (
+          {Math.ceil(steps.totalWaitTime / 60 / 60) <= 1 ? (
             <Trans i18nKey="scheduler.progress_tldr_seconds">
               Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
               <strong>{{ seconds: Math.ceil(steps.totalWaitTime) }}</strong> seconds.
@@ -106,7 +109,7 @@ const ScheduleProgress = ({ schedule }) => {
           {stepsJsx}
         </div>
       </div>
-      <div className={[styles['text'], 'text-secondary'].join(' ')}>
+      <div className={[styles.text, 'text-secondary'].join(' ')}>
         <div>
           {steps.completedTxs < steps.txs.length ? (
             <>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
@@ -17,19 +17,25 @@ import ScheduleProgress from './ScheduleProgress'
 
 import styles from './Jam.module.css'
 
-// When running the scheduler with internal destination addresses, the funds
-// will end up on those 3 mixdepths (one UTXO each).
-// Length of this array must be 3 for now.
-const INTERNAL_DEST_ACCOUNTS = [0, 1, 2]
+const DEST_ADDRESS_COUNT_PROD = 3
+const DEST_ADDRESS_COUNT_TEST = 1
 
-const ValuesListener = ({ handler }) => {
+const addressValueKeys = (addressCount) =>
+  Array(addressCount)
+    .fill('')
+    .map((_, index) => `dest${index + 1}`)
+
+const ValuesListener = ({ handler, addressCount }) => {
   const { values } = useFormikContext()
 
   useEffect(() => {
-    if (values.dest1 !== '' && values.dest2 !== '' && values.dest3 !== '') {
+    const allValuesPresent = addressValueKeys(addressCount)
+      .map((key) => values[key])
+      .every((val) => val !== '')
+    if (allValuesPresent) {
       handler()
     }
-  }, [values, handler])
+  }, [values, handler, addressCount])
 
   return null
 }
@@ -58,41 +64,38 @@ export default function Jam({ wallet }) {
   )
 
   // Returns one fresh address for each requested mixdepth.
-  const getNewAddressesForAccounts = useCallback(
-    (mixdepths) => {
-      if (mixdepths.length !== 3) {
-        throw new Error('Can only handle 3 destination addresses for now.')
-      }
+  const getNewAddresses = useCallback(
+    (count, mixdepth = 0) => {
       if (!walletInfo) {
         throw new Error('Wallet info is not available.')
       }
-      return mixdepths.map((mixdepth) => {
-        const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
-          return branch.branch.split('\t')[0] === 'external addresses'
-        })
-
-        const newEntry = externalBranch.entries.find((entry) => entry.status === 'new')
-
-        if (!newEntry) {
-          throw new Error(`Cannot find a fresh address in mixdepth ${mixdepth}`)
-        }
-
-        return newEntry.address
+      const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
+        return branch.branch.split('\t')[0] === 'external addresses'
       })
+
+      const newEntries = externalBranch.entries.filter((entry) => entry.status === 'new').slice(0, count)
+
+      if (newEntries.length !== count) {
+        throw new Error(`Cannot find enough fresh addresses in mixdepth ${mixdepth}`)
+      }
+
+      return newEntries.map((it) => it.address)
     },
     [walletInfo]
   )
 
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
+  const addressCount = useMemo(
+    () => (useInsecureTestingSettings ? DEST_ADDRESS_COUNT_TEST : DEST_ADDRESS_COUNT_PROD),
+    [useInsecureTestingSettings]
+  )
 
   const initialFormValues = useMemo(() => {
-    const addressCount = 3
-
     let destinationAddresses = Array(addressCount).fill('')
     if (useInsecureTestingSettings) {
       try {
         // prefill with addresses marked as "new"
-        destinationAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
+        destinationAddresses = getNewAddresses(addressCount)
       } catch (e) {
         // on error initialize with empty addresses - form validation will do the rest
         destinationAddresses = Array(addressCount).fill('')
@@ -100,7 +103,7 @@ export default function Jam({ wallet }) {
     }
 
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
-  }, [useInsecureTestingSettings, getNewAddressesForAccounts])
+  }, [addressCount, useInsecureTestingSettings, getNewAddresses])
 
   useEffect(() => {
     setAlert(null)
@@ -169,23 +172,25 @@ export default function Jam({ wallet }) {
     setAlert(null)
     setIsWaitingSchedulerStart(true)
 
-    const destinations = [values.dest1, values.dest2, values.dest3]
+    const destinations = addressValueKeys(addressCount).map((key) => values[key])
 
     const body = { destination_addresses: destinations }
 
     // Make sure schedule testing is really only used in dev mode.
     if (isDebugFeatureEnabled('insecureScheduleTesting') && useInsecureTestingSettings) {
+      // for a proper description of all parameters see
+      // https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.8/jmclient/jmclient/cli_options.py#L268
       body.tumbler_options = {
-        addrcount: 3,
+        addrcount: addressCount,
         minmakercount: 1,
         makercountrange: [1, 0],
-        mixdepthcount: 3,
-        mintxcount: 2,
-        txcountparams: [1, 1],
-        timelambda: 0.1,
+        mixdepthcount: addressCount,
+        mintxcount: 1,
+        txcountparams: [1, 0],
+        timelambda: 0.025, // 0.025 minutes := 1.5 seconds
         stage1_timelambda_increase: 1.0,
         liquiditywait: 10,
-        waittime: 1.0,
+        waittime: 0.0,
       }
     }
 
@@ -297,15 +302,12 @@ export default function Jam({ wallet }) {
                   return alreadyUsed || duplicateEntry
                 }
 
-                const addressDict = Array(3)
-                  .fill('')
-                  .map((_, index) => {
-                    const key = `dest${index + 1}`
-                    return {
-                      key,
-                      address: values[key],
-                    }
-                  })
+                const addressDict = addressValueKeys(addressCount).map((key) => {
+                  return {
+                    key,
+                    address: values[key],
+                  }
+                })
                 const addresses = addressDict.map((it) => it.address)
 
                 addressDict.forEach((addressEntry) => {
@@ -340,7 +342,7 @@ export default function Jam({ wallet }) {
                 errors,
               }) => (
                 <>
-                  <ValuesListener handler={validateForm} />
+                  <ValuesListener handler={validateForm} addressCount={addressCount} />
                   <rb.Form onSubmit={handleSubmit} noValidate>
                     {!collaborativeOperationRunning && (
                       <>
@@ -356,20 +358,21 @@ export default function Jam({ wallet }) {
                                 setUseInsecureTestingSettings(isToggled)
                                 if (isToggled) {
                                   try {
-                                    const newAddresses = getNewAddressesForAccounts(INTERNAL_DEST_ACCOUNTS)
-                                    setFieldValue('dest1', newAddresses[0], true)
-                                    setFieldValue('dest2', newAddresses[1], true)
-                                    setFieldValue('dest3', newAddresses[2], true)
+                                    const newAddresses = getNewAddresses(DEST_ADDRESS_COUNT_TEST)
+                                    newAddresses.forEach((newAddress, index) => {
+                                      setFieldValue(`dest${index + 1}`, newAddress, true)
+                                    })
                                   } catch (e) {
                                     console.error('Could not get internal addresses.', e)
-                                    setFieldValue('dest1', '', true)
-                                    setFieldValue('dest2', '', true)
-                                    setFieldValue('dest3', '', true)
+
+                                    addressValueKeys(DEST_ADDRESS_COUNT_TEST).forEach((key) => {
+                                      setFieldValue(key, '', true)
+                                    })
                                   }
                                 } else {
-                                  setFieldValue('dest1', '', false)
-                                  setFieldValue('dest2', '', false)
-                                  setFieldValue('dest3', '', false)
+                                  addressValueKeys(DEST_ADDRESS_COUNT_PROD).forEach((key) => {
+                                    setFieldValue(key, '', false)
+                                  })
                                 }
                               }}
                               disabled={isSubmitting}
@@ -379,20 +382,22 @@ export default function Jam({ wallet }) {
                       </>
                     )}
                     {!collaborativeOperationRunning &&
-                      [1, 2, 3].map((i) => {
+                      addressValueKeys(addressCount).map((key, index) => {
                         return (
-                          <rb.Form.Group className="mb-4" key={i} controlId={`dest${i}`}>
-                            <rb.Form.Label>{t('scheduler.label_destination_input', { destination: i })}</rb.Form.Label>
+                          <rb.Form.Group className="mb-4" key={key} controlId={key}>
+                            <rb.Form.Label>
+                              {t('scheduler.label_destination_input', { destination: index + 1 })}
+                            </rb.Form.Label>
                             <rb.Form.Control
-                              name={`dest${i}`}
-                              value={values[`dest${i}`]}
+                              name={key}
+                              value={values[key]}
                               placeholder={t('scheduler.placeholder_destination_input')}
                               onChange={handleChange}
                               onBlur={handleBlur}
-                              isInvalid={touched[`dest${i}`] && !!errors[`dest${i}`]}
+                              isInvalid={touched[key] && !!errors[key]}
                               className={`${styles.input} slashed-zeroes`}
                             />
-                            <rb.Form.Control.Feedback type="invalid">{errors[`dest${i}`]}</rb.Form.Control.Feedback>
+                            <rb.Form.Control.Feedback type="invalid">{errors[key]}</rb.Form.Control.Feedback>
                           </rb.Form.Group>
                         )
                       })}
