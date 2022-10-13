@@ -4,7 +4,7 @@ This setup will help you set up a regtest environment quickly.
 It starts multiple JoinMarket containers, hence not only API calls but also actual CoinJoin transactions can be tested.
 Communication between these containers is done via Tor (if internet connection is available) and IRC (locally running container).
 
-Both containers will have a wallet named `Satoshi.jmdat` with password `test`.
+All containers will have a wallet named `Satoshi.jmdat` with password `test`.
 The second container has basic auth enabled (username `joinmarket` and password `joinmarket`).
 
 ## Common flow
@@ -15,7 +15,7 @@ npm run regtest:rebuild
 # start the regtest environment
 npm run regtest:up
 
-# fund wallets and start maker in secondary container
+# fund wallets and start maker in secondary and tertiary container
 npm run regtest:init
 
 # mine blocks in regtest periodically
@@ -42,7 +42,7 @@ Start the regtest environment with:
 ```sh
 npm run regtest:up
 
-# (optional) fund wallets and start maker in secondary container
+# (optional) fund wallets and start maker in secondary and tertiary containers
 npm run regtest:init
 ```
 
@@ -80,9 +80,10 @@ Keep in mind: Building from `master` is not always reliable. This tradeoff is ma
 
 The second JoinMarket container is based on `joinmarket-webui/jam-dev-standalone:master` which exposes an UI on port `29080`
 (username `joinmarket` and pass `joinmarket` for Basic Authentication).
+The third container is a copy of the second one exposed on port `30080` without authentication.
 This is useful if you want to perform regression tests.
 
-The third JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
+One additional JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
 
 ### Build
 ```sh
@@ -118,13 +119,13 @@ Some helper scripts are included to make recurring tasks and interaction with th
 
 ### `init-setup.sh`
 
-This script helps in providing both JoinMarket containers a wallet with spendable coins and starting the Maker Service in the secondary container.
+This script helps in providing JoinMarket containers a wallet with spendable coins and starting the Maker Service in the secondary and tertiary containers.
 Its main goal is to make CoinJoin transactions possible in the regtest environment.
 It should be run immediately after the Docker setup is successfully started so you can start developing right away.
 A wallet named `Satoshi.jmdat` with password `test` will be created if it does not exist.
 
 ```sh
-# fund wallets and start maker service in secondary container
+# fund wallets and start maker service in secondary and tertiary containers
 [user@home regtest]$ ./init-setup.sh
 ```
 
@@ -132,8 +133,11 @@ A wallet named `Satoshi.jmdat` with password `test` will be created if it does n
 [...]
 Attempt to start maker for wallet 'Satoshi.jmdat' in secondary container ..
 [...]
-Starting maker service for wallet 'Satoshi.jmdat'
-Successfully started maker for wallet 'Satoshi.jmdat' in secondary container.
+Successfully started maker for wallet 'Satoshi.jmdat'.
+[...]
+Attempt to start maker for wallet 'Satoshi.jmdat' in tertiary container ..
+[...]
+Successfully started maker for wallet 'Satoshi.jmdat'.
 [...]
 ```
 
