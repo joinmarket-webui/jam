@@ -315,6 +315,7 @@
     "button_show_report": "Show earnings report",
     "button_show_orderbook": "Show orderbook",
     "current": {
+      "text_offer": "Offer",
       "text_cjfee": "Fee",
       "text_minsize": "Minimum Size",
       "text_maxsize": "Maximum Size",
