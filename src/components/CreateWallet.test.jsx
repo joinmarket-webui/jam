@@ -2,7 +2,7 @@ import { BrowserRouter } from 'react-router-dom'
 import user from '@testing-library/user-event'
 import { render, screen, waitFor } from '../testUtils'
 import { act } from 'react-dom/test-utils'
-import { __testSetFeatureEnabled } from '../constants/features'
+import { __testSetDebugFeatureEnabled } from '../constants/debugFeatures'
 
 import * as apiMock from '../libs/JmWalletApi'
 
@@ -159,7 +159,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should verify that "skip" button IS visible when feature is enabled', async () => {
-    __testSetFeatureEnabled('skipWalletBackupConfirmation', true)
+    __testSetDebugFeatureEnabled('skipWalletBackupConfirmation', true)
 
     apiMock.postWalletCreate.mockResolvedValueOnce({
       ok: true,
