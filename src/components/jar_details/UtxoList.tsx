@@ -184,21 +184,21 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
     }
   )
 
-  const frozenOrLocked = (utxo: Utxo) => {
-    if (utxo.frozen && !fb.utxo.isLocked(utxo)) {
-      return (
-        <div className={styles.frozenLockedTag}>
-          <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
-        </div>
-      )
-    }
+  const frozenOrLockedIcon = (utxo: Utxo) => {
     if (fb.utxo.isLocked(utxo)) {
       return (
         <div className={styles.frozenLockedTag}>
           <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
         </div>
       )
+    } else if (utxo.frozen) {
+      return (
+        <div className={styles.frozenLockedTag}>
+          <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
+        </div>
+      )
     }
+    return <></>
   }
 
   return (
@@ -231,58 +231,61 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
               </HeaderRow>
             </Header>
             <Body>
-              {tableList.map((item) => (
-                <Row key={item.id} item={item}>
-                  <CellSelect item={item} />
-                  <Cell>{frozenOrLocked(toUtxo(item))}</Cell>
-                  <Cell>
-                    <Balance
-                      valueString={toUtxo(item).value.toString()}
-                      convertToUnit={settings.unit}
-                      showBalance={settings.showBalance}
-                    />
-                  </Cell>
-                  <Cell>
-                    <code>{toUtxo(item).address}</code>
-                  </Cell>
-                  <Cell>
-                    <div
-                      className={classnames(
-                        styles.utxoConfirmations,
-                        styles[`utxoConfirmations-${toUtxo(item).confirmations}`]
-                      )}
-                    >
-                      {item.confirmations === 0 && <Sprite symbol="confs-0" width="20" height="20" />}
-                      {item.confirmations === 1 && <Sprite symbol="confs-1" width="20" height="20" />}
-                      {item.confirmations === 2 && <Sprite symbol="confs-2" width="20" height="20" />}
-                      {item.confirmations === 3 && <Sprite symbol="confs-3" width="20" height="20" />}
-                      {item.confirmations === 4 && <Sprite symbol="confs-4" width="20" height="20" />}
-                      {item.confirmations === 5 && <Sprite symbol="confs-5" width="20" height="20" />}
-                      {item.confirmations >= 6 && <Sprite symbol="confs-full" width="20" height="20" />}
-                      <div>{item.confirmations}</div>
-                    </div>
-                  </Cell>
-                  <Cell>
-                    <div className={styles.utxoTagList}>
-                      {utxoTags(toUtxo(item), walletInfo).map((tag, index) => (
-                        <div key={index} className={classnames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
-                          <div />
-                          <div>{tag.tag}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </Cell>
-                  <Cell>
-                    <rb.Button
-                      className={styles.utxoListButtonDetails}
-                      variant="link"
-                      onClick={() => setDetailUtxo(toUtxo(item))}
-                    >
-                      {t('jar_details.utxo_list.row_button_details')}
-                    </rb.Button>
-                  </Cell>
-                </Row>
-              ))}
+              {tableList.map((item) => {
+                const utxo = toUtxo(item)
+                return (
+                  <Row key={item.id} item={item}>
+                    <CellSelect item={item} />
+                    <Cell>{frozenOrLockedIcon(utxo)}</Cell>
+                    <Cell>
+                      <Balance
+                        valueString={utxo.value.toString()}
+                        convertToUnit={settings.unit}
+                        showBalance={settings.showBalance}
+                      />
+                    </Cell>
+                    <Cell>
+                      <code>{utxo.address}</code>
+                    </Cell>
+                    <Cell>
+                      <div
+                        className={classnames(
+                          styles.utxoConfirmations,
+                          styles[`utxoConfirmations-${utxo.confirmations}`]
+                        )}
+                      >
+                        {item.confirmations === 0 && <Sprite symbol="confs-0" width="20" height="20" />}
+                        {item.confirmations === 1 && <Sprite symbol="confs-1" width="20" height="20" />}
+                        {item.confirmations === 2 && <Sprite symbol="confs-2" width="20" height="20" />}
+                        {item.confirmations === 3 && <Sprite symbol="confs-3" width="20" height="20" />}
+                        {item.confirmations === 4 && <Sprite symbol="confs-4" width="20" height="20" />}
+                        {item.confirmations === 5 && <Sprite symbol="confs-5" width="20" height="20" />}
+                        {item.confirmations >= 6 && <Sprite symbol="confs-full" width="20" height="20" />}
+                        <div>{item.confirmations}</div>
+                      </div>
+                    </Cell>
+                    <Cell>
+                      <div className={styles.utxoTagList}>
+                        {utxoTags(utxo, walletInfo).map((tag, index) => (
+                          <div key={index} className={classnames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
+                            <div />
+                            <div>{tag.tag}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </Cell>
+                    <Cell>
+                      <rb.Button
+                        className={styles.utxoListButtonDetails}
+                        variant="link"
+                        onClick={() => setDetailUtxo(utxo)}
+                      >
+                        {t('jar_details.utxo_list.row_button_details')}
+                      </rb.Button>
+                    </Cell>
+                  </Row>
+                )
+              })}
             </Body>
           </>
         )}

@@ -81,9 +81,7 @@ export const lockdate = (() => {
 })()
 
 export const utxo = (() => {
-  const isEqual = (lhs: Utxo, rhs: Utxo) => {
-    return lhs.utxo === rhs.utxo
-  }
+  const isEqual = (lhs: Utxo, rhs: Utxo) => lhs.utxo === rhs.utxo
 
   const isInList = (utxo: Utxo, list: Array<Utxo>) => list.findIndex((it) => isEqual(it, utxo)) !== -1
 
@@ -92,8 +90,10 @@ export const utxo = (() => {
 
   const allAreFrozen = (utxos: Array<Utxo>) => utxos.every((utxo) => utxo.frozen)
 
+  const isFidelityBond = (utxo: Utxo) => !!utxo.locktime
+
   const isLocked = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
-    if (!utxo.locktime) return false
+    if (!isFidelityBond(utxo)) return false
 
     const pathAndLocktime = utxo.path.split(':')
     if (pathAndLocktime.length !== 2) return false
@@ -104,7 +104,7 @@ export const utxo = (() => {
     return locktimeUnixTimestamp * 1_000 >= refTime
   }
 
-  return { isEqual, isInList, utxosToFreeze, allAreFrozen, isLocked }
+  return { isEqual, isInList, utxosToFreeze, allAreFrozen, isFidelityBond, isLocked }
 })()
 
 export const time = (() => {
