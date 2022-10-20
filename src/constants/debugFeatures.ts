@@ -3,7 +3,7 @@ interface DebugFeatures {
   allowCreatingExpiredFidelityBond: boolean
 }
 
-const devMode = process.env.NODE_ENV === 'development'
+const devMode = process.env.NODE_ENV === 'development' && process.env.REACT_APP_JAM_DEV_MODE === 'true'
 
 const debugFeatures: DebugFeatures = {
   insecureScheduleTesting: true,
