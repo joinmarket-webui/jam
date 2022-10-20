@@ -1,17 +1,27 @@
 import { useMemo } from 'react'
+import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
+import { Utxo } from '../../context/WalletContext'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { CopyButton } from '../CopyButton'
 import * as fb from './utils'
 import styles from './ExistingFidelityBond.module.css'
 
-const ExistingFidelityBond = ({ utxo }) => {
+interface ExistingFidelityBondProps {
+  utxo: Utxo
+}
+
+const ExistingFidelityBond = ({ utxo }: ExistingFidelityBondProps) => {
   const settings = useSettings()
   const { t, i18n } = useTranslation()
 
   const isExpired = useMemo(() => !fb.utxo.isLocked(utxo), [utxo])
+
+  if (!fb.utxo.isFidelityBond(utxo)) {
+    return <></>
+  }
 
   return (
     <div className={styles.container}>
@@ -29,24 +39,31 @@ const ExistingFidelityBond = ({ utxo }) => {
         </div>
       </div>
       <div className="d-flex align-items-center justify-content-start gap-4 px-3 mt-3">
-        <Sprite className={styles.jar} symbol="fb-filled" width="46px" height="74px" />
+        <Sprite
+          className={styles.jar}
+          symbol={isExpired ? 'jar-open-fill-25' : 'fb-filled'}
+          width="46px"
+          height="74px"
+        />
         <div className="d-flex flex-column gap-3 w-75">
-          <div className="d-flex align-items-center gap-2">
-            <Sprite symbol="clock" width="18" height="18" className={styles.icon} />
-            <div className="d-flex flex-column">
-              <div className={styles.label}>
-                {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
-              </div>
-              <div className={styles.content}>
-                {utxo.locktime} (
-                {fb.time.humanReadableDuration({
-                  to: new Date(utxo.locktime).getTime(),
-                  locale: i18n.resolvedLanguage || i18n.language,
-                })}
-                )
+          {utxo.locktime && (
+            <div className="d-flex align-items-center gap-2">
+              <Sprite symbol="clock" width="18" height="18" className={styles.icon} />
+              <div className="d-flex flex-column">
+                <div className={styles.label}>
+                  {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
+                </div>
+                <div className={styles.content}>
+                  {utxo.locktime} (
+                  {fb.time.humanReadableDuration({
+                    to: new Date(utxo.locktime).getTime(),
+                    locale: i18n.resolvedLanguage || i18n.language,
+                  })}
+                  )
+                </div>
               </div>
             </div>
-          </div>
+          )}
           <div className="d-flex align-items-center gap-2">
             <CopyButton
               showSprites={false}
