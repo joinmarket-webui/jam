@@ -43,18 +43,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const [step, setStep] = useState(steps.selectDate)
   const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
 
-  const utxosByJar = useMemo(() => {
-    const utxos = walletInfo.data.utxos.utxos
-
-    return utxos.reduce((res, utxo) => {
-      const { mixdepth } = utxo
-      res[mixdepth] = res[mixdepth] || []
-      res[mixdepth].push(utxo)
-
-      return res
-    }, {})
-  }, [walletInfo])
-
   const [lockDate, setLockDate] = useState(null)
   const [selectedJar, setSelectedJar] = useState(null)
   const [selectedUtxos, setSelectedUtxos] = useState([])
@@ -232,7 +220,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             description={t('earn.fidelity_bond.select_jar.description')}
             accountBalances={walletInfo.balanceSummary.accountBalances}
             totalBalance={walletInfo.balanceSummary.totalBalance}
-            isJarSelectable={(jarIndex) => utxosByJar[jarIndex] && utxosByJar[jarIndex].length > 0}
+            isJarSelectable={(jarIndex) =>
+              walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
+            }
             selectedJar={selectedJar}
             onJarSelected={(accountIndex) => setSelectedJar(accountIndex)}
           />
@@ -242,7 +232,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <SelectUtxos
             walletInfo={walletInfo}
             jar={selectedJar}
-            utxos={utxosByJar[selectedJar]}
+            utxos={walletInfo.utxosByJar[selectedJar]}
             selectedUtxos={selectedUtxos}
             onUtxoSelected={(utxo) => setSelectedUtxos([...selectedUtxos, utxo])}
             onUtxoDeselected={(utxo) => setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))}
@@ -253,7 +243,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <FreezeUtxos
             walletInfo={walletInfo}
             jar={selectedJar}
-            utxos={utxosByJar[selectedJar]}
+            utxos={walletInfo.utxosByJar[selectedJar]}
             selectedUtxos={selectedUtxos}
             isLoading={isLoading}
           />
@@ -276,7 +266,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <ReviewInputs
             lockDate={lockDate}
             jar={selectedJar}
-            utxos={utxosByJar[selectedJar]}
+            utxos={walletInfo.utxosByJar[selectedJar]}
             selectedUtxos={selectedUtxos}
             timelockedAddress={timelockedAddress}
           />
@@ -330,7 +320,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
         return t('earn.fidelity_bond.select_utxos.text_primary_button')
       case steps.freezeUtxos:
-        const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxosByJar[selectedJar], selectedUtxos))
+        const utxosAreFrozen = fb.utxo.allAreFrozen(
+          fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar], selectedUtxos)
+        )
 
         if (utxosAreFrozen) {
           return t('earn.fidelity_bond.freeze_utxos.text_primary_button_all_frozen')
@@ -417,7 +409,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         return null
       }
 
-      const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxosByJar[selectedJar], selectedUtxos))
+      const utxosAreFrozen = fb.utxo.allAreFrozen(
+        fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar], selectedUtxos)
+      )
       if (utxosAreFrozen) {
         return steps.reviewInputs
       }
@@ -462,7 +456,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     }
 
     if (step === steps.freezeUtxos) {
-      const utxosToFreeze = fb.utxo.utxosToFreeze(utxosByJar[selectedJar], selectedUtxos)
+      const utxosToFreeze = fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar], selectedUtxos)
       const utxosAreFrozen = fb.utxo.allAreFrozen(utxosToFreeze)
 
       if (!utxosAreFrozen) {

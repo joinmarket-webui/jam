@@ -59,16 +59,6 @@ export default function MainWalletView({ wallet }) {
     [currentWalletInfo]
   )
 
-  const utxosByAccount = useMemo(() => {
-    const utxos = (currentWalletInfo && currentWalletInfo.data.utxos.utxos) || []
-    return utxos.reduce((res, utxo) => {
-      const { mixdepth } = utxo
-      res[mixdepth] = res[mixdepth] || []
-      res[mixdepth].push(utxo)
-      return res
-    }, {})
-  }, [currentWalletInfo])
-
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
@@ -116,7 +106,6 @@ export default function MainWalletView({ wallet }) {
         <JarDetailsOverlay
           accounts={accounts}
           initialAccountIndex={selectedAccountIndex}
-          utxosByAccount={utxosByAccount}
           walletInfo={currentWalletInfo}
           wallet={wallet}
           isShown={isAccountOverlayShown}

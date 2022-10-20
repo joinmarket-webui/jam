@@ -13,7 +13,7 @@ import SegmentedTabs from '../SegmentedTabs'
 import UtxoDetailModal from './UtxoDetailModule'
 import { UtxoList } from './UtxoList'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
-import { jarInitial } from '../jars/Jar'
+import { JarIndex, jarInitial } from '../jars/Jar'
 import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {
@@ -32,8 +32,7 @@ interface HeaderProps {
 
 interface JarDetailsOverlayProps {
   accounts: Account[]
-  initialAccountIndex: number
-  utxosByAccount: { [accountIndex: number]: Array<Utxo> }
+  initialAccountIndex: JarIndex
   walletInfo: WalletInfo
   wallet: CurrentWallet
   isShown: boolean
@@ -101,7 +100,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const [detailUtxo, setDetailUtxo] = useState<Utxo | null>(null)
 
   const account = useMemo(() => props.accounts[accountIndex], [props.accounts, accountIndex])
-  const utxos = useMemo(() => props.utxosByAccount[accountIndex] || [], [props.utxosByAccount, accountIndex])
+  const utxos = useMemo(() => props.walletInfo.utxosByJar[accountIndex] || [], [props.walletInfo, accountIndex])
   const selectedUtxos = useMemo(
     () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
     [utxos, selectedUtxoIds]

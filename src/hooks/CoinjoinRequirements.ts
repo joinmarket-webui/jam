@@ -1,5 +1,5 @@
 import * as fb from '../components/fb/utils'
-import { Utxos } from '../context/WalletContext'
+import { groupByJar, Utxos } from '../context/WalletContext'
 
 export type CoinjoinRequirementOptions = {
   minNumberOfUtxos: number // min amount of utxos available
@@ -61,17 +61,6 @@ const buildCoinjoinViolationSummaryForJar = (
     utxosViolatingRetriesLeft,
     utxosViolatingMinConfirmations,
   }
-}
-
-type UtxosByJar = { [key: number]: Utxos }
-
-const groupByJar = (utxos: Utxos): UtxosByJar => {
-  return utxos.reduce((res, utxo) => {
-    const { mixdepth } = utxo
-    res[mixdepth] = res[mixdepth] || []
-    res[mixdepth].push(utxo)
-    return res
-  }, {} as UtxosByJar)
 }
 
 export const buildCoinjoinRequirementSummary = (

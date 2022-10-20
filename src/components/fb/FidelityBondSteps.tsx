@@ -72,8 +72,6 @@ interface CreatedFidelityBondProps {
 }
 
 const SelectDate = ({ description, selectableYearsRange, onDateSelected }: SelectDateProps) => {
-  const { t } = useTranslation()
-
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>{description}</div>
