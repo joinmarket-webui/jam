@@ -59,20 +59,20 @@ export default function MainWalletView({ wallet }) {
     [currentWalletInfo]
   )
 
-  const [selectedAccountIndex, setSelectedAccountIndex] = useState(0)
+  const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
-  const onJarClicked = (accountIndex) => {
-    if (accountIndex === 0) {
-      const isEmpty = Number(currentWalletInfo?.balanceSummary.accountBalances[accountIndex]?.totalBalance) === 0
+  const onJarClicked = (jarIndex) => {
+    if (jarIndex === 0) {
+      const isEmpty = Number(currentWalletInfo?.balanceSummary.accountBalances[jarIndex]?.totalBalance) === 0
 
       if (isEmpty) {
-        navigate(routes.receive, { state: { account: accountIndex } })
+        navigate(routes.receive, { state: { account: jarIndex } })
         return
       }
     }
 
-    setSelectedAccountIndex(accountIndex)
+    setSelectedJarIndex(jarIndex)
     setIsAccountOverlayShown(true)
   }
 
@@ -105,7 +105,7 @@ export default function MainWalletView({ wallet }) {
       {accounts && isAccountOverlayShown && (
         <JarDetailsOverlay
           accounts={accounts}
-          initialAccountIndex={selectedAccountIndex}
+          initialJarIndex={selectedJarIndex}
           walletInfo={currentWalletInfo}
           wallet={wallet}
           isShown={isAccountOverlayShown}

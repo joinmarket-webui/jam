@@ -32,7 +32,7 @@ interface HeaderProps {
 
 interface JarDetailsOverlayProps {
   accounts: Account[]
-  initialAccountIndex: JarIndex
+  initialJarIndex: JarIndex
   walletInfo: WalletInfo
   wallet: CurrentWallet
   isShown: boolean
@@ -91,7 +91,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const serviceInfo = useServiceInfo()
 
   const [alert, setAlert] = useState<SimpleMessageAlertProps | null>(null)
-  const [accountIndex, setAccountIndex] = useState(props.initialAccountIndex)
+  const [jarIndex, setAccountIndex] = useState(props.initialJarIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isLoadingFreeze, setIsLoadingFreeze] = useState(false)
@@ -99,8 +99,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
   const [detailUtxo, setDetailUtxo] = useState<Utxo | null>(null)
 
-  const account = useMemo(() => props.accounts[accountIndex], [props.accounts, accountIndex])
-  const utxos = useMemo(() => props.walletInfo.utxosByJar[accountIndex] || [], [props.walletInfo, accountIndex])
+  const account = useMemo(() => props.accounts[jarIndex], [props.accounts, jarIndex])
+  const utxos = useMemo(() => props.walletInfo.utxosByJar[jarIndex] || [], [props.walletInfo, jarIndex])
   const selectedUtxos = useMemo(
     () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
     [utxos, selectedUtxoIds]
@@ -118,11 +118,11 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     [props.accounts]
   )
 
-  useEffect(() => setAccountIndex(props.initialAccountIndex), [props.initialAccountIndex])
+  useEffect(() => setAccountIndex(props.initialJarIndex), [props.initialJarIndex])
   useEffect(() => {
     // reset selected utxos when switching jars
     setSelectedUtxoIds([])
-  }, [accountIndex])
+  }, [jarIndex])
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -214,7 +214,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }
 
   const utxoListTitle = () => {
-    return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(accountIndex) })
+    return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(jarIndex) })
   }
 
   const refreshButton = () => {
