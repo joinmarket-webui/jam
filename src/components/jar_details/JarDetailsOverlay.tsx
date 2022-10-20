@@ -144,20 +144,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     [serviceInfo]
   )
 
-  /**
-   * Always allow freezing UTXOs.
-   * Only allow unfreezing for non-timelocked UTXOs.
-   *
-   * Expired, unfrozen FBs cannot be used in taker or maker
-   * operation. Hence, unfreezing of FBs is forbidden in this
-   * component. The FB should be spent (unfreeze and sweep)
-   * via other mechanisms (_not_ in this component).
-   *
-   * @param utxo UTXO to check whether freez/unfreeze is allowed
-   * @returns true when UTXO can be frozen/unfrozen
-   */
   const canBeFrozenOrUnfrozen = (utxo: Utxo) => {
-    const isUnfreezeEnabled = !fb.utxo.isFidelityBond(utxo)
+    const isUnfreezeEnabled = !fb.utxo.isLocked(utxo)
     const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
 
     return allowedToExecute
