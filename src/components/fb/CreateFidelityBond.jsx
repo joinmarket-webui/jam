@@ -165,6 +165,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input) => input.outpoint)))
       .then((_) => setAlert(null))
       .catch((err) => {
+        setIsLoading(false)
         setAlert({ variant: 'danger', message: err.message })
       })
   }
