@@ -425,6 +425,13 @@
         "confirmation_toggle_title": "I have reviewed my inputs carefully",
         "confirmation_toggle_subtitle": "I understand that the locked funds will be inaccessible for the given duration",
         "button_create": "Create Fidelity Bond"
+      },
+      "existing": {
+        "title_active": "Fidelity Bond",
+        "title_expired": "Expired Fidelity Bond",
+        "label_locked_until": "Locked until",
+        "label_expired_on": "Expired on",
+        "label_address": "Timelocked address"
       }
     }
   },

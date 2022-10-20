@@ -1,6 +1,7 @@
-import React, { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useRef } from 'react'
+import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useRef } from 'react'
 
 import { getSession } from '../session'
+import * as fb from '../components/fb/utils'
 import * as Api from '../libs/JmWalletApi'
 
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
@@ -115,7 +116,7 @@ const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
 }
 
 const toFidelityBondSummary = (data: CombinedRawWalletData): FidenlityBondSummary => {
-  const fbOutputs = data.utxos.utxos.filter((utxo) => utxo.locktime)
+  const fbOutputs = data.utxos.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
   return {
     fbOutputs,
   }

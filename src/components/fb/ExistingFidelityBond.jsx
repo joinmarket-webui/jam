@@ -1,4 +1,4 @@
-import React from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import Sprite from '../Sprite'
@@ -9,12 +9,16 @@ import styles from './ExistingFidelityBond.module.css'
 
 const ExistingFidelityBond = ({ utxo }) => {
   const settings = useSettings()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
+
+  const isExpired = useMemo(() => !fb.utxo.isLocked(utxo), [utxo])
 
   return (
     <div className={styles.container}>
       <div className="d-flex justify-content-between align-items-center">
-        <div className={styles.title}>Fidelity Bond</div>
+        <div className={styles.title}>
+          {t(`earn.fidelity_bond.existing.${isExpired ? 'title_expired' : 'title_active'}`)}
+        </div>
         <div className="d-flex align-items-center gap-1">
           <Sprite symbol="coins" width="24" height="24" />
           <Balance
@@ -30,7 +34,9 @@ const ExistingFidelityBond = ({ utxo }) => {
           <div className="d-flex align-items-center gap-2">
             <Sprite symbol="clock" width="18" height="18" className={styles.icon} />
             <div className="d-flex flex-column">
-              <div className={styles.label}>Locked until</div>
+              <div className={styles.label}>
+                {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
+              </div>
               <div className={styles.content}>
                 {utxo.locktime} (
                 {fb.time.humanReadableDuration({
@@ -50,7 +56,7 @@ const ExistingFidelityBond = ({ utxo }) => {
               className={styles.icon}
             />
             <div className="d-flex flex-column">
-              <div className={styles.label}>Timelocked address</div>
+              <div className={styles.label}>{t('earn.fidelity_bond.existing.label_address')}</div>
               <div className={styles.content}>
                 <code>{utxo.address}</code>
               </div>
