@@ -5,7 +5,6 @@ import * as fb from '../components/fb/utils'
 import * as Api from '../libs/JmWalletApi'
 
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
-import { JarIndex } from '../components/jars/Jar'
 
 export interface CurrentWallet {
   name: Api.WalletName

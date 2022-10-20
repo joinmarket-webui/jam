@@ -6,14 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import { AccountBalances, AccountBalanceSummary } from '../../context/BalanceSummary'
 import { Utxo, AddressStatus, WalletInfo, BalanceString } from '../../context/WalletContext'
-import { calculateFillLevel, SelectableJar } from '../jars/Jar'
+import { calculateFillLevel, SelectableJar, jarInitial } from '../jars/Jar'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { CopyButton } from '../CopyButton'
 import LockdateForm from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
-import { JarIndex, jarInitial } from '../jars/Jar'
 
 const cx = classnamesBind.bind(styles)
 

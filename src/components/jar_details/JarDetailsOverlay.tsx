@@ -13,7 +13,7 @@ import SegmentedTabs from '../SegmentedTabs'
 import UtxoDetailModal from './UtxoDetailModule'
 import { UtxoList } from './UtxoList'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
-import { JarIndex, jarInitial } from '../jars/Jar'
+import { jarInitial } from '../jars/Jar'
 import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {

@@ -1,15 +1,13 @@
 import { useState, useRef, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
-import styles from './Jar.module.css'
-import Sprite from '../Sprite'
-import Balance from '../Balance'
 import { useSettings } from '../../context/SettingsContext'
 import { BalanceString } from '../../context/WalletContext'
+import Sprite from '../Sprite'
+import Balance from '../Balance'
+import styles from './Jar.module.css'
 
 const classNames = classnamesBind.bind(styles)
-
-type JarIndex = number
 
 type JarFillLevel = 0 | 1 | 2 | 3
 
@@ -199,4 +197,4 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
   )
 }
 
-export { calculateFillLevel, JarIndex, SelectableJar, OpenableJar, jarName, jarInitial }
+export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial }

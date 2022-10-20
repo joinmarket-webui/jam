@@ -18,7 +18,7 @@ export interface CoinjoinRequirementViolation {
   utxosViolatingMinConfirmations: Utxos
 }
 
-export type CoinjoinRequirementViolationWithJarIndex = { jarIndex: number } & CoinjoinRequirementViolation
+export type CoinjoinRequirementViolationWithJarIndex = { jarIndex: JarIndex } & CoinjoinRequirementViolation
 
 export interface CoinjoinRequirementSummary {
   isFulfilled: boolean
