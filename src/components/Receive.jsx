@@ -131,7 +131,7 @@ export default function Receive({ wallet }) {
                       isSelectable={true}
                       isSelected={it.accountIndex === selectedJarIndex}
                       fillLevel={calculateFillLevel(it.totalBalance, walletInfo.balanceSummary.totalBalance)}
-                      onClick={() => setSelectedJarIndex(it.accountIndex)}
+                      onClick={(jarIndex) => setSelectedJarIndex(jarIndex)}
                     />
                   ))}
                 </div>

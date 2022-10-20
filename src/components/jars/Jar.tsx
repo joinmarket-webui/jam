@@ -23,7 +23,7 @@ interface JarProps {
 interface SelectableJarProps {
   isSelectable: boolean
   isSelected: boolean
-  onClick: () => void
+  onClick: (index: JarIndex) => void
 }
 
 interface TooltipJarProps {
@@ -150,7 +150,7 @@ const SelectableJar = ({
         selectable: isSelectable,
         selected: isSelected,
       })}
-      onClick={() => isSelectable && onClick()}
+      onClick={() => isSelectable && onClick(index)}
     >
       <Jar index={index} balance={balance} fillLevel={fillLevel} />
       <div className={styles.selectionCircle}></div>

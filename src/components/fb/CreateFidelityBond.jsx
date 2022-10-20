@@ -33,7 +33,7 @@ const steps = {
   failed: 8,
 }
 
-const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBalance, wallet, walletInfo, onDone }) => {
+const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDone }) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const { t, i18n } = useTranslation()
 
@@ -43,7 +43,17 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
   const [step, setStep] = useState(steps.selectDate)
   const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
 
-  const [utxos, setUtxos] = useState({})
+  const utxosByJar = useMemo(() => {
+    const utxos = walletInfo.data.utxos.utxos
+
+    return utxos.reduce((res, utxo) => {
+      const { mixdepth } = utxo
+      res[mixdepth] = res[mixdepth] || []
+      res[mixdepth].push(utxo)
+
+      return res
+    }, {})
+  }, [walletInfo])
 
   const [lockDate, setLockDate] = useState(null)
   const [selectedJar, setSelectedJar] = useState(null)
@@ -205,30 +215,23 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
   }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t])
 
-  useEffect(() => {
-    const utxos = walletInfo.data.utxos.utxos
-
-    const utxosByAccount = utxos.reduce((res, utxo) => {
-      const { mixdepth } = utxo
-      res[mixdepth] = res[mixdepth] || []
-      res[mixdepth].push(utxo)
-
-      return res
-    }, {})
-
-    setUtxos(utxosByAccount)
-  }, [walletInfo])
-
   const stepComponent = (currentStep) => {
     switch (currentStep) {
       case steps.selectDate:
-        return <SelectDate selectableYearsRange={yearsRange} onDateSelected={(date) => setLockDate(date)} />
+        return (
+          <SelectDate
+            description={t('earn.fidelity_bond.select_date.description')}
+            selectableYearsRange={yearsRange}
+            onDateSelected={(date) => setLockDate(date)}
+          />
+        )
       case steps.selectJar:
         return (
           <SelectJar
-            accountBalances={accountBalances}
-            totalBalance={totalBalance}
-            utxos={utxos}
+            description={t('earn.fidelity_bond.select_jar.description')}
+            accountBalances={walletInfo.balanceSummary.accountBalances}
+            totalBalance={walletInfo.balanceSummary.totalBalance}
+            isJarSelectable={(jarIndex) => utxosByJar[jarIndex] && utxosByJar[jarIndex].length > 0}
             selectedJar={selectedJar}
             onJarSelected={(accountIndex) => setSelectedJar(accountIndex)}
           />
@@ -238,7 +241,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           <SelectUtxos
             walletInfo={walletInfo}
             jar={selectedJar}
-            utxos={utxos[selectedJar]}
+            utxos={utxosByJar[selectedJar]}
             selectedUtxos={selectedUtxos}
             onUtxoSelected={(utxo) => setSelectedUtxos([...selectedUtxos, utxo])}
             onUtxoDeselected={(utxo) => setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))}
@@ -249,7 +252,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           <FreezeUtxos
             walletInfo={walletInfo}
             jar={selectedJar}
-            utxos={utxos[selectedJar]}
+            utxos={utxosByJar[selectedJar]}
             selectedUtxos={selectedUtxos}
             isLoading={isLoading}
           />
@@ -272,7 +275,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
           <ReviewInputs
             lockDate={lockDate}
             jar={selectedJar}
-            utxos={utxos[selectedJar]}
+            utxos={utxosByJar[selectedJar]}
             selectedUtxos={selectedUtxos}
             timelockedAddress={timelockedAddress}
           />
@@ -326,7 +329,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
 
         return t('earn.fidelity_bond.select_utxos.text_primary_button')
       case steps.freezeUtxos:
-        const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos))
+        const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxosByJar[selectedJar], selectedUtxos))
 
         if (utxosAreFrozen) {
           return t('earn.fidelity_bond.freeze_utxos.text_primary_button_all_frozen')
@@ -413,7 +416,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
         return null
       }
 
-      const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos))
+      const utxosAreFrozen = fb.utxo.allAreFrozen(fb.utxo.utxosToFreeze(utxosByJar[selectedJar], selectedUtxos))
       if (utxosAreFrozen) {
         return steps.reviewInputs
       }
@@ -458,7 +461,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, accountBalances, totalBal
     }
 
     if (step === steps.freezeUtxos) {
-      const utxosToFreeze = fb.utxo.utxosToFreeze(utxos[selectedJar], selectedUtxos)
+      const utxosToFreeze = fb.utxo.utxosToFreeze(utxosByJar[selectedJar], selectedUtxos)
       const utxosAreFrozen = fb.utxo.allAreFrozen(utxosToFreeze)
 
       if (!utxosAreFrozen) {

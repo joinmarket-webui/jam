@@ -5,17 +5,17 @@ import { useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
+import { factorToPercentage, percentageToFactor } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
 import { EarnReportOverlay } from './EarnReport'
-import * as Api from '../libs/JmWalletApi'
-import styles from './Earn.module.css'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
-import { factorToPercentage, percentageToFactor } from '../utils'
+import styles from './Earn.module.css'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -395,9 +395,13 @@ export default function Earn({ wallet }) {
                 subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
-                {fidelityBonds.length > 0 &&
-                  fidelityBonds.map((utxo, index) => <ExistingFidelityBond key={index} utxo={utxo} />)}
-
+                {fidelityBonds.length > 0 && (
+                  <>
+                    {fidelityBonds.map((fidelityBond, index) => (
+                      <ExistingFidelityBond key={index} fidelityBond={fidelityBond} />
+                    ))}
+                  </>
+                )}
                 <>
                   {!serviceInfo?.makerRunning &&
                     !isWaitingMakerStart &&
@@ -405,8 +409,6 @@ export default function Earn({ wallet }) {
                     (!isLoading && currentWalletInfo ? (
                       <CreateFidelityBond
                         otherFidelityBondExists={fidelityBonds.length > 0}
-                        accountBalances={currentWalletInfo.balanceSummary.accountBalances}
-                        totalBalance={currentWalletInfo.balanceSummary.totalBalance}
                         wallet={wallet}
                         walletInfo={currentWalletInfo}
                         onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}

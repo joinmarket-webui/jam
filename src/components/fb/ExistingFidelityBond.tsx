@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo } from '../../context/WalletContext'
@@ -10,16 +9,16 @@ import * as fb from './utils'
 import styles from './ExistingFidelityBond.module.css'
 
 interface ExistingFidelityBondProps {
-  utxo: Utxo
+  fidelityBond: Utxo
 }
 
-const ExistingFidelityBond = ({ utxo }: ExistingFidelityBondProps) => {
+const ExistingFidelityBond = ({ fidelityBond }: ExistingFidelityBondProps) => {
   const settings = useSettings()
   const { t, i18n } = useTranslation()
 
-  const isExpired = useMemo(() => !fb.utxo.isLocked(utxo), [utxo])
+  const isExpired = useMemo(() => !fb.utxo.isLocked(fidelityBond), [fidelityBond])
 
-  if (!fb.utxo.isFidelityBond(utxo)) {
+  if (!fb.utxo.isFidelityBond(fidelityBond)) {
     return <></>
   }
 
@@ -32,7 +31,7 @@ const ExistingFidelityBond = ({ utxo }: ExistingFidelityBondProps) => {
         <div className="d-flex align-items-center gap-1">
           <Sprite symbol="coins" width="24" height="24" />
           <Balance
-            valueString={utxo.value.toString()}
+            valueString={fidelityBond.value.toString()}
             convertToUnit={settings.unit}
             showBalance={settings.showBalance}
           />
@@ -45,8 +44,8 @@ const ExistingFidelityBond = ({ utxo }: ExistingFidelityBondProps) => {
           width="46px"
           height="74px"
         />
-        <div className="d-flex flex-column gap-3 w-75">
-          {utxo.locktime && (
+        <div className="d-flex flex-column gap-3">
+          {fidelityBond.locktime && (
             <div className="d-flex align-items-center gap-2">
               <Sprite symbol="clock" width="18" height="18" className={styles.icon} />
               <div className="d-flex flex-column">
@@ -54,9 +53,9 @@ const ExistingFidelityBond = ({ utxo }: ExistingFidelityBondProps) => {
                   {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
                 </div>
                 <div className={styles.content}>
-                  {utxo.locktime} (
+                  {fidelityBond.locktime} (
                   {fb.time.humanReadableDuration({
-                    to: new Date(utxo.locktime).getTime(),
+                    to: new Date(fidelityBond.locktime).getTime(),
                     locale: i18n.resolvedLanguage || i18n.language,
                   })}
                   )
@@ -69,13 +68,13 @@ const ExistingFidelityBond = ({ utxo }: ExistingFidelityBondProps) => {
               showSprites={false}
               text={<Sprite symbol="copy" width="18" height="18" />}
               successText={<Sprite symbol="checkmark" width="18" height="18" />}
-              value={utxo.address}
+              value={fidelityBond.address}
               className={styles.icon}
             />
             <div className="d-flex flex-column">
               <div className={styles.label}>{t('earn.fidelity_bond.existing.label_address')}</div>
               <div className={styles.content}>
-                <code>{utxo.address}</code>
+                <code>{fidelityBond.address}</code>
               </div>
             </div>
           </div>

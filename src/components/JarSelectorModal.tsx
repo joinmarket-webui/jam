@@ -78,7 +78,7 @@ export default function JarSelectorModal({
                 isSelectable={account.accountIndex !== disabledJar}
                 isSelected={account.accountIndex === selectedJar}
                 fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
-                onClick={() => setSelectedJar(account.accountIndex)}
+                onClick={(jarIndex) => setSelectedJar(jarIndex)}
               />
             )
           })}

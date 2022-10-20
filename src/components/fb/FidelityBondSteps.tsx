@@ -18,14 +18,16 @@ import { JarIndex, jarInitial } from '../jars/Jar'
 const cx = classnamesBind.bind(styles)
 
 interface SelectDateProps {
+  description: string
   selectableYearsRange: fb.YearsRange
   onDateSelected: (lockdate: Api.Lockdate | null) => void
 }
 
 interface SelectJarProps {
+  description: string
   accountBalances: AccountBalances
   totalBalance: BalanceString
-  utxos: { [accountIndex: JarIndex]: Array<Utxo> }
+  isJarSelectable: (jarIndex: JarIndex) => boolean
   selectedJar: JarIndex | null
   onJarSelected: (jarIndex: JarIndex) => void
 }
@@ -69,20 +71,25 @@ interface CreatedFidelityBondProps {
   frozenUtxos: Array<Utxo>
 }
 
-const SelectDate = ({ selectableYearsRange, onDateSelected }: SelectDateProps) => {
+const SelectDate = ({ description, selectableYearsRange, onDateSelected }: SelectDateProps) => {
   const { t } = useTranslation()
 
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_date.description')}</div>
+      <div className={styles.stepDescription}>{description}</div>
       <LockdateForm onChange={(date) => onDateSelected(date)} yearsRange={selectableYearsRange} />
     </div>
   )
 }
 
-const SelectJar = ({ accountBalances, totalBalance, utxos, selectedJar, onJarSelected }: SelectJarProps) => {
-  const { t } = useTranslation()
-
+const SelectJar = ({
+  description,
+  accountBalances,
+  totalBalance,
+  isJarSelectable,
+  selectedJar,
+  onJarSelected,
+}: SelectJarProps) => {
   const sortedAccountBalances: Array<AccountBalanceSummary> = useMemo(() => {
     if (!accountBalances) return []
     return Object.values(accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
@@ -90,17 +97,17 @@ const SelectJar = ({ accountBalances, totalBalance, utxos, selectedJar, onJarSel
 
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>{t('earn.fidelity_bond.select_jar.description')}</div>
+      <div className={styles.stepDescription}>{description}</div>
       <div className={styles.jarsContainer}>
         {sortedAccountBalances.map((account, index) => (
           <SelectableJar
             key={index}
             index={account.accountIndex}
             balance={account.totalBalance}
-            isSelectable={utxos[account.accountIndex] && utxos[account.accountIndex].length > 0}
+            isSelectable={isJarSelectable(account.accountIndex)}
             isSelected={selectedJar === account.accountIndex}
             fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
-            onClick={() => onJarSelected(account.accountIndex)}
+            onClick={(jarIndex) => onJarSelected(jarIndex)}
           />
         ))}
       </div>
