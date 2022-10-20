@@ -54,7 +54,7 @@ export default function MainWalletView({ wallet }) {
   const [isLoading, setIsLoading] = useState(true)
   const [showJars, setShowJars] = useState(false)
 
-  const accounts = useMemo(
+  const jars = useMemo(
     () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
     [currentWalletInfo]
   )
@@ -102,9 +102,9 @@ export default function MainWalletView({ wallet }) {
         </rb.Row>
       )}
 
-      {accounts && isAccountOverlayShown && (
+      {jars && isAccountOverlayShown && (
         <JarDetailsOverlay
-          accounts={accounts}
+          jars={jars}
           initialJarIndex={selectedJarIndex}
           walletInfo={currentWalletInfo}
           wallet={wallet}
@@ -178,12 +178,7 @@ export default function MainWalletView({ wallet }) {
         <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
           <div className={styles['jars-divider-container']}>
             <hr className={styles['jars-divider-line']} />
-            <div
-              className={styles['jars-divider-button']}
-              onClick={() => {
-                setShowJars(!showJars)
-              }}
-            >
+            <div className={styles['jars-divider-button']} onClick={() => setShowJars((current) => !current)}>
               <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
             </div>
             <hr className={styles['jars-divider-line']} />
