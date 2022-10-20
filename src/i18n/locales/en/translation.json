@@ -221,7 +221,7 @@
     "label_recipient": "Recipient",
     "placeholder_recipient": "Enter address or choose jar from wallet...",
     "feedback_reused_address": "This address is already used. To preserve your privacy please choose another one.",
-    "label_account": "Send from",
+    "label_source_jar": "Send from",
     "title_jar_selector": "Select a jar from your wallet to send the funds to.",
     "label_amount": "Amount in sats",
     "placeholder_amount": "Enter amount...",
