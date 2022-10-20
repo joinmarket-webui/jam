@@ -917,7 +917,7 @@ export default function Send({ wallet }) {
         {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
-            title={'Select a jar from your wallet to send the funds to.'}
+            title={t('send.title_jar_selector')}
             accountBalances={walletInfo.balanceSummary.accountBalances}
             totalBalance={walletInfo.balanceSummary.totalBalance}
             disabledJar={account}
