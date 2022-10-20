@@ -160,7 +160,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       }
     )
       .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(t('earn.fidelity_bond.error_creating_fidelity_bond'))
+        res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_creating_fidelity_bond'))
       )
       .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input) => input.outpoint)))
       .then((_) => setAlert(null))
