@@ -1,6 +1,7 @@
-import React, { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useRef } from 'react'
+import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useRef } from 'react'
 
 import { getSession } from '../session'
+import * as fb from '../components/fb/utils'
 import * as Api from '../libs/JmWalletApi'
 
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
@@ -89,10 +90,13 @@ type FidenlityBondSummary = {
   fbOutputs: Utxos
 }
 
+export type UtxosByJar = { [key: JarIndex]: Utxos }
+
 export interface WalletInfo {
   balanceSummary: WalletBalanceSummary
   addressSummary: AddressSummary
   fidelityBondSummary: FidenlityBondSummary
+  utxosByJar: UtxosByJar
   data: CombinedRawWalletData
 }
 
@@ -115,7 +119,7 @@ const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
 }
 
 const toFidelityBondSummary = (data: CombinedRawWalletData): FidenlityBondSummary => {
-  const fbOutputs = data.utxos.utxos.filter((utxo) => utxo.locktime)
+  const fbOutputs = data.utxos.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
   return {
     fbOutputs,
   }
@@ -153,15 +157,26 @@ const loadWalletInfoData = async ({
   }
 }
 
+export const groupByJar = (utxos: Utxos): UtxosByJar => {
+  return utxos.reduce((res, utxo) => {
+    const { mixdepth } = utxo
+    res[mixdepth] = res[mixdepth] || []
+    res[mixdepth].push(utxo)
+    return res
+  }, {} as UtxosByJar)
+}
+
 const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
   const balanceSummary = toBalanceSummary(data)
   const addressSummary = toAddressSummary(data)
   const fidelityBondSummary = toFidelityBondSummary(data)
+  const utxosByJar = groupByJar(data.utxos.utxos)
 
   return {
     balanceSummary,
     addressSummary,
     fidelityBondSummary,
+    utxosByJar,
     data,
   }
 }

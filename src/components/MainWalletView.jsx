@@ -54,35 +54,25 @@ export default function MainWalletView({ wallet }) {
   const [isLoading, setIsLoading] = useState(true)
   const [showJars, setShowJars] = useState(false)
 
-  const accounts = useMemo(
+  const jars = useMemo(
     () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
     [currentWalletInfo]
   )
 
-  const utxosByAccount = useMemo(() => {
-    const utxos = (currentWalletInfo && currentWalletInfo.data.utxos.utxos) || []
-    return utxos.reduce((res, utxo) => {
-      const { mixdepth } = utxo
-      res[mixdepth] = res[mixdepth] || []
-      res[mixdepth].push(utxo)
-      return res
-    }, {})
-  }, [currentWalletInfo])
-
-  const [selectedAccountIndex, setSelectedAccountIndex] = useState(0)
+  const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
-  const onJarClicked = (accountIndex) => {
-    if (accountIndex === 0) {
-      const isEmpty = Number(currentWalletInfo?.balanceSummary.accountBalances[accountIndex]?.totalBalance) === 0
+  const onJarClicked = (jarIndex) => {
+    if (jarIndex === 0) {
+      const isEmpty = Number(currentWalletInfo?.balanceSummary.accountBalances[jarIndex]?.totalBalance) === 0
 
       if (isEmpty) {
-        navigate(routes.receive, { state: { account: accountIndex } })
+        navigate(routes.receive, { state: { account: jarIndex } })
         return
       }
     }
 
-    setSelectedAccountIndex(accountIndex)
+    setSelectedJarIndex(jarIndex)
     setIsAccountOverlayShown(true)
   }
 
@@ -112,11 +102,10 @@ export default function MainWalletView({ wallet }) {
         </rb.Row>
       )}
 
-      {accounts && isAccountOverlayShown && (
+      {jars && isAccountOverlayShown && (
         <JarDetailsOverlay
-          accounts={accounts}
-          initialAccountIndex={selectedAccountIndex}
-          utxosByAccount={utxosByAccount}
+          jars={jars}
+          initialJarIndex={selectedJarIndex}
           walletInfo={currentWalletInfo}
           wallet={wallet}
           isShown={isAccountOverlayShown}
@@ -189,12 +178,7 @@ export default function MainWalletView({ wallet }) {
         <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
           <div className={styles['jars-divider-container']}>
             <hr className={styles['jars-divider-line']} />
-            <div
-              className={styles['jars-divider-button']}
-              onClick={() => {
-                setShowJars(!showJars)
-              }}
-            >
+            <div className={styles['jars-divider-button']} onClick={() => setShowJars((current) => !current)}>
               <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
             </div>
             <hr className={styles['jars-divider-line']} />

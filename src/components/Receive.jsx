@@ -5,14 +5,13 @@ import { useLocation } from 'react-router-dom'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
-
 import { BitcoinQR } from './BitcoinQR'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import { CopyButton } from './CopyButton'
 import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
-import styles from './Receive.module.css'
 import { SelectableJar, calculateFillLevel } from './jars/Jar'
+import styles from './Receive.module.css'
 
 export default function Receive({ wallet }) {
   const { t } = useTranslation()
@@ -131,7 +130,7 @@ export default function Receive({ wallet }) {
                       isSelectable={true}
                       isSelected={it.accountIndex === selectedJarIndex}
                       fillLevel={calculateFillLevel(it.totalBalance, walletInfo.balanceSummary.totalBalance)}
-                      onClick={() => setSelectedJarIndex(it.accountIndex)}
+                      onClick={(jarIndex) => setSelectedJarIndex(jarIndex)}
                     />
                   ))}
                 </div>

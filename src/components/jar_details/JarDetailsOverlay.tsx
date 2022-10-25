@@ -18,34 +18,33 @@ import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {
   UTXOS: 'UTXOS',
-  ACCOUNT_DETAILS: 'ACCOUNT_DETAILS',
+  JAR_DETAILS: 'JAR_DETAILS',
 }
 
 interface HeaderProps {
-  account: Account
-  nextAccount: () => void
-  previousAccount: () => void
+  jar: Account
+  nextJar: () => void
+  previousJar: () => void
   setTab: (tab: string) => void
   onHide: () => void
   initialTab: string
 }
 
 interface JarDetailsOverlayProps {
-  accounts: Account[]
-  initialAccountIndex: number
-  utxosByAccount: { [accountIndex: number]: Array<Utxo> }
+  jars: Account[]
+  initialJarIndex: JarIndex
   walletInfo: WalletInfo
   wallet: CurrentWallet
   isShown: boolean
   onHide: () => void
 }
 
-const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initialTab }: HeaderProps) => {
+const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab }: HeaderProps) => {
   const { t } = useTranslation()
 
   const tabs = [
     { label: t('jar_details.title_tab_utxos'), value: TABS.UTXOS },
-    { label: t('jar_details.title_tab_account'), value: TABS.ACCOUNT_DETAILS },
+    { label: t('jar_details.title_tab_jar_details'), value: TABS.JAR_DETAILS },
   ]
 
   return (
@@ -53,16 +52,16 @@ const Header = ({ account, nextAccount, previousAccount, setTab, onHide, initial
       <div className="w-100 d-flex flex-column flex-md-row gap-3">
         <div className="d-flex align-items-center flex-1">
           <div className="d-flex align-items-center ms-auto me-auto ms-md-0">
-            <rb.Button variant="link" className={styles.accountStepperButton} onClick={() => previousAccount()}>
+            <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => previousJar()}>
               <Sprite symbol="caret-left" width="20" height="20" />
             </rb.Button>
             <div className={styles.accountStepperTitle}>
               <Sprite symbol="jar-open-fill-50" width="20" height="20" />
               <span className="slashed-zeroes">
-                <strong>{jarInitial(Number(account.account))}</strong>
+                <strong>{jarInitial(Number(jar.account))}</strong>
               </span>
             </div>
-            <rb.Button variant="link" className={styles.accountStepperButton} onClick={() => nextAccount()}>
+            <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => nextJar()}>
               <Sprite symbol="caret-right" width="20" height="20" />
             </rb.Button>
           </div>
@@ -92,7 +91,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const serviceInfo = useServiceInfo()
 
   const [alert, setAlert] = useState<SimpleMessageAlertProps | null>(null)
-  const [accountIndex, setAccountIndex] = useState(props.initialAccountIndex)
+  const [jarIndex, setJarIndex] = useState(props.initialJarIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isLoadingFreeze, setIsLoadingFreeze] = useState(false)
@@ -100,8 +99,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
   const [detailUtxo, setDetailUtxo] = useState<Utxo | null>(null)
 
-  const account = useMemo(() => props.accounts[accountIndex], [props.accounts, accountIndex])
-  const utxos = useMemo(() => props.utxosByAccount[accountIndex] || [], [props.utxosByAccount, accountIndex])
+  const jar = useMemo(() => props.jars[jarIndex], [props.jars, jarIndex])
+  const utxos = useMemo(() => props.walletInfo.utxosByJar[jarIndex] || [], [props.walletInfo, jarIndex])
   const selectedUtxos = useMemo(
     () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
     [utxos, selectedUtxoIds]
@@ -110,27 +109,27 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return selectedUtxos.map((it) => it.value).reduce((acc, curr) => acc + curr, 0)
   }, [selectedUtxos])
 
-  const nextAccount = useCallback(
-    () => setAccountIndex((current) => (current + 1 >= props.accounts.length ? 0 : current + 1)),
-    [props.accounts]
+  const nextJar = useCallback(
+    () => setJarIndex((current) => (current + 1 >= props.jars.length ? 0 : current + 1)),
+    [props.jars]
   )
-  const previousAccount = useCallback(
-    () => setAccountIndex((current) => (current - 1 < 0 ? props.accounts.length - 1 : current - 1)),
-    [props.accounts]
+  const previousJar = useCallback(
+    () => setJarIndex((current) => (current - 1 < 0 ? props.jars.length - 1 : current - 1)),
+    [props.jars]
   )
 
-  useEffect(() => setAccountIndex(props.initialAccountIndex), [props.initialAccountIndex])
+  useEffect(() => setJarIndex(props.initialJarIndex), [props.initialJarIndex])
   useEffect(() => {
     // reset selected utxos when switching jars
     setSelectedUtxoIds([])
-  }, [accountIndex])
+  }, [jarIndex])
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.code === 'ArrowLeft') previousAccount()
-      else if (e.code === 'ArrowRight') nextAccount()
+      if (e.code === 'ArrowLeft') previousJar()
+      else if (e.code === 'ArrowRight') nextJar()
     },
-    [previousAccount, nextAccount]
+    [previousJar, nextJar]
   )
 
   useEffect(() => {
@@ -203,7 +202,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }
 
   const utxoListTitle = () => {
-    return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(accountIndex) })
+    return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(jarIndex) })
   }
 
   const refreshButton = () => {
@@ -268,9 +267,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       <rb.Offcanvas.Header>
         <rb.Container fluid="lg">
           <Header
-            account={account}
-            nextAccount={nextAccount}
-            previousAccount={previousAccount}
+            jar={jar}
+            nextJar={nextJar}
+            previousJar={previousJar}
             setTab={setSelectedTab}
             onHide={props.onHide}
             initialTab={selectedTab}
@@ -343,8 +342,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                   </>
                 ) : (
                   <rb.Accordion flush className="p-3 p-lg-0">
-                    {account.branches.map((branch, index) => (
-                      <rb.Accordion.Item className={styles.accountItem} key={branch.branch} eventKey={`${index}`}>
+                    {jar.branches.map((branch, index) => (
+                      <rb.Accordion.Item className={styles.jarItem} key={branch.branch} eventKey={`${index}`}>
                         <rb.Accordion.Header>
                           <DisplayBranchHeader branch={branch} />
                         </rb.Accordion.Header>

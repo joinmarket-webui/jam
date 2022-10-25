@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { JarIndex, calculateFillLevel, SelectableJar } from './jars/Jar'
+import { calculateFillLevel, SelectableJar } from './jars/Jar'
 import { AccountBalances } from '../context/BalanceSummary'
 import { BalanceString } from '../context/WalletContext'
 import Sprite from './Sprite'
@@ -78,7 +78,7 @@ export default function JarSelectorModal({
                 isSelectable={account.accountIndex !== disabledJar}
                 isSelected={account.accountIndex === selectedJar}
                 fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
-                onClick={() => setSelectedJar(account.accountIndex)}
+                onClick={(jarIndex) => setSelectedJar(jarIndex)}
               />
             )
           })}

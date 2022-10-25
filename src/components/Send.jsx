@@ -30,7 +30,7 @@ const IS_COINJOIN_DEFAULT_VAL = true
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
 const INITIAL_DESTINATION = null
-const INITIAL_ACCOUNT = 0
+const INITIAL_SOURCE_JAR_INDEX = 0
 const INITIAL_AMOUNT = null
 
 const initialNumCollaborators = (minValue) => {
@@ -52,7 +52,7 @@ const isValidAddress = (candidate) => {
   return typeof candidate === 'string' && !(candidate === '')
 }
 
-const isValidAccount = (candidate) => {
+const isValidJarIndex = (candidate) => {
   const parsed = parseInt(candidate, 10)
   return isValidNumber(parsed) && parsed >= 0
 }
@@ -424,22 +424,24 @@ export default function Send({ wallet }) {
   )
 
   const [destination, setDestination] = useState(INITIAL_DESTINATION)
-  const [account, setAccount] = useState(parseInt(location.state?.account, 10) || INITIAL_ACCOUNT)
+  const [sourceJarIndex, setSourceJarIndex] = useState(
+    parseInt(location.state?.account, 10) || INITIAL_SOURCE_JAR_INDEX
+  )
   const [amount, setAmount] = useState(INITIAL_AMOUNT)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
 
   const accountBalanceOrNull = useMemo(
-    () => (walletInfo && walletInfo.balanceSummary.accountBalances[account]) || null,
-    [walletInfo, account]
+    () => (walletInfo && walletInfo.balanceSummary.accountBalances[sourceJarIndex]) || null,
+    [walletInfo, sourceJarIndex]
   )
 
   const sourceJarUtxos = useMemo(() => {
     if (!walletInfo) return null
 
-    return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === account)
-  }, [walletInfo, account])
+    return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === sourceJarIndex)
+  }, [walletInfo, sourceJarIndex])
 
   const coinjoinPreconditionSummary = useMemo(
     () => buildCoinjoinRequirementSummary(sourceJarUtxos || []),
@@ -473,7 +475,7 @@ export default function Send({ wallet }) {
     if (
       isValidAddress(destination) &&
       !destinationIsReusedAddress &&
-      isValidAccount(account) &&
+      isValidJarIndex(sourceJarIndex) &&
       isValidAmount(amount, isSweep) &&
       (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
     ) {
@@ -483,7 +485,7 @@ export default function Send({ wallet }) {
     }
   }, [
     destination,
-    account,
+    sourceJarIndex,
     amount,
     numCollaborators,
     minNumCollaborators,
@@ -611,7 +613,7 @@ export default function Send({ wallet }) {
     setDestinationIsReusedAddress(false)
   }, [walletInfo, destination])
 
-  const sendPayment = async (account, destination, amount_sats) => {
+  const sendPayment = async (sourceJarIndex, destination, amount_sats) => {
     setAlert(null)
     setPaymentSuccessfulInfoAlert(null)
     setIsSending(true)
@@ -620,7 +622,7 @@ export default function Send({ wallet }) {
 
     let success = false
     try {
-      const res = await Api.postDirectSend(requestContext, { mixdepth: account, destination, amount_sats })
+      const res = await Api.postDirectSend(requestContext, { mixdepth: sourceJarIndex, destination, amount_sats })
 
       if (res.ok) {
         const {
@@ -656,7 +658,7 @@ export default function Send({ wallet }) {
     return success
   }
 
-  const startCoinjoin = async (account, destination, amount_sats, counterparties) => {
+  const startCoinjoin = async (sourceJarIndex, destination, amount_sats, counterparties) => {
     setAlert(null)
     setIsSending(true)
 
@@ -664,7 +666,7 @@ export default function Send({ wallet }) {
     let success = false
     try {
       const res = await Api.postCoinjoin(requestContext, {
-        mixdepth: account,
+        mixdepth: sourceJarIndex,
         destination,
         amount_sats,
         counterparties,
@@ -749,8 +751,8 @@ export default function Send({ wallet }) {
       }
 
       const success = isCoinjoin
-        ? await startCoinjoin(account, destination, amount, counterparties)
-        : await sendPayment(account, destination, amount)
+        ? await startCoinjoin(sourceJarIndex, destination, amount, counterparties)
+        : await sendPayment(sourceJarIndex, destination, amount)
 
       if (success) {
         setDestination(INITIAL_DESTINATION)
@@ -917,10 +919,10 @@ export default function Send({ wallet }) {
         {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
-            title={'Select a jar from your wallet to send the funds to.'}
+            title={t('send.title_jar_selector')}
             accountBalances={walletInfo.balanceSummary.accountBalances}
             totalBalance={walletInfo.balanceSummary.totalBalance}
-            disabledJar={account}
+            disabledJar={sourceJarIndex}
             onCancel={() => setDestinationJarPickerShown(false)}
             onConfirm={(selectedJar) => {
               setDestinationJarPickerShown(false)
@@ -944,19 +946,19 @@ export default function Send({ wallet }) {
         )}
 
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
-          <rb.Form.Group className="mb-4 flex-grow-1" controlId="account">
-            <rb.Form.Label>{t('send.label_account')}</rb.Form.Label>
+          <rb.Form.Group className="mb-4 flex-grow-1" controlId="sourceJarIndex">
+            <rb.Form.Label>{t('send.label_source_jar')}</rb.Form.Label>
             {isLoading ? (
               <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder xs={12} className={styles['input-loader']} />
               </rb.Placeholder>
             ) : (
               <rb.Form.Select
-                defaultValue={account}
-                onChange={(e) => setAccount(parseInt(e.target.value, 10))}
+                defaultValue={sourceJarIndex}
+                onChange={(e) => setSourceJarIndex(parseInt(e.target.value, 10))}
                 required
                 className={`${styles['select']} slashed-zeroes`}
-                isInvalid={!isValidAccount(account)}
+                isInvalid={!isValidJarIndex(sourceJarIndex)}
                 disabled={isOperationDisabled}
               >
                 {walletInfo &&
@@ -1142,7 +1144,7 @@ export default function Send({ wallet }) {
             submitButtonRef.current?.click()
           }}
           data={{
-            sourceJarId: jarInitial(account),
+            sourceJarId: jarInitial(sourceJarIndex),
             destination,
             amount: amountFieldValue().toString(),
             isSweep,
