@@ -1,22 +1,20 @@
 interface DebugFeatures {
   insecureScheduleTesting: boolean
   allowCreatingExpiredFidelityBond: boolean
+  skipWalletBackupConfirmation: boolean
 }
 
-const devMode = process.env.NODE_ENV === 'development'
+const devMode = process.env.NODE_ENV === 'development' && process.env.REACT_APP_JAM_DEV_MODE === 'true'
 
 const debugFeatures: DebugFeatures = {
-  insecureScheduleTesting: true,
-  allowCreatingExpiredFidelityBond: true,
+  allowCreatingExpiredFidelityBond: devMode,
+  insecureScheduleTesting: devMode,
+  skipWalletBackupConfirmation: devMode,
 }
 
 type DebugFeature = keyof DebugFeatures
 
 export const isDebugFeatureEnabled = (name: DebugFeature): boolean => {
-  if (!devMode) {
-    return false
-  }
-
   return debugFeatures[name] || false
 }
 

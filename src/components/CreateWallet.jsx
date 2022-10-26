@@ -10,7 +10,7 @@ import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
-import { isFeatureEnabled } from '../constants/features'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './CreateWallet.module.css'
 
 const PreventLeavingPageByMistake = () => {
@@ -192,7 +192,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
   const { t } = useTranslation()
   const [seedBackup, setSeedBackup] = useState(false)
   const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
-  const [showSkipButton] = useState(isFeatureEnabled('skipWalletBackupConfirmation'))
+  const [showSkipButton] = useState(isDebugFeatureEnabled('skipWalletBackupConfirmation'))
 
   useEffect(() => {
     setSeedBackup(seedWordConfirmations.every((wordConfirmed) => wordConfirmed))
