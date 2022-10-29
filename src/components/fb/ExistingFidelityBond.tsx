@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { PropsWithChildren, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo } from '../../context/WalletContext'
@@ -12,11 +12,18 @@ interface ExistingFidelityBondProps {
   fidelityBond: Utxo
 }
 
-const ExistingFidelityBond = ({ fidelityBond }: ExistingFidelityBondProps) => {
+const ExistingFidelityBond = ({ fidelityBond, children }: PropsWithChildren<ExistingFidelityBondProps>) => {
   const settings = useSettings()
   const { t, i18n } = useTranslation()
 
   const isExpired = useMemo(() => !fb.utxo.isLocked(fidelityBond), [fidelityBond])
+  const humanReadableDuration = useMemo(() => {
+    if (!fidelityBond.locktime) return '-'
+    return fb.time.humanReadableDuration({
+      to: new Date(fidelityBond.locktime).getTime(),
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  }, [i18n, fidelityBond])
 
   if (!fb.utxo.isFidelityBond(fidelityBond)) {
     return <></>
@@ -45,24 +52,17 @@ const ExistingFidelityBond = ({ fidelityBond }: ExistingFidelityBondProps) => {
           height="74px"
         />
         <div className="d-flex flex-column gap-3">
-          {fidelityBond.locktime && (
-            <div className="d-flex align-items-center gap-2">
-              <Sprite symbol="clock" width="18" height="18" className={styles.icon} />
-              <div className="d-flex flex-column">
-                <div className={styles.label}>
-                  {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
-                </div>
-                <div className={styles.content}>
-                  {fidelityBond.locktime} (
-                  {fb.time.humanReadableDuration({
-                    to: new Date(fidelityBond.locktime).getTime(),
-                    locale: i18n.resolvedLanguage || i18n.language,
-                  })}
-                  )
-                </div>
+          <div className="d-flex align-items-center gap-2">
+            <Sprite symbol="clock" width="18" height="18" className={styles.icon} />
+            <div className="d-flex flex-column">
+              <div className={styles.label}>
+                {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
+              </div>
+              <div className={styles.content}>
+                {fidelityBond.locktime} ({humanReadableDuration})
               </div>
             </div>
-          )}
+          </div>
           <div className="d-flex align-items-center gap-2">
             <CopyButton
               showSprites={false}
@@ -80,6 +80,7 @@ const ExistingFidelityBond = ({ fidelityBond }: ExistingFidelityBondProps) => {
           </div>
         </div>
       </div>
+      {children}
     </div>
   )
 }
