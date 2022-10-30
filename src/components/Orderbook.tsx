@@ -5,7 +5,8 @@ import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-ta
 import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
-import { useTranslation, TFunction } from 'react-i18next'
+import { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 import { Helper as ApiHelper } from '../libs/JmWalletApi'
 import * as ObwatchApi from '../libs/JmObwatchApi'
 // @ts-ignore
