@@ -339,4 +339,8 @@
     <symbol id="block" viewBox="0 0 24 24" fill="currentColor">
         <path fill-rule="evenodd" d="M21 8.344a.73.73 0 00-.364-.645l-7.494-4.395a2.21 2.21 0 00-2.23-.003L3.368 7.698a.73.73 0 00-.365.646H3v7.43h.004a.73.73 0 00.376.622l7.563 4.242a2.21 2.21 0 002.167-.003l7.515-4.24a.73.73 0 00.375-.62v-7.43zm-16.236.564a.375.375 0 00-.368.653l6.359 3.588a2.585 2.585 0 002.551-.006l6.278-3.583a.375.375 0 10-.372-.651l-6.278 3.582c-.56.32-1.248.322-1.81.005l-6.36-3.588z" clip-rule="evenodd"></path>
     </symbol>
+    <symbol id="transfer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 15.993V19a1 1 0 001 1h14a1 1 0 001-1v-3.007M19.352 11.436l-3.047 3.198-3.048-3.198"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.4 13.958V8.952A4.952 4.952 0 0111.352 4v0a4.952 4.952 0 014.953 4.952v5.006"></path>
+    </symbol>
 </svg>

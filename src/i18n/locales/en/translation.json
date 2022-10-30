@@ -432,7 +432,15 @@
         "title_expired": "Expired Fidelity Bond",
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
-        "label_address": "Timelocked address"
+        "label_address": "Timelocked address",
+        "button_move_to_jar": "Move to Jar",
+        "move_to_jar": {
+          "title": "Move to Jar",
+          "select_jar": {
+            "description": "Select a jar to move the fidelity bond to."
+          },
+          "button_move": "Move to jar"
+        }
       }
     }
   },

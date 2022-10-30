@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -7,11 +7,13 @@ import { useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/Wal
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { factorToPercentage, percentageToFactor } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import * as fb from './fb/utils'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
+import { SpendFidelityBondModal } from './fb/SpendFidelityBond'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -184,6 +186,8 @@ export default function Earn({ wallet }) {
   const [isShowReport, setIsShowReport] = useState(false)
   const [isShowOrderbook, setIsShowOrderbook] = useState(false)
   const [fidelityBonds, setFidelityBonds] = useState([])
+
+  const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState()
 
   const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
     setIsSending(true)
@@ -359,6 +363,72 @@ export default function Earn({ wallet }) {
     }
   }
 
+  const sendFidelityBondToJar = async (fidelityBond, destinationJarIndex) => {
+    if (isLoading || isSending || isWaitingMakerStart || isWaitingMakerStop) {
+      return
+    }
+
+    setAlert(null)
+
+    try {
+      const abortCtrl = new AbortController()
+      const { name: walletName, token } = wallet
+      const requestContext = { walletName, token, signal: abortCtrl.signal }
+
+      const destination = await Api.getAddressNew({ ...requestContext, mixdepth: destinationJarIndex })
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
+        .then((data) => data.address)
+
+      // reload utxos
+      const utxos = await Api.getWalletUtxos(requestContext)
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+        .then((data) => data.utxos)
+      const utxosToFreeze = utxos.filter((it) => it.mixdepth === fidelityBond.mixdepth).filter((it) => !it.frozen)
+
+      const utxosThatWereFrozen = []
+      const freezeCalls = utxosToFreeze.map((utxo) =>
+        Api.postFreeze(requestContext, { utxo: utxo.utxo, freeze: true })
+          .then((res) => {
+            if (!res.ok) throw Api.Helper.throwError(res, t('earn.fidelity_bond.error_freezing_utxos'))
+          })
+          .then((_) => utxosThatWereFrozen.push(utxo))
+      )
+
+      try {
+        // freeze other coins
+        await Promise.all(freezeCalls)
+        // unfreeze fidelity bond
+        await Api.postFreeze(requestContext, { utxo: fidelityBond.utxo, freeze: false }).then((res) => {
+          // TODO: translate
+          if (!res.ok) throw Api.Helper.throwError(res, 'Error while unfreezing fidelity bond')
+        })
+        // spend fidelity bond (by sweeping whole jar)
+        await Api.postDirectSend(requestContext, {
+          destination,
+          mixdepth: fidelityBond.mixdepth,
+          amount_sats: 0, // sweep
+        }).then((res) => {
+          // TODO: translate
+          if (!res.ok) throw Api.Helper.throwError(res, 'Error while spending fidelity bond')
+        })
+      } finally {
+        // unfreeze all previously frozen coins
+        const unfreezeCalls = utxosThatWereFrozen.map((utxo) =>
+          Api.postFreeze(requestContext, { utxo: utxo.utxo, freeze: false })
+        )
+
+        try {
+          await Promise.all(unfreezeCalls)
+        } catch (e) {
+          // don't throw, just log, as we are in a finally block
+          console.error(e)
+        }
+      }
+    } catch (e) {
+      setAlert({ variant: 'danger', message: e.message })
+    }
+  }
+
   return (
     <div className={styles['earn']}>
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
@@ -395,11 +465,39 @@ export default function Earn({ wallet }) {
                 subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
-                {fidelityBonds.length > 0 && (
+                {currentWalletInfo && fidelityBonds.length > 0 && (
                   <>
-                    {fidelityBonds.map((fidelityBond, index) => (
-                      <ExistingFidelityBond key={index} fidelityBond={fidelityBond} />
-                    ))}
+                    {moveToJarFidelityBondId && (
+                      <SpendFidelityBondModal
+                        show={true}
+                        fidelityBondId={moveToJarFidelityBondId}
+                        wallet={wallet}
+                        walletInfo={currentWalletInfo}
+                        onHide={() => {
+                          setMoveToJarFidelityBondId(undefined)
+                          reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })
+                        }}
+                      />
+                    )}
+                    {fidelityBonds.map((fidelityBond, index) => {
+                      const isExpired = !fb.utxo.isLocked(fidelityBond)
+                      return (
+                        <ExistingFidelityBond key={index} fidelityBond={fidelityBond}>
+                          {isExpired && (
+                            <div className="d-flex flex-row flex-wrap align-items-center gap-2 mt-3">
+                              <rb.Button
+                                variant="dark"
+                                className="flex-1"
+                                onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
+                              >
+                                <Sprite className="me-1" symbol="transfer" width="24" height="24" />
+                                {t('earn.fidelity_bond.existing.button_move_to_jar')}
+                              </rb.Button>
+                            </div>
+                          )}
+                        </ExistingFidelityBond>
+                      )
+                    })}
                   </>
                 )}
                 <>
