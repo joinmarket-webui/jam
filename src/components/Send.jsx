@@ -533,7 +533,9 @@ export default function Send({ wallet }) {
           // the user that loading the wallet info failed
           setWaitForUtxosToBeSpent([])
 
-          const message = err.message || t('send.error_loading_wallet_failed')
+          const message = t('global.errors.error_reloading_wallet_failed', {
+            reason: err.message || t('global.errors.reason_unknown'),
+          })
           setAlert({ variant: 'danger', message })
         })
     }, initialDelayInMs)
@@ -559,12 +561,16 @@ export default function Send({ wallet }) {
     // if the operation is even allowed, i.e. if no other service is running
     const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
       // reusing "wallet failed" message here is okay, as session info also contains wallet information
-      const message = err.message || t('send.error_loading_wallet_failed')
+      const message = t('global.errors.error_loading_wallet_failed', {
+        reason: err.message || t('global.errors.reason_unknown'),
+      })
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
     })
 
     const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => {
-      const message = err.message || t('send.error_loading_wallet_failed')
+      const message = t('global.errors.error_loading_wallet_failed', {
+        reason: err.message || t('global.errors.reason_unknown'),
+      })
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
     })
 

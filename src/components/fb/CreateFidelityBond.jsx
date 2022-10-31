@@ -194,7 +194,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           setUtxoIdsToBeSpent([])
           setIsLoading(false)
 
-          setAlert({ variant: 'danger', message: t('earn.fidelity_bond.error_reloading_wallet') })
+          const message = t('global.errors.error_reloading_wallet_failed', {
+            reason: err.message || t('global.errors.reason_unknown'),
+          })
+          setAlert({ variant: 'danger', message })
         })
     }, TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS)
 

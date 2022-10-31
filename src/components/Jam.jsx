@@ -115,13 +115,18 @@ export default function Jam({ wallet }) {
     const abortCtrl = new AbortController()
     const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
       if (abortCtrl.signal.aborted) return
-      const message = err.message || t('send.error_loading_wallet_failed')
+      // reusing "wallet failed" message here is okay, as session info also contains wallet information
+      const message = t('global.errors.error_loading_wallet_failed', {
+        reason: err.message || t('global.errors.reason_unknown'),
+      })
       setAlert({ variant: 'danger', message })
     })
 
     const loadingWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => {
       if (abortCtrl.signal.aborted) return
-      const message = err.message || t('send.error_loading_wallet_failed')
+      const message = t('global.errors.error_loading_wallet_failed', {
+        reason: err.message || t('global.errors.reason_unknown'),
+      })
       setAlert({ variant: 'danger', message })
     })
 

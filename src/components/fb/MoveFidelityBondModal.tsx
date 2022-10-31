@@ -97,7 +97,9 @@ const MoveFidelityBondModal = ({
           // the user that loading the wallet info failed
           setWaitForUtxosToBeSpent([])
 
-          const message = err.message || t('send.error_loading_wallet_failed')
+          const message = t('global.errors.error_reloading_wallet_failed', {
+            reason: err.message || t('global.errors.reason_unknown'),
+          })
           setAlert({ variant: 'danger', message })
         })
     }, initialDelayInMs)

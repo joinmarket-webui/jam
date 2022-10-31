@@ -21,6 +21,11 @@
           "label_last": "Last"
         }
       }
+    },
+    "errors": {
+      "error_loading_wallet_failed": "Loading wallet failed. {{ reason }}",
+      "error_reloading_wallet_failed": "Reloading wallet failed. {{ reason }}",
+      "reason_unknown": "Unknown reason."
     }
   },
   "app": {
@@ -213,7 +218,6 @@
     "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
     "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. Consider adding them to your config manually.",
     "direct_payment_error_message_bad_request": "Please verify your inputs carefully.",
-    "error_loading_wallet_failed": "Loading wallet failed.",
     "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }} in transaction {{ txid }}.",
     "text_maker_running": "Earn is active. Stop the service in order to send collaborative transactions.",
@@ -348,7 +352,6 @@
       "error_unfreezing_utxos": "Could not unfreeze UTXOs.",
       "error_loading_address": "Could not load time-locked address.",
       "error_creating_fidelity_bond": "The transaction to create the fidelity bond failed.",
-      "error_reloading_wallet": "Could not reload the wallet.",
       "text_loading": "Loading...",
       "text_creating": "Creating...",
       "text_unfreezing": "Unfreezing...",

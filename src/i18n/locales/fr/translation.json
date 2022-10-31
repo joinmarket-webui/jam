@@ -1,4 +1,9 @@
 {
+  "global": {
+    "errors": {
+      "error_loading_wallet_failed": "Le chargement du portefeuille a échoué. {{ reason }}"
+    }
+  },
   "navbar": {
     "title": "Jam",
     "button_create_wallet": "Créer un porte-monnaie",
@@ -158,7 +163,6 @@
     "error_invalid_num_collaborators": "Veuillez utiliser entre {{ minNumCollaborators }} et {{ maxNumCollaborators }} collaborateurs.",
     "taker_error_message_max_fees_config_missing": "Les variables de configuration 'max_cj_fee_rel' et 'max_cj_fee_abs' doivent être définies dans votre fichier joinmarket.cfg afin d'envoyer des transactions collaboratives. Pensez à les ajouter manuellement à votre configuration.",
     "direct_payment_error_message_bad_request": " Veuillez vérifier soigneusement vos entrées.",
-    "error_loading_wallet_failed": "Le chargement du portefeuille a échoué.",
     "error_loading_min_makers_failed": "Le chargement de la valeur de configuration 'minimum_makers' a échoué.",
     "alert_payment_successful": "Paiement réussi : Envoyé {{ amount }} sats à {{ address }} en transaction {{ txid }}.",
     "text_maker_running": "Générer est actif. Arrêtez le service afin d'envoyer des transactions collaboratives.",
