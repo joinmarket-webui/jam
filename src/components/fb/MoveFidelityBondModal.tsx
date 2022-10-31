@@ -170,7 +170,7 @@ const MoveFidelityBondModal = ({
         Api.postFreeze(requestContext, { utxo: utxo.utxo, freeze: true })
           .then((res) => {
             if (!res.ok) {
-              throw Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_freezing_utxos'))
+              return Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_freezing_utxos'))
             }
           })
           .then((_) => utxosThatWereFrozen.push(utxo.utxo))
@@ -181,7 +181,7 @@ const MoveFidelityBondModal = ({
       // unfreeze fidelity bond
       await Api.postFreeze(requestContext, { utxo: fidelityBond.utxo, freeze: false }).then((res) => {
         if (!res.ok) {
-          throw Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_unfreezing_fidelity_bond'))
+          return Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_unfreezing_fidelity_bond'))
         }
       })
       // spend fidelity bond (by sweeping whole jar)
@@ -191,7 +191,7 @@ const MoveFidelityBondModal = ({
         amount_sats: 0, // sweep
       }).then((res) => {
         if (!res.ok) {
-          throw Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_spending_fidelity_bond'))
+          return Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_spending_fidelity_bond'))
         }
         return res.json()
       })
@@ -200,7 +200,7 @@ const MoveFidelityBondModal = ({
       const unfreezeCalls = utxosThatWereFrozen.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
 
       try {
-        await Promise.all(unfreezeCalls)
+        await Promise.allSettled(unfreezeCalls)
       } catch (e) {
         // don't throw, just log, as we are in a finally block
         console.error(e)
