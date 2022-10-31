@@ -1,24 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { CurrentWallet, useReloadCurrentWalletInfo, Utxos, WalletInfo } from '../../context/WalletContext'
+import { CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos, WalletInfo } from '../../context/WalletContext'
 import { SelectJar } from './FidelityBondSteps'
 import * as Api from '../../libs/JmWalletApi'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
-import styles from './SpendFidelityBond.module.css'
+import styles from './MoveFidelityBondModal.module.css'
 
 type InputPartial = {
   outpoint: Api.UtxoId
 }
 
-type SpendFidelityBondModalProps = {
+type MoveFidelityBondModalProps = {
   fidelityBondId: Api.UtxoId
   wallet: CurrentWallet
   walletInfo: WalletInfo
 } & rb.ModalProps
 
-const SpendFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalProps }: SpendFidelityBondModalProps) => {
+const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalProps }: MoveFidelityBondModalProps) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const { t } = useTranslation()
 
@@ -206,7 +206,7 @@ const SpendFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPr
       )
     }
 
-    if (successfulSendData && waitForUtxosToBeSpent.length === 0) {
+    if (successfulSendData) {
       return <Done text={t('earn.fidelity_bond.select_jar.description')} />
     }
 
@@ -254,4 +254,4 @@ const SpendFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPr
   )
 }
 
-export { SpendFidelityBondModal }
+export { MoveFidelityBondModal }

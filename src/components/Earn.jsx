@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -13,7 +13,7 @@ import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
-import { SpendFidelityBondModal } from './fb/SpendFidelityBond'
+import { MoveFidelityBondModal } from './fb/MoveFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -402,7 +402,7 @@ export default function Earn({ wallet }) {
                 {currentWalletInfo && fidelityBonds.length > 0 && (
                   <>
                     {moveToJarFidelityBondId && (
-                      <SpendFidelityBondModal
+                      <MoveFidelityBondModal
                         show={true}
                         fidelityBondId={moveToJarFidelityBondId}
                         wallet={wallet}
