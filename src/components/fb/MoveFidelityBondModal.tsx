@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { CurrentWallet, useReloadCurrentWalletInfo, Utxos, WalletInfo } from '../../context/WalletContext'
 import { SelectJar } from './FidelityBondSteps'
 import * as Api from '../../libs/JmWalletApi'
+import * as fb from './utils'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
 import styles from './MoveFidelityBondModal.module.css'
@@ -133,15 +134,15 @@ const MoveFidelityBondModal = ({
         .catch((e) => {
           setIsSending(false)
 
-          const message = e instanceof Error ? e.message : 'Unknown Error'
+          const message = e instanceof Error ? e.message : t('global.errors.reason_unknown')
           setAlert({ variant: 'danger', message })
         })
     }
   }
 
   const sendFidelityBondToJar = async (targetJarIndex: JarIndex) => {
-    if (!fidelityBond) {
-      throw new Error('Precondition failed')
+    if (!fidelityBond || fb.utxo.isLocked(fidelityBond)) {
+      throw new Error(t('earn.fidelity_bond.move.error_fidelity_bond_still_locked'))
     }
 
     const abortCtrl = new AbortController()
@@ -149,12 +150,16 @@ const MoveFidelityBondModal = ({
     const requestContext = { walletName, token, signal: abortCtrl.signal }
 
     const destination = await Api.getAddressNew({ ...requestContext, mixdepth: targetJarIndex })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
+      .then((res) =>
+        res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_loading_address'))
+      )
       .then((data) => data.address as Api.BitcoinAddress)
 
     // reload utxos
     const utxos = await Api.getWalletUtxos(requestContext)
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((res) =>
+        res.ok ? res.json() : Api.Helper.throwError(res, t('global.errors.error_reloading_wallet_failed'))
+      )
       .then((data) => data.utxos as Utxos)
     const utxosToFreeze = utxos.filter((it) => it.mixdepth === fidelityBond.mixdepth).filter((it) => !it.frozen)
 
@@ -165,7 +170,7 @@ const MoveFidelityBondModal = ({
         Api.postFreeze(requestContext, { utxo: utxo.utxo, freeze: true })
           .then((res) => {
             if (!res.ok) {
-              throw Api.Helper.throwError(res, t('earn.fidelity_bond.error_freezing_utxos'))
+              throw Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_freezing_utxos'))
             }
           })
           .then((_) => utxosThatWereFrozen.push(utxo.utxo))
@@ -175,9 +180,8 @@ const MoveFidelityBondModal = ({
 
       // unfreeze fidelity bond
       await Api.postFreeze(requestContext, { utxo: fidelityBond.utxo, freeze: false }).then((res) => {
-        // TODO: translate
         if (!res.ok) {
-          throw Api.Helper.throwError(res, 'Error while unfreezing fidelity bond')
+          throw Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_unfreezing_fidelity_bond'))
         }
       })
       // spend fidelity bond (by sweeping whole jar)
@@ -186,9 +190,8 @@ const MoveFidelityBondModal = ({
         mixdepth: fidelityBond.mixdepth,
         amount_sats: 0, // sweep
       }).then((res) => {
-        // TODO: translate
         if (!res.ok) {
-          throw Api.Helper.throwError(res, 'Error while spending fidelity bond')
+          throw Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_spending_fidelity_bond'))
         }
         return res.json()
       })
@@ -210,13 +213,13 @@ const MoveFidelityBondModal = ({
       return (
         <>
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          {t('global.moving')}
+          {t('earn.fidelity_bond.move.text_moving')}
         </>
       )
     } else if (txInfo) {
-      return <>{t('global.done')}</>
+      return <>{t('earn.fidelity_bond.move.text_button_done')}</>
     }
-    return <>{t('global.move')}</>
+    return <>{t('earn.fidelity_bond.move.text_button_submit')}</>
   }
 
   const Done = ({ text }: { text: string }) => {
@@ -233,20 +236,20 @@ const MoveFidelityBondModal = ({
   const ModalBodyContent = () => {
     if (isLoading) {
       return (
-        <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
+        <div className="d-flex justify-content-center align-items-center my-5">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          <div>{isSending ? 'Moving...' : 'Loading...'}</div>
+          <div>{t(`earn.fidelity_bond.move.${isSending ? 'text_moving' : 'text_loading'}`)}</div>
         </div>
       )
     }
 
     if (txInfo) {
-      return <Done text={t('earn.fidelity_bond.select_jar.description')} />
+      return <Done text={t('earn.fidelity_bond.move.success_text')} />
     }
 
     return (
       <SelectJar
-        description={t('earn.fidelity_bond.select_jar.description')}
+        description={t('earn.fidelity_bond.move.select_jar.description')}
         accountBalances={walletInfo.balanceSummary.accountBalances}
         totalBalance={walletInfo.balanceSummary.totalBalance}
         isJarSelectable={() => true}
@@ -267,7 +270,7 @@ const MoveFidelityBondModal = ({
       onHide={() => onClose({ txInfo, mustReload: parentMustReload })}
     >
       <rb.Modal.Header closeButton>
-        <rb.Modal.Title>{t('settings.fees.title')}</rb.Modal.Title>
+        <rb.Modal.Title>{t('earn.fidelity_bond.move.title')}</rb.Modal.Title>
       </rb.Modal.Header>
       <rb.Modal.Body>
         {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
@@ -277,11 +280,11 @@ const MoveFidelityBondModal = ({
         <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
           <rb.Button
             variant="light"
-            disabled={!isLoading && txInfo !== undefined}
+            disabled={isLoading}
             onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
             className="flex-1 justify-content-center align-items-center"
           >
-            {t('settings.fees.text_button_cancel')}
+            {t('earn.fidelity_bond.move.text_button_cancel')}
           </rb.Button>
           <rb.Button
             variant="dark"

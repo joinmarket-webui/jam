@@ -530,7 +530,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
         )}
         <div className={styles.buttonContainer}>
           <rb.Button variant="light" onClick={cancel} className="d-flex justify-content-center align-items-center">
-            {t('settings.fees.text_button_cancel')}
+            {t('global.fees.text_button_cancel')}
           </rb.Button>
           <rb.Button
             variant="dark"

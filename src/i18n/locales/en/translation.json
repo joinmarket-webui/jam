@@ -436,13 +436,23 @@
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
         "label_address": "Timelocked address",
-        "button_move_to_jar": "Move to Jar",
-        "move_to_jar": {
-          "title": "Move to Jar",
-          "select_jar": {
-            "description": "Select a jar to move the fidelity bond to."
-          },
-          "button_move": "Move to jar"
+        "button_move_to_jar": "Move to Jar"
+      },
+      "move": {
+        "title": "Move expired Fidelity Bond to Jar",
+        "success_text": "Fidelity Bond moved successfully!",
+        "text_loading": "Loading...",
+        "text_moving": "Moving...",
+        "text_button_cancel": "Cancel",
+        "text_button_submit": "Move to Jar",
+        "text_button_done": "Done",
+        "error_fidelity_bond_still_locked": "The given fidelity bond is still locked.",
+        "error_loading_address": "Unable to get new address.",
+        "error_freezing_utxos": "Could not freeze UTXOs.",
+        "error_unfreezing_fidelity_bond": "Error while unfreezing fidelity bond.",
+        "error_spending_fidelity_bond": "Error while spending fidelity bond.",
+        "select_jar": {
+          "description": "Select a jar to move the fidelity bond into."
         }
       }
     }
