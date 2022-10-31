@@ -5,6 +5,12 @@
   border-color: var(--bs-btn-border-color) !important;
 }
 
+.paginationSelect option {
+  /* For chromium based browser (Firefox applies own styles to <option /> elements) */
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+}
+
 :root[data-theme='dark'] .paginationSelect {
   color: var(--bs-btn-color);
   background-color: transparent;
