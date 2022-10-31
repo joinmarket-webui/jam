@@ -1,15 +1,33 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos, WalletInfo } from '../../context/WalletContext'
+import { CurrentWallet, useReloadCurrentWalletInfo, Utxos, WalletInfo } from '../../context/WalletContext'
 import { SelectJar } from './FidelityBondSteps'
 import * as Api from '../../libs/JmWalletApi'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
 import styles from './MoveFidelityBondModal.module.css'
 
-type InputPartial = {
+type Input = {
   outpoint: Api.UtxoId
+  scriptSig: string
+  nSequence: number
+  witness: string
+}
+
+type Output = {
+  value_sats: Api.AmountSats
+  scriptPubKey: string
+  address: string
+}
+
+type TxInfo = {
+  hex: string
+  inputs: Input[]
+  outputs: Output[]
+  txid: Api.TxId
+  nLocktime: number
+  nVersion: number
 }
 
 type MoveFidelityBondModalProps = {
@@ -25,7 +43,7 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
   const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | undefined>()
   const [destinationJarIndex, setDestinationJarIndex] = useState<JarIndex>()
 
-  const [successfulSendData, setSuccessfulSendData] = useState<any | undefined>()
+  const [txInfo, setTxInfo] = useState<TxInfo | undefined>()
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<Api.UtxoId[]>([])
 
   const [isSending, setIsSending] = useState(false)
@@ -82,17 +100,17 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
     if (destinationJarIndex === undefined) return
     if (waitForUtxosToBeSpent.length > 0) return
 
-    if (successfulSendData) {
+    if (txInfo) {
       modalProps.onHide && modalProps.onHide()
     } else {
       setAlert(undefined)
       setIsSending(true)
       sendFidelityBondToJar(destinationJarIndex)
-        .then((data) => {
-          setSuccessfulSendData(data)
+        .then((data) => data.txinfo as TxInfo)
+        .then((txinfo) => {
+          setTxInfo(txinfo)
 
-          const inputs = data.txinfo.inputs as InputPartial[]
-          setWaitForUtxosToBeSpent(inputs.map((it) => it.outpoint as Api.UtxoId))
+          setWaitForUtxosToBeSpent(txinfo.inputs.map((it) => it.outpoint))
 
           setIsSending(false)
         })
@@ -179,7 +197,7 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
           {t('global.moving')}
         </>
       )
-    } else if (successfulSendData) {
+    } else if (txInfo) {
       return <>{t('global.done')}</>
     }
     return <>{t('global.move')}</>
@@ -206,7 +224,7 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
       )
     }
 
-    if (successfulSendData) {
+    if (txInfo) {
       return <Done text={t('earn.fidelity_bond.select_jar.description')} />
     }
 

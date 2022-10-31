@@ -422,6 +422,13 @@ export default function Earn({ wallet }) {
                               <rb.Button
                                 variant="dark"
                                 className="flex-1"
+                                disabled={
+                                  serviceInfo?.coinjoinInProgress !== false ||
+                                  serviceInfo?.makerRunning !== false ||
+                                  isWaitingMakerStart ||
+                                  isWaitingMakerStop ||
+                                  isLoading
+                                }
                                 onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
                               >
                                 <Sprite className="me-1" symbol="transfer" width="24" height="24" />
