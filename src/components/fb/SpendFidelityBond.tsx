@@ -1,127 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos, WalletInfo } from '../../context/WalletContext'
-import { Done, FreezeUtxos, SelectJar } from './FidelityBondSteps'
-import * as fb from './utils'
+import { CurrentWallet, useReloadCurrentWalletInfo, Utxos, WalletInfo } from '../../context/WalletContext'
+import { SelectJar } from './FidelityBondSteps'
 import * as Api from '../../libs/JmWalletApi'
 import Alert from '../Alert'
+import Sprite from '../Sprite'
+import styles from './SpendFidelityBond.module.css'
 
-const steps = {
-  selectJar: 1,
-  freezeUtxos: 2,
-  spendFidelityBond: 3,
-  unfreezeUtxos: 4,
-  done: 5,
-  failed: 6,
-}
-
-interface SpendFidelityBondProps {
-  fidelityBond?: Utxo
-  walletInfo: WalletInfo
-  step: number
-  isLoading: boolean
-  selectedJar?: JarIndex
-  setSelectedJar: (jar: JarIndex) => void
-}
-
-const SpendFidelityBond = ({
-  fidelityBond,
-  walletInfo,
-  step,
-  isLoading,
-  selectedJar,
-  setSelectedJar,
-}: SpendFidelityBondProps) => {
-  const { t } = useTranslation()
-
-  const stepComponent = (currentStep: number) => {
-    switch (currentStep) {
-      case steps.selectJar:
-        return (
-          <SelectJar
-            description={t('earn.fidelity_bond.select_jar.description')}
-            accountBalances={walletInfo.balanceSummary.accountBalances}
-            totalBalance={walletInfo.balanceSummary.totalBalance}
-            isJarSelectable={() => true}
-            selectedJar={selectedJar}
-            onJarSelected={setSelectedJar}
-          />
-        )
-      case steps.freezeUtxos:
-        return (
-          <>
-            {fidelityBond && (
-              <FreezeUtxos
-                walletInfo={walletInfo}
-                jar={fidelityBond.mixdepth}
-                utxos={walletInfo.utxosByJar[fidelityBond.mixdepth]}
-                selectedUtxos={[fidelityBond]}
-                isLoading={isLoading}
-              />
-            )}
-          </>
-        )
-      /*case steps.reviewInputs:
-            if (isLoading) {
-              return (
-                <div className="d-flex justify-content-center align-items-center mt-5">
-                  <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                  <div>{t('earn.fidelity_bond.text_loading')}</div>
-                </div>
-              )
-            }
-    
-            if (timelockedAddress === null) {
-              return <div>{t('earn.fidelity_bond.error_loading_address')}</div>
-            }
-    
-            return (
-              <ReviewInputs
-                lockDate={lockDate}
-                jar={selectedJar}
-                utxos={walletInfo.utxosByJar[selectedJar]}
-                selectedUtxos={selectedUtxos}
-                timelockedAddress={timelockedAddress}
-              />
-            )
-    
-          case steps.createFidelityBond:
-            return isLoading ? (
-              <div className="d-flex justify-content-center align-items-center mt-5">
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                <div>{t('earn.fidelity_bond.text_creating')}</div>
-              </div>
-            ) : (
-              <div className="d-flex justify-content-center align-items-center gap-2 mt-5">
-                {alert === null ? (
-                  <CreatedFidelityBond fbUtxo={createdFidelityBondUtxo} frozenUtxos={frozenUtxos} />
-                ) : (
-                  <>{t('earn.fidelity_bond.error_creating_fidelity_bond')}</>
-                )}
-              </div>
-            )*/
-      case steps.unfreezeUtxos:
-        return isLoading ? (
-          <div className="d-flex justify-content-center align-items-center mt-5">
-            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-            <div>{t('earn.fidelity_bond.text_unfreezing')}</div>
-          </div>
-        ) : (
-          <div className="d-flex justify-content-center align-items-center gap-2 mt-5">
-            {alert === null ? (
-              <Done text={t('earn.fidelity_bond.unfreeze_utxos.done')} />
-            ) : (
-              <>{t('earn.fidelity_bond.error_unfreezing_utxos')}</>
-            )}
-          </div>
-        )
-      default:
-        return null
-    }
-  }
-
-  return <>{stepComponent(step)}</>
+type InputPartial = {
+  outpoint: Api.UtxoId
 }
 
 type SpendFidelityBondModalProps = {
@@ -135,14 +23,13 @@ const SpendFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPr
   const { t } = useTranslation()
 
   const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | undefined>()
-  const [isLoading, setIsLoading] = useState(false)
-  const [step, setStep] = useState(steps.selectJar)
-  //const [nextStep, setNextStep] = useState<number>()
-
   const [destinationJarIndex, setDestinationJarIndex] = useState<JarIndex>()
-  const [frozenUtxoIds, setFrozenUtxoIds] = useState<Api.UtxoId[]>([])
 
+  const [successfulSendData, setSuccessfulSendData] = useState<any | undefined>()
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<Api.UtxoId[]>([])
+
+  const [isSending, setIsSending] = useState(false)
+  const isLoading = useMemo(() => isSending || waitForUtxosToBeSpent.length > 0, [isSending, waitForUtxosToBeSpent])
 
   const fidelityBond = useMemo(() => {
     return walletInfo.data.utxos.utxos.find((utxo) => utxo.utxo === fidelityBondId)
@@ -190,205 +77,149 @@ const SpendFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPr
     }
   }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
 
-  const freezeUtxos = (utxos: Utxos) => {
-    return changeUtxoFreeze(utxos, true)
+  const onPrimaryButtonClicked = () => {
+    if (isLoading) return
+    if (destinationJarIndex === undefined) return
+    if (waitForUtxosToBeSpent.length > 0) return
+
+    if (successfulSendData) {
+      modalProps.onHide && modalProps.onHide()
+    } else {
+      setAlert(undefined)
+      setIsSending(true)
+      sendFidelityBondToJar(destinationJarIndex)
+        .then((data) => {
+          setSuccessfulSendData(data)
+
+          const inputs = data.txinfo.inputs as InputPartial[]
+          setWaitForUtxosToBeSpent(inputs.map((it) => it.outpoint as Api.UtxoId))
+
+          setIsSending(false)
+        })
+        .catch((e) => {
+          setIsSending(false)
+
+          const message = e instanceof Error ? e.message : 'Unknown Error'
+          setAlert({ variant: 'danger', message })
+        })
+    }
   }
 
-  const unfreezeUtxos = (utxos: Utxos) => {
-    return changeUtxoFreeze(utxos, false)
-  }
-
-  const changeUtxoFreeze = (utxos: Utxos, freeze: boolean) => {
-    setIsLoading(true)
-
-    let utxosThatWereFrozen: Api.UtxoId[] = []
-
-    const { name: walletName, token } = wallet
-    const freezeCalls = utxos.map((utxo) =>
-      Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
-        if (res.ok) {
-          if (!utxo.frozen && freeze) {
-            utxosThatWereFrozen.push(utxo.utxo)
-          }
-        } else {
-          return Api.Helper.throwError(
-            res,
-            freeze ? t('earn.fidelity_bond.error_freezing_utxos') : t('earn.fidelity_bond.error_unfreezing_utxos')
-          )
-        }
-      })
-    )
+  const sendFidelityBondToJar = async (targetJarIndex: JarIndex) => {
+    if (!fidelityBond) {
+      throw new Error('Precondition failed')
+    }
 
     const abortCtrl = new AbortController()
-    return Promise.all(freezeCalls)
-      .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
-      .then(
-        (_) =>
-          freeze &&
-          setFrozenUtxoIds((current) => {
-            const notIncluded = utxosThatWereFrozen.filter((utxo) => !current.includes(utxo))
-            return [...current, ...notIncluded]
+    const { name: walletName, token } = wallet
+    const requestContext = { walletName, token, signal: abortCtrl.signal }
+
+    const destination = await Api.getAddressNew({ ...requestContext, mixdepth: targetJarIndex })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
+      .then((data) => data.address as Api.BitcoinAddress)
+
+    // reload utxos
+    const utxos = await Api.getWalletUtxos(requestContext)
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((data) => data.utxos as Utxos)
+    const utxosToFreeze = utxos.filter((it) => it.mixdepth === fidelityBond.mixdepth).filter((it) => !it.frozen)
+
+    const utxosThatWereFrozen: Api.UtxoId[] = []
+
+    try {
+      const freezeCalls = utxosToFreeze.map((utxo) =>
+        Api.postFreeze(requestContext, { utxo: utxo.utxo, freeze: true })
+          .then((res) => {
+            if (!res.ok) {
+              throw Api.Helper.throwError(res, t('earn.fidelity_bond.error_freezing_utxos'))
+            }
           })
+          .then((_) => utxosThatWereFrozen.push(utxo.utxo))
       )
-      .finally(() => {
-        setIsLoading(false)
+      // freeze other coins
+      await Promise.all(freezeCalls)
+
+      // unfreeze fidelity bond
+      await Api.postFreeze(requestContext, { utxo: fidelityBond.utxo, freeze: false }).then((res) => {
+        // TODO: translate
+        if (!res.ok) {
+          throw Api.Helper.throwError(res, 'Error while unfreezing fidelity bond')
+        }
       })
-  }
-
-  const nextStep = (currentStep: number) => {
-    if (currentStep === steps.selectJar) {
-      if (fidelityBond === undefined) return null
-      if (destinationJarIndex === undefined) return null
-
-      const utxosAreFrozen = fb.utxo.allAreFrozen(
-        fb.utxo.utxosToFreeze(walletInfo.utxosByJar[fidelityBond.mixdepth], [fidelityBond])
-      )
-
-      if (utxosAreFrozen && fidelityBond.frozen !== true) {
-        return steps.spendFidelityBond
-      } else {
-        return steps.freezeUtxos
-      }
-    }
-
-    if (currentStep === steps.freezeUtxos) {
-      if (isLoading) return null
-      if (fidelityBond === undefined) return null
-
-      const utxosAreFrozen = fb.utxo.allAreFrozen(
-        fb.utxo.utxosToFreeze(walletInfo.utxosByJar[fidelityBond.mixdepth], [fidelityBond])
-      )
-
-      if (utxosAreFrozen && fidelityBond.frozen !== true) {
-        return steps.spendFidelityBond
-      }
-
-      return steps.freezeUtxos
-    }
-
-    if (currentStep === steps.spendFidelityBond) {
-      if (isLoading) return null
-      if (alert !== undefined) return steps.failed
-      if (fidelityBond !== undefined) return null
-
-      if (frozenUtxoIds.length > 0) return steps.unfreezeUtxos
-
-      return steps.done
-    }
-
-    if (currentStep === steps.unfreezeUtxos) {
-      if (isLoading) {
-        return null
-      }
-
-      return steps.done
-    }
-
-    return null
-  }
-
-  const primaryButtonText = (currentStep: number) => {
-    switch (currentStep) {
-      case steps.selectJar:
-        return t('global.next')
-      case steps.freezeUtxos:
-        if (fidelityBond === undefined) return 'Error'
-        const utxosAreFrozen = fb.utxo.allAreFrozen(
-          fb.utxo.utxosToFreeze(walletInfo.utxosByJar[fidelityBond.mixdepth], [fidelityBond])
-        )
-
-        if (utxosAreFrozen && fidelityBond.frozen !== true) {
-          return t('global.next')
-        } else if (alert !== undefined) {
-          return t('global.retry')
+      // spend fidelity bond (by sweeping whole jar)
+      return await Api.postDirectSend(requestContext, {
+        destination,
+        mixdepth: fidelityBond.mixdepth,
+        amount_sats: 0, // sweep
+      }).then((res) => {
+        // TODO: translate
+        if (!res.ok) {
+          throw Api.Helper.throwError(res, 'Error while spending fidelity bond')
         }
+        return res.json()
+      })
+    } finally {
+      // unfreeze all previously frozen coins
+      const unfreezeCalls = utxosThatWereFrozen.map((utxo) => Api.postFreeze(requestContext, { utxo, freeze: false }))
 
-        return t('global.freeze.utxos')
-
-      case steps.spendFidelityBond:
-        if (alert !== undefined) {
-          return t('try again')
-        }
-
-        return t('global.spend')
-      /*case steps.unfreezeUtxos:
-        return t('earn.fidelity_bond.unfreeze_utxos.text_primary_button')*/
-      default:
-        return null
+      try {
+        await Promise.all(unfreezeCalls)
+      } catch (e) {
+        // don't throw, just log, as we are in a finally block
+        console.error(e)
+      }
     }
   }
 
-  const onPrimaryButtonClicked = () => {
-    const next = nextStep(step)
-    console.log(`current: ${step} -> next: ${next}`)
+  const primaryButtonContent = () => {
+    if (isSending) {
+      return (
+        <>
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          {t('global.moving')}
+        </>
+      )
+    } else if (successfulSendData) {
+      return <>{t('global.done')}</>
+    }
+    return <>{t('global.move')}</>
+  }
 
-    if (step === steps.freezeUtxos) {
-      if (fidelityBond === undefined) return
-      const utxosToFreeze = fb.utxo.utxosToFreeze(walletInfo.utxosByJar[fidelityBond.mixdepth], [fidelityBond])
-      const utxosAreFrozen = fb.utxo.allAreFrozen(utxosToFreeze)
+  const Done = ({ text }: { text: string }) => {
+    return (
+      <div className="d-flex flex-column justify-content-center align-items-center gap-1">
+        <div className={styles.successCheckmark}>
+          <Sprite symbol="checkmark" width="24" height="30" />
+        </div>
+        <div className={styles.successSummaryTitle}>{text}</div>
+      </div>
+    )
+  }
 
-      Promise.all([
-        ...(!utxosAreFrozen ? [freezeUtxos(utxosToFreeze)] : []),
-        ...(fidelityBond.frozen === true ? [unfreezeUtxos([fidelityBond])] : []),
-      ])
-        .then((_) => setAlert(undefined))
-        .catch((err) => {
-          setAlert({ variant: 'danger', message: err.message, dismissible: false })
-        })
+  const ModalBodyContent = () => {
+    if (isLoading) {
+      return (
+        <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          <div>{isSending ? 'Moving...' : 'Loading...'}</div>
+        </div>
+      )
     }
 
-    if (step === steps.spendFidelityBond) {
-      if (fidelityBond === undefined) return
-      if (destinationJarIndex === undefined) return
-      if (isLoading) return
-
-      const abortCtrl = new AbortController()
-      const { name: walletName, token } = wallet
-      const requestContext = { walletName, token, signal: abortCtrl.signal }
-
-      setIsLoading(true)
-      Api.getAddressNew({ ...requestContext, mixdepth: destinationJarIndex })
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
-        .then((data) => data.address)
-        // spend fidelity bond (by sweeping whole jar)
-        .then((destination) =>
-          Api.postDirectSend(requestContext, {
-            destination,
-            mixdepth: fidelityBond!.mixdepth,
-            amount_sats: 0, // sweep
-          })
-        )
-        .then((res) => {
-          // TODO: translate
-          if (!res.ok) throw Api.Helper.throwError(res, 'Error while spending fidelity bond')
-          return res.json()
-        })
-        .then((data) => {
-          const inputs = data.txinfo.inputs as Array<any>
-          setWaitForUtxosToBeSpent(inputs.map((it) => it.outpoint as Api.UtxoId))
-        })
-      // setShowConfirmInputsModal(true)
-      //return
+    if (successfulSendData && waitForUtxosToBeSpent.length === 0) {
+      return <Done text={t('earn.fidelity_bond.select_jar.description')} />
     }
 
-    if (next === steps.unfreezeUtxos) {
-      //unfreezeUtxos(frozenUtxos)
-    }
-
-    if (next === steps.failed) {
-      //reset()
-      return
-    }
-
-    /*if (next === steps.done) {
-      //reset()
-      modalProps.onHide && modalProps.onHide()
-      return
-    }*/
-
-    if (next !== null) {
-      setStep(next)
-    }
+    return (
+      <SelectJar
+        description={t('earn.fidelity_bond.select_jar.description')}
+        accountBalances={walletInfo.balanceSummary.accountBalances}
+        totalBalance={walletInfo.balanceSummary.totalBalance}
+        isJarSelectable={() => true}
+        selectedJar={destinationJarIndex}
+        onJarSelected={setDestinationJarIndex}
+      />
+    )
   }
 
   return (
@@ -398,16 +229,7 @@ const SpendFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPr
       </rb.Modal.Header>
       <rb.Modal.Body>
         {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
-
-        {step}
-        <SpendFidelityBond
-          step={step}
-          selectedJar={destinationJarIndex}
-          setSelectedJar={setDestinationJarIndex}
-          isLoading={isLoading}
-          fidelityBond={fidelityBond}
-          walletInfo={walletInfo}
-        />
+        {ModalBodyContent()}
       </rb.Modal.Body>
       <rb.Modal.Footer>
         <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
@@ -421,10 +243,10 @@ const SpendFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPr
           <rb.Button
             variant="dark"
             className="flex-1 justify-content-center align-items-center"
-            disabled={nextStep(step) === null}
+            disabled={isLoading || destinationJarIndex === undefined}
             onClick={onPrimaryButtonClicked}
           >
-            {primaryButtonText(step)}
+            {primaryButtonContent()}
           </rb.Button>
         </div>
       </rb.Modal.Footer>
