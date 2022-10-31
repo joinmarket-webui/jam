@@ -386,7 +386,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       onHide()
     } catch (err) {
       setIsSubmitting(false)
-      setSaveErrorMessage(
+      setSaveErrorMessage((_) =>
         t('settings.fees.error_saving_fee_config_failed', {
           reason: err instanceof Error ? err.message : 'Unknown',
         })
