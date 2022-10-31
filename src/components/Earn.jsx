@@ -407,9 +407,11 @@ export default function Earn({ wallet }) {
                         fidelityBondId={moveToJarFidelityBondId}
                         wallet={wallet}
                         walletInfo={currentWalletInfo}
-                        onHide={() => {
+                        onClose={({ mustReload }) => {
                           setMoveToJarFidelityBondId(undefined)
-                          reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })
+                          if (mustReload) {
+                            reloadFidelityBonds({ delay: 0 })
+                          }
                         }}
                       />
                     )}

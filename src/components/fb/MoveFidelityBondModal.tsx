@@ -30,13 +30,25 @@ type TxInfo = {
   nVersion: number
 }
 
+interface Result {
+  txInfo?: TxInfo
+  mustReload: boolean
+}
+
 type MoveFidelityBondModalProps = {
   fidelityBondId: Api.UtxoId
   wallet: CurrentWallet
   walletInfo: WalletInfo
-} & rb.ModalProps
+  onClose: (result: Result) => void
+} & Omit<rb.ModalProps, 'onHide'>
 
-const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalProps }: MoveFidelityBondModalProps) => {
+const MoveFidelityBondModal = ({
+  fidelityBondId,
+  wallet,
+  walletInfo,
+  onClose,
+  ...modalProps
+}: MoveFidelityBondModalProps) => {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const { t } = useTranslation()
 
@@ -46,6 +58,7 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
   const [txInfo, setTxInfo] = useState<TxInfo | undefined>()
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<Api.UtxoId[]>([])
 
+  const [parentMustReload, setParentMustReload] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const isLoading = useMemo(() => isSending || waitForUtxosToBeSpent.length > 0, [isSending, waitForUtxosToBeSpent])
 
@@ -101,8 +114,9 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
     if (waitForUtxosToBeSpent.length > 0) return
 
     if (txInfo) {
-      modalProps.onHide && modalProps.onHide()
+      onClose({ txInfo, mustReload: parentMustReload })
     } else {
+      setParentMustReload(true)
       setAlert(undefined)
       setIsSending(true)
       sendFidelityBondToJar(destinationJarIndex)
@@ -241,7 +255,15 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
   }
 
   return (
-    <rb.Modal animation={true} backdrop="static" centered={true} keyboard={false} size="lg" {...modalProps}>
+    <rb.Modal
+      animation={true}
+      backdrop="static"
+      centered={true}
+      keyboard={false}
+      size="lg"
+      {...modalProps}
+      onHide={() => onClose({ txInfo, mustReload: parentMustReload })}
+    >
       <rb.Modal.Header closeButton>
         <rb.Modal.Title>{t('settings.fees.title')}</rb.Modal.Title>
       </rb.Modal.Header>
@@ -253,7 +275,8 @@ const MoveFidelityBondModal = ({ fidelityBondId, wallet, walletInfo, ...modalPro
         <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
           <rb.Button
             variant="light"
-            onClick={modalProps.onHide}
+            disabled={!isLoading && txInfo !== undefined}
+            onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
             className="flex-1 justify-content-center align-items-center"
           >
             {t('settings.fees.text_button_cancel')}
