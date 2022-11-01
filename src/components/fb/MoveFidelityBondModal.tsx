@@ -1,14 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as rb from 'react-bootstrap'
+import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos, WalletInfo } from '../../context/WalletContext'
-import { SelectJar } from './FidelityBondSteps'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
+import { SelectJar } from './FidelityBondSteps'
+import { PaymentConfirmModal } from '../PaymentConfirmModal'
+import { jarInitial } from '../jars/Jar'
+
 import styles from './MoveFidelityBondModal.module.css'
-import { TFunction } from 'i18next'
+import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -158,8 +162,9 @@ const MoveFidelityBondModal = ({
   onClose,
   ...modalProps
 }: MoveFidelityBondModalProps) => {
-  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const { t } = useTranslation()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+  const loadFeeConfigValues = useLoadFeeConfigValues()
 
   const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | undefined>()
   const [destinationJarIndex, setDestinationJarIndex] = useState<JarIndex>()
@@ -171,10 +176,34 @@ const MoveFidelityBondModal = ({
   const [isSending, setIsSending] = useState(false)
   const isLoading = useMemo(() => isSending || waitForUtxosToBeSpent.length > 0, [isSending, waitForUtxosToBeSpent])
 
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
+  const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
+
+  const submitButtonRef = useRef<HTMLButtonElement>(null)
+
   const fidelityBond = useMemo(() => {
     return walletInfo.data.utxos.utxos.find((utxo) => utxo.utxo === fidelityBondId)
   }, [walletInfo, fidelityBondId])
 
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    loadFeeConfigValues(abortCtrl.signal)
+      .then((data) => {
+        if (abortCtrl.signal.aborted) return
+        setFeeConfigValues(data)
+      })
+      .catch((e) => {
+        if (abortCtrl.signal.aborted) return
+        // As fee config is not essential, don't raise an error on purpose.
+        // Fee settings cannot be displayed, but making a payment is still possible.
+        setFeeConfigValues(undefined)
+      })
+
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [loadFeeConfigValues])
   // This callback is responsible for updating the `isLoading` flag while the
   // wallet is synchronizing. The wallet needs some time after a tx is sent
   // to reflect the changes internally. In order to show the actual balance,
@@ -226,8 +255,12 @@ const MoveFidelityBondModal = ({
 
     if (txInfo) {
       onClose({ txInfo, mustReload: parentMustReload })
+    } else if (!showConfirmSendModal) {
+      setShowConfirmSendModal(true)
     } else {
+      setShowConfirmSendModal(false)
       setParentMustReload(true)
+
       setAlert(undefined)
       setIsSending(true)
 
@@ -341,43 +374,65 @@ const MoveFidelityBondModal = ({
   }
 
   return (
-    <rb.Modal
-      animation={true}
-      backdrop="static"
-      centered={true}
-      keyboard={false}
-      size="lg"
-      {...modalProps}
-      onHide={() => onClose({ txInfo, mustReload: parentMustReload })}
-    >
-      <rb.Modal.Header closeButton>
-        <rb.Modal.Title>{t('earn.fidelity_bond.move.title')}</rb.Modal.Title>
-      </rb.Modal.Header>
-      <rb.Modal.Body>
-        {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
-        {ModalBodyContent()}
-      </rb.Modal.Body>
-      <rb.Modal.Footer>
-        <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
-          <rb.Button
-            variant="light"
-            disabled={isLoading}
-            onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
-            className="flex-1 justify-content-center align-items-center"
-          >
-            {t('earn.fidelity_bond.move.text_button_cancel')}
-          </rb.Button>
-          <rb.Button
-            variant="dark"
-            className="flex-1 justify-content-center align-items-center"
-            disabled={isLoading || destinationJarIndex === undefined}
-            onClick={onPrimaryButtonClicked}
-          >
-            {PrimaryButtonContent()}
-          </rb.Button>
-        </div>
-      </rb.Modal.Footer>
-    </rb.Modal>
+    <>
+      <rb.Modal
+        animation={true}
+        backdrop="static"
+        centered={true}
+        keyboard={false}
+        size="lg"
+        {...modalProps}
+        onHide={() => onClose({ txInfo, mustReload: parentMustReload })}
+      >
+        <rb.Modal.Header closeButton>
+          <rb.Modal.Title>{t('earn.fidelity_bond.move.title')}</rb.Modal.Title>
+        </rb.Modal.Header>
+        <rb.Modal.Body>
+          {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
+          {ModalBodyContent()}
+        </rb.Modal.Body>
+        <rb.Modal.Footer>
+          <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
+            <rb.Button
+              variant="light"
+              disabled={isLoading}
+              onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
+              className="flex-1 justify-content-center align-items-center"
+            >
+              {t('earn.fidelity_bond.move.text_button_cancel')}
+            </rb.Button>
+            <rb.Button
+              ref={submitButtonRef}
+              variant="dark"
+              className="flex-1 justify-content-center align-items-center"
+              disabled={isLoading || destinationJarIndex === undefined}
+              onClick={onPrimaryButtonClicked}
+            >
+              {PrimaryButtonContent()}
+            </rb.Button>
+          </div>
+        </rb.Modal.Footer>
+      </rb.Modal>
+      {fidelityBond && destinationJarIndex && (
+        <PaymentConfirmModal
+          isShown={showConfirmSendModal}
+          title={t('earn.fidelity_bond.move.confirm_send_modal.title')}
+          onCancel={() => setShowConfirmSendModal(false)}
+          onConfirm={() => {
+            submitButtonRef.current?.click()
+          }}
+          data={{
+            sourceJarId: null, // dont show a source jar - might be confusing in this context
+            destination: t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(destinationJarIndex) }),
+            amount: `${fidelityBond.value}`,
+            isSweep: false, // don't show as sweep asother utxos will be frozen - might be confusing in this context
+            isCoinjoin: false, // not sent as a collaborative transaction
+            numCollaborators: null,
+            feeConfigValues,
+          }}
+        />
+      )}
+    </>
   )
 }
 

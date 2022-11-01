@@ -77,14 +77,16 @@ export function PaymentConfirmModal({
             )}
           </rb.Col>
         </rb.Row>
-        <rb.Row>
-          <rb.Col xs={4} md={3} className="text-end">
-            <strong>{t('send.confirm_send_modal.label_source_jar')}</strong>
-          </rb.Col>
-          <rb.Col xs={8} md={9} className="text-start">
-            {t('send.confirm_send_modal.text_source_jar', { jarId: sourceJarId })}
-          </rb.Col>
-        </rb.Row>
+        {sourceJarId && (
+          <rb.Row>
+            <rb.Col xs={4} md={3} className="text-end">
+              <strong>{t('send.confirm_send_modal.label_source_jar')}</strong>
+            </rb.Col>
+            <rb.Col xs={8} md={9} className="text-start">
+              {t('send.confirm_send_modal.text_source_jar', { jarId: sourceJarId })}
+            </rb.Col>
+          </rb.Row>
+        )}
         <rb.Row>
           <rb.Col xs={4} md={3} className="text-end">
             <strong>{t('send.confirm_send_modal.label_recipient')}</strong>

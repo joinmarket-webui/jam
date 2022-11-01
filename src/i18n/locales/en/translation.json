@@ -453,6 +453,9 @@
         "error_spending_fidelity_bond": "Error while spending fidelity bond.",
         "select_jar": {
           "description": "Select a jar to move the fidelity bond into."
+        },
+        "confirm_send_modal": {
+          "title": "Confirm moving Fidelity Bond"
         }
       }
     }
