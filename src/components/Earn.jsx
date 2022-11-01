@@ -419,25 +419,25 @@ export default function Earn({ wallet }) {
                       const isExpired = !fb.utxo.isLocked(fidelityBond)
                       return (
                         <ExistingFidelityBond key={index} fidelityBond={fidelityBond}>
-                          {isExpired && (
-                            <div className="d-flex flex-row flex-wrap align-items-center gap-2 mt-3">
-                              <rb.Button
-                                variant="dark"
-                                className="flex-1"
-                                disabled={
-                                  serviceInfo?.coinjoinInProgress !== false ||
-                                  serviceInfo?.makerRunning !== false ||
-                                  isWaitingMakerStart ||
-                                  isWaitingMakerStop ||
-                                  isLoading
-                                }
-                                onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
-                              >
-                                <Sprite className="me-1" symbol="transfer" width="24" height="24" />
-                                {t('earn.fidelity_bond.existing.button_move_to_jar')}
-                              </rb.Button>
-                            </div>
-                          )}
+                          {isExpired &&
+                            serviceInfo &&
+                            !serviceInfo.coinjoinInProgress &&
+                            !serviceInfo.makerRunning &&
+                            !isWaitingMakerStart &&
+                            !isWaitingMakerStop &&
+                            !isLoading && (
+                              <div className="d-flex flex-row flex-wrap align-items-center gap-2 mt-3">
+                                <rb.Button
+                                  variant="dark"
+                                  className="flex-1"
+                                  disabled={!!moveToJarFidelityBondId}
+                                  onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
+                                >
+                                  <Sprite className="me-1" symbol="transfer" width="24" height="24" />
+                                  {t('earn.fidelity_bond.existing.button_move_to_jar')}
+                                </rb.Button>
+                              </div>
+                            )}
                         </ExistingFidelityBond>
                       )
                     })}
