@@ -171,7 +171,10 @@ const MoveFidelityBondModal = ({
           : Api.Helper.throwResolved(res, errorResolver(t, 'global.errors.error_reloading_wallet_failed'))
       )
       .then((data) => data.utxos as Utxos)
-    const utxosToFreeze = utxos.filter((it) => it.mixdepth === fidelityBond.mixdepth).filter((it) => !it.frozen)
+    const utxosToFreeze = utxos
+      .filter((it) => it.mixdepth === fidelityBond.mixdepth)
+      .filter((it) => !it.frozen)
+      .filter((it) => it.utxo !== fidelityBond.utxo)
 
     const utxosThatWereFrozen: Api.UtxoId[] = []
 
@@ -216,7 +219,15 @@ const MoveFidelityBondModal = ({
         await Promise.allSettled(unfreezeCalls)
       } catch (e) {
         // don't throw, just log, as we are in a finally block
-        console.error(e)
+        console.error('Error while unfreezing previously frozen utxo', e)
+      }
+
+      // freeze fidelity bond again
+      try {
+        await Api.postFreeze(requestContext, { utxo: fidelityBond.utxo, freeze: true })
+      } catch (e) {
+        // don't throw, just log, as we are in a finally block
+        console.error('Error while freezing previously unfrozen fidelity bond', e)
       }
     }
   }
@@ -257,7 +268,11 @@ const MoveFidelityBondModal = ({
     }
 
     if (txInfo) {
-      return <Done text={t('earn.fidelity_bond.move.success_text')} />
+      return (
+        <div className="my-4">
+          <Done text={t('earn.fidelity_bond.move.success_text')} />
+        </div>
+      )
     }
 
     return (
