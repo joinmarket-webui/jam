@@ -8,6 +8,7 @@ import * as fb from './utils'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
 import styles from './MoveFidelityBondModal.module.css'
+import { TFunction } from 'i18next'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -42,6 +43,11 @@ type MoveFidelityBondModalProps = {
   walletInfo: WalletInfo
   onClose: (result: Result) => void
 } & Omit<rb.ModalProps, 'onHide'>
+
+const errorResolver = (t: TFunction<'translation', undefined>, i18nKey: string | string[]) => ({
+  resolver: (_: Response, reason: string) => `${t(i18nKey)} ${reason}`,
+  fallbackReason: t('global.errors.reason_unknown'),
+})
 
 const MoveFidelityBondModal = ({
   fidelityBondId,
@@ -151,14 +157,18 @@ const MoveFidelityBondModal = ({
 
     const destination = await Api.getAddressNew({ ...requestContext, mixdepth: targetJarIndex })
       .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_loading_address'))
+        res.ok
+          ? res.json()
+          : Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_loading_address'))
       )
       .then((data) => data.address as Api.BitcoinAddress)
 
     // reload utxos
     const utxos = await Api.getWalletUtxos(requestContext)
       .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(res, t('global.errors.error_reloading_wallet_failed'))
+        res.ok
+          ? res.json()
+          : Api.Helper.throwResolved(res, errorResolver(t, 'global.errors.error_reloading_wallet_failed'))
       )
       .then((data) => data.utxos as Utxos)
     const utxosToFreeze = utxos.filter((it) => it.mixdepth === fidelityBond.mixdepth).filter((it) => !it.frozen)
@@ -170,7 +180,7 @@ const MoveFidelityBondModal = ({
         Api.postFreeze(requestContext, { utxo: utxo.utxo, freeze: true })
           .then((res) => {
             if (!res.ok) {
-              return Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_freezing_utxos'))
+              return Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_freezing_utxos'))
             }
           })
           .then((_) => utxosThatWereFrozen.push(utxo.utxo))
@@ -181,7 +191,10 @@ const MoveFidelityBondModal = ({
       // unfreeze fidelity bond
       await Api.postFreeze(requestContext, { utxo: fidelityBond.utxo, freeze: false }).then((res) => {
         if (!res.ok) {
-          return Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_unfreezing_fidelity_bond'))
+          return Api.Helper.throwResolved(
+            res,
+            errorResolver(t, 'earn.fidelity_bond.move.error_unfreezing_fidelity_bond')
+          )
         }
       })
       // spend fidelity bond (by sweeping whole jar)
@@ -191,7 +204,7 @@ const MoveFidelityBondModal = ({
         amount_sats: 0, // sweep
       }).then((res) => {
         if (!res.ok) {
-          return Api.Helper.throwError(res, t('earn.fidelity_bond.move.error_spending_fidelity_bond'))
+          return Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond'))
         }
         return res.json()
       })
@@ -208,7 +221,7 @@ const MoveFidelityBondModal = ({
     }
   }
 
-  const primaryButtonContent = () => {
+  const PrimaryButtonContent = () => {
     if (isSending) {
       return (
         <>
@@ -292,7 +305,7 @@ const MoveFidelityBondModal = ({
             disabled={isLoading || destinationJarIndex === undefined}
             onClick={onPrimaryButtonClicked}
           >
-            {primaryButtonContent()}
+            {PrimaryButtonContent()}
           </rb.Button>
         </div>
       </rb.Modal.Footer>

@@ -27,7 +27,7 @@ interface AuthApiRequestContext extends ApiRequestContext {
 const withExpectedContentTypeOrThrow = (res: Response, expectedContentType: string) => {
   const contentType = res.headers.get('Content-Type')
   if (res.ok && (contentType === null || !contentType.startsWith(expectedContentType))) {
-    throw new JmApiError('Unexpected Content-Type', res)
+    throw new JmApiError(res, 'Unexpected Content-Type')
   }
   return res
 }
