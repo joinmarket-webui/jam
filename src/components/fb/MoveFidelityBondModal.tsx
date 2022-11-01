@@ -10,9 +10,9 @@ import Sprite from '../Sprite'
 import { SelectJar } from './FidelityBondSteps'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { jarInitial } from '../jars/Jar'
+import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 
 import styles from './MoveFidelityBondModal.module.css'
-import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -66,7 +66,7 @@ const spendUtxosWithDirectSend = async (
 ) => {
   const utxosFromSameJar = request.utxos.every((it) => it.mixdepth === request.sourceJarIndex)
   if (!utxosFromSameJar || request.utxos.length === 0) {
-    // this is programming error (no translation needed)
+    // this is a programming error (no translation needed)
     throw new Error('Precondition failed: UTXOs must be from the same jar')
   }
 
@@ -194,11 +194,12 @@ const MoveFidelityBondModal = ({
       abortCtrl.abort()
     }
   }, [loadFeeConfigValues])
-  // This callback is responsible for updating the `isLoading` flag while the
-  // wallet is synchronizing. The wallet needs some time after a tx is sent
-  // to reflect the changes internally. In order to show the actual balance,
-  // all outputs in `waitForUtxosToBeSpent` must have been removed from the
-  // wallet's utxo set.
+
+  // This callback is responsible for updating the loading state when the
+  // the payment is made. The wallet needs some time after a tx is sent
+  // to reflect the changes internally. All outputs in
+  // `waitForUtxosToBeSpent` must have been removed from the wallet
+  // for the payment to be considered done.
   useEffect(() => {
     if (waitForUtxosToBeSpent.length === 0) return
 
@@ -373,6 +374,7 @@ const MoveFidelityBondModal = ({
         size="lg"
         {...modalProps}
         onHide={() => onClose({ txInfo, mustReload: parentMustReload })}
+        dialogClassName={showConfirmSendModal ? 'invisible' : ''}
       >
         <rb.Modal.Header closeButton>
           <rb.Modal.Title>{t('earn.fidelity_bond.move.title')}</rb.Modal.Title>
@@ -385,16 +387,16 @@ const MoveFidelityBondModal = ({
           <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
             <rb.Button
               variant="light"
-              disabled={isLoading}
+              disabled={isSending}
               onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
-              className="flex-1 justify-content-center align-items-center"
+              className="flex-1 d-flex justify-content-center align-items-center"
             >
               {t('earn.fidelity_bond.move.text_button_cancel')}
             </rb.Button>
             <rb.Button
               ref={submitButtonRef}
               variant="dark"
-              className="flex-1 justify-content-center align-items-center"
+              className="flex-1 d-flex justify-content-center align-items-center"
               disabled={isLoading || destinationJarIndex === undefined}
               onClick={onPrimaryButtonClicked}
             >
@@ -403,7 +405,7 @@ const MoveFidelityBondModal = ({
           </div>
         </rb.Modal.Footer>
       </rb.Modal>
-      {fidelityBond && destinationJarIndex && (
+      {fidelityBond && destinationJarIndex !== undefined && (
         <PaymentConfirmModal
           isShown={showConfirmSendModal}
           title={t('earn.fidelity_bond.move.confirm_send_modal.title')}

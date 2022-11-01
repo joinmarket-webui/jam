@@ -8,6 +8,15 @@
   border-color: var(--bs-gray-700);
 }
 
+.expired {
+  background-color: var(--bs-gray-200);
+  border-color: var(--bs-gray-400) !important;
+}
+
+:root[data-theme='dark'] .expired {
+  background-color: var(--bs-gray-800);
+}
+
 .title {
   width: 100%;
   font-size: 1.2rem;

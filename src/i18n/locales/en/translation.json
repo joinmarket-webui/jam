@@ -432,11 +432,11 @@
       },
       "existing": {
         "title_active": "Fidelity Bond",
-        "title_expired": "Expired Fidelity Bond",
+        "title_expired": "Fidelity Bond <1>expired</1>",
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
         "label_address": "Timelocked address",
-        "button_move_to_jar": "Move to Jar"
+        "button_move_to_jar": "Move to a Jar"
       },
       "move": {
         "title": "Move expired Fidelity Bond to Jar",
@@ -449,13 +449,13 @@
         "error_fidelity_bond_still_locked": "The given fidelity bond is still locked.",
         "error_loading_address": "Unable to get new address.",
         "error_freezing_utxos": "Could not freeze UTXOs.",
-        "error_unfreezing_fidelity_bond": "Error while unfreezing fidelity bond.",
-        "error_spending_fidelity_bond": "Error while spending fidelity bond.",
+        "error_unfreezing_fidelity_bond": "Error while unfreezing expired fidelity bond.",
+        "error_spending_fidelity_bond": "Error while spending expired fidelity bond.",
         "select_jar": {
-          "description": "Select a jar to move the fidelity bond into."
+          "description": "Select a jar to move the expired fidelity bond into."
         },
         "confirm_send_modal": {
-          "title": "Confirm moving Fidelity Bond"
+          "title": "Confirm moving expired Fidelity Bond"
         }
       }
     }

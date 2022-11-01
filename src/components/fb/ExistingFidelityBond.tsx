@@ -1,5 +1,6 @@
 import { PropsWithChildren, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
+import classNames from 'classnames'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo } from '../../context/WalletContext'
 import Sprite from '../Sprite'
@@ -30,10 +31,20 @@ const ExistingFidelityBond = ({ fidelityBond, children }: PropsWithChildren<Exis
   }
 
   return (
-    <div className={styles.container}>
+    <div
+      className={classNames(styles.container, {
+        [styles.expired]: isExpired,
+      })}
+    >
       <div className="d-flex justify-content-between align-items-center">
         <div className={styles.title}>
-          {t(`earn.fidelity_bond.existing.${isExpired ? 'title_expired' : 'title_active'}`)}
+          {isExpired ? (
+            <Trans i18nKey="earn.fidelity_bond.existing.title_expired">
+              Fidelity Bond <strong>expired</strong>
+            </Trans>
+          ) : (
+            t('earn.fidelity_bond.existing.title_active')
+          )}
         </div>
         <div className="d-flex align-items-center gap-1">
           <Sprite symbol="coins" width="24" height="24" />
