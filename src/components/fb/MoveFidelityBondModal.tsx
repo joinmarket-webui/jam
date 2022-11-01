@@ -73,14 +73,15 @@ const spendUtxosWithDirectSend = async (
   const spendableUtxoIds = request.utxos.map((it) => it.utxo)
 
   // reload utxos
-  const utxos = await Api.getWalletUtxos(context)
-    .then((res) => (res.ok ? res.json() : hooks.onReloadWalletError(res)))
-    .then((data) => data.utxos as Utxos)
+  const utxosFromSourceJar = (
+    await Api.getWalletUtxos(context)
+      .then((res) => (res.ok ? res.json() : hooks.onReloadWalletError(res)))
+      .then((data) => data.utxos as Utxos)
+  ).filter((utxo) => utxo.mixdepth === request.sourceJarIndex)
 
-  const utxosToSpend = utxos.filter((it) => spendableUtxoIds.includes(it.utxo))
+  const utxosToSpend = utxosFromSourceJar.filter((it) => spendableUtxoIds.includes(it.utxo))
 
-  const utxosToFreeze = utxos
-    .filter((it) => it.mixdepth === request.sourceJarIndex)
+  const utxosToFreeze = utxosFromSourceJar
     .filter((it) => !it.frozen)
     .filter((it) => !spendableUtxoIds.includes(it.utxo))
 
@@ -89,29 +90,23 @@ const spendUtxosWithDirectSend = async (
 
   try {
     const freezeCalls = utxosToFreeze.map((utxo) =>
-      Api.postFreeze(context, { utxo: utxo.utxo, freeze: true })
-        .then((res) => {
-          if (!res.ok) {
-            return hooks.onFreezeUtxosError(res)
-          }
-        })
-        .then((_) => utxosThatWereFrozen.push(utxo.utxo))
+      Api.postFreeze(context, { utxo: utxo.utxo, freeze: true }).then((res) => {
+        if (!res.ok) return hooks.onFreezeUtxosError(res)
+        utxosThatWereFrozen.push(utxo.utxo)
+      })
     )
-    // freeze other coins
+    // freeze unused coins not part of the payment
     await Promise.all(freezeCalls)
 
     const unfreezeCalls = utxosToSpend
       .filter((it) => it.frozen)
       .map((utxo) =>
-        Api.postFreeze(context, { utxo: utxo.utxo, freeze: false })
-          .then((res) => {
-            if (!res.ok) {
-              return hooks.onUnfreezeUtxosError(res)
-            }
-          })
-          .then((_) => utxosThatWereUnfrozen.push(utxo.utxo))
+        Api.postFreeze(context, { utxo: utxo.utxo, freeze: false }).then((res) => {
+          if (!res.ok) return hooks.onUnfreezeUtxosError(res)
+          utxosThatWereUnfrozen.push(utxo.utxo)
+        })
       )
-    // unfreeze potentially frozen coins that are about to be spend
+    // unfreeze potentially frozen coins that are about to be spent
     await Promise.all(unfreezeCalls)
 
     // spend fidelity bond (by sweeping whole jar)
@@ -119,27 +114,22 @@ const spendUtxosWithDirectSend = async (
       destination: request.destination,
       mixdepth: request.sourceJarIndex,
       amount_sats: 0, // sweep
-    }).then((res) => {
-      if (!res.ok) {
-        return hooks.onSendError(res)
-      }
-      return res.json()
-    })
+    }).then((res) => (res.ok ? res.json() : hooks.onSendError(res)))
   } finally {
-    // unfreeze all previously frozen coins
-    const unfreezeCalls = utxosThatWereFrozen.map((utxo) => Api.postFreeze(context, { utxo, freeze: false }))
-
     try {
+      // try unfreezing all previously frozen coins
+      const unfreezeCalls = utxosThatWereFrozen.map((utxo) => Api.postFreeze(context, { utxo, freeze: false }))
+
       await Promise.allSettled(unfreezeCalls)
     } catch (e) {
       // don't throw, just log, as we are in a finally block
       console.error('Error while unfreezing previously frozen UTXOs', e)
     }
 
-    // freeze all previously unfrozen coins
-    const freezeCalls = utxosThatWereUnfrozen.map((utxo) => Api.postFreeze(context, { utxo, freeze: true }))
-
     try {
+      // try freezing all previously unfrozen coins
+      const freezeCalls = utxosThatWereUnfrozen.map((utxo) => Api.postFreeze(context, { utxo, freeze: true }))
+
       await Promise.allSettled(freezeCalls)
     } catch (e) {
       // don't throw, just log, as we are in a finally block
