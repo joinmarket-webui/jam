@@ -419,7 +419,7 @@ const MoveFidelityBondModal = ({
               t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(destinationJarIndex) })
             ),
             amount: fidelityBond.value,
-            isSweep: false, // don't show as sweep as other utxos will be frozen - might be confusing in this context
+            isSweep: true,
             isCoinjoin: false, // not sent as collaborative transaction
             numCollaborators: undefined,
             feeConfigValues,
