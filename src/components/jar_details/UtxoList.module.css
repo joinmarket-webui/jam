@@ -7,11 +7,11 @@
   margin-bottom: 1px;
 }
 
-.utxoList .frozenLockedTag > .iconFrozen {
-  margin-bottom: 2px;
+.utxoList .utxoIcon > .iconFrozen {
+  margin-bottom: 1px;
 }
 
-.utxoList .frozenLockedTag > .iconLocked {
+.utxoList .utxoIcon > .iconLocked {
   margin-bottom: 3px;
 }
 
