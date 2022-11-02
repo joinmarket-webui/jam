@@ -4,31 +4,45 @@ import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
-import { estimateMaxCollaboratorFee, toTxFeeValueUnit } from '../hooks/Fees'
+import { estimateMaxCollaboratorFee, FeeValues, toTxFeeValueUnit } from '../hooks/Fees'
 
 import { isValidNumber } from '../utils'
-import { ConfirmModal } from './Modal'
+import { ConfirmModal, ConfirmModalProps } from './Modal'
 
 import styles from './PaymentConfirmModal.module.css'
+import { AmountSats } from '../libs/JmWalletApi'
+import { jarInitial } from './jars/Jar'
+
+interface PaymentDisplayInfo {
+  sourceJarIndex?: JarIndex
+  destination: String
+  amount: AmountSats
+  isSweep: boolean
+  isCoinjoin: boolean
+  numCollaborators?: number
+  feeConfigValues?: FeeValues
+}
+
+interface PaymentConfirmModalProps extends ConfirmModalProps {
+  data: PaymentDisplayInfo
+}
 
 export function PaymentConfirmModal({
-  isShown,
-  title,
-  onCancel,
-  onConfirm,
-  data: { sourceJarId, destination, amount, isSweep, isCoinjoin, numCollaborators, feeConfigValues },
-}) {
+  data: { sourceJarIndex, destination, amount, isSweep, isCoinjoin, numCollaborators, feeConfigValues },
+  ...confirmModalProps
+}: PaymentConfirmModalProps) {
   const { t } = useTranslation()
   const settings = useSettings()
 
   const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (!amount || !isCoinjoin || !numCollaborators || !feeConfigValues) return null
+    if (!isCoinjoin || !feeConfigValues) return null
+    if (!isValidNumber(amount) || !isValidNumber(numCollaborators)) return null
     if (!isValidNumber(feeConfigValues.max_cj_fee_abs) || !isValidNumber(feeConfigValues.max_cj_fee_rel)) return null
     return estimateMaxCollaboratorFee({
       amount,
-      collaborators: numCollaborators,
-      maxFeeAbs: feeConfigValues.max_cj_fee_abs,
-      maxFeeRel: feeConfigValues.max_cj_fee_rel,
+      collaborators: numCollaborators!,
+      maxFeeAbs: feeConfigValues.max_cj_fee_abs!,
+      maxFeeRel: feeConfigValues.max_cj_fee_rel!,
     })
   }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
 
@@ -42,7 +56,7 @@ export function PaymentConfirmModal({
     } else if (unit === 'blocks') {
       return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
     } else {
-      const feeTargetInSatsPerVByte = feeConfigValues.tx_fees / 1_000
+      const feeTargetInSatsPerVByte = feeConfigValues.tx_fees! / 1_000
       if (feeConfigValues.tx_fees_factor === 0) {
         return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
           value: feeTargetInSatsPerVByte.toLocaleString(undefined, {
@@ -51,8 +65,8 @@ export function PaymentConfirmModal({
         })
       }
 
-      const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor))
-      const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor)
+      const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor!))
+      const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor!)
 
       return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
         min: minFeeSatsPerVByte.toLocaleString(undefined, {
@@ -66,7 +80,7 @@ export function PaymentConfirmModal({
   }, [t, feeConfigValues])
 
   return (
-    <ConfirmModal isShown={isShown} title={title} onCancel={onCancel} onConfirm={onConfirm}>
+    <ConfirmModal {...confirmModalProps}>
       <rb.Container className="mt-2">
         <rb.Row className="mt-2 mb-3">
           <rb.Col xs={12} className="text-center">
@@ -77,13 +91,13 @@ export function PaymentConfirmModal({
             )}
           </rb.Col>
         </rb.Row>
-        {sourceJarId && (
+        {sourceJarIndex !== undefined && (
           <rb.Row>
             <rb.Col xs={4} md={3} className="text-end">
               <strong>{t('send.confirm_send_modal.label_source_jar')}</strong>
             </rb.Col>
             <rb.Col xs={8} md={9} className="text-start">
-              {t('send.confirm_send_modal.text_source_jar', { jarId: sourceJarId })}
+              {t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(sourceJarIndex) })}
             </rb.Col>
           </rb.Row>
         )}
@@ -104,7 +118,7 @@ export function PaymentConfirmModal({
               <>
                 <Trans i18nKey="send.confirm_send_modal.text_sweep_balance">
                   Sweep
-                  <Balance valueString={amount} convertToUnit={settings.unit} showBalance={true} />
+                  <Balance valueString={String(amount)} convertToUnit={settings.unit} showBalance={true} />
                 </Trans>
                 <rb.OverlayTrigger
                   placement="right"
@@ -120,7 +134,7 @@ export function PaymentConfirmModal({
                 </rb.OverlayTrigger>
               </>
             ) : (
-              <Balance valueString={amount} convertToUnit={settings.unit} showBalance={true} />
+              <Balance valueString={String(amount)} convertToUnit={settings.unit} showBalance={true} />
             )}
           </rb.Col>
         </rb.Row>

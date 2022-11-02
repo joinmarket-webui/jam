@@ -414,12 +414,14 @@ const MoveFidelityBondModal = ({
             submitButtonRef.current?.click()
           }}
           data={{
-            sourceJarId: null, // dont show a source jar - might be confusing in this context
-            destination: t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(destinationJarIndex) }),
-            amount: `${fidelityBond.value}`,
+            sourceJarIndex: undefined, // dont show a source jar - might be confusing in this context
+            destination: String(
+              t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(destinationJarIndex) })
+            ),
+            amount: fidelityBond.value,
             isSweep: false, // don't show as sweep as other utxos will be frozen - might be confusing in this context
-            isCoinjoin: false, // not sent as a collaborative transaction
-            numCollaborators: null,
+            isCoinjoin: false, // not sent as collaborative transaction
+            numCollaborators: undefined,
             feeConfigValues,
           }}
         />

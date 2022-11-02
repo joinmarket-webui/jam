@@ -22,7 +22,7 @@ import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 import * as Api from '../libs/JmWalletApi'
 import { SATS, formatBtc, formatSats, isValidNumber } from '../utils'
 import { routes } from '../constants/routes'
-import { jarInitial, jarName } from './jars/Jar'
+import { jarName } from './jars/Jar'
 
 import styles from './Send.module.css'
 
@@ -983,9 +983,9 @@ export default function Send({ wallet }) {
             submitButtonRef.current?.click()
           }}
           data={{
-            sourceJarId: jarInitial(sourceJarIndex),
+            sourceJarIndex,
             destination,
-            amount: amountFieldValue().toString(),
+            amount: parseInt(amountFieldValue(), 10),
             isSweep,
             isCoinjoin,
             numCollaborators,

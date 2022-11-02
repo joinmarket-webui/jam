@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import styles from './Modal.module.css'
 import Sprite from './Sprite'
 
-interface ConfirmModalProps {
+export interface ConfirmModalProps {
   isShown: boolean
   title: ReactNode | string
   onCancel: () => void
