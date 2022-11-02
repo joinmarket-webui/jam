@@ -405,9 +405,9 @@ const MoveFidelityBondModal = ({
           </div>
         </rb.Modal.Footer>
       </rb.Modal>
-      {fidelityBond && destinationJarIndex !== undefined && (
+      {showConfirmSendModal && fidelityBond && destinationJarIndex !== undefined && (
         <PaymentConfirmModal
-          isShown={showConfirmSendModal}
+          isShown={true}
           title={t('earn.fidelity_bond.move.confirm_send_modal.title')}
           onCancel={() => setShowConfirmSendModal(false)}
           onConfirm={() => {

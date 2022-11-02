@@ -966,32 +966,36 @@ export default function Send({ wallet }) {
           )}
         </rb.Button>
 
-        <ConfirmModal
-          isShown={showConfirmAbortModal}
-          title={t('send.confirm_abort_modal.title')}
-          onCancel={() => setShowConfirmAbortModal(false)}
-          onConfirm={() => abortCoinjoin()}
-        >
-          {t('send.confirm_abort_modal.text_body')}
-        </ConfirmModal>
+        {showConfirmAbortModal && (
+          <ConfirmModal
+            isShown={showConfirmAbortModal}
+            title={t('send.confirm_abort_modal.title')}
+            onCancel={() => setShowConfirmAbortModal(false)}
+            onConfirm={() => abortCoinjoin()}
+          >
+            {t('send.confirm_abort_modal.text_body')}
+          </ConfirmModal>
+        )}
 
-        <PaymentConfirmModal
-          isShown={showConfirmSendModal}
-          title={t('send.confirm_send_modal.title')}
-          onCancel={() => setShowConfirmSendModal(false)}
-          onConfirm={() => {
-            submitButtonRef.current?.click()
-          }}
-          data={{
-            sourceJarIndex,
-            destination,
-            amount: parseInt(amountFieldValue(), 10),
-            isSweep,
-            isCoinjoin,
-            numCollaborators,
-            feeConfigValues,
-          }}
-        />
+        {showConfirmSendModal && (
+          <PaymentConfirmModal
+            isShown={true}
+            title={t('send.confirm_send_modal.title')}
+            onCancel={() => setShowConfirmSendModal(false)}
+            onConfirm={() => {
+              submitButtonRef.current?.click()
+            }}
+            data={{
+              sourceJarIndex,
+              destination,
+              amount: parseInt(amountFieldValue(), 10),
+              isSweep,
+              isCoinjoin,
+              numCollaborators,
+              feeConfigValues,
+            }}
+          />
+        )}
       </div>
     </>
   )
