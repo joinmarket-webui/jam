@@ -119,7 +119,18 @@ const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
 }
 
 const toFidelityBondSummary = (data: CombinedRawWalletData): FidenlityBondSummary => {
-  const fbOutputs = data.utxos.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
+  const fbOutputs = data.utxos.utxos
+    .filter((utxo) => fb.utxo.isFidelityBond(utxo))
+    .sort((a, b) => {
+      const aLocked = fb.utxo.isLocked(a)
+      const bLocked = fb.utxo.isLocked(b)
+
+      if (aLocked && bLocked) {
+        return b.value - a.value
+      } else {
+        return aLocked ? -1 : 1
+      }
+    })
   return {
     fbOutputs,
   }

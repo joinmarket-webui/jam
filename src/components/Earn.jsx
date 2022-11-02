@@ -64,7 +64,7 @@ const persistFormValues = (values) => {
   }
 }
 
-const initialFormValues = (settings) => ({
+const initialFormValues = () => ({
   offertype:
     window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype) || FORM_INPUT_DEFAULT_VALUES.offertype,
   feeRel:
@@ -301,7 +301,7 @@ export default function Earn({ wallet }) {
   const feeRelMax = 0.1 // 10%
   const feeRelPercentageStep = 0.0001
 
-  const initialValues = initialFormValues(settings)
+  const initialValues = initialFormValues()
 
   const validate = (values) => {
     const errors = {}
