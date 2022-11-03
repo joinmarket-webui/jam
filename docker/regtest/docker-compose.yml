@@ -8,6 +8,7 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_native
     environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
       jm_rpc_wallet_file: jm_primary
       jm_rpc_user: joinmarket
       jm_rpc_password: joinmarket
@@ -39,10 +40,8 @@ services:
       - "29183:28183" # exposed for "init setup" routine
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
-      - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
       - bitcoind
-      - bitcoind_regtest_initializer
       - irc
 
   joinmarket3:
@@ -51,6 +50,8 @@ services:
       file: docker-compose-common.yml
       service: joinmarket_jam_standalone
     environment:
+      READY_FILE: /root/.regtest-initializer/btc_fully_synched
+      WAIT_FOR_BITCOIND: "false"
       jm_rpc_wallet_file: jm_tertiary
       jm_rpc_user: joinmarket3
       jm_rpc_password: joinmarket3

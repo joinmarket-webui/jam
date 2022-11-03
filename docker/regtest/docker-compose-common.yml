@@ -8,7 +8,6 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      READY_FILE: /root/.regtest-initializer/btc_fully_synched
       ENSURE_WALLET: "true"
       REMOVE_LOCK_FILES: "true"
       jm_blockchain_source: regtest
@@ -30,7 +29,6 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      READY_FILE: /root/.regtest-initializer/btc_fully_synched
       ENSURE_WALLET: "true"
       REMOVE_LOCK_FILES: "true"
       jm_blockchain_source: regtest
