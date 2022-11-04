@@ -14,6 +14,7 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+import FeeConfigModal from './settings/FeeConfigModal'
 
 import styles from './Jam.module.css'
 
@@ -50,6 +51,7 @@ export default function Jam({ wallet }) {
 
   const [alert, setAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showingFeeConfig, setShowingFeeConfig] = useState(false)
   const [schedule, setSchedule] = useState(null)
   const [isWaitingSchedulerStart, setIsWaitingSchedulerStart] = useState(false)
   const [isWaitingSchedulerStop, setIsWaitingSchedulerStop] = useState(false)
@@ -421,6 +423,22 @@ export default function Jam({ wallet }) {
                       )}
                     </Formik>
                   )}
+
+                  <rb.Row className="mt-5 mb-3">
+                    <rb.Col className="d-flex justify-content-center">
+                      <rb.Button
+                        variant="outline-dark"
+                        className="border-0 mb-2 d-inline-flex align-items-center"
+                        onClick={() => setShowingFeeConfig(true)}
+                      >
+                        <Sprite symbol="coins" width="24" height="24" className="me-1" />
+                        {t('settings.show_fee_config')}
+                      </rb.Button>
+                      {showingFeeConfig && (
+                        <FeeConfigModal show={showingFeeConfig} onHide={() => setShowingFeeConfig(false)} />
+                      )}
+                    </rb.Col>
+                  </rb.Row>
                 </>
               )}
             </>
