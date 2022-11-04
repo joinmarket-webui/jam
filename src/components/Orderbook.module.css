@@ -56,6 +56,14 @@
   border: none;
 }
 
-.highlighted td {
+.orderbookContainer tr:nth-child(2n) td {
+  background-color: var(--bs-gray-200);
+}
+
+:root[data-theme='dark'] .orderbookContainer tr:nth-child(2n) td {
+  background-color: var(--bs-gray-800);
+}
+
+.orderbookContainer tr.highlighted td {
   background-color: rgba(var(--bs-success-rgb), 0.33) !important;
 }
