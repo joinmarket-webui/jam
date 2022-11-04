@@ -53,6 +53,7 @@ export default function Jam({ wallet }) {
   const [schedule, setSchedule] = useState(null)
   const [isWaitingSchedulerStart, setIsWaitingSchedulerStart] = useState(false)
   const [isWaitingSchedulerStop, setIsWaitingSchedulerStop] = useState(false)
+
   const collaborativeOperationRunning = useMemo(
     () => serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false,
     [serviceInfo]
@@ -235,189 +236,194 @@ export default function Jam({ wallet }) {
         </rb.Placeholder>
       ) : (
         <>
-          {collaborativeOperationRunning && (
-            <div className="mb-4">
-              {schedule ? (
-                <ScheduleProgress schedule={schedule} />
-              ) : (
-                <rb.Alert variant="info">{t('send.text_coinjoin_already_running')}</rb.Alert>
-              )}
-            </div>
-          )}
-          <rb.Fade
-            in={!collaborativeOperationRunning && !schedulerPreconditionSummary.isFulfilled}
-            mountOnEnter={true}
-            unmountOnExit={true}
-            className="mb-4"
-          >
-            <CoinjoinPreconditionViolationAlert
-              summary={schedulerPreconditionSummary}
-              i18nPrefix="scheduler.precondition."
-            />
-          </rb.Fade>
-          {!collaborativeOperationRunning && walletInfo && (
+          {collaborativeOperationRunning ? (
             <>
-              <div className="d-flex align-items-center justify-content-between mb-4">
-                <div className="d-flex align-items-center gap-2">
-                  <Sprite symbol="checkmark" width="25" height="25" className="text-secondary" />
-                  <div className="d-flex flex-column">
-                    <div>{t('scheduler.complete_wallet_title')}</div>
-                    <div className={`text-secondary ${styles['small-text']}`}>
-                      {t('scheduler.complete_wallet_subtitle')}
-                    </div>
+              {!schedule ? (
+                <rb.Alert variant="info">{t('send.text_coinjoin_already_running')}</rb.Alert>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <ScheduleProgress schedule={schedule} />
                   </div>
-                </div>
-                <>
-                  <Balance
-                    valueString={`${walletInfo.balanceSummary.calculatedAvailableBalanceInSats}`}
-                    convertToUnit={settings.unit}
-                    showBalance={settings.showBalance}
-                  />
-                </>
-              </div>
-              <p className="text-secondary mb-4">{t('scheduler.description_destination_addresses')}</p>
-            </>
-          )}
-          {((!collaborativeOperationRunning && walletInfo && serviceInfo) ||
-            (collaborativeOperationRunning && schedule)) && (
-            <Formik
-              initialValues={initialFormValues}
-              validate={(values) => {
-                if (collaborativeOperationRunning) {
-                  return {}
-                }
 
-                const errors = {}
-
-                const isValidAddress = (candidate) => {
-                  return typeof candidate !== 'undefined' && candidate !== ''
-                }
-                const isAddressReused = (destination, inputAddresses) => {
-                  if (!destination) return false
-
-                  const knownAddress = walletInfo?.addressSummary[destination] || false
-                  const alreadyUsed = knownAddress && walletInfo?.addressSummary[destination]?.status !== 'new'
-                  const duplicateEntry = inputAddresses.filter((it) => it === destination).length > 1
-
-                  return alreadyUsed || duplicateEntry
-                }
-
-                const addressDict = addressValueKeys(addressCount).map((key) => {
-                  return {
-                    key,
-                    address: values[key],
-                  }
-                })
-                const addresses = addressDict.map((it) => it.address)
-
-                addressDict.forEach((addressEntry) => {
-                  if (!isValidAddress(addressEntry.address)) {
-                    errors[addressEntry.key] = t('scheduler.feedback_invalid_destination_address')
-                  } else if (isAddressReused(addressEntry.address, addresses)) {
-                    errors[addressEntry.key] = t('scheduler.feedback_reused_destination_address')
-                  }
-                })
-
-                return errors
-              }}
-              onSubmit={async (values) => {
-                if (collaborativeOperationRunning) {
-                  await stopSchedule()
-                } else {
-                  await startSchedule(values)
-                }
-              }}
-            >
-              {({
-                values,
-                isSubmitting,
-                handleSubmit,
-                handleBlur,
-                handleChange,
-                setFieldValue,
-                validateForm,
-                isValid,
-                dirty,
-                touched,
-                errors,
-              }) => (
-                <>
-                  <ValuesListener handler={validateForm} addressCount={addressCount} />
-                  <rb.Form onSubmit={handleSubmit} noValidate>
-                    {!collaborativeOperationRunning && (
-                      <>
-                        {isDebugFeatureEnabled('insecureScheduleTesting') && (
-                          <rb.Form.Group className="mb-4" controlId="offertype">
-                            <ToggleSwitch
-                              label={'Use insecure testing settings'}
-                              subtitle={
-                                "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
-                              }
-                              toggledOn={useInsecureTestingSettings}
-                              onToggle={async (isToggled) => {
-                                setUseInsecureTestingSettings(isToggled)
-                                if (isToggled) {
-                                  try {
-                                    const newAddresses = getNewAddresses(DEST_ADDRESS_COUNT_TEST)
-                                    newAddresses.forEach((newAddress, index) => {
-                                      setFieldValue(`dest${index + 1}`, newAddress, true)
-                                    })
-                                  } catch (e) {
-                                    console.error('Could not get internal addresses.', e)
-
-                                    addressValueKeys(DEST_ADDRESS_COUNT_TEST).forEach((key) => {
-                                      setFieldValue(key, '', true)
-                                    })
-                                  }
-                                } else {
-                                  addressValueKeys(DEST_ADDRESS_COUNT_PROD).forEach((key) => {
-                                    setFieldValue(key, '', false)
-                                  })
-                                }
-                              }}
-                              disabled={isSubmitting}
-                            />
-                          </rb.Form.Group>
-                        )}
-                      </>
-                    )}
-                    {!collaborativeOperationRunning &&
-                      addressValueKeys(addressCount).map((key, index) => {
-                        return (
-                          <rb.Form.Group className="mb-4" key={key} controlId={key}>
-                            <rb.Form.Label>
-                              {t('scheduler.label_destination_input', { destination: index + 1 })}
-                            </rb.Form.Label>
-                            <rb.Form.Control
-                              name={key}
-                              value={values[key]}
-                              placeholder={t('scheduler.placeholder_destination_input')}
-                              onChange={handleChange}
-                              onBlur={handleBlur}
-                              isInvalid={touched[key] && !!errors[key]}
-                              className={`${styles.input} slashed-zeroes`}
-                            />
-                            <rb.Form.Control.Feedback type="invalid">{errors[key]}</rb.Form.Control.Feedback>
-                          </rb.Form.Group>
-                        )
-                      })}
-                    {!collaborativeOperationRunning && (
-                      <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
-                    )}
-                    <rb.Button
-                      className={styles.submit}
-                      variant="dark"
-                      type="submit"
-                      disabled={isSubmitting || isLoading || (!collaborativeOperationRunning && !isValid)}
-                    >
-                      <div className="d-flex justify-content-center align-items-center">
-                        {collaborativeOperationRunning ? t('scheduler.button_stop') : t('scheduler.button_start')}
-                      </div>
-                    </rb.Button>
-                  </rb.Form>
+                  <rb.Button
+                    className={styles.submit}
+                    variant="dark"
+                    disabled={isLoading}
+                    onClick={async () => {
+                      await stopSchedule()
+                    }}
+                  >
+                    <div className="d-flex justify-content-center align-items-center">{t('scheduler.button_stop')}</div>
+                  </rb.Button>
                 </>
               )}
-            </Formik>
+            </>
+          ) : (
+            <>
+              <rb.Fade
+                in={!schedulerPreconditionSummary.isFulfilled}
+                mountOnEnter={true}
+                unmountOnExit={true}
+                className="mb-4"
+              >
+                <CoinjoinPreconditionViolationAlert
+                  summary={schedulerPreconditionSummary}
+                  i18nPrefix="scheduler.precondition."
+                />
+              </rb.Fade>
+
+              {walletInfo && (
+                <>
+                  <div className="d-flex align-items-center justify-content-between mb-4">
+                    <div className="d-flex align-items-center gap-2">
+                      <Sprite symbol="checkmark" width="25" height="25" className="text-secondary" />
+                      <div className="d-flex flex-column">
+                        <div>{t('scheduler.complete_wallet_title')}</div>
+                        <div className={`text-secondary ${styles['small-text']}`}>
+                          {t('scheduler.complete_wallet_subtitle')}
+                        </div>
+                      </div>
+                    </div>
+                    <>
+                      <Balance
+                        valueString={`${walletInfo.balanceSummary.calculatedAvailableBalanceInSats}`}
+                        convertToUnit={settings.unit}
+                        showBalance={settings.showBalance}
+                      />
+                    </>
+                  </div>
+                  <p className="text-secondary mb-4">{t('scheduler.description_destination_addresses')}</p>
+                  {serviceInfo && (
+                    <Formik
+                      initialValues={initialFormValues}
+                      validate={(values) => {
+                        const errors = {}
+
+                        const isValidAddress = (candidate) => {
+                          return typeof candidate !== 'undefined' && candidate !== ''
+                        }
+                        const isAddressReused = (destination, inputAddresses) => {
+                          if (!destination) return false
+
+                          const knownAddress = walletInfo.addressSummary[destination] || false
+                          const alreadyUsed = knownAddress && walletInfo.addressSummary[destination]?.status !== 'new'
+                          const duplicateEntry = inputAddresses.filter((it) => it === destination).length > 1
+
+                          return alreadyUsed || duplicateEntry
+                        }
+
+                        const addressDict = addressValueKeys(addressCount).map((key) => {
+                          return {
+                            key,
+                            address: values[key],
+                          }
+                        })
+                        const addresses = addressDict.map((it) => it.address)
+
+                        addressDict.forEach((addressEntry) => {
+                          if (!isValidAddress(addressEntry.address)) {
+                            errors[addressEntry.key] = t('scheduler.feedback_invalid_destination_address')
+                          } else if (isAddressReused(addressEntry.address, addresses)) {
+                            errors[addressEntry.key] = t('scheduler.feedback_reused_destination_address')
+                          }
+                        })
+
+                        return errors
+                      }}
+                      onSubmit={async (values) => {
+                        await startSchedule(values)
+                      }}
+                    >
+                      {({
+                        values,
+                        isSubmitting,
+                        handleSubmit,
+                        handleBlur,
+                        handleChange,
+                        setFieldValue,
+                        validateForm,
+                        isValid,
+                        dirty,
+                        touched,
+                        errors,
+                      }) => (
+                        <>
+                          <ValuesListener handler={validateForm} addressCount={addressCount} />
+                          <rb.Form onSubmit={handleSubmit} noValidate>
+                            {isDebugFeatureEnabled('insecureScheduleTesting') && (
+                              <rb.Form.Group className="mb-4" controlId="offertype">
+                                <ToggleSwitch
+                                  label={'Use insecure testing settings'}
+                                  subtitle={
+                                    "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
+                                  }
+                                  toggledOn={useInsecureTestingSettings}
+                                  onToggle={async (isToggled) => {
+                                    setUseInsecureTestingSettings(isToggled)
+                                    if (isToggled) {
+                                      try {
+                                        const newAddresses = getNewAddresses(DEST_ADDRESS_COUNT_TEST)
+                                        newAddresses.forEach((newAddress, index) => {
+                                          setFieldValue(`dest${index + 1}`, newAddress, true)
+                                        })
+                                      } catch (e) {
+                                        console.error('Could not get internal addresses.', e)
+
+                                        addressValueKeys(DEST_ADDRESS_COUNT_TEST).forEach((key) => {
+                                          setFieldValue(key, '', true)
+                                        })
+                                      }
+                                    } else {
+                                      addressValueKeys(DEST_ADDRESS_COUNT_PROD).forEach((key) => {
+                                        setFieldValue(key, '', false)
+                                      })
+                                    }
+                                  }}
+                                  disabled={isSubmitting}
+                                />
+                              </rb.Form.Group>
+                            )}
+                            {addressValueKeys(addressCount).map((key, index) => {
+                              return (
+                                <rb.Form.Group className="mb-4" key={key} controlId={key}>
+                                  <rb.Form.Label>
+                                    {t('scheduler.label_destination_input', { destination: index + 1 })}
+                                  </rb.Form.Label>
+                                  <rb.Form.Control
+                                    name={key}
+                                    value={values[key]}
+                                    placeholder={t('scheduler.placeholder_destination_input')}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    isInvalid={touched[key] && !!errors[key]}
+                                    className={`${styles.input} slashed-zeroes`}
+                                  />
+                                  <rb.Form.Control.Feedback type="invalid">{errors[key]}</rb.Form.Control.Feedback>
+                                </rb.Form.Group>
+                              )
+                            })}
+
+                            <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
+
+                            <rb.Button
+                              className={styles.submit}
+                              variant="dark"
+                              type="submit"
+                              disabled={isSubmitting || !isValid}
+                            >
+                              <div className="d-flex justify-content-center align-items-center">
+                                {t('scheduler.button_start')}
+                              </div>
+                            </rb.Button>
+                          </rb.Form>
+                        </>
+                      )}
+                    </Formik>
+                  )}
+                </>
+              )}
+            </>
           )}
         </>
       )}
