@@ -6,6 +6,7 @@ import { BalanceString } from '../../context/WalletContext'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import styles from './Jar.module.css'
+import { AmountSats } from '../../libs/JmWalletApi'
 
 const classNames = classnamesBind.bind(styles)
 
@@ -30,12 +31,9 @@ interface TooltipJarProps {
 }
 
 /**
- * Classifies the account balance into one of four groups:
+ * @deprecated
  *
- * - More than half of the total balance
- * - More than a quarter of the total balance
- * - Not empty
- * - Empty
+ * Please use {@link jarFillLevel}
  */
 const calculateFillLevel = (accountBalanceString: BalanceString, totalBalanceString: BalanceString): JarFillLevel => {
   const accountBalance = Number.parseFloat(accountBalanceString)
@@ -44,6 +42,23 @@ const calculateFillLevel = (accountBalanceString: BalanceString, totalBalanceStr
   if (accountBalance > totalBalance / 2) return 3
   if (accountBalance > totalBalance / 4) return 2
   if (accountBalance > 0) return 1
+
+  return 0
+}
+
+/**
+ * Classifies the account balance into one of four groups:
+ *
+ * - More than half of the total balance
+ * - More than a quarter of the total balance
+ * - Not empty
+ * - Empty
+ */
+const jarFillLevel = (jarBalance: AmountSats, totalBalance: AmountSats): JarFillLevel => {
+  if (totalBalance === 0) return 0
+  if (jarBalance > totalBalance / 2) return 3
+  if (jarBalance > totalBalance / 4) return 2
+  if (jarBalance > 0) return 1
 
   return 0
 }
@@ -197,4 +212,4 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
   )
 }
 
-export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial }
+export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }

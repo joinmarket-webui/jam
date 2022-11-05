@@ -42,6 +42,14 @@ export type BalanceString = `${number}.${string}`
 interface WalletDisplayInfo {
   wallet_name: string
   total_balance: BalanceString
+  /**
+   * @since clientserver v0.9.7
+   * @description available balance (total - frozen - locked)
+   *   This value can report less than available in case of address reuse.
+   *   See https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1285#issuecomment-1136438072
+   *   Utxos controlled by the same key will not be taken into account if at least one output is
+   *   frozen (last checked on 2022-05-24).
+   */
   available_balance: BalanceString
   accounts: Account[]
 }
