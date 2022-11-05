@@ -17,7 +17,7 @@ import { estimateMaxCollaboratorFee, toTxFeeValueUnit, useLoadFeeConfigValues } 
 import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
-import { SATS, formatBtc, formatSats, isValidNumber } from '../utils'
+import { SATS, formatBtc, formatSats, satsToBtc, isValidNumber } from '../utils'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
@@ -34,13 +34,10 @@ const INITIAL_SOURCE_JAR_INDEX = 0
 const INITIAL_AMOUNT = null
 
 const initialNumCollaborators = (minValue) => {
-  const defaultNumber = pseudoRandomNumber(8, 10)
-
   if (minValue > 8) {
     return minValue + pseudoRandomNumber(0, 2)
   }
-
-  return defaultNumber
+  return pseudoRandomNumber(8, 10)
 }
 
 // not cryptographically random. returned number is in range [min, max] (both inclusive).
@@ -793,7 +790,7 @@ export default function Send({ wallet }) {
                     <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
                     <td className={styles['balance-col']}>
                       <Balance
-                        valueString={accountBalanceOrNull.totalBalance}
+                        valueString={accountBalanceOrNull.calculatedTotalBalanceInSats.toString()}
                         convertToUnit={SATS}
                         showBalance={true}
                       />
@@ -921,7 +918,7 @@ export default function Send({ wallet }) {
             isShown={destinationJarPickerShown}
             title={t('send.title_jar_selector')}
             accountBalances={walletInfo.balanceSummary.accountBalances}
-            totalBalance={walletInfo.balanceSummary.totalBalance}
+            totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
             disabledJar={sourceJarIndex}
             onCancel={() => setDestinationJarPickerShown(false)}
             onConfirm={(selectedJar) => {
@@ -964,13 +961,13 @@ export default function Send({ wallet }) {
                 {walletInfo &&
                   Object.values(walletInfo.balanceSummary.accountBalances)
                     .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
-                    .map(({ accountIndex, totalBalance, calculatedTotalBalanceInSats }) => (
+                    .map(({ accountIndex, calculatedTotalBalanceInSats }) => (
                       <option key={accountIndex} value={accountIndex}>
                         {jarName(accountIndex)}{' '}
                         {settings.showBalance &&
-                          (settings.unit === 'sats'
+                          (settings.unit === SATS
                             ? `(${formatSats(calculatedTotalBalanceInSats)} sats)`
-                            : `(\u20BF${formatBtc(totalBalance)})`)}
+                            : `(\u20BF${formatBtc(satsToBtc(calculatedTotalBalanceInSats.toString()))})`)}
                       </option>
                     ))}
               </rb.Form.Select>

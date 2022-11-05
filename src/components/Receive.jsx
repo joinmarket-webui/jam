@@ -10,7 +10,7 @@ import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import { CopyButton } from './CopyButton'
 import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
-import { SelectableJar, calculateFillLevel } from './jars/Jar'
+import { SelectableJar, jarFillLevel } from './jars/Jar'
 import styles from './Receive.module.css'
 
 export default function Receive({ wallet }) {
@@ -126,10 +126,13 @@ export default function Receive({ wallet }) {
                     <SelectableJar
                       key={it.accountIndex}
                       index={it.accountIndex}
-                      balance={it.totalBalance}
+                      balance={it.calculatedTotalBalanceInSats}
                       isSelectable={true}
                       isSelected={it.accountIndex === selectedJarIndex}
-                      fillLevel={calculateFillLevel(it.totalBalance, walletInfo.balanceSummary.totalBalance)}
+                      fillLevel={jarFillLevel(
+                        it.calculatedTotalBalanceInSats,
+                        walletInfo.balanceSummary.calculatedTotalBalanceInSats
+                      )}
                       onClick={(jarIndex) => setSelectedJarIndex(jarIndex)}
                     />
                   ))}

@@ -3,10 +3,10 @@ import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import { useSettings } from '../../context/SettingsContext'
 import { BalanceString } from '../../context/WalletContext'
+import { AmountSats } from '../../libs/JmWalletApi'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import styles from './Jar.module.css'
-import { AmountSats } from '../../libs/JmWalletApi'
 
 const classNames = classnamesBind.bind(styles)
 
@@ -14,7 +14,7 @@ type JarFillLevel = 0 | 1 | 2 | 3
 
 interface JarProps {
   index: JarIndex
-  balance: string
+  balance: AmountSats
   fillLevel: JarFillLevel
   isOpen?: boolean
 }
@@ -140,7 +140,7 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
       <Sprite className={`${styles.jarSprite} ${flavorStyle}`} symbol={jarSymbol} width="32px" height="48px" />
       <div className={styles.jarIndex}>{flavorName}</div>
       <div className={styles.jarBalance}>
-        <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+        <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
       </div>
     </div>
   )
