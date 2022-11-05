@@ -45,16 +45,11 @@ const WalletPreview = ({ wallet, totalBalance, unit, showBalance = false }: Wall
 interface CenterNavProps {
   makerRunning: boolean
   schedulerRunning: boolean
-  singleCollaborativeTransactionRunning: boolean
+  singleCoinJoinRunning: boolean
   onClick?: () => void
 }
 
-const CenterNav = ({
-  makerRunning,
-  schedulerRunning,
-  singleCollaborativeTransactionRunning,
-  onClick,
-}: CenterNavProps) => {
+const CenterNav = ({ makerRunning, schedulerRunning, singleCoinJoinRunning, onClick }: CenterNavProps) => {
   const { t } = useTranslation()
 
   return (
@@ -81,7 +76,7 @@ const CenterNav = ({
         >
           <div className="d-flex align-items-start">
             {t('navbar.tab_send')}
-            <TabActivityIndicator isOn={singleCollaborativeTransactionRunning} className="ms-1" />
+            <TabActivityIndicator isOn={singleCoinJoinRunning} className="ms-1" />
           </div>
         </NavLink>
       </rb.Nav.Item>
@@ -170,18 +165,23 @@ export default function Navbar() {
 
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const joiningRoute = useMemo(() => {
-    if (!serviceInfo) return undefined
+  const makerRunning = useMemo(() => serviceInfo?.makerRunning || false, [serviceInfo])
+  const schedulerRunning = useMemo(
+    () => (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null) || false,
+    [serviceInfo]
+  )
+  const singleCoinJoinRunning = useMemo(
+    () => (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null) || false,
+    [serviceInfo]
+  )
 
-    if (serviceInfo.coinjoinInProgress) {
-      return serviceInfo.schedule ? routes.jam : routes.send
-    }
-    if (serviceInfo.makerRunning) {
-      return routes.earn
-    }
+  const joiningRoute = useMemo(() => {
+    if (schedulerRunning) return routes.jam
+    if (singleCoinJoinRunning) return routes.send
+    if (makerRunning) return routes.earn
 
     return undefined
-  }, [serviceInfo])
+  }, [makerRunning, schedulerRunning, singleCoinJoinRunning])
 
   const height = '75px'
 
@@ -268,11 +268,9 @@ export default function Navbar() {
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
                     <CenterNav
-                      makerRunning={serviceInfo?.makerRunning || false}
-                      schedulerRunning={(serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null) || false}
-                      singleCollaborativeTransactionRunning={
-                        (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null) || false
-                      }
+                      makerRunning={makerRunning}
+                      schedulerRunning={schedulerRunning}
+                      singleCoinJoinRunning={singleCoinJoinRunning}
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
                     <TrailingNav joiningRoute={joiningRoute} onClick={() => setIsExpanded(!isExpanded)} />
@@ -280,11 +278,9 @@ export default function Navbar() {
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
                   <CenterNav
-                    makerRunning={serviceInfo?.makerRunning || false}
-                    schedulerRunning={(serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null) || false}
-                    singleCollaborativeTransactionRunning={
-                      (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null) || false
-                    }
+                    makerRunning={makerRunning}
+                    schedulerRunning={schedulerRunning}
+                    singleCoinJoinRunning={singleCoinJoinRunning}
                   />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">
