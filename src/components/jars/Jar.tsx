@@ -2,7 +2,6 @@ import { useState, useRef, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import { useSettings } from '../../context/SettingsContext'
-import { BalanceString } from '../../context/WalletContext'
 import { AmountSats } from '../../libs/JmWalletApi'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
@@ -28,22 +27,6 @@ interface SelectableJarProps {
 interface TooltipJarProps {
   tooltipText: string
   onClick: () => void
-}
-
-/**
- * @deprecated
- *
- * Please use {@link jarFillLevel}
- */
-const calculateFillLevel = (accountBalanceString: BalanceString, totalBalanceString: BalanceString): JarFillLevel => {
-  const accountBalance = Number.parseFloat(accountBalanceString)
-  const totalBalance = Number.parseFloat(totalBalanceString)
-
-  if (accountBalance > totalBalance / 2) return 3
-  if (accountBalance > totalBalance / 4) return 2
-  if (accountBalance > 0) return 1
-
-  return 0
 }
 
 /**
@@ -212,4 +195,4 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
   )
 }
 
-export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }
+export { SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }

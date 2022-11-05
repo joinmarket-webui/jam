@@ -1,30 +1,11 @@
-import { CombinedRawWalletData, BalanceString, Utxos } from '../context/WalletContext'
+import { CombinedRawWalletData, Utxos } from '../context/WalletContext'
 
 import * as fb from '../components/fb/utils'
 import { AmountSats } from '../libs/JmWalletApi'
 
 type Milliseconds = number
 
-interface BalanceSummary {
-  /* @deprecated
-   *
-   *   Please use {@link BalanceSummarySupport#calculatedTotalBalanceInSats}
-   */
-  totalBalance: BalanceString
-  /**
-   * @since clientserver v0.9.7
-   * @description available balance (total - frozen - locked)
-   *   This value can report less than available in case of address reuse.
-   *   See https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1285#issuecomment-1136438072
-   *   Utxos controlled by the same key will not be taken into account if at least one output is
-   *   frozen (last checked on 2022-05-24).
-   *
-   *   Please use {@link BalanceSummarySupport#calculatedAvailableBalanceInSats} if applicable.
-   */
-  availableBalance: BalanceString
-}
-
-type BalanceSummarySupport = BalanceSummary & {
+type BalanceSummary = {
   /**
    * @description Manually calculated total balance in sats.
    */
@@ -40,7 +21,7 @@ type BalanceSummarySupport = BalanceSummary & {
   calculatedFrozenOrLockedBalanceInSats: AmountSats
 }
 
-type AccountBalanceSummary = BalanceSummarySupport & {
+type AccountBalanceSummary = BalanceSummary & {
   accountIndex: number
 }
 
@@ -48,7 +29,7 @@ type AccountBalances = {
   [key: number]: AccountBalanceSummary
 }
 
-export type WalletBalanceSummary = BalanceSummarySupport & {
+export type WalletBalanceSummary = BalanceSummary & {
   accountBalances: AccountBalances
 }
 
@@ -87,8 +68,6 @@ const toBalanceSummary = (rawWalletData: CombinedRawWalletData, now?: Millisecon
       const accountFrozenOrLockedCalculated: AmountSats = frozenOrLockedCalculatedByAccount[account] || 0
       const accountAvailableCalculated: AmountSats = accountTotalCalculated - accountFrozenOrLockedCalculated
       return {
-        totalBalance: '-1.00000000',
-        availableBalance: '-1.00000000',
         calculatedTotalBalanceInSats: accountTotalCalculated,
         calculatedFrozenOrLockedBalanceInSats: accountFrozenOrLockedCalculated,
         calculatedAvailableBalanceInSats: accountAvailableCalculated,
@@ -110,8 +89,6 @@ const toBalanceSummary = (rawWalletData: CombinedRawWalletData, now?: Millisecon
   const walletAvailableCalculated = walletTotalCalculated - walletFrozenOrLockedCalculated
 
   return {
-    totalBalance: '-1.00000000',
-    availableBalance: '-1.00000000',
     accountBalances: accountsBalanceSummary,
     calculatedTotalBalanceInSats: walletTotalCalculated,
     calculatedFrozenOrLockedBalanceInSats: walletFrozenOrLockedCalculated,

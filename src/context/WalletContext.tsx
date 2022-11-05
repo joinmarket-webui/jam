@@ -37,7 +37,7 @@ interface WalletDisplayResponse {
   walletinfo: WalletDisplayInfo
 }
 
-export type BalanceString = `${number}.${string}`
+type BalanceString = `${number}.${string}`
 
 interface WalletDisplayInfo {
   wallet_name: string
