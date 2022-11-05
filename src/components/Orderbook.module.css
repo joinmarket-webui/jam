@@ -58,13 +58,22 @@
 }
 
 .orderbookContainer tr:nth-child(2n) td {
-  background-color: var(--bs-gray-200);
+  background-color: var(--bs-gray-100);
 }
-
 :root[data-theme='dark'] .orderbookContainer tr:nth-child(2n) td {
   background-color: var(--bs-gray-800);
 }
 
+.orderbookContainer tr:hover td {
+  background-color: var(--bs-gray-200) !important;
+}
+:root[data-theme='dark'] tr:hover td {
+  background-color: var(--bs-gray-700) !important;
+}
+
 .orderbookContainer tr.highlighted td {
   background-color: rgba(var(--bs-success-rgb), 0.33) !important;
+}
+.orderbookContainer tr:hover.highlighted td {
+  background-color: rgba(var(--bs-success-rgb), 0.66) !important;
 }
