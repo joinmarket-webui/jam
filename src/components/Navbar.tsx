@@ -15,7 +15,7 @@ import { AmountSats } from '../libs/JmWalletApi'
 interface WalletPreviewProps {
   wallet: CurrentWallet
   totalBalance?: AmountSats
-  unit: string
+  unit: Unit
   showBalance?: boolean
 }
 

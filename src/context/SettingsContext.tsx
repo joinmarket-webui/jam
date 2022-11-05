@@ -1,18 +1,32 @@
 import React, { createContext, useReducer, useEffect, useContext } from 'react'
-import { BTC } from '../utils'
-
 const localStorageKey = window.JM.SETTINGS_STORE_KEY
 
-const initialSettings = {
+interface Settings {
+  showBalance: boolean
+  unit: Unit
+  showOnboarding: boolean
+  showCheatsheet: boolean
+  theme?: string
+}
+
+const initialSettings: Settings = {
   showBalance: false,
-  unit: BTC,
+  unit: 'BTC',
   showOnboarding: true,
   showCheatsheet: true,
 }
 
-const SettingsContext = createContext()
+interface SettingsContextEntry {
+  settings: Settings
+  dispatch: React.Dispatch<Partial<Settings>>
+}
 
-const settingsReducer = (oldSettings, action) => {
+const SettingsContext = createContext<SettingsContextEntry>({
+  settings: initialSettings,
+  dispatch: (_: Partial<Settings>) => {},
+})
+
+const settingsReducer = (oldSettings: Settings, action: Partial<Settings>) => {
   const { ...newSettings } = action
 
   return {
@@ -21,10 +35,10 @@ const settingsReducer = (oldSettings, action) => {
   }
 }
 
-const SettingsProvider = ({ children }) => {
+const SettingsProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const [settings, dispatch] = useReducer(
     settingsReducer,
-    Object.assign({}, initialSettings, JSON.parse(window.localStorage.getItem(localStorageKey)))
+    Object.assign({}, initialSettings, JSON.parse(window.localStorage.getItem(localStorageKey) || '{}')) as Settings
   )
 
   useEffect(() => {
