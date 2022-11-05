@@ -1,28 +1,36 @@
-import React, { useMemo, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, NavLink, To } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
+import { CurrentWallet, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
+import { AmountSats } from '../libs/JmWalletApi'
 
-const WalletPreview = ({ wallet, totalBalance, unit, showBalance }) => {
+interface WalletPreviewProps {
+  wallet: CurrentWallet
+  totalBalance?: AmountSats
+  unit: string
+  showBalance?: boolean
+}
+
+const WalletPreview = ({ wallet, totalBalance, unit, showBalance = false }: WalletPreviewProps) => {
   return (
     <div className="d-flex align-items-center">
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {totalBalance && unit ? (
+        {totalBalance !== undefined ? (
           <div className="text-body">
             <Balance
-              valueString={totalBalance}
+              valueString={`${totalBalance}`}
               convertToUnit={unit}
-              showBalance={showBalance || false}
+              showBalance={showBalance}
               enableVisibilityToggle={false}
             />
           </div>
@@ -34,7 +42,19 @@ const WalletPreview = ({ wallet, totalBalance, unit, showBalance }) => {
   )
 }
 
-const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransactionRunning, onClick }) => {
+interface CenterNavProps {
+  makerRunning: boolean
+  schedulerRunning: boolean
+  singleCollaborativeTransactionRunning: boolean
+  onClick?: () => void
+}
+
+const CenterNav = ({
+  makerRunning,
+  schedulerRunning,
+  singleCollaborativeTransactionRunning,
+  onClick,
+}: CenterNavProps) => {
   const { t } = useTranslation()
 
   return (
@@ -99,7 +119,12 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCollaborativeTransact
   )
 }
 
-const TrailingNav = ({ joiningRoute, onClick }) => {
+interface TrailingNavProps {
+  joiningRoute?: To
+  onClick?: () => void
+}
+
+const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
   const { t } = useTranslation()
 
   return (
@@ -146,7 +171,7 @@ export default function Navbar() {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const joiningRoute = useMemo(() => {
-    if (!serviceInfo) return null
+    if (!serviceInfo) return undefined
 
     if (serviceInfo.coinjoinInProgress) {
       return serviceInfo.schedule ? routes.jam : routes.send
@@ -155,7 +180,7 @@ export default function Navbar() {
       return routes.earn
     }
 
-    return null
+    return undefined
   }, [serviceInfo])
 
   const height = '75px'
@@ -223,14 +248,12 @@ export default function Navbar() {
                         'leading-nav-link nav-link d-flex align-items-center' + (isActive ? ' active' : '')
                       }
                     >
-                      <>
-                        <WalletPreview
-                          wallet={currentWallet}
-                          totalBalance={currentWalletInfo?.balanceSummary.totalBalance}
-                          showBalance={settings.showBalance}
-                          unit={settings.unit}
-                        />
-                      </>
+                      <WalletPreview
+                        wallet={currentWallet}
+                        totalBalance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
+                        showBalance={settings.showBalance}
+                        unit={settings.unit}
+                      />
                     </NavLink>
                   </rb.Nav.Item>
                 </rb.Nav>
@@ -245,10 +268,10 @@ export default function Navbar() {
                   </rb.Offcanvas.Header>
                   <rb.Offcanvas.Body>
                     <CenterNav
-                      makerRunning={serviceInfo?.makerRunning}
-                      schedulerRunning={serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null}
+                      makerRunning={serviceInfo?.makerRunning || false}
+                      schedulerRunning={(serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null) || false}
                       singleCollaborativeTransactionRunning={
-                        serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null
+                        (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null) || false
                       }
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
@@ -257,10 +280,10 @@ export default function Navbar() {
                 </rb.Navbar.Offcanvas>
                 <rb.Container className="d-none d-md-flex flex-1 flex-grow-0 align-items-stretch">
                   <CenterNav
-                    makerRunning={serviceInfo?.makerRunning}
-                    schedulerRunning={serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null}
+                    makerRunning={serviceInfo?.makerRunning || false}
+                    schedulerRunning={(serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null) || false}
                     singleCollaborativeTransactionRunning={
-                      serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null
+                      (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null) || false
                     }
                   />
                 </rb.Container>
