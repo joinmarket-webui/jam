@@ -166,23 +166,31 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
-      const allUtxoIds = walletInfo.data.utxos.utxos.map((utxo) => utxo.utxo)
-      const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
+      reloadCurrentWalletInfo
+        .reloadUtxos({ signal: abortCtrl.signal })
+        .then((res) => {
+          if (abortCtrl.signal.aborted) return
 
-      setUtxoIdsToBeSpent([...utxoIdsStillPresent])
-      if (utxoIdsStillPresent.length === 0) {
-        // Note that two fidelity bonds with the same locktime will end up on the same address.
-        // Therefore, this might not actually be the UTXO we just created.
-        // Since we're using it only for displaying locktime and address, this should be fine though.
-        const fbUtxo = walletInfo.fidelityBondSummary.fbOutputs.find((utxo) => utxo.address === timelockedAddress)
+          const allUtxoIds = res.utxos.map((utxo) => utxo.utxo)
+          const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
 
-        if (fbUtxo !== undefined) {
-          setCreatedFidelityBondUtxo(fbUtxo)
-        }
+          if (utxoIdsStillPresent.length === 0) {
+            // Note that two fidelity bonds with the same locktime will end up on the same address.
+            // Therefore, this might not actually be the UTXO we just created.
+            // Since we're using it only for displaying locktime and address, this should be fine though.
+            const fbOutputs = res.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
+            const fbUtxo = fbOutputs.find((utxo) => utxo.address === timelockedAddress)
 
-        setIsLoading(false)
-      } else {
-        reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }).catch((err) => {
+            if (fbUtxo !== undefined) {
+              setCreatedFidelityBondUtxo(fbUtxo)
+            }
+
+            setIsLoading(false)
+          }
+
+          setUtxoIdsToBeSpent([...utxoIdsStillPresent])
+        })
+        .catch((err) => {
           if (abortCtrl.signal.aborted) return
 
           setUtxoIdsToBeSpent([])
@@ -190,14 +198,13 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
           setAlert({ variant: 'danger', message: t('earn.fidelity_bond.error_reloading_wallet') })
         })
-      }
     }, TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS)
 
     return () => {
       abortCtrl.abort()
       clearTimeout(timer)
     }
-  }, [utxoIdsToBeSpent, walletInfo, reloadCurrentWalletInfo, timelockedAddress, t])
+  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t])
 
   const stepComponent = (currentStep) => {
     switch (currentStep) {
