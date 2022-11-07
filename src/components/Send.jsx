@@ -919,23 +919,28 @@ export default function Send({ wallet }) {
             totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
             disabledJar={sourceJarIndex}
             onCancel={() => setDestinationJarPickerShown(false)}
-            onConfirm={async (selectedJar) => {
-              setDestinationJarPickerShown(false)
-
-              const externalBranch = walletInfo.data.display.walletinfo.accounts[selectedJar].branches.find(
-                (branch) => {
-                  return branch.branch.split('\t')[0] === 'external addresses'
-                }
-              )
-
-              const newEntry = externalBranch.entries.find((entry) => entry.status === 'new')
-
-              if (newEntry) {
-                setDestination(newEntry.address)
-                setDestinationJar(selectedJar)
-              } else {
-                console.error(`Cannot find a new address in mixdepth ${selectedJar}`)
-              }
+            onConfirm={(selectedJar) => {
+              const abortCtrl = new AbortController()
+              return Api.getAddressNew({
+                signal: abortCtrl.signal,
+                walletName: wallet.name,
+                token: wallet.token,
+                mixdepth: selectedJar,
+              })
+                .then((res) =>
+                  res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))
+                )
+                .then((data) => {
+                  if (abortCtrl.signal.aborted) return
+                  setDestination(data.address)
+                  setDestinationJar(selectedJar)
+                  setDestinationJarPickerShown(false)
+                })
+                .catch((err) => {
+                  if (abortCtrl.signal.aborted) return
+                  setAlert({ variant: 'danger', message: err.message })
+                  setDestinationJarPickerShown(false)
+                })
             }}
           />
         )}
