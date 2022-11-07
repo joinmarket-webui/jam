@@ -19,34 +19,33 @@ interface WalletHeaderProps {
   balance: Api.AmountSats
   unit: Unit
   showBalance: boolean
-  loading: boolean
 }
 
-const WalletHeader = ({ name, balance, unit, showBalance, loading }: WalletHeaderProps) => {
+const WalletHeader = ({ name, balance, unit, showBalance }: WalletHeaderProps) => {
   return (
     <div className={styles.walletHeader}>
-      {loading ? (
-        <>
-          <rb.Placeholder as="div" animation="wave">
-            <rb.Placeholder className={styles.titlePlaceholder} />
-          </rb.Placeholder>
-          <rb.Placeholder as="div" animation="wave">
-            <rb.Placeholder className={styles.subtitlePlaceholder} />
-          </rb.Placeholder>
-        </>
-      ) : (
-        <>
-          <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>
-          <h2>
-            <Balance
-              valueString={balance.toString()}
-              convertToUnit={unit}
-              showBalance={showBalance}
-              enableVisibilityToggle={true}
-            />
-          </h2>
-        </>
-      )}
+      <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>
+      <h2>
+        <Balance
+          valueString={balance.toString()}
+          convertToUnit={unit}
+          showBalance={showBalance}
+          enableVisibilityToggle={true}
+        />
+      </h2>
+    </div>
+  )
+}
+
+const WalletHeaderPlaceholder = () => {
+  return (
+    <div className={styles.walletHeader}>
+      <rb.Placeholder as="div" animation="wave">
+        <rb.Placeholder className={styles.titlePlaceholder} />
+      </rb.Placeholder>
+      <rb.Placeholder as="div" animation="wave">
+        <rb.Placeholder className={styles.subtitlePlaceholder} />
+      </rb.Placeholder>
     </div>
   )
 }
@@ -95,10 +94,14 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
     reloadCurrentWalletInfo
       .reloadUtxos({ signal: abortCtrl.signal })
       .catch((err) => {
+        if (abortCtrl.signal.aborted) return
         const message = err.message || t('current_wallet.error_loading_failed')
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
       })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsLoading(false)
+      })
 
     return () => abortCtrl.abort()
   }, [reloadCurrentWalletInfo, t])
@@ -124,13 +127,18 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
         />
       )}
       <rb.Row>
-        <WalletHeader
-          name={wallet.name}
-          balance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats || -1}
-          unit={settings.unit}
-          showBalance={settings.showBalance}
-          loading={!currentWalletInfo || isLoading}
-        />
+        {!currentWalletInfo || isLoading ? (
+          <>
+            <WalletHeaderPlaceholder />
+          </>
+        ) : (
+          <WalletHeader
+            name={wallet.name}
+            balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
+            unit={settings.unit}
+            showBalance={settings.showBalance}
+          />
+        )}
       </rb.Row>
       <rb.Row className="mt-4 mb-5 d-flex justify-content-center">
         <rb.Col xs={10} md={8}>
