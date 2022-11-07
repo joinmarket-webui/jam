@@ -168,6 +168,7 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
         pagination={pagination}
         sort={tableSort}
         layout={{ custom: true, horizontalScroll: true }}
+        className="table striped"
       >
         {(tableList) => (
           <>
