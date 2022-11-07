@@ -919,7 +919,7 @@ export default function Send({ wallet }) {
             totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
             disabledJar={sourceJarIndex}
             onCancel={() => setDestinationJarPickerShown(false)}
-            onConfirm={(selectedJar) => {
+            onConfirm={async (selectedJar) => {
               setDestinationJarPickerShown(false)
 
               const externalBranch = walletInfo.data.display.walletinfo.accounts[selectedJar].branches.find(

@@ -14,7 +14,7 @@ interface JarSelectorModalProps {
   totalBalance: AmountSats
   disabledJar?: JarIndex
   onCancel: () => void
-  onConfirm: (jarIndex: JarIndex) => void
+  onConfirm: (jarIndex: JarIndex) => Promise<void>
 }
 
 export default function JarSelectorModal({
@@ -28,7 +28,8 @@ export default function JarSelectorModal({
 }: JarSelectorModalProps) {
   const { t } = useTranslation()
 
-  const [selectedJar, setSelectedJar] = useState<JarIndex | null>(null)
+  const [isConfirming, setIsConfirming] = useState(false)
+  const [selectedJar, setSelectedJar] = useState<JarIndex>()
 
   const sortedAccountBalances = useMemo(() => {
     if (!accountBalances) return []
@@ -36,15 +37,17 @@ export default function JarSelectorModal({
   }, [accountBalances])
 
   const cancel = () => {
-    setSelectedJar(null)
+    setSelectedJar(undefined)
     onCancel()
   }
 
   const confirm = () => {
-    if (selectedJar === null) return
+    if (selectedJar === undefined) return
 
+    setIsConfirming(true)
     onConfirm(selectedJar)
-    setSelectedJar(null)
+      .then(() => setSelectedJar(undefined))
+      .finally(() => setIsConfirming(false))
   }
 
   return (
@@ -88,8 +91,14 @@ export default function JarSelectorModal({
         <rb.Button variant="light" onClick={cancel} className="d-flex justify-content-center align-items-center">
           {t('modal.confirm_button_reject')}
         </rb.Button>
-        <rb.Button disabled={selectedJar === null} variant="dark" onClick={confirm}>
-          {t('modal.confirm_button_accept')}
+        <rb.Button disabled={isConfirming || selectedJar === undefined} variant="dark" onClick={confirm}>
+          {isConfirming ? (
+            <>
+              <rb.Spinner as="span" animation="border" size="sm" role="status" />
+            </>
+          ) : (
+            <>{t('modal.confirm_button_accept')}</>
+          )}
         </rb.Button>
       </rb.Modal.Footer>
     </rb.Modal>
