@@ -27,19 +27,11 @@ interface HeaderProps {
   previousJar: () => void
   setTab: (tab: string) => void
   onHide: () => void
+  isInitializing: boolean
   initialTab: string
 }
 
-interface JarDetailsOverlayProps {
-  jars: Account[]
-  initialJarIndex: JarIndex
-  walletInfo: WalletInfo
-  wallet: CurrentWallet
-  isShown: boolean
-  onHide: () => void
-}
-
-const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab }: HeaderProps) => {
+const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab, isInitializing }: HeaderProps) => {
   const { t } = useTranslation()
 
   const tabs = [
@@ -64,6 +56,20 @@ const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab }: Heade
             <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => nextJar()}>
               <Sprite symbol="caret-right" width="20" height="20" />
             </rb.Button>
+            {isInitializing && (
+              <>
+                {
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="ms-3"
+                  />
+                }
+              </>
+            )}
           </div>
         </div>
         <div className="d-flex align-items-center flex-grow-1 flex-shrink-0">
@@ -84,20 +90,30 @@ const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab }: Heade
   )
 }
 
+interface JarDetailsOverlayProps {
+  jars: Account[]
+  initialJarIndex: JarIndex
+  walletInfo: WalletInfo
+  wallet: CurrentWallet
+  isShown: boolean
+  onHide: () => void
+}
+
 const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
 
-  const [alert, setAlert] = useState<SimpleMessageAlertProps | null>(null)
+  const [alert, setAlert] = useState<SimpleMessageAlertProps>()
   const [jarIndex, setJarIndex] = useState(props.initialJarIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
+  const [isInitializing, setIsInitializing] = useState(true)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isLoadingFreeze, setIsLoadingFreeze] = useState(false)
   const [isLoadingUnfreeze, setIsLoadingUnfreeze] = useState(false)
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
-  const [detailUtxo, setDetailUtxo] = useState<Utxo | null>(null)
+  const [detailUtxo, setDetailUtxo] = useState<Utxo>()
 
   const jar = useMemo(() => props.jars[jarIndex], [props.jars, jarIndex])
   const utxos = useMemo(() => props.walletInfo.utxosByJar[jarIndex] || [], [props.walletInfo, jarIndex])
@@ -117,6 +133,26 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     () => setJarIndex((current) => (current - 1 < 0 ? props.jars.length - 1 : current - 1)),
     [props.jars]
   )
+
+  useEffect(() => {
+    if (!props.isShown) return
+
+    const abortCtrl = new AbortController()
+
+    setIsInitializing(true)
+    reloadCurrentWalletInfo
+      .reloadAll({ signal: abortCtrl.signal })
+      .catch((err) => {
+        if (abortCtrl.signal.aborted) return
+        setAlert({ variant: 'danger', message: err.message, dismissible: true })
+      })
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsInitializing(false)
+      })
+
+    return () => abortCtrl.abort()
+  }, [props.isShown, reloadCurrentWalletInfo])
 
   useEffect(() => setJarIndex(props.initialJarIndex), [props.initialJarIndex])
   useEffect(() => {
@@ -154,7 +190,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const refreshUtxos = async () => {
     if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
 
-    setAlert(null)
+    setAlert(undefined)
     setIsLoadingRefresh(true)
 
     const abortCtrl = new AbortController()
@@ -162,9 +198,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     reloadCurrentWalletInfo
       .reloadUtxos({ signal: abortCtrl.signal })
       .catch((err) => {
-        setAlert({ variant: 'danger', message: err.message, dismissible: true })
+        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
-      .finally(() => setIsLoadingRefresh(false))
+      .finally(() => !abortCtrl.signal.aborted && setIsLoadingRefresh(false))
 
     return () => abortCtrl.abort()
   }
@@ -174,7 +210,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
     if (selectedUtxos.length <= 0) return
 
-    setAlert(null)
+    setAlert(undefined)
     freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
 
     const abortCtrl = new AbortController()
@@ -274,6 +310,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
             setTab={setSelectedTab}
             onHide={props.onHide}
             initialTab={selectedTab}
+            isInitializing={isInitializing}
           />
         </rb.Container>
       </rb.Offcanvas.Header>
@@ -286,17 +323,17 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                   variant={alert.variant}
                   dismissible={true}
                   message={alert.message}
-                  onClose={() => setAlert(null)}
+                  onClose={() => setAlert(undefined)}
                 />
               </rb.Col>
             </rb.Row>
           )}
           {detailUtxo && (
             <UtxoDetailModal
-              isShown={detailUtxo !== null}
+              isShown={detailUtxo !== undefined}
               utxo={detailUtxo}
               status={props.walletInfo.addressSummary[detailUtxo.address]?.status}
-              close={() => setDetailUtxo(null)}
+              close={() => setDetailUtxo(undefined)}
             />
           )}
           <rb.Row className="justify-content-center">

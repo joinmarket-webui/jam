@@ -93,7 +93,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
     setIsLoading(true)
 
     reloadCurrentWalletInfo
-      .reloadAll({ signal: abortCtrl.signal })
+      .reloadUtxos({ signal: abortCtrl.signal })
       .catch((err) => {
         const message = err.message || t('current_wallet.error_loading_failed')
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
