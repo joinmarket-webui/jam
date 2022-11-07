@@ -240,7 +240,7 @@ export default function Earn({ wallet }) {
     setIsLoading(true)
 
     const reloadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
-    const reloadingCurrentWalletInfo = reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal })
+    const reloadingCurrentWalletInfo = reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
 
     Promise.all([reloadingServiceInfo, reloadingCurrentWalletInfo])
       .catch((err) => {
@@ -249,7 +249,7 @@ export default function Earn({ wallet }) {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [wallet, isSending, reloadServiceInfo, reloadCurrentWalletInfo])
+  }, [isSending, reloadServiceInfo, reloadCurrentWalletInfo])
 
   useEffect(() => {
     if (isSending) return
@@ -281,13 +281,17 @@ export default function Earn({ wallet }) {
 
     new Promise((resolve) => {
       setTimeout(() => {
-        resolve(reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }))
+        resolve(reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
       }, delay)
     })
       .catch((err) => {
+        if (abortCtrl.signal.aborted) return
         setAlert({ variant: 'danger', message: err.message })
       })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsLoading(false)
+      })
   }
 
   const feeRelMin = 0.0

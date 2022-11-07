@@ -59,6 +59,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   }, [])
 
   const reset = () => {
+    setIsLoading(false)
     setIsExpanded(false)
     setStep(steps.selectDate)
     setSelectedJar(null)
@@ -70,6 +71,26 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     setFrozenUtxos([])
     setUtxoIdsToBeSpent([])
   }
+
+  useEffect(() => {
+    if (!isExpanded) {
+      reset()
+    } else {
+      setIsLoading(true)
+      const abortCtrl = new AbortController()
+      reloadCurrentWalletInfo
+        .reloadAll({ signal: abortCtrl.signal })
+        .catch(() => {
+          if (abortCtrl.signal.aborted) return
+          setAlert({ variant: 'danger', message: t('earn.fidelity_bond.error_reloading_wallet') })
+        })
+        .finally(() => {
+          if (abortCtrl.signal.aborted) return
+          setIsLoading(false)
+        })
+      return () => abortCtrl.abort()
+    }
+  }, [isExpanded, reloadCurrentWalletInfo, t])
 
   const freezeUtxos = (utxos) => {
     changeUtxoFreeze(utxos, true)
@@ -103,7 +124,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     )
 
     Promise.all(freezeCalls)
-      .then((_) => reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }))
+      .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
       .then(() => setAlert(null))
       .then(() => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
       .catch((err) => {
@@ -190,7 +211,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
           setUtxoIdsToBeSpent([...utxoIdsStillPresent])
         })
-        .catch((err) => {
+        .catch(() => {
           if (abortCtrl.signal.aborted) return
 
           setUtxoIdsToBeSpent([])
@@ -209,6 +230,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const stepComponent = (currentStep) => {
     switch (currentStep) {
       case steps.selectDate:
+        if (isLoading) {
+          return (
+            <div className="d-flex justify-content-center align-items-center mt-5">
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              <div>{t('earn.fidelity_bond.text_loading')}</div>
+            </div>
+          )
+        }
+
         return (
           <SelectDate
             description={t('earn.fidelity_bond.select_date.description')}
