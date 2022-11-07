@@ -54,10 +54,7 @@ export default function MainWalletView({ wallet }) {
   const [isLoading, setIsLoading] = useState(true)
   const [showJars, setShowJars] = useState(false)
 
-  const jars = useMemo(
-    () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
-    [currentWalletInfo]
-  )
+  const jars = useMemo(() => currentWalletInfo?.data.display.walletinfo.accounts, [currentWalletInfo])
 
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
@@ -82,7 +79,8 @@ export default function MainWalletView({ wallet }) {
     setAlert(null)
     setIsLoading(true)
 
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+    reloadCurrentWalletInfo
+      .reloadAll({ signal: abortCtrl.signal })
       .catch((err) => {
         const message = err.message || t('current_wallet.error_loading_failed')
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
@@ -90,7 +88,7 @@ export default function MainWalletView({ wallet }) {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [wallet, reloadCurrentWalletInfo, t])
+  }, [reloadCurrentWalletInfo, t])
 
   return (
     <div>

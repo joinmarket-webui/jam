@@ -159,7 +159,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
     const abortCtrl = new AbortController()
 
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+    reloadCurrentWalletInfo
+      .reloadUtxos({ signal: abortCtrl.signal })
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
@@ -192,7 +193,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     )
 
     Promise.all(freezeCalls)
-      .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
+      .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })

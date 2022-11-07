@@ -116,7 +116,7 @@ export default function Jam({ wallet }) {
       setAlert({ variant: 'danger', message })
     })
 
-    const loadingWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => {
+    const loadingWalletInfo = reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).catch((err) => {
       if (abortCtrl.signal.aborted) return
       const message = err.message || t('send.error_loading_wallet_failed')
       setAlert({ variant: 'danger', message })
@@ -155,7 +155,7 @@ export default function Jam({ wallet }) {
 
     setIsLoading(true)
     const abortCtrl = new AbortController()
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal }).finally(() => {
+    reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).finally(() => {
       if (abortCtrl.signal.aborted) return
       setIsLoading(false)
     })

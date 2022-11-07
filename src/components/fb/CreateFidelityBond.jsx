@@ -103,9 +103,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     )
 
     Promise.all(freezeCalls)
-      .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
-      .then((_) => setAlert(null))
-      .then((_) => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
+      .then((_) => reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }))
+      .then(() => setAlert(null))
+      .then(() => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
@@ -166,29 +166,23 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
-      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-        .then((walletInfo) => {
-          if (abortCtrl.signal.aborted) return
+      const allUtxoIds = walletInfo.data.utxos.utxos.map((utxo) => utxo.utxo)
+      const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
 
-          const allUtxoIds = walletInfo.data.utxos.utxos.map((utxo) => utxo.utxo)
-          const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
+      setUtxoIdsToBeSpent([...utxoIdsStillPresent])
+      if (utxoIdsStillPresent.length === 0) {
+        // Note that two fidelity bonds with the same locktime will end up on the same address.
+        // Therefore, this might not actually be the UTXO we just created.
+        // Since we're using it only for displaying locktime and address, this should be fine though.
+        const fbUtxo = walletInfo.fidelityBondSummary.fbOutputs.find((utxo) => utxo.address === timelockedAddress)
 
-          if (utxoIdsStillPresent.length === 0) {
-            // Note that two fidelity bonds with the same locktime will end up on the same address.
-            // Therefore, this might not actually be the UTXO we just created.
-            // Since we're using it only for displaying locktime and address, this should be fine though.
-            const fbUtxo = walletInfo.fidelityBondSummary.fbOutputs.find((utxo) => utxo.address === timelockedAddress)
+        if (fbUtxo !== undefined) {
+          setCreatedFidelityBondUtxo(fbUtxo)
+        }
 
-            if (fbUtxo !== undefined) {
-              setCreatedFidelityBondUtxo(fbUtxo)
-            }
-
-            setIsLoading(false)
-          }
-
-          setUtxoIdsToBeSpent([...utxoIdsStillPresent])
-        })
-        .catch((err) => {
+        setIsLoading(false)
+      } else {
+        reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }).catch((err) => {
           if (abortCtrl.signal.aborted) return
 
           setUtxoIdsToBeSpent([])
@@ -196,13 +190,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
           setAlert({ variant: 'danger', message: t('earn.fidelity_bond.error_reloading_wallet') })
         })
+      }
     }, TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS)
 
     return () => {
       abortCtrl.abort()
       clearTimeout(timer)
     }
-  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t])
+  }, [utxoIdsToBeSpent, walletInfo, reloadCurrentWalletInfo, timelockedAddress, t])
 
   const stepComponent = (currentStep) => {
     switch (currentStep) {

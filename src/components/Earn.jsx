@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Formik } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -183,7 +183,9 @@ export default function Earn({ wallet }) {
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
   const [isShowOrderbook, setIsShowOrderbook] = useState(false)
-  const [fidelityBonds, setFidelityBonds] = useState([])
+  const fidelityBonds = useMemo(() => {
+    return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
+  }, [currentWalletInfo])
 
   const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
     setIsSending(true)
@@ -238,11 +240,7 @@ export default function Earn({ wallet }) {
     setIsLoading(true)
 
     const reloadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
-    const reloadingCurrentWalletInfo = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).then((info) => {
-      if (!abortCtrl.signal.aborted) {
-        setFidelityBonds(info.fidelityBondSummary.fbOutputs)
-      }
-    })
+    const reloadingCurrentWalletInfo = reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal })
 
     Promise.all([reloadingServiceInfo, reloadingCurrentWalletInfo])
       .catch((err) => {
@@ -283,10 +281,9 @@ export default function Earn({ wallet }) {
 
     new Promise((resolve) => {
       setTimeout(() => {
-        resolve(reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
+        resolve(reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }))
       }, delay)
     })
-      .then((info) => setFidelityBonds(info.fidelityBondSummary.fbOutputs))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
       })
