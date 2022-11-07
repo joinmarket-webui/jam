@@ -114,8 +114,8 @@ interface WalletContextEntry {
   currentWalletInfo: WalletInfo | undefined
   reloadCurrentWalletInfo: {
     reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<void>
-    reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<void>
-    reloadDisplay: ({ signal }: { signal: AbortSignal }) => Promise<void>
+    reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<UtxosResponse>
+    reloadDisplay: ({ signal }: { signal: AbortSignal }) => Promise<WalletDisplayResponse>
   }
 }
 
@@ -215,6 +215,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       if (!signal.aborted) {
         setUtxoResponse(response)
       }
+      return response
     },
     [fetchUtxos]
   )
@@ -225,6 +226,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       if (!signal.aborted) {
         setDisplayResponse(response)
       }
+      return response
     },
     [fetchDisplay]
   )
