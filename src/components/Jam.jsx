@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, useFormikContext } from 'formik'
@@ -19,6 +19,23 @@ import styles from './Jam.module.css'
 
 const DEST_ADDRESS_COUNT_PROD = 3
 const DEST_ADDRESS_COUNT_TEST = 1
+
+const getNewAddressesForTesting = (walletInfo, count, mixdepth = 0) => {
+  if (!walletInfo) {
+    throw new Error('Wallet info is not available.')
+  }
+  const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
+    return branch.branch.split('\t')[0] === 'external addresses'
+  })
+
+  const newEntries = externalBranch.entries.filter((entry) => entry.status === 'new').slice(0, count)
+
+  if (newEntries.length !== count) {
+    throw new Error(`Cannot find enough fresh addresses in mixdepth ${mixdepth}`)
+  }
+
+  return newEntries.map((it) => it.address)
+}
 
 const addressValueKeys = (addressCount) =>
   Array(addressCount)
@@ -63,27 +80,6 @@ export default function Jam({ wallet }) {
     [walletInfo]
   )
 
-  // Returns one fresh address for each requested mixdepth.
-  const getNewAddresses = useCallback(
-    (count, mixdepth = 0) => {
-      if (!walletInfo) {
-        throw new Error('Wallet info is not available.')
-      }
-      const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
-        return branch.branch.split('\t')[0] === 'external addresses'
-      })
-
-      const newEntries = externalBranch.entries.filter((entry) => entry.status === 'new').slice(0, count)
-
-      if (newEntries.length !== count) {
-        throw new Error(`Cannot find enough fresh addresses in mixdepth ${mixdepth}`)
-      }
-
-      return newEntries.map((it) => it.address)
-    },
-    [walletInfo]
-  )
-
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const addressCount = useMemo(
     () => (useInsecureTestingSettings ? DEST_ADDRESS_COUNT_TEST : DEST_ADDRESS_COUNT_PROD),
@@ -95,7 +91,7 @@ export default function Jam({ wallet }) {
     if (useInsecureTestingSettings) {
       try {
         // prefill with addresses marked as "new"
-        destinationAddresses = getNewAddresses(addressCount)
+        destinationAddresses = getNewAddressesForTesting(walletInfo, addressCount)
       } catch (e) {
         // on error initialize with empty addresses - form validation will do the rest
         destinationAddresses = Array(addressCount).fill('')
@@ -103,7 +99,7 @@ export default function Jam({ wallet }) {
     }
 
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
-  }, [addressCount, useInsecureTestingSettings, getNewAddresses])
+  }, [addressCount, useInsecureTestingSettings, walletInfo])
 
   useEffect(() => {
     setAlert(null)
@@ -130,7 +126,7 @@ export default function Jam({ wallet }) {
     return () => {
       abortCtrl.abort()
     }
-  }, [reloadServiceInfo, reloadCurrentWalletInfo, t])
+  }, [collaborativeOperationRunning, reloadServiceInfo, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
     if (!serviceInfo) return
@@ -145,24 +141,6 @@ export default function Jam({ wallet }) {
       console.table(scheduleUpdate)
     }
   }, [serviceInfo])
-
-  useEffect(() => {
-    // Due to polling, using `collaborativeOperationRunning` instead of
-    // `schedule` here, as a schedule object might still be present when
-    // the scheduler is actually not running anymore. Reload wallet data
-    // only when no collaborative operation is running anymore.
-    if (collaborativeOperationRunning) return
-
-    setIsLoading(true)
-    const abortCtrl = new AbortController()
-    reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).finally(() => {
-      if (abortCtrl.signal.aborted) return
-      setIsLoading(false)
-    })
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [collaborativeOperationRunning, reloadCurrentWalletInfo])
 
   const startSchedule = async (values) => {
     if (isLoading || collaborativeOperationRunning) {
@@ -354,11 +332,11 @@ export default function Jam({ wallet }) {
                                 "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
                               }
                               toggledOn={useInsecureTestingSettings}
-                              onToggle={async (isToggled) => {
+                              onToggle={(isToggled) => {
                                 setUseInsecureTestingSettings(isToggled)
                                 if (isToggled) {
                                   try {
-                                    const newAddresses = getNewAddresses(DEST_ADDRESS_COUNT_TEST)
+                                    const newAddresses = getNewAddressesForTesting(walletInfo, DEST_ADDRESS_COUNT_TEST)
                                     newAddresses.forEach((newAddress, index) => {
                                       setFieldValue(`dest${index + 1}`, newAddress, true)
                                     })
