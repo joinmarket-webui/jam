@@ -515,12 +515,16 @@ export default function Send({ wallet }) {
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
-      const outputs = walletInfo.data.utxos.utxos.map((it) => it.utxo)
-      const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
-      setWaitForUtxosToBeSpent([...utxosStillPresent])
+      reloadCurrentWalletInfo
+        .reloadUtxos({ signal: abortCtrl.signal })
+        .then((res) => {
+          if (abortCtrl.signal.aborted) return
+          const outputs = res.utxos.map((it) => it.utxo)
+          const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
+          setWaitForUtxosToBeSpent([...utxosStillPresent])
+        })
 
-      if (utxosStillPresent.length > 0) {
-        reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).catch((err) => {
+        .catch((err) => {
           if (abortCtrl.signal.aborted) return
 
           // Stop waiting for wallet synchronization on errors, but inform
@@ -530,14 +534,13 @@ export default function Send({ wallet }) {
           const message = err.message || t('send.error_loading_wallet_failed')
           setAlert({ variant: 'danger', message })
         })
-      }
     }, initialDelayInMs)
 
     return () => {
       abortCtrl.abort()
       clearTimeout(timer)
     }
-  }, [waitForUtxosToBeSpent, walletInfo, reloadCurrentWalletInfo, t])
+  }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
 
   useEffect(() => {
     if (isOperationDisabled) {
@@ -558,7 +561,7 @@ export default function Send({ wallet }) {
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
     })
 
-    const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }).catch((err) => {
+    const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).catch((err) => {
       const message = err.message || t('send.error_loading_wallet_failed')
       !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
     })
