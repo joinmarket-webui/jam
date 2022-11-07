@@ -43,7 +43,7 @@
   }
 }
 
-:root[data-theme='dark'] .overlayContainer .orderbookContainer > .titleBar {
+:root[data-theme='dark'] .overlayContainer .orderbookContainer .titleBar {
   background-color: var(--bs-gray-800);
 }
 
