@@ -57,7 +57,7 @@ export function LogContent({ content, refresh }: LogContentProps) {
           </rb.Button>
         </div>
       </div>
-      <div className="px-md-3 pb-2">
+      <div className="py-2 px-2">
         <pre ref={logContentRef} className={styles.logContent}>
           {content}
         </pre>
@@ -123,7 +123,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
       placement="bottom"
     >
       <rb.Offcanvas.Header>
-        <rb.Container>
+        <rb.Container fluid="lg">
           <div className="w-100 d-flex">
             <div className="d-flex align-items-center flex-1">
               <rb.Offcanvas.Title>{t('logs.title')}</rb.Offcanvas.Title>
@@ -137,7 +137,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <rb.Container fluid="md" className="py-4 py-sm-5">
+        <rb.Container fluid="lg" className="py-3">
           {!isInitialized && isLoading ? (
             Array(12)
               .fill('')
@@ -153,7 +153,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {content && (
                 <rb.Row>
-                  <rb.Col>
+                  <rb.Col className="px-0">
                     <LogContent content={content} refresh={refresh} />
                   </rb.Col>
                 </rb.Row>

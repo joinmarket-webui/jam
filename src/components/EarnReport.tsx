@@ -168,6 +168,7 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
         pagination={pagination}
         sort={tableSort}
         layout={{ custom: true, horizontalScroll: true }}
+        className="table striped"
       >
         {(tableList) => (
           <>
@@ -223,7 +224,7 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
           </>
         )}
       </Table>
-      <div className="mt-4 mb-4 mb-md-0">
+      <div className="mt-4 mb-4 mb-lg-0">
         <TablePagination data={data} pagination={pagination} />
       </div>
     </>
@@ -389,7 +390,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
       placement="bottom"
     >
       <rb.Offcanvas.Header>
-        <rb.Container>
+        <rb.Container fluid="lg">
           <div className="w-100 d-flex">
             <div className="d-flex align-items-center flex-1">
               <rb.Offcanvas.Title>{t('earn.report.title')}</rb.Offcanvas.Title>
@@ -403,7 +404,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <rb.Container fluid="md" className="py-4 py-sm-5">
+        <rb.Container fluid="lg" className="py-3">
           {!isInitialized && isLoading ? (
             Array(5)
               .fill('')
@@ -419,7 +420,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {entries && (
                 <rb.Row>
-                  <rb.Col>
+                  <rb.Col className="px-0">
                     <EarnReport entries={entries} refresh={refresh} />
                   </rb.Col>
                 </rb.Row>

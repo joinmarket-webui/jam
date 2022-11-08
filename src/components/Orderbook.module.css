@@ -43,7 +43,7 @@
   }
 }
 
-:root[data-theme='dark'] .overlayContainer .orderbookContainer > .titleBar {
+:root[data-theme='dark'] .overlayContainer .orderbookContainer .titleBar {
   background-color: var(--bs-gray-800);
 }
 
@@ -55,20 +55,6 @@
   height: 2rem;
   padding: 0.1rem;
   border: none;
-}
-
-.orderbookContainer tr:nth-child(2n) td {
-  background-color: var(--bs-gray-100);
-}
-:root[data-theme='dark'] .orderbookContainer tr:nth-child(2n) td {
-  background-color: var(--bs-gray-800);
-}
-
-.orderbookContainer tr:hover td {
-  background-color: var(--bs-gray-200) !important;
-}
-:root[data-theme='dark'] tr:hover td {
-  background-color: var(--bs-gray-700) !important;
 }
 
 .orderbookContainer tr.highlighted td {
