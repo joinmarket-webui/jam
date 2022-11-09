@@ -179,6 +179,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
         pagination={pagination}
         sort={tableSort}
         layout={{ custom: true, horizontalScroll: true }}
+        className="table striped"
       >
         {(tableList) => (
           <>
