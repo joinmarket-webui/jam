@@ -1,4 +1,4 @@
-FROM ghcr.io/joinmarket-webui/jam-dev-standalone:wait-for-bitcoind
+FROM ghcr.io/joinmarket-webui/jam-dev-standalone:master
 
 COPY default.cfg ${DEFAULT_CONFIG}
 
