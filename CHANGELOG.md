@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.1.3](https://github.com/joinmarket-webui/jam/compare/v0.1.2...v0.1.3) (2022-11-10)
+
+#### Fixed
+
+* **docker**: wait for bitcoind to accept RPC calls ([#559](https://github.com/joinmarket-webui/jam/pull/559)) ([6e2ee47](https://github.com/joinmarket-webui/jam/commit/6e2ee47538fe225f7b84eb2de245993a90dfd042))
+* **pagination:** colors of option element in dark mode ([#554](https://github.com/joinmarket-webui/jam/issues/554)) ([86dc2c5](https://github.com/joinmarket-webui/jam/commit/86dc2c5d545037e2a1a593049ac6b96e31910d07))
+
+#### Added
+
+* quickly review/adapt fee settings before sweeping ([#565](https://github.com/joinmarket-webui/jam/issues/565)) ([0d4dd0d](https://github.com/joinmarket-webui/jam/commit/0d4dd0d4d550a7052b6958326cd70adebea6cd60))
+* **orderbook:** improve readability with alternating colors ([#563](https://github.com/joinmarket-webui/jam/pull/563)) ([691faf7](https://github.com/joinmarket-webui/jam/pull/563))
+
 ### [0.1.2](https://github.com/joinmarket-webui/jam/compare/v0.1.1...v0.1.2) (2022-10-28)
 
 #### Fixed
