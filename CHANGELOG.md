@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 * quickly review/adapt fee settings before sweeping ([#565](https://github.com/joinmarket-webui/jam/issues/565)) ([0d4dd0d](https://github.com/joinmarket-webui/jam/commit/0d4dd0d4d550a7052b6958326cd70adebea6cd60))
+* **orderbook:** improve readability with alternating colors ([#563](https://github.com/joinmarket-webui/jam/pull/563)) ([691faf7](https://github.com/joinmarket-webui/jam/pull/563))
 
 ### [0.1.2](https://github.com/joinmarket-webui/jam/compare/v0.1.1...v0.1.2) (2022-10-28)
 
