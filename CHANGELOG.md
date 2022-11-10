@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 
+* **docker**: wait for bitcoind to accept RPC calls ([#559](https://github.com/joinmarket-webui/jam/pull/559)) ([6e2ee47](https://github.com/joinmarket-webui/jam/commit/6e2ee47538fe225f7b84eb2de245993a90dfd042))
 * **pagination:** colors of option element in dark mode ([#554](https://github.com/joinmarket-webui/jam/issues/554)) ([86dc2c5](https://github.com/joinmarket-webui/jam/commit/86dc2c5d545037e2a1a593049ac6b96e31910d07))
 
 #### Added
