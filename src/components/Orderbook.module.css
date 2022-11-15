@@ -6,47 +6,48 @@
 .overlayContainer .orderbookContainer {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 0.5rem;
   background-color: var(--bs-body-bg);
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 992px) {
   .overlayContainer .orderbookContainer {
+    gap: 1.5rem;
     padding: 2rem;
     border-radius: 0.5rem;
   }
 }
 
-.overlayContainer .orderbookContainer > .titleBar {
+.overlayContainer .orderbookContainer .titleBar {
   min-height: 3.6rem;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
-  padding: 0 0 0.8rem 0;
+  padding: 0 0.5rem 0.8rem 0.5rem;
   background-color: var(--bs-gray-100);
 }
 
-@media only screen and (min-width: 768px) {
-  .overlayContainer .orderbookContainer > .titleBar {
-    align-items: center;
+@media only screen and (min-width: 992px) {
+  .overlayContainer .orderbookContainer .titleBar {
     padding: 0.8rem 1rem;
     border-radius: 0.6rem;
   }
 }
 
 @media only screen and (min-width: 768px) {
-  .overlayContainer .orderbookContainer > .titleBar {
+  .overlayContainer .orderbookContainer .titleBar {
+    align-items: center;
     flex-direction: row;
   }
 }
 
-:root[data-theme='dark'] .overlayContainer .orderbookContainer > .titleBar {
+:root[data-theme='dark'] .overlayContainer .orderbookContainer .titleBar {
   background-color: var(--bs-gray-800);
 }
 
-.overlayContainer .orderbookContainer > .titleBar .refreshButton {
+.overlayContainer .orderbookContainer .titleBar .refreshButton {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -56,6 +57,9 @@
   border: none;
 }
 
-.highlighted td {
+.orderbookContainer tr.highlighted td {
   background-color: rgba(var(--bs-success-rgb), 0.33) !important;
+}
+.orderbookContainer tr:hover.highlighted td {
+  background-color: rgba(var(--bs-success-rgb), 0.66) !important;
 }

@@ -9,7 +9,6 @@ import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { Helper as ApiHelper } from '../libs/JmWalletApi'
 import * as ObwatchApi from '../libs/JmObwatchApi'
-// @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
@@ -180,6 +179,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
         pagination={pagination}
         sort={tableSort}
         layout={{ custom: true, horizontalScroll: true }}
+        className="table striped"
       >
         {(tableList) => (
           <>
@@ -233,7 +233,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
           </>
         )}
       </Table>
-      <div className="mt-4 mb-4 mb-md-0">
+      <div className="mt-4 mb-4 mb-lg-0">
         <TablePagination data={data} pagination={pagination} />
       </div>
     </>
@@ -357,7 +357,7 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
         ) : (
           <>
             {nickname && (
-              <div className="mb-3">
+              <div className="mb-3 ps-3 ps-md-0 pt-3 pt-lg-0">
                 <rb.Form.Check
                   type="checkbox"
                   id="highlight-own-offers"
@@ -440,7 +440,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
       placement="bottom"
     >
       <rb.Offcanvas.Header>
-        <rb.Container>
+        <rb.Container fluid="lg">
           <div className="w-100 d-flex">
             <div className="d-flex align-items-center flex-1">
               <rb.Offcanvas.Title>{t('orderbook.title')}</rb.Offcanvas.Title>
@@ -454,7 +454,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
-        <rb.Container fluid="md" className="py-4 py-sm-5">
+        <rb.Container fluid="lg" className="py-3">
           {!isInitialized && isLoading ? (
             Array(5)
               .fill('')
@@ -470,7 +470,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {orders && (
                 <rb.Row>
-                  <rb.Col>
+                  <rb.Col className="px-0">
                     <Orderbook nickname={nickname} orders={orders} refresh={refresh} />
                   </rb.Col>
                 </rb.Row>
