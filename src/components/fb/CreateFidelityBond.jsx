@@ -19,7 +19,7 @@ import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
 
-const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2500
+const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
 
 const steps = {
   selectDate: 0,
@@ -219,7 +219,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <SelectJar
             description={t('earn.fidelity_bond.select_jar.description')}
             accountBalances={walletInfo.balanceSummary.accountBalances}
-            totalBalance={walletInfo.balanceSummary.totalBalance}
+            totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
             isJarSelectable={(jarIndex) =>
               walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
             }

@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { calculateFillLevel, SelectableJar } from './jars/Jar'
+import { jarFillLevel, SelectableJar } from './jars/Jar'
 import { AccountBalances } from '../context/BalanceSummary'
-import { BalanceString } from '../context/WalletContext'
+import { AmountSats } from '../libs/JmWalletApi'
 import Sprite from './Sprite'
 import styles from './JarSelectorModal.module.css'
 
@@ -11,7 +11,7 @@ interface JarSelectorModalProps {
   isShown: boolean
   title: string
   accountBalances: AccountBalances
-  totalBalance: BalanceString
+  totalBalance: AmountSats
   disabledJar?: JarIndex
   onCancel: () => void
   onConfirm: (jarIndex: JarIndex) => void
@@ -74,10 +74,10 @@ export default function JarSelectorModal({
               <SelectableJar
                 key={account.accountIndex}
                 index={account.accountIndex}
-                balance={account.totalBalance}
+                balance={account.calculatedTotalBalanceInSats}
                 isSelectable={account.accountIndex !== disabledJar}
                 isSelected={account.accountIndex === selectedJar}
-                fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
+                fillLevel={jarFillLevel(account.calculatedTotalBalanceInSats, totalBalance)}
                 onClick={(jarIndex) => setSelectedJar(jarIndex)}
               />
             )

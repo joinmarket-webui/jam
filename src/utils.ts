@@ -8,8 +8,8 @@ const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 0,
 })
 
-export const BTC = 'BTC'
-export const SATS = 'sats'
+export const BTC: Unit = 'BTC'
+export const SATS: Unit = 'sats'
 
 export const walletDisplayName = (name: string) => name.replace('.jmdat', '')
 

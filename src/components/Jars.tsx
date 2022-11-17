@@ -1,11 +1,20 @@
 import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import styles from './Jars.module.css'
+import { AccountBalances } from '../context/BalanceSummary'
+import { AmountSats } from '../libs/JmWalletApi'
+import { OpenableJar, jarFillLevel } from './jars/Jar'
 import Sprite from './Sprite'
-import { calculateFillLevel, OpenableJar } from './jars/Jar'
 
-const Jars = ({ accountBalances, totalBalance, onClick }) => {
+import styles from './Jars.module.css'
+
+interface JarsProps {
+  accountBalances: AccountBalances
+  totalBalance: AmountSats
+  onClick: (jarIndex: JarIndex) => void
+}
+
+const Jars = ({ accountBalances, totalBalance, onClick }: JarsProps) => {
   const { t } = useTranslation()
   const sortedAccountBalances = useMemo(() => {
     if (!accountBalances) return []
@@ -28,14 +37,14 @@ const Jars = ({ accountBalances, totalBalance, onClick }) => {
       </rb.OverlayTrigger>
       <div className={styles.jarsContainer}>
         {sortedAccountBalances.map((account) => {
-          const jarIsEmpty = parseInt(account.totalBalance, 10) === 0
+          const jarIsEmpty = account.calculatedTotalBalanceInSats === 0
 
           return (
             <OpenableJar
               key={account.accountIndex}
               index={account.accountIndex}
-              balance={account.totalBalance}
-              fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
+              balance={account.calculatedTotalBalanceInSats}
+              fillLevel={jarFillLevel(account.calculatedTotalBalanceInSats, totalBalance)}
               tooltipText={
                 account.accountIndex === 0 && jarIsEmpty
                   ? t('current_wallet.jar_tooltip_empty_jar_0')
