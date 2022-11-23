@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { useSettings } from '../context/SettingsContext'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
@@ -30,7 +30,7 @@ const WalletHeader = ({ name, balance, unit, showBalance }: WalletHeaderProps) =
           valueString={balance.toString()}
           convertToUnit={unit}
           showBalance={showBalance}
-          enableVisibilityToggle={true}
+          enableVisibilityToggle={false}
         />
       </h2>
     </div>
@@ -59,6 +59,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
   const navigate = useNavigate()
 
   const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
   const currentWalletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
@@ -126,7 +127,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
           onHide={() => setIsAccountOverlayShown(false)}
         />
       )}
-      <rb.Row>
+      <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
         {!currentWalletInfo || isLoading ? (
           <>
             <WalletHeaderPlaceholder />
