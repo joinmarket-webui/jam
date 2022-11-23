@@ -2,7 +2,7 @@ import { useState, useRef, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import { useSettings } from '../../context/SettingsContext'
-import { BalanceString } from '../../context/WalletContext'
+import { AmountSats } from '../../libs/JmWalletApi'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import styles from './Jar.module.css'
@@ -13,7 +13,7 @@ type JarFillLevel = 0 | 1 | 2 | 3
 
 interface JarProps {
   index: JarIndex
-  balance: string
+  balance: AmountSats
   fillLevel: JarFillLevel
   isOpen?: boolean
 }
@@ -37,13 +37,11 @@ interface TooltipJarProps {
  * - Not empty
  * - Empty
  */
-const calculateFillLevel = (accountBalanceString: BalanceString, totalBalanceString: BalanceString): JarFillLevel => {
-  const accountBalance = Number.parseFloat(accountBalanceString)
-  const totalBalance = Number.parseFloat(totalBalanceString)
-
-  if (accountBalance > totalBalance / 2) return 3
-  if (accountBalance > totalBalance / 4) return 2
-  if (accountBalance > 0) return 1
+const jarFillLevel = (jarBalance: AmountSats, totalBalance: AmountSats): JarFillLevel => {
+  if (totalBalance === 0) return 0
+  if (jarBalance > totalBalance / 2) return 3
+  if (jarBalance > totalBalance / 4) return 2
+  if (jarBalance > 0) return 1
 
   return 0
 }
@@ -125,7 +123,7 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
       <Sprite className={`${styles.jarSprite} ${flavorStyle}`} symbol={jarSymbol} width="32px" height="48px" />
       <div className={styles.jarIndex}>{flavorName}</div>
       <div className={styles.jarBalance}>
-        <Balance valueString={balance} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+        <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
       </div>
     </div>
   )
@@ -197,4 +195,4 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
   )
 }
 
-export { calculateFillLevel, SelectableJar, OpenableJar, jarName, jarInitial }
+export { SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }

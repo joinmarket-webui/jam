@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BTC, SATS, btcToSats, satsToBtc, formatBtc, formatSats, isValidNumber } from '../utils'
+import { SATS, BTC, btcToSats, satsToBtc, formatBtc, formatSats, isValidNumber } from '../utils'
 import Sprite from './Sprite'
 import * as rb from 'react-bootstrap'
 import styles from './Balance.module.css'
@@ -33,8 +33,7 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
  * For example:
  *  - 0, 10, 2100000000000000 are treated as a value in SATS; while
  *  - 0.00000000, 150.00000001, 21000000.00000000 are treated as a value in BTC.
- * @param {convertToUnit}: The unit to convert the `valueString` to.
- * Possible options are `BTC` and `SATS` from `src/utils.js`
+ * @param {convertToUnit}: The unit to convert the `valueString` to. Type {@link Unit}.
  * @param {showBalance}: A flag indicating whether to render or hide the balance.
  * Hidden balances are masked with `*****`.
  * @param {loading}: A loading flag that renders a placeholder while true.

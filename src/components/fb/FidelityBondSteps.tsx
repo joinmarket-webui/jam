@@ -5,8 +5,8 @@ import * as Api from '../../libs/JmWalletApi'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import { AccountBalances, AccountBalanceSummary } from '../../context/BalanceSummary'
-import { Utxo, AddressStatus, WalletInfo, BalanceString } from '../../context/WalletContext'
-import { calculateFillLevel, SelectableJar, jarInitial } from '../jars/Jar'
+import { Utxo, AddressStatus, WalletInfo } from '../../context/WalletContext'
+import { SelectableJar, jarInitial, jarFillLevel } from '../jars/Jar'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { CopyButton } from '../CopyButton'
@@ -25,7 +25,7 @@ interface SelectDateProps {
 interface SelectJarProps {
   description: string
   accountBalances: AccountBalances
-  totalBalance: BalanceString
+  totalBalance: Api.AmountSats
   isJarSelectable: (jarIndex: JarIndex) => boolean
   selectedJar?: JarIndex
   onJarSelected: (jarIndex: JarIndex) => void
@@ -100,10 +100,10 @@ const SelectJar = ({
           <SelectableJar
             key={index}
             index={account.accountIndex}
-            balance={account.totalBalance}
+            balance={account.calculatedTotalBalanceInSats}
             isSelectable={isJarSelectable(account.accountIndex)}
             isSelected={selectedJar === account.accountIndex}
-            fillLevel={calculateFillLevel(account.totalBalance, totalBalance)}
+            fillLevel={jarFillLevel(account.calculatedTotalBalanceInSats, totalBalance)}
             onClick={(jarIndex) => onJarSelected(jarIndex)}
           />
         ))}

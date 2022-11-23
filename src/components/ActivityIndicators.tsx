@@ -16,7 +16,8 @@ function ActivityIndicator({ isOn, children }: PropsWithChildren<ActivityIndicat
 
 interface JoiningIndicatorProps {
   isOn: boolean
-  size: number
+  size?: number
+  title?: string
   className?: string
 }
 

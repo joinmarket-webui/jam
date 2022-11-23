@@ -356,7 +356,7 @@ const MoveFidelityBondModal = ({
       <SelectJar
         description={t('earn.fidelity_bond.move.select_jar.description')}
         accountBalances={walletInfo.balanceSummary.accountBalances}
-        totalBalance={walletInfo.balanceSummary.totalBalance}
+        totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
         isJarSelectable={() => true}
         selectedJar={destinationJarIndex}
         onJarSelected={setDestinationJarIndex}

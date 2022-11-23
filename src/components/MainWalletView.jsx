@@ -13,7 +13,7 @@ import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
 import { Jars } from './Jars'
 import styles from './MainWalletView.module.css'
 
-const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
+const WalletHeader = ({ name, balance /*: AmountSats */, unit, showBalance, loading }) => {
   return (
     <div className="d-flex flex-column align-items-center">
       {loading && (
@@ -30,7 +30,7 @@ const WalletHeader = ({ name, balance, unit, showBalance, loading }) => {
       {!loading && (
         <h2>
           <Balance
-            valueString={balance}
+            valueString={`${balance}`}
             convertToUnit={unit}
             showBalance={showBalance || false}
             enableVisibilityToggle={false}
@@ -64,7 +64,7 @@ export default function MainWalletView({ wallet }) {
 
   const onJarClicked = (jarIndex) => {
     if (jarIndex === 0) {
-      const isEmpty = Number(currentWalletInfo?.balanceSummary.accountBalances[jarIndex]?.totalBalance) === 0
+      const isEmpty = currentWalletInfo?.balanceSummary.accountBalances[jarIndex]?.calculatedTotalBalanceInSats === 0
 
       if (isEmpty) {
         navigate(routes.receive, { state: { account: jarIndex } })
@@ -115,7 +115,7 @@ export default function MainWalletView({ wallet }) {
       <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
         <WalletHeader
           name={wallet.name}
-          balance={currentWalletInfo?.balanceSummary.totalBalance}
+          balance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
           unit={settings.unit}
           showBalance={settings.showBalance}
           loading={isLoading}
@@ -166,7 +166,7 @@ export default function MainWalletView({ wallet }) {
               ) : (
                 <Jars
                   accountBalances={currentWalletInfo?.balanceSummary.accountBalances}
-                  totalBalance={currentWalletInfo?.balanceSummary.totalBalance}
+                  totalBalance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
                   onClick={onJarClicked}
                 />
               )}
