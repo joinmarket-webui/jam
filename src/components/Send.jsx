@@ -85,32 +85,22 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   }
 
   return (
-    <rb.Form noValidate className={styles['collaborators-selector']} disabled={disabled}>
+    <rb.Form noValidate className={styles.collaboratorsSelector} disabled={disabled}>
       <rb.Form.Group>
         <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
         <div className="mb-2">
           <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
         </div>
-        <div className={`${styles['collaborators-selector-flex']} d-flex flex-row flex-wrap`}>
+        <div className="d-flex flex-row flex-wrap gap-2">
           {defaultCollaboratorsSelection.map((number) => {
+            const isSelected = !usesCustomNumCollaborators && numCollaborators === number
             return (
               <rb.Button
                 key={number}
                 variant={settings.theme === 'light' ? 'white' : 'dark'}
-                className={classNames(
-                  styles['collaborators-selector-button'],
-                  'p-2',
-                  'border',
-                  'border-1',
-                  'rounded',
-                  'text-center',
-                  {
-                    'border-dark':
-                      !usesCustomNumCollaborators && numCollaborators === number && settings.theme === 'light',
-                    [styles['selected-dark']]:
-                      !usesCustomNumCollaborators && numCollaborators === number && settings.theme !== 'light',
-                  }
-                )}
+                className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
+                  [styles.selected]: isSelected,
+                })}
                 onClick={() => {
                   setUsesCustomNumCollaborators(false)
                   setNumCollaborators(number)
@@ -128,18 +118,9 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
             isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
             placeholder={t('send.input_num_collaborators_placeholder')}
             defaultValue=""
-            className={classNames(
-              styles['collaborators-selector-input'],
-              'p-2',
-              'border',
-              'border-1',
-              'rounded',
-              'text-center',
-              {
-                'border-dark': usesCustomNumCollaborators && settings.theme === 'light',
-                [styles['selected-dark']]: usesCustomNumCollaborators && settings.theme !== 'light',
-              }
-            )}
+            className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
+              [styles.selected]: usesCustomNumCollaborators,
+            })}
             onChange={(e) => {
               setUsesCustomNumCollaborators(true)
               validateAndSetCustomNumCollaborators(e.target.value)
