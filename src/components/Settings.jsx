@@ -148,7 +148,7 @@ export default function Settings({ wallet, stopWallet }) {
               {languages.map((lng, index) => {
                 return (
                   <rb.Dropdown.Item key={index} onClick={() => i18n.changeLanguage(lng.key)}>
-                    {lng.description}
+                    {lng.description} {lng.flag}
                   </rb.Dropdown.Item>
                 )
               })}
