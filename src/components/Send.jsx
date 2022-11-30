@@ -70,17 +70,18 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
 
   const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
 
+  const defaultCollaboratorsSelection = useMemo(() => {
+    const start = Math.max(minNumCollaborators, 8)
+    return [start, start + 1, start + 2]
+  }, [minNumCollaborators])
+
   const validateAndSetCustomNumCollaborators = (candidate) => {
-    if (isValidNumCollaborators(candidate, minNumCollaborators)) {
-      setNumCollaborators(candidate)
+    const parsed = parseInt(candidate, 10)
+    if (isValidNumCollaborators(parsed, minNumCollaborators)) {
+      setNumCollaborators(parsed)
     } else {
       setNumCollaborators(null)
     }
-  }
-
-  var defaultCollaboratorsSelection = [8, 9, 10]
-  if (minNumCollaborators > 8) {
-    defaultCollaboratorsSelection = [minNumCollaborators, minNumCollaborators + 1, minNumCollaborators + 2]
   }
 
   return (
