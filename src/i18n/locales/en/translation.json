@@ -140,9 +140,11 @@
     "account_heading_internal_addresses": "Internal Addresses"
   },
   "settings": {
-    "title": "Settings",
+    "section_title_display": "Display",
+    "section_title_market": "Market",
     "section_title_wallet": "Wallet",
     "section_title_community": "Community",
+    "section_title_dev": "Development & Documentation",
     "show_balance": "Show balance",
     "hide_balance": "Hide balance",
     "use_sats": "Display amounts in sats",
