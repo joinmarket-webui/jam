@@ -67,13 +67,11 @@ const languages = [
   {
     key: 'en',
     description: 'English',
-    flag: '🇺🇸',
     translation: en,
   },
   {
     key: 'de',
     description: 'Deutsch',
-    flag: '🇩🇪',
     translation: de,
   },
 ]
