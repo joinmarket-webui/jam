@@ -5,13 +5,11 @@ const languages = [
   {
     key: 'en',
     description: 'English',
-    flag: '🇺🇸',
     translation: en,
   },
   {
     key: 'fr',
     description: 'Français',
-    flag: '🇫🇷',
     translation: fr,
   },
 ]
