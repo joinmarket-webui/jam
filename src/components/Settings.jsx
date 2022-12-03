@@ -92,7 +92,7 @@ export default function Settings({ wallet, stopWallet }) {
   return (
     <div className={styles.settings}>
       <div className="d-flex flex-column gap-3">
-        <div className={styles['section-title']}>{t('settings.title')}</div>
+        <div className={styles['section-title']}>{t('settings.section_title_display')}</div>
         {alert && <Alert {...alert} />}
         <ConfirmModal
           isShown={showConfirmLockModal}
@@ -161,28 +161,23 @@ export default function Settings({ wallet, stopWallet }) {
               </rb.Dropdown.Item>
             </rb.Dropdown.Menu>
           </rb.Dropdown>
-
-          <rb.Button
-            variant="outline-dark"
-            className={styles['settings-btn']}
-            onClick={(e) => setShowingFeeConfig(true)}
-          >
-            <Sprite symbol="coins" width="24" height="24" />
-            {t('settings.show_fee_config')}
-          </rb.Button>
-          {showingFeeConfig && <FeeConfigModal show={showingFeeConfig} onHide={() => setShowingFeeConfig(false)} />}
-
-          {showLogsEnabled && (
-            <>
-              <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={() => setShowingLogs(true)}>
-                <Sprite symbol="console" width="24" height="24" />
-                {t('settings.show_logs')}
-              </rb.Button>
-              <LogOverlay currentWallet={wallet} show={showingLogs} onHide={() => setShowingLogs(false)} />
-            </>
-          )}
         </div>
+        <div className={styles['section-title']}>{t('settings.section_title_market')}</div>
+        <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingFeeConfig(true)}>
+          <Sprite symbol="coins" width="24" height="24" />
+          {t('settings.show_fee_config')}
+        </rb.Button>
+        {showingFeeConfig && <FeeConfigModal show={showingFeeConfig} onHide={() => setShowingFeeConfig(false)} />}
 
+        {showLogsEnabled && (
+          <>
+            <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={() => setShowingLogs(true)}>
+              <Sprite symbol="console" width="24" height="24" />
+              {t('settings.show_logs')}
+            </rb.Button>
+            <LogOverlay currentWallet={wallet} show={showingLogs} onHide={() => setShowingLogs(false)} />
+          </>
+        )}
         <div className={styles['section-title']}>{t('settings.section_title_wallet')}</div>
         <div className={styles['settings-group-container']}>
           <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
@@ -233,23 +228,6 @@ export default function Settings({ wallet, stopWallet }) {
 
         <div className={styles['section-title']}>{t('settings.section_title_community')}</div>
         <div className={styles['settings-links']}>
-          <a href="https://jamdocs.org" target="_blank" rel="noopener noreferrer" className="link-dark">
-            <div className="d-flex align-items-center">
-              <Sprite symbol="file" width="24" height="24" className="me-2" />
-              {t('settings.documentation')}
-            </div>
-          </a>
-          <a
-            href="https://github.com/joinmarket-webui/jam"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="link-dark"
-          >
-            <div className="d-flex align-items-center">
-              <Sprite symbol="github" width="24" height="24" className="me-2 p-1" />
-              {t('settings.github')}
-            </div>
-          </a>
           <a
             href="https://matrix.to/#/%23jam:bitcoin.kyoto"
             target="_blank"
@@ -277,6 +255,26 @@ export default function Settings({ wallet, stopWallet }) {
             <div className="d-flex align-items-center">
               <Sprite symbol="twitter" width="24" height="24" className="me-2 p-1" />
               {t('settings.jm_twitter')}
+            </div>
+          </a>
+        </div>
+        <div className={styles['section-title']}>{t('settings.section_title_dev')}</div>
+        <div className={styles['settings-links']}>
+          <a href="https://jamdocs.org" target="_blank" rel="noopener noreferrer" className="link-dark">
+            <div className="d-flex align-items-center">
+              <Sprite symbol="file" width="24" height="24" className="me-2" />
+              {t('settings.documentation')}
+            </div>
+          </a>
+          <a
+            href="https://github.com/joinmarket-webui/jam"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="link-dark"
+          >
+            <div className="d-flex align-items-center">
+              <Sprite symbol="github" width="24" height="24" className="me-2 p-1" />
+              {t('settings.github')}
             </div>
           </a>
         </div>

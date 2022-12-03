@@ -131,7 +131,11 @@
     "account_heading_internal_addresses": "Adresses internes"
   },
   "settings": {
-    "title": "Paramètres",
+    "section_title_display": "Écran",
+    "section_title_market": "Marché",
+    "section_title_wallet": "Portefeuille",
+    "section_title_community": "Communauté",
+    "section_title_dev": "Développement & Documentation",
     "show_balance": "Afficher le solde",
     "hide_balance": "Cacher le solde",
     "use_sats": "Afficher les montants en sats",
@@ -144,9 +148,26 @@
     "show_seed": "Afficher la phrase graine",
     "hide_seed": "Cacher la phrase graine",
     "reveal_seed": "Révéler la phrase graine",
+    "show_logs": "Afficher les journaux",
+    "show_fee_config": "Ajuster les limites de frais",
+    "button_lock_wallet": "Verrouiller le portefeuille",
+    "button_locking_wallet": "Verrouillant...",
+    "button_create_wallet": "Créer un nouveau portefeuille",
     "button_switch_wallet": "Changer de porte-monnaie",
     "error_loading_seed_failed": "Impossible de récupérer la phrase graine.",
-    "seed_modal_info_text": "Veuillez noter votre phrase graine et votre mot de passe ! Sans ces informations, vous ne serez pas en mesure d'accéder à votre portefeuille !"
+    "seed_modal_info_text": "Veuillez noter votre phrase graine et votre mot de passe ! Sans ces informations, vous ne serez pas en mesure d'accéder à votre portefeuille !",
+    "documentation": "Documentation",
+    "github": "GitHub",
+    "matrix": "Matrix",
+    "telegram": "Telegram",
+    "jm_twitter": "JoinMarket Twitter",
+    "jam_twitter": "Jam Twitter",
+    "confirm_locking_modal_title": "Verrouiller le Portefeuille",
+    "fees": {
+      "text_button_cancel": "Annuler",
+      "text_button_submit": "Sauvegarder",
+      "text_button_submitting": "Sauvant..."
+    }
   },
   "send": {
     "loading": "Chargement",
