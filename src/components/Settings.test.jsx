@@ -41,7 +41,7 @@ describe('<Settings />', () => {
     expect(screen.queryByText(/settings.jm_twitter/)).toBeVisible()
 
     expect(screen.getByText('settings.section_title_community')).toBeVisible()
-    expect(screnn.queryByText(/settings.documentation/)).toBeVisible()
+    expect(screen.queryByText(/settings.documentation/)).toBeVisible()
     expect(screen.queryByText(/settings.github/)).toBeVisible()
   })
 })
