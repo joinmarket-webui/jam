@@ -163,19 +163,11 @@
     "jm_twitter": "JoinMarket Twitter",
     "jam_twitter": "Jam Twitter",
     "confirm_locking_modal_title": "Verrouiller le Portefeuille",
-    "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
-    "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "fees": {
       "text_button_cancel": "Annuler",
       "text_button_submit": "Sauvegarder",
-      "text_button_submitting": "Sauvant...",
-      "error_loading_fee_config_failed": "Error while loading fee config values. ",
-      "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}"
+      "text_button_submitting": "Sauvant..."
     }
-  },
-  "logs": {
-    "title": "Logs",
-    "error_loading_logs_failed": "Could not retrieve log file."
   },
   "send": {
     "loading": "Chargement",
