@@ -170,7 +170,8 @@ const SpendFidelityBondModal = ({
   const [isSending, setIsSending] = useState(false)
   const isLoading = useMemo(() => isSending || waitForUtxosToBeSpent.length > 0, [isSending, waitForUtxosToBeSpent])
 
-  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
+  const enableDestinationJarSelection = useMemo(() => destinationJarIndex === undefined, [destinationJarIndex])
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(!enableDestinationJarSelection)
   const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
 
   const submitButtonRef = useRef<HTMLButtonElement>(null)
@@ -413,8 +414,13 @@ const SpendFidelityBondModal = ({
       {showConfirmSendModal && fidelityBond && selectedDestinationJarIndex !== undefined && (
         <PaymentConfirmModal
           isShown={true}
-          title={t('earn.fidelity_bond.move.confirm_send_modal.title')}
-          onCancel={() => setShowConfirmSendModal(false)}
+          title={t(`earn.fidelity_bond.move.${enableDestinationJarSelection ? 'confirm_send_modal.title' : 'title'}`)}
+          onCancel={() => {
+            setShowConfirmSendModal(false)
+            if (!enableDestinationJarSelection) {
+              onClose({ txInfo, mustReload: parentMustReload })
+            }
+          }}
           onConfirm={() => {
             submitButtonRef.current?.click()
           }}
