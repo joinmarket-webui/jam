@@ -113,28 +113,26 @@ input[type='number'] {
   width: 100%;
 }
 
-.collaborators-selector-button {
+.collaboratorsSelectorElement {
   min-width: 6rem;
   flex: 1;
+  padding: 0.5rem;
+  text-align: center;
+  border-radius: var(--bs-border-radius);
 }
 
-.collaborators-selector-input {
-  min-width: 6rem;
-  flex: 1;
-}
-
-:root[data-theme='dark'] .collaborators-selector-input {
+:root[data-theme='dark'] input.collaboratorsSelectorElement {
   background-color: var(--bs-gray-800);
   color: var(--bs-white);
 }
 
-:root[data-theme='dark'] .collaborators-selector .selected-dark {
-  background-color: var(--bs-gray-dark);
-  border-color: var(--bs-gray-dark) !important;
+.collaboratorsSelectorElement.selected {
+  border-color: var(--bs-dark-rgb) !important;
 }
 
-.collaborators-selector-flex {
-  gap: 0.5rem;
+:root[data-theme='dark'] .collaboratorsSelectorElement.selected {
+  background-color: var(--bs-gray-dark);
+  border-color: var(--bs-gray-dark) !important;
 }
 
 .input-loader {
@@ -146,7 +144,7 @@ input[type='number'] {
   filter: blur(2px);
 }
 
-.service-running .collaborators-selector {
+.service-running .collaboratorsSelector {
   filter: blur(2px);
 }
 

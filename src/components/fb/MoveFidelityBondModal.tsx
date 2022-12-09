@@ -211,11 +211,12 @@ const MoveFidelityBondModal = ({
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
-      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-        .then((data) => {
+      reloadCurrentWalletInfo
+        .reloadUtxos({ signal: abortCtrl.signal })
+        .then((res) => {
           if (abortCtrl.signal.aborted) return
 
-          const outputs = data.data.utxos.utxos.map((it) => it.utxo)
+          const outputs = res.utxos.map((it) => it.utxo)
           const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
           setWaitForUtxosToBeSpent([...utxosStillPresent])
         })

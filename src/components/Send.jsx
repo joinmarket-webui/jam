@@ -71,46 +71,37 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
 
   const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
 
+  const defaultCollaboratorsSelection = useMemo(() => {
+    const start = Math.max(minNumCollaborators, 8)
+    return [start, start + 1, start + 2]
+  }, [minNumCollaborators])
+
   const validateAndSetCustomNumCollaborators = (candidate) => {
-    if (isValidNumCollaborators(candidate, minNumCollaborators)) {
-      setNumCollaborators(candidate)
+    const parsed = parseInt(candidate, 10)
+    if (isValidNumCollaborators(parsed, minNumCollaborators)) {
+      setNumCollaborators(parsed)
     } else {
       setNumCollaborators(null)
     }
   }
 
-  var defaultCollaboratorsSelection = [8, 9, 10]
-  if (minNumCollaborators > 8) {
-    defaultCollaboratorsSelection = [minNumCollaborators, minNumCollaborators + 1, minNumCollaborators + 2]
-  }
-
   return (
-    <rb.Form noValidate className={styles['collaborators-selector']} disabled={disabled}>
+    <rb.Form noValidate className={styles.collaboratorsSelector} disabled={disabled}>
       <rb.Form.Group>
         <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
         <div className="mb-2">
           <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
         </div>
-        <div className={`${styles['collaborators-selector-flex']} d-flex flex-row flex-wrap`}>
+        <div className="d-flex flex-row flex-wrap gap-2">
           {defaultCollaboratorsSelection.map((number) => {
+            const isSelected = !usesCustomNumCollaborators && numCollaborators === number
             return (
               <rb.Button
                 key={number}
                 variant={settings.theme === 'light' ? 'white' : 'dark'}
-                className={classNames(
-                  styles['collaborators-selector-button'],
-                  'p-2',
-                  'border',
-                  'border-1',
-                  'rounded',
-                  'text-center',
-                  {
-                    'border-dark':
-                      !usesCustomNumCollaborators && numCollaborators === number && settings.theme === 'light',
-                    [styles['selected-dark']]:
-                      !usesCustomNumCollaborators && numCollaborators === number && settings.theme !== 'light',
-                  }
-                )}
+                className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
+                  [styles.selected]: isSelected,
+                })}
                 onClick={() => {
                   setUsesCustomNumCollaborators(false)
                   setNumCollaborators(number)
@@ -128,18 +119,9 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
             isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
             placeholder={t('send.input_num_collaborators_placeholder')}
             defaultValue=""
-            className={classNames(
-              styles['collaborators-selector-input'],
-              'p-2',
-              'border',
-              'border-1',
-              'rounded',
-              'text-center',
-              {
-                'border-dark': usesCustomNumCollaborators && settings.theme === 'light',
-                [styles['selected-dark']]: usesCustomNumCollaborators && settings.theme !== 'light',
-              }
-            )}
+            className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
+              [styles.selected]: usesCustomNumCollaborators,
+            })}
             onChange={(e) => {
               setUsesCustomNumCollaborators(true)
               validateAndSetCustomNumCollaborators(e.target.value)
@@ -348,14 +330,15 @@ export default function Send({ wallet }) {
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
-      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-        .then((data) => {
+      reloadCurrentWalletInfo
+        .reloadUtxos({ signal: abortCtrl.signal })
+        .then((res) => {
           if (abortCtrl.signal.aborted) return
-
-          const outputs = data.data.utxos.utxos.map((it) => it.utxo)
+          const outputs = res.utxos.map((it) => it.utxo)
           const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
           setWaitForUtxosToBeSpent([...utxosStillPresent])
         })
+
         .catch((err) => {
           if (abortCtrl.signal.aborted) return
 
@@ -390,18 +373,20 @@ export default function Send({ wallet }) {
     // reloading service info is important, is it must be known as soon as possible
     // if the operation is even allowed, i.e. if no other service is running
     const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
+      if (abortCtrl.signal.aborted) return
       // reusing "wallet failed" message here is okay, as session info also contains wallet information
       const message = t('global.errors.error_loading_wallet_failed', {
         reason: err.message || t('global.errors.reason_unknown'),
       })
-      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      setAlert({ variant: 'danger', message })
     })
 
-    const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo({ signal: abortCtrl.signal }).catch((err) => {
+    const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).catch((err) => {
+      if (abortCtrl.signal.aborted) return
       const message = t('global.errors.error_loading_wallet_failed', {
         reason: err.message || t('global.errors.reason_unknown'),
       })
-      !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+      setAlert({ variant: 'danger', message })
     })
 
     const loadingMinimumMakerConfig = loadConfigValue({
@@ -761,22 +746,27 @@ export default function Send({ wallet }) {
             disabledJar={sourceJarIndex}
             onCancel={() => setDestinationJarPickerShown(false)}
             onConfirm={(selectedJar) => {
-              setDestinationJarPickerShown(false)
-
-              const externalBranch = walletInfo.data.display.walletinfo.accounts[selectedJar].branches.find(
-                (branch) => {
-                  return branch.branch.split('\t')[0] === 'external addresses'
-                }
-              )
-
-              const newEntry = externalBranch.entries.find((entry) => entry.status === 'new')
-
-              if (newEntry) {
-                setDestination(newEntry.address)
-                setDestinationJar(selectedJar)
-              } else {
-                console.error(`Cannot find a new address in mixdepth ${selectedJar}`)
-              }
+              const abortCtrl = new AbortController()
+              return Api.getAddressNew({
+                signal: abortCtrl.signal,
+                walletName: wallet.name,
+                token: wallet.token,
+                mixdepth: selectedJar,
+              })
+                .then((res) =>
+                  res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))
+                )
+                .then((data) => {
+                  if (abortCtrl.signal.aborted) return
+                  setDestination(data.address)
+                  setDestinationJar(selectedJar)
+                  setDestinationJarPickerShown(false)
+                })
+                .catch((err) => {
+                  if (abortCtrl.signal.aborted) return
+                  setAlert({ variant: 'danger', message: err.message })
+                  setDestinationJarPickerShown(false)
+                })
             }}
           />
         )}

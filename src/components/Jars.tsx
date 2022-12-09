@@ -21,15 +21,16 @@ const Jars = ({ accountBalances, totalBalance, onClick }: JarsProps) => {
     return Object.values(accountBalances).sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
   }, [accountBalances])
 
-  const jarsDescriptionPopover = (
-    <rb.Popover>
-      <rb.Popover.Body>{t('current_wallet.jars_title_popover')}</rb.Popover.Body>
-    </rb.Popover>
-  )
-
   return (
     <div className="d-flex flex-column align-items-center gap-5">
-      <rb.OverlayTrigger placement="right" overlay={jarsDescriptionPopover}>
+      <rb.OverlayTrigger
+        placement="right"
+        overlay={
+          <rb.Popover>
+            <rb.Popover.Body>{t('current_wallet.jars_title_popover')}</rb.Popover.Body>
+          </rb.Popover>
+        }
+      >
         <div className={styles.jarsTitle}>
           <div>{t('current_wallet.jars_title')}</div>
           <Sprite className={styles.infoIcon} symbol="info" width="18" height="18" />

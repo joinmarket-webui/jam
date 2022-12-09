@@ -1,33 +1,39 @@
-.wallet-header-title-placeholder {
+.walletHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.walletHeader .titlePlaceholder {
   width: 5rem;
   margin-bottom: 0.5rem;
 }
 
-.wallet-header-subtitle-placeholder {
+.walletHeader .subtitlePlaceholder {
   width: 12rem;
   height: 1.8rem;
   margin-bottom: 0.45rem;
 }
 
-.jars-placeholder {
+.jarsPlaceholder {
   width: 100%;
   height: 3.5rem;
 }
 
-.jars-divider-container {
+.jarsDividerContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.jars-divider-line {
+.jarsDividerContainer .dividerLine {
   margin: 0;
   width: 50%;
   flex-grow: 0;
   flex-shrink: 1;
 }
 
-.jars-divider-button {
+.jarsDividerContainer .dividerButton {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -43,7 +49,7 @@
   height: 2rem;
 }
 
-.send-receive-button {
+.sendReceiveButton {
   padding: 0.25rem;
   font-weight: 500;
   border-color: rgba(222, 222, 222, 1) !important;

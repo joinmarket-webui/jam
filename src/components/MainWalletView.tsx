@@ -3,8 +3,9 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
-import { useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { walletDisplayName } from '../utils'
+import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import Balance from './Balance'
 import Sprite from './Sprite'
@@ -13,35 +14,47 @@ import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
 import { Jars } from './Jars'
 import styles from './MainWalletView.module.css'
 
-const WalletHeader = ({ name, balance /*: AmountSats */, unit, showBalance, loading }) => {
+interface WalletHeaderProps {
+  name: string
+  balance: Api.AmountSats
+  unit: Unit
+  showBalance: boolean
+}
+
+const WalletHeader = ({ name, balance, unit, showBalance }: WalletHeaderProps) => {
   return (
-    <div className="d-flex flex-column align-items-center">
-      {loading && (
-        <rb.Placeholder as="div" animation="wave">
-          <rb.Placeholder className={styles['wallet-header-title-placeholder']} />
-        </rb.Placeholder>
-      )}
-      {!loading && <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>}
-      {loading && (
-        <rb.Placeholder as="div" animation="wave">
-          <rb.Placeholder className={styles['wallet-header-subtitle-placeholder']} />
-        </rb.Placeholder>
-      )}
-      {!loading && (
-        <h2>
-          <Balance
-            valueString={`${balance}`}
-            convertToUnit={unit}
-            showBalance={showBalance || false}
-            enableVisibilityToggle={false}
-          />
-        </h2>
-      )}
+    <div className={styles.walletHeader}>
+      <h1 className="text-secondary fs-6">{walletDisplayName(name)}</h1>
+      <h2>
+        <Balance
+          valueString={balance.toString()}
+          convertToUnit={unit}
+          showBalance={showBalance}
+          enableVisibilityToggle={false}
+        />
+      </h2>
     </div>
   )
 }
 
-export default function MainWalletView({ wallet }) {
+const WalletHeaderPlaceholder = () => {
+  return (
+    <div className={styles.walletHeader}>
+      <rb.Placeholder as="div" animation="wave">
+        <rb.Placeholder className={styles.titlePlaceholder} />
+      </rb.Placeholder>
+      <rb.Placeholder as="div" animation="wave">
+        <rb.Placeholder className={styles.subtitlePlaceholder} />
+      </rb.Placeholder>
+    </div>
+  )
+}
+
+interface MainWalletViewProps {
+  wallet: CurrentWallet
+}
+
+export default function MainWalletView({ wallet }: MainWalletViewProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -50,19 +63,16 @@ export default function MainWalletView({ wallet }) {
   const currentWalletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
-  const [alert, setAlert] = useState(null)
+  const [alert, setAlert] = useState<rb.AlertProps & { message: string }>()
   const [isLoading, setIsLoading] = useState(true)
   const [showJars, setShowJars] = useState(false)
 
-  const jars = useMemo(
-    () => currentWalletInfo && currentWalletInfo.data.display.walletinfo.accounts,
-    [currentWalletInfo]
-  )
+  const jars = useMemo(() => currentWalletInfo?.data.display.walletinfo.accounts, [currentWalletInfo])
 
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [isAccountOverlayShown, setIsAccountOverlayShown] = useState(false)
 
-  const onJarClicked = (jarIndex) => {
+  const onJarClicked = (jarIndex: JarIndex) => {
     if (jarIndex === 0) {
       const isEmpty = currentWalletInfo?.balanceSummary.accountBalances[jarIndex]?.calculatedTotalBalanceInSats === 0
 
@@ -79,18 +89,23 @@ export default function MainWalletView({ wallet }) {
   useEffect(() => {
     const abortCtrl = new AbortController()
 
-    setAlert(null)
+    setAlert(undefined)
     setIsLoading(true)
 
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
+    reloadCurrentWalletInfo
+      .reloadUtxos({ signal: abortCtrl.signal })
       .catch((err) => {
+        if (abortCtrl.signal.aborted) return
         const message = err.message || t('current_wallet.error_loading_failed')
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
       })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsLoading(false)
+      })
 
     return () => abortCtrl.abort()
-  }, [wallet, reloadCurrentWalletInfo, t])
+  }, [reloadCurrentWalletInfo, t])
 
   return (
     <div>
@@ -102,7 +117,7 @@ export default function MainWalletView({ wallet }) {
         </rb.Row>
       )}
 
-      {jars && isAccountOverlayShown && (
+      {currentWalletInfo && jars && isAccountOverlayShown && (
         <JarDetailsOverlay
           jars={jars}
           initialJarIndex={selectedJarIndex}
@@ -113,13 +128,18 @@ export default function MainWalletView({ wallet }) {
         />
       )}
       <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
-        <WalletHeader
-          name={wallet.name}
-          balance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
-          unit={settings.unit}
-          showBalance={settings.showBalance}
-          loading={isLoading}
-        />
+        {!currentWalletInfo || isLoading ? (
+          <>
+            <WalletHeaderPlaceholder />
+          </>
+        ) : (
+          <WalletHeader
+            name={wallet.name}
+            balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
+            unit={settings.unit}
+            showBalance={settings.showBalance}
+          />
+        )}
       </rb.Row>
       <rb.Row className="mt-4 mb-5 d-flex justify-content-center">
         <rb.Col xs={10} md={8}>
@@ -129,7 +149,7 @@ export default function MainWalletView({ wallet }) {
               <ExtendedLink
                 to={routes.receive}
                 state={{ account: 0 }}
-                className={`${styles['send-receive-button']} btn btn-outline-dark w-100`}
+                className={`${styles.sendReceiveButton} btn btn-outline-dark w-100`}
                 disabled={isLoading}
               >
                 <div className="d-flex justify-content-center align-items-center">
@@ -143,7 +163,7 @@ export default function MainWalletView({ wallet }) {
               Depending on the mixdepth/account there will be different amounts available. */}
               <ExtendedLink
                 to={routes.send}
-                className={`${styles['send-receive-button']} btn btn-outline-dark w-100`}
+                className={`${styles.sendReceiveButton} btn btn-outline-dark w-100`}
                 disabled={isLoading}
               >
                 <div className="d-flex justify-content-center align-items-center">
@@ -159,14 +179,14 @@ export default function MainWalletView({ wallet }) {
         <rb.Row>
           <div className="mb-5">
             <div>
-              {isLoading ? (
+              {!currentWalletInfo || isLoading ? (
                 <rb.Placeholder as="div" animation="wave">
-                  <rb.Placeholder className={styles['jars-placeholder']} />
+                  <rb.Placeholder className={styles.jarsPlaceholder} />
                 </rb.Placeholder>
               ) : (
                 <Jars
-                  accountBalances={currentWalletInfo?.balanceSummary.accountBalances}
-                  totalBalance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
+                  accountBalances={currentWalletInfo.balanceSummary.accountBalances}
+                  totalBalance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
                   onClick={onJarClicked}
                 />
               )}
@@ -176,12 +196,12 @@ export default function MainWalletView({ wallet }) {
       </rb.Collapse>
       <rb.Row className="d-flex justify-content-center">
         <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
-          <div className={styles['jars-divider-container']}>
-            <hr className={styles['jars-divider-line']} />
-            <div className={styles['jars-divider-button']} onClick={() => setShowJars((current) => !current)}>
+          <div className={styles.jarsDividerContainer}>
+            <hr className={styles.dividerLine} />
+            <div className={styles.dividerButton} onClick={() => setShowJars((current) => !current)}>
               <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
             </div>
-            <hr className={styles['jars-divider-line']} />
+            <hr className={styles.dividerLine} />
           </div>
         </rb.Col>
       </rb.Row>

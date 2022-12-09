@@ -1,4 +1,4 @@
-import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useRef } from 'react'
+import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useMemo } from 'react'
 
 import { getSession } from '../session'
 import * as fb from '../components/fb/utils'
@@ -111,12 +111,16 @@ export interface WalletInfo {
 interface WalletContextEntry {
   currentWallet: CurrentWallet | null
   setCurrentWallet: React.Dispatch<React.SetStateAction<CurrentWallet | null>>
-  currentWalletInfo: WalletInfo | null
-  reloadCurrentWalletInfo: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
+  currentWalletInfo: WalletInfo | undefined
+  reloadCurrentWalletInfo: {
+    reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<void>
+    reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<UtxosResponse>
+    reloadDisplay: ({ signal }: { signal: AbortSignal }) => Promise<WalletDisplayResponse>
+  }
 }
 
-const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
-  const accounts = data.display.walletinfo.accounts
+const toAddressSummary = (res: WalletDisplayResponse): AddressSummary => {
+  const accounts = res.walletinfo.accounts
   return accounts
     .flatMap((it) => it.branches)
     .flatMap((it) => it.entries)
@@ -126,8 +130,8 @@ const toAddressSummary = (data: CombinedRawWalletData): AddressSummary => {
     }, {} as AddressSummary)
 }
 
-const toFidelityBondSummary = (data: CombinedRawWalletData): FidenlityBondSummary => {
-  const fbOutputs = data.utxos.utxos
+const toFidelityBondSummary = (res: UtxosResponse): FidenlityBondSummary => {
+  const fbOutputs = res.utxos
     .filter((utxo) => fb.utxo.isFidelityBond(utxo))
     .sort((a, b) => {
       const aLocked = fb.utxo.isLocked(a)
@@ -156,26 +160,6 @@ const restoreWalletFromSession = (): CurrentWallet | null => {
     : null
 }
 
-const loadWalletInfoData = async ({
-  walletName,
-  token,
-  signal,
-}: Api.WalletRequestContext & { signal: AbortSignal }): Promise<CombinedRawWalletData> => {
-  const loadingWallet = Api.getWalletDisplay({ walletName, token, signal }).then(
-    (res): Promise<WalletDisplayResponse> => (res.ok ? res.json() : Api.Helper.throwError(res))
-  )
-
-  const loadingUtxos = Api.getWalletUtxos({ walletName, token, signal }).then(
-    (res): Promise<{ utxos: Utxos }> => (res.ok ? res.json() : Api.Helper.throwError(res))
-  )
-
-  const data = await Promise.all([loadingWallet, loadingUtxos])
-  return {
-    display: data[0],
-    utxos: data[1],
-  }
-}
-
 export const groupByJar = (utxos: Utxos): UtxosByJar => {
   return utxos.reduce((res, utxo) => {
     const { mixdepth } = utxo
@@ -187,8 +171,8 @@ export const groupByJar = (utxos: Utxos): UtxosByJar => {
 
 const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
   const balanceSummary = toBalanceSummary(data)
-  const addressSummary = toAddressSummary(data)
-  const fidelityBondSummary = toFidelityBondSummary(data)
+  const addressSummary = toAddressSummary(data.display)
+  const fidelityBondSummary = toFidelityBondSummary(data.utxos)
   const utxosByJar = groupByJar(data.utxos.utxos)
 
   return {
@@ -200,70 +184,121 @@ const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
   }
 }
 
+const toCombinedRawData = (utxos: UtxosResponse, display: WalletDisplayResponse) => ({ utxos, display })
+
 const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   const [currentWallet, setCurrentWallet] = useState(restoreWalletFromSession())
-  const [currentWalletInfo, setCurrentWalletInfo] = useState<WalletInfo | null>(null)
-  const fetchWalletInfoInProgress = useRef<Promise<WalletInfo> | null>(null)
 
-  const reloadCurrentWalletInfo = useCallback(
+  const [utxoResponse, setUtxoResponse] = useState<UtxosResponse>()
+  const [displayResponse, setDisplayResponse] = useState<WalletDisplayResponse>()
+
+  const fetchUtxos = useCallback(
     async ({ signal }: { signal: AbortSignal }) => {
       if (!currentWallet) {
         throw new Error('Cannot load wallet info: Wallet not present')
-      } else {
-        if (fetchWalletInfoInProgress.current !== null) {
-          try {
-            return await fetchWalletInfoInProgress.current
-          } catch (err: unknown) {
-            // If a previous wallet info request was in progress but failed, retry!
-            // This happens e.g. when the in-progress request was aborted.
-            if (!(err instanceof Error) || err.name !== 'AbortError') {
-              console.warn('Previous wallet info request resulted in an unexpected error. Retrying!', err)
-            }
-          }
-        }
-
-        const { name: walletName, token } = currentWallet
-        const fetch = loadWalletInfoData({ walletName, token, signal }).then((data) => toWalletInfo(data))
-
-        fetchWalletInfoInProgress.current = fetch
-
-        return fetch
-          .finally(() => {
-            fetchWalletInfoInProgress.current = null
-          })
-          .then((walletInfo) => {
-            if (!signal.aborted) {
-              setCurrentWalletInfo(walletInfo)
-            }
-            return walletInfo
-          })
       }
+
+      const { name: walletName, token } = currentWallet
+      return await Api.getWalletUtxos({ walletName, token, signal }).then(
+        (res): Promise<UtxosResponse> => (res.ok ? res.json() : Api.Helper.throwError(res))
+      )
     },
-    [currentWallet, fetchWalletInfoInProgress]
+    [currentWallet]
+  )
+
+  const fetchDisplay = useCallback(
+    async ({ signal }: { signal: AbortSignal }) => {
+      if (!currentWallet) {
+        throw new Error('Cannot load wallet info: Wallet not present')
+      }
+
+      const { name: walletName, token } = currentWallet
+      return await Api.getWalletDisplay({ walletName, token, signal }).then(
+        (res): Promise<WalletDisplayResponse> => (res.ok ? res.json() : Api.Helper.throwError(res))
+      )
+    },
+    [currentWallet]
+  )
+
+  const reloadUtxos = useCallback(
+    async ({ signal }: { signal: AbortSignal }) => {
+      const response = await fetchUtxos({ signal })
+      if (!signal.aborted) {
+        setUtxoResponse(response)
+      }
+      return response
+    },
+    [fetchUtxos]
+  )
+
+  const reloadDisplay = useCallback(
+    async ({ signal }: { signal: AbortSignal }) => {
+      const response = await fetchDisplay({ signal })
+      if (!signal.aborted) {
+        setDisplayResponse(response)
+      }
+      return response
+    },
+    [fetchDisplay]
+  )
+
+  const reloadAll = useCallback(
+    async ({ signal }: { signal: AbortSignal }): Promise<void> => {
+      await Promise.all([reloadUtxos({ signal }), reloadDisplay({ signal })])
+    },
+    [reloadUtxos, reloadDisplay]
+  )
+
+  const combinedRawData = useMemo<CombinedRawWalletData | undefined>(() => {
+    if (!utxoResponse || !displayResponse) return
+    return toCombinedRawData(utxoResponse, displayResponse)
+  }, [utxoResponse, displayResponse])
+
+  const currentWalletInfo = useMemo(() => {
+    if (!combinedRawData) return
+    return toWalletInfo(combinedRawData)
+  }, [combinedRawData])
+
+  const reloadCurrentWalletInfo = useMemo(
+    () => ({
+      reloadAll,
+      reloadUtxos,
+      reloadDisplay,
+    }),
+    [reloadAll, reloadUtxos, reloadDisplay]
   )
 
   useEffect(() => {
     if (!currentWallet) {
-      setCurrentWalletInfo(null)
-      return
-    }
+      setUtxoResponse(undefined)
+      setDisplayResponse(undefined)
+    } else {
+      const abortCtrl = new AbortController()
+      const signal = abortCtrl.signal
 
-    const abortCtrl = new AbortController()
+      reloadCurrentWalletInfo
+        .reloadAll({ signal })
+        // If the auto-reloading on wallet change fails, the error can currently
+        // only be logged and cannot be displayed to the user satisfactorily.
+        // This might change in the future but is okay for now - components can
+        // always trigger a reload on demand and inform the user as they see fit.
+        .catch((err) => console.error(err))
 
-    reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-      // If the auto-reloading on wallet change fails, the error can currently
-      // only be logged and cannot be displayed to the user satisfactorily.
-      // This might change in the future but is okay for now - components can
-      // always trigger a reload on demand and inform the user as they see fit.
-      .catch((err) => console.error(err))
-
-    return () => {
-      abortCtrl.abort()
+      return () => {
+        abortCtrl.abort()
+      }
     }
   }, [currentWallet, reloadCurrentWalletInfo])
 
   return (
-    <WalletContext.Provider value={{ currentWallet, setCurrentWallet, currentWalletInfo, reloadCurrentWalletInfo }}>
+    <WalletContext.Provider
+      value={{
+        currentWallet,
+        setCurrentWallet,
+        currentWalletInfo,
+        reloadCurrentWalletInfo,
+      }}
+    >
       {children}
     </WalletContext.Provider>
   )

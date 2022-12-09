@@ -59,6 +59,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   }, [])
 
   const reset = () => {
+    setIsLoading(false)
     setIsExpanded(false)
     setStep(steps.selectDate)
     setSelectedJar(null)
@@ -70,6 +71,26 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     setFrozenUtxos([])
     setUtxoIdsToBeSpent([])
   }
+
+  useEffect(() => {
+    if (!isExpanded) {
+      reset()
+    } else {
+      setIsLoading(true)
+      const abortCtrl = new AbortController()
+      reloadCurrentWalletInfo
+        .reloadAll({ signal: abortCtrl.signal })
+        .catch(() => {
+          if (abortCtrl.signal.aborted) return
+          setAlert({ variant: 'danger', message: t('earn.fidelity_bond.error_reloading_wallet') })
+        })
+        .finally(() => {
+          if (abortCtrl.signal.aborted) return
+          setIsLoading(false)
+        })
+      return () => abortCtrl.abort()
+    }
+  }, [isExpanded, reloadCurrentWalletInfo, t])
 
   const freezeUtxos = (utxos) => {
     changeUtxoFreeze(utxos, true)
@@ -103,9 +124,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     )
 
     Promise.all(freezeCalls)
-      .then((_) => reloadCurrentWalletInfo({ signal: abortCtrl.signal }))
-      .then((_) => setAlert(null))
-      .then((_) => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
+      .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
+      .then(() => setAlert(null))
+      .then(() => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
@@ -166,18 +187,20 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
-      reloadCurrentWalletInfo({ signal: abortCtrl.signal })
-        .then((walletInfo) => {
+      reloadCurrentWalletInfo
+        .reloadUtxos({ signal: abortCtrl.signal })
+        .then((res) => {
           if (abortCtrl.signal.aborted) return
 
-          const allUtxoIds = walletInfo.data.utxos.utxos.map((utxo) => utxo.utxo)
+          const allUtxoIds = res.utxos.map((utxo) => utxo.utxo)
           const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
 
           if (utxoIdsStillPresent.length === 0) {
             // Note that two fidelity bonds with the same locktime will end up on the same address.
             // Therefore, this might not actually be the UTXO we just created.
             // Since we're using it only for displaying locktime and address, this should be fine though.
-            const fbUtxo = walletInfo.fidelityBondSummary.fbOutputs.find((utxo) => utxo.address === timelockedAddress)
+            const fbOutputs = res.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
+            const fbUtxo = fbOutputs.find((utxo) => utxo.address === timelockedAddress)
 
             if (fbUtxo !== undefined) {
               setCreatedFidelityBondUtxo(fbUtxo)
@@ -210,6 +233,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const stepComponent = (currentStep) => {
     switch (currentStep) {
       case steps.selectDate:
+        if (isLoading) {
+          return (
+            <div className="d-flex justify-content-center align-items-center mt-5">
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              <div>{t('earn.fidelity_bond.text_loading')}</div>
+            </div>
+          )
+        }
+
         return (
           <SelectDate
             description={t('earn.fidelity_bond.select_date.description')}
