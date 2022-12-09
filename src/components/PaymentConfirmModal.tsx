@@ -21,6 +21,7 @@ interface PaymentDisplayInfo {
   isCoinjoin: boolean
   numCollaborators?: number
   feeConfigValues?: FeeValues
+  showPrivacyInfo?: boolean
 }
 
 interface PaymentConfirmModalProps extends ConfirmModalProps {
@@ -28,7 +29,16 @@ interface PaymentConfirmModalProps extends ConfirmModalProps {
 }
 
 export function PaymentConfirmModal({
-  data: { sourceJarIndex, destination, amount, isSweep, isCoinjoin, numCollaborators, feeConfigValues },
+  data: {
+    sourceJarIndex,
+    destination,
+    amount,
+    isSweep,
+    isCoinjoin,
+    numCollaborators,
+    feeConfigValues,
+    showPrivacyInfo = true,
+  },
   ...confirmModalProps
 }: PaymentConfirmModalProps) {
   const { t } = useTranslation()
@@ -82,15 +92,17 @@ export function PaymentConfirmModal({
   return (
     <ConfirmModal {...confirmModalProps}>
       <rb.Container className="mt-2">
-        <rb.Row className="mt-2 mb-3">
-          <rb.Col xs={12} className="text-center">
-            {isCoinjoin ? (
-              <strong className="text-success">{t('send.confirm_send_modal.text_collaborative_tx_enabled')}</strong>
-            ) : (
-              <strong className="text-danger">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</strong>
-            )}
-          </rb.Col>
-        </rb.Row>
+        {showPrivacyInfo && (
+          <rb.Row className="mt-2 mb-3">
+            <rb.Col xs={12} className="text-center">
+              {isCoinjoin ? (
+                <strong className="text-success">{t('send.confirm_send_modal.text_collaborative_tx_enabled')}</strong>
+              ) : (
+                <strong className="text-danger">{t('send.confirm_send_modal.text_collaborative_tx_disabled')}</strong>
+              )}
+            </rb.Col>
+          </rb.Row>
+        )}
         {sourceJarIndex !== undefined && (
           <rb.Row>
             <rb.Col xs={4} md={3} className="text-end">

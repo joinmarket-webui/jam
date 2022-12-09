@@ -428,6 +428,7 @@ const SpendFidelityBondModal = ({
             isCoinjoin: false, // not sent as collaborative transaction
             numCollaborators: undefined,
             feeConfigValues,
+            showPrivacyInfo: false,
           }}
         />
       )}
