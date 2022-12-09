@@ -13,7 +13,7 @@ import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
-import { MoveFidelityBondModal } from './fb/MoveFidelityBondModal'
+import { SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -403,7 +403,7 @@ export default function Earn({ wallet }) {
                 {currentWalletInfo && fidelityBonds.length > 0 && (
                   <>
                     {moveToJarFidelityBondId && (
-                      <MoveFidelityBondModal
+                      <SpendFidelityBondModal
                         show={true}
                         fidelityBondId={moveToJarFidelityBondId}
                         wallet={wallet}
@@ -430,15 +430,15 @@ export default function Earn({ wallet }) {
                         <ExistingFidelityBond key={index} fidelityBond={fidelityBond}>
                           {actionsEnabled && (
                             <div className="mt-4">
-                              <div className="d-flex flex-row flex-wrap gap-2">
+                              <div className="">
                                 <rb.Button
                                   variant={settings.theme === 'dark' ? 'light' : 'dark'}
                                   className="w-50 d-flex justify-content-center align-items-center"
                                   disabled={moveToJarFidelityBondId !== undefined}
                                   onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
                                 >
-                                  <Sprite className="me-1" symbol="transfer" width="24" height="24" />
-                                  {t('earn.fidelity_bond.existing.button_move_to_jar')}
+                                  <Sprite className="me-1 mb-1" symbol="unlock" width="24" height="24" />
+                                  {t('earn.fidelity_bond.existing.button_spend')}
                                 </rb.Button>
                               </div>
                             </div>

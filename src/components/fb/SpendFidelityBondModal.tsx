@@ -12,7 +12,7 @@ import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { jarInitial } from '../jars/Jar'
 import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 
-import styles from './MoveFidelityBondModal.module.css'
+import styles from './SpendFidelityBondModal.module.css'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -138,20 +138,20 @@ const spendUtxosWithDirectSend = async (
   }
 }
 
-type MoveFidelityBondModalProps = {
+type SpendFidelityBondModalProps = {
   fidelityBondId: Api.UtxoId
   wallet: CurrentWallet
   walletInfo: WalletInfo
   onClose: (result: Result) => void
 } & Omit<rb.ModalProps, 'onHide'>
 
-const MoveFidelityBondModal = ({
+const SpendFidelityBondModal = ({
   fidelityBondId,
   wallet,
   walletInfo,
   onClose,
   ...modalProps
-}: MoveFidelityBondModalProps) => {
+}: SpendFidelityBondModalProps) => {
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const loadFeeConfigValues = useLoadFeeConfigValues()
@@ -315,7 +315,7 @@ const MoveFidelityBondModal = ({
       return (
         <>
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          {t('earn.fidelity_bond.move.text_moving')}
+          {t('earn.fidelity_bond.move.text_sending')}
         </>
       )
     } else if (txInfo) {
@@ -340,7 +340,7 @@ const MoveFidelityBondModal = ({
       return (
         <div className="d-flex justify-content-center align-items-center my-5">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          <div>{t(`earn.fidelity_bond.move.${isSending ? 'text_moving' : 'text_loading'}`)}</div>
+          <div>{t(`earn.fidelity_bond.move.${isSending ? 'text_sending' : 'text_loading'}`)}</div>
         </div>
       )
     }
@@ -431,4 +431,4 @@ const MoveFidelityBondModal = ({
   )
 }
 
-export { MoveFidelityBondModal }
+export { SpendFidelityBondModal }
