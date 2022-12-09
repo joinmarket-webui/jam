@@ -284,8 +284,8 @@ export default function Earn({ wallet }) {
     setIsLoading(true)
 
     new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
+      setTimeout(async () => {
+        resolve(await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
       }, delay)
     })
       .catch((err) => {
