@@ -438,15 +438,15 @@
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
         "label_address": "Timelocked address",
-        "button_spend": "Unlock"
+        "button_spend": "Unlock Funds"
       },
       "move": {
-        "title": "Unlock expired fidelity bond?",
+        "title": "Unlock Funds",
         "success_text": "Fidelity Bond unlocked successfully!",
         "text_loading": "Loading...",
         "text_sending": "Unlocking...",
         "text_button_cancel": "Cancel",
-        "text_button_submit": "Unlock",
+        "text_button_submit": "Unlock Funds",
         "text_button_done": "Done",
         "error_fidelity_bond_still_locked": "The given fidelity bond is still locked.",
         "error_loading_address": "Unable to get new address.",

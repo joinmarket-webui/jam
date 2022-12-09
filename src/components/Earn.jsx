@@ -408,6 +408,7 @@ export default function Earn({ wallet }) {
                         fidelityBondId={moveToJarFidelityBondId}
                         wallet={wallet}
                         walletInfo={currentWalletInfo}
+                        destinationJarIndex={0}
                         onClose={({ mustReload }) => {
                           setMoveToJarFidelityBondId(undefined)
                           if (mustReload) {

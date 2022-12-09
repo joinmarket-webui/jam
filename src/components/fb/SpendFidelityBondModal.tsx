@@ -143,6 +143,7 @@ type SpendFidelityBondModalProps = {
   wallet: CurrentWallet
   walletInfo: WalletInfo
   onClose: (result: Result) => void
+  destinationJarIndex?: JarIndex
 } & Omit<rb.ModalProps, 'onHide'>
 
 const SpendFidelityBondModal = ({
@@ -150,6 +151,7 @@ const SpendFidelityBondModal = ({
   wallet,
   walletInfo,
   onClose,
+  destinationJarIndex,
   ...modalProps
 }: SpendFidelityBondModalProps) => {
   const { t } = useTranslation()
@@ -157,7 +159,9 @@ const SpendFidelityBondModal = ({
   const loadFeeConfigValues = useLoadFeeConfigValues()
 
   const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | undefined>()
-  const [destinationJarIndex, setDestinationJarIndex] = useState<JarIndex>()
+  const [selectedDestinationJarIndex, setSelectedDestinationJarIndex] = useState<JarIndex | undefined>(
+    destinationJarIndex
+  )
 
   const [txInfo, setTxInfo] = useState<TxInfo | undefined>()
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<Api.UtxoId[]>([])
@@ -242,7 +246,7 @@ const SpendFidelityBondModal = ({
 
   const onPrimaryButtonClicked = () => {
     if (isLoading) return
-    if (destinationJarIndex === undefined) return
+    if (selectedDestinationJarIndex === undefined) return
     if (waitForUtxosToBeSpent.length > 0) return
 
     if (txInfo) {
@@ -256,7 +260,7 @@ const SpendFidelityBondModal = ({
       setAlert(undefined)
       setIsSending(true)
 
-      sendFidelityBondToJar(fidelityBond, destinationJarIndex)
+      sendFidelityBondToJar(fidelityBond, selectedDestinationJarIndex)
         .then((data) => data.txinfo as TxInfo)
         .then((txinfo) => {
           setTxInfo(txinfo)
@@ -359,8 +363,8 @@ const SpendFidelityBondModal = ({
         accountBalances={walletInfo.balanceSummary.accountBalances}
         totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
         isJarSelectable={() => true}
-        selectedJar={destinationJarIndex}
-        onJarSelected={setDestinationJarIndex}
+        selectedJar={selectedDestinationJarIndex}
+        onJarSelected={setSelectedDestinationJarIndex}
       />
     )
   }
@@ -398,7 +402,7 @@ const SpendFidelityBondModal = ({
               ref={submitButtonRef}
               variant="dark"
               className="flex-1 d-flex justify-content-center align-items-center"
-              disabled={isLoading || destinationJarIndex === undefined}
+              disabled={isLoading || selectedDestinationJarIndex === undefined}
               onClick={onPrimaryButtonClicked}
             >
               {PrimaryButtonContent()}
@@ -406,7 +410,7 @@ const SpendFidelityBondModal = ({
           </div>
         </rb.Modal.Footer>
       </rb.Modal>
-      {showConfirmSendModal && fidelityBond && destinationJarIndex !== undefined && (
+      {showConfirmSendModal && fidelityBond && selectedDestinationJarIndex !== undefined && (
         <PaymentConfirmModal
           isShown={true}
           title={t('earn.fidelity_bond.move.confirm_send_modal.title')}
@@ -417,7 +421,7 @@ const SpendFidelityBondModal = ({
           data={{
             sourceJarIndex: undefined, // dont show a source jar - might be confusing in this context
             destination: String(
-              t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(destinationJarIndex) })
+              t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(selectedDestinationJarIndex) })
             ),
             amount: fidelityBond.value,
             isSweep: true,
