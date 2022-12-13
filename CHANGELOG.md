@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.1.4](https://github.com/joinmarket-webui/jam/compare/v0.1.3...v0.1.4) (2022-12-13)
+
+#### Fixed
+
+* **send:** parse number of collaborators as integer ([#572](https://github.com/joinmarket-webui/jam/issues/572)) ([4fca8f1](https://github.com/joinmarket-webui/jam/commit/4fca8f1fd1ba5d9e9f7f1289c9db35c1f03aaf34))
+
+#### Added
+
+* Settings subsections ([#573](https://github.com/joinmarket-webui/jam/issues/573)) ([495dc2b](https://github.com/joinmarket-webui/jam/commit/495dc2b169ddccedb0adff3f6b9f5caf03873cbf)), closes [#524](https://github.com/joinmarket-webui/jam/issues/524)
+* spend fidelity bond ([#556](https://github.com/joinmarket-webui/jam/issues/556)) ([9f42dac](https://github.com/joinmarket-webui/jam/commit/9f42dac19ad1897c51be535636ff64b8d2bbb125))
+
 ### [0.1.3](https://github.com/joinmarket-webui/jam/compare/v0.1.2...v0.1.3) (2022-11-10)
 
 #### Fixed
