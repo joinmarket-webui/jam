@@ -131,7 +131,18 @@ const toAddressSummary = (res: WalletDisplayResponse): AddressSummary => {
 }
 
 const toFidelityBondSummary = (res: UtxosResponse): FidenlityBondSummary => {
-  const fbOutputs = res.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
+  const fbOutputs = res.utxos
+    .filter((utxo) => fb.utxo.isFidelityBond(utxo))
+    .sort((a, b) => {
+      const aLocked = fb.utxo.isLocked(a)
+      const bLocked = fb.utxo.isLocked(b)
+
+      if (aLocked && bLocked) {
+        return b.value - a.value
+      } else {
+        return aLocked ? -1 : 1
+      }
+    })
   return {
     fbOutputs,
   }

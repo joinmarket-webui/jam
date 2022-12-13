@@ -7,11 +7,13 @@ import { useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/Wal
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
 import { factorToPercentage, percentageToFactor } from '../utils'
 import * as Api from '../libs/JmWalletApi'
+import * as fb from './fb/utils'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
+import { SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -62,7 +64,7 @@ const persistFormValues = (values) => {
   }
 }
 
-const initialFormValues = (settings) => ({
+const initialFormValues = () => ({
   offertype:
     window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype) || FORM_INPUT_DEFAULT_VALUES.offertype,
   feeRel:
@@ -187,6 +189,8 @@ export default function Earn({ wallet }) {
     return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
   }, [currentWalletInfo])
 
+  const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState()
+
   const startMakerService = (ordertype, minsize, cjfee_a, cjfee_r) => {
     setIsSending(true)
     setIsWaitingMakerStart(true)
@@ -280,8 +284,8 @@ export default function Earn({ wallet }) {
     setIsLoading(true)
 
     new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
+      setTimeout(async () => {
+        resolve(await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
       }, delay)
     })
       .catch((err) => {
@@ -298,7 +302,7 @@ export default function Earn({ wallet }) {
   const feeRelMax = 0.1 // 10%
   const feeRelPercentageStep = 0.0001
 
-  const initialValues = initialFormValues(settings)
+  const initialValues = initialFormValues()
 
   const validate = (values) => {
     const errors = {}
@@ -396,11 +400,53 @@ export default function Earn({ wallet }) {
                 subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
-                {fidelityBonds.length > 0 && (
+                {currentWalletInfo && fidelityBonds.length > 0 && (
                   <>
-                    {fidelityBonds.map((fidelityBond, index) => (
-                      <ExistingFidelityBond key={index} fidelityBond={fidelityBond} />
-                    ))}
+                    {moveToJarFidelityBondId && (
+                      <SpendFidelityBondModal
+                        show={true}
+                        fidelityBondId={moveToJarFidelityBondId}
+                        wallet={wallet}
+                        walletInfo={currentWalletInfo}
+                        destinationJarIndex={0}
+                        onClose={({ mustReload }) => {
+                          setMoveToJarFidelityBondId(undefined)
+                          if (mustReload) {
+                            reloadFidelityBonds({ delay: 0 })
+                          }
+                        }}
+                      />
+                    )}
+                    {fidelityBonds.map((fidelityBond, index) => {
+                      const isExpired = !fb.utxo.isLocked(fidelityBond)
+                      const actionsEnabled =
+                        isExpired &&
+                        serviceInfo &&
+                        !serviceInfo.coinjoinInProgress &&
+                        !serviceInfo.makerRunning &&
+                        !isWaitingMakerStart &&
+                        !isWaitingMakerStop &&
+                        !isLoading
+                      return (
+                        <ExistingFidelityBond key={index} fidelityBond={fidelityBond}>
+                          {actionsEnabled && (
+                            <div className="mt-4">
+                              <div className="">
+                                <rb.Button
+                                  variant={settings.theme === 'dark' ? 'light' : 'dark'}
+                                  className="w-50 d-flex justify-content-center align-items-center"
+                                  disabled={moveToJarFidelityBondId !== undefined}
+                                  onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
+                                >
+                                  <Sprite className="me-1 mb-1" symbol="unlock" width="24" height="24" />
+                                  {t('earn.fidelity_bond.existing.button_spend')}
+                                </rb.Button>
+                              </div>
+                            </div>
+                          )}
+                        </ExistingFidelityBond>
+                      )
+                    })}
                   </>
                 )}
                 <>

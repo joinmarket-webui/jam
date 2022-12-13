@@ -170,12 +170,15 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
           array.sort((a, b) => {
             const aUtxo = toUtxo(a)
             const bUtxo = toUtxo(b)
-            if (fb.utxo.isLocked(aUtxo) && !fb.utxo.isLocked(bUtxo)) return -1
-            if (!fb.utxo.isLocked(aUtxo) && fb.utxo.isLocked(bUtxo)) return 1
-            if (fb.utxo.isLocked(aUtxo) && fb.utxo.isLocked(bUtxo)) return 0
+            const aLocked = fb.utxo.isLocked(aUtxo)
+            const bLocked = fb.utxo.isLocked(bUtxo)
+
+            if (aLocked && !bLocked) return -1
+            if (!aLocked && bLocked) return 1
+            if (aLocked && bLocked) return aUtxo.value - bUtxo.value
             if (aUtxo.frozen && !bUtxo.frozen) return -1
             if (!aUtxo.frozen && bUtxo.frozen) return 1
-            if (aUtxo.frozen && bUtxo.frozen) return 0
+            if (aUtxo.frozen && bUtxo.frozen) return aUtxo.value - bUtxo.value
             return 0
           }),
         [SORT_KEYS.value]: (array) => array.sort((a, b) => a.value - b.value),
@@ -184,16 +187,16 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
     }
   )
 
-  const frozenOrLockedIcon = (utxo: Utxo) => {
-    if (fb.utxo.isLocked(utxo)) {
+  const utxoIcon = (utxo: Utxo) => {
+    if (fb.utxo.isFidelityBond(utxo)) {
       return (
-        <div className={styles.frozenLockedTag}>
+        <div className={styles.utxoIcon}>
           <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
         </div>
       )
     } else if (utxo.frozen) {
       return (
-        <div className={styles.frozenLockedTag}>
+        <div className={styles.utxoIcon}>
           <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
         </div>
       )
@@ -236,7 +239,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                 return (
                   <Row key={item.id} item={item}>
                     <CellSelect item={item} />
-                    <Cell>{frozenOrLockedIcon(utxo)}</Cell>
+                    <Cell>{utxoIcon(utxo)}</Cell>
                     <Cell>
                       <Balance
                         valueString={utxo.value.toString()}

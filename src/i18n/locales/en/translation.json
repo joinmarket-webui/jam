@@ -21,6 +21,11 @@
           "label_last": "Last"
         }
       }
+    },
+    "errors": {
+      "error_loading_wallet_failed": "Loading wallet failed. {{ reason }}",
+      "error_reloading_wallet_failed": "Reloading wallet failed. {{ reason }}",
+      "reason_unknown": "Unknown reason."
     }
   },
   "app": {
@@ -215,7 +220,6 @@
     "error_invalid_num_collaborators": "Please use between {{ minNumCollaborators }} and {{ maxNumCollaborators }} collaborators.",
     "taker_error_message_max_fees_config_missing": "Config variables 'max_cj_fee_rel' and 'max_cj_fee_abs' must be set in your joinmarket.cfg in order to send collaborative transactions. Consider adding them to your config manually.",
     "direct_payment_error_message_bad_request": "Please verify your inputs carefully.",
-    "error_loading_wallet_failed": "Loading wallet failed.",
     "error_loading_min_makers_failed": "Loading config value 'minimum_makers' failed.",
     "alert_payment_successful": "Payment successful: Sent {{ amount }} sats to {{ address }} in transaction {{ txid }}.",
     "text_maker_running": "Earn is active. Stop the service in order to send collaborative transactions.",
@@ -244,7 +248,7 @@
     "confirm_send_modal": {
       "title": "Confirm payment",
       "label_amount": "Amount",
-      "text_sweep_balance": "Sweep whole jar (<1></1>)",
+      "text_sweep_balance": "Sweep (<1></1>)",
       "text_sweep_info_popover": "The exact transaction amount can only be calculated by JoinMarket at the point when the transaction is made.",
       "label_recipient": "Recipient",
       "label_source_jar": "Send from",
@@ -350,7 +354,6 @@
       "error_unfreezing_utxos": "Could not unfreeze UTXOs.",
       "error_loading_address": "Could not load time-locked address.",
       "error_creating_fidelity_bond": "The transaction to create the fidelity bond failed.",
-      "error_reloading_wallet": "Could not reload the wallet.",
       "text_loading": "Loading...",
       "text_creating": "Creating...",
       "text_unfreezing": "Unfreezing...",
@@ -431,10 +434,31 @@
       },
       "existing": {
         "title_active": "Fidelity Bond",
-        "title_expired": "Expired Fidelity Bond",
+        "title_expired": "Fidelity Bond <1>expired</1>",
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
-        "label_address": "Timelocked address"
+        "label_address": "Timelocked address",
+        "button_spend": "Unlock Funds"
+      },
+      "move": {
+        "title": "Unlock Funds",
+        "success_text": "Fidelity Bond unlocked successfully!",
+        "text_loading": "Loading...",
+        "text_sending": "Unlocking...",
+        "text_button_cancel": "Cancel",
+        "text_button_submit": "Unlock Funds",
+        "text_button_done": "Done",
+        "error_fidelity_bond_still_locked": "The given fidelity bond is still locked.",
+        "error_loading_address": "Unable to get new address.",
+        "error_freezing_utxos": "Could not freeze UTXOs.",
+        "error_unfreezing_fidelity_bond": "Error while unfreezing expired fidelity bond.",
+        "error_spending_fidelity_bond": "Error while unlocking expired fidelity bond.",
+        "select_jar": {
+          "description": "Select a jar to move the expired fidelity bond into."
+        },
+        "confirm_send_modal": {
+          "title": "Confirm unlocking expired Fidelity Bond"
+        }
       }
     }
   },

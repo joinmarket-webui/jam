@@ -1,4 +1,3 @@
-import React from 'react'
 import { act } from 'react-dom/test-utils'
 import user from '@testing-library/user-event'
 import { render, screen } from '../testUtils'
@@ -10,6 +9,11 @@ describe('<Balance />', () => {
   it('should render placeholder while loading', () => {
     render(<Balance loading={true} />)
     expect(screen.getByTestId('balance-component-placeholder')).toBeInTheDocument()
+  })
+
+  it('should render invalid param as given', () => {
+    render(<Balance valueString={'NaN'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByText(`NaN`)).toBeInTheDocument()
   })
 
   it('should render BTC using satscomma formatting', () => {

@@ -161,8 +161,22 @@ const Helper = (() => {
     }
   }
 
+  /**
+   * @deprecated Use `throwResolved()` instead
+   */
   const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
-    throw new JmApiError(await extractErrorMessage(response, fallbackReason), response)
+    throw new JmApiError(response, await extractErrorMessage(response, fallbackReason))
+  }
+
+  const DEFAULT_RESOLVER = (res: Response, reason: string) => reason
+
+  const throwResolved = async (
+    response: Response,
+    { resolver = DEFAULT_RESOLVER, fallbackReason = response.statusText } = {}
+  ): Promise<never> => {
+    const reason = await extractErrorMessage(response, fallbackReason)
+    const errorMessage = resolver(response, reason) || reason
+    throw new JmApiError(response, errorMessage)
   }
 
   /**
@@ -180,6 +194,7 @@ const Helper = (() => {
 
   return {
     throwError,
+    throwResolved,
     extractErrorMessage,
     buildAuthHeader,
   }
@@ -407,7 +422,7 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
 export class JmApiError extends Error {
   public response: Response
 
-  constructor(message: string, response: Response) {
+  constructor(response: Response, message: string) {
     super(message)
     this.response = response
   }

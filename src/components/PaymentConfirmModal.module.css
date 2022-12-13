@@ -1,0 +1,6 @@
+.infoIcon {
+  margin: 2px 0 0 0.25rem;
+  color: var(--bs-gray-500);
+  border: 1px solid var(--bs-gray-500);
+  border-radius: 50%;
+}

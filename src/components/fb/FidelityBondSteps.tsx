@@ -27,7 +27,7 @@ interface SelectJarProps {
   accountBalances: AccountBalances
   totalBalance: Api.AmountSats
   isJarSelectable: (jarIndex: JarIndex) => boolean
-  selectedJar: JarIndex | null
+  selectedJar?: JarIndex
   onJarSelected: (jarIndex: JarIndex) => void
 }
 
@@ -205,7 +205,7 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
   const utxosToFreeze = useMemo(() => fb.utxo.utxosToFreeze(utxos, selectedUtxos), [utxos, selectedUtxos])
 
   return (
-    <div className="d-flex flex-column gap-4">
+    <div className="d-flex flex-column gap-2">
       <div className={styles.stepDescription}>{t('earn.fidelity_bond.freeze_utxos.description_selected_utxos')}</div>
       {selectedUtxos.map((utxo, index) => (
         <UtxoCard
@@ -219,11 +219,11 @@ const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false 
       {utxosToFreeze.length > 0 && (
         <>
           {fb.utxo.allAreFrozen(utxosToFreeze) ? (
-            <div className={styles.stepDescription}>
+            <div className={`mt-2 ${styles.stepDescription}`}>
               {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}
             </div>
           ) : (
-            <div className={styles.stepDescription}>
+            <div className={`mt-2 ${styles.stepDescription}`}>
               {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}{' '}
               {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar: jarInitial(jar) })}
             </div>

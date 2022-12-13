@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { SATS, BTC, btcToSats, satsToBtc, formatBtc, formatSats } from '../utils'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { SATS, BTC, btcToSats, satsToBtc, formatBtc, formatSats, isValidNumber } from '../utils'
 import Sprite from './Sprite'
 import * as rb from 'react-bootstrap'
 import styles from './Balance.module.css'
@@ -57,25 +57,14 @@ export default function Balance({
     setDisplayMode(getDisplayMode(convertToUnit, isBalanceVisible))
   }, [convertToUnit, isBalanceVisible])
 
-  if (loading) {
-    return (
-      <rb.Placeholder as="div" animation="wave">
-        <rb.Placeholder
-          data-testid="balance-component-placeholder"
-          className={styles['balance-component-placeholder']}
-        />
-      </rb.Placeholder>
-    )
-  }
-
-  const toggleVisibility = (e) => {
+  const toggleVisibility = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
 
     setIsBalanceVisible((current) => !current)
-  }
+  }, [])
 
-  const balanceComponent = (() => {
+  const balanceComponent = useMemo(() => {
     if (displayMode === DISPLAY_MODE_HIDDEN) {
       return (
         <BalanceComponent
@@ -90,15 +79,15 @@ export default function Balance({
       )
     }
 
-    if (typeof valueString !== 'string') {
-      console.warn('<Balance /> component expects string input')
+    if (typeof valueString !== 'string' || !isValidNumber(parseFloat(valueString))) {
+      console.warn('<Balance /> component expects number input as string')
       return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
     }
 
     // Treat integers as sats.
-    const valueIsSats = valueString === Number.parseInt(valueString).toString()
+    const valueIsSats = valueString === parseInt(valueString, 10).toString()
     // Treat decimal numbers as btc.
-    const valueIsBtc = !valueIsSats && !Number.isNaN(Number.parseFloat(valueString)) && valueString.indexOf('.') > -1
+    const valueIsBtc = !valueIsSats && !isNaN(parseFloat(valueString)) && valueString.indexOf('.') > -1
 
     const btcSymbol = (
       <span className="balance-symbol" style={{ paddingRight: '0.1em' }}>
@@ -118,16 +107,27 @@ export default function Balance({
       return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <BalanceComponent symbol={''} value={valueString} symbolIsPrefix={false} />
-  })()
+    return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
+  }, [valueString, displayMode])
+
+  if (loading) {
+    return (
+      <rb.Placeholder as="div" animation="wave">
+        <rb.Placeholder
+          data-testid="balance-component-placeholder"
+          className={styles['balance-component-placeholder']}
+        />
+      </rb.Placeholder>
+    )
+  }
 
   if (!enableVisibilityToggle) {
     return <>{balanceComponent}</>
+  } else {
+    return (
+      <span onClick={toggleVisibility} style={{ cursor: 'pointer' }}>
+        {balanceComponent}
+      </span>
+    )
   }
-
-  return (
-    <span onClick={toggleVisibility} style={{ cursor: 'pointer' }}>
-      {balanceComponent}
-    </span>
-  )
 }

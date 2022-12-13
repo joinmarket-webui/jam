@@ -244,6 +244,10 @@
         <rect width="14" height="10" x="5" y="10.968" rx="2"></rect>
         <path d="M15.486 10.984V7.243a1.5 1.5 0 00-1.5-1.5h-3.972a1.5 1.5 0 00-1.5 1.5v3.74"></path>
     </symbol>
+    <symbol id="unlock" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <rect width="14" height="10" x="5" y="10.989" rx="2" />
+        <path stroke-linecap="round" d="M15.5 8l-.008-1.742a1.5 1.5 0 00-1.5-1.494H10.014a1.5 1.5 0 00-1.5 1.5v4.73" />
+    </symbol>
     <symbol id="cancel" stroke="currentColor" viewBox="0 0 31 31">
         <line x1="10.6642" y1="10.75" x2="20.5637" y2="20.6495" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <line x1="20.5" y1="10.9142" x2="10.6005" y2="20.8137" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
