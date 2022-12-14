@@ -358,7 +358,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           {utxoListTitle()}
                         </div>
                         <div>
-                          <Trans i18nKey="jar_details.total_label">
+                          <Trans i18nKey="jar_details.utxo_list.text_balance_sum_total">
                             <Balance
                               valueString={jar.account_balance}
                               convertToUnit={settings.unit}
