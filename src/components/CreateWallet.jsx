@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
@@ -190,13 +190,13 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
   const seedphrase = createdWallet.seedphrase.split(' ')
 
   const { t } = useTranslation()
-  const [seedBackup, setSeedBackup] = useState(false)
   const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
   const [showSkipButton] = useState(isDebugFeatureEnabled('skipWalletBackupConfirmation'))
 
-  useEffect(() => {
-    setSeedBackup(seedWordConfirmations.every((wordConfirmed) => wordConfirmed))
-  }, [seedWordConfirmations])
+  const isSeedBackupConfirmed = useMemo(
+    () => seedWordConfirmations.every((wordConfirmed) => wordConfirmed),
+    [seedWordConfirmations]
+  )
 
   return (
     <div>
@@ -236,16 +236,23 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
           })}
         </div>
       </rb.Form>
-      {seedBackup && <div className="text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>}
+      {isSeedBackupConfirmed && (
+        <div className="mb-4 text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>
+      )}
 
-      <rb.Button variant="dark" className={styles.button} onClick={() => walletConfirmed()} disabled={!seedBackup}>
+      <rb.Button
+        variant="dark"
+        className={styles.button}
+        onClick={() => walletConfirmed()}
+        disabled={!isSeedBackupConfirmed}
+      >
         {t('create_wallet.confirmation_button_fund_wallet')}
       </rb.Button>
 
       <div className="d-flex mt-4 mb-4 gap-4">
         <rb.Button
           variant="outline-dark"
-          disabled={seedBackup}
+          disabled={isSeedBackupConfirmed}
           className={styles.button}
           onClick={() => {
             parentStepSetter()
@@ -259,7 +266,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
             variant="outline-dark"
             className={styles.button}
             onClick={() => walletConfirmed()}
-            disabled={seedBackup}
+            disabled={isSeedBackupConfirmed}
           >
             {t('create_wallet.skip_button')}
           </rb.Button>
