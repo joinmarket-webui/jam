@@ -352,19 +352,32 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                 {selectedTab === TABS.UTXOS ? (
                   <>
                     <div className={styles.utxoListTitleBar}>
-                      <div className="d-flex justify-content-center align-items-center gap-2">
-                        {refreshButton()}
-                        {utxoListTitle()}
+                      <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column">
+                        <div className="d-flex justify-content-center align-items-center gap-2">
+                          {refreshButton()}
+                          {utxoListTitle()}
+                        </div>
+                        <div>
+                          <Trans i18nKey="jar_details.utxo_list.text_balance_sum_total">
+                            <Balance
+                              valueString={jar.account_balance}
+                              convertToUnit={settings.unit}
+                              showBalance={settings.showBalance}
+                            />
+                          </Trans>
+                        </div>
                       </div>
-                      <div className={styles.operationsContainer}>
+                      <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column gap-2">
                         {utxos.length > 0 && (
-                          <div className={styles.freezeUnfreezeButtonsContainer}>
-                            {freezeUnfreezeButton({ freeze: true })}
-                            {freezeUnfreezeButton({ freeze: false })}
+                          <div className="order-1 order-sm-0">
+                            <div className={styles.freezeUnfreezeButtonsContainer}>
+                              {freezeUnfreezeButton({ freeze: true })}
+                              {freezeUnfreezeButton({ freeze: false })}
+                            </div>
                           </div>
                         )}
                         {selectedUtxosBalance > 0 && (
-                          <div className={styles.selectedUtxosSumContainer}>
+                          <div className="order-0 order-sm-1">
                             <Trans i18nKey="jar_details.utxo_list.text_balance_sum_selected">
                               <Balance
                                 valueString={String(selectedUtxosBalance)}
