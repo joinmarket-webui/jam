@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 * **send:** parse number of collaborators as integer ([#572](https://github.com/joinmarket-webui/jam/issues/572)) ([4fca8f1](https://github.com/joinmarket-webui/jam/commit/4fca8f1fd1ba5d9e9f7f1289c9db35c1f03aaf34))
+* **performance:** speed up initial page load ([#566](https://github.com/joinmarket-webui/jam/pull/566)) ([e2bad18](https://github.com/joinmarket-webui/jam/commit/e2bad188f116b63bf68b308106bba33ac8fc7164))
 
 #### Added
 
