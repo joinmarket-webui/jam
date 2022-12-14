@@ -352,9 +352,20 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                 {selectedTab === TABS.UTXOS ? (
                   <>
                     <div className={styles.utxoListTitleBar}>
-                      <div className="d-flex justify-content-center align-items-center gap-2">
-                        {refreshButton()}
-                        {utxoListTitle()}
+                      <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column">
+                        <div className="d-flex justify-content-center align-items-center gap-2">
+                          {refreshButton()}
+                          {utxoListTitle()}
+                        </div>
+                        <div>
+                          <Trans i18nKey="jar_details.total_label">
+                            <Balance
+                              valueString={jar.account_balance}
+                              convertToUnit={settings.unit}
+                              showBalance={settings.showBalance}
+                            />
+                          </Trans>
+                        </div>
                       </div>
                       <div className={styles.operationsContainer}>
                         {utxos.length > 0 && (

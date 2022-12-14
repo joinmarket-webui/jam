@@ -554,6 +554,7 @@
   "jar_details": {
     "title_tab_utxos": "UTXOs",
     "title_tab_jar_details": "Details",
+    "total_label": "<0></0> total",
     "utxo_list": {
       "title_zero": "No UTXOs in Jar {{ jar }}",
       "title_one": "{{ count }} UTXO in Jar {{ jar }}",
