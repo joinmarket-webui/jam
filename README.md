@@ -52,7 +52,7 @@ If your node system of choice is missing, feel free to integrate it and let us k
 <td style="text-align:center"><a href="https://github.com/rootzoll/raspiblitz">RaspiBlitz</a>: v1.7.2*</td>
 <td style="text-align:center"><a href="https://getumbrel.com">Umbrel</a>: v0.4.15</td>
 <td style="text-align:center"><a href="https://runcitadel.space">Citadel</a>: v0.0.1</td>
-<td style="text-align:center"><a href="https://mynodebtc.com">MyNode</a>: v0.3.5</td>
+<td style="text-align:center"><a href="https://mynodebtc.com">MyNode</a>: v0.3.05</td>
 </tr>
 </tbody>
 </table>
