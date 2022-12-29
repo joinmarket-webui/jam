@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, SetStateAction, Dispatch, FormEventHandler } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
@@ -12,11 +12,11 @@ import JarSelectorModal from './JarSelectorModal'
 import { PaymentConfirmModal } from './PaymentConfirmModal'
 import { CoinjoinPreconditionViolationAlert } from './CoinjoinPreconditionViolationAlert'
 
-import { useReloadCurrentWalletInfo, useCurrentWalletInfo } from '../context/WalletContext'
+import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { useLoadConfigValue } from '../context/ServiceConfigContext'
+import { ServiceConfigContextEntry, useLoadConfigValue } from '../context/ServiceConfigContext'
 import { useSettings } from '../context/SettingsContext'
-import { useLoadFeeConfigValues } from '../hooks/Fees'
+import { FeeValues, useLoadFeeConfigValues } from '../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../hooks/CoinjoinRequirements'
 
 import * as Api from '../libs/JmWalletApi'
@@ -34,7 +34,7 @@ const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = 0
 const INITIAL_AMOUNT = null
 
-const initialNumCollaborators = (minValue) => {
+const initialNumCollaborators = (minValue: number) => {
   if (minValue > 8) {
     return minValue + pseudoRandomNumber(0, 2)
   }
@@ -42,30 +42,38 @@ const initialNumCollaborators = (minValue) => {
 }
 
 // not cryptographically random. returned number is in range [min, max] (both inclusive).
-const pseudoRandomNumber = (min, max) => {
+const pseudoRandomNumber = (min: number, max: number) => {
   return Math.round(Math.random() * (max - min)) + min
 }
 
-const isValidAddress = (candidate) => {
+const isValidAddress = (candidate: string | null) => {
   return typeof candidate === 'string' && !(candidate === '')
 }
 
-const isValidJarIndex = (candidate) => {
-  const parsed = parseInt(candidate, 10)
-  return isValidNumber(parsed) && parsed >= 0
+const isValidJarIndex = (candidate: number) => {
+  return isValidNumber(candidate) && candidate >= 0
 }
 
-const isValidAmount = (candidate, isSweep) => {
-  const parsed = parseInt(candidate, 10)
-  return isValidNumber(parsed) && (isSweep ? parsed === 0 : parsed > 0)
+const isValidAmount = (candidate: number | null, isSweep: boolean) => {
+  return candidate !== null && isValidNumber(candidate) && (isSweep ? candidate === 0 : candidate > 0)
 }
 
-const isValidNumCollaborators = (candidate, minNumCollaborators) => {
-  const parsed = parseInt(candidate, 10)
-  return isValidNumber(parsed) && parsed >= minNumCollaborators && parsed <= 99
+const isValidNumCollaborators = (candidate: number, minNumCollaborators: number) => {
+  return isValidNumber(candidate) && candidate >= minNumCollaborators && candidate <= 99
 }
 
-const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCollaborators, disabled = false }) => {
+type CollaboratorsSelectorArgs = {
+  numCollaborators: number
+  setNumCollaborators: Dispatch<SetStateAction<number>>
+  minNumCollaborators: number
+  disabled?: boolean
+}
+const CollaboratorsSelector = ({
+  numCollaborators,
+  setNumCollaborators,
+  minNumCollaborators,
+  disabled = false,
+}: CollaboratorsSelectorArgs) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -76,16 +84,17 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
     return [start, start + 1, start + 2]
   }, [minNumCollaborators])
 
-  const validateAndSetCustomNumCollaborators = (candidate) => {
+  const validateAndSetCustomNumCollaborators = (candidate: string) => {
     const parsed = parseInt(candidate, 10)
     if (isValidNumCollaborators(parsed, minNumCollaborators)) {
       setNumCollaborators(parsed)
     } else {
-      setNumCollaborators(null)
+      setNumCollaborators(initialNumCollaborators(minNumCollaborators))
     }
   }
 
   return (
+    // @ts-ignore FIXME: "Property 'disabled' does not exist on type..."
     <rb.Form noValidate className={styles.collaboratorsSelector} disabled={disabled}>
       <rb.Form.Group>
         <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
@@ -127,9 +136,11 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
               validateAndSetCustomNumCollaborators(e.target.value)
             }}
             onClick={(e) => {
+              // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
               if (e.target.value !== '') {
                 setUsesCustomNumCollaborators(true)
-                validateAndSetCustomNumCollaborators(parseInt(e.target.value, 10))
+                // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
+                validateAndSetCustomNumCollaborators(e.target.value)
               }
             }}
             disabled={disabled}
@@ -145,7 +156,11 @@ const CollaboratorsSelector = ({ numCollaborators, setNumCollaborators, minNumCo
   )
 }
 
-const enhanceDirectPaymentErrorMessageIfNecessary = async (httpStatus, errorMessage, onBadRequest) => {
+const enhanceDirectPaymentErrorMessageIfNecessary = async (
+  httpStatus: number,
+  errorMessage: string,
+  onBadRequest: (errorMessage: string) => string
+) => {
   const tryEnhanceMessage = httpStatus === 400
   if (tryEnhanceMessage) {
     return onBadRequest(errorMessage)
@@ -155,16 +170,16 @@ const enhanceDirectPaymentErrorMessageIfNecessary = async (httpStatus, errorMess
 }
 
 const enhanceTakerErrorMessageIfNecessary = async (
-  loadConfigValue,
-  httpStatus,
-  errorMessage,
-  onMaxFeeSettingsMissing
+  loadConfigValue: ServiceConfigContextEntry['loadConfigValueIfAbsent'],
+  httpStatus: number,
+  errorMessage: string,
+  onMaxFeeSettingsMissing: (errorMessage: string) => string
 ) => {
   const tryEnhanceMessage = httpStatus === 409
   if (tryEnhanceMessage) {
     const abortCtrl = new AbortController()
 
-    const configExists = (section, field) =>
+    const configExists = (section: string, field: string) =>
       loadConfigValue({
         signal: abortCtrl.signal,
         key: { section, field },
@@ -187,7 +202,10 @@ const enhanceTakerErrorMessageIfNecessary = async (
   return errorMessage
 }
 
-function SweepAccordionToggle({ eventKey }) {
+type SweepAccordionToggleProps = {
+  eventKey: string
+}
+function SweepAccordionToggle({ eventKey }: SweepAccordionToggleProps) {
   const { t } = useTranslation()
   return (
     <button type="button" className={styles['accordion-button']} onClick={rb.useAccordionButton(eventKey)}>
@@ -196,7 +214,15 @@ function SweepAccordionToggle({ eventKey }) {
   )
 }
 
-export default function Send({ wallet }) {
+type Alert = {
+  variant: 'success' | 'danger'
+  message: string
+}
+
+type SendProps = {
+  wallet: CurrentWallet
+}
+export default function Send({ wallet }: SendProps) {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
 
@@ -211,19 +237,19 @@ export default function Send({ wallet }) {
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
 
-  const [alert, setAlert] = useState(null)
+  const [alert, setAlert] = useState<Alert>()
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
   const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
-  const [destinationJar, setDestinationJar] = useState(null)
+  const [destinationJar, setDestinationJar] = useState<number | null>(null)
   const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
 
-  const [feeConfigValues, setFeeConfigValues] = useState(null)
+  const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
-  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState(null)
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<Alert>()
 
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning || waitForUtxosToBeSpent.length > 0,
@@ -235,11 +261,11 @@ export default function Send({ wallet }) {
     [isInitializing, waitForUtxosToBeSpent]
   )
 
-  const [destination, setDestination] = useState(INITIAL_DESTINATION)
+  const [destination, setDestination] = useState<string | null>(INITIAL_DESTINATION)
   const [sourceJarIndex, setSourceJarIndex] = useState(
     parseInt(location.state?.account, 10) || INITIAL_SOURCE_JAR_INDEX
   )
-  const [amount, setAmount] = useState(INITIAL_AMOUNT)
+  const [amount, setAmount] = useState<number | null>(INITIAL_AMOUNT)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
@@ -262,7 +288,7 @@ export default function Send({ wallet }) {
 
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
-  const submitButtonRef = useRef(null)
+  const submitButtonRef = useRef<HTMLButtonElement>(null)
   const submitButtonOptions = useMemo(() => {
     if (!isInitializing) {
       if (!isCoinjoin)
@@ -367,7 +393,7 @@ export default function Send({ wallet }) {
 
     const abortCtrl = new AbortController()
 
-    setAlert(null)
+    setAlert(undefined)
     setIsInitializing(true)
 
     // reloading service info is important, is it must be known as soon as possible
@@ -413,7 +439,7 @@ export default function Send({ wallet }) {
         if (abortCtrl.signal.aborted) return
         // As fee config is not essential, don't raise an error on purpose.
         // Fee settings cannot be displayed, but making a payment is still possible.
-        setFeeConfigValues(null)
+        setFeeConfigValues(undefined)
       })
 
     Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig, loadFeeValues]).finally(
@@ -434,9 +460,19 @@ export default function Send({ wallet }) {
     setDestinationIsReusedAddress(false)
   }, [walletInfo, destination])
 
-  const sendPayment = async (sourceJarIndex, destination, amount_sats) => {
-    setAlert(null)
-    setPaymentSuccessfulInfoAlert(null)
+  type SendPayment = (
+    sourceJarIndex: number,
+    destination: string | null,
+    amount_sats: number | null
+  ) => Promise<boolean>
+
+  const sendPayment: SendPayment = async (sourceJarIndex, destination, amount_sats) => {
+    if (!destination || !amount_sats) {
+      setAlert({ variant: 'danger', message: 'Missing destination or amount' })
+      return false
+    }
+    setAlert(undefined)
+    setPaymentSuccessfulInfoAlert(undefined)
     setIsSending(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -446,10 +482,11 @@ export default function Send({ wallet }) {
       const res = await Api.postDirectSend(requestContext, { mixdepth: sourceJarIndex, destination, amount_sats })
 
       if (res.ok) {
+        // TODO: add type for json response
         const {
           txinfo: { outputs, inputs, txid },
         } = await res.json()
-        const output = outputs.find((o) => o.address === destination)
+        const output = outputs.find((o: any) => o.address === destination)
         setPaymentSuccessfulInfoAlert({
           variant: 'success',
           message: t('send.alert_payment_successful', {
@@ -458,7 +495,7 @@ export default function Send({ wallet }) {
             txid,
           }),
         })
-        setWaitForUtxosToBeSpent(inputs.map((it) => it.outpoint))
+        setWaitForUtxosToBeSpent(inputs.map((it: any) => it.outpoint))
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
@@ -471,7 +508,7 @@ export default function Send({ wallet }) {
       }
 
       setIsSending(false)
-    } catch (e) {
+    } catch (e: any) {
       setIsSending(false)
       setAlert({ variant: 'danger', message: e.message })
     }
@@ -479,8 +516,18 @@ export default function Send({ wallet }) {
     return success
   }
 
-  const startCoinjoin = async (sourceJarIndex, destination, amount_sats, counterparties) => {
-    setAlert(null)
+  type StartCoinjoin = (
+    sourceJarIndex: number,
+    destination: string | null,
+    amount_sats: number | null,
+    counterparties: number
+  ) => Promise<boolean>
+  const startCoinjoin: StartCoinjoin = async (sourceJarIndex, destination, amount_sats, counterparties) => {
+    if (!destination || !amount_sats) {
+      setAlert({ variant: 'danger', message: 'Missing destination or amount' })
+      return false
+    }
+    setAlert(undefined)
     setIsSending(true)
 
     const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -510,7 +557,7 @@ export default function Send({ wallet }) {
       }
 
       setIsSending(false)
-    } catch (e) {
+    } catch (e: any) {
       setIsSending(false)
       setAlert({ variant: 'danger', message: e.message })
     }
@@ -538,7 +585,7 @@ export default function Send({ wallet }) {
     }
 
     setShowConfirmAbortModal(false)
-    setAlert(null)
+    setAlert(undefined)
 
     const abortCtrl = new AbortController()
     return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }).catch((err) => {
@@ -546,12 +593,12 @@ export default function Send({ wallet }) {
     })
   }
 
-  const onSubmit = async (e) => {
+  const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault()
 
     if (isLoading || isOperationDisabled) return
 
-    setPaymentSuccessfulInfoAlert(null)
+    setPaymentSuccessfulInfoAlert(undefined)
 
     const form = e.currentTarget
     const isValid = formIsValid
@@ -564,15 +611,13 @@ export default function Send({ wallet }) {
 
       setShowConfirmSendModal(false)
 
-      const counterparties = parseInt(numCollaborators, 10)
-
       if (isSweep && amount !== 0) {
         console.error('Sweep amount mismatch. This should not happen.')
         return
       }
 
       const success = isCoinjoin
-        ? await startCoinjoin(sourceJarIndex, destination, amount, counterparties)
+        ? await startCoinjoin(sourceJarIndex, destination, amount, numCollaborators)
         : await sendPayment(sourceJarIndex, destination, amount)
 
       if (success) {
@@ -588,7 +633,7 @@ export default function Send({ wallet }) {
     }
   }
 
-  const amountFieldValue = () => {
+  const amountFieldValue = useMemo(() => {
     if (amount === null || !isValidNumber(amount)) return ''
 
     if (isSweep) {
@@ -596,8 +641,8 @@ export default function Send({ wallet }) {
       return `${accountBalanceOrNull.calculatedAvailableBalanceInSats}`
     }
 
-    return amount
-  }
+    return amount.toString()
+  }, [accountBalanceOrNull, amount, isSweep])
 
   const frozenOrLockedWarning = () => {
     if (!accountBalanceOrNull) return null
@@ -633,7 +678,7 @@ export default function Send({ wallet }) {
                   <tr>
                     <td>{t('send.sweep_amount_breakdown_estimated_amount')}</td>
                     <td className={styles['balance-col']}>
-                      <Balance valueString={amountFieldValue().toString()} convertToUnit={SATS} showBalance={true} />
+                      <Balance valueString={amountFieldValue} convertToUnit={SATS} showBalance={true} />
                     </td>
                   </tr>
                 </tbody>
@@ -881,7 +926,7 @@ export default function Send({ wallet }) {
                   <rb.Form.Control
                     name="amount"
                     type="number"
-                    value={amountFieldValue()}
+                    value={amountFieldValue}
                     className={`${styles.input} slashed-zeroes`}
                     min={1}
                     placeholder={t('send.placeholder_amount')}
@@ -910,6 +955,7 @@ export default function Send({ wallet }) {
             </div>
             <rb.Form.Control.Feedback
               className={amount !== null && !isValidAmount(amount, isSweep) ? 'd-block' : 'd-none'}
+              // @ts-ignore FIXME: "Property 'form' does not exist on type..."
               form="send-form"
               type="invalid"
             >
@@ -974,8 +1020,8 @@ export default function Send({ wallet }) {
             }}
             data={{
               sourceJarIndex,
-              destination,
-              amount: parseInt(amountFieldValue(), 10),
+              destination: destination as string,
+              amount: parseInt(amountFieldValue, 10),
               isSweep,
               isCoinjoin,
               numCollaborators,

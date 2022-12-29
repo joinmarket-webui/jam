@@ -95,7 +95,7 @@ const pushConfigValues = async ({
   return Promise.all(fetches)
 }
 
-interface ServiceConfigContextEntry {
+export interface ServiceConfigContextEntry {
   loadConfigValueIfAbsent: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
   refreshConfigValues: (props: RefreshConfigValuesProps) => Promise<ServiceConfig>
   updateConfigValues: (props: UpdateConfigValuesProps) => Promise<ServiceConfig>
