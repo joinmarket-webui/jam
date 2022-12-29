@@ -25,8 +25,8 @@ export const isValidAmount = (candidate: number | null, isSweep: boolean) => {
   return candidate !== null && isValidNumber(candidate) && (isSweep ? candidate === 0 : candidate > 0)
 }
 
-export const isValidNumCollaborators = (candidate: number, minNumCollaborators: number) => {
-  return isValidNumber(candidate) && candidate >= minNumCollaborators && candidate <= 99
+export const isValidNumCollaborators = (candidate: number | null, minNumCollaborators: number) => {
+  return candidate !== null && isValidNumber(candidate) && candidate >= minNumCollaborators && candidate <= 99
 }
 
 export const enhanceDirectPaymentErrorMessageIfNecessary = async (

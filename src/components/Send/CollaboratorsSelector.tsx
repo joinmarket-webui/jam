@@ -4,11 +4,11 @@ import { useSettings } from '../../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
 import styles from './Send.module.css'
-import { initialNumCollaborators, isValidNumCollaborators } from './helpers'
+import { isValidNumCollaborators } from './helpers'
 
 type CollaboratorsSelectorArgs = {
-  numCollaborators: number
-  setNumCollaborators: Dispatch<SetStateAction<number>>
+  numCollaborators: number | null
+  setNumCollaborators: Dispatch<SetStateAction<number | null>>
   minNumCollaborators: number
   disabled?: boolean
 }
@@ -33,7 +33,7 @@ const CollaboratorsSelector = ({
     if (isValidNumCollaborators(parsed, minNumCollaborators)) {
       setNumCollaborators(parsed)
     } else {
-      setNumCollaborators(initialNumCollaborators(minNumCollaborators))
+      setNumCollaborators(null)
     }
   }
 

@@ -109,7 +109,7 @@ export default function Send({ wallet }: SendProps) {
   )
   const [amount, setAmount] = useState<number | null>(INITIAL_AMOUNT)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
-  const [numCollaborators, setNumCollaborators] = useState(initialNumCollaborators(minNumCollaborators))
+  const [numCollaborators, setNumCollaborators] = useState<number | null>(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
 
   const accountBalanceOrNull = useMemo(
@@ -362,10 +362,10 @@ export default function Send({ wallet }: SendProps) {
     sourceJarIndex: number,
     destination: string | null,
     amount_sats: number | null,
-    counterparties: number
+    counterparties: number | null
   ) => Promise<boolean>
   const startCoinjoin: StartCoinjoin = async (sourceJarIndex, destination, amount_sats, counterparties) => {
-    if (!destination || amount_sats === null) {
+    if (!destination || amount_sats === null || counterparties === null) {
       setAlert({ variant: 'danger', message: 'Missing destination or amount' })
       return false
     }
@@ -866,7 +866,7 @@ export default function Send({ wallet }: SendProps) {
               amount: parseInt(amountFieldValue, 10),
               isSweep,
               isCoinjoin,
-              numCollaborators,
+              numCollaborators: numCollaborators as number,
               feeConfigValues,
             }}
           />
