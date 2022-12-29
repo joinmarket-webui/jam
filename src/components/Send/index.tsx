@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, SetStateAction, Dispatch, FormEventHandler } from 'react'
+import { useEffect, useState, useMemo, useRef, FormEventHandler } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
@@ -14,7 +14,7 @@ import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViola
 
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
-import { ServiceConfigContextEntry, useLoadConfigValue } from '../../context/ServiceConfigContext'
+import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useSettings } from '../../context/SettingsContext'
 import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
@@ -25,6 +25,16 @@ import { routes } from '../../constants/routes'
 import { jarName } from '../jars/Jar'
 
 import styles from './Send.module.css'
+import CollaboratorsSelector from './CollaboratorsSelector'
+import {
+  enhanceDirectPaymentErrorMessageIfNecessary,
+  enhanceTakerErrorMessageIfNecessary,
+  initialNumCollaborators,
+  isValidAddress,
+  isValidAmount,
+  isValidJarIndex,
+  isValidNumCollaborators,
+} from './helpers'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -33,174 +43,6 @@ const MINIMUM_MAKERS_DEFAULT_VAL = 4
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = 0
 const INITIAL_AMOUNT = null
-
-const initialNumCollaborators = (minValue: number) => {
-  if (minValue > 8) {
-    return minValue + pseudoRandomNumber(0, 2)
-  }
-  return pseudoRandomNumber(8, 10)
-}
-
-// not cryptographically random. returned number is in range [min, max] (both inclusive).
-const pseudoRandomNumber = (min: number, max: number) => {
-  return Math.round(Math.random() * (max - min)) + min
-}
-
-const isValidAddress = (candidate: string | null) => {
-  return typeof candidate === 'string' && !(candidate === '')
-}
-
-const isValidJarIndex = (candidate: number) => {
-  return isValidNumber(candidate) && candidate >= 0
-}
-
-const isValidAmount = (candidate: number | null, isSweep: boolean) => {
-  return candidate !== null && isValidNumber(candidate) && (isSweep ? candidate === 0 : candidate > 0)
-}
-
-const isValidNumCollaborators = (candidate: number, minNumCollaborators: number) => {
-  return isValidNumber(candidate) && candidate >= minNumCollaborators && candidate <= 99
-}
-
-type CollaboratorsSelectorArgs = {
-  numCollaborators: number
-  setNumCollaborators: Dispatch<SetStateAction<number>>
-  minNumCollaborators: number
-  disabled?: boolean
-}
-const CollaboratorsSelector = ({
-  numCollaborators,
-  setNumCollaborators,
-  minNumCollaborators,
-  disabled = false,
-}: CollaboratorsSelectorArgs) => {
-  const { t } = useTranslation()
-  const settings = useSettings()
-
-  const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
-
-  const defaultCollaboratorsSelection = useMemo(() => {
-    const start = Math.max(minNumCollaborators, 8)
-    return [start, start + 1, start + 2]
-  }, [minNumCollaborators])
-
-  const validateAndSetCustomNumCollaborators = (candidate: string) => {
-    const parsed = parseInt(candidate, 10)
-    if (isValidNumCollaborators(parsed, minNumCollaborators)) {
-      setNumCollaborators(parsed)
-    } else {
-      setNumCollaborators(initialNumCollaborators(minNumCollaborators))
-    }
-  }
-
-  return (
-    // @ts-ignore FIXME: "Property 'disabled' does not exist on type..."
-    <rb.Form noValidate className={styles.collaboratorsSelector} disabled={disabled}>
-      <rb.Form.Group>
-        <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
-        <div className="mb-2">
-          <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
-        </div>
-        <div className="d-flex flex-row flex-wrap gap-2">
-          {defaultCollaboratorsSelection.map((number) => {
-            const isSelected = !usesCustomNumCollaborators && numCollaborators === number
-            return (
-              <rb.Button
-                key={number}
-                variant={settings.theme === 'light' ? 'white' : 'dark'}
-                className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
-                  [styles.selected]: isSelected,
-                })}
-                onClick={() => {
-                  setUsesCustomNumCollaborators(false)
-                  setNumCollaborators(number)
-                }}
-                disabled={disabled}
-              >
-                {number}
-              </rb.Button>
-            )
-          })}
-          <rb.Form.Control
-            type="number"
-            min={minNumCollaborators}
-            max={99}
-            isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
-            placeholder={t('send.input_num_collaborators_placeholder')}
-            defaultValue=""
-            className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
-              [styles.selected]: usesCustomNumCollaborators,
-            })}
-            onChange={(e) => {
-              setUsesCustomNumCollaborators(true)
-              validateAndSetCustomNumCollaborators(e.target.value)
-            }}
-            onClick={(e) => {
-              // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
-              if (e.target.value !== '') {
-                setUsesCustomNumCollaborators(true)
-                // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
-                validateAndSetCustomNumCollaborators(e.target.value)
-              }
-            }}
-            disabled={disabled}
-          />
-          {usesCustomNumCollaborators && (
-            <rb.Form.Control.Feedback type="invalid">
-              {t('send.error_invalid_num_collaborators', { minNumCollaborators, maxNumCollaborators: 99 })}
-            </rb.Form.Control.Feedback>
-          )}
-        </div>
-      </rb.Form.Group>
-    </rb.Form>
-  )
-}
-
-const enhanceDirectPaymentErrorMessageIfNecessary = async (
-  httpStatus: number,
-  errorMessage: string,
-  onBadRequest: (errorMessage: string) => string
-) => {
-  const tryEnhanceMessage = httpStatus === 400
-  if (tryEnhanceMessage) {
-    return onBadRequest(errorMessage)
-  }
-
-  return errorMessage
-}
-
-const enhanceTakerErrorMessageIfNecessary = async (
-  loadConfigValue: ServiceConfigContextEntry['loadConfigValueIfAbsent'],
-  httpStatus: number,
-  errorMessage: string,
-  onMaxFeeSettingsMissing: (errorMessage: string) => string
-) => {
-  const tryEnhanceMessage = httpStatus === 409
-  if (tryEnhanceMessage) {
-    const abortCtrl = new AbortController()
-
-    const configExists = (section: string, field: string) =>
-      loadConfigValue({
-        signal: abortCtrl.signal,
-        key: { section, field },
-      })
-        .then((val) => val.value !== null)
-        .catch(() => false)
-
-    const maxFeeSettingsPresent = await Promise.all([
-      configExists('POLICY', 'max_cj_fee_rel'),
-      configExists('POLICY', 'max_cj_fee_abs'),
-    ])
-      .then((arr) => arr.every((e) => e))
-      .catch(() => false)
-
-    if (!maxFeeSettingsPresent) {
-      return onMaxFeeSettingsMissing(errorMessage)
-    }
-  }
-
-  return errorMessage
-}
 
 type SweepAccordionToggleProps = {
   eventKey: string
