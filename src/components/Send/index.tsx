@@ -309,7 +309,7 @@ export default function Send({ wallet }: SendProps) {
   ) => Promise<boolean>
 
   const sendPayment: SendPayment = async (sourceJarIndex, destination, amount_sats) => {
-    if (!destination || !amount_sats) {
+    if (!destination || amount_sats === null) {
       setAlert({ variant: 'danger', message: 'Missing destination or amount' })
       return false
     }
@@ -365,7 +365,7 @@ export default function Send({ wallet }: SendProps) {
     counterparties: number
   ) => Promise<boolean>
   const startCoinjoin: StartCoinjoin = async (sourceJarIndex, destination, amount_sats, counterparties) => {
-    if (!destination || !amount_sats) {
+    if (!destination || amount_sats === null) {
       setAlert({ variant: 'danger', message: 'Missing destination or amount' })
       return false
     }
