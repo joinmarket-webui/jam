@@ -555,7 +555,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           }}
         >
           {t('earn.fidelity_bond.confirm_modal.body', {
-            date: new Date(lockDate).toUTCString(),
+            date: new Date(fb.lockdate.toTimestamp(lockDate)).toUTCString(),
             humanReadableDuration: fb.time.humanReadableDuration({
               to: fb.lockdate.toTimestamp(lockDate),
               locale: i18n.resolvedLanguage || i18n.language,

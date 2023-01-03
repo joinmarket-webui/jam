@@ -18,10 +18,11 @@ const ExistingFidelityBond = ({ fidelityBond, children }: PropsWithChildren<Exis
   const { t, i18n } = useTranslation()
 
   const isExpired = useMemo(() => !fb.utxo.isLocked(fidelityBond), [fidelityBond])
-  const humanReadableDuration = useMemo(() => {
-    if (!fidelityBond.locktime) return '-'
+  const humanReadableLockDuration = useMemo(() => {
+    const locktime = fb.utxo.getLocktime(fidelityBond)
+    if (!locktime) return '-'
     return fb.time.humanReadableDuration({
-      to: new Date(fidelityBond.locktime).getTime(),
+      to: locktime,
       locale: i18n.resolvedLanguage || i18n.language,
     })
   }, [i18n, fidelityBond])
@@ -70,7 +71,7 @@ const ExistingFidelityBond = ({ fidelityBond, children }: PropsWithChildren<Exis
                 {t(`earn.fidelity_bond.existing.${isExpired ? 'label_expired_on' : 'label_locked_until'}`)}
               </div>
               <div className={styles.content}>
-                {fidelityBond.locktime} ({humanReadableDuration})
+                {fidelityBond.locktime} ({humanReadableLockDuration})
               </div>
             </div>
           </div>

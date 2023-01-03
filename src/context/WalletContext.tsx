@@ -24,7 +24,9 @@ export type Utxo = {
   confirmations: number
   frozen: boolean
   utxo: Api.UtxoId
-  locktime?: Api.Lockdate
+  // `locktime` in format "yyyy-MM-dd 00:00:00"
+  // NOTE: it is unparsable with safari Date constructor
+  locktime?: string
 }
 
 export type Utxos = Utxo[]

@@ -287,7 +287,7 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
       label: t('earn.fidelity_bond.review_inputs.label_lock_date'),
       content: (
         <>
-          {new Date(lockDate).toUTCString()}(
+          {new Date(fb.lockdate.toTimestamp(lockDate)).toUTCString()} (
           {fb.time.humanReadableDuration({
             to: fb.lockdate.toTimestamp(lockDate),
             locale: i18n.resolvedLanguage || i18n.language,
@@ -357,6 +357,17 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
 const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) => {
   const { t, i18n } = useTranslation()
 
+  const humanReadableLockDuration = useMemo(() => {
+    if (!fbUtxo) return '-'
+
+    const locktime = fb.utxo.getLocktime(fbUtxo)
+    if (!locktime) return '-'
+    return fb.time.humanReadableDuration({
+      to: locktime,
+      locale: i18n.resolvedLanguage || i18n.language,
+    })
+  }, [i18n, fbUtxo])
+
   return (
     <div className="d-flex flex-column gap-3">
       <Done text={t('earn.fidelity_bond.create_fidelity_bond.success_text')} />
@@ -372,12 +383,7 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
                 </div>
                 {fbUtxo.locktime && (
                   <div className={styles.confirmationStepContent}>
-                    {fbUtxo.locktime} (
-                    {fb.time.humanReadableDuration({
-                      to: new Date(fbUtxo.locktime).getTime(),
-                      locale: i18n.resolvedLanguage || i18n.language,
-                    })}
-                    )
+                    {fbUtxo.locktime} ({humanReadableLockDuration})
                   </div>
                 )}
               </div>
