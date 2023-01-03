@@ -1,7 +1,13 @@
-import React from 'react'
 import Sprite from './Sprite'
 
-export default function PageTitle({ title, subtitle, success = false, center = false }) {
+interface PageTitleProps {
+  title: string
+  subtitle?: string
+  success?: boolean
+  center?: boolean
+}
+
+export default function PageTitle({ title, subtitle, success = false, center = false }: PageTitleProps) {
   return (
     <div className={`mb-4 ${center && 'text-center'}`}>
       {success && (
