@@ -73,6 +73,19 @@
     "button_next": "Next",
     "button_complete": "Let's go!"
   },
+  "error_page": {
+    "unknown_error": {
+      "title": "An unknown error has been encountered",
+      "subtitle": "The source of the error could not be determined."
+    },
+    "error_with_details": {
+      "title": "An error has been encountered : (",
+      "subtitle": ""
+    },
+    "heading_reason": "Reason",
+    "heading_stacktrace": "Stacktrace",
+    "report_bug": "Please, <2>open an issue on GitHub</2> for this to be reviewed and for the error to be resolved in an upcoming version."
+  },
   "wallets": {
     "title": "Your Wallets",
     "subtitle_no_wallets": "It looks like you do not have a wallet, yet.",

@@ -56,16 +56,26 @@ export default function App() {
           <>
             <Navbar />
             <rb.Container as="main" className="py-4 py-sm-5">
-              <Layout>
-                <Outlet />
-              </Layout>
+              <Outlet />
             </rb.Container>
             <Footer />
           </>
         }
         errorElement={<ErrorPage />}
       >
-        <Route id="errorBoundary" element={<Outlet />} errorElement={<ErrorPage />}>
+        <Route
+          id="error-boundary"
+          element={
+            <Layout>
+              <Outlet />
+            </Layout>
+          }
+          errorElement={
+            <Layout variant="wide">
+              <ErrorPage />
+            </Layout>
+          }
+        >
           {/**
            * This sections defines all routes that can be displayed, even if the connection
            * to the backend is down, e.g. "create-wallet" shows the seed quiz and it is important
