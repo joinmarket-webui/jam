@@ -45,7 +45,7 @@ If your node system of choice is missing, feel free to integrate it and let us k
 <th style="text-align:center"><img src="docs/assets/umbrel.svg" width="45px" alt="Umbrel Logo" /></th>
 <th style="text-align:center"><img src="docs/assets/citadel.png" width="45px" alt="Citadel Logo" /></th>
 <th style="text-align:center"><img src="docs/assets/mynode.png" width="45px" alt="MyNode Logo" /></th>
-<th style="text-align:center"><img src="docs/assets/start9.jpg" width="45px" alt="Start9 Logo" /></th>
+<th style="text-align:center"><img src="docs/assets/start9.png" width="45px" alt="Start9 Logo" /></th>
 </tr>
 </thead>
 <tbody>
