@@ -14,9 +14,10 @@ import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { clearSession, setSession } from '../session'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import CreateWallet from './CreateWallet'
 import Earn from './Earn'
-import ErrorPage from './ErrorPage'
+import ErrorPage, { ErrorThrowingComponent } from './ErrorPage'
 import Footer from './Footer'
 import Jam from './Jam'
 import Layout from './Layout'
@@ -116,6 +117,9 @@ export default function App() {
                     element={<Settings wallet={currentWallet} stopWallet={stopWallet} />}
                   />
                 </>
+              )}
+              {isDebugFeatureEnabled('errorExamplePage') && (
+                <Route id="error-example" path={routes.__errorExample} element={<ErrorThrowingComponent />} />
               )}
               <Route id="404" path="*" element={<Navigate to={routes.home} replace={true} />} />
             </>

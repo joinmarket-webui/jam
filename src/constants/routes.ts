@@ -8,4 +8,5 @@ export const routes = {
   settings: '/settings',
   wallet: '/wallet',
   createWallet: '/create-wallet',
+  __errorExample: '/error-example',
 }

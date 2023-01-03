@@ -3,6 +3,14 @@ import * as rb from 'react-bootstrap'
 import { useRouteError } from 'react-router-dom'
 import PageTitle from './PageTitle'
 import { t } from 'i18next'
+import { useEffect } from 'react'
+
+export function ErrorThrowingComponent() {
+  useEffect(() => {
+    throw new Error('This error is thrown on purpose. Only to be used for testing.')
+  }, [])
+  return <></>
+}
 
 interface ErrorViewProps {
   title: string
