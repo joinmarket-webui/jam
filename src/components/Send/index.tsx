@@ -51,7 +51,7 @@ type SweepAccordionToggleProps = {
 function SweepAccordionToggle({ eventKey }: SweepAccordionToggleProps) {
   const { t } = useTranslation()
   return (
-    <button type="button" className={styles['accordion-button']} onClick={rb.useAccordionButton(eventKey)}>
+    <button type="button" className={styles.accordionButton} onClick={rb.useAccordionButton(eventKey)}>
       {t('send.button_sweep_amount_breakdown')}
     </button>
   )
@@ -484,16 +484,16 @@ export default function Send({ wallet }: SendProps) {
     if (!accountBalanceOrNull) return null
 
     return (
-      <div className={`${styles['sweep-breakdown']} mt-2`}>
+      <div className={`${styles.sweepBreakdown} mt-2`}>
         <rb.Accordion flush>
           <rb.Accordion.Item eventKey="0">
             <SweepAccordionToggle eventKey="0" />
             <rb.Accordion.Body className="my-4 p-0">
-              <table className={`${styles['sweep-breakdown-table']} table table-sm`}>
+              <table className={`${styles.sweepBreakdownTable} table table-sm`}>
                 <tbody>
                   <tr>
                     <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
-                    <td className={styles['balance-col']}>
+                    <td className={styles.balanceCol}>
                       <Balance
                         valueString={accountBalanceOrNull.calculatedTotalBalanceInSats.toString()}
                         convertToUnit={SATS}
@@ -503,7 +503,7 @@ export default function Send({ wallet }: SendProps) {
                   </tr>
                   <tr>
                     <td>{t('send.sweep_amount_breakdown_frozen_balance')}</td>
-                    <td className={styles['balance-col']}>
+                    <td className={styles.balanceCol}>
                       <Balance
                         valueString={accountBalanceOrNull.calculatedFrozenOrLockedBalanceInSats.toString()}
                         convertToUnit={SATS}
@@ -513,13 +513,13 @@ export default function Send({ wallet }: SendProps) {
                   </tr>
                   <tr>
                     <td>{t('send.sweep_amount_breakdown_estimated_amount')}</td>
-                    <td className={styles['balance-col']}>
+                    <td className={styles.balanceCol}>
                       <Balance valueString={amountFieldValue} convertToUnit={SATS} showBalance={true} />
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <p className={`${styles['sweep-breakdown-paragraph']} mb-0 mt-4`}>
+              <p className={`${styles.sweepBreakdownParagraph} mb-0 mt-4`}>
                 <Trans i18nKey="send.sweep_amount_breakdown_explanation">
                   A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that
                   have been
@@ -527,7 +527,7 @@ export default function Send({ wallet }: SendProps) {
                     href="https://github.com/JoinMarket-Org/joinmarket-clientserver#wallet-features"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={styles['sweep-breakdown-anchor']}
+                    className={styles.sweepBreakdownAnchor}
                   >
                     frozen
                   </a>
@@ -536,7 +536,7 @@ export default function Send({ wallet }: SendProps) {
                     href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={styles['sweep-breakdown-anchor']}
+                    className={styles.sweepBreakdownAnchor}
                   >
                     time-locked
                   </a>
@@ -548,7 +548,7 @@ export default function Send({ wallet }: SendProps) {
                     href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={styles['sweep-breakdown-anchor']}
+                    className={styles.sweepBreakdownAnchor}
                   >
                     JoinMarket documentation
                   </a>
@@ -564,7 +564,11 @@ export default function Send({ wallet }: SendProps) {
 
   return (
     <>
-      <div className={`${isMakerRunning || isCoinjoinInProgress ? styles['service-running'] : ''}`}>
+      <div
+        className={classNames({
+          [styles.serviceRunning]: isMakerRunning || isCoinjoinInProgress,
+        })}
+      >
         <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
         <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
           <>
@@ -647,19 +651,20 @@ export default function Send({ wallet }: SendProps) {
             }}
           />
         )}
-        <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
+
+        <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles.sendForm}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="sourceJarIndex">
             <rb.Form.Label>{t('send.label_source_jar')}</rb.Form.Label>
             {isLoading ? (
               <rb.Placeholder as="div" animation="wave">
-                <rb.Placeholder xs={12} className={styles['input-loader']} />
+                <rb.Placeholder xs={12} className={styles.inputLoader} />
               </rb.Placeholder>
             ) : (
               <rb.Form.Select
                 defaultValue={sourceJarIndex}
                 onChange={(e) => setSourceJarIndex(parseInt(e.target.value, 10))}
                 required
-                className={`${styles['select']} slashed-zeroes`}
+                className={`${styles.select} slashed-zeroes`}
                 isInvalid={!isValidJarIndex(sourceJarIndex)}
                 disabled={isOperationDisabled}
               >
@@ -683,15 +688,15 @@ export default function Send({ wallet }: SendProps) {
             <div className="position-relative">
               {isLoading ? (
                 <rb.Placeholder as="div" animation="wave">
-                  <rb.Placeholder xs={12} className={styles['input-loader']} />
+                  <rb.Placeholder xs={12} className={styles.inputLoader} />
                 </rb.Placeholder>
               ) : (
                 <>
                   <rb.Form.Control
                     name="destination"
                     placeholder={t('send.placeholder_recipient')}
-                    className={classNames('slashed-zeroes', styles['input'], {
-                      [styles['jar-input']]: destinationJar !== null,
+                    className={classNames('slashed-zeroes', styles.input, {
+                      [styles.jarInput]: destinationJar !== null,
                     })}
                     value={destinationJar !== null ? `${jarName(destinationJar)} (${destination})` : destination || ''}
                     required
@@ -714,7 +719,7 @@ export default function Send({ wallet }: SendProps) {
                   {!destinationIsReusedAddress && (
                     <rb.Button
                       variant="outline-dark"
-                      className={styles['button-jar-selector']}
+                      className={styles.buttonJarSelector}
                       onClick={() => {
                         if (destinationJar !== null) {
                           setDestinationJar(null)
@@ -750,7 +755,7 @@ export default function Send({ wallet }: SendProps) {
             <div className="position-relative">
               {isLoading ? (
                 <rb.Placeholder as="div" animation="wave">
-                  <rb.Placeholder xs={12} className={styles['input-loader']} />
+                  <rb.Placeholder xs={12} className={styles.inputLoader} />
                 </rb.Placeholder>
               ) : (
                 <>
@@ -768,18 +773,20 @@ export default function Send({ wallet }: SendProps) {
                   />
                   <rb.Button
                     variant="outline-dark"
-                    className={styles['button-sweep']}
+                    className={styles.buttonSweep}
                     onClick={() => setIsSweep(!isSweep)}
                     disabled={isOperationDisabled}
                   >
-                    {isSweep ? (
-                      <div className={styles['button-sweep-item']}>{t('send.button_clear_sweep')}</div>
-                    ) : (
-                      <div className={styles['button-sweep-item']}>
-                        <Sprite symbol="sweep" width="24px" height="24px" />
-                        {t('send.button_sweep')}
-                      </div>
-                    )}
+                    <div className={styles.buttonSweepItem}>
+                      {isSweep ? (
+                        <>{t('send.button_clear_sweep')}</>
+                      ) : (
+                        <>
+                          <Sprite symbol="sweep" width="24px" height="24px" />
+                          {t('send.button_sweep')}
+                        </>
+                      )}
+                    </div>
                   </rb.Button>
                 </>
               )}
@@ -819,7 +826,7 @@ export default function Send({ wallet }: SendProps) {
           variant={submitButtonOptions.variant}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
-          className={`${styles['button']} ${styles['send-button']} mt-4`}
+          className={classNames(styles.button, styles.sendButton, 'mt-4')}
           form="send-form"
         >
           {isSending ? (
