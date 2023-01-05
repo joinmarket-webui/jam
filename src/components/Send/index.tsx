@@ -104,7 +104,7 @@ export default function Send({ wallet }: SendProps) {
     [walletInfo, isInitializing, waitForUtxosToBeSpent]
   )
 
-  const [destination, setDestination] = useState<string | null>(INITIAL_DESTINATION)
+  const [destination, setDestination] = useState<Api.BitcoinAddress | null>(INITIAL_DESTINATION)
   const [sourceJarIndex, setSourceJarIndex] = useState(
     parseInt(location.state?.account, 10) || INITIAL_SOURCE_JAR_INDEX
   )
@@ -183,8 +183,8 @@ export default function Send({ wallet }: SendProps) {
     }
   }, [isSweep])
 
-  // This callback is responsible for updating the `isLoading` flag while the
-  // wallet is synchronizing. The wallet needs some time after a tx is sent
+  // This callback is responsible for updating `waitForUtxosToBeSpent` while
+  // the wallet is synchronizing. The wallet needs some time after a tx is sent
   // to reflect the changes internally. In order to show the actual balance,
   // all outputs in `waitForUtxosToBeSpent` must have been removed from the
   // wallet's utxo set.
@@ -303,17 +303,11 @@ export default function Send({ wallet }: SendProps) {
     setDestinationIsReusedAddress(false)
   }, [walletInfo, destination])
 
-  type SendPayment = (
-    sourceJarIndex: number,
-    destination: string | null,
-    amount_sats: number | null
-  ) => Promise<boolean>
-
-  const sendPayment: SendPayment = async (sourceJarIndex, destination, amount_sats) => {
-    if (!destination || amount_sats === null) {
-      setAlert({ variant: 'danger', message: 'Missing destination or amount' })
-      return false
-    }
+  const sendPayment = async (
+    sourceJarIndex: JarIndex,
+    destination: Api.BitcoinAddress,
+    amount_sats: Api.AmountSats
+  ) => {
     setAlert(undefined)
     setPaymentSuccessfulInfoAlert(undefined)
     setIsSending(true)
@@ -359,17 +353,12 @@ export default function Send({ wallet }: SendProps) {
     return success
   }
 
-  type StartCoinjoin = (
-    sourceJarIndex: number,
-    destination: string | null,
-    amount_sats: number | null,
-    counterparties: number | null
-  ) => Promise<boolean>
-  const startCoinjoin: StartCoinjoin = async (sourceJarIndex, destination, amount_sats, counterparties) => {
-    if (!destination || amount_sats === null || counterparties === null) {
-      setAlert({ variant: 'danger', message: 'Missing destination or amount' })
-      return false
-    }
+  const startCoinjoin = async (
+    sourceJarIndex: JarIndex,
+    destination: Api.BitcoinAddress,
+    amount_sats: Api.AmountSats,
+    counterparties: number
+  ) => {
     setAlert(undefined)
     setIsSending(true)
 
@@ -447,6 +436,15 @@ export default function Send({ wallet }: SendProps) {
     const isValid = formIsValid
 
     if (isValid) {
+      if (isSweep && amount !== 0) {
+        console.error('Sanity check failed: Sweep amount mismatch. This should not happen.')
+        return
+      }
+      if (!destination || amount === null || (isCoinjoin && numCollaborators === null)) {
+        console.error('Sanity check failed: Form is invalid and is missing required values. This should not happen.')
+        return
+      }
+
       if (!showConfirmSendModal) {
         setShowConfirmSendModal(true)
         return
@@ -454,13 +452,8 @@ export default function Send({ wallet }: SendProps) {
 
       setShowConfirmSendModal(false)
 
-      if (isSweep && amount !== 0) {
-        console.error('Sweep amount mismatch. This should not happen.')
-        return
-      }
-
       const success = isCoinjoin
-        ? await startCoinjoin(sourceJarIndex, destination, amount, numCollaborators)
+        ? await startCoinjoin(sourceJarIndex, destination, amount, numCollaborators!)
         : await sendPayment(sourceJarIndex, destination, amount)
 
       if (success) {
