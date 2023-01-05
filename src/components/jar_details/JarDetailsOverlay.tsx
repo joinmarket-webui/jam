@@ -25,19 +25,15 @@ interface HeaderProps {
   jar: Account
   nextJar: () => void
   previousJar: () => void
-  setTab: (tab: string) => void
   onHide: () => void
   isInitializing: boolean
-  initialTab: string
 }
 
-const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab, isInitializing }: HeaderProps) => {
-  const { t } = useTranslation()
-
+const Header = ({ jar, nextJar, previousJar, onHide, isInitializing }: HeaderProps) => {
   return (
     <>
       <div className="w-100 d-flex flex-column justify-content-between flex-md-row gap-3">
-        <div />
+        <div className="w-25" />
         <div className="d-flex align-items-center">
           <div className="d-flex align-items-center ms-auto me-auto ms-md-0 position-relative">
             <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => previousJar()}>
@@ -59,7 +55,7 @@ const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab, isIniti
             )}
           </div>
         </div>
-        <div className="d-flex ml-auto">
+        <div className={styles.closeButton}>
           <rb.Button variant="link" className="unstyled px-0 ms-auto me-auto me-md-0" onClick={onHide}>
             <Sprite symbol="cancel" width="32" height="32" />
           </rb.Button>
@@ -301,9 +297,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
             jar={jar}
             nextJar={nextJar}
             previousJar={previousJar}
-            setTab={setSelectedTab}
             onHide={props.onHide}
-            initialTab={selectedTab}
             isInitializing={isInitializing}
           />
         </rb.Container>
@@ -311,7 +305,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       <rb.Offcanvas.Body>
         <rb.Container fluid="lg" className="py-3">
           <div className="d-flex align-items-center flex-grow-1 flex-shrink-0 w-100 justify-content-center">
-            <div className="w-25 mb-3">
+            <div className="mb-3">
               <SegmentedTabs
                 name="jarDetailsTab"
                 tabs={tabs}

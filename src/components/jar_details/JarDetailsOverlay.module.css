@@ -105,6 +105,16 @@
     width: 10rem;
     font-size: 0.8rem;
   }
+  .closeButton {
+    display: flex;
+    width: 25%;
+  }
+}
+
+@media only screen and (max-width: 576px) {
+  .closeButton {
+    display: flex;
+  }
 }
 
 :root[data-theme='dark'] .overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
