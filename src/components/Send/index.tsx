@@ -100,8 +100,8 @@ export default function Send({ wallet }: SendProps) {
   )
   const [isInitializing, setIsInitializing] = useState(!isOperationDisabled)
   const isLoading = useMemo(
-    () => isInitializing || waitForUtxosToBeSpent.length > 0,
-    [isInitializing, waitForUtxosToBeSpent]
+    () => !walletInfo || isInitializing || waitForUtxosToBeSpent.length > 0,
+    [walletInfo, isInitializing, waitForUtxosToBeSpent]
   )
 
   const [destination, setDestination] = useState<string | null>(INITIAL_DESTINATION)
@@ -133,7 +133,7 @@ export default function Send({ wallet }: SendProps) {
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
   const submitButtonRef = useRef<HTMLButtonElement>(null)
   const submitButtonOptions = useMemo(() => {
-    if (!isInitializing) {
+    if (!isLoading) {
       if (!isCoinjoin)
         return {
           variant: 'danger',
@@ -150,7 +150,7 @@ export default function Send({ wallet }: SendProps) {
       variant: 'dark',
       text: t('send.button_send'),
     }
-  }, [isInitializing, isCoinjoin, coinjoinPreconditionSummary, t])
+  }, [isLoading, isCoinjoin, coinjoinPreconditionSummary, t])
 
   useEffect(() => {
     if (
