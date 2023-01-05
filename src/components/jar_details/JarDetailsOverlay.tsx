@@ -13,7 +13,7 @@ import SegmentedTabs from '../SegmentedTabs'
 import UtxoDetailModal from './UtxoDetailModule'
 import { UtxoList } from './UtxoList'
 import { DisplayBranchHeader, DisplayBranchBody } from './DisplayBranch'
-import { jarInitial } from '../jars/Jar'
+import { jarInitial, jarName } from '../jars/Jar'
 import styles from './JarDetailsOverlay.module.css'
 
 const TABS = {
@@ -34,53 +34,32 @@ interface HeaderProps {
 const Header = ({ jar, nextJar, previousJar, setTab, onHide, initialTab, isInitializing }: HeaderProps) => {
   const { t } = useTranslation()
 
-  const tabs = [
-    { label: t('jar_details.title_tab_utxos'), value: TABS.UTXOS },
-    { label: t('jar_details.title_tab_jar_details'), value: TABS.JAR_DETAILS },
-  ]
-
   return (
     <>
-      <div className="w-100 d-flex flex-column flex-md-row gap-3">
-        <div className="d-flex align-items-center flex-1">
-          <div className="d-flex align-items-center ms-auto me-auto ms-md-0">
+      <div className="w-100 d-flex flex-column justify-content-between flex-md-row gap-3">
+        <div />
+        <div className="d-flex align-items-center">
+          <div className="d-flex align-items-center ms-auto me-auto ms-md-0 position-relative">
             <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => previousJar()}>
               <Sprite symbol="caret-left" width="20" height="20" />
             </rb.Button>
             <div className={styles.accountStepperTitle}>
               <Sprite symbol="jar-open-fill-50" width="20" height="20" />
               <span className="slashed-zeroes">
-                <strong>{jarInitial(Number(jar.account))}</strong>
+                <strong>{jarName(Number(jar.account))}</strong>
               </span>
             </div>
             <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => nextJar()}>
               <Sprite symbol="caret-right" width="20" height="20" />
             </rb.Button>
             {isInitializing && (
-              <>
-                {
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="ms-3"
-                  />
-                }
-              </>
+              <div className="position-absolute start-100">
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="ms-3" />
+              </div>
             )}
           </div>
         </div>
-        <div className="d-flex align-items-center flex-grow-1 flex-shrink-0">
-          <SegmentedTabs
-            name="jarDetailsTab"
-            tabs={tabs}
-            onChange={(tab, checked) => checked && setTab(tab.value)}
-            initialValue={initialTab}
-          />
-        </div>
-        <div className="d-flex flex-1">
+        <div className="d-flex ml-auto">
           <rb.Button variant="link" className="unstyled px-0 ms-auto me-auto me-md-0" onClick={onHide}>
             <Sprite symbol="cancel" width="32" height="32" />
           </rb.Button>
@@ -114,6 +93,11 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const [isLoadingUnfreeze, setIsLoadingUnfreeze] = useState(false)
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
   const [detailUtxo, setDetailUtxo] = useState<Utxo>()
+
+  const tabs = [
+    { label: t('jar_details.title_tab_utxos'), value: TABS.UTXOS },
+    { label: t('jar_details.title_tab_jar_details'), value: TABS.JAR_DETAILS },
+  ]
 
   const jar = useMemo(() => props.jars[jarIndex], [props.jars, jarIndex])
   const utxos = useMemo(() => props.walletInfo.utxosByJar[jarIndex] || [], [props.walletInfo, jarIndex])
@@ -326,6 +310,17 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
         <rb.Container fluid="lg" className="py-3">
+          <div className="d-flex align-items-center flex-grow-1 flex-shrink-0 w-100 justify-content-center">
+            <div className="w-25 mb-3">
+              <SegmentedTabs
+                name="jarDetailsTab"
+                tabs={tabs}
+                onChange={(tab, checked) => checked && setSelectedTab(tab.value)}
+                initialValue={selectedTab}
+                bgLightDark={true}
+              />
+            </div>
+          </div>
           {alert && (
             <rb.Row>
               <rb.Col>
