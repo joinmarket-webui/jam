@@ -46,6 +46,7 @@ If your node system of choice is missing, feel free to integrate it and let us k
 <th style="text-align:center"><img src="docs/assets/citadel.png" width="45px" alt="Citadel Logo" /></th>
 <th style="text-align:center"><img src="docs/assets/mynode.png" width="45px" alt="MyNode Logo" /></th>
 <th style="text-align:center"><img src="docs/assets/start9.png" width="45px" alt="Start9 Logo" /></th>
+<th style="text-align:center"><img src="docs/assets/raspibolt.png" width="45px" alt="RaspiBolt Logo" /></th>
 </tr>
 </thead>
 <tbody>
@@ -55,6 +56,7 @@ If your node system of choice is missing, feel free to integrate it and let us k
 <td style="text-align:center"><a href="https://runcitadel.space">Citadel</a>: v0.0.1</td>
 <td style="text-align:center"><a href="https://mynodebtc.com">MyNode</a>: v0.3.05</td>
 <td style="text-align:center"><a href="https://start9.com">Start9</a>: v0.3.3</td>
+<td style="text-align:center"><a href="https://raspibolt.org">RaspiBolt</a>: v3</td>
 </tr>
 </tbody>
 </table>
