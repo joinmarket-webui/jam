@@ -37,7 +37,6 @@ interface SegmentedTabsProps {
   onChange: (tab: SegmentedTab, checked: boolean) => void
   initialValue?: string
   disabled?: boolean
-  bgLightDark?: boolean
 }
 
 export default function SegmentedTabs({
@@ -46,7 +45,6 @@ export default function SegmentedTabs({
   onChange,
   initialValue,
   disabled = false,
-  bgLightDark = false,
 }: SegmentedTabsProps) {
   const _onChange = (e: React.ChangeEvent<HTMLInputElement>, tab: SegmentedTab) => {
     e.stopPropagation()
@@ -54,7 +52,7 @@ export default function SegmentedTabs({
   }
 
   return (
-    <div className={[styles[bgLightDark ? 'segmented-tabs-lightdark' : ''], styles['segmented-tabs']].join(' ')}>
+    <div className={['segmented-tabs-hook', styles['segmented-tabs']].join(' ')}>
       <div className="d-flex gap-1">
         {tabs.map((tab, index) => {
           return (

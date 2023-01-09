@@ -311,7 +311,6 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                 tabs={tabs}
                 onChange={(tab, checked) => checked && setSelectedTab(tab.value)}
                 initialValue={selectedTab}
-                bgLightDark={true}
               />
             </div>
           </div>

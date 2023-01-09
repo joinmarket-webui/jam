@@ -38,6 +38,10 @@
   color: var(--bs-body-color);
 }
 
+:root[data-theme='dark'] .overlayContainer :global .segmented-tabs-hook {
+  background-color: var(--bs-gray-900);
+}
+
 .overlayContainer .tabContainer {
   display: flex;
   flex-direction: column;
