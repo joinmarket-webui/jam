@@ -87,6 +87,17 @@ const utxoIcon = (utxo: Utxo, t: TFunction<'translation', undefined>) => {
   return <></>
 }
 
+const utxoConfirmations = (utxo: Utxo) => {
+  const symbol = `confs-${utxo.confirmations >= 6 ? 'full' : utxo.confirmations}`
+
+  return (
+    <div className={classNames(styles.utxoConfirmations, styles[`utxoConfirmations-${utxo.confirmations}`])}>
+      <Sprite symbol={symbol} width="20" height="20" />
+      <div>{utxo.confirmations}</div>
+    </div>
+  )
+}
+
 const SORT_KEYS = {
   frozenOrLocked: 'FROZEN_OR_LOCKED',
   value: 'VALUE',
@@ -145,7 +156,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
   const settings = useSettings()
 
   const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
-    const { id, _icon, _tags, ...utxo } = tableNode
+    const { id, _icon, _tags, _confs, ...utxo } = tableNode
 
     return utxo as Utxo
   }
@@ -157,6 +168,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
         id: utxo.utxo,
         _icon: utxoIcon(utxo, t),
         _tags: utxoTags(utxo, walletInfo, t),
+        _confs: utxoConfirmations(utxo),
       })),
     }),
     [utxos, walletInfo, t]
@@ -294,23 +306,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                         <code>{utxo.address}</code>
                       </div>
                     </Cell>
-                    <Cell>
-                      <div
-                        className={classNames(
-                          styles.utxoConfirmations,
-                          styles[`utxoConfirmations-${utxo.confirmations}`]
-                        )}
-                      >
-                        {item.confirmations === 0 && <Sprite symbol="confs-0" width="20" height="20" />}
-                        {item.confirmations === 1 && <Sprite symbol="confs-1" width="20" height="20" />}
-                        {item.confirmations === 2 && <Sprite symbol="confs-2" width="20" height="20" />}
-                        {item.confirmations === 3 && <Sprite symbol="confs-3" width="20" height="20" />}
-                        {item.confirmations === 4 && <Sprite symbol="confs-4" width="20" height="20" />}
-                        {item.confirmations === 5 && <Sprite symbol="confs-5" width="20" height="20" />}
-                        {item.confirmations >= 6 && <Sprite symbol="confs-full" width="20" height="20" />}
-                        <div>{item.confirmations}</div>
-                      </div>
-                    </Cell>
+                    <Cell>{item._confs}</Cell>
                     <Cell>
                       <div className={styles.utxoTagList}>
                         {item._tags.map((tag: Tag, index: number) => (
