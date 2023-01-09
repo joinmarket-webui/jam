@@ -31,10 +31,10 @@ const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
 type Tag = { tag: string; color: string }
 
 const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation', undefined>): Tag[] => {
-  var rawStatus = walletInfo.addressSummary[utxo.address]?.status
+  const rawStatus = walletInfo.addressSummary[utxo.address]?.status
 
-  var status: string | null = null
-  var locktime: string | undefined = utxo.locktime
+  let status: string | null = null
+  const locktime: string | undefined = utxo.locktime
 
   // If a UTXO is locked, it's status will be the locktime.
   // Since we already have the locktime (see above), we don't need to parse it again.
@@ -48,7 +48,7 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
     }
   }
 
-  let tags: Tag[] = []
+  const tags: Tag[] = []
 
   if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
   if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
@@ -79,6 +79,7 @@ const SORT_KEYS = {
   frozenOrLocked: 'FROZEN_OR_LOCKED',
   value: 'VALUE',
   confirmations: 'CONFIRMATIONS',
+  tags: 'TAGS',
 }
 
 const TABLE_THEME = {
@@ -207,6 +208,8 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
           }),
         [SORT_KEYS.value]: (array) => array.sort((a, b) => a.value - b.value),
         [SORT_KEYS.confirmations]: (array) => array.sort((a, b) => a.confirmations - b.confirmations),
+        [SORT_KEYS.tags]: (array) =>
+          array.sort((a, b) => (String(a._tags[0]?.tag) || 'z').localeCompare(String(b._tags[0]?.tag) || 'z')),
       },
     }
   )
@@ -236,7 +239,9 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                 <HeaderCellSort sortKey={SORT_KEYS.confirmations}>
                   {t('jar_details.utxo_list.column_title_confirmations')}
                 </HeaderCellSort>
-                <HeaderCell>{t('jar_details.utxo_list.column_title_label_and_status')}</HeaderCell>
+                <HeaderCellSort sortKey={SORT_KEYS.tags}>
+                  {t('jar_details.utxo_list.column_title_label_and_status')}
+                </HeaderCellSort>
                 <HeaderCell></HeaderCell>
               </HeaderRow>
             </Header>
