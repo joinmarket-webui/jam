@@ -68,6 +68,10 @@
   background-color: var(--bs-gray-100);
 }
 
+.overlayContainer .tabContainer .utxoListTitleBar :global .balance-value {
+  font-weight: 600;
+}
+
 @media only screen and (min-width: 992px) {
   .overlayContainer .tabContainer .utxoListTitleBar {
     padding: 0.8rem 1rem;

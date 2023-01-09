@@ -42,7 +42,7 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
 
   let status: string | null = null
 
-  // If a UTXO is locked, it's status will be the locktime, with other states
+  // If a UTXO is locked, it's `status` will be the locktime, with other states
   // appended in brackets, e.g. `2099-12-01 [LOCKED] [FROZEN]`
   if (rawStatus && !utxo.locktime) {
     const indexOfOtherTag = rawStatus.indexOf('[')

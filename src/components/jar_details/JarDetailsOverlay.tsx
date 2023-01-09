@@ -226,9 +226,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       })
   }
 
-  const utxoListTitle = () => {
+  const utxoListTitle = useMemo(() => {
     return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(jarIndex) })
-  }
+  }, [utxos, jarIndex, t])
 
   const refreshButton = () => {
     return (
@@ -341,7 +341,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                       <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column">
                         <div className="d-flex justify-content-center align-items-center gap-2">
                           {refreshButton()}
-                          {utxoListTitle()}
+                          {utxoListTitle}
                         </div>
                         <div>
                           <Trans i18nKey="jar_details.utxo_list.text_balance_sum_total">
