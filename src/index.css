@@ -561,7 +561,7 @@ h2 {
 
 /* Theme overrides */
 :root[data-theme='dark'] {
-  --bs-body-color-rgb: var(--bs-white);
+  --bs-body-color-rgb: var(--bs-white-rgb);
   --bs-body-bg-rgb: 33, 37, 41;
   --bs-body-color: var(--bs-white);
   --bs-body-bg: var(--bs-gray-900);

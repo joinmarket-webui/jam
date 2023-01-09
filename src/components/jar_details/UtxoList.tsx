@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import classnames from 'classnames'
+import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
@@ -133,7 +133,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
   const settings = useSettings()
 
   const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
-    const { id, ...utxo } = tableNode
+    const { id, _icon, _tags, ...utxo } = tableNode
 
     return utxo as Utxo
   }
@@ -245,7 +245,13 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
               {tableList.map((item) => {
                 const utxo = toUtxo(item)
                 return (
-                  <Row key={item.id} item={item}>
+                  <Row
+                    key={item.id}
+                    item={item}
+                    className={classNames({
+                      [styles.frozen]: utxo.frozen,
+                    })}
+                  >
                     <CellSelect item={item} />
                     <Cell>{item._icon}</Cell>
                     <Cell>
@@ -260,7 +266,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                     </Cell>
                     <Cell>
                       <div
-                        className={classnames(
+                        className={classNames(
                           styles.utxoConfirmations,
                           styles[`utxoConfirmations-${utxo.confirmations}`]
                         )}
@@ -278,7 +284,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                     <Cell>
                       <div className={styles.utxoTagList}>
                         {item._tags.map((tag: Tag, index: number) => (
-                          <div key={index} className={classnames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
+                          <div key={index} className={classNames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
                             <div />
                             <div>{tag.tag}</div>
                           </div>
