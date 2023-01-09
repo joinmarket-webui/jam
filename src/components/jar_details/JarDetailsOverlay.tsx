@@ -33,29 +33,27 @@ const Header = ({ jar, nextJar, previousJar, onHide, isInitializing }: HeaderPro
   return (
     <>
       <div className="w-100 d-flex flex-column justify-content-between flex-md-row gap-3">
-        <div className="w-25" />
-        <div className="d-flex align-items-center">
-          <div className="d-flex align-items-center ms-auto me-auto ms-md-0 position-relative">
-            <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => previousJar()}>
-              <Sprite symbol="caret-left" width="20" height="20" />
-            </rb.Button>
-            <div className={styles.accountStepperTitle}>
-              <Sprite symbol="jar-open-fill-50" width="20" height="20" />
-              <span className="slashed-zeroes">
-                <strong>{jarName(Number(jar.account))}</strong>
-              </span>
-            </div>
-            <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => nextJar()}>
-              <Sprite symbol="caret-right" width="20" height="20" />
-            </rb.Button>
-            {isInitializing && (
-              <div className="position-absolute start-100">
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="ms-3" />
-              </div>
-            )}
+        <div className="d-flex flex-1" />
+        <div className="d-flex justify-content-center align-items-center">
+          <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => previousJar()}>
+            <Sprite symbol="caret-left" width="20" height="20" />
+          </rb.Button>
+          <div className={styles.accountStepperTitle}>
+            <Sprite symbol="jar-open-fill-50" width="20" height="20" />
+            <span className="slashed-zeroes">
+              <strong>{jarName(Number(jar.account))}</strong>
+            </span>
           </div>
+          <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => nextJar()}>
+            <Sprite symbol="caret-right" width="20" height="20" />
+          </rb.Button>
+          {isInitializing && (
+            <div className="position-absolute start-100">
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="ms-3" />
+            </div>
+          )}
         </div>
-        <div className={styles.closeButton}>
+        <div className="d-flex flex-1">
           <rb.Button variant="link" className="unstyled px-0 ms-auto me-auto me-md-0" onClick={onHide}>
             <Sprite symbol="cancel" width="32" height="32" />
           </rb.Button>

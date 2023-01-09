@@ -39,13 +39,7 @@ interface SegmentedTabsProps {
   disabled?: boolean
 }
 
-export default function SegmentedTabs({
-  name,
-  tabs,
-  onChange,
-  initialValue,
-  disabled = false,
-}: SegmentedTabsProps) {
+export default function SegmentedTabs({ name, tabs, onChange, initialValue, disabled = false }: SegmentedTabsProps) {
   const _onChange = (e: React.ChangeEvent<HTMLInputElement>, tab: SegmentedTab) => {
     e.stopPropagation()
     onChange(tab, e.currentTarget.checked)
