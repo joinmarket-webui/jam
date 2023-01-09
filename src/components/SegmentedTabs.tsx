@@ -46,7 +46,7 @@ export default function SegmentedTabs({ name, tabs, onChange, initialValue, disa
   }
 
   return (
-    <div className={styles['segmented-tabs']}>
+    <div className={['segmented-tabs-hook', styles['segmented-tabs']].join(' ')}>
       <div className="d-flex gap-1">
         {tabs.map((tab, index) => {
           return (
