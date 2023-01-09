@@ -50,7 +50,6 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
 
   let tags: Tag[] = []
 
-  if (utxo.frozen) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_frozen'), color: 'frozen' })
   if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
   if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
   if (fb.utxo.isLocked(utxo) && locktime)

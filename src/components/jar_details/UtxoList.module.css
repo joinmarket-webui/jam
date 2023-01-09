@@ -58,11 +58,6 @@
   padding: 0.1rem 0.3rem;
 }
 
-.utxoList .utxoTagList > .utxoTag.utxoTag-frozen {
-  color: var(--bs-blue);
-  background-color: rgba(13, 110, 253, 0.1);
-  border-color: var(--bs-blue);
-}
 .utxoList .utxoTagList > .utxoTag.utxoTag-success {
   color: var(--bs-success);
   background-color: rgba(var(--bs-success-rgb), 0.1);
