@@ -50,7 +50,7 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
 
   let tags: Tag[] = []
 
-  if (utxo.frozen) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_frozen'), color: 'normal' })
+  if (utxo.frozen) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_frozen'), color: 'frozen' })
   if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
   if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
   if (fb.utxo.isLocked(utxo) && locktime)
@@ -285,8 +285,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                       <div className={styles.utxoTagList}>
                         {item._tags.map((tag: Tag, index: number) => (
                           <div key={index} className={classNames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
-                            <div />
-                            <div>{tag.tag}</div>
+                            {tag.tag}
                           </div>
                         ))}
                       </div>
