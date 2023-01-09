@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnames from 'classnames'
 import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useRowSelect, HeaderCellSelect, CellSelect, SelectTypes } from '@table-library/react-table-library/select'
@@ -25,6 +26,54 @@ const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
   'change-out': 'warning',
   'non-cj-change': 'normal',
   deposit: 'normal',
+}
+
+type Tag = { tag: string; color: string }
+
+const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation', undefined>): Tag[] => {
+  var rawStatus = walletInfo.addressSummary[utxo.address]?.status
+
+  var status: string | null = null
+  var locktime: string | undefined = utxo.locktime
+
+  // If a UTXO is locked, it's status will be the locktime.
+  // Since we already have the locktime (see above), we don't need to parse it again.
+  if (rawStatus && !utxo.locktime) {
+    const indexOfOtherTag = rawStatus.indexOf('[')
+
+    if (indexOfOtherTag !== -1) {
+      status = rawStatus.substring(0, indexOfOtherTag).trim()
+    } else {
+      status = rawStatus
+    }
+  }
+
+  let tags: Tag[] = []
+
+  if (utxo.frozen) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_frozen'), color: 'normal' })
+  if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
+  if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
+  if (fb.utxo.isLocked(utxo) && locktime)
+    tags.push({ tag: t('jar_details.utxo_list.utxo_tag_locktime', { locktime }), color: 'normal' })
+
+  return tags
+}
+
+const utxoIcon = (utxo: Utxo) => {
+  if (fb.utxo.isFidelityBond(utxo)) {
+    return (
+      <div className={styles.utxoIcon}>
+        <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
+      </div>
+    )
+  } else if (utxo.frozen) {
+    return (
+      <div className={styles.utxoIcon}>
+        <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
+      </div>
+    )
+  }
+  return <></>
 }
 
 const SORT_KEYS = {
@@ -89,40 +138,16 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
     return utxo as Utxo
   }
 
-  const utxoTags = (utxo: Utxo, walletInfo: WalletInfo) => {
-    var rawStatus = walletInfo.addressSummary[utxo.address]?.status
-
-    var status: string | null = null
-    var locktime: string | undefined = utxo.locktime
-
-    // If a UTXO is locked, it's status will be the locktime.
-    // Since we already have the locktime (see above), we don't need to parse it again.
-    if (rawStatus && !utxo.locktime) {
-      const indexOfOtherTag = rawStatus.indexOf('[')
-
-      if (indexOfOtherTag !== -1) {
-        status = rawStatus.substring(0, indexOfOtherTag).trim()
-      } else {
-        status = rawStatus
-      }
-    }
-
-    let tags = []
-
-    if (utxo.frozen) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_frozen'), color: 'normal' })
-    if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
-    if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
-    if (fb.utxo.isLocked(utxo) && locktime)
-      tags.push({ tag: t('jar_details.utxo_list.utxo_tag_locktime', { locktime }), color: 'normal' })
-
-    return tags
-  }
-
   const tableData: TableTypes.Data = useMemo(
     () => ({
-      nodes: utxos.map((utxo: Utxo) => ({ ...utxo, id: utxo.utxo })),
+      nodes: utxos.map((utxo: Utxo) => ({
+        ...utxo,
+        id: utxo.utxo,
+        _icon: utxoIcon(utxo),
+        _tags: utxoTags(utxo, walletInfo, t),
+      })),
     }),
-    [utxos]
+    [utxos, walletInfo, t]
   )
 
   const tableTheme = useTheme(TABLE_THEME)
@@ -187,23 +212,6 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
     }
   )
 
-  const utxoIcon = (utxo: Utxo) => {
-    if (fb.utxo.isFidelityBond(utxo)) {
-      return (
-        <div className={styles.utxoIcon}>
-          <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
-        </div>
-      )
-    } else if (utxo.frozen) {
-      return (
-        <div className={styles.utxoIcon}>
-          <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
-        </div>
-      )
-    }
-    return <></>
-  }
-
   return (
     <div className={styles.utxoList}>
       <Table
@@ -239,7 +247,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                 return (
                   <Row key={item.id} item={item}>
                     <CellSelect item={item} />
-                    <Cell>{utxoIcon(utxo)}</Cell>
+                    <Cell>{item._icon}</Cell>
                     <Cell>
                       <Balance
                         valueString={utxo.value.toString()}
@@ -269,7 +277,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                     </Cell>
                     <Cell>
                       <div className={styles.utxoTagList}>
-                        {utxoTags(utxo, walletInfo).map((tag, index) => (
+                        {item._tags.map((tag: Tag, index: number) => (
                           <div key={index} className={classnames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
                             <div />
                             <div>{tag.tag}</div>
