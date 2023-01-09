@@ -19,6 +19,12 @@ import Balance from '../Balance'
 import TablePagination from '../TablePagination'
 import styles from './UtxoList.module.css'
 
+const withTooltip = ({ node, tooltip }: { node: React.ReactElement; tooltip: React.ReactElement }) => {
+  return (
+    <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
+  )
+}
+
 const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
   new: 'normal',
   used: 'normal',
@@ -35,10 +41,9 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
   const rawStatus = walletInfo.addressSummary[utxo.address]?.status
 
   let status: string | null = null
-  const locktime: string | undefined = utxo.locktime
 
-  // If a UTXO is locked, it's status will be the locktime.
-  // Since we already have the locktime (see above), we don't need to parse it again.
+  // If a UTXO is locked, it's status will be the locktime, with other states
+  // appended in brackets, e.g. `2099-12-01 [LOCKED] [FROZEN]`
   if (rawStatus && !utxo.locktime) {
     const indexOfOtherTag = rawStatus.indexOf('[')
 
@@ -53,18 +58,24 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
 
   if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
   if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
-  if (fb.utxo.isLocked(utxo) && locktime)
-    tags.push({ tag: t('jar_details.utxo_list.utxo_tag_locktime', { locktime }), color: 'normal' })
-
+  if (fb.utxo.isLocked(utxo) && utxo.locktime)
+    tags.push({ tag: t('jar_details.utxo_list.utxo_tag_locked'), color: 'normal' })
   return tags
 }
 
-const utxoIcon = (utxo: Utxo) => {
+const utxoIcon = (utxo: Utxo, t: TFunction<'translation', undefined>) => {
   if (fb.utxo.isFidelityBond(utxo)) {
     return (
-      <div className={styles.utxoIcon}>
-        <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
-      </div>
+      <>
+        {withTooltip({
+          node: (
+            <div className={styles.utxoIcon}>
+              <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
+            </div>
+          ),
+          tooltip: <div>{t('jar_details.utxo_list.utxo_tooltip_locktime', { locktime: utxo.locktime })}</div>,
+        })}
+      </>
     )
   } else if (utxo.frozen) {
     return (
@@ -74,12 +85,6 @@ const utxoIcon = (utxo: Utxo) => {
     )
   }
   return <></>
-}
-
-const withTooltip = ({ node, tooltip }: { node: React.ReactElement; tooltip: React.ReactElement }) => {
-  return (
-    <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
-  )
 }
 
 const SORT_KEYS = {
@@ -150,7 +155,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
       nodes: utxos.map((utxo: Utxo) => ({
         ...utxo,
         id: utxo.utxo,
-        _icon: utxoIcon(utxo),
+        _icon: utxoIcon(utxo, t),
         _tags: utxoTags(utxo, walletInfo, t),
       })),
     }),
