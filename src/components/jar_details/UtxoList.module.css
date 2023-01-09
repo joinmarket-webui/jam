@@ -20,6 +20,22 @@
   color: var(--bs-blue);
 }
 
+.utxoList tr .quickFreezeUnfreezeBtn {
+  display: none;
+  text-decoration: none;
+}
+
+.utxoList tr:not(.locked):hover .quickFreezeUnfreezeBtn {
+  display: block;
+}
+
+.utxoList tr .quickFreezeUnfreezeBtn {
+  color: var(--bs-blue);
+}
+.utxoList tr.frozen .quickFreezeUnfreezeBtn {
+  color: var(--bs-red);
+}
+
 .utxoList .utxoIcon > .iconLocked {
   margin-bottom: 3px;
 }

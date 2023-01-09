@@ -63,6 +63,23 @@ const Header = ({ jar, nextJar, previousJar, onHide, isInitializing }: HeaderPro
   )
 }
 
+/**
+ * Always allow freezing, but only allow unfreezing of non-timelocked UTXOs.
+ *
+ * Expired, unfrozen FBs cannot be used in taker or maker operation. Hence,
+ * unfreezing of FBs is forbidden in this component. The FB should be spent
+ * (unfreeze and sweep) via other mechanisms (_not_ in this component).
+ *
+ * @param utxo UTXO to check whether freez/unfreeze is allowed
+ * @returns true when UTXO can be frozen/unfrozen
+ */
+const canBeFrozenOrUnfrozen = (utxo: Utxo) => {
+  const isUnfreezeEnabled = !fb.utxo.isFidelityBond(utxo)
+  const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
+
+  return allowedToExecute
+}
+
 interface JarDetailsOverlayProps {
   jars: Account[]
   initialJarIndex: JarIndex
@@ -158,23 +175,6 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     [serviceInfo]
   )
 
-  /**
-   * Always allow freezing, but only allow unfreezing of non-timelocked UTXOs.
-   *
-   * Expired, unfrozen FBs cannot be used in taker or maker operation. Hence,
-   * unfreezing of FBs is forbidden in this component. The FB should be spent
-   * (unfreeze and sweep) via other mechanisms (_not_ in this component).
-   *
-   * @param utxo UTXO to check whether freez/unfreeze is allowed
-   * @returns true when UTXO can be frozen/unfrozen
-   */
-  const canBeFrozenOrUnfrozen = (utxo: Utxo) => {
-    const isUnfreezeEnabled = !fb.utxo.isFidelityBond(utxo)
-    const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
-
-    return allowedToExecute
-  }
-
   const refreshUtxos = async () => {
     if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
 
@@ -193,10 +193,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => abortCtrl.abort()
   }
 
-  const changeSelectedUtxoFreeze = async (freeze: boolean) => {
+  const changeUtxoFreezeState = async (utxos: Utxo[], freeze: boolean) => {
     if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning) return
 
-    if (selectedUtxos.length <= 0) return
+    if (utxos.length <= 0) return
 
     setAlert(undefined)
     freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
@@ -205,7 +205,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
     const { name: walletName, token } = props.wallet
 
-    const freezeCalls = selectedUtxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
+    const freezeCalls = utxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
       Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
         if (!res.ok) {
           return Api.Helper.throwError(
@@ -216,8 +216,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       })
     )
 
-    Promise.all(freezeCalls)
+    return Promise.all(freezeCalls)
       .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
+      .then((_) => {})
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
@@ -259,7 +260,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         disabled={isDisabled}
         variant="light"
         onClick={() => {
-          changeSelectedUtxoFreeze(freeze)
+          changeUtxoFreezeState(selectedUtxos, freeze)
         }}
       >
         {isLoading ? (
@@ -383,6 +384,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           selectState={{ ids: selectedUtxoIds }}
                           setSelectedUtxoIds={setSelectedUtxoIds}
                           setDetailUtxo={setDetailUtxo}
+                          toggleFreezeState={(utxo: Utxo) => changeUtxoFreezeState([utxo], !utxo.frozen)}
                         />
                       </div>
                     )}

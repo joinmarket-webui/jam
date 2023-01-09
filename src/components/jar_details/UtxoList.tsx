@@ -107,7 +107,7 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 3fr 6rem 3fr 1fr;
+    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 3fr 1fr 6rem 3fr 1fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -118,7 +118,10 @@ const TABLE_THEME = {
       display: flex;
       justify-content: end;
     }
-    &:nth-of-type(5) button {
+    &:nth-of-type(5) {
+      text-align: center;
+    }
+    &:nth-of-type(6) button {
       display: flex;
       justify-content: center;
     }
@@ -130,7 +133,7 @@ const TABLE_THEME = {
     &:nth-of-type(3) {
       text-align: right;
     }
-    &:nth-of-type(5) > div {
+    &:nth-of-type(6) > div {
       display: flex;
       justify-content: center;
     }
@@ -143,23 +146,31 @@ const TABLE_THEME = {
   `,
 }
 
+const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
+  const { id, _icon, _tags, _confs, ...utxo } = tableNode
+
+  return utxo as Utxo
+}
+
 interface UtxoListProps {
   utxos: Array<Utxo>
   walletInfo: WalletInfo
   selectState: State
   setSelectedUtxoIds: (selectedUtxoIds: Array<string>) => void
   setDetailUtxo: (utxo: Utxo) => void
+  toggleFreezeState: (utxo: Utxo) => Promise<void>
 }
 
-const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetailUtxo }: UtxoListProps) => {
+const UtxoList = ({
+  utxos,
+  walletInfo,
+  selectState,
+  setSelectedUtxoIds,
+  setDetailUtxo,
+  toggleFreezeState,
+}: UtxoListProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
-
-  const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
-    const { id, _icon, _tags, _confs, ...utxo } = tableNode
-
-    return utxo as Utxo
-  }
 
   const tableData: TableTypes.Data = useMemo(
     () => ({
@@ -260,6 +271,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                   {t('jar_details.utxo_list.column_title_balance')}
                 </HeaderCellSort>
                 <HeaderCell>{t('jar_details.utxo_list.column_title_address')}</HeaderCell>
+                <HeaderCell></HeaderCell>
                 <HeaderCellSort sortKey={SORT_KEYS.confirmations}>
                   {t('jar_details.utxo_list.column_title_confirmations')}
                 </HeaderCellSort>
@@ -278,6 +290,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                     item={item}
                     className={classNames({
                       [styles.frozen]: utxo.frozen,
+                      [styles.locked]: fb.utxo.isLocked(utxo),
                     })}
                   >
                     <CellSelect item={item} />
@@ -305,6 +318,17 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                       <div className="d-none d-xl-block">
                         <code>{utxo.address}</code>
                       </div>
+                    </Cell>
+                    <Cell
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        toggleFreezeState(utxo)
+                      }}
+                    >
+                      <a className={styles.quickFreezeUnfreezeBtn}>
+                        <Sprite symbol="snowflake" width="20" height="20" />
+                      </a>
                     </Cell>
                     <Cell>{item._confs}</Cell>
                     <Cell>
