@@ -13,6 +13,7 @@ import { useTheme } from '@table-library/react-table-library/theme'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo, WalletInfo } from '../../context/WalletContext'
 import * as fb from '../fb/utils'
+import { shortenStringMiddle } from '../../utils'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import TablePagination from '../TablePagination'
@@ -75,6 +76,12 @@ const utxoIcon = (utxo: Utxo) => {
   return <></>
 }
 
+const withTooltip = ({ node, tooltip }: { node: React.ReactElement; tooltip: React.ReactElement }) => {
+  return (
+    <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
+  )
+}
+
 const SORT_KEYS = {
   frozenOrLocked: 'FROZEN_OR_LOCKED',
   value: 'VALUE',
@@ -84,7 +91,7 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 4fr 6rem 3fr 1fr;
+    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 3fr 6rem 3fr 1fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -266,7 +273,21 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                       />
                     </Cell>
                     <Cell>
-                      <code>{utxo.address}</code>
+                      <div className="d-block d-lg-none">
+                        {withTooltip({
+                          node: <code>{shortenStringMiddle(utxo.address, 16)}</code>,
+                          tooltip: <div className="break-word">{utxo.address}</div>,
+                        })}
+                      </div>
+                      <div className="d-none d-lg-block d-xl-none">
+                        {withTooltip({
+                          node: <code>{shortenStringMiddle(utxo.address, 32)}</code>,
+                          tooltip: <div className="break-word">{utxo.address}</div>,
+                        })}
+                      </div>
+                      <div className="d-none d-xl-block">
+                        <code>{utxo.address}</code>
+                      </div>
                     </Cell>
                     <Cell>
                       <div
