@@ -302,7 +302,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
         <rb.Container fluid="lg" className="py-3">
-          <div className="d-flex align-items-center flex-grow-1 flex-shrink-0 w-100 justify-content-center">
+          <div className="d-flex align-items-center justify-content-center">
             <div className="mb-3">
               <SegmentedTabs
                 name="jarDetailsTab"
