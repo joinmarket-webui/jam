@@ -188,7 +188,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [props.isShown, onKeyDown])
 
-  const refreshUtxos = async () => {
+  const refreshUtxos = useCallback(async () => {
     if (isLoading) return
 
     setAlert(undefined)
@@ -204,53 +204,54 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       .finally(() => !abortCtrl.signal.aborted && setIsLoadingRefresh(false))
 
     return () => abortCtrl.abort()
-  }
+  }, [isLoading, reloadCurrentWalletInfo])
 
-  const changeUtxoFreezeState = async ({ utxos, freeze }: { utxos: Utxo[]; freeze: boolean }) => {
-    if (isActionsDisabled || utxos.length <= 0) return
+  const changeUtxoFreezeState = useCallback(
+    async ({ utxos, freeze }: { utxos: Utxo[]; freeze: boolean }) => {
+      if (isActionsDisabled || utxos.length <= 0) return
 
-    setAlert(undefined)
-    freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
+      setAlert(undefined)
+      freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
 
-    const abortCtrl = new AbortController()
+      const abortCtrl = new AbortController()
 
-    const { name: walletName, token } = props.wallet
+      const { name: walletName, token } = props.wallet
 
-    const freezeCalls = utxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
-      Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
-        if (!res.ok) {
-          return Api.Helper.throwError(
-            res,
-            freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos')
-          )
-        }
-      })
-    )
+      const freezeCalls = utxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
+        Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
+          if (!res.ok) {
+            return Api.Helper.throwError(
+              res,
+              freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos')
+            )
+          }
+        })
+      )
 
-    return Promise.all(freezeCalls)
-      .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
-      .then((_) => {})
-      .catch((err) => {
-        setAlert({ variant: 'danger', message: err.message, dismissible: true })
-      })
-      .finally(() => {
-        freeze ? setIsLoadingFreeze(false) : setIsLoadingUnfreeze(false)
-      })
-  }
+      return Promise.all(freezeCalls)
+        .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
+        .then((_) => {})
+        .catch((err) => {
+          setAlert({ variant: 'danger', message: err.message, dismissible: true })
+        })
+        .finally(() => {
+          freeze ? setIsLoadingFreeze(false) : setIsLoadingUnfreeze(false)
+        })
+    },
+    [isActionsDisabled, props.wallet, reloadCurrentWalletInfo, t]
+  )
 
   const utxoListTitle = useMemo(() => {
     return t('jar_details.utxo_list.title', { count: utxos.length, jar: jarInitial(jarIndex) })
   }, [utxos, jarIndex, t])
 
-  const refreshButton = () => {
+  const refreshButton = useMemo(() => {
     return (
       <rb.Button
         className={styles.refreshButton}
-        disabled={isLoading}
+        disabled={isLoadingRefresh}
         variant={settings.theme}
-        onClick={() => {
-          refreshUtxos()
-        }}
+        onClick={() => refreshUtxos()}
       >
         {isLoadingRefresh ? (
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
@@ -259,7 +260,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         )}
       </rb.Button>
     )
-  }
+  }, [settings, isLoadingRefresh, refreshUtxos])
 
   const freezeButton = useMemo(() => {
     return (
@@ -267,24 +268,17 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         disabled={isActionsDisabled || selectedUtxos.length === 0}
         variant="light"
         className={styles.freezeBtn}
-        onClick={() => {
-          changeUtxoFreezeState({ utxos: selectedUtxos, freeze: true })
-        }}
+        onClick={() => changeUtxoFreezeState({ utxos: selectedUtxos, freeze: true })}
       >
-        {isLoadingFreeze ? (
-          <>
-            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />
-            <div>{t('jar_details.utxo_list.button_freeze_loading')}</div>
-          </>
-        ) : (
-          <>
-            <Sprite symbol="snowflake" width="20" height="20" />
-            <div>{t('jar_details.utxo_list.button_freeze')}</div>
-          </>
-        )}
+        <Sprite symbol="snowflake" width="20" height="20" />
+        <div>
+          {isLoadingFreeze
+            ? t('jar_details.utxo_list.button_freeze_loading')
+            : t('jar_details.utxo_list.button_freeze')}
+        </div>
       </rb.Button>
     )
-  }, [isActionsDisabled, isLoadingFreeze, selectedUtxos])
+  }, [isActionsDisabled, isLoadingFreeze, selectedUtxos, changeUtxoFreezeState, t])
 
   const unfreezeButton = useMemo(() => {
     return (
@@ -292,24 +286,17 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         disabled={isActionsDisabled || selectedUtxos.length === 0}
         variant="light"
         className={styles.unfreezeBtn}
-        onClick={() => {
-          changeUtxoFreezeState({ utxos: selectedUtxos, freeze: false })
-        }}
+        onClick={() => changeUtxoFreezeState({ utxos: selectedUtxos, freeze: false })}
       >
-        {isLoadingUnfreeze ? (
-          <>
-            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />
-            <div>{t('jar_details.utxo_list.button_unfreeze_loading')}</div>
-          </>
-        ) : (
-          <>
-            <Sprite symbol="sun" width="20" height="20" />
-            <div>{t('jar_details.utxo_list.button_unfreeze')}</div>
-          </>
-        )}
+        <Sprite symbol="sun" width="20" height="20" />
+        <div>
+          {isLoadingUnfreeze
+            ? t('jar_details.utxo_list.button_unfreeze_loading')
+            : t('jar_details.utxo_list.button_unfreeze')}
+        </div>
       </rb.Button>
     )
-  }, [isActionsDisabled, isLoadingUnfreeze, selectedUtxos])
+  }, [isActionsDisabled, isLoadingUnfreeze, selectedUtxos, changeUtxoFreezeState, t])
 
   return (
     <rb.Offcanvas
@@ -364,7 +351,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                     <div className={styles.utxoListTitleBar}>
                       <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column">
                         <div className="d-flex justify-content-center align-items-center gap-2">
-                          {refreshButton()}
+                          {refreshButton}
                           {utxoListTitle}
                         </div>
                         <div>
