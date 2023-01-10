@@ -107,19 +107,20 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 3fr 1fr 6rem 3fr 1fr;
+    --data-table-library_grid-template-columns: 2rem 3.5rem 2.5rem 2fr 3fr 6rem 3fr 1fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
+    padding: 0.25rem 0.25rem !important;
     &:nth-of-type(1) {
       text-align: center;
     }
-    &:nth-of-type(3) button {
+    &:nth-of-type(3) {
+      text-align: center;
+    }
+    &:nth-of-type(4) button {
       display: flex;
       justify-content: end;
-    }
-    &:nth-of-type(5) {
-      text-align: center;
     }
     &:nth-of-type(6) button {
       display: flex;
@@ -130,7 +131,7 @@ const TABLE_THEME = {
     &:nth-of-type(2) {
       text-align: center;
     }
-    &:nth-of-type(3) {
+    &:nth-of-type(4) {
       text-align: right;
     }
     &:nth-of-type(6) > div {
@@ -267,11 +268,11 @@ const UtxoList = ({
                 <HeaderCellSort sortKey={SORT_KEYS.frozenOrLocked}>
                   <Sprite symbol="coins" width="20" height="20" className={styles.headerCoinsIcon} />
                 </HeaderCellSort>
+                <HeaderCell></HeaderCell>
                 <HeaderCellSort sortKey={SORT_KEYS.value}>
                   {t('jar_details.utxo_list.column_title_balance')}
                 </HeaderCellSort>
                 <HeaderCell>{t('jar_details.utxo_list.column_title_address')}</HeaderCell>
-                <HeaderCell></HeaderCell>
                 <HeaderCellSort sortKey={SORT_KEYS.confirmations}>
                   {t('jar_details.utxo_list.column_title_confirmations')}
                 </HeaderCellSort>
@@ -295,6 +296,17 @@ const UtxoList = ({
                   >
                     <CellSelect item={item} />
                     <Cell>{item._icon}</Cell>
+                    <Cell
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        toggleFreezeState(utxo)
+                      }}
+                    >
+                      <span className={styles.quickFreezeUnfreezeBtn}>
+                        <Sprite symbol="snowflake" width="20" height="20" />
+                      </span>
+                    </Cell>
                     <Cell>
                       <Balance
                         valueString={utxo.value.toString()}
@@ -318,17 +330,6 @@ const UtxoList = ({
                       <div className="d-none d-xl-block">
                         <code>{utxo.address}</code>
                       </div>
-                    </Cell>
-                    <Cell
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        toggleFreezeState(utxo)
-                      }}
-                    >
-                      <a className={styles.quickFreezeUnfreezeBtn}>
-                        <Sprite symbol="snowflake" width="20" height="20" />
-                      </a>
                     </Cell>
                     <Cell>{item._confs}</Cell>
                     <Cell>
