@@ -84,14 +84,14 @@
   background-color: var(--bs-gray-800);
 }
 
-.overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer {
+.utxoListTitleBar .freezeUnfreezeButtonsContainer {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
 }
 
-.overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
-  width: 8rem;
+.freezeUnfreezeButtonsContainer button {
+  min-width: 6rem;
   font-size: 0.6rem;
   padding: 0.3rem 0.5rem;
   display: flex;
@@ -104,33 +104,36 @@
   border-radius: 0.35rem;
 }
 
-.overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button:hover {
-  background-color: var(--bs-btn-hover-bg);
-  border-color: var(--bs-btn-hover-border-color);
+.freezeBtn {
+  color: var(--bs-blue) !important;
+  border-color: var(--bs-blue) !important;
+}
+.freezeBtn:hover {
+  background-color: rgba(13, 110, 253, 0.07) !important;
+}
+.unfreezeBtn {
+  color: var(--bs-red) !important;
+  border-color: var(--bs-red) !important;
+}
+.unfreezeBtn:hover {
+  background-color: rgba(220, 53, 69, 0.07) !important;
+}
+
+:root[data-theme='dark'] .freezeUnfreezeButtonsContainer button {
+  background-color: var(--bs-gray-800) !important;
+}
+
+:root[data-theme='dark'] .freezeUnfreezeButtonsContainer button:hover {
+  background-color: var(--bs-gray-900) !important;
+  border-color: var(--bs-gray-900) !important;
 }
 
 @media only screen and (min-width: 768px) {
-  .overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
-    width: 10rem;
+  .overlayContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer button {
+    min-width: 8rem;
     font-size: 0.8rem;
   }
 }
-
-:root[data-theme='dark'] .overlayContainer .tabContainer .utxoListTitleBar .freezeUnfreezeButtonsContainer > button {
-  background-color: var(--bs-gray-600) !important;
-  border-color: var(--bs-gray-600);
-}
-
-:root[data-theme='dark']
-  .overlayContainer
-  .tabContainer
-  .utxoListTitleBar
-  .freezeUnfreezeButtonsContainer
-  > button:hover {
-  background-color: var(--bs-gray-700) !important;
-  border-color: var(--bs-gray-700);
-}
-
 .overlayContainer .tabContainer .utxoListTitleBar .refreshButton {
   display: flex;
   justify-content: center;

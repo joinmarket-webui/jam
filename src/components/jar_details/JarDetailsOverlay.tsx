@@ -250,17 +250,18 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     )
   }
 
-  const freezeUnfreezeButton = ({ freeze }: { freeze: boolean }) => {
+  const freezeUnfreezeButton = ({ utxos, freeze }: { utxos: Utxo[]; freeze: boolean }) => {
     const isLoading = freeze ? isLoadingFreeze : isLoadingUnfreeze
     const isDisabled =
-      isLoadingRefresh || isLoadingFreeze || isLoadingUnfreeze || isTakerOrMakerRunning || selectedUtxos.length <= 0
+      isLoadingRefresh || isLoadingFreeze || isLoadingUnfreeze || isTakerOrMakerRunning || utxos.length <= 0
 
     return (
       <rb.Button
         disabled={isDisabled}
         variant="light"
+        className={freeze ? styles.freezeBtn : styles.unfreezeBtn}
         onClick={() => {
-          changeUtxoFreezeState(selectedUtxos, freeze)
+          changeUtxoFreezeState(utxos, freeze)
         }}
       >
         {isLoading ? (
@@ -354,27 +355,27 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           </Trans>
                         </div>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column gap-2">
-                        {utxos.length > 0 && (
+                      {selectedUtxos.length > 0 && (
+                        <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column gap-2">
                           <div className="order-1 order-sm-0">
                             <div className={styles.freezeUnfreezeButtonsContainer}>
-                              {freezeUnfreezeButton({ freeze: true })}
-                              {freezeUnfreezeButton({ freeze: false })}
+                              {freezeUnfreezeButton({ utxos: selectedUtxos, freeze: true })}
+                              {freezeUnfreezeButton({ utxos: selectedUtxos, freeze: false })}
                             </div>
                           </div>
-                        )}
-                        {selectedUtxosBalance > 0 && (
-                          <div className="order-0 order-sm-1">
-                            <Trans i18nKey="jar_details.utxo_list.text_balance_sum_selected">
-                              <Balance
-                                valueString={String(selectedUtxosBalance)}
-                                convertToUnit={settings.unit}
-                                showBalance={settings.showBalance}
-                              />
-                            </Trans>
-                          </div>
-                        )}
-                      </div>
+                          {selectedUtxosBalance > 0 && (
+                            <div className="order-0 order-sm-1">
+                              <Trans i18nKey="jar_details.utxo_list.text_balance_sum_selected">
+                                <Balance
+                                  valueString={String(selectedUtxosBalance)}
+                                  convertToUnit={settings.unit}
+                                  showBalance={settings.showBalance}
+                                />
+                              </Trans>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     {utxos.length > 0 && (
                       <div className="px-md-3 pb-2">
