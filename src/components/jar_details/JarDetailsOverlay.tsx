@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
+import classNames from 'classnames'
 import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
@@ -26,14 +27,23 @@ interface HeaderProps {
   nextJar: () => void
   previousJar: () => void
   onHide: () => void
-  isInitializing: boolean
+  isLoading: boolean
 }
 
-const Header = ({ jar, nextJar, previousJar, onHide, isInitializing }: HeaderProps) => {
+const Header = ({ jar, nextJar, previousJar, onHide, isLoading }: HeaderProps) => {
   return (
     <>
-      <div className="w-100 d-flex flex-column justify-content-between flex-md-row gap-3">
-        <div className="d-flex flex-1" />
+      <div className="w-100 d-flex flex-column justify-content-between flex-md-row gap-2">
+        <div className="d-flex flex-1 align-items-center">
+          <div
+            className={classNames('ms-auto', 'me-auto', 'ms-md-0', {
+              invisible: !isLoading,
+              visible: isLoading,
+            })}
+          >
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+          </div>
+        </div>
         <div className="d-flex justify-content-center align-items-center">
           <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => previousJar()}>
             <Sprite symbol="caret-left" width="20" height="20" />
@@ -47,14 +57,9 @@ const Header = ({ jar, nextJar, previousJar, onHide, isInitializing }: HeaderPro
           <rb.Button variant="link" className={styles.jarStepperButton} onClick={() => nextJar()}>
             <Sprite symbol="caret-right" width="20" height="20" />
           </rb.Button>
-          {isInitializing && (
-            <div className="position-absolute start-100">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="ms-3" />
-            </div>
-          )}
         </div>
         <div className="d-flex flex-1">
-          <rb.Button variant="link" className="unstyled px-0 ms-auto me-auto me-md-0" onClick={onHide}>
+          <rb.Button variant="link" className="unstyled p-0 ms-auto me-auto me-md-0" onClick={onHide}>
             <Sprite symbol="cancel" width="32" height="32" />
           </rb.Button>
         </div>
@@ -94,6 +99,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
+  const isTakerOrMakerRunning = useMemo(
+    () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
+    [serviceInfo]
+  )
 
   const [alert, setAlert] = useState<SimpleMessageAlertProps>()
   const [jarIndex, setJarIndex] = useState(props.initialJarIndex)
@@ -102,6 +111,15 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isLoadingFreeze, setIsLoadingFreeze] = useState(false)
   const [isLoadingUnfreeze, setIsLoadingUnfreeze] = useState(false)
+
+  const isLoading = useMemo(() => {
+    return isInitializing || isLoadingRefresh || isLoadingFreeze || isLoadingUnfreeze
+  }, [isInitializing, isLoadingRefresh, isLoadingFreeze, isLoadingUnfreeze])
+
+  const isActionsDisabled = useMemo(() => {
+    return isLoading || isTakerOrMakerRunning
+  }, [isLoading, isTakerOrMakerRunning])
+
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
   const [detailUtxo, setDetailUtxo] = useState<Utxo>()
 
@@ -170,13 +188,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [props.isShown, onKeyDown])
 
-  const isTakerOrMakerRunning = useMemo(
-    () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
-    [serviceInfo]
-  )
-
   const refreshUtxos = async () => {
-    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh) return
+    if (isLoading) return
 
     setAlert(undefined)
     setIsLoadingRefresh(true)
@@ -193,10 +206,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return () => abortCtrl.abort()
   }
 
-  const changeUtxoFreezeState = async (utxos: Utxo[], freeze: boolean) => {
-    if (isLoadingFreeze || isLoadingUnfreeze || isLoadingRefresh || isTakerOrMakerRunning) return
-
-    if (utxos.length <= 0) return
+  const changeUtxoFreezeState = async ({ utxos, freeze }: { utxos: Utxo[]; freeze: boolean }) => {
+    if (isActionsDisabled || utxos.length <= 0) return
 
     setAlert(undefined)
     freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
@@ -235,7 +246,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return (
       <rb.Button
         className={styles.refreshButton}
-        disabled={isLoadingRefresh || isLoadingUnfreeze || isLoadingFreeze}
+        disabled={isLoading}
         variant={settings.theme}
         onClick={() => {
           refreshUtxos()
@@ -250,38 +261,55 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     )
   }
 
-  const freezeUnfreezeButton = ({ utxos, freeze }: { utxos: Utxo[]; freeze: boolean }) => {
-    const isLoading = freeze ? isLoadingFreeze : isLoadingUnfreeze
-    const isDisabled =
-      isLoadingRefresh || isLoadingFreeze || isLoadingUnfreeze || isTakerOrMakerRunning || utxos.length <= 0
-
+  const freezeButton = useMemo(() => {
     return (
       <rb.Button
-        disabled={isDisabled}
+        disabled={isActionsDisabled || selectedUtxos.length === 0}
         variant="light"
-        className={freeze ? styles.freezeBtn : styles.unfreezeBtn}
+        className={styles.freezeBtn}
         onClick={() => {
-          changeUtxoFreezeState(utxos, freeze)
+          changeUtxoFreezeState({ utxos: selectedUtxos, freeze: true })
         }}
       >
-        {isLoading ? (
+        {isLoadingFreeze ? (
           <>
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />
-            <div>
-              {freeze
-                ? t('jar_details.utxo_list.button_freeze_loading')
-                : t('jar_details.utxo_list.button_unfreeze_loading')}
-            </div>
+            <div>{t('jar_details.utxo_list.button_freeze_loading')}</div>
           </>
         ) : (
           <>
-            <Sprite symbol="snowflake" width="16" height="16" />
-            <div>{freeze ? t('jar_details.utxo_list.button_freeze') : t('jar_details.utxo_list.button_unfreeze')}</div>
+            <Sprite symbol="snowflake" width="20" height="20" />
+            <div>{t('jar_details.utxo_list.button_freeze')}</div>
           </>
         )}
       </rb.Button>
     )
-  }
+  }, [isActionsDisabled, isLoadingFreeze, selectedUtxos])
+
+  const unfreezeButton = useMemo(() => {
+    return (
+      <rb.Button
+        disabled={isActionsDisabled || selectedUtxos.length === 0}
+        variant="light"
+        className={styles.unfreezeBtn}
+        onClick={() => {
+          changeUtxoFreezeState({ utxos: selectedUtxos, freeze: false })
+        }}
+      >
+        {isLoadingUnfreeze ? (
+          <>
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-1" />
+            <div>{t('jar_details.utxo_list.button_unfreeze_loading')}</div>
+          </>
+        ) : (
+          <>
+            <Sprite symbol="sun" width="20" height="20" />
+            <div>{t('jar_details.utxo_list.button_unfreeze')}</div>
+          </>
+        )}
+      </rb.Button>
+    )
+  }, [isActionsDisabled, isLoadingUnfreeze, selectedUtxos])
 
   return (
     <rb.Offcanvas
@@ -293,13 +321,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     >
       <rb.Offcanvas.Header>
         <rb.Container fluid="lg">
-          <Header
-            jar={jar}
-            nextJar={nextJar}
-            previousJar={previousJar}
-            onHide={props.onHide}
-            isInitializing={isInitializing}
-          />
+          <Header jar={jar} nextJar={nextJar} previousJar={previousJar} onHide={props.onHide} isLoading={isLoading} />
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
@@ -359,8 +381,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column gap-2">
                           <div className="order-1 order-sm-0">
                             <div className={styles.freezeUnfreezeButtonsContainer}>
-                              {freezeUnfreezeButton({ utxos: selectedUtxos, freeze: true })}
-                              {freezeUnfreezeButton({ utxos: selectedUtxos, freeze: false })}
+                              {freezeButton}
+                              {unfreezeButton}
                             </div>
                           </div>
                           {selectedUtxosBalance > 0 && (
@@ -385,7 +407,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           selectState={{ ids: selectedUtxoIds }}
                           setSelectedUtxoIds={setSelectedUtxoIds}
                           setDetailUtxo={setDetailUtxo}
-                          toggleFreezeState={(utxo: Utxo) => changeUtxoFreezeState([utxo], !utxo.frozen)}
+                          toggleFreezeState={(utxo: Utxo) =>
+                            changeUtxoFreezeState({ utxos: [utxo], freeze: !utxo.frozen })
+                          }
                         />
                       </div>
                     )}

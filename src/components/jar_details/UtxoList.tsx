@@ -304,7 +304,11 @@ const UtxoList = ({
                       }}
                     >
                       <span className={styles.quickFreezeUnfreezeBtn}>
-                        <Sprite symbol="snowflake" width="20" height="20" />
+                        {utxo.frozen ? (
+                          <Sprite symbol="sun" width="20" height="20" />
+                        ) : (
+                          <Sprite symbol="snowflake" width="20" height="20" />
+                        )}
                       </span>
                     </Cell>
                     <Cell>
