@@ -107,8 +107,11 @@ const SORT_KEYS = {
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2rem 3.5rem 2.5rem 2fr 3fr 6rem 3fr 1fr;
     font-size: 0.9rem;
+    --data-table-library_grid-template-columns: 2rem 3.5rem 0px 2fr 3fr 6rem 3fr 1fr;
+    @media only screen and (min-width: 768px) {
+      --data-table-library_grid-template-columns: 2rem 3.5rem 2.5rem 2fr 3fr 6rem 3fr 1fr;
+    }
   `,
   BaseCell: `
     padding: 0.25rem 0.25rem !important;
@@ -117,10 +120,14 @@ const TABLE_THEME = {
     }
     &:nth-of-type(3) {
       text-align: center;
+      padding: 0 !important;
     }
     &:nth-of-type(4) button {
       display: flex;
       justify-content: end;
+    }
+    &:nth-of-type(6) {
+      padding: 0 !important;
     }
     &:nth-of-type(6) button {
       display: flex;
