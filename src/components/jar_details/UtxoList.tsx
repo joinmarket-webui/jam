@@ -58,8 +58,7 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
 
   if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
   if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
-  if (fb.utxo.isLocked(utxo) && utxo.locktime)
-    tags.push({ tag: t('jar_details.utxo_list.utxo_tag_locked'), color: 'normal' })
+  if (fb.utxo.isFidelityBond(utxo)) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_fb'), color: 'dark' })
   return tags
 }
 
@@ -297,7 +296,7 @@ const UtxoList = ({
                     key={item.id}
                     item={item}
                     className={classNames({
-                      [styles.frozen]: utxo.frozen,
+                      [styles.frozen]: !fb.utxo.isLocked(utxo) && utxo.frozen,
                       [styles.locked]: fb.utxo.isLocked(utxo),
                     })}
                   >
