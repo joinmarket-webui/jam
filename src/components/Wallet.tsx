@@ -25,18 +25,30 @@ const WalletLockForm = ({ walletName, lockWallet }: WalletLockFormProps) => {
     <Formik initialValues={{}} validate={() => ({})} onSubmit={onSubmit}>
       {({ handleSubmit, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate>
-          <Link className="btn btn-outline-dark me-2" to={routes.wallet}>
+          <Link className="btn btn-dark me-2" to={routes.wallet}>
             {t('wallets.wallet_preview.button_open')}
           </Link>
           <rb.Button variant="outline-dark" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <div className="d-flex justify-content-center align-items-center">
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                {t('wallets.wallet_preview.button_locking')}
-              </div>
-            ) : (
-              t('wallets.wallet_preview.button_lock')
-            )}
+            <div className="d-flex justify-content-center align-items-center">
+              {isSubmitting ? (
+                <>
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="me-2"
+                  />
+                  {t('wallets.wallet_preview.button_locking')}
+                </>
+              ) : (
+                <>
+                  <Sprite symbol="lock" width="24" height="24" className="me-1" />
+                  {t('wallets.wallet_preview.button_lock')}
+                </>
+              )}
+            </div>
           </rb.Button>
         </rb.Form>
       )}
