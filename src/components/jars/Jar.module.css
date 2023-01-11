@@ -4,6 +4,12 @@
   align-items: center;
 }
 
+.jarInfoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .jarSprite {
   margin: 0 0 0.25rem 0;
 }
@@ -50,7 +56,6 @@
   min-width: 11.5ch;
 
   font-size: 0.8rem;
-  padding-bottom: 0.8rem;
 }
 
 .selectableJarContainer {
@@ -66,14 +71,13 @@
   cursor: unset;
 }
 
-.selectableJarContainer:not(.selectable) > .selectionCircle {
+.selectableJarContainer > .selectionCircle {
   height: 1.25rem;
   width: 1.25rem;
+  margin-top: 0.8rem;
 }
 
 .selectableJarContainer.selectable > .selectionCircle {
-  height: 1.25rem;
-  width: 1.25rem;
   border-radius: 50%;
   display: inline-block;
   border: 1px solid var(--bs-body-color);
