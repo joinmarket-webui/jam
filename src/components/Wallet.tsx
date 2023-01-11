@@ -196,7 +196,7 @@ export default function Wallet({
             {lockWallet ? (
               <WalletLockForm walletName={name} lockWallet={lockWallet} />
             ) : (
-              <div className={`w-100 mt-3 mt-md-0 ${styles['wallet-password-input']}`}>
+              <div className={`w-100 mt-3 mt-md-0 ${styles.walletPasswordInput}`}>
                 {unlockWallet && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />}
               </div>
             )}
