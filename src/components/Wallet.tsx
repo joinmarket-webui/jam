@@ -5,6 +5,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
+import Sprite from './Sprite'
 import { routes } from '../constants/routes'
 import styles from './Wallet.module.css'
 
@@ -95,9 +96,14 @@ const WalletUnlockForm = ({ walletName, unlockWallet }: WalletUnlockFormProps) =
               value={values.password}
               isInvalid={!!touched.password && !!errors.password}
             />
-            <rb.Button variant="outline-dark" className="py-1 px-3" type="submit" disabled={isSubmitting}>
+            <rb.Button
+              variant="outline-dark"
+              className="d-flex justify-content-center align-items-center py-1 px-3"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
-                <div className="d-flex justify-content-center align-items-center">
+                <>
                   <rb.Spinner
                     as="span"
                     animation="border"
@@ -107,9 +113,12 @@ const WalletUnlockForm = ({ walletName, unlockWallet }: WalletUnlockFormProps) =
                     className="me-2"
                   />
                   {t('wallets.wallet_preview.button_unlocking')}
-                </div>
+                </>
               ) : (
-                t('wallets.wallet_preview.button_unlock')
+                <>
+                  <Sprite symbol="unlock" width="24" height="24" className="me-1" />
+                  {t('wallets.wallet_preview.button_unlock')}
+                </>
               )}
             </rb.Button>
             <rb.Form.Control.Feedback type="invalid">{errors.password}</rb.Form.Control.Feedback>
