@@ -270,7 +270,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         className={styles.freezeBtn}
         onClick={() => changeUtxoFreezeState({ utxos: selectedUtxos, freeze: true })}
       >
-        <Sprite symbol="snowflake" width="20" height="20" />
+        <Sprite symbol="freeze" width="20" height="20" />
         <div>
           {isLoadingFreeze
             ? t('jar_details.utxo_list.button_freeze_loading')
@@ -288,7 +288,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         className={styles.unfreezeBtn}
         onClick={() => changeUtxoFreezeState({ utxos: selectedUtxos, freeze: false })}
       >
-        <Sprite symbol="sun" width="20" height="20" />
+        <Sprite symbol="unfreeze" width="20" height="20" />
         <div>
           {isLoadingUnfreeze
             ? t('jar_details.utxo_list.button_unfreeze_loading')

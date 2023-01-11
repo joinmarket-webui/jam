@@ -312,9 +312,9 @@ const UtxoList = ({
                       {toggleFreezeState && (
                         <span className={styles.quickFreezeUnfreezeBtn}>
                           {utxo.frozen ? (
-                            <Sprite symbol="sun" width="20" height="20" />
+                            <Sprite symbol="unfreeze" width="24" height="24" />
                           ) : (
-                            <Sprite symbol="snowflake" width="20" height="20" />
+                            <Sprite symbol="freeze" width="24" height="24" />
                           )}
                         </span>
                       )}
