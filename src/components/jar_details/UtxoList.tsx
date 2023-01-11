@@ -297,7 +297,7 @@ const UtxoList = ({
                     item={item}
                     className={classNames({
                       [styles.frozen]: !fb.utxo.isLocked(utxo) && utxo.frozen,
-                      [styles.locked]: fb.utxo.isLocked(utxo),
+                      [styles.fidelityBond]: fb.utxo.isFidelityBond(utxo),
                     })}
                   >
                     <CellSelect item={item} />
