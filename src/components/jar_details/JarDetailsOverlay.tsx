@@ -116,8 +116,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return isInitializing || isLoadingRefresh || isLoadingFreeze || isLoadingUnfreeze
   }, [isInitializing, isLoadingRefresh, isLoadingFreeze, isLoadingUnfreeze])
 
-  const isActionsDisabled = useMemo(() => {
-    return isLoading || isTakerOrMakerRunning
+  const isActionsEnabled = useMemo(() => {
+    return !isLoading && !isTakerOrMakerRunning
   }, [isLoading, isTakerOrMakerRunning])
 
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
@@ -208,7 +208,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
   const changeUtxoFreezeState = useCallback(
     async ({ utxos, freeze }: { utxos: Utxo[]; freeze: boolean }) => {
-      if (isActionsDisabled || utxos.length <= 0) return
+      if (!isActionsEnabled || utxos.length <= 0) return
 
       setAlert(undefined)
       freeze ? setIsLoadingFreeze(true) : setIsLoadingUnfreeze(true)
@@ -238,7 +238,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
           freeze ? setIsLoadingFreeze(false) : setIsLoadingUnfreeze(false)
         })
     },
-    [isActionsDisabled, props.wallet, reloadCurrentWalletInfo, t]
+    [isActionsEnabled, props.wallet, reloadCurrentWalletInfo, t]
   )
 
   const utxoListTitle = useMemo(() => {
@@ -265,7 +265,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const freezeButton = useMemo(() => {
     return (
       <rb.Button
-        disabled={isActionsDisabled || selectedUtxos.length === 0}
+        disabled={!isActionsEnabled || selectedUtxos.length === 0}
         variant="light"
         className={styles.freezeBtn}
         onClick={() => changeUtxoFreezeState({ utxos: selectedUtxos, freeze: true })}
@@ -278,12 +278,12 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         </div>
       </rb.Button>
     )
-  }, [isActionsDisabled, isLoadingFreeze, selectedUtxos, changeUtxoFreezeState, t])
+  }, [isActionsEnabled, isLoadingFreeze, selectedUtxos, changeUtxoFreezeState, t])
 
   const unfreezeButton = useMemo(() => {
     return (
       <rb.Button
-        disabled={isActionsDisabled || selectedUtxos.length === 0}
+        disabled={!isActionsEnabled || selectedUtxos.length === 0}
         variant="light"
         className={styles.unfreezeBtn}
         onClick={() => changeUtxoFreezeState({ utxos: selectedUtxos, freeze: false })}
@@ -296,7 +296,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
         </div>
       </rb.Button>
     )
-  }, [isActionsDisabled, isLoadingUnfreeze, selectedUtxos, changeUtxoFreezeState, t])
+  }, [isActionsEnabled, isLoadingUnfreeze, selectedUtxos, changeUtxoFreezeState, t])
 
   return (
     <rb.Offcanvas
@@ -367,10 +367,12 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                       {selectedUtxos.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column gap-2">
                           <div className="order-1 order-sm-0">
-                            <div className={styles.freezeUnfreezeButtonsContainer}>
-                              {freezeButton}
-                              {unfreezeButton}
-                            </div>
+                            {isActionsEnabled && (
+                              <div className={styles.freezeUnfreezeButtonsContainer}>
+                                {freezeButton}
+                                {unfreezeButton}
+                              </div>
+                            )}
                           </div>
                           {selectedUtxosBalance > 0 && (
                             <div className="order-0 order-sm-1">
@@ -394,8 +396,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           selectState={{ ids: selectedUtxoIds }}
                           setSelectedUtxoIds={setSelectedUtxoIds}
                           setDetailUtxo={setDetailUtxo}
-                          toggleFreezeState={(utxo: Utxo) =>
-                            changeUtxoFreezeState({ utxos: [utxo], freeze: !utxo.frozen })
+                          toggleFreezeState={
+                            isActionsEnabled
+                              ? (utxo: Utxo) => changeUtxoFreezeState({ utxos: [utxo], freeze: !utxo.frozen })
+                              : undefined
                           }
                         />
                       </div>

@@ -165,7 +165,7 @@ interface UtxoListProps {
   selectState: State
   setSelectedUtxoIds: (selectedUtxoIds: Array<string>) => void
   setDetailUtxo: (utxo: Utxo) => void
-  toggleFreezeState: (utxo: Utxo) => Promise<void>
+  toggleFreezeState?: (utxo: Utxo) => Promise<void>
 }
 
 const UtxoList = ({
@@ -303,19 +303,21 @@ const UtxoList = ({
                     <CellSelect item={item} />
                     <Cell>{item._icon}</Cell>
                     <Cell
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        toggleFreezeState(utxo)
+                        toggleFreezeState && (await toggleFreezeState(utxo))
                       }}
                     >
-                      <span className={styles.quickFreezeUnfreezeBtn}>
-                        {utxo.frozen ? (
-                          <Sprite symbol="sun" width="20" height="20" />
-                        ) : (
-                          <Sprite symbol="snowflake" width="20" height="20" />
-                        )}
-                      </span>
+                      {toggleFreezeState && (
+                        <span className={styles.quickFreezeUnfreezeBtn}>
+                          {utxo.frozen ? (
+                            <Sprite symbol="sun" width="20" height="20" />
+                          ) : (
+                            <Sprite symbol="snowflake" width="20" height="20" />
+                          )}
+                        </span>
+                      )}
                     </Cell>
                     <Cell>
                       <Balance
