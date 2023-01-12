@@ -498,12 +498,17 @@ h2 {
   text-decoration: underline;
 }
 
-.wallets .btn.btn-outline-dark {
+.wallets .btn {
   padding: 0.25rem 1rem;
   font-weight: 500;
-  border-color: rgba(222, 222, 222, 1);
 }
 
+.wallets .btn.btn-outline-dark:not(:hover) {
+  border-color: rgba(222, 222, 222, 1);
+}
+:root[data-theme='dark'] .wallets .btn.btn-outline-dark:not(:hover) {
+  border-color: var(--bs-gray-800);
+}
 /* Alpha Warning */
 
 .warning-hint {

@@ -5,7 +5,7 @@ import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
 import { walletDisplayName } from '../utils'
 
-import Wallet from './Wallet'
+import Wallet, { WalletProps } from './Wallet'
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
@@ -26,7 +26,7 @@ describe('<Wallet />', () => {
     isActive = false,
     makerRunning = false,
     coinjoinInProgress = false,
-  }) => {
+  }: WalletProps) => {
     render(
       <BrowserRouter>
         <Wallet
@@ -42,8 +42,8 @@ describe('<Wallet />', () => {
   }
 
   beforeEach(() => {
-    const neverResolvingPromise = new Promise(() => {})
-    apiMock.getSession.mockReturnValue(neverResolvingPromise)
+    const neverResolvingPromise = new Promise<Response>(() => {})
+    jest.mocked(apiMock.getSession).mockReturnValue(neverResolvingPromise)
   })
 
   it('should render inactive wallet without errors', () => {
