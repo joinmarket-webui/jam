@@ -119,11 +119,13 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
   const flavorName = jarName(index)
 
   return (
-    <div className={styles.jarContainer}>
+    <div className={`${styles.jarContainer} jar-container-hook`}>
       <Sprite className={`${styles.jarSprite} ${flavorStyle}`} symbol={jarSymbol} width="32px" height="48px" />
-      <div className={styles.jarIndex}>{flavorName}</div>
-      <div className={styles.jarBalance}>
-        <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+      <div className={`${styles.jarInfoContainer} jar-info-container-hook`}>
+        <div className={styles.jarIndex}>{flavorName}</div>
+        <div className={`${styles.jarBalance} jar-balance-container-hook`}>
+          <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
+        </div>
       </div>
     </div>
   )
