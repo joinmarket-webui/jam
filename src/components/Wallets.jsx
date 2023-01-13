@@ -32,7 +32,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   const reloadServiceInfo = useReloadServiceInfo()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isUnlocking, setIsUnlocking] = useState(false)
+  const [unlockingWalletName, setUnlockWalletName] = useState(undefined)
+  const isUnlocking = useMemo(() => unlockingWalletName !== undefined, [unlockingWalletName])
   const [alert, setAlert] = useState(null)
   const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
 
@@ -56,12 +57,12 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       }
 
       setAlert(null)
-      setIsUnlocking(true)
+      setUnlockWalletName(walletName)
       try {
         const res = await Api.postWalletUnlock({ walletName }, { password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
-        setIsUnlocking(false)
+        setUnlockWalletName(undefined)
 
         const { walletname: unlockedWalletName, token } = body
         startWallet(unlockedWalletName, token)
@@ -69,7 +70,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       } catch (e) {
         const message = e.message.replace('Wallet', walletName)
         setAlert({ variant: 'danger', dismissible: false, message })
-        setIsUnlocking(false)
+        setUnlockWalletName(undefined)
       }
     },
     [currentWallet, setAlert, startWallet, t, navigate]
@@ -213,7 +214,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
             const showLockOptions = isActive && hasToken
             const showUnlockOptions =
-              noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress)
+              (!isUnlocking || unlockingWalletName === wallet) &&
+              (noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress))
             return (
               <Wallet
                 key={wallet}

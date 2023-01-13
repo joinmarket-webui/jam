@@ -1,14 +1,20 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Formik } from 'formik'
+import { Formik, FormikErrors } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { walletDisplayName } from '../utils'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
+import Sprite from './Sprite'
 import { routes } from '../constants/routes'
 import styles from './Wallet.module.css'
 
-const WalletLockForm = ({ walletName, lockWallet }) => {
+interface WalletLockFormProps {
+  walletName: string
+  lockWallet: (walletName: string, options: { confirmed: boolean }) => Promise<void>
+}
+
+const WalletLockForm = ({ walletName, lockWallet }: WalletLockFormProps) => {
   const { t } = useTranslation()
 
   const onSubmit = useCallback(async () => {
@@ -19,18 +25,30 @@ const WalletLockForm = ({ walletName, lockWallet }) => {
     <Formik initialValues={{}} validate={() => ({})} onSubmit={onSubmit}>
       {({ handleSubmit, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate>
-          <Link className="btn btn-outline-dark me-2" to={routes.wallet}>
+          <Link className="btn btn-dark me-2" to={routes.wallet}>
             {t('wallets.wallet_preview.button_open')}
           </Link>
           <rb.Button variant="outline-dark" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <div className="d-flex justify-content-center align-items-center">
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                {t('wallets.wallet_preview.button_locking')}
-              </div>
-            ) : (
-              t('wallets.wallet_preview.button_lock')
-            )}
+            <div className="d-flex justify-content-center align-items-center">
+              {isSubmitting ? (
+                <>
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="me-2"
+                  />
+                  {t('wallets.wallet_preview.button_locking')}
+                </>
+              ) : (
+                <>
+                  <Sprite symbol="lock" width="24" height="24" className="me-1" />
+                  {t('wallets.wallet_preview.button_lock')}
+                </>
+              )}
+            </div>
           </rb.Button>
         </rb.Form>
       )}
@@ -38,14 +56,24 @@ const WalletLockForm = ({ walletName, lockWallet }) => {
   )
 }
 
-const WalletUnlockForm = ({ walletName, unlockWallet }) => {
+interface WalletUnlockFormProps {
+  walletName: string
+  unlockWallet: (walletName: string, password: string) => Promise<void>
+}
+
+type WalletUnlockFormValues = {
+  password: string
+}
+
+const walletUnlockFormInitialValues: WalletUnlockFormValues = {
+  password: '',
+}
+
+const WalletUnlockForm = ({ walletName, unlockWallet }: WalletUnlockFormProps) => {
   const { t } = useTranslation()
 
-  const initialValues = {
-    password: '',
-  }
-  const validate = (values) => {
-    const errors = {}
+  const validate = (values: WalletUnlockFormValues) => {
+    const errors: FormikErrors<WalletUnlockFormValues> = {}
     if (!values.password) {
       errors.password = t('wallets.wallet_preview.feedback_missing_password')
     }
@@ -61,7 +89,12 @@ const WalletUnlockForm = ({ walletName, unlockWallet }) => {
   )
 
   return (
-    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit} validateOnBlur={false}>
+    <Formik
+      initialValues={walletUnlockFormInitialValues}
+      validate={validate}
+      onSubmit={onSubmit}
+      validateOnBlur={false}
+    >
       {({ handleSubmit, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate>
           <rb.InputGroup hasValidation={true}>
@@ -73,11 +106,16 @@ const WalletUnlockForm = ({ walletName, unlockWallet }) => {
               onChange={handleChange}
               onBlur={handleBlur}
               value={values.password}
-              isInvalid={touched.password && errors.password}
+              isInvalid={!!touched.password && !!errors.password}
             />
-            <rb.Button variant="outline-dark" className="py-1 px-3" type="submit" disabled={isSubmitting}>
+            <rb.Button
+              variant="outline-dark"
+              className="d-flex justify-content-center align-items-center py-1 px-3"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
-                <div className="d-flex justify-content-center align-items-center">
+                <>
                   <rb.Spinner
                     as="span"
                     animation="border"
@@ -87,9 +125,12 @@ const WalletUnlockForm = ({ walletName, unlockWallet }) => {
                     className="me-2"
                   />
                   {t('wallets.wallet_preview.button_unlocking')}
-                </div>
+                </>
               ) : (
-                t('wallets.wallet_preview.button_unlock')
+                <>
+                  <Sprite symbol="unlock" width="24" height="24" className="me-1" />
+                  {t('wallets.wallet_preview.button_unlock')}
+                </>
               )}
             </rb.Button>
             <rb.Form.Control.Feedback type="invalid">{errors.password}</rb.Form.Control.Feedback>
@@ -100,6 +141,16 @@ const WalletUnlockForm = ({ walletName, unlockWallet }) => {
   )
 }
 
+export interface WalletProps {
+  name: string
+  lockWallet?: (walletName: string, options: { confirmed: boolean }) => Promise<void>
+  unlockWallet?: (walletName: string, password: string) => Promise<void>
+  isActive?: boolean
+  makerRunning?: boolean
+  coinjoinInProgress?: boolean
+  [key: string]: any
+}
+
 export default function Wallet({
   name,
   lockWallet,
@@ -108,7 +159,7 @@ export default function Wallet({
   makerRunning,
   coinjoinInProgress,
   ...props
-}) {
+}: WalletProps) {
   const { t } = useTranslation()
 
   return (
@@ -145,7 +196,7 @@ export default function Wallet({
             {lockWallet ? (
               <WalletLockForm walletName={name} lockWallet={lockWallet} />
             ) : (
-              <div className={`w-100 mt-3 mt-md-0 ${styles['wallet-password-input']}`}>
+              <div className={`w-100 mt-3 mt-md-0 ${styles.walletPasswordInput}`}>
                 {unlockWallet && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />}
               </div>
             )}

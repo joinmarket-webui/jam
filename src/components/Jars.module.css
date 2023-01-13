@@ -22,9 +22,34 @@
   color: var(--bs-body-color);
 }
 
+.jarsContainer :global .jar-container-hook {
+  flex-direction: row;
+  gap: 1rem;
+  min-width: 11rem;
+}
+
+.jarsContainer :global .jar-info-container-hook {
+  align-items: start;
+}
+.jarsContainer :global .jar-balance-container-hook {
+  justify-content: start !important;
+}
+
 @media only screen and (min-width: 768px) {
   .jarsContainer {
     flex-direction: row;
     gap: 1.5rem;
+  }
+
+  .jarsContainer :global .jar-container-hook {
+    flex-direction: column;
+    gap: 0;
+    min-width: inherit;
+  }
+  .jarsContainer :global .jar-info-container-hook {
+    align-items: center !important;
+  }
+  .jarsContainer :global .jar-balance-container-hook {
+    justify-content: center !important;
   }
 }
