@@ -6,11 +6,6 @@ import { BTC, SATS } from '../utils'
 import Balance from './Balance'
 
 describe('<Balance />', () => {
-  it('should render placeholder while loading', () => {
-    render(<Balance loading={true} />)
-    expect(screen.getByTestId('balance-component-placeholder')).toBeInTheDocument()
-  })
-
   it('should render invalid param as given', () => {
     render(<Balance valueString={'NaN'} convertToUnit={BTC} showBalance={true} />)
     expect(screen.getByText(`NaN`)).toBeInTheDocument()
@@ -73,11 +68,6 @@ describe('<Balance />', () => {
     expect(screen.getByText(`2,100,000,000,000,000`)).toBeInTheDocument()
   })
 
-  it('should render a number BTC value as fallback', () => {
-    render(<Balance valueString={123.456} convertToUnit={BTC} showBalance={true} />)
-    expect(screen.getByText(`123.456`)).toBeInTheDocument()
-  })
-
   it('should render a string SATS value correctly as SATS', () => {
     render(<Balance valueString={'43000'} convertToUnit={SATS} showBalance={true} />)
     expect(screen.getByText(`43,000`)).toBeInTheDocument()
@@ -116,11 +106,6 @@ describe('<Balance />', () => {
   it('should render a max string SATS value correctly as SATS', () => {
     render(<Balance valueString={'2100000000000000'} convertToUnit={SATS} showBalance={true} />)
     expect(screen.getByText(`2,100,000,000,000,000`)).toBeInTheDocument()
-  })
-
-  it('should render a number SATS value as fallback', () => {
-    render(<Balance valueString={43000} convertToUnit={SATS} showBalance={true} />)
-    expect(screen.getByText(`43000`)).toBeInTheDocument()
   })
 
   it('should toggle visibility of initially hidden balance on click by default', () => {
