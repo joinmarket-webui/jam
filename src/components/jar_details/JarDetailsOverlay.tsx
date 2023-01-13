@@ -152,6 +152,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
     const abortCtrl = new AbortController()
 
+    setAlert(undefined)
     setIsInitializing(true)
     reloadCurrentWalletInfo
       .reloadAll({ signal: abortCtrl.signal })
@@ -199,9 +200,13 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     reloadCurrentWalletInfo
       .reloadUtxos({ signal: abortCtrl.signal })
       .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message, dismissible: true })
+        if (abortCtrl.signal.aborted) return
+        setAlert({ variant: 'danger', message: err.message, dismissible: true })
       })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoadingRefresh(false))
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsLoadingRefresh(false)
+      })
 
     return () => abortCtrl.abort()
   }, [isLoading, reloadCurrentWalletInfo])
@@ -218,23 +223,27 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       const { name: walletName, token } = props.wallet
 
       const freezeCalls = utxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
-        Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
-          if (!res.ok) {
-            return Api.Helper.throwError(
-              res,
-              freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos')
-            )
+        Api.postFreeze({ walletName, token, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: freeze }).then(
+          (res) => {
+            if (!res.ok) {
+              return Api.Helper.throwError(
+                res,
+                freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos')
+              )
+            }
           }
-        })
+        )
       )
 
       return Promise.all(freezeCalls)
         .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
         .then((_) => {})
         .catch((err) => {
+          if (abortCtrl.signal.aborted) return
           setAlert({ variant: 'danger', message: err.message, dismissible: true })
         })
         .finally(() => {
+          if (abortCtrl.signal.aborted) return
           freeze ? setIsLoadingFreeze(false) : setIsLoadingUnfreeze(false)
         })
     },
