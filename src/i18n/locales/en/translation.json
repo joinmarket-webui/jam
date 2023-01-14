@@ -232,6 +232,7 @@
     "label_amount": "Amount in sats",
     "placeholder_amount": "Enter amount...",
     "feedback_invalid_amount": "Please provide a valid amount.",
+    "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
     "toggle_coinjoin_subtitle": "Collaborative transactions improve the privacy of yourself and others.",
     "button_send": "Send",

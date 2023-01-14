@@ -35,6 +35,7 @@ import {
   isValidJarIndex,
   isValidNumCollaborators,
 } from './helpers'
+import Accordion from '../Accordion'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -800,23 +801,25 @@ export default function Send({ wallet }: SendProps) {
             </rb.Form.Control.Feedback>
             {isSweep && frozenOrLockedWarning()}
           </rb.Form.Group>
-          <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-            <ToggleSwitch
-              label={t('send.toggle_coinjoin')}
-              subtitle={t('send.toggle_coinjoin_subtitle')}
-              toggledOn={isCoinjoin}
-              onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-              disabled={isLoading || isOperationDisabled}
-            />
-          </rb.Form.Group>
-          {isCoinjoin && (
-            <CollaboratorsSelector
-              numCollaborators={numCollaborators}
-              setNumCollaborators={setNumCollaborators}
-              minNumCollaborators={minNumCollaborators}
-              disabled={isLoading || isOperationDisabled}
-            />
-          )}
+          <Accordion title={t('send.sending_options')}>
+            <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
+              <ToggleSwitch
+                label={t('send.toggle_coinjoin')}
+                subtitle={t('send.toggle_coinjoin_subtitle')}
+                toggledOn={isCoinjoin}
+                onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+                disabled={isLoading || isOperationDisabled}
+              />
+            </rb.Form.Group>
+            {isCoinjoin && (
+              <CollaboratorsSelector
+                numCollaborators={numCollaborators}
+                setNumCollaborators={setNumCollaborators}
+                minNumCollaborators={minNumCollaborators}
+                disabled={isLoading || isOperationDisabled}
+              />
+            )}
+          </Accordion>
         </rb.Form>
         <rb.Button
           ref={submitButtonRef}
