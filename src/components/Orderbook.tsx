@@ -87,7 +87,7 @@ const withTooltip = (node: React.ReactElement, tooltip: string) => {
 // `TableNode` is known to have same properties as `ObwatchApi.Order`, hence prefer casting over object destructuring
 const toOrder = (tableNode: TableTypes.TableNode) => tableNode as unknown as ObwatchApi.Order
 
-const renderOrderType = (val: string, t: TFunction<'translation', undefined>) => {
+const renderOrderType = (val: string, t: TFunction) => {
   if (val === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
     return withTooltip(<rb.Badge bg="info">{t('orderbook.text_offer_type_absolute')}</rb.Badge>, val)
   }

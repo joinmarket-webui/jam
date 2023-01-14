@@ -41,7 +41,7 @@ interface Result {
   mustReload: boolean
 }
 
-const errorResolver = (t: TFunction<'translation', undefined>, i18nKey: string | string[]) => ({
+const errorResolver = (t: TFunction, i18nKey: string | string[]) => ({
   resolver: (_: Response, reason: string) => `${t(i18nKey)} ${reason}`,
   fallbackReason: t('global.errors.reason_unknown'),
 })
