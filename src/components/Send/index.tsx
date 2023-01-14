@@ -602,19 +602,16 @@ export default function Send({ wallet }: SendProps) {
             )}
           </>
         </rb.Fade>
-
         {alert && (
           <rb.Alert className="slashed-zeroes" variant={alert.variant}>
             {alert.message}
           </rb.Alert>
         )}
-
         {paymentSuccessfulInfoAlert && (
           <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
             {paymentSuccessfulInfoAlert.message}
           </rb.Alert>
         )}
-
         {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
           <div className="mb-4">
             <CoinjoinPreconditionViolationAlert
@@ -623,7 +620,6 @@ export default function Send({ wallet }: SendProps) {
             />
           </div>
         )}
-
         {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
@@ -657,7 +653,6 @@ export default function Send({ wallet }: SendProps) {
             }}
           />
         )}
-
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="sourceJarIndex">
             <rb.Form.Label>{t('send.label_source_jar')}</rb.Form.Label>
@@ -814,15 +809,15 @@ export default function Send({ wallet }: SendProps) {
               disabled={isLoading || isOperationDisabled}
             />
           </rb.Form.Group>
+          {isCoinjoin && (
+            <CollaboratorsSelector
+              numCollaborators={numCollaborators}
+              setNumCollaborators={setNumCollaborators}
+              minNumCollaborators={minNumCollaborators}
+              disabled={isLoading || isOperationDisabled}
+            />
+          )}
         </rb.Form>
-        {isCoinjoin && (
-          <CollaboratorsSelector
-            numCollaborators={numCollaborators}
-            setNumCollaborators={setNumCollaborators}
-            minNumCollaborators={minNumCollaborators}
-            disabled={isLoading || isOperationDisabled}
-          />
-        )}
         <rb.Button
           ref={submitButtonRef}
           variant={submitButtonOptions.variant}
@@ -840,7 +835,6 @@ export default function Send({ wallet }: SendProps) {
             <>{submitButtonOptions.text}</>
           )}
         </rb.Button>
-
         {showConfirmAbortModal && (
           <ConfirmModal
             isShown={showConfirmAbortModal}
@@ -851,7 +845,6 @@ export default function Send({ wallet }: SendProps) {
             {t('send.confirm_abort_modal.text_body')}
           </ConfirmModal>
         )}
-
         {showConfirmSendModal && (
           <PaymentConfirmModal
             isShown={true}
