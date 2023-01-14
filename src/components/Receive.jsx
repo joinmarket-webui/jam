@@ -12,6 +12,7 @@ import { CopyButton } from './CopyButton'
 import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
 import { SelectableJar, jarFillLevel } from './jars/Jar'
 import styles from './Receive.module.css'
+import Accordion from './Accordion'
 
 export default function Receive({ wallet }) {
   const { t } = useTranslation()
@@ -25,7 +26,6 @@ export default function Receive({ wallet }) {
   const [amount, setAmount] = useState('')
   const [selectedJarIndex, setSelectedJarIndex] = useState(parseInt(location.state?.account, 10) || 0)
   const [addressCount, setAddressCount] = useState(0)
-  const [showSettings, setShowSettings] = useState(false)
 
   const sortedAccountBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -105,66 +105,53 @@ export default function Receive({ wallet }) {
         </rb.Card>
       </div>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-        <div className={styles['settings-container']}>
-          <rb.Button
-            variant={`${settings.theme}`}
-            className={`${styles['settings-btn']} d-flex align-items-center`}
-            onClick={() => setShowSettings((current) => !current)}
-          >
-            {t('receive.button_settings')}
-            <Sprite symbol={`caret-${showSettings ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
-          </rb.Button>
-          {showSettings && (
-            <div className="my-4">
-              {!walletInfo || sortedAccountBalances.length === 0 ? (
-                <rb.Placeholder as="div" animation="wave">
-                  <rb.Placeholder className={styles.jarsPlaceholder} />
-                </rb.Placeholder>
-              ) : (
-                <div className={styles.jarsContainer}>
-                  {sortedAccountBalances.map((it) => (
-                    <SelectableJar
-                      key={it.accountIndex}
-                      index={it.accountIndex}
-                      balance={it.calculatedTotalBalanceInSats}
-                      isSelectable={true}
-                      isSelected={it.accountIndex === selectedJarIndex}
-                      fillLevel={jarFillLevel(
-                        it.calculatedTotalBalanceInSats,
-                        walletInfo.balanceSummary.calculatedTotalBalanceInSats
-                      )}
-                      onClick={(jarIndex) => setSelectedJarIndex(jarIndex)}
-                    />
-                  ))}
-                </div>
-              )}
-              <rb.Form.Group controlId="amountSats">
-                <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
-                <rb.InputGroup>
-                  <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
-                    <Sprite symbol="sats" width="24" height="24" />
-                  </rb.InputGroup.Text>
-                  <rb.Form.Control
-                    aria-label={t('receive.label_amount')}
-                    className="slashed-zeroes"
-                    name="amount"
-                    type="number"
-                    placeholder="0"
-                    value={amount}
-                    disabled={isLoading}
-                    onChange={(e) => setAmount(e.target.value)}
-                    min={0}
-                    step={1}
+        <Accordion title={t('receive.button_settings')}>
+          <div className="my-4">
+            {!walletInfo || sortedAccountBalances.length === 0 ? (
+              <rb.Placeholder as="div" animation="wave">
+                <rb.Placeholder className={styles.jarsPlaceholder} />
+              </rb.Placeholder>
+            ) : (
+              <div className={styles.jarsContainer}>
+                {sortedAccountBalances.map((it) => (
+                  <SelectableJar
+                    key={it.accountIndex}
+                    index={it.accountIndex}
+                    balance={it.calculatedTotalBalanceInSats}
+                    isSelectable={true}
+                    isSelected={it.accountIndex === selectedJarIndex}
+                    fillLevel={jarFillLevel(
+                      it.calculatedTotalBalanceInSats,
+                      walletInfo.balanceSummary.calculatedTotalBalanceInSats
+                    )}
+                    onClick={(jarIndex) => setSelectedJarIndex(jarIndex)}
                   />
-                </rb.InputGroup>
-                <rb.Form.Control.Feedback type="invalid">
-                  {t('receive.feedback_invalid_amount')}
-                </rb.Form.Control.Feedback>
-              </rb.Form.Group>
-            </div>
-          )}
-          <hr className="m-0" />
-        </div>
+                ))}
+              </div>
+            )}
+            <rb.Form.Group controlId="amountSats">
+              <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
+              <rb.InputGroup>
+                <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
+                  <Sprite symbol="sats" width="24" height="24" />
+                </rb.InputGroup.Text>
+                <rb.Form.Control
+                  aria-label={t('receive.label_amount')}
+                  className="slashed-zeroes"
+                  name="amount"
+                  type="number"
+                  placeholder="0"
+                  value={amount}
+                  disabled={isLoading}
+                  onChange={(e) => setAmount(e.target.value)}
+                  min={0}
+                  step={1}
+                />
+              </rb.InputGroup>
+              <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
+            </rb.Form.Group>
+          </div>
+        </Accordion>
 
         <div className="mt-4 d-flex justify-content-center">
           <rb.Button
