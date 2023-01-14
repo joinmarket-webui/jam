@@ -106,7 +106,7 @@ export default function Receive({ wallet }) {
       </div>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <Accordion title={t('receive.button_settings')}>
-          <div className="my-4">
+          <div>
             {!walletInfo || sortedAccountBalances.length === 0 ? (
               <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder className={styles.jarsPlaceholder} />

@@ -28,7 +28,7 @@ const Accordion = ({ children, defaultOpen, title }: AccordionProps) => {
         {title}
         <Sprite symbol={`caret-${isOpen ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
       </rb.Button>
-      {isOpen && children}
+      {isOpen && <div className="py-4">{children}</div>}
       <hr className="m-0" />
     </div>
   )
