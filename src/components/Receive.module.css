@@ -14,18 +14,6 @@
   border-color: rgba(222, 222, 222, 1);
 }
 
-.settings-container {
-  margin-top: 1.5rem;
-}
-
-.settings-container button.settings-btn {
-  background-color: transparent !important;
-  border: none;
-  padding-left: 0;
-  height: 3rem;
-  width: 100%;
-}
-
 .receive form input {
   height: 3.5rem;
   width: 100%;

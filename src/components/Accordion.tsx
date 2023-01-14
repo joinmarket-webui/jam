@@ -1,6 +1,5 @@
 import { PropsWithChildren, useEffect, useState } from 'react'
 import { useSettings } from '../context/SettingsContext'
-import styles from './Receive.module.css'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 
@@ -18,10 +17,12 @@ const Accordion = ({ children, defaultOpen, title }: AccordionProps) => {
   }, [defaultOpen])
 
   return (
-    <div className={styles['settings-container']}>
+    <div className="mt-4">
       <rb.Button
         variant={`${settings.theme}`}
-        className={`${styles['settings-btn']} d-flex align-items-center`}
+        className="d-flex align-items-center bg-transparent border-0 w-100"
+        // `pl-0` is ignored due to `.receive button` in src/components/Receive.module.css
+        style={{ height: '3rem', paddingLeft: 0 }}
         onClick={() => setIsOpen((current) => !current)}
       >
         {title}
