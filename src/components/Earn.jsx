@@ -513,7 +513,7 @@ export default function Earn({ wallet }) {
                                   <rb.Placeholder xs={12} className={styles['input-loader']} />
                                 </rb.Placeholder>
                               ) : (
-                                <rb.InputGroup>
+                                <rb.InputGroup hasValidation>
                                   <rb.InputGroup.Text id="feeRel-addon1" className={styles.inputGroupText}>
                                     %
                                   </rb.InputGroup.Text>
@@ -534,9 +534,9 @@ export default function Earn({ wallet }) {
                                     min={0}
                                     step={feeRelPercentageStep}
                                   />
+                                  <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
                                 </rb.InputGroup>
                               )}
-                              <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
                             </rb.Form.Group>
                           ) : (
                             <rb.Form.Group className="mb-3" controlId="feeAbs">
@@ -556,7 +556,7 @@ export default function Earn({ wallet }) {
                                   <rb.Placeholder xs={12} className={styles['input-loader']} />
                                 </rb.Placeholder>
                               ) : (
-                                <rb.InputGroup>
+                                <rb.InputGroup hasValidation>
                                   <rb.InputGroup.Text id="feeAbs-addon1" className={styles.inputGroupText}>
                                     <Sprite symbol="sats" width="24" height="24" />
                                   </rb.InputGroup.Text>
@@ -574,9 +574,9 @@ export default function Earn({ wallet }) {
                                     min={0}
                                     step={1}
                                   />
+                                  <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
                                 </rb.InputGroup>
                               )}
-                              <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
                             </rb.Form.Group>
                           )}
 
@@ -587,7 +587,7 @@ export default function Earn({ wallet }) {
                                 <rb.Placeholder xs={12} className={styles['input-loader']} />
                               </rb.Placeholder>
                             ) : (
-                              <rb.InputGroup>
+                              <rb.InputGroup hasValidation>
                                 <rb.InputGroup.Text id="minsize-addon1" className={styles.inputGroupText}>
                                   <Sprite symbol="sats" width="24" height="24" />
                                 </rb.InputGroup.Text>
@@ -604,9 +604,9 @@ export default function Earn({ wallet }) {
                                   min={0}
                                   step={1000}
                                 />
+                                <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
                               </rb.InputGroup>
                             )}
-                            <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
                           </rb.Form.Group>
                         </>
                       </Accordion>
