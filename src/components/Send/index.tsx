@@ -35,6 +35,7 @@ import {
   isValidJarIndex,
   isValidNumCollaborators,
 } from './helpers'
+import Accordion from '../Accordion'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -602,19 +603,16 @@ export default function Send({ wallet }: SendProps) {
             )}
           </>
         </rb.Fade>
-
         {alert && (
           <rb.Alert className="slashed-zeroes" variant={alert.variant}>
             {alert.message}
           </rb.Alert>
         )}
-
         {paymentSuccessfulInfoAlert && (
           <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
             {paymentSuccessfulInfoAlert.message}
           </rb.Alert>
         )}
-
         {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
           <div className="mb-4">
             <CoinjoinPreconditionViolationAlert
@@ -623,7 +621,6 @@ export default function Send({ wallet }: SendProps) {
             />
           </div>
         )}
-
         {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
@@ -657,7 +654,6 @@ export default function Send({ wallet }: SendProps) {
             }}
           />
         )}
-
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles['send-form']}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="sourceJarIndex">
             <rb.Form.Label>{t('send.label_source_jar')}</rb.Form.Label>
@@ -805,24 +801,26 @@ export default function Send({ wallet }: SendProps) {
             </rb.Form.Control.Feedback>
             {isSweep && frozenOrLockedWarning()}
           </rb.Form.Group>
-          <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
-            <ToggleSwitch
-              label={t('send.toggle_coinjoin')}
-              subtitle={t('send.toggle_coinjoin_subtitle')}
-              toggledOn={isCoinjoin}
-              onToggle={(isToggled) => setIsCoinjoin(isToggled)}
-              disabled={isLoading || isOperationDisabled}
-            />
-          </rb.Form.Group>
+          <Accordion title={t('send.sending_options')}>
+            <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
+              <ToggleSwitch
+                label={t('send.toggle_coinjoin')}
+                subtitle={t('send.toggle_coinjoin_subtitle')}
+                toggledOn={isCoinjoin}
+                onToggle={(isToggled) => setIsCoinjoin(isToggled)}
+                disabled={isLoading || isOperationDisabled}
+              />
+            </rb.Form.Group>
+            <div className={isCoinjoin ? 'd-block' : 'd-none'}>
+              <CollaboratorsSelector
+                numCollaborators={numCollaborators}
+                setNumCollaborators={setNumCollaborators}
+                minNumCollaborators={minNumCollaborators}
+                disabled={isLoading || isOperationDisabled}
+              />
+            </div>
+          </Accordion>
         </rb.Form>
-        {isCoinjoin && (
-          <CollaboratorsSelector
-            numCollaborators={numCollaborators}
-            setNumCollaborators={setNumCollaborators}
-            minNumCollaborators={minNumCollaborators}
-            disabled={isLoading || isOperationDisabled}
-          />
-        )}
         <rb.Button
           ref={submitButtonRef}
           variant={submitButtonOptions.variant}
@@ -840,7 +838,6 @@ export default function Send({ wallet }: SendProps) {
             <>{submitButtonOptions.text}</>
           )}
         </rb.Button>
-
         {showConfirmAbortModal && (
           <ConfirmModal
             isShown={showConfirmAbortModal}
@@ -851,7 +848,6 @@ export default function Send({ wallet }: SendProps) {
             {t('send.confirm_abort_modal.text_body')}
           </ConfirmModal>
         )}
-
         {showConfirmSendModal && (
           <PaymentConfirmModal
             isShown={true}

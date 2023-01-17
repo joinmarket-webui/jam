@@ -18,6 +18,7 @@ import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
 import styles from './Earn.module.css'
+import Accordion from './Accordion'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -176,7 +177,6 @@ export default function Earn({ wallet }) {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
 
-  const [showSettings, setShowSettings] = useState(false)
   const [alert, setAlert] = useState(null)
   const [serviceInfoAlert, setServiceInfoAlert] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -472,24 +472,11 @@ export default function Earn({ wallet }) {
           {!serviceInfo?.coinjoinInProgress && (
             <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
               {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
-                <rb.Form onSubmit={handleSubmit} noValidate>
-                  {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
-                    <div className={styles['settings-container']}>
-                      <rb.Button
-                        variant={`${settings.theme}`}
-                        className={`${styles['settings-btn']} d-flex align-items-center`}
-                        onClick={() => setShowSettings((current) => !current)}
-                      >
-                        {t('earn.button_settings')}
-                        <Sprite
-                          symbol={`caret-${showSettings ? 'up' : 'down'}`}
-                          className="ms-1"
-                          width="20"
-                          height="20"
-                        />
-                      </rb.Button>
-                      {showSettings && (
-                        <div className="my-4">
+                <>
+                  <rb.Form onSubmit={handleSubmit} noValidate>
+                    {!serviceInfo?.makerRunning && !isWaitingMakerStart && !isWaitingMakerStop && (
+                      <Accordion title={t('earn.button_settings')}>
+                        <>
                           <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
                             <SegmentedTabs
                               name="offertype"
@@ -518,16 +505,16 @@ export default function Earn({ wallet }) {
                                     typeof values.feeRel === 'number' ? `(${factorToPercentage(values.feeRel)}%)` : '',
                                 })}
                               </rb.Form.Label>
-                              <div className="mb-2">
-                                <rb.Form.Text className="text-secondary">{t('earn.description_rel_fee')}</rb.Form.Text>
-                              </div>
+                              <rb.Form.Text className="d-block text-secondary mb-2">
+                                {t('earn.description_rel_fee')}
+                              </rb.Form.Text>
                               {isLoading ? (
                                 <rb.Placeholder as="div" animation="wave">
                                   <rb.Placeholder xs={12} className={styles['input-loader']} />
                                 </rb.Placeholder>
                               ) : (
-                                <rb.InputGroup>
-                                  <rb.InputGroup.Text id="feeRel-addon1" className={styles['input-group-text']}>
+                                <rb.InputGroup hasValidation>
+                                  <rb.InputGroup.Text id="feeRel-addon1" className={styles.inputGroupText}>
                                     %
                                   </rb.InputGroup.Text>
                                   <rb.Form.Control
@@ -543,13 +530,13 @@ export default function Earn({ wallet }) {
                                     onBlur={handleBlur}
                                     value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
                                     isValid={touched.feeRel && !errors.feeRel}
-                                    isInvalid={touched.feeRel && errors.feeRel}
+                                    isInvalid={touched.feeRel && !!errors.feeRel}
                                     min={0}
                                     step={feeRelPercentageStep}
                                   />
+                                  <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
                                 </rb.InputGroup>
                               )}
-                              <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
                             </rb.Form.Group>
                           ) : (
                             <rb.Form.Group className="mb-3" controlId="feeAbs">
@@ -561,16 +548,16 @@ export default function Earn({ wallet }) {
                                       : '',
                                 })}
                               </rb.Form.Label>
-                              <div className="mb-2">
-                                <rb.Form.Text className="text-secondary">{t('earn.description_abs_fee')}</rb.Form.Text>
-                              </div>
+                              <rb.Form.Text className="d-block text-secondary mb-2">
+                                {t('earn.description_abs_fee')}
+                              </rb.Form.Text>
                               {isLoading ? (
                                 <rb.Placeholder as="div" animation="wave">
                                   <rb.Placeholder xs={12} className={styles['input-loader']} />
                                 </rb.Placeholder>
                               ) : (
-                                <rb.InputGroup>
-                                  <rb.InputGroup.Text id="feeAbs-addon1" className={styles['input-group-text']}>
+                                <rb.InputGroup hasValidation>
+                                  <rb.InputGroup.Text id="feeAbs-addon1" className={styles.inputGroupText}>
                                     <Sprite symbol="sats" width="24" height="24" />
                                   </rb.InputGroup.Text>
                                   <rb.Form.Control
@@ -583,13 +570,13 @@ export default function Earn({ wallet }) {
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     isValid={touched.feeAbs && !errors.feeAbs}
-                                    isInvalid={touched.feeAbs && errors.feeAbs}
+                                    isInvalid={touched.feeAbs && !!errors.feeAbs}
                                     min={0}
                                     step={1}
                                   />
+                                  <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
                                 </rb.InputGroup>
                               )}
-                              <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
                             </rb.Form.Group>
                           )}
 
@@ -600,8 +587,8 @@ export default function Earn({ wallet }) {
                                 <rb.Placeholder xs={12} className={styles['input-loader']} />
                               </rb.Placeholder>
                             ) : (
-                              <rb.InputGroup>
-                                <rb.InputGroup.Text id="minsize-addon1" className={styles['input-group-text']}>
+                              <rb.InputGroup hasValidation>
+                                <rb.InputGroup.Text id="minsize-addon1" className={styles.inputGroupText}>
                                   <Sprite symbol="sats" width="24" height="24" />
                                 </rb.InputGroup.Text>
                                 <rb.Form.Control
@@ -617,46 +604,44 @@ export default function Earn({ wallet }) {
                                   min={0}
                                   step={1000}
                                 />
+                                <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
                               </rb.InputGroup>
                             )}
-                            <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
                           </rb.Form.Group>
+                        </>
+                      </Accordion>
+                    )}
+                    <div className="mt-4">
+                      <rb.Button
+                        variant="dark"
+                        type="submit"
+                        className={styles['earn-btn']}
+                        disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
+                      >
+                        <div className="d-flex justify-content-center align-items-center">
+                          {(isWaitingMakerStart || isWaitingMakerStop) && (
+                            <rb.Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                              className="me-2"
+                            />
+                          )}
+                          {isWaitingMakerStart || isWaitingMakerStop ? (
+                            <>
+                              {isWaitingMakerStart && t('earn.text_starting')}
+                              {isWaitingMakerStop && t('earn.text_stopping')}
+                            </>
+                          ) : (
+                            <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
+                          )}
                         </div>
-                      )}
-
-                      <hr className="m-0" />
+                      </rb.Button>
                     </div>
-                  )}
-                  <div className="mt-4">
-                    <rb.Button
-                      variant="dark"
-                      type="submit"
-                      className={styles['earn-btn']}
-                      disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
-                    >
-                      <div className="d-flex justify-content-center align-items-center">
-                        {(isWaitingMakerStart || isWaitingMakerStop) && (
-                          <rb.Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                            className="me-2"
-                          />
-                        )}
-                        {isWaitingMakerStart || isWaitingMakerStop ? (
-                          <>
-                            {isWaitingMakerStart && t('earn.text_starting')}
-                            {isWaitingMakerStop && t('earn.text_stopping')}
-                          </>
-                        ) : (
-                          <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
-                        )}
-                      </div>
-                    </rb.Button>
-                  </div>
-                </rb.Form>
+                  </rb.Form>
+                </>
               )}
             </Formik>
           )}

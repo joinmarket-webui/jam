@@ -195,6 +195,7 @@
     "label_amount": "Montant en sats",
     "placeholder_amount": "Entrez le montant...",
     "feedback_invalid_amount": "Veuillez fournir un montant valide.",
+    "sending_options": "Options d'envoi",
     "toggle_coinjoin": "Envoyer en tant que transaction collaborative pour une meilleure confidentialité",
     "button_send": "Envoyer",
     "text_sending": "Envoi de ",
