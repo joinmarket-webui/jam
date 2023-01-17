@@ -11,11 +11,11 @@
   gap: 2rem;
 }
 
-.jarsContainer :global .balance-value {
+.jarsContainer :global .balance-value-hook {
   font-size: 0.7rem;
 }
 
-.jarsContainer :global .balance-symbol {
+.jarsContainer :global .balance-symbol-hook {
   font-size: 0.7rem;
 }
 

@@ -1,32 +1,36 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SATS, BTC, btcToSats, satsToBtc, formatBtc, formatSats, isValidNumber } from '../utils'
 import Sprite from './Sprite'
-import * as rb from 'react-bootstrap'
-import styles from './Balance.module.css'
 
 const DISPLAY_MODE_BTC = 0
 const DISPLAY_MODE_SATS = 1
 const DISPLAY_MODE_HIDDEN = 2
 
-const getDisplayMode = (unit, showBalance) => {
+const getDisplayMode = (unit: Unit, showBalance: boolean) => {
   if (showBalance && unit === SATS) return DISPLAY_MODE_SATS
   if (showBalance && unit === BTC) return DISPLAY_MODE_BTC
 
   return DISPLAY_MODE_HIDDEN
 }
 
-const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
+interface BalanceComponentProps {
+  symbol: JSX.Element
+  value: any
+  symbolIsPrefix: boolean
+}
+
+const BalanceComponent = ({ symbol, value, symbolIsPrefix }: BalanceComponentProps) => {
   return (
     <span className="d-inline-flex align-items-center">
       {symbolIsPrefix && symbol}
-      <span className="d-inline-flex align-items-center slashed-zeroes balance-value">{value}</span>
+      <span className="d-inline-flex align-items-center slashed-zeroes balance-value-hook">{value}</span>
       {!symbolIsPrefix && symbol}
     </span>
   )
 }
 
 /**
- * Render balances nicely formatted.
+ * Options argument for Balance component.
  *
  * @param {valueString}: The balance value to render.
  * Integer values are treated as SATS while decimal numbers with a decimal point (.) are treated as BTC.
@@ -39,23 +43,28 @@ const BalanceComponent = ({ symbol, value, symbolIsPrefix }) => {
  * @param {loading}: A loading flag that renders a placeholder while true.
  * @param {enableVisibilityToggle}: A flag that controls whether the balance can mask/unmask when clicked
  */
+interface BalanceProps {
+  valueString: string
+  convertToUnit: Unit
+  showBalance?: boolean
+  enableVisibilityToggle?: boolean
+}
+
+/**
+ * Render balances nicely formatted.
+ */
 export default function Balance({
   valueString,
   convertToUnit,
   showBalance = false,
-  loading = false,
   enableVisibilityToggle = !showBalance,
-}) {
-  const [displayMode, setDisplayMode] = useState(DISPLAY_MODE_HIDDEN)
+}: BalanceProps) {
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
+  const displayMode = useMemo(() => getDisplayMode(convertToUnit, isBalanceVisible), [convertToUnit, isBalanceVisible])
 
   useEffect(() => {
     setIsBalanceVisible(showBalance)
   }, [showBalance])
-
-  useEffect(() => {
-    setDisplayMode(getDisplayMode(convertToUnit, isBalanceVisible))
-  }, [convertToUnit, isBalanceVisible])
 
   const toggleVisibility = useCallback((e) => {
     e.preventDefault()
@@ -79,27 +88,28 @@ export default function Balance({
       )
     }
 
-    if (typeof valueString !== 'string' || !isValidNumber(parseFloat(valueString))) {
+    const valueNumber = parseFloat(valueString)
+    if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
-      return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
+      return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} />
     }
 
     // Treat integers as sats.
     const valueIsSats = valueString === parseInt(valueString, 10).toString()
     // Treat decimal numbers as btc.
-    const valueIsBtc = !valueIsSats && !isNaN(parseFloat(valueString)) && valueString.indexOf('.') > -1
+    const valueIsBtc = !valueIsSats && valueString.indexOf('.') > -1
 
     const btcSymbol = (
-      <span className="balance-symbol" style={{ paddingRight: '0.1em' }}>
+      <span className="balance-symbol-hook" style={{ paddingRight: '0.1em' }}>
         {'\u20BF'}
       </span>
     )
-    const satSymbol = <Sprite className="balance-symbol" symbol="sats" width="1.2em" height="1.2em" />
+    const satSymbol = <Sprite className="balance-symbol-hook" symbol="sats" width="1.2em" height="1.2em" />
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
-      return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueString)} symbolIsPrefix={true} />
+      return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueNumber)} symbolIsPrefix={true} />
     if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
-      return <BalanceComponent symbol={satSymbol} value={formatSats(valueString)} symbolIsPrefix={false} />
+      return <BalanceComponent symbol={satSymbol} value={formatSats(valueNumber)} symbolIsPrefix={false} />
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
       return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(valueString))} symbolIsPrefix={false} />
@@ -107,19 +117,8 @@ export default function Balance({
       return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <BalanceComponent symbol="" value={valueString} symbolIsPrefix={false} />
+    return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} />
   }, [valueString, displayMode])
-
-  if (loading) {
-    return (
-      <rb.Placeholder as="div" animation="wave">
-        <rb.Placeholder
-          data-testid="balance-component-placeholder"
-          className={styles['balance-component-placeholder']}
-        />
-      </rb.Placeholder>
-    )
-  }
 
   if (!enableVisibilityToggle) {
     return <>{balanceComponent}</>

@@ -12,6 +12,16 @@ import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
 import { AmountSats } from '../libs/JmWalletApi'
 
+import styles from './Navbar.module.css'
+
+const BalanceLoadingIndicator = () => {
+  return (
+    <rb.Placeholder as="div" animation="wave">
+      <rb.Placeholder className={styles.balancePlaceholder} />
+    </rb.Placeholder>
+  )
+}
+
 interface WalletPreviewProps {
   wallet: CurrentWallet
   totalBalance?: AmountSats
@@ -25,7 +35,9 @@ const WalletPreview = ({ wallet, totalBalance, unit, showBalance = false }: Wall
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {totalBalance !== undefined ? (
+        {totalBalance === undefined ? (
+          <BalanceLoadingIndicator />
+        ) : (
           <div className="text-body">
             <Balance
               valueString={`${totalBalance}`}
@@ -34,8 +46,6 @@ const WalletPreview = ({ wallet, totalBalance, unit, showBalance = false }: Wall
               enableVisibilityToggle={false}
             />
           </div>
-        ) : (
-          <Balance loading={true} />
         )}
       </div>
     </div>
