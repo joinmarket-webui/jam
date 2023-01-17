@@ -17,19 +17,7 @@
   width: 100%;
 }
 
-.settings-container {
-  margin-top: 1.5rem;
-}
-
-.settings-container button.settings-btn {
-  background-color: transparent !important;
-  border: none;
-  padding-left: 0;
-  height: 3rem;
-  width: 100%;
-}
-
-.settings-container .input-group-text {
+.inputGroupText {
   width: 5ch;
   display: inline-flex;
   justify-content: center;
