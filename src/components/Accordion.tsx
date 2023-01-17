@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useState } from 'react'
 import { useSettings } from '../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
@@ -8,13 +8,9 @@ type AccordionProps = PropsWithChildren<{
   title?: string
 }>
 
-const Accordion = ({ children, defaultOpen, title }: AccordionProps) => {
+const Accordion = ({ children, defaultOpen = false, title }: AccordionProps) => {
   const settings = useSettings()
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (defaultOpen) setIsOpen(defaultOpen)
-  }, [defaultOpen])
+  const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
     <div className="mt-4">
