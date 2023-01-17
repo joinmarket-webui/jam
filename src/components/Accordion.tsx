@@ -3,12 +3,12 @@ import { useSettings } from '../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 
-type AccordionProps = PropsWithChildren<{
+interface AccordionProps {
+  title: string
   defaultOpen?: boolean
-  title?: string
-}>
+}
 
-const Accordion = ({ children, defaultOpen = false, title }: AccordionProps) => {
+const Accordion = ({ title, defaultOpen = false, children }: PropsWithChildren<AccordionProps>) => {
   const settings = useSettings()
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
