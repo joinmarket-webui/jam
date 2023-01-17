@@ -19,10 +19,8 @@ const Accordion = ({ children, defaultOpen, title }: AccordionProps) => {
   return (
     <div className="mt-4">
       <rb.Button
-        variant={`${settings.theme}`}
-        className="d-flex align-items-center bg-transparent border-0 w-100"
-        // `pl-0` is ignored due to `.receive button` in src/components/Receive.module.css
-        style={{ height: '3rem', paddingLeft: 0 }}
+        variant={settings.theme}
+        className="d-flex align-items-center bg-transparent border-0 w-100 px-0 py-2"
         onClick={() => setIsOpen((current) => !current)}
       >
         {title}
