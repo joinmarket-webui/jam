@@ -811,14 +811,14 @@ export default function Send({ wallet }: SendProps) {
                 disabled={isLoading || isOperationDisabled}
               />
             </rb.Form.Group>
-            {isCoinjoin && (
+            <div className={isCoinjoin ? 'd-block' : 'd-none'}>
               <CollaboratorsSelector
                 numCollaborators={numCollaborators}
                 setNumCollaborators={setNumCollaborators}
                 minNumCollaborators={minNumCollaborators}
                 disabled={isLoading || isOperationDisabled}
               />
-            )}
+            </div>
           </Accordion>
         </rb.Form>
         <rb.Button
