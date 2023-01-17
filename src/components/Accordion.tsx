@@ -22,12 +22,10 @@ const Accordion = ({ title, defaultOpen = false, children }: PropsWithChildren<A
         {title}
         <Sprite symbol={`caret-${isOpen ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
       </rb.Button>
-      <hr className="mt-0 text-secondary" />
-      <div className={isOpen ? 'pb-4' : ''}>
-        <rb.Collapse in={isOpen}>
-          <div>{children}</div>
-        </rb.Collapse>
-      </div>
+      <hr className="m-0 pb-4 text-secondary" />
+      <rb.Collapse in={isOpen}>
+        <div>{children}</div>
+      </rb.Collapse>
     </div>
   )
 }
