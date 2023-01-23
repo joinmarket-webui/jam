@@ -158,7 +158,7 @@ const SpendFidelityBondModal = ({
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const loadFeeConfigValues = useLoadFeeConfigValues()
 
-  const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | undefined>()
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [selectedDestinationJarIndex, setSelectedDestinationJarIndex] = useState<JarIndex | undefined>(
     destinationJarIndex
   )

@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { Alert as BsAlert, AlertProps as BsAlertProps } from 'react-bootstrap'
+import { Alert as BsAlert } from 'react-bootstrap'
 
-export type SimpleMessageAlertProps = BsAlertProps & { message: string }
-
-export default function Alert({ message, onClose, ...props }: SimpleMessageAlertProps) {
+export default function Alert({ message, onClose, ...props }: SimpleAlert) {
   const [show, setShow] = useState(true)
 
   return (

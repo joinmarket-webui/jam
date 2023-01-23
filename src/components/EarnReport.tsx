@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
@@ -333,7 +333,7 @@ export function EarnReport({ entries, refresh }: EarnReportProps) {
 
 export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const { t } = useTranslation()
-  const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [entries, setEntries] = useState<EarnReportEntry[] | null>(null)
@@ -351,7 +351,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
         .then((linesWithHeader) => yieldgenReportToEarnReportEntries(linesWithHeader))
         .then((earnReportEntries) => {
           if (signal.aborted) return
-          setAlert(null)
+          setAlert(undefined)
           setEntries(earnReportEntries)
         })
         .catch((e) => {

@@ -72,7 +72,7 @@ type LogOverlayProps = rb.OffcanvasProps & {
 
 export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
   const { t } = useTranslation()
-  const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [content, setContent] = useState<string | null>(null)
@@ -83,7 +83,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
         .then((res) => (res.ok ? res.text() : ApiHelper.throwError(res)))
         .then((data) => {
           if (signal.aborted) return
-          setAlert(null)
+          setAlert(undefined)
           setContent(data)
         })
         .catch((err) => {

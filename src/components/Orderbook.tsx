@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactElement, ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
@@ -78,7 +78,7 @@ const TABLE_THEME = {
   `,
 }
 
-const withTooltip = (node: React.ReactElement, tooltip: string) => {
+const withTooltip = (node: ReactElement, tooltip: string) => {
   return (
     <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
   )
@@ -362,7 +362,7 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
                   type="checkbox"
                   id="highlight-own-offers"
                   label={t('orderbook.label_highlight_own_orders')}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     setIsHighlightOwnOffers(e.target.checked)
                   }}
                 />
@@ -382,7 +382,7 @@ type OrderbookOverlayProps = rb.OffcanvasProps & {
 
 export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayProps) {
   const { t } = useTranslation()
-  const [alert, setAlert] = useState<(rb.AlertProps & { message: string }) | null>(null)
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [orders, setOrders] = useState<ObwatchApi.Order[] | null>(null)
@@ -402,7 +402,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
           if (signal.aborted) return
 
           setOrders(orders)
-          setAlert(null)
+          setAlert(undefined)
         })
         .catch((e) => {
           if (signal.aborted) return
