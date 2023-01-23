@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors, FormikValues, useFormikContext } from 'formik'
@@ -188,37 +188,35 @@ export default function Jam({ wallet }: JamProps) {
     return destinationAddresses.reduce((obj, addr, index) => ({ ...obj, [`dest${index + 1}`]: addr }), {})
   }, [addressCount, useInsecureTestingSettings, walletInfo])
 
+  const reloadData = useCallback(
+    ({ signal }: { signal: AbortSignal }) => {
+      setAlert(undefined)
+      setIsLoading(true)
+
+      return Promise.all([reloadServiceInfo({ signal }), reloadCurrentWalletInfo.reloadUtxos({ signal })])
+        .catch((err) => {
+          if (signal.aborted) return
+          // reusing "wallet failed" message here is okay, as session info also contains wallet information
+          const message = t('global.errors.error_loading_wallet_failed', {
+            reason: err.message || t('global.errors.reason_unknown'),
+          })
+          setAlert({ variant: 'danger', message })
+        })
+        .finally(() => {
+          if (signal.aborted) return
+          setIsLoading(false)
+        })
+    },
+    [reloadServiceInfo, reloadCurrentWalletInfo, t]
+  )
+
   useEffect(() => {
-    setAlert(undefined)
-    setIsLoading(true)
-
     const abortCtrl = new AbortController()
-    const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
-      if (abortCtrl.signal.aborted) return
-      // reusing "wallet failed" message here is okay, as session info also contains wallet information
-      const message = t('global.errors.error_loading_wallet_failed', {
-        reason: err.message || t('global.errors.reason_unknown'),
-      })
-      setAlert({ variant: 'danger', message })
-    })
-
-    const loadingWalletInfo = reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).catch((err) => {
-      if (abortCtrl.signal.aborted) return
-      const message = t('global.errors.error_loading_wallet_failed', {
-        reason: err.message || t('global.errors.reason_unknown'),
-      })
-      setAlert({ variant: 'danger', message })
-    })
-
-    Promise.all([loadingServiceInfo, loadingWalletInfo]).finally(() => {
-      if (abortCtrl.signal.aborted) return
-      setIsLoading(false)
-    })
-
+    reloadData({ signal: abortCtrl.signal })
     return () => {
       abortCtrl.abort()
     }
-  }, [collaborativeOperationRunning, reloadServiceInfo, reloadCurrentWalletInfo, t])
+  }, [collaborativeOperationRunning, reloadData])
 
   useEffect(() => {
     if (!serviceInfo) return
@@ -257,7 +255,7 @@ export default function Jam({ wallet }: JamProps) {
       // In this case, additionally check that every remaining UTXO is frozen
       // (indicating the opteration was successfully completed).
       // Hint: In dev mode, this will only work if you send coins to an external wallet.
-      const allUtxosFrozen = walletInfo?.data.utxos.utxos.every((it) => it.frozen)
+      const allUtxosFrozen = walletInfo.data.utxos.utxos.every((it) => it.frozen)
 
       setIsShowSuccessMessage(firstEntriesSuccess && (lastEntrySuccess || allUtxosFrozen))
     }
@@ -365,9 +363,12 @@ export default function Jam({ wallet }: JamProps) {
                 <div className="py-4">
                   <SchedulerSuccessMessage
                     schedule={lastKnownSchedule}
-                    onConfirm={() => {
+                    onConfirm={async () => {
                       setIsShowSuccessMessage(false)
                       resetLastKnownSchedule()
+
+                      const abortCtrl = new AbortController()
+                      await reloadData({ signal: abortCtrl.signal })
                     }}
                   />
                 </div>
