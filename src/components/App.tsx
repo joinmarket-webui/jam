@@ -14,8 +14,10 @@ import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { clearSession, setSession } from '../session'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import CreateWallet from './CreateWallet'
 import Earn from './Earn'
+import ErrorPage, { ErrorThrowingComponent } from './ErrorPage'
 import Footer from './Footer'
 import Jam from './Jam'
 import Layout from './Layout'
@@ -55,58 +57,74 @@ export default function App() {
           <>
             <Navbar />
             <rb.Container as="main" className="py-4 py-sm-5">
-              <Layout>
-                <Outlet />
-              </Layout>
+              <Outlet />
             </rb.Container>
             <Footer />
           </>
         }
+        errorElement={<ErrorPage />}
       >
-        {/**
-         * This sections defines all routes that can be displayed, even if the connection
-         * to the backend is down, e.g. "create-wallet" shows the seed quiz and it is important
-         * that it stays visible in case the backend becomes unavailable.
-         */}
-        <Route id="create-wallet" path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
+        <Route
+          id="error-boundary"
+          element={
+            <Layout>
+              <Outlet />
+            </Layout>
+          }
+          errorElement={
+            <Layout variant="wide">
+              <ErrorPage />
+            </Layout>
+          }
+        >
+          {/**
+           * This sections defines all routes that can be displayed, even if the connection
+           * to the backend is down, e.g. "create-wallet" shows the seed quiz and it is important
+           * that it stays visible in case the backend becomes unavailable.
+           */}
+          <Route id="create-wallet" path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
 
-        {sessionConnectionError ? (
-          <Route
-            id="404"
-            path="*"
-            element={
-              <rb.Alert variant="danger">
-                {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
-              </rb.Alert>
-            }
-          />
-        ) : (
-          <>
-            {/**
-             * This section defines all routes that are displayed only if the backend is reachable.
-             */}
+          {sessionConnectionError ? (
             <Route
-              id="wallets"
-              path={routes.home}
-              element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
+              id="404"
+              path="*"
+              element={
+                <rb.Alert variant="danger">
+                  {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
+                </rb.Alert>
+              }
             />
-            {currentWallet && (
-              <>
-                <Route id="wallet" path={routes.wallet} element={<MainWalletView wallet={currentWallet} />} />
-                <Route id="jam" path={routes.jam} element={<Jam wallet={currentWallet} />} />
-                <Route id="send" path={routes.send} element={<Send wallet={currentWallet} />} />
-                <Route id="earn" path={routes.earn} element={<Earn wallet={currentWallet} />} />
-                <Route id="receive" path={routes.receive} element={<Receive wallet={currentWallet} />} />
-                <Route
-                  id="settings"
-                  path={routes.settings}
-                  element={<Settings wallet={currentWallet} stopWallet={stopWallet} />}
-                />
-              </>
-            )}
-            <Route id="404" path="*" element={<Navigate to={routes.home} replace={true} />} />
-          </>
-        )}
+          ) : (
+            <>
+              {/**
+               * This section defines all routes that are displayed only if the backend is reachable.
+               */}
+              <Route
+                id="wallets"
+                path={routes.home}
+                element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
+              />
+              {currentWallet && (
+                <>
+                  <Route id="wallet" path={routes.wallet} element={<MainWalletView wallet={currentWallet} />} />
+                  <Route id="jam" path={routes.jam} element={<Jam wallet={currentWallet} />} />
+                  <Route id="send" path={routes.send} element={<Send wallet={currentWallet} />} />
+                  <Route id="earn" path={routes.earn} element={<Earn wallet={currentWallet} />} />
+                  <Route id="receive" path={routes.receive} element={<Receive wallet={currentWallet} />} />
+                  <Route
+                    id="settings"
+                    path={routes.settings}
+                    element={<Settings wallet={currentWallet} stopWallet={stopWallet} />}
+                  />
+                </>
+              )}
+              {isDebugFeatureEnabled('errorExamplePage') && (
+                <Route id="error-example" path={routes.__errorExample} element={<ErrorThrowingComponent />} />
+              )}
+              <Route id="404" path="*" element={<Navigate to={routes.home} replace={true} />} />
+            </>
+          )}
+        </Route>
       </Route>
     ),
     {
