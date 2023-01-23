@@ -105,12 +105,12 @@ interface ConfigGetRequest {
   field: string
 }
 
-interface StartSchedulerRequest {
+export interface StartSchedulerRequest {
   destination_addresses: BitcoinAddress[]
   tumbler_options?: TumblerOptions
 }
 
-interface TumblerOptions {
+export interface TumblerOptions {
   restart?: boolean
   schedulefile?: string
   addrcount?: number
