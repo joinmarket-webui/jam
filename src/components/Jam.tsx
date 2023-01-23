@@ -242,19 +242,21 @@ export default function Jam({ wallet }: JamProps) {
       setIsShowSuccessMessage(false)
     } else {
       const isInMempoolOrSuccess = (it: StateFlag) => it === 1 || typeof it === 'string'
+
       const firstEntriesSuccess = lastKnownSchedule
         .slice(0, -1)
         .map((it) => it[6])
         .every((it) => it === 1 || typeof it === 'string')
 
-      // workaround to prevent race condition: since we poll the schedule info,
-      // it is possible that the latest known state still has the success flag
-      // of the last entry set to `0`, although the schedule was completed successfully.
-      // in this case, additionally check that every remaining utxo is frozen
-      // (indicating the schedule run was successfully completed).
       const lastEntryState = lastKnownSchedule[lastKnownSchedule.length - 1][6]
       const lastEntrySuccess = isInMempoolOrSuccess(lastEntryState)
 
+      // Workaround to prevent race conditions: Since the schedule info is polled,
+      // it'll be possible that the latest known state still has the success flag
+      // of the last entry set to `0`, although the schedule was completed successfully.
+      // In this case, additionally check that every remaining UTXO is frozen
+      // (indicating the opteration was successfully completed).
+      // Hint: In dev mode, this will only work if you send coins to an external wallet.
       const allUtxosFrozen = walletInfo?.data.utxos.utxos.every((it) => it.frozen)
 
       setIsShowSuccessMessage(firstEntriesSuccess && (lastEntrySuccess || allUtxosFrozen))
