@@ -9,9 +9,9 @@ interface PageTitleProps {
 
 export default function PageTitle({ title, subtitle, success = false, center = false }: PageTitleProps) {
   return (
-    <div className={`mb-4 ${center && 'text-center'}`}>
+    <div className={`mb-4 ${center ? 'text-center' : ''}`}>
       {success && (
-        <div className={`mb-2 ${center && 'd-flex align-items-center justify-content-center'}`}>
+        <div className={`mb-2 ${center ? 'd-flex align-items-center justify-content-center' : ''}`}>
           <div
             className="d-flex align-items-center justify-content-center"
             style={{

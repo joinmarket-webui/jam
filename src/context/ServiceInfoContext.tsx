@@ -246,4 +246,5 @@ export {
   useReloadServiceInfo,
   useSessionConnectionError,
   Schedule,
+  StateFlag,
 }
