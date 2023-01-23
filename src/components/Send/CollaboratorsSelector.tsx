@@ -1,14 +1,14 @@
-import { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
-import styles from './Send.module.css'
+import styles from './CollaboratorsSelector.module.css'
 import { isValidNumCollaborators } from './helpers'
 
-type CollaboratorsSelectorArgs = {
+type CollaboratorsSelectorProps = {
   numCollaborators: number | null
-  setNumCollaborators: Dispatch<SetStateAction<number | null>>
+  setNumCollaborators: (val: number | null) => void
   minNumCollaborators: number
   disabled?: boolean
 }
@@ -17,7 +17,7 @@ const CollaboratorsSelector = ({
   setNumCollaborators,
   minNumCollaborators,
   disabled = false,
-}: CollaboratorsSelectorArgs) => {
+}: CollaboratorsSelectorProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
