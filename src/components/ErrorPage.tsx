@@ -26,7 +26,7 @@ function ErrorView({ title, subtitle, reason, stacktrace }: ErrorViewProps) {
 
       <p>
         <Trans i18nKey="error_page.report_bug">
-          Please,{' '}
+          Please{' '}
           <a
             href="https://github.com/joinmarket-webui/jam/issues/new?labels=bug&template=bug_report.md"
             target="_blank"
@@ -34,7 +34,7 @@ function ErrorView({ title, subtitle, reason, stacktrace }: ErrorViewProps) {
           >
             open an issue on GitHub
           </a>{' '}
-          for this to be reviewed and for the error to be resolved in an upcoming version.
+          for this error to be reviewed and resolved in an upcoming version.
         </Trans>
       </p>
 
