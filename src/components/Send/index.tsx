@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef, FormEventHandler } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
@@ -74,7 +74,6 @@ export default function Send({ wallet }: SendProps) {
   const reloadServiceInfo = useReloadServiceInfo()
   const loadConfigValue = useLoadConfigValue()
   const loadFeeConfigValues = useLoadFeeConfigValues()
-  const location = useLocation()
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
@@ -104,9 +103,7 @@ export default function Send({ wallet }: SendProps) {
   )
 
   const [destination, setDestination] = useState<Api.BitcoinAddress | null>(INITIAL_DESTINATION)
-  const [sourceJarIndex, setSourceJarIndex] = useState(
-    parseInt(location.state?.account, 10) || INITIAL_SOURCE_JAR_INDEX
-  )
+  const [sourceJarIndex, setSourceJarIndex] = useState(INITIAL_SOURCE_JAR_INDEX)
   const [amount, setAmount] = useState<number | null>(INITIAL_AMOUNT)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState<number | null>(initialNumCollaborators(minNumCollaborators))
