@@ -3,29 +3,28 @@ import { Link, useLocation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
+
 import PageTitle from '../PageTitle'
 import ToggleSwitch from '../ToggleSwitch'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { ConfirmModal } from '../Modal'
+import { jarFillLevel, jarName, SelectableJar } from '../jars/Jar'
 import JarSelectorModal from '../JarSelectorModal'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViolationAlert'
+import CollaboratorsSelector from './CollaboratorsSelector'
+import Accordion from '../Accordion'
 
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
-import { useSettings } from '../../context/SettingsContext'
 import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
 
 import * as Api from '../../libs/JmWalletApi'
-import { SATS, formatBtc, formatSats, satsToBtc, isValidNumber } from '../../utils'
 import { routes } from '../../constants/routes'
-import { jarName } from '../jars/Jar'
 
-import styles from './Send.module.css'
-import CollaboratorsSelector from './CollaboratorsSelector'
 import {
   enhanceDirectPaymentErrorMessageIfNecessary,
   enhanceTakerErrorMessageIfNecessary,
@@ -35,7 +34,8 @@ import {
   isValidJarIndex,
   isValidNumCollaborators,
 } from './helpers'
-import Accordion from '../Accordion'
+import { SATS, isValidNumber } from '../../utils'
+import styles from './Send.module.css'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -74,7 +74,6 @@ export default function Send({ wallet }: SendProps) {
   const reloadServiceInfo = useReloadServiceInfo()
   const loadConfigValue = useLoadConfigValue()
   const loadFeeConfigValues = useLoadFeeConfigValues()
-  const settings = useSettings()
   const location = useLocation()
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
@@ -112,6 +111,13 @@ export default function Send({ wallet }: SendProps) {
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState<number | null>(initialNumCollaborators(minNumCollaborators))
   const [formIsValid, setFormIsValid] = useState(false)
+
+  const sortedAccountBalances = useMemo(() => {
+    if (!walletInfo) return []
+    return Object.values(walletInfo.balanceSummary.accountBalances).sort(
+      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex
+    )
+  }, [walletInfo])
 
   const accountBalanceOrNull = useMemo(
     () => (walletInfo && walletInfo.balanceSummary.accountBalances[sourceJarIndex]) || null,
@@ -270,7 +276,8 @@ export default function Send({ wallet }: SendProps) {
         setNumCollaborators(initialNumCollaborators(minimumMakers))
       })
       .catch((err) => {
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })
+        if (abortCtrl.signal.aborted) return
+        setAlert({ variant: 'danger', message: err.message })
       })
 
     const loadFeeValues = loadFeeConfigValues(abortCtrl.signal)
@@ -278,7 +285,7 @@ export default function Send({ wallet }: SendProps) {
         if (abortCtrl.signal.aborted) return
         setFeeConfigValues(data)
       })
-      .catch((e) => {
+      .catch(() => {
         if (abortCtrl.signal.aborted) return
         // As fee config is not essential, don't raise an error on purpose.
         // Fee settings cannot be displayed, but making a payment is still possible.
@@ -294,7 +301,7 @@ export default function Send({ wallet }: SendProps) {
 
   useEffect(() => {
     if (destination !== null && walletInfo?.addressSummary[destination]) {
-      if (walletInfo?.addressSummary[destination].status !== 'new') {
+      if (walletInfo.addressSummary[destination].status !== 'new') {
         setDestinationIsReusedAddress(true)
         return
       }
@@ -655,32 +662,27 @@ export default function Send({ wallet }: SendProps) {
         <rb.Form id="send-form" onSubmit={onSubmit} noValidate className={styles.sendForm}>
           <rb.Form.Group className="mb-4 flex-grow-1" controlId="sourceJarIndex">
             <rb.Form.Label>{t('send.label_source_jar')}</rb.Form.Label>
-            {isLoading ? (
+            {!walletInfo || sortedAccountBalances.length === 0 ? (
               <rb.Placeholder as="div" animation="wave">
-                <rb.Placeholder xs={12} className={styles.inputLoader} />
+                <rb.Placeholder className={styles.sourceJarsPlaceholder} />
               </rb.Placeholder>
             ) : (
-              <rb.Form.Select
-                defaultValue={sourceJarIndex}
-                onChange={(e) => setSourceJarIndex(parseInt(e.target.value, 10))}
-                required
-                className={`${styles.select} slashed-zeroes`}
-                isInvalid={!isValidJarIndex(sourceJarIndex)}
-                disabled={isOperationDisabled}
-              >
-                {walletInfo &&
-                  Object.values(walletInfo.balanceSummary.accountBalances)
-                    .sort((lhs, rhs) => lhs.accountIndex - rhs.accountIndex)
-                    .map(({ accountIndex, calculatedTotalBalanceInSats }) => (
-                      <option key={accountIndex} value={accountIndex}>
-                        {jarName(accountIndex)}{' '}
-                        {settings.showBalance &&
-                          (settings.unit === SATS
-                            ? `(${formatSats(calculatedTotalBalanceInSats)} sats)`
-                            : `(\u20BF${formatBtc(satsToBtc(calculatedTotalBalanceInSats.toString()))})`)}
-                      </option>
-                    ))}
-              </rb.Form.Select>
+              <div className={styles.sourceJarsContainer}>
+                {sortedAccountBalances.map((it) => (
+                  <SelectableJar
+                    key={it.accountIndex}
+                    index={it.accountIndex}
+                    balance={it.calculatedAvailableBalanceInSats}
+                    isSelectable={it.calculatedAvailableBalanceInSats > 0}
+                    isSelected={it.accountIndex === sourceJarIndex}
+                    fillLevel={jarFillLevel(
+                      it.calculatedTotalBalanceInSats,
+                      walletInfo.balanceSummary.calculatedTotalBalanceInSats
+                    )}
+                    onClick={(jarIndex) => setSourceJarIndex(jarIndex)}
+                  />
+                ))}
+              </div>
             )}
           </rb.Form.Group>
           <rb.Form.Group className="mb-4" controlId="destination">
