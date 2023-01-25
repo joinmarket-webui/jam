@@ -13,7 +13,7 @@ const Accordion = ({ title, defaultOpen = false, children }: PropsWithChildren<A
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="mt-4">
+    <div>
       <rb.Button
         variant={settings.theme}
         className="d-flex align-items-center bg-transparent border-0 w-100 px-0 py-2"

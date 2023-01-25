@@ -42,7 +42,7 @@ const IS_COINJOIN_DEFAULT_VAL = true
 const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
 const INITIAL_DESTINATION = null
-const INITIAL_SOURCE_JAR_INDEX = 0
+const INITIAL_SOURCE_JAR_INDEX = null
 const INITIAL_AMOUNT = null
 
 type SweepAccordionToggleProps = {
@@ -84,7 +84,7 @@ export default function Send({ wallet }: SendProps) {
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
   const [isSweep, setIsSweep] = useState(false)
   const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
-  const [destinationJar, setDestinationJar] = useState<number | null>(null)
+  const [destinationJar, setDestinationJar] = useState<JarIndex | null>(null)
   const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
 
   const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
@@ -103,11 +103,10 @@ export default function Send({ wallet }: SendProps) {
   )
 
   const [destination, setDestination] = useState<Api.BitcoinAddress | null>(INITIAL_DESTINATION)
-  const [sourceJarIndex, setSourceJarIndex] = useState(INITIAL_SOURCE_JAR_INDEX)
+  const [sourceJarIndex, setSourceJarIndex] = useState<JarIndex | null>(INITIAL_SOURCE_JAR_INDEX)
   const [amount, setAmount] = useState<number | null>(INITIAL_AMOUNT)
   // see https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/USAGE.md#try-out-a-coinjoin-using-sendpaymentpy
   const [numCollaborators, setNumCollaborators] = useState<number | null>(initialNumCollaborators(minNumCollaborators))
-  const [formIsValid, setFormIsValid] = useState(false)
 
   const sortedAccountBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -116,21 +115,36 @@ export default function Send({ wallet }: SendProps) {
     )
   }, [walletInfo])
 
-  const accountBalanceOrNull = useMemo(
-    () => (walletInfo && walletInfo.balanceSummary.accountBalances[sourceJarIndex]) || null,
-    [walletInfo, sourceJarIndex]
+  useEffect(
+    function preSelectSourceJarIfPossible() {
+      if (isLoading) return
+
+      const jarsWithBalance = sortedAccountBalances.filter((it) => it.calculatedAvailableBalanceInSats > 0)
+      setSourceJarIndex((current) => {
+        if (jarsWithBalance.length === 0) return null
+
+        const currentJarHasBalance = current !== null && jarsWithBalance.some((it) => it.accountIndex === current)
+        if (currentJarHasBalance) return current
+        return jarsWithBalance[0].accountIndex
+      })
+    },
+    [isLoading, sourceJarIndex, sortedAccountBalances]
   )
 
-  const sourceJarUtxos = useMemo(() => {
-    if (!walletInfo) return null
+  const accountBalance = useMemo(() => {
+    if (sourceJarIndex === null) return null
+    return sortedAccountBalances[sourceJarIndex]
+  }, [sortedAccountBalances, sourceJarIndex])
 
+  const sourceJarUtxos = useMemo(() => {
+    if (!walletInfo || sourceJarIndex === null) return null
     return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === sourceJarIndex)
   }, [walletInfo, sourceJarIndex])
 
-  const coinjoinPreconditionSummary = useMemo(
-    () => buildCoinjoinRequirementSummary(sourceJarUtxos || []),
-    [sourceJarUtxos]
-  )
+  const coinjoinPreconditionSummary = useMemo(() => {
+    if (sourceJarUtxos === null) return null
+    return buildCoinjoinRequirementSummary(sourceJarUtxos)
+  }, [sourceJarUtxos])
 
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
@@ -142,7 +156,7 @@ export default function Send({ wallet }: SendProps) {
           variant: 'danger',
           text: t('send.button_send_without_improved_privacy'),
         }
-      if (!coinjoinPreconditionSummary.isFulfilled)
+      if (coinjoinPreconditionSummary && !coinjoinPreconditionSummary.isFulfilled)
         return {
           variant: 'warning',
           text: t('send.button_send_despite_warning'),
@@ -155,18 +169,14 @@ export default function Send({ wallet }: SendProps) {
     }
   }, [isLoading, isCoinjoin, coinjoinPreconditionSummary, t])
 
-  useEffect(() => {
-    if (
+  const formIsValid = useMemo(() => {
+    return (
       isValidAddress(destination) &&
       !destinationIsReusedAddress &&
-      isValidJarIndex(sourceJarIndex) &&
+      isValidJarIndex(sourceJarIndex ?? -1) &&
       isValidAmount(amount, isSweep) &&
       (isCoinjoin ? isValidNumCollaborators(numCollaborators, minNumCollaborators) : true)
-    ) {
-      setFormIsValid(true)
-    } else {
-      setFormIsValid(false)
-    }
+    )
   }, [
     destination,
     sourceJarIndex,
@@ -178,134 +188,139 @@ export default function Send({ wallet }: SendProps) {
     destinationIsReusedAddress,
   ])
 
-  useEffect(() => {
-    if (isSweep) {
-      setAmount(0)
-    } else {
-      setAmount(null)
-    }
-  }, [isSweep])
+  useEffect(() => setAmount(isSweep ? 0 : null), [isSweep])
 
   // This callback is responsible for updating `waitForUtxosToBeSpent` while
   // the wallet is synchronizing. The wallet needs some time after a tx is sent
   // to reflect the changes internally. In order to show the actual balance,
   // all outputs in `waitForUtxosToBeSpent` must have been removed from the
   // wallet's utxo set.
-  useEffect(() => {
-    if (waitForUtxosToBeSpent.length === 0) return
+  useEffect(
+    function updateWaitForUtxosToBeSpentHook() {
+      if (waitForUtxosToBeSpent.length === 0) return
 
-    const abortCtrl = new AbortController()
+      const abortCtrl = new AbortController()
 
-    // Delaying the poll requests gives the wallet some time to synchronize
-    // the utxo set and reduces amount of http requests
-    const initialDelayInMs = 250
-    const timer = setTimeout(() => {
-      if (abortCtrl.signal.aborted) return
+      // Delaying the poll requests gives the wallet some time to synchronize
+      // the utxo set and reduces amount of http requests
+      const initialDelayInMs = 250
+      const timer = setTimeout(() => {
+        if (abortCtrl.signal.aborted) return
 
-      reloadCurrentWalletInfo
-        .reloadUtxos({ signal: abortCtrl.signal })
-        .then((res) => {
-          if (abortCtrl.signal.aborted) return
-          const outputs = res.utxos.map((it) => it.utxo)
-          const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
-          setWaitForUtxosToBeSpent([...utxosStillPresent])
+        reloadCurrentWalletInfo
+          .reloadUtxos({ signal: abortCtrl.signal })
+          .then((res) => {
+            if (abortCtrl.signal.aborted) return
+            const outputs = res.utxos.map((it) => it.utxo)
+            const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
+            setWaitForUtxosToBeSpent([...utxosStillPresent])
+          })
+
+          .catch((err) => {
+            if (abortCtrl.signal.aborted) return
+
+            // Stop waiting for wallet synchronization on errors, but inform
+            // the user that loading the wallet info failed
+            setWaitForUtxosToBeSpent([])
+
+            const message = t('global.errors.error_reloading_wallet_failed', {
+              reason: err.message || t('global.errors.reason_unknown'),
+            })
+            setAlert({ variant: 'danger', message })
+          })
+      }, initialDelayInMs)
+
+      return () => {
+        abortCtrl.abort()
+        clearTimeout(timer)
+      }
+    },
+    [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t]
+  )
+
+  useEffect(
+    function initialize() {
+      if (isOperationDisabled) {
+        setIsInitializing(false)
+        return
+      }
+
+      const abortCtrl = new AbortController()
+
+      setAlert(undefined)
+      setIsInitializing(true)
+
+      // reloading service info is important, is it must be known as soon as possible
+      // if the operation is even allowed, i.e. if no other service is running
+      const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
+        if (abortCtrl.signal.aborted) return
+        // reusing "wallet failed" message here is okay, as session info also contains wallet information
+        const message = t('global.errors.error_loading_wallet_failed', {
+          reason: err.message || t('global.errors.reason_unknown'),
         })
+        setAlert({ variant: 'danger', message })
+      })
 
+      const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo
+        .reloadUtxos({ signal: abortCtrl.signal })
         .catch((err) => {
           if (abortCtrl.signal.aborted) return
-
-          // Stop waiting for wallet synchronization on errors, but inform
-          // the user that loading the wallet info failed
-          setWaitForUtxosToBeSpent([])
-
-          const message = t('global.errors.error_reloading_wallet_failed', {
+          const message = t('global.errors.error_loading_wallet_failed', {
             reason: err.message || t('global.errors.reason_unknown'),
           })
           setAlert({ variant: 'danger', message })
         })
-    }, initialDelayInMs)
 
-    return () => {
-      abortCtrl.abort()
-      clearTimeout(timer)
-    }
-  }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
-
-  useEffect(() => {
-    if (isOperationDisabled) {
-      setIsInitializing(false)
-      return
-    }
-
-    const abortCtrl = new AbortController()
-
-    setAlert(undefined)
-    setIsInitializing(true)
-
-    // reloading service info is important, is it must be known as soon as possible
-    // if the operation is even allowed, i.e. if no other service is running
-    const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
-      if (abortCtrl.signal.aborted) return
-      // reusing "wallet failed" message here is okay, as session info also contains wallet information
-      const message = t('global.errors.error_loading_wallet_failed', {
-        reason: err.message || t('global.errors.reason_unknown'),
+      const loadingMinimumMakerConfig = loadConfigValue({
+        signal: abortCtrl.signal,
+        key: { section: 'POLICY', field: 'minimum_makers' },
       })
-      setAlert({ variant: 'danger', message })
-    })
+        .then((data) => {
+          if (abortCtrl.signal.aborted) return
 
-    const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }).catch((err) => {
-      if (abortCtrl.signal.aborted) return
-      const message = t('global.errors.error_loading_wallet_failed', {
-        reason: err.message || t('global.errors.reason_unknown'),
-      })
-      setAlert({ variant: 'danger', message })
-    })
+          const minimumMakers = parseInt(data.value, 10)
+          setMinNumCollaborators(minimumMakers)
+          setNumCollaborators(initialNumCollaborators(minimumMakers))
+        })
+        .catch((err) => {
+          if (abortCtrl.signal.aborted) return
+          setAlert({ variant: 'danger', message: err.message })
+        })
 
-    const loadingMinimumMakerConfig = loadConfigValue({
-      signal: abortCtrl.signal,
-      key: { section: 'POLICY', field: 'minimum_makers' },
-    })
-      .then((data) => {
-        if (abortCtrl.signal.aborted) return
+      const loadFeeValues = loadFeeConfigValues(abortCtrl.signal)
+        .then((data) => {
+          if (abortCtrl.signal.aborted) return
+          setFeeConfigValues(data)
+        })
+        .catch(() => {
+          if (abortCtrl.signal.aborted) return
+          // As fee config is not essential, don't raise an error on purpose.
+          // Fee settings cannot be displayed, but making a payment is still possible.
+          setFeeConfigValues(undefined)
+        })
 
-        const minimumMakers = parseInt(data.value, 10)
-        setMinNumCollaborators(minimumMakers)
-        setNumCollaborators(initialNumCollaborators(minimumMakers))
-      })
-      .catch((err) => {
-        if (abortCtrl.signal.aborted) return
-        setAlert({ variant: 'danger', message: err.message })
-      })
+      Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig, loadFeeValues]).finally(
+        () => !abortCtrl.signal.aborted && setIsInitializing(false)
+      )
 
-    const loadFeeValues = loadFeeConfigValues(abortCtrl.signal)
-      .then((data) => {
-        if (abortCtrl.signal.aborted) return
-        setFeeConfigValues(data)
-      })
-      .catch(() => {
-        if (abortCtrl.signal.aborted) return
-        // As fee config is not essential, don't raise an error on purpose.
-        // Fee settings cannot be displayed, but making a payment is still possible.
-        setFeeConfigValues(undefined)
-      })
+      return () => abortCtrl.abort()
+    },
+    [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, loadFeeConfigValues, t]
+  )
 
-    Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig, loadFeeValues]).finally(
-      () => !abortCtrl.signal.aborted && setIsInitializing(false)
-    )
-
-    return () => abortCtrl.abort()
-  }, [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, loadFeeConfigValues, t])
-
-  useEffect(() => {
-    if (destination !== null && walletInfo?.addressSummary[destination]) {
-      if (walletInfo.addressSummary[destination].status !== 'new') {
-        setDestinationIsReusedAddress(true)
-        return
+  useEffect(
+    function checkReusedDestinationAddressHook() {
+      if (destination !== null && walletInfo?.addressSummary[destination]) {
+        if (walletInfo.addressSummary[destination].status !== 'new') {
+          setDestinationIsReusedAddress(true)
+          return
+        }
       }
-    }
 
-    setDestinationIsReusedAddress(false)
-  }, [walletInfo, destination])
+      setDestinationIsReusedAddress(false)
+    },
+    [walletInfo, destination]
+  )
 
   const sendPayment = async (
     sourceJarIndex: JarIndex,
@@ -444,7 +459,7 @@ export default function Send({ wallet }: SendProps) {
         console.error('Sanity check failed: Sweep amount mismatch. This should not happen.')
         return
       }
-      if (!destination || amount === null || (isCoinjoin && numCollaborators === null)) {
+      if (sourceJarIndex === null || !destination || amount === null || (isCoinjoin && numCollaborators === null)) {
         console.error('Sanity check failed: Form is invalid and is missing required values. This should not happen.')
         return
       }
@@ -462,11 +477,11 @@ export default function Send({ wallet }: SendProps) {
 
       if (success) {
         setDestination(INITIAL_DESTINATION)
+        setDestinationJar(null)
         setAmount(INITIAL_AMOUNT)
         setNumCollaborators(initialNumCollaborators(minNumCollaborators))
         setIsCoinjoin(IS_COINJOIN_DEFAULT_VAL)
         setIsSweep(false)
-        setDestinationJar(null)
 
         form.reset()
       }
@@ -477,15 +492,15 @@ export default function Send({ wallet }: SendProps) {
     if (amount === null || !isValidNumber(amount)) return ''
 
     if (isSweep) {
-      if (!accountBalanceOrNull) return ''
-      return `${accountBalanceOrNull.calculatedAvailableBalanceInSats}`
+      if (!accountBalance) return ''
+      return `${accountBalance.calculatedAvailableBalanceInSats}`
     }
 
     return amount.toString()
-  }, [accountBalanceOrNull, amount, isSweep])
+  }, [accountBalance, amount, isSweep])
 
-  const frozenOrLockedWarning = () => {
-    if (!accountBalanceOrNull) return null
+  const frozenOrLockedWarning = useMemo(() => {
+    if (!accountBalance || amountFieldValue === '') return <></>
 
     return (
       <div className={`${styles.sweepBreakdown} mt-2`}>
@@ -499,7 +514,7 @@ export default function Send({ wallet }: SendProps) {
                     <td>{t('send.sweep_amount_breakdown_total_balance')}</td>
                     <td className={styles.balanceCol}>
                       <Balance
-                        valueString={accountBalanceOrNull.calculatedTotalBalanceInSats.toString()}
+                        valueString={accountBalance.calculatedTotalBalanceInSats.toString()}
                         convertToUnit={SATS}
                         showBalance={true}
                       />
@@ -509,7 +524,7 @@ export default function Send({ wallet }: SendProps) {
                     <td>{t('send.sweep_amount_breakdown_frozen_balance')}</td>
                     <td className={styles.balanceCol}>
                       <Balance
-                        valueString={accountBalanceOrNull.calculatedFrozenOrLockedBalanceInSats.toString()}
+                        valueString={accountBalance.calculatedFrozenOrLockedBalanceInSats.toString()}
                         convertToUnit={SATS}
                         showBalance={true}
                       />
@@ -564,7 +579,7 @@ export default function Send({ wallet }: SendProps) {
         </rb.Accordion>
       </div>
     )
-  }
+  }, [amountFieldValue, accountBalance, t])
 
   return (
     <>
@@ -614,21 +629,25 @@ export default function Send({ wallet }: SendProps) {
             {paymentSuccessfulInfoAlert.message}
           </rb.Alert>
         )}
-        {!isLoading && !isOperationDisabled && isCoinjoin && !coinjoinPreconditionSummary.isFulfilled && (
-          <div className="mb-4">
-            <CoinjoinPreconditionViolationAlert
-              summary={coinjoinPreconditionSummary}
-              i18nPrefix="send.coinjoin_precondition."
-            />
-          </div>
-        )}
+        {!isLoading &&
+          !isOperationDisabled &&
+          isCoinjoin &&
+          coinjoinPreconditionSummary &&
+          !coinjoinPreconditionSummary.isFulfilled && (
+            <div className="mb-4">
+              <CoinjoinPreconditionViolationAlert
+                summary={coinjoinPreconditionSummary}
+                i18nPrefix="send.coinjoin_precondition."
+              />
+            </div>
+          )}
         {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
             title={t('send.title_jar_selector')}
             accountBalances={walletInfo.balanceSummary.accountBalances}
             totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
-            disabledJar={sourceJarIndex}
+            disabledJar={sourceJarIndex ?? undefined}
             onCancel={() => setDestinationJarPickerShown(false)}
             onConfirm={(selectedJar) => {
               const abortCtrl = new AbortController()
@@ -670,7 +689,7 @@ export default function Send({ wallet }: SendProps) {
                     key={it.accountIndex}
                     index={it.accountIndex}
                     balance={it.calculatedAvailableBalanceInSats}
-                    isSelectable={it.calculatedAvailableBalanceInSats > 0}
+                    isSelectable={!isOperationDisabled && !isLoading && it.calculatedAvailableBalanceInSats > 0}
                     isSelected={it.accountIndex === sourceJarIndex}
                     fillLevel={jarFillLevel(
                       it.calculatedTotalBalanceInSats,
@@ -701,11 +720,7 @@ export default function Send({ wallet }: SendProps) {
                     required
                     onChange={(e) => {
                       const value = e.target.value
-                      if (value === '') {
-                        setDestination(null)
-                      } else {
-                        setDestination(e.target.value)
-                      }
+                      setDestination(value === '' ? null : value)
                     }}
                     isInvalid={(destination !== null && !isValidAddress(destination)) || destinationIsReusedAddress}
                     disabled={isOperationDisabled || destinationJar !== null}
@@ -773,8 +788,8 @@ export default function Send({ wallet }: SendProps) {
                   <rb.Button
                     variant="outline-dark"
                     className={styles.buttonSweep}
-                    onClick={() => setIsSweep(!isSweep)}
-                    disabled={isOperationDisabled}
+                    onClick={() => setIsSweep((current) => !current)}
+                    disabled={isOperationDisabled || sourceJarIndex === null}
                   >
                     <div className={styles.buttonSweepItem}>
                       {isSweep ? (
@@ -798,10 +813,10 @@ export default function Send({ wallet }: SendProps) {
             >
               {t('send.feedback_invalid_amount')}
             </rb.Form.Control.Feedback>
-            {isSweep && frozenOrLockedWarning()}
+            {isSweep && <>{frozenOrLockedWarning}</>}
           </rb.Form.Group>
           <Accordion title={t('send.sending_options')}>
-            <rb.Form.Group controlId="isCoinjoin" className={`${isCoinjoin ? 'mb-3' : ''}`}>
+            <rb.Form.Group controlId="isCoinjoin" className="mb-3">
               <ToggleSwitch
                 label={t('send.toggle_coinjoin')}
                 subtitle={t('send.toggle_coinjoin_subtitle')}
@@ -810,7 +825,7 @@ export default function Send({ wallet }: SendProps) {
                 disabled={isLoading || isOperationDisabled}
               />
             </rb.Form.Group>
-            <div className={isCoinjoin ? 'd-block' : 'd-none'}>
+            <div className={isCoinjoin ? 'mb-4 d-block' : 'd-none'}>
               <CollaboratorsSelector
                 numCollaborators={numCollaborators}
                 setNumCollaborators={setNumCollaborators}
@@ -825,7 +840,7 @@ export default function Send({ wallet }: SendProps) {
           variant={submitButtonOptions.variant}
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
-          className={classNames(styles.button, styles.sendButton, 'mt-4')}
+          className={classNames(styles.button, styles.sendButton, 'mb-4')}
           form="send-form"
         >
           {isSending ? (
@@ -856,12 +871,12 @@ export default function Send({ wallet }: SendProps) {
               submitButtonRef.current?.click()
             }}
             data={{
-              sourceJarIndex,
-              destination: destination as string,
+              sourceJarIndex: sourceJarIndex!,
+              destination: destination!,
               amount: parseInt(amountFieldValue, 10),
               isSweep,
               isCoinjoin,
-              numCollaborators: numCollaborators as number,
+              numCollaborators: numCollaborators!,
               feeConfigValues,
             }}
           />
