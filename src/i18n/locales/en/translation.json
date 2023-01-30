@@ -248,6 +248,7 @@
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
     "toggle_coinjoin_subtitle": "Collaborative transactions improve the privacy of yourself and others.",
+    "collaborators_number_accordion_info": "How much effect does this number has?",
     "button_send": "Send",
     "button_send_despite_warning": "Ignore warning & try send",
     "button_send_without_improved_privacy": "Send without privacy improvement",
