@@ -34,7 +34,7 @@ COPY jam-entrypoint.sh /
 RUN chmod +x /jam-entrypoint.sh
 
 # payjoin server
-EXPOSE 8080
+EXPOSE 8082
 # obwatch
 EXPOSE 62601 
 # joinmarketd daemon
