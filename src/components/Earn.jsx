@@ -400,55 +400,51 @@ export default function Earn({ wallet }) {
                 subtitle={t('earn.subtitle_fidelity_bonds')}
               />
               <div className="d-flex flex-column gap-3">
-                {currentWalletInfo && fidelityBonds.length > 0 && (
-                  <>
-                    {moveToJarFidelityBondId && (
-                      <SpendFidelityBondModal
-                        show={true}
-                        fidelityBondId={moveToJarFidelityBondId}
-                        wallet={wallet}
-                        walletInfo={currentWalletInfo}
-                        destinationJarIndex={0}
-                        onClose={({ mustReload }) => {
-                          setMoveToJarFidelityBondId(undefined)
-                          if (mustReload) {
-                            reloadFidelityBonds({ delay: 0 })
-                          }
-                        }}
-                      />
-                    )}
-                    {fidelityBonds.map((fidelityBond, index) => {
-                      const isExpired = !fb.utxo.isLocked(fidelityBond)
-                      const actionsEnabled =
-                        isExpired &&
-                        serviceInfo &&
-                        !serviceInfo.coinjoinInProgress &&
-                        !serviceInfo.makerRunning &&
-                        !isWaitingMakerStart &&
-                        !isWaitingMakerStop &&
-                        !isLoading
-                      return (
-                        <ExistingFidelityBond key={index} fidelityBond={fidelityBond}>
-                          {actionsEnabled && (
-                            <div className="mt-4">
-                              <div className="">
-                                <rb.Button
-                                  variant={settings.theme === 'dark' ? 'light' : 'dark'}
-                                  className="w-50 d-flex justify-content-center align-items-center"
-                                  disabled={moveToJarFidelityBondId !== undefined}
-                                  onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
-                                >
-                                  <Sprite className="me-1 mb-1" symbol="unlock" width="24" height="24" />
-                                  {t('earn.fidelity_bond.existing.button_spend')}
-                                </rb.Button>
-                              </div>
-                            </div>
-                          )}
-                        </ExistingFidelityBond>
-                      )
-                    })}
-                  </>
+                {currentWalletInfo && moveToJarFidelityBondId && (
+                  <SpendFidelityBondModal
+                    show={true}
+                    fidelityBondId={moveToJarFidelityBondId}
+                    wallet={wallet}
+                    walletInfo={currentWalletInfo}
+                    destinationJarIndex={0}
+                    onClose={({ mustReload }) => {
+                      setMoveToJarFidelityBondId(undefined)
+                      if (mustReload) {
+                        reloadFidelityBonds({ delay: 0 })
+                      }
+                    }}
+                  />
                 )}
+                {fidelityBonds.map((fidelityBond, index) => {
+                  const isExpired = !fb.utxo.isLocked(fidelityBond)
+                  const actionsEnabled =
+                    isExpired &&
+                    serviceInfo &&
+                    !serviceInfo.coinjoinInProgress &&
+                    !serviceInfo.makerRunning &&
+                    !isWaitingMakerStart &&
+                    !isWaitingMakerStop &&
+                    !isLoading
+                  return (
+                    <ExistingFidelityBond key={index} fidelityBond={fidelityBond}>
+                      {actionsEnabled && (
+                        <div className="mt-4">
+                          <div className="">
+                            <rb.Button
+                              variant={settings.theme === 'dark' ? 'light' : 'dark'}
+                              className="w-50 d-flex justify-content-center align-items-center"
+                              disabled={moveToJarFidelityBondId !== undefined}
+                              onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
+                            >
+                              <Sprite className="me-1 mb-1" symbol="unlock" width="24" height="24" />
+                              {t('earn.fidelity_bond.existing.button_spend')}
+                            </rb.Button>
+                          </div>
+                        </div>
+                      )}
+                    </ExistingFidelityBond>
+                  )
+                })}
                 <>
                   {!serviceInfo?.makerRunning &&
                     !isWaitingMakerStart &&
