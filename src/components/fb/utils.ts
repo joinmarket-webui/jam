@@ -92,19 +92,24 @@ export const utxo = (() => {
 
   const isFidelityBond = (utxo: Utxo) => !!utxo.locktime
 
-  const isLocked = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
-    if (!isFidelityBond(utxo)) return false
+  const getLocktime = (utxo: Utxo): Milliseconds | null => {
+    if (!isFidelityBond(utxo)) return null
 
     const pathAndLocktime = utxo.path.split(':')
-    if (pathAndLocktime.length !== 2) return false
+    if (pathAndLocktime.length !== 2) return null
 
     const locktimeUnixTimestamp: Seconds = parseInt(pathAndLocktime[1], 10)
-    if (Number.isNaN(locktimeUnixTimestamp)) return false
+    if (Number.isNaN(locktimeUnixTimestamp)) return null
 
-    return locktimeUnixTimestamp * 1_000 >= refTime
+    return locktimeUnixTimestamp * 1_000
   }
 
-  return { isEqual, isInList, utxosToFreeze, allAreFrozen, isFidelityBond, isLocked }
+  const isLocked = (utxo: Utxo, refTime: Milliseconds = Date.now()) => {
+    const locktime = getLocktime(utxo)
+    return locktime !== null && locktime >= refTime
+  }
+
+  return { isEqual, isInList, utxosToFreeze, allAreFrozen, isFidelityBond, isLocked, getLocktime }
 })()
 
 export const time = (() => {
