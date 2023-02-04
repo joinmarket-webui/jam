@@ -37,6 +37,7 @@ import {
 import { SATS, isValidNumber } from '../../utils'
 import styles from './Send.module.css'
 import AccordionInfo from '../AccordionInfo'
+import FeeBreakdown from './FeeBreakdown'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -833,7 +834,9 @@ export default function Send({ wallet }: SendProps) {
                 minNumCollaborators={minNumCollaborators}
                 disabled={isLoading || isOperationDisabled}
               />
-              <AccordionInfo title={t('send.collaborators_number_accordion_info')}>Fee breakdown...</AccordionInfo>
+              <AccordionInfo title={t('send.collaborators_number_accordion_info')}>
+                <FeeBreakdown numCollaborators={numCollaborators} />
+              </AccordionInfo>
             </div>
           </Accordion>
         </rb.Form>
