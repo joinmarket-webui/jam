@@ -450,7 +450,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
 
       if (
         !isValidNumber(values.max_cj_fee_rel) ||
-        values.max_cj_fee_rel! <= CJ_FEE_REL_MIN ||
+        values.max_cj_fee_rel! < CJ_FEE_REL_MIN ||
         values.max_cj_fee_rel! > CJ_FEE_REL_MAX
       ) {
         errors.max_cj_fee_rel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {
