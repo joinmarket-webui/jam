@@ -3,7 +3,7 @@ FROM debian:bullseye-20220801-slim
 RUN apt-get update \
     && apt-get install -qq --no-install-recommends gnupg tini procps vim git iproute2 supervisor \
        # joinmarket dependencies
-       curl build-essential automake pkg-config libtool python3-dev python3-pip python3-setuptools libltdl-dev \
+       curl build-essential automake pkg-config libtool python3-dev python3-venv python3-pip python3-setuptools libltdl-dev \
        tor \
        && rm -rf /var/lib/apt/lists/*
 
@@ -34,7 +34,7 @@ COPY jam-entrypoint.sh /
 RUN chmod +x /jam-entrypoint.sh
 
 # payjoin server
-EXPOSE 8080
+EXPOSE 8082
 # obwatch
 EXPOSE 62601 
 # joinmarketd daemon

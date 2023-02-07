@@ -24,7 +24,7 @@ const TX_FEES_BLOCKS_MAX = 1_000
  * See https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1360#issuecomment-1262295463
  * Last checked on 2022-10-06.
  */
-const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 3_000 // 3 sat/vbyte
+const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
 // 350 sats/vbyte - no enforcement by JM - this should be a "sane" max value (taken default value of "absurd_fee_per_kb")
 const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 350_000
 const TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN = 1_001 // actual min of `tx_fees` if unit is sats/kilo-vbyte
@@ -450,7 +450,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
 
       if (
         !isValidNumber(values.max_cj_fee_rel) ||
-        values.max_cj_fee_rel! <= CJ_FEE_REL_MIN ||
+        values.max_cj_fee_rel! < CJ_FEE_REL_MIN ||
         values.max_cj_fee_rel! > CJ_FEE_REL_MAX
       ) {
         errors.max_cj_fee_rel = t('settings.fees.feedback_invalid_max_cj_fee_rel', {

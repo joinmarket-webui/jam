@@ -393,7 +393,7 @@ const SpendFidelityBondModal = ({
           <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
             <rb.Button
               variant="light"
-              disabled={isSending}
+              disabled={isLoading}
               onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
               className="flex-1 d-flex justify-content-center align-items-center"
             >
