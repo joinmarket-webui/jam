@@ -63,7 +63,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
   const currentWalletInfo = useCurrentWalletInfo()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
-  const [alert, setAlert] = useState<rb.AlertProps & { message: string }>()
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isLoading, setIsLoading] = useState(true)
   const [showJars, setShowJars] = useState(false)
 

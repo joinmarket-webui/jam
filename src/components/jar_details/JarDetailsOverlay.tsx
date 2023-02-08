@@ -7,7 +7,7 @@ import { useSettings } from '../../context/SettingsContext'
 import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import { useServiceInfo } from '../../context/ServiceInfoContext'
 import * as fb from '../fb/utils'
-import Alert, { SimpleMessageAlertProps } from '../Alert'
+import Alert from '../Alert'
 import Balance from '../Balance'
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
@@ -104,7 +104,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     [serviceInfo]
   )
 
-  const [alert, setAlert] = useState<SimpleMessageAlertProps>()
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [jarIndex, setJarIndex] = useState(props.initialJarIndex)
   const [selectedTab, setSelectedTab] = useState(TABS.UTXOS)
   const [isInitializing, setIsInitializing] = useState(true)

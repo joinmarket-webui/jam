@@ -239,4 +239,12 @@ const useSessionConnectionError = () => {
   return context.connectionError
 }
 
-export { ServiceInfoContext, ServiceInfoProvider, useServiceInfo, useReloadServiceInfo, useSessionConnectionError }
+export {
+  ServiceInfoContext,
+  ServiceInfoProvider,
+  useServiceInfo,
+  useReloadServiceInfo,
+  useSessionConnectionError,
+  Schedule,
+  StateFlag,
+}

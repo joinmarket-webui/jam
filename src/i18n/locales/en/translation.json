@@ -559,6 +559,12 @@
       "nested_hint_wait_for_block_other": "Wait for {{ count }} more blocks.",
       "nested_hint_fund_wallet": "Fund your wallet and wait for one more block.",
       "nested_hint_fund_wallet_other": "Fund your wallet and wait for {{ count }} more blocks."
+    },
+    "success": {
+      "title": "Success!",
+      "subtitle": "Successfully completed a single scheduled transaction.",
+      "subtitle_other": "Successfully completed {{ count }} scheduled transactions.",
+      "text_button_submit": "Continue"
     }
   },
   "modal": {
