@@ -75,15 +75,18 @@
   height: 1.25rem;
   width: 1.25rem;
   margin-top: 0.8rem;
-}
 
-.selectableJarContainer.selectable > .selectionCircle {
   border-radius: 50%;
   display: inline-block;
   border: 1px solid var(--bs-body-color);
 }
 
-.selectableJarContainer.selectable.selected > .selectionCircle {
+.selectableJarContainer:not(.selectable) > .selectionCircle {
+  visibility: hidden;
+}
+
+.selectableJarContainer.selected > .selectionCircle {
+  visibility: visible !important;
   background-color: var(--bs-body-color);
 }
 

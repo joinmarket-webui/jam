@@ -22,11 +22,11 @@ type BalanceSummary = {
 }
 
 type AccountBalanceSummary = BalanceSummary & {
-  accountIndex: number
+  accountIndex: JarIndex
 }
 
 type AccountBalances = {
-  [key: number]: AccountBalanceSummary
+  [key: JarIndex]: AccountBalanceSummary
 }
 
 export type WalletBalanceSummary = BalanceSummary & {

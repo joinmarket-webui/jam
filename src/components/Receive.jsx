@@ -70,7 +70,7 @@ export default function Receive({ wallet }) {
     <div className={`${styles.receive}`}>
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      <div className="qr-container">
+      <div className="qr-container mb-4">
         <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
           <div className={styles['qr-container']}>
             {!isLoading && address && <BitcoinQR address={address} sats={amount} />}
@@ -106,7 +106,7 @@ export default function Receive({ wallet }) {
       </div>
       <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
         <Accordion title={t('receive.button_settings')}>
-          <div>
+          <div className="mb-4">
             {!walletInfo || sortedAccountBalances.length === 0 ? (
               <rb.Placeholder as="div" animation="wave">
                 <rb.Placeholder className={styles.jarsPlaceholder} />
@@ -153,7 +153,7 @@ export default function Receive({ wallet }) {
           </div>
         </Accordion>
 
-        <div className="mt-4 d-flex justify-content-center">
+        <div className="d-flex justify-content-center">
           <rb.Button
             variant="outline-dark"
             type="submit"

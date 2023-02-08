@@ -399,7 +399,7 @@ export default function Earn({ wallet }) {
                 title={t('earn.title_fidelity_bonds', { count: fidelityBonds.length })}
                 subtitle={t('earn.subtitle_fidelity_bonds')}
               />
-              <div className="d-flex flex-column gap-3">
+              <div className="d-flex flex-column gap-3 mb-4">
                 {currentWalletInfo && moveToJarFidelityBondId && (
                   <SpendFidelityBondModal
                     show={true}
@@ -576,7 +576,7 @@ export default function Earn({ wallet }) {
                             </rb.Form.Group>
                           )}
 
-                          <rb.Form.Group controlId="minsize">
+                          <rb.Form.Group className="mb-4" controlId="minsize">
                             <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
                             {isLoading ? (
                               <rb.Placeholder as="div" animation="wave">
@@ -607,7 +607,7 @@ export default function Earn({ wallet }) {
                         </>
                       </Accordion>
                     )}
-                    <div className="mt-4">
+                    <div className="mb-4">
                       <rb.Button
                         variant="dark"
                         type="submit"
@@ -643,7 +643,7 @@ export default function Earn({ wallet }) {
           )}
         </rb.Col>
       </rb.Row>
-      <rb.Row className="mt-5 mb-3">
+      <rb.Row className="my-3">
         <rb.Col className="d-flex justify-content-center">
           <OrderbookOverlay
             show={isShowOrderbook}
