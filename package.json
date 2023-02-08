@@ -65,7 +65,7 @@
     "regtest:logs:schedule": "docker exec -t jm_regtest_joinmarket tail -f /root/.joinmarket/logs/TUMBLE.schedule",
     "regtest:logs:directory_node": "docker exec -t jm_regtest_joinmarket_directory_node tail -f /var/log/jam/directory_node_stdout.log -n 200",
     "regtest:init": "./docker/regtest/init-setup.sh",
-    "regtest:mine": "watch -n 10 ./docker/regtest/mine-block.sh"
+    "regtest:mine": "watch -n 11 ./docker/regtest/mine-block.sh"
   },
   "eslintConfig": {
     "extends": [

@@ -65,7 +65,7 @@ npm run regtest:clear
 ```
 
 ### Mine
-Mine regtest blocks in a fixed interval (current default is every 10 seconds).
+Mine regtest blocks in a fixed interval (current default is every 11 seconds).
 This is useful for features that await confirmations or need incoming blocks regularly.
 e.g. This is necessary for scheduled transactions to execute successfully.
 ```sh
