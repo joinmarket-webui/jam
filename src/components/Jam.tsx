@@ -288,7 +288,7 @@ export default function Jam({ wallet }: JamProps) {
         txcountparams: [1, 0],
         timelambda: 0.025, // 0.025 minutes := 1.5 seconds
         stage1_timelambda_increase: 1.0,
-        liquiditywait: 10,
+        liquiditywait: 13,
         waittime: 0.0,
       }
     }
