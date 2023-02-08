@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import classnames from 'classnames'
+import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useRowSelect, HeaderCellSelect, CellSelect, SelectTypes } from '@table-library/react-table-library/select'
@@ -12,10 +13,17 @@ import { useTheme } from '@table-library/react-table-library/theme'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo, WalletInfo } from '../../context/WalletContext'
 import * as fb from '../fb/utils'
+import { shortenStringMiddle } from '../../utils'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import TablePagination from '../TablePagination'
 import styles from './UtxoList.module.css'
+
+const withTooltip = ({ node, tooltip }: { node: React.ReactElement; tooltip: React.ReactElement }) => {
+  return (
+    <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
+  )
+}
 
 const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
   new: 'normal',
@@ -27,26 +35,100 @@ const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
   deposit: 'normal',
 }
 
+type Tag = { tag: string; color: string }
+
+const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation', undefined>): Tag[] => {
+  const rawStatus = walletInfo.addressSummary[utxo.address]?.status
+
+  let status: string | null = null
+
+  // If a UTXO is locked, it's `status` will be the locktime, with other states
+  // appended in brackets, e.g. `2099-12-01 [LOCKED] [FROZEN]`
+  if (rawStatus && !utxo.locktime) {
+    const indexOfOtherTag = rawStatus.indexOf('[')
+
+    if (indexOfOtherTag !== -1) {
+      status = rawStatus.substring(0, indexOfOtherTag).trim()
+    } else {
+      status = rawStatus
+    }
+  }
+
+  const tags: Tag[] = []
+
+  if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
+  if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
+  if (fb.utxo.isFidelityBond(utxo)) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_fb'), color: 'dark' })
+  return tags
+}
+
+const utxoIcon = (utxo: Utxo, t: TFunction<'translation', undefined>) => {
+  if (fb.utxo.isFidelityBond(utxo)) {
+    return (
+      <>
+        {withTooltip({
+          node: (
+            <div className={styles.utxoIcon}>
+              <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
+            </div>
+          ),
+          tooltip: <div>{t('jar_details.utxo_list.utxo_tooltip_locktime', { locktime: utxo.locktime })}</div>,
+        })}
+      </>
+    )
+  } else if (utxo.frozen) {
+    return (
+      <div className={styles.utxoIcon}>
+        <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
+      </div>
+    )
+  }
+  return <></>
+}
+
+const utxoConfirmations = (utxo: Utxo) => {
+  const symbol = `confs-${utxo.confirmations >= 6 ? 'full' : utxo.confirmations}`
+
+  return (
+    <div className={classNames(styles.utxoConfirmations, styles[`utxoConfirmations-${utxo.confirmations}`])}>
+      <Sprite symbol={symbol} width="20" height="20" />
+      <div>{utxo.confirmations}</div>
+    </div>
+  )
+}
+
 const SORT_KEYS = {
   frozenOrLocked: 'FROZEN_OR_LOCKED',
   value: 'VALUE',
   confirmations: 'CONFIRMATIONS',
+  tags: 'TAGS',
 }
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 2rem 3.5rem 2fr 4fr 6rem 3fr 1fr;
     font-size: 0.9rem;
+    --data-table-library_grid-template-columns: 2rem 3.5rem 0px 2fr 3fr 6rem 3fr 1fr;
+    @media only screen and (min-width: 768px) {
+      --data-table-library_grid-template-columns: 2rem 3.5rem 2.5rem 2fr 3fr 6rem 3fr 1fr;
+    }
   `,
   BaseCell: `
+    padding: 0.25rem 0.25rem !important;
     &:nth-of-type(1) {
       text-align: center;
     }
-    &:nth-of-type(3) button {
+    &:nth-of-type(3) {
+      text-align: center;
+      padding: 0 !important;
+    }
+    &:nth-of-type(4) button {
       display: flex;
       justify-content: end;
     }
-    &:nth-of-type(5) button {
+    &:nth-of-type(6) {
+      padding: 0 !important;
+    }
+    &:nth-of-type(6) button {
       display: flex;
       justify-content: center;
     }
@@ -55,10 +137,10 @@ const TABLE_THEME = {
     &:nth-of-type(2) {
       text-align: center;
     }
-    &:nth-of-type(3) {
+    &:nth-of-type(4) {
       text-align: right;
     }
-    &:nth-of-type(5) > div {
+    &:nth-of-type(6) > div {
       display: flex;
       justify-content: center;
     }
@@ -71,58 +153,43 @@ const TABLE_THEME = {
   `,
 }
 
+const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
+  const { id, _icon, _tags, _confs, ...utxo } = tableNode
+
+  return utxo as Utxo
+}
+
 interface UtxoListProps {
   utxos: Array<Utxo>
   walletInfo: WalletInfo
   selectState: State
   setSelectedUtxoIds: (selectedUtxoIds: Array<string>) => void
   setDetailUtxo: (utxo: Utxo) => void
+  toggleFreezeState?: (utxo: Utxo) => Promise<void>
 }
 
-const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetailUtxo }: UtxoListProps) => {
+const UtxoList = ({
+  utxos,
+  walletInfo,
+  selectState,
+  setSelectedUtxoIds,
+  setDetailUtxo,
+  toggleFreezeState,
+}: UtxoListProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
-    const { id, ...utxo } = tableNode
-
-    return utxo as Utxo
-  }
-
-  const utxoTags = (utxo: Utxo, walletInfo: WalletInfo) => {
-    var rawStatus = walletInfo.addressSummary[utxo.address]?.status
-
-    var status: string | null = null
-    var locktime: string | undefined = utxo.locktime
-
-    // If a UTXO is locked, it's status will be the locktime.
-    // Since we already have the locktime (see above), we don't need to parse it again.
-    if (rawStatus && !utxo.locktime) {
-      const indexOfOtherTag = rawStatus.indexOf('[')
-
-      if (indexOfOtherTag !== -1) {
-        status = rawStatus.substring(0, indexOfOtherTag).trim()
-      } else {
-        status = rawStatus
-      }
-    }
-
-    let tags = []
-
-    if (utxo.frozen) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_frozen'), color: 'normal' })
-    if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
-    if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
-    if (fb.utxo.isLocked(utxo) && locktime)
-      tags.push({ tag: t('jar_details.utxo_list.utxo_tag_locktime', { locktime }), color: 'normal' })
-
-    return tags
-  }
-
   const tableData: TableTypes.Data = useMemo(
     () => ({
-      nodes: utxos.map((utxo: Utxo) => ({ ...utxo, id: utxo.utxo })),
+      nodes: utxos.map((utxo: Utxo) => ({
+        ...utxo,
+        id: utxo.utxo,
+        _icon: utxoIcon(utxo, t),
+        _tags: utxoTags(utxo, walletInfo, t),
+        _confs: utxoConfirmations(utxo),
+      })),
     }),
-    [utxos]
+    [utxos, walletInfo, t]
   )
 
   const tableTheme = useTheme(TABLE_THEME)
@@ -183,26 +250,11 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
           }),
         [SORT_KEYS.value]: (array) => array.sort((a, b) => a.value - b.value),
         [SORT_KEYS.confirmations]: (array) => array.sort((a, b) => a.confirmations - b.confirmations),
+        [SORT_KEYS.tags]: (array) =>
+          array.sort((a, b) => (String(a._tags[0]?.tag) || 'z').localeCompare(String(b._tags[0]?.tag) || 'z')),
       },
     }
   )
-
-  const utxoIcon = (utxo: Utxo) => {
-    if (fb.utxo.isFidelityBond(utxo)) {
-      return (
-        <div className={styles.utxoIcon}>
-          <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
-        </div>
-      )
-    } else if (utxo.frozen) {
-      return (
-        <div className={styles.utxoIcon}>
-          <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
-        </div>
-      )
-    }
-    return <></>
-  }
 
   return (
     <div className={styles.utxoList}>
@@ -222,6 +274,7 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                 <HeaderCellSort sortKey={SORT_KEYS.frozenOrLocked}>
                   <Sprite symbol="coins" width="20" height="20" className={styles.headerCoinsIcon} />
                 </HeaderCellSort>
+                <HeaderCell></HeaderCell>
                 <HeaderCellSort sortKey={SORT_KEYS.value}>
                   {t('jar_details.utxo_list.column_title_balance')}
                 </HeaderCellSort>
@@ -229,7 +282,9 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                 <HeaderCellSort sortKey={SORT_KEYS.confirmations}>
                   {t('jar_details.utxo_list.column_title_confirmations')}
                 </HeaderCellSort>
-                <HeaderCell>{t('jar_details.utxo_list.column_title_label_and_status')}</HeaderCell>
+                <HeaderCellSort sortKey={SORT_KEYS.tags}>
+                  {t('jar_details.utxo_list.column_title_label_and_status')}
+                </HeaderCellSort>
                 <HeaderCell></HeaderCell>
               </HeaderRow>
             </Header>
@@ -237,9 +292,33 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
               {tableList.map((item) => {
                 const utxo = toUtxo(item)
                 return (
-                  <Row key={item.id} item={item}>
+                  <Row
+                    key={item.id}
+                    item={item}
+                    className={classNames({
+                      [styles.frozen]: !fb.utxo.isLocked(utxo) && utxo.frozen,
+                      [styles.fidelityBond]: fb.utxo.isFidelityBond(utxo),
+                    })}
+                  >
                     <CellSelect item={item} />
-                    <Cell>{utxoIcon(utxo)}</Cell>
+                    <Cell>{item._icon}</Cell>
+                    <Cell
+                      onClick={async (e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        toggleFreezeState && (await toggleFreezeState(utxo))
+                      }}
+                    >
+                      {toggleFreezeState && (
+                        <span className={styles.quickFreezeUnfreezeBtn}>
+                          {utxo.frozen ? (
+                            <Sprite symbol="unfreeze" width="20" height="20" />
+                          ) : (
+                            <Sprite symbol="freeze" width="20" height="20" />
+                          )}
+                        </span>
+                      )}
+                    </Cell>
                     <Cell>
                       <Balance
                         valueString={utxo.value.toString()}
@@ -248,31 +327,28 @@ const UtxoList = ({ utxos, walletInfo, selectState, setSelectedUtxoIds, setDetai
                       />
                     </Cell>
                     <Cell>
-                      <code>{utxo.address}</code>
-                    </Cell>
-                    <Cell>
-                      <div
-                        className={classnames(
-                          styles.utxoConfirmations,
-                          styles[`utxoConfirmations-${utxo.confirmations}`]
-                        )}
-                      >
-                        {item.confirmations === 0 && <Sprite symbol="confs-0" width="20" height="20" />}
-                        {item.confirmations === 1 && <Sprite symbol="confs-1" width="20" height="20" />}
-                        {item.confirmations === 2 && <Sprite symbol="confs-2" width="20" height="20" />}
-                        {item.confirmations === 3 && <Sprite symbol="confs-3" width="20" height="20" />}
-                        {item.confirmations === 4 && <Sprite symbol="confs-4" width="20" height="20" />}
-                        {item.confirmations === 5 && <Sprite symbol="confs-5" width="20" height="20" />}
-                        {item.confirmations >= 6 && <Sprite symbol="confs-full" width="20" height="20" />}
-                        <div>{item.confirmations}</div>
+                      <div className="d-block d-lg-none">
+                        {withTooltip({
+                          node: <code>{shortenStringMiddle(utxo.address, 16)}</code>,
+                          tooltip: <div className="break-word">{utxo.address}</div>,
+                        })}
+                      </div>
+                      <div className="d-none d-lg-block d-xl-none">
+                        {withTooltip({
+                          node: <code>{shortenStringMiddle(utxo.address, 32)}</code>,
+                          tooltip: <div className="break-word">{utxo.address}</div>,
+                        })}
+                      </div>
+                      <div className="d-none d-xl-block">
+                        <code>{utxo.address}</code>
                       </div>
                     </Cell>
+                    <Cell>{item._confs}</Cell>
                     <Cell>
                       <div className={styles.utxoTagList}>
-                        {utxoTags(utxo, walletInfo).map((tag, index) => (
-                          <div key={index} className={classnames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
-                            <div />
-                            <div>{tag.tag}</div>
+                        {item._tags.map((tag: Tag, index: number) => (
+                          <div key={index} className={classNames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
+                            {tag.tag}
                           </div>
                         ))}
                       </div>

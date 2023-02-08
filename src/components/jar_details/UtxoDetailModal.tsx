@@ -4,7 +4,7 @@ import { useSettings } from '../../context/SettingsContext'
 import { Utxo } from '../../context/WalletContext'
 import Balance from '../Balance'
 import Sprite from '../Sprite'
-import styles from './UtxoDetailModule.module.css'
+import styles from './UtxoDetailModal.module.css'
 
 interface UtxoDetailModalProps {
   utxo: Utxo

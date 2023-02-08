@@ -11,6 +11,28 @@
   margin-bottom: 1px;
 }
 
+.utxoList tr.frozen td {
+  --bs-code-color: var(--bs-blue);
+  color: var(--bs-blue);
+  background-color: rgba(13, 110, 253, 0.07);
+}
+
+.utxoList tr .quickFreezeUnfreezeBtn {
+  display: none;
+  text-decoration: none;
+}
+
+.utxoList tr:not(.fidelityBond):hover .quickFreezeUnfreezeBtn {
+  display: block;
+}
+
+.utxoList tr .quickFreezeUnfreezeBtn {
+  color: var(--bs-blue);
+}
+.utxoList tr.frozen .quickFreezeUnfreezeBtn {
+  color: var(--bs-red);
+}
+
 .utxoList .utxoIcon > .iconLocked {
   margin-bottom: 3px;
 }
@@ -18,6 +40,7 @@
 .utxoList .utxoTagList {
   display: flex;
   gap: 0.5rem;
+  color: var(--bs-body-color);
 }
 
 .utxoList .utxoConfirmations {
@@ -48,26 +71,25 @@
   padding: 0.1rem 0.3rem;
 }
 
-.utxoList .utxoTagList > .utxoTag > div:first-of-type {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 0.1rem;
+.utxoList .utxoTagList > .utxoTag.utxoTag-success {
+  color: var(--bs-success);
+  background-color: rgba(var(--bs-success-rgb), 0.1);
+  border-color: var(--bs-success);
 }
-
-.utxoList .utxoTagList > .utxoTag.utxoTag-normal > div:first-of-type {
-  display: none;
+.utxoList .utxoTagList > .utxoTag.utxoTag-warning {
+  color: var(--bs-warning);
+  background-color: rgba(var(--bs-warning-rgb), 0.1);
+  border-color: var(--bs-warning);
 }
-
-.utxoList .utxoTagList > .utxoTag.utxoTag-danger > div:first-of-type {
-  background-color: var(--bs-danger);
+.utxoList .utxoTagList > .utxoTag.utxoTag-danger {
+  color: var(--bs-danger);
+  background-color: rgba(var(--bs-danger-rgb), 0.1);
+  border-color: var(--bs-danger);
 }
-
-.utxoList .utxoTagList > .utxoTag.utxoTag-warning > div:first-of-type {
-  background-color: var(--bs-warning);
-}
-
-.utxoList .utxoTagList > .utxoTag.utxoTag-success > div:first-of-type {
-  background-color: var(--bs-success);
+.utxoList .utxoTagList > .utxoTag.utxoTag-dark {
+  color: var(--bs-white);
+  background-color: var(--bs-dark);
+  border-color: var(--bs-dark);
 }
 
 .utxoList .utxoListButtonDetails {
@@ -92,4 +114,16 @@
 
 :root[data-theme='dark'] .utxoList :global tr.row-select-selected > td {
   background-color: var(--bs-gray-800);
+}
+
+.utxoList tr.fidelityBond td {
+  --bs-code-color: var(--bs-gray-600);
+  background-color: var(--bs-gray-200);
+  color: var(--bs-gray-600);
+}
+
+:root[data-theme='dark'] .utxoList tr.fidelityBond td {
+  --bs-code-color: var(--bs-gray-900);
+  background-color: var(--bs-gray-700);
+  color: var(--bs-gray-900);
 }
