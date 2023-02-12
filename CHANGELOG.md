@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.1.5](https://github.com/joinmarket-webui/jam/compare/v0.1.4...v0.1.5) (2023-02-08)
+
+#### Fixed
+
+* construct dates with timestamp to please safari ([#584](https://github.com/joinmarket-webui/jam/issues/584)) ([9ebe168](https://github.com/joinmarket-webui/jam/commit/9ebe168b5dced4553bae942a8d8836e9b103c815))
+* **fb:** correctly display success screen after unlocking fb ([#601](https://github.com/joinmarket-webui/jam/issues/601)) ([0eb6649](https://github.com/joinmarket-webui/jam/commit/0eb6649b7a21ab03824e562edec92d3080cf8e16))
+* **fee:** allow input for relative fee limit of 0.0001% ([#603](https://github.com/joinmarket-webui/jam/issues/603)) ([1c87a6d](https://github.com/joinmarket-webui/jam/commit/1c87a6de06db3974a8f0e307329fc3f13dd69954))
+* **fees:** allow min tx fee of 1sat/vbyte ([#604](https://github.com/joinmarket-webui/jam/issues/604)) ([4121c9b](https://github.com/joinmarket-webui/jam/commit/4121c9bd4510cef9af5345fd921d040933b915e9))
+* install python3-venv in regtest environment ([#585](https://github.com/joinmarket-webui/jam/issues/585)) ([d9b0415](https://github.com/joinmarket-webui/jam/commit/d9b0415dffb397c9d602b42408916ce8daeef63c))
+
+#### Added
+
+* add dedicated error page ([#586](https://github.com/joinmarket-webui/jam/issues/586)) ([42c9f5d](https://github.com/joinmarket-webui/jam/commit/42c9f5d773a74a41e4f32c145c3512d7d9405d6d))
+* **Jam:** add success message ([#599](https://github.com/joinmarket-webui/jam/issues/599)) ([531adb6](https://github.com/joinmarket-webui/jam/commit/531adb6ffa82183534c7e8f08c7a87d05adad59c))
+* quick freeze/unfreeze utxos ([#591](https://github.com/joinmarket-webui/jam/issues/591)) ([f3f6e84](https://github.com/joinmarket-webui/jam/commit/f3f6e847abfe43db6ae6d63656d15b81122b66e2))
+* Show jar total amount in detail view ([#551](https://github.com/joinmarket-webui/jam/issues/551)) ([90f22e5](https://github.com/joinmarket-webui/jam/commit/90f22e59eb317ae7280357f0c00455ae9c46bf68))
+
 ### [0.1.4](https://github.com/joinmarket-webui/jam/compare/v0.1.3...v0.1.4) (2022-12-13)
 
 #### Fixed
