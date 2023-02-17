@@ -162,6 +162,22 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  explorer:
+    container_name: jm_regtest_explorer
+    restart: unless-stopped
+    image: getumbrel/btc-rpc-explorer:v3.3.0
+    environment:
+      BTCEXP_HOST: 0.0.0.0
+      BTCEXP_PORT: 3002
+      BTCEXP_BITCOIND_HOST: bitcoind
+      BTCEXP_BITCOIND_PORT: 43782
+      BTCEXP_BITCOIND_USER: regtest
+      BTCEXP_BITCOIND_PASS: regtest
+    ports:
+      - "3002:3002"
+    depends_on:
+      - bitcoind
+
 volumes:
   bitcoin_datadir:
   bitcoin_wallet_datadir:
