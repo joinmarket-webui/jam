@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRefreshConfigValues } from '../context/ServiceConfigContext'
 import { AmountSats } from '../libs/JmWalletApi'
 import { isValidNumber } from '../utils'
@@ -51,6 +51,27 @@ export const useLoadFeeConfigValues = () => {
     },
     [refreshConfigValues]
   )
+}
+
+export const useFeeConfigValues = () => {
+  const loadFeeConfigValues = useLoadFeeConfigValues()
+  const [values, setValues] = useState<FeeValues | null>()
+
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    loadFeeConfigValues(abortCtrl.signal)
+      .then((val) => setValues(val))
+      .catch((e) => {
+        console.log('Unable lo load fee config: ', e)
+        setValues(null)
+      })
+
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [setValues, loadFeeConfigValues])
+  return values
 }
 
 interface EstimatMaxCollaboratorFeeProps {
