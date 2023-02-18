@@ -4,7 +4,7 @@ import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
-import { estimateMaxCollaboratorFee, FeeValues, toTxFeeValueUnit } from '../hooks/Fees'
+import { estimateMaxCollaboratorFee, FeeValues, useMiningFeeText } from '../hooks/Fees'
 
 import { isValidNumber } from '../utils'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
@@ -56,38 +56,7 @@ export function PaymentConfirmModal({
     })
   }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
 
-  const miningFeeText = useMemo(() => {
-    if (!feeConfigValues) return null
-    if (!isValidNumber(feeConfigValues.tx_fees) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
-
-    const unit = toTxFeeValueUnit(feeConfigValues.tx_fees)
-    if (!unit) {
-      return null
-    } else if (unit === 'blocks') {
-      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
-    } else {
-      const feeTargetInSatsPerVByte = feeConfigValues.tx_fees! / 1_000
-      if (feeConfigValues.tx_fees_factor === 0) {
-        return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
-          value: feeTargetInSatsPerVByte.toLocaleString(undefined, {
-            maximumFractionDigits: Math.log10(1_000),
-          }),
-        })
-      }
-
-      const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor!))
-      const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor!)
-
-      return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
-        min: minFeeSatsPerVByte.toLocaleString(undefined, {
-          maximumFractionDigits: 1,
-        }),
-        max: maxFeeSatsPerVByte.toLocaleString(undefined, {
-          maximumFractionDigits: 1,
-        }),
-      })
-    }
-  }, [t, feeConfigValues])
+  const miningFeeText = useMiningFeeText()
 
   return (
     <ConfirmModal {...confirmModalProps}>
