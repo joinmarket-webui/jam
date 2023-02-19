@@ -835,7 +835,7 @@ export default function Send({ wallet }: SendProps) {
                 disabled={isLoading || isOperationDisabled}
               />
               <AccordionInfo title={t('send.collaborators_number_accordion_info')}>
-                <FeeBreakdown numCollaborators={numCollaborators} />
+                <FeeBreakdown numCollaborators={numCollaborators} amount={amount} isCoinjoin={isCoinjoin} />
               </AccordionInfo>
             </div>
           </Accordion>

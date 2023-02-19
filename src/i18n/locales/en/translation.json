@@ -268,7 +268,7 @@
       "personal_absolute_limit": "<b>Your personal</b> absolute fee limit (if set, change <a>here</a>)",
       "random_relative_limit": "Relative fee limit, chosen randomly",
       "personal_relative_limit": "<b>Your personal</b> relative fee limit (if set, change <a>here</a>)",
-      "miner_fee": "Miner fee ({{amount}} sat/VB, change <a>here</a>)",
+      "miner_fee": "Miner fee, change <a>here</a>",
       "total_estimate": "Very rough estimated total collaborative transaction fees"
     },
     "confirm_send_modal": {
