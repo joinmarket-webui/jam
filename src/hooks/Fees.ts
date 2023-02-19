@@ -131,3 +131,30 @@ export const useMiningFeeText = () => {
 
   return miningFeeText
 }
+
+interface useEstimatedMaxCollaboratorFeeArgs {
+  isCoinjoin: boolean
+  amount: number | null
+  numCollaborators?: number | null
+}
+export const useEstimatedMaxCollaboratorFee = ({
+  isCoinjoin,
+  amount,
+  numCollaborators,
+}: useEstimatedMaxCollaboratorFeeArgs) => {
+  const feeConfigValues = useFeeConfigValues()
+
+  const estimatedMaxCollaboratorFee = useMemo(() => {
+    if (!isCoinjoin || !feeConfigValues || !amount) return null
+    if (!isValidNumber(amount) || !isValidNumber(numCollaborators ?? undefined)) return null
+    if (!isValidNumber(feeConfigValues.max_cj_fee_abs) || !isValidNumber(feeConfigValues.max_cj_fee_rel)) return null
+    return estimateMaxCollaboratorFee({
+      amount,
+      collaborators: numCollaborators!,
+      maxFeeAbs: feeConfigValues.max_cj_fee_abs!,
+      maxFeeRel: feeConfigValues.max_cj_fee_rel!,
+    })
+  }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
+
+  return estimatedMaxCollaboratorFee
+}
