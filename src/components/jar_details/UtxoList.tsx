@@ -37,7 +37,7 @@ const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
 
 type Tag = { tag: string; color: string }
 
-const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation', undefined>): Tag[] => {
+const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction): Tag[] => {
   const rawStatus = walletInfo.addressSummary[utxo.address]?.status
 
   let status: string | null = null
@@ -62,7 +62,7 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction<'translation'
   return tags
 }
 
-const utxoIcon = (utxo: Utxo, t: TFunction<'translation', undefined>) => {
+const utxoIcon = (utxo: Utxo, t: TFunction) => {
   if (fb.utxo.isFidelityBond(utxo)) {
     return (
       <>
