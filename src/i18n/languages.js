@@ -1,6 +1,6 @@
 import en from './locales/en/translation.json'
 import fr from './locales/fr/translation.json'
-import pt_BR from './locales/ptbr/translation.json'
+import pt_BR from './locales/pt_BR/translation.json'
 
 const languages = [
   {
