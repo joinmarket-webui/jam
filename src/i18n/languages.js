@@ -14,7 +14,7 @@ const languages = [
     translation: fr,
   },
   {
-    key: 'pt_BR',
+    key: 'pt-BR',
     description: 'Português (Brasil)',
     translation: pt_BR,
   },
