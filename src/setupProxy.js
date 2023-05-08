@@ -6,7 +6,7 @@ const SUPPORTED_BACKENDS = [BACKEND_NATIVE, BACKEND_STANDALONE]
 
 const {
   PUBLIC_URL = '',
-  JAM_BACKEND = 'native',
+  JAM_BACKEND = BACKEND_NATIVE,
   JMWALLETD_API_PORT = '28183',
   JMWALLETD_WEBSOCKET_PORT = '28283',
   JMOBWATCH_PORT = '62601',
@@ -33,7 +33,7 @@ module.exports = (app) => {
      */
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
-        target: `https://localhost:${JMWALLETD_WEBSOCKET_PORT}`,
+        target: `https://127.0.0.1:${JMWALLETD_WEBSOCKET_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}/jmws`]: '' },
         changeOrigin: true,
         secure: false,
@@ -42,7 +42,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/api/`, {
-        target: `https://localhost:${JMWALLETD_API_PORT}`,
+        target: `https://127.0.0.1:${JMWALLETD_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -55,7 +55,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
-        target: `http://localhost:${JMOBWATCH_PORT}`,
+        target: `http://127.0.0.1:${JMOBWATCH_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
         changeOrigin: true,
         secure: false,
@@ -70,7 +70,7 @@ module.exports = (app) => {
      */
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
-        target: `http://localhost:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -79,7 +79,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/api/`, {
-        target: `http://localhost:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -87,7 +87,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
-        target: `http://localhost:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
@@ -95,7 +95,7 @@ module.exports = (app) => {
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/jam/`, {
-        target: `http://localhost:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
