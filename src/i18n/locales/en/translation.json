@@ -248,7 +248,8 @@
     "sending_options": "Sending options",
     "toggle_coinjoin": "Send as collaborative transaction",
     "toggle_coinjoin_subtitle": "Collaborative transactions improve the privacy of yourself and others.",
-    "collaborators_number_accordion_info": "How much effect does this number has?",
+    "collaborators_fee_question": "How much is the maximum collaborators fee?",
+    "collaborators_fee_info": "Here you can find the maximum collaborators fee you will pay (this does not include mining fees). You can change your fee limits in the <a>settings page</a>.",
     "button_send": "Send",
     "button_send_despite_warning": "Ignore warning & try send",
     "button_send_without_improved_privacy": "Send without privacy improvement",
@@ -261,15 +262,14 @@
     "sweep_amount_breakdown_estimated_amount": "Estimated amount to be sent",
     "sweep_amount_breakdown_explanation": "A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that have been <1>frozen</1> or <3>time-locked</3>. Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero change. The exact transaction amount can only be calculated by JoinMarket at the point when the transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount. Refer to the <5>JoinMarket documentation</5> for more details.",
     "fee_breakdown": {
-      "or": "or",
-      "plus": "plus",
-      "counterparties_multiplied": "Counterparties <b>multiplied by...</b>",
-      "random_absolute_limit": "Absolute fee limit, chosen randomly",
-      "personal_absolute_limit": "<b>Your personal</b> absolute fee limit (if set, change <a>here</a>)",
-      "random_relative_limit": "Relative fee limit, chosen randomly",
-      "personal_relative_limit": "<b>Your personal</b> relative fee limit (if set, change <a>here</a>)",
-      "miner_fee": "Miner fee, change <a>here</a>",
-      "total_estimate": "Very rough estimated total collaborative transaction fees"
+      "absolute_limit": "Absolute fee limit (<balance/>) * {{ num }} collaborators",
+      "or_relative_limit": "OR relative fee limit ({{ percentage }}) * {{ num }} collaborators",
+      "not_set": "Not set",
+      "too_low": "Too low",
+      "total_estimate": "Max collaborators fee",
+      "plus_mining_fee": "Plus mining fees",
+      "why_cant_estimate_mining_fee": "Why can't we estimate mining fees?",
+      "cant_estimate_mining_fee_info": "The amount of inputs and outputs is not know beforehand, so it is not possible to know the transaction size, hence the transaction fees cannot be estimated.<br>In addition to this, if you have set a \"Block target\" as mining fee (read: \"Include my tx in the next n blocks\", instead of a sats/vByte value), we cannot estimate the fee needed for your transaction since Jam does not have access to the current mempool conditions."
     },
     "confirm_send_modal": {
       "title": "Confirm payment",
