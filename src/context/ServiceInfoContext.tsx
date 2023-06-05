@@ -49,6 +49,7 @@ interface JmSessionData {
   schedule: Schedule | null
   offer_list: Offer[] | null
   nickname: string | null
+  rescanning: boolean
 }
 
 type SessionFlag = { sessionActive: boolean }
@@ -62,6 +63,7 @@ type ServiceInfo = SessionFlag &
     schedule: Schedule | null
     offers: Offer[] | null
     nickname: string | null
+    rescanning: boolean
   }
 type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag
 
@@ -123,6 +125,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             coinjoin_in_process: coinjoinInProgress,
             wallet_name: walletNameOrNoneString,
             offer_list: offers,
+            rescanning,
             schedule,
             nickname,
           } = data
@@ -135,6 +138,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             schedule,
             offers,
             nickname,
+            rescanning,
           }
         })
 
