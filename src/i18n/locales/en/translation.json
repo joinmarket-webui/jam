@@ -269,7 +269,7 @@
       "total_estimate": "Max collaborators fee",
       "plus_mining_fee": "Plus mining fees",
       "why_cant_estimate_mining_fee": "Why can't we estimate mining fees?",
-      "cant_estimate_mining_fee_info": "The amount of inputs and outputs is not know beforehand, so it is not possible to know the transaction size, hence the transaction fees cannot be estimated.<br>In addition to this, if you have set a \"Block target\" as mining fee (read: \"Include my tx in the next n blocks\", instead of a sats/vByte value), we cannot estimate the fee needed for your transaction since Jam does not have access to the current mempool conditions."
+      "cant_estimate_mining_fee_info": "The amount of inputs and outputs is not know beforehand, so it is not possible to know the transaction size, hence the transaction fees cannot be estimated.<br>In addition to this, if you have set a \"Block target\" as mining fee (read: \"Include my tx in the next n blocks\", instead of a sats/vByte value), the transaction fee cannot be calculated since Jam does not have access to the current mempool conditions."
     },
     "confirm_send_modal": {
       "title": "Confirm payment",
