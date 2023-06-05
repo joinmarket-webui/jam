@@ -4,6 +4,7 @@ import { useEstimatedMaxCollaboratorFee, useFeeConfigValues, useMiningFeeText } 
 import Balance from '../Balance'
 import * as rb from 'react-bootstrap'
 import Sprite from '../Sprite'
+import { useSettings } from '../../context/SettingsContext'
 
 interface FeeBreakdownProps {
   numCollaborators: number | null
@@ -33,6 +34,7 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
 
   const miningFeeText = useMiningFeeText()
   const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({ amount, numCollaborators, isCoinjoin })
+  const settings = useSettings()
 
   return (
     <div>
@@ -90,7 +92,9 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
             placement="right"
             overlay={
               <rb.Popover>
-                <rb.Popover.Header>{t('send.fee_breakdown.why_cant_estimate_mining_fee')}</rb.Popover.Header>
+                <rb.Popover.Header className={settings.theme === 'dark' ? 'text-bg-secondary' : undefined}>
+                  {t('send.fee_breakdown.why_cant_estimate_mining_fee')}
+                </rb.Popover.Header>
                 <rb.Popover.Body>
                   <Trans i18nKey="send.fee_breakdown.cant_estimate_mining_fee_info" components={{ br: <br /> }} />
                 </rb.Popover.Body>
