@@ -37,6 +37,9 @@ export type Lockdate = `${YYYY}-${MM}`
 type WithLockdate = {
   lockdate: Lockdate
 }
+type WithBlockheight = {
+  blockheight: number
+}
 
 interface ApiRequestContext {
   signal?: AbortSignal
@@ -415,6 +418,21 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
+    signal,
+  })
+}
+
+/**
+ * Use this operation on recovered wallets to re-sync the wallet
+ */
+const getRescanBlockchain = async ({
+  token,
+  signal,
+  walletName,
+  blockheight,
+}: WalletRequestContext & WithBlockheight) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/rescanblockchain/${blockheight}`, {
+    headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
