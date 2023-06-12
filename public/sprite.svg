@@ -91,6 +91,9 @@
         <path fill-rule="evenodd" d="M2.461 12a.75.75 0 01.75-.75l17.79.012a.75.75 0 11-.002 1.5L3.21 12.75a.75.75 0 01-.749-.75z" clip-rule="evenodd"></path>
         <path fill-rule="evenodd" d="M10.517 4.47a.75.75 0 01.001 1.06L4.06 12l6.458 6.47a.75.75 0 01-1.061 1.06l-6.988-7a.75.75 0 010-1.06l6.988-7a.75.75 0 011.06 0z" clip-rule="evenodd"></path>
     </symbol>
+    <symbol id="arrow-right" viewBox="0 0 24 24" fill="currentColor">
+        <path fill-rule="evenodd" d="M13.483 4.47a.75.75 0 011.06 0l6.988 7a.75.75 0 010 1.06l-6.988 7a.75.75 0 01-1.061-1.06l5.709-5.719L3 12.762a.75.75 0 01-.002-1.5l16.194-.01-5.711-5.722a.75.75 0 010-1.06z" clip-rule="evenodd"></path>
+    </symbol>
     <symbol id="mnemonic" stroke="currentColor" fill="none" viewBox="0 0 24 24">
         <rect width="13" height="13" x="5.5" y="5.5" rx="1"></rect><path stroke-linecap="round" d="M15 16h1.5M11.5 16H13M8 16h1.5M15 13.333h1.5M11.5 13.333H13M8 13.333h1.5M15 10.667h1.5M11.5 10.667H13M8 10.667h1.5M15 8h1.5M11.5 8H13M8 8h1.5"></path>
     </symbol>

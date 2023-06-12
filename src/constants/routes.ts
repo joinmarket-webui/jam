@@ -8,5 +8,6 @@ export const routes = {
   settings: '/settings',
   wallet: '/wallet',
   createWallet: '/create-wallet',
+  importWallet: '/import-wallet',
   __errorExample: '/error-example',
 }

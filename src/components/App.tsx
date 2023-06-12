@@ -16,6 +16,7 @@ import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { clearSession, setSession } from '../session'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import CreateWallet from './CreateWallet'
+import ImportWallet from './ImportWallet'
 import Earn from './Earn'
 import ErrorPage, { ErrorThrowingComponent } from './ErrorPage'
 import Footer from './Footer'
@@ -104,6 +105,7 @@ export default function App() {
                 path={routes.home}
                 element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
               />
+              <Route id="import-wallet" path={routes.importWallet} element={<ImportWallet />} />
               {currentWallet && (
                 <>
                   <Route id="wallet" path={routes.wallet} element={<MainWalletView wallet={currentWallet} />} />
