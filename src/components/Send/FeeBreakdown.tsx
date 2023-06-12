@@ -91,11 +91,11 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
           <rb.OverlayTrigger
             placement="right"
             overlay={
-              <rb.Popover>
+              <rb.Popover className={settings.theme === 'dark' ? 'border border-light' : 'border border-dark'}>
                 <rb.Popover.Header className={settings.theme === 'dark' ? 'text-bg-secondary' : undefined}>
                   {t('send.fee_breakdown.why_cant_estimate_mining_fee')}
                 </rb.Popover.Header>
-                <rb.Popover.Body>
+                <rb.Popover.Body className={settings.theme === 'dark' ? 'text-bg-dark rounded-bottom' : undefined}>
                   <Trans i18nKey="send.fee_breakdown.cant_estimate_mining_fee_info" components={{ br: <br /> }} />
                 </rb.Popover.Body>
               </rb.Popover>
