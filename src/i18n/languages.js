@@ -1,6 +1,7 @@
 import en from './locales/en/translation.json'
 import fr from './locales/fr/translation.json'
 import pt_BR from './locales/pt_BR/translation.json'
+import de from './locales/de/translation.json'
 
 const languages = [
   {
@@ -17,6 +18,11 @@ const languages = [
     key: 'pt-BR',
     description: 'Português (Brasil)',
     translation: pt_BR,
+  },
+  {
+    key: 'de',
+    description: 'Deutsch',
+    translation: de,
   },
 ]
 
