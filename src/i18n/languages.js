@@ -5,6 +5,11 @@ import de from './locales/de/translation.json'
 
 const languages = [
   {
+    key: 'de',
+    description: 'Deutsch',
+    translation: de,
+  },
+  {
     key: 'en',
     description: 'English',
     translation: en,
@@ -18,11 +23,6 @@ const languages = [
     key: 'pt-BR',
     description: 'Português (Brasil)',
     translation: pt_BR,
-  },
-  {
-    key: 'de',
-    description: 'Deutsch',
-    translation: de,
   },
 ]
 

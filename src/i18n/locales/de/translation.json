@@ -43,11 +43,11 @@
     "menu_mobile_settings": "Einstellungen"
   },
   "footer": {
-    "warning": "Jam ist Beta Software! <br /><1> Lies das erst, bevor du weitermachst.</1>",
+    "warning": "Jam ist Beta Software! <br /><1> Lies das, bevor du weitermachst.</1>",
     "warning_alert_title": "Warnung",
-    "warning_alert_text": "Während JoinMarket schon viel genutzt und getestet wurde, ist das bei Jam nicht der Fall. Jam ist im Beta Stadium und sollte mit Vorsicht benutzt werden. ",
+    "warning_alert_text": "Während JoinMarket schon viel genutzt und getestet wurde, ist Jam noch relativ neu. Außerdem ist Jam Beta Software und sollte deshalb noch mit Vorsicht benutzt werden. ",
     "warning_alert_button_ok": "Geht klar.",
-    "cheatsheet": "Cheatsheet",
+    "cheatsheet": "Schummelzettel",
     "connected": "Verbunden",
     "disconnected": "Verbindung getrennt"
   },
@@ -59,7 +59,7 @@
     "splashscreen_description_line1": "Deine Wallet, deine Coins. ",
     "splashscreen_description_line2": "100 % Open Source Code & Design",
     "splashscreen_warning_title": "Warnung",
-    "splashscreen_warning_text": "Während JoinMarket schon viel verwendet und getestet wurde, ist das bei Jam nicht der Fall. Bitte lies dir also <2>die Dokumentation</2> durch und benutze Jam mit Vorsicht. Du kannst <1>auch über Github mitwirken und Jam verbessern</1>.",
+    "splashscreen_warning_text": "Während JoinMarket bereits ausgiebig getestet wurde, ist Jam noch relativ neu. Bitte lies dir also <2>die Dokumentation</2> durch und benutze Jam mit Vorsicht. Du kannst <1>auch über Github mitwirken und Jam verbessern</1>.",
     "screen_1_title": "Willkommen bei Jam für JoinMarket!",
     "screen_1_description": "Jam ist eine Benutzeroberfläche für JoinMarket, eine Softwarelösung mit dem Ziel, die Privatsphäre und Vertraulichkeit von Bitcointransaktionen zu verbessern. Diese Software soll gemeinsame Transaktionen über einen Peer-to-Peer-Marktplatz ermöglichen. ",
     "screen_2_title": "Gemeinschafts-Transaktionen",
@@ -150,15 +150,15 @@
     "button_deposit": "Empfangen",
     "button_withdraw": "Senden",
     "error_loading_failed": "Laden der Wallet fehlgeschlagen.",
-    "jar_tooltip": "Hineinschauen",
+    "jar_tooltip": "Inhalt anzeigen",
     "jar_tooltip_empty_jar_0": "Empfangen",
-    "jars_title": "Wallet Aufteilung",
+    "jars_title": "Wallet Verteilung",
     "jars_title_popover": "Gläser werden genutzt, um Sats in mehrere, voneinander getrennte Bereiche zu unterteilen, was die Privatsphäre verbessert. ",
     "account_heading_external_addresses": "Externe Adressen für Einlagen",
     "account_heading_internal_addresses": "Interne Adressen"
   },
   "settings": {
-    "section_title_display": "Anzeigen",
+    "section_title_display": "Anzeige",
     "section_title_market": "Markt",
     "section_title_wallet": "Wallet",
     "section_title_community": "Community",
@@ -226,7 +226,7 @@
   "send": {
     "loading": "Laden",
     "title": "Senden",
-    "subtitle": "Erstelle Gemeinschafts-Transaktionen, kurz Coinjoins, für verbesserte Sicherheit und Privatsphäre. ",
+    "subtitle": "Erstelle Gemeinschafts-Transaktionen, kurz Coinjoins, um deine Sicherheit und Privatsphäre zu verbessern. ",
     "label_num_collaborators": "Anzahl der Transaktionspartner: {{ numCollaborators }}",
     "input_num_collaborators_placeholder": "Andere",
     "description_num_collaborators": "Eine höhere Anzahl ist besser für die Privatsphäre, steigert aber die Transaktionskosten. ",
@@ -238,7 +238,7 @@
     "text_maker_running": "Der Earn Modus ist aktiv. Stoppe diesen Service, um gemeinschaftliche Transaktionen durchzuführen. ",
     "text_coinjoin_already_running": "Derzeit wird eine Gemeinschafts-Transaktion durchgeführt. ",
     "label_recipient": "Empfänger",
-    "placeholder_recipient": "Adresse eingeben oder Glas aus deiner Wallet auswählen...",
+    "placeholder_recipient": "Adresse eingeben oder Glas deiner Wallet auswählen...",
     "feedback_reused_address": "Diese Adresse wurde bereits verwendet. Nimm eine andere, um deine Privatsphäre zu bewahren. ",
     "label_source_jar": "Senden von",
     "title_jar_selector": "Wähle ein Glas aus, um deine Coins dorthin zu senden. ",
@@ -296,15 +296,15 @@
   },
   "receive": {
     "title": "Empfangen",
-    "subtitle": "Sende deine Sats an die unten angegebene Adresse, um dein Wallet aufzufüllen.",
+    "subtitle": "Befülle deine Wallet, indem du Sats an die unten stehende Adresse schickst. ",
     "error_loading_address_failed": "Neue Adresse kann nicht ermittelt werden.",
     "error_copy_address_failed": "Adresse konnte nicht kopiert werden",
     "button_copy_address": "Kopieren",
     "text_copy_address_confirmed": "Kopiert",
     "button_settings": "Empfangsoptionen",
-    "label_amount": "anzufordernder Betrag in Sats",
+    "label_amount": "genauen Betrag anfordern ",
     "feedback_invalid_amount": "Bitte einen gültigen Betrag angeben.",
-    "button_new_address": "neue Adresse erhalten",
+    "button_new_address": "neue Adresse generieren",
     "text_getting_address": "Generiere neue Adresse"
   },
   "earn": {
@@ -316,7 +316,7 @@
     "error_loading_report_failed": "Laden vom Verdienstbericht fehlgeschlagen. ",
     "alert_starting": "Der Service startet.",
     "alert_stopping": "Der Service stoppt. ",
-    "alert_running": "Sats anbieten, um mehr Sats zu verdienen...",
+    "alert_running": "Sats anbieten, um Sats zu verdienen...",
     "alert_coinjoin_in_progress": "Derzeit wird eine Gemeinschafts-Transaktion durchgeführt. ",
     "button_settings": "Angebots Optionen",
     "radio_abs_offer_label": "Absolutes Angebot",
@@ -477,7 +477,7 @@
     }
   },
   "cheatsheet": {
-    "title": "Das Cheatsheet",
+    "title": "Schummelzettel",
     "description": "Folge den Schritten unten, um deine finanzielle Privatsphäre zu erhöhen. Es ist empfehlenswert, den <2>Earn Modus als Maker</2> und das <6>Senden als Taker</6> hin und her zu wechseln. <10>Mehr dazu</10>",
     "receive": {
       "title": "<0>Befülle</0> deine Wallet.",
@@ -489,15 +489,15 @@
     },
     "bond": {
       "title": "Optional: <1>Sperre</1> Gelder in einem Fidelity Bond.",
-      "description": "Ein Fidelity Bond erhöht deine Chance Sats zu verdienen immens. "
+      "description": "Mit einem Fidelity Bond erhöhst du deine Chance Sats zu verdienen. "
     },
     "earn": {
-      "title": "<0>Verdiene</0> Sats indem du Liquidität bereitstellst. ",
-      "description": "Stelle im Austausch gegen eine Gebühr auf dem Marktplatz Liquidität bereit. Kein Vertrauen oder fremde Custody notwendig—du hast immer die volle Kontrolle über deine Coins."
+      "title": "<0>Verdiene</0> Sats durch das Bereitstellen von Liquidität. ",
+      "description": "Stelle auf dem Markplatz im Austausch gegen eine Gebühr Liquidität bereit. Kein Vertrauen oder fremde Custody notwendig—du hast immer die volle Kontrolle über deine Coins."
     },
     "schedule": {
       "title": "Veranlasse eine <1>Sweep</1> Transaktion, um deine Wallet zu leeren. ",
-      "description": "Automatische Durchführung von einer Serie von gemeinschaftlichen Transaktionen. Du kannst Coins an deine Cold Storage senden oder sie nutzen, um Lightning Channels zu öffnen. "
+      "description": "Automatisierte Durchführung von mehreren gemeinschaftlichen Transaktionen. So kannst du Coins an deine Cold Storage senden oder sie nutzen, um Lightning Kanäle zu öffnen. "
     },
     "repeat": {
       "title": "Immer und immer wieder!",
@@ -534,14 +534,14 @@
     "subtitle": "Führe mehrere Transaktionen mit zufälligen Beträgen und Zeitintervallen durch, um deine Privatsphäre und die von anderen zu erhöhen. Jede durchgeführte Transaktion ist ein Coinjoin. ",
     "error_starting_schedule_failed": "Der Scheduler konnte nicht gestartet werden. ",
     "error_stopping_schedule_failed": "Der Scheduler konnte nicht gestoppt werden. ",
-    "complete_wallet_title": "Wallet vervollständigen ",
+    "complete_wallet_title": "Gesamte Wallet ",
     "complete_wallet_subtitle": "Das wird alle deine nicht eingefrorenen Gelder verwenden. ",
     "description_destination_addresses": "Der Scheduler wird alle verfügbaren Gelder in zufällige Teile aufteilen und sie an mehrere Adressen schicken. ",
     "feedback_invalid_destination_address": "Bitte gib eine gültige Adresse ein. ",
     "feedback_reused_destination_address": "Diese Adresse wurde schon einmal verwendet. Nutze eine andere, um deine Privatsphäre zu erhalten. ",
-    "label_destination_input": "Destination {{ destination }}",
+    "label_destination_input": "Empfangsadresse {{ destination }}",
     "placeholder_destination_input": "Empfängeradresse eingeben...",
-    "description_fees": "Der Scheduler wird alle anfallenden Gebühren automatisch bezahlen. ",
+    "description_fees": "Alle anfallenden Gebühren werden automatisch abgezogen.",
     "button_start": "Scheduler starten",
     "button_stop": "Scheduler stoppen",
     "progress_tldr_seconds": "<1>{{ length }}</1> Transaktionen in <3>{{ seconds }}</3> Sekunden geplant.",
