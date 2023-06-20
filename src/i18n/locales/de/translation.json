@@ -59,7 +59,7 @@
     "splashscreen_description_line1": "Deine Wallet, deine Coins. ",
     "splashscreen_description_line2": "100 % Open Source Code & Design",
     "splashscreen_warning_title": "Warnung",
-    "splashscreen_warning_text": "Während JoinMarket bereits ausgiebig getestet wurde, ist Jam noch relativ neu. Bitte lies dir also <2>die Dokumentation</2> durch und benutze Jam mit Vorsicht. Du kannst <1>auch über Github mitwirken und Jam verbessern</1>.",
+    "splashscreen_warning_text": "Während JoinMarket bereits ausgiebig getestet wurde, ist Jam noch relativ neu. Also lies dir bitte <2>die Dokumentation</2> durch und benutze Jam mit Vorsicht. Du kannst <1>auch über Github mitwirken und mithelfen Jam zu verbessern</1>.",
     "screen_1_title": "Willkommen bei Jam für JoinMarket!",
     "screen_1_description": "Jam ist eine Benutzeroberfläche für JoinMarket, eine Softwarelösung mit dem Ziel, die Privatsphäre und Vertraulichkeit von Bitcointransaktionen zu verbessern. Diese Software soll gemeinsame Transaktionen über einen Peer-to-Peer-Marktplatz ermöglichen. ",
     "screen_2_title": "Gemeinschafts-Transaktionen",
@@ -201,11 +201,11 @@
       "description_tx_fees_satspervbyte": "Bei Angaben der Base Fee in sats/vByte, wird die Einstellung für das Block-Target überschrieben. Passe diese Einstellung der Auslastung des Mempools entsprechend an. ",
       "feedback_invalid_tx_fees_blocks": "Bitte gib ein gültiges Block-Target zwischen {{ min }} und {{ max }} an.",
       "feedback_invalid_tx_fees_satspervbyte": "Bitte gib eine gültige Transaktionsgebühr in sats/vByte zwischen {{ min }} und {{ max }} an.",
-      "label_tx_fees_factor": "Fee Zufallsanpassung",
+      "label_tx_fees_factor": "Zufällige Fee Anpassung",
       "description_tx_fees_factor": "Zufällige Fees erhöhen deine Privatsphäre. Die Prozentzahl ist als +/- Bereich zur Base Fee zu verstehen. Z.B.: Gibst du eine Base Fee von 10 sats/vByte und eine Zufallsanpassung von 30% an, wird ein Wert zwischen 7 und 13 sats/vByte für deine Transaktion anwendet. Standardwert: 20%.",
       "feedback_invalid_tx_fees_factor": "Bitte gib einen gültigen Wert für die Zufallsanpassung zwischen {{ min }} und {{ max }} an.",
       "title_max_cj_fee_settings": "Collaborator Fees",
-      "subtitle_max_cj_fee": "Notiz: Ein Vorschlag wird nur dann abgelehnt, wenn beide Limits überschritten werden.  ",
+      "subtitle_max_cj_fee": "Notiz: Ein Angebot für eine Gemeinschafts-Transaktion wird nur abgelehnt, wenn beide Limits überschritten werden.  ",
       "label_max_cj_fee_abs": "Absolutes Limit (pro Teilnehmer)",
       "description_max_cj_fee_abs": "Die maximale Fee, die für jeden Beteiligten zu zahlen ist. Beispiel: Bei einem Limit von 3000 Sats, liegt die maximale Gesamtgebühr bei 27.000 Sats für die Standardeinstellung von 9 Transaktionspartnern. ",
       "feedback_invalid_max_cj_fee_abs": "Bitte gib eine gültige maximale absolute Fee in Sats zwischen {{ min }} und {{ max }} an.",
@@ -286,8 +286,8 @@
       "hint_missing_utxos": "Damit Gemeinschafts-Transaktionen durchgeführt werden können, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen im Ursprungsglas. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Eine Gemeinschafts-Transaktion erfordert UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Zu viele Versuche, die notwendigen Verpflichtungen für dieses Glas zu beschaffen, sind gescheitert. Aus Sicherheitsgründen brauchst du für einen neuen Versuch einen frischen UTXO im Glas. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
-      "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos verwendet und kann nicht wiederverwendet werden: <1></1>",
-      "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos verwendet und können nicht wiederverwendet werden: <1></1> ",
+      "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos eingesetzt und kann nicht wiederverwendet werden: <1></1>",
+      "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos eingesetzt und können nicht wiederverwendet werden: <1></1> ",
       "nested_hint_wait_for_block": "Wähle ein anderes Glas für die Transaktion oder warte einen oder mehr Blöcke. ",
       "nested_hint_wait_for_block_other": "Wähle ein anderes Glas für die Transaktion oder warte auf {{ count }} mehr Blöcke.",
       "nested_hint_fund_jar": "Wähle ein anderes Glas für die Transaktion oder warte auf einen weiteren Block. ",
@@ -492,7 +492,7 @@
       "description": "Mit einem Fidelity Bond erhöhst du deine Chance Sats zu verdienen. "
     },
     "earn": {
-      "title": "<0>Verdiene</0> Sats durch das Bereitstellen von Liquidität. ",
+      "title": "<0>Verdiene</0> Sats durch Bereitstellen von Liquidität. ",
       "description": "Stelle auf dem Markplatz im Austausch gegen eine Gebühr Liquidität bereit. Kein Vertrauen oder fremde Custody notwendig—du hast immer die volle Kontrolle über deine Coins."
     },
     "schedule": {
