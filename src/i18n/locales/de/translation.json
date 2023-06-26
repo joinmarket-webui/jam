@@ -69,7 +69,7 @@
     "screen_4_title": "Keine vertrauten Drittparteien",
     "screen_4_description": "Weil JoinMarket ein peer-to-peer System ist, ist Vertrauen in Drittparteien zu keinem Zeitpunkt notwendig. Das ist eine einzigartige und vom Markt gesteuerte Methode, die Vertrauen in Gegenparteien minimiert. ",
     "screen_5_title": "Privatsphäre für alle",
-    "screen_5_description": "JoinMarket ist freie Open-Source-Software ohne Achillesferse. Jeder ist willkommen, mit ihr herumzuspielen, sie zu verändern, zu verteilen und auf ihr aufzubauen. Und selbstverständlich kannst du JoinMarket auch bloß benutzen, um deine eigene Privatsphäre und die von anderen zu verbessern. ",
+    "screen_5_description": "JoinMarket ist freie Open-Source-Software ohne Achillesferse. Jeder ist willkommen, mit ihr herumzuspielen, sie zu verändern, zu verteilen und auf ihr aufzubauen. Selbstverständlich kannst du JoinMarket auch nur benutzen, um deine eigene Privatsphäre und die von anderen zu verbessern. ",
     "button_next": "Weiter",
     "button_complete": "Los geht’s!"
   },
@@ -84,11 +84,11 @@
     },
     "heading_reason": "Begründung:",
     "heading_stacktrace": "Stacktrace:",
-    "report_bug": "Bitte <2>erstelle ein Issue auf GitHub</2>, um diesen Fehler zu melden, damit er in einer zukünftigen Version behoben werden kann."
+    "report_bug": "Melde diesen <2>Fehler auf GitHub</2>, damit er in einer zukünftigen Version behoben werden kann."
   },
   "wallets": {
     "title": "Deine Wallets",
-    "subtitle_no_wallets": "Es schaut so aus, als hättest du noch keine Wallet angelegt. ",
+    "subtitle_no_wallets": "Es sieht so aus, als hättest du noch keine Wallet angelegt. ",
     "text_loading": "Wallets laden",
     "button_new_wallet": "Neue Wallet erstellen",
     "alert_wallet_open": "Es kann immer nur eine Wallet aktiv sein. Wenn du eine andere öffnen willst, sperre zuerst '{{ currentWalletName }}'.",
@@ -106,7 +106,7 @@
       "button_unlock": "Entsperren",
       "button_locking": "Sperren",
       "button_unlocking": "Entsperren",
-      "feedback_missing_password": "Setze ein Passwort für diese Wallet.",
+      "feedback_missing_password": "Bitte wähle ein Passwort für diese Wallet.",
       "modal_lock_wallet_title": "Wallet sperren",
       "modal_lock_wallet_maker_running_text": "Earn Modus aktiv. Das Sperren der Wallet wird diesen Service stoppen. ",
       "modal_lock_wallet_coinjoin_in_progress_text": "Eine Gemeinschafts-Transaktion ist derzeit im Gange. Das Sperren der Wallet stoppt diese. ",
@@ -127,7 +127,7 @@
     "feedback_invalid_password": "Bitte wähle ein Passwort. ",
     "label_password_confirm": "Passwort bestätigen",
     "placeholder_password_confirm": "Passwort wiederholen...",
-    "feedback_invalid_password_confirm": "Die eingegebenen Passwörter sind nicht identisch.",
+    "feedback_invalid_password_confirm": "Die eingegebenen Passwörter sind unterschiedlich.",
     "button_create": "Erstellen",
     "button_creating": "Erstelle",
     "alert_confirmation_failed": "Wallet Bestätigung fehlgeschlagen. ",
@@ -231,7 +231,7 @@
     "input_num_collaborators_placeholder": "Andere",
     "description_num_collaborators": "Eine höhere Anzahl ist besser für die Privatsphäre, steigert aber die Transaktionskosten. ",
     "error_invalid_num_collaborators": "Bitte wähle zwischen {{ minNumCollaborators }} und {{ maxNumCollaborators }} Transaktionspartnern.",
-    "taker_error_message_max_fees_config_missing": "Die Parameter 'max_cj_fee_rel' und 'max_cj_fee_abs' müssen in der joinmarket.cfg Datei verändert werden, damit Coinjoins durchgeführt werden können. Falls nötig, kannst du diese Einstellung direkt in deiner Konfigurationsdatei vornehmen.",
+    "taker_error_message_max_fees_config_missing": "Die Parameter 'max_cj_fee_rel' und 'max_cj_fee_abs' müssen in der joinmarket.cfg Datei verändert werden. Falls nötig, kannst du diese Einstellungen direkt in deiner Konfigurationsdatei vornehmen.",
     "direct_payment_error_message_bad_request": "Bitte überprüfe deine Eingaben genau. ",
     "error_loading_min_makers_failed": "Laden der Konfigurationseinstellung 'minimum_makers' fehlgeschlagen.",
     "alert_payment_successful": "Zahlung erfolgreich: {{ amount }} Sats an die Adresse {{ address }} in der Transaction {{ txid }} versendet.",
@@ -257,7 +257,7 @@
     "button_sweep_amount_breakdown": "Wie wird diese Zahl berechnet?",
     "sweep_amount_breakdown_total_balance": "Gesamtguthaben",
     "sweep_amount_breakdown_frozen_balance": "Eingefrorenes oder gesperrtes Guthaben",
-    "sweep_amount_breakdown_estimated_amount": "Geschätzte Versandmenge",
+    "sweep_amount_breakdown_estimated_amount": "Geschätzter zu versendender Betrag",
     "sweep_amount_breakdown_explanation": "Eine Sweep-Transaktion wird alle deine UTXOs bis auf <1>eingefrorene</1>oder <3>zeitlich gesperrte</3> nützen. Onchain- und Marketmaker-Fees werden von der Gesamtmenge abgezogen, sodass kein Wechselgeld zurückbleibt. Der exakte Transaktionsbetrag kann nur von JoinMarket zum Transaktionszeitpunkt berechnet werden. Die geschätzte Transaktionsmenge kann sich also von der tatsächlichen unterscheiden. Bitte schau in <5>die JM Dokumentation</5>für mehr Details. ",
     "confirm_send_modal": {
       "title": "Zahlung freigeben",
@@ -280,12 +280,12 @@
     },
     "confirm_abort_modal": {
       "title": "Zahlung abbrechen",
-      "text_body": "Bist du dir sicher, dass du diese Gemeinschafts-Transaktion abbrechen willst?"
+      "text_body": "Bist du dir sicher, dass du diese gemeinsame Transaktion abbrechen willst?"
     },
     "coinjoin_precondition": {
       "hint_missing_utxos": "Damit Gemeinschafts-Transaktionen durchgeführt werden können, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen im Ursprungsglas. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Eine Gemeinschafts-Transaktion erfordert UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
-      "hint_missing_retries": "Zu viele Versuche, die notwendigen Verpflichtungen für dieses Glas zu beschaffen, sind gescheitert. Aus Sicherheitsgründen brauchst du für einen neuen Versuch einen frischen UTXO im Glas. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
+      "hint_missing_retries": "Zu viele Versuche, die notwendigen Verpflichtungen für dieses Glas zu beschaffen, scheiterten. Für einen neuen Versuch brauchst du einen frischen UTXO im Glas. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
       "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos eingesetzt und kann nicht wiederverwendet werden: <1></1>",
       "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos eingesetzt und können nicht wiederverwendet werden: <1></1> ",
       "nested_hint_wait_for_block": "Wähle ein anderes Glas für die Transaktion oder warte einen oder mehr Blöcke. ",
@@ -310,7 +310,7 @@
   "earn": {
     "title": "Verdienen",
     "subtitle": "Indem du dem Markt Liquidität anbietest, verbesserst du die Privatsphäre von dir und anderen. Deine Sats bleiben immer unter deiner Kontrolle und verlassen nie deine Wallet",
-    "market_explainer": "Du kannst wählen, wie viel du für dein Angebot verlangen willst. Beachte, dass du an einem offenen Markt teilnimmst und mit anderen konkurrierst - es gibt keine Garantie, dass andere Marktteilnehmer auf dein Angebot eingehen werden. Es kann einige Zeit dauern, bis du für ein gemeinsames Geschäft ausgewählt wirst. Niedrige Gebühren erhöhen deine Chance.",
+    "market_explainer": "Du kannst wählen, wie viel du für dein Angebot verlangen willst. Beachte, dass du an einem offenen Markt teilnimmst und mit anderen konkurrierst - es gibt keine Garantie, dass andere auf dein Angebot eingehen werden. Es kann einige Zeit dauern, bis du für eine gemeinsame Transaktion ausgewählt wirst. Niedrige Gebühren erhöhen deine Chance.",
     "alert_empty_report": "Der Bericht ist leer.",
     "text_report_length": "Es werden {{ visibleLines }} von {{ linesWithoutHeader }} Einträgen angezeigt",
     "error_loading_report_failed": "Laden vom Verdienstbericht fehlgeschlagen. ",
@@ -367,7 +367,7 @@
       "error_freezing_utxos": "Die UTXOs konnten nicht gefroren werden. ",
       "error_unfreezing_utxos": "Die UTXOs konnten nicht aufgetaut werden.",
       "error_loading_address": "Die zeitlich gesperrte Adresse konnte nicht geladen werden.",
-      "error_creating_fidelity_bond": "Transaktion zum Erstellen vom Fidelity Bond fehlgeschlagen. ",
+      "error_creating_fidelity_bond": "Die Transaktion zur Erstellung des Fidelity Bond ist fehlgeschlagen. ",
       "text_loading": "Laden...",
       "text_creating": "Erstellen...",
       "text_unfreezing": "Ensperren...",
@@ -443,7 +443,7 @@
       "text_coinjoin_already_running": "Derzeit wird eine Gemeinschafts-Transaktion durchgeführt. ",
       "create_form": {
         "confirmation_toggle_title": "Ich habe meine Eingaben sorgfältig überprüft",
-        "confirmation_toggle_subtitle": "Ich verstehe, dass zeitlich gesperrte Gelder für den Zeitraum der Sperre nicht ausgegeben werden können",
+        "confirmation_toggle_subtitle": "Ich verstehe, dass gesperrte Gelder für den Zeitraum der Sperre nicht ausgegeben werden können",
         "button_create": "Fidelity Bond erstellen"
       },
       "existing": {
@@ -497,7 +497,7 @@
     },
     "schedule": {
       "title": "Veranlasse eine <1>Sweep</1> Transaktion, um deine Wallet zu leeren. ",
-      "description": "Automatisierte Durchführung von mehreren gemeinschaftlichen Transaktionen. So kannst du Coins an deine Cold Storage senden oder sie nutzen, um Lightning Kanäle zu öffnen. "
+      "description": "Automatisierte Durchführung von mehreren gemeinschaftlichen Transaktionen. So kannst du Coins an deine Cold Storage senden mit ihnen Lightning Kanäle eröffnen. "
     },
     "repeat": {
       "title": "Immer und immer wieder!",
@@ -517,7 +517,7 @@
     "label_search": "Suche",
     "placeholder_search": "Suche",
     "text_orderbook_filter_count": "{{ filterCount }} Einträge gleichen deinen angegebenen Suchkriterien",
-    "label_highlight_own_orders": "Highlighte meine Angebote",
+    "label_highlight_own_orders": "Meine Angebote hervorheben",
     "table": {
       "heading_type": "Typ",
       "heading_counterparty": "Gegenpartei",
@@ -538,7 +538,7 @@
     "complete_wallet_subtitle": "Das wird alle deine nicht eingefrorenen Gelder verwenden. ",
     "description_destination_addresses": "Der Scheduler wird alle verfügbaren Gelder in zufällige Teile aufteilen und sie an mehrere Adressen schicken. ",
     "feedback_invalid_destination_address": "Bitte gib eine gültige Adresse ein. ",
-    "feedback_reused_destination_address": "Diese Adresse wurde schon einmal verwendet. Nutze eine andere, um deine Privatsphäre zu erhalten. ",
+    "feedback_reused_destination_address": "Diese Adresse wurde schon einmal verwendet. Nutze eine andere, um deine Privatsphäre zu bewahren. ",
     "label_destination_input": "Empfangsadresse {{ destination }}",
     "placeholder_destination_input": "Empfängeradresse eingeben...",
     "description_fees": "Alle anfallenden Gebühren werden automatisch abgezogen.",
@@ -552,7 +552,7 @@
     "precondition": {
       "hint_missing_utxos": "Um den Scheduler zu starten, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Um den Scheduler zu starten, brauchen deine UTXOs {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
-      "hint_missing_retries": "Zu viele Versuche, Commitments für diesen Jar zu beschaffen, sind fehlgeschlagen. Aus Sicherheitsgründen brauchst du einen frischen UTXO im Glas, um es erneut zu probieren. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
+      "hint_missing_retries": "Zu viele Versuche, Commitments für diesen Jar zu beschaffen, sind fehlgeschlagen. Aus Sicherheitsgründen brauchst du einen frischen UTXO, um es erneut zu probieren. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
       "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos verwendet und kann nicht wiederverwendet werden: <1></1>",
       "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos verwendet und können nicht wiederverwendet werden: <1></1> ",
       "nested_hint_wait_for_block": "Warte auf einen weiteren Block. ",
@@ -562,7 +562,7 @@
     },
     "success": {
       "title": "Erfolgreich!",
-      "subtitle": "Eine geplante Transaktion erfolgreich durchgeführt. ",
+      "subtitle": "Eine geplante Transaktion wurde erfolgreich durchgeführt. ",
       "subtitle_other": "{{ count }} erfolgreich durchgeführte geplante Transaktionen.",
       "text_button_submit": "Fortfahren"
     }
@@ -595,7 +595,7 @@
       "utxo_detail_label_id": "UTXO Id",
       "utxo_detail_label_address": "Adresse",
       "utxo_detail_label_path": "Pfad",
-      "utxo_detail_label_label": "Adress Beschreibung",
+      "utxo_detail_label_label": "Beschreibung der Adresse",
       "utxo_detail_label_value": "Wert",
       "utxo_detail_label_tries": "Versuche",
       "utxo_detail_label_tries_remaining": "verbleibende Versuche",
@@ -604,7 +604,7 @@
       "utxo_detail_label_confirmations": "Confirmations",
       "utxo_detail_label_is_frozen": "eingefroren",
       "utxo_detail_label_locktime": "Locktime",
-      "utxo_detail_label_status": "Adressen Status"
+      "utxo_detail_label_status": "Status der Adresse"
     }
   }
 }
