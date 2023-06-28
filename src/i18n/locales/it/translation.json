@@ -59,7 +59,7 @@
     "splashscreen_description_line1": "Il tuo portafoglio, le tue monete.",
     "splashscreen_description_line2": "100% open source e design aperto.",
     "splashscreen_warning_title": "Avviso",
-    "splashscreen_warning_text": "Mentre JoinMarket è collaudato e testato, Jam non lo è affatto. Si tratta di un software in versione beta, quindi ti preghiamo di <2> leggere la documentazione </2>e usarlo con cautela. Puoi aiutare <1> a migliorare il progetto su GitHub</1>.",
+    "splashscreen_warning_text": "Mentre JoinMarket è collaudato e testato, Jam non lo è affatto. Si tratta di un software in versione beta, quindi ti preghiamo di <2>leggere la documentazione</2> e usarlo con cautela. Puoi <1>aiutare a migliorare il progetto su GitHub</1>.",
     "screen_1_title": "Benvenuto in Jam per JoinMarket!",
     "screen_1_description": "Jam è un'interfaccia per JoinMarket, una soluzione software incentrata sulla privacy che punta a migliorare la riservatezza e la privacy delle tue transazioni bitcoin. Il suo obiettivo principale è facilitare la creazione di transazioni collaborative attraverso un mercato peer-to-peer.",
     "screen_2_title": "Transazioni collaborative",
