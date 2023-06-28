@@ -84,7 +84,7 @@
     },
     "heading_reason": "Motivo:",
     "heading_stacktrace": "Stacktrace:",
-    "report_bug": "Si prega <2>di aprire una issue su GitHub </2>affinché questo errore venga esaminato e risolto in una prossima versione."
+    "report_bug": "Si prega di <2>aprire una issue su GitHub</2> affinché questo errore venga esaminato e risolto in una prossima versione."
   },
   "wallets": {
     "title": "I tuoi portafogli",
