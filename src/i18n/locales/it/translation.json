@@ -117,7 +117,7 @@
     "title": "Crea Portafoglio",
     "title_wallet_created": "Portafoglio creato con successo!",
     "subtitle_wallet_created": "Per favore, annota la tua seed phrase e la tua password! Senza queste informazioni non sarai in grado di accedere e recuperare il tuo portafoglio!",
-    "alert_other_wallet_unlocked": "Attualmente <1>{{ walletName }}</1> è attivo. Devi prima bloccarlo.<3>Torna indietro</3>.",
+    "alert_other_wallet_unlocked": "Attualmente <1>{{ walletName }}</1> è attivo. Devi prima bloccarlo. <3>Torna indietro</3>.",
     "feedback_valid": "Sembra tutto ok!",
     "label_wallet_name": "Nome del portafoglio",
     "placeholder_wallet_name": "Il tuo portafoglio...",
@@ -234,7 +234,7 @@
     "taker_error_message_max_fees_config_missing": "Le variabili di configurazione 'max_cj_fee_rel' e 'max_cj_fee_abs' devono essere impostate nel tuo joinmarket.cfg per poter inviare transazioni collaborative. Considera di aggiungerli alla tua configurazione manualmente.",
     "direct_payment_error_message_bad_request": "Si prega di verificare attentamente i dati immessi.",
     "error_loading_min_makers_failed": "Caricamento del valore di configurazione 'minimum_makers' fallito.",
-    "alert_payment_successful": "Pagamento riuscito: Inviati {{ importo }} sats a {{ indirizzo }} nella transazione {{ txid }}.",
+    "alert_payment_successful": "Pagamento riuscito: Inviati {{ amount }} sats a {{ address }} nella transazione {{ txid }}.",
     "text_maker_running": "La funzione Guadagna è attiva. Interrompere il servizio per inviare transazioni collaborative.",
     "text_coinjoin_already_running": "È attualmente in corso una transazione collaborativa.",
     "label_recipient": "Destinatario",
@@ -249,7 +249,7 @@
     "toggle_coinjoin": "Invia come transazione collaborativa",
     "toggle_coinjoin_subtitle": "Le transazioni collaborative migliorano la tua privacy e quella degli altri.",
     "button_send": "Invia",
-    "button_send_despite_warning": "Ignora l'avviso & prova l'invio",
+    "button_send_despite_warning": "Ignora l'avviso e tenta l'invio",
     "button_send_without_improved_privacy": "Invia senza miglioramento di privacy",
     "text_sending": "Invio in corso",
     "button_sweep": "Sweep",
@@ -258,7 +258,7 @@
     "sweep_amount_breakdown_total_balance": "Saldo totale",
     "sweep_amount_breakdown_frozen_balance": "Saldo congelato o bloccato",
     "sweep_amount_breakdown_estimated_amount": "Importo stimato da inviare",
-    "sweep_amount_breakdown_explanation": "Una transazione \"sweep\" consumerà tutti gli UTXO di un mixdepth senza lasciare bitcoin ad eccezione di quelli che sono stati <1>congelati</1> o<3>bloccati con time-lock</3>. Le commissioni di transazione onchain e le commissioni dei market maker verranno detratte dall'importo in modo da non lasciare resto. L'importo esatto della transazione può essere calcolato da JoinMarket solo nel momento in cui la transazione viene creata. Pertanto l'importo stimato visualizzato potrebbe discostarsi dall'importo effettivamente inviato. Fai riferimento alla <5>documentazione JoinMarket</5> per ulteriori dettagli.",
+    "sweep_amount_breakdown_explanation": "Una transazione \"sweep\" consumerà tutti gli UTXO di un mixdepth senza lasciare bitcoin ad eccezione di quelli che sono stati <1>congelati</1> o <3>bloccati con time-lock</3>. Le commissioni di transazione onchain e le commissioni dei market maker verranno detratte dall'importo in modo da non lasciare resto. L'importo esatto della transazione può essere calcolato da JoinMarket solo nel momento in cui la transazione viene creata. Pertanto l'importo stimato visualizzato potrebbe discostarsi dall'importo effettivamente inviato. Fai riferimento alla <5>documentazione JoinMarket</5> per ulteriori dettagli.",
     "confirm_send_modal": {
       "title": "Conferma pagamento",
       "label_amount": "Importo",
@@ -290,7 +290,7 @@
       "hint_missing_retries_detail_other": "I seguenti {{ count }} UTXO sono stati utilizzati troppe volte senza successo e non possono essere riutilizzati:<1></1>",
       "nested_hint_wait_for_block": "Seleziona un altro vaso da cui inviare o attendi un ulteriore blocco.",
       "nested_hint_wait_for_block_other": "Seleziona un altro vaso da cui inviare o attendi altri {{ count }} ulteriori blocchi.",
-      "nested_hint_fund_jar": "Selezionare un altro vaso da cui inviare, oppure finanziare questo vaso e attendere un blocco.",
+      "nested_hint_fund_jar": "Seleziona un altro vaso da cui inviare, oppure deposita in questo vaso e attendi un blocco.",
       "nested_hint_fund_jar_other": "Selezionare un altro vaso da cui inviare, oppure finanziare questo vaso e attendere {{ count }} blocchi."
     }
   },
@@ -311,17 +311,17 @@
     "title": "Guadagna",
     "subtitle": "Offrendo liquidità al mercato, si migliora la propria privacy e quella altrui. I tuoi sats rimangono sempre sotto il tuo controllo e non escono mai dal tuo portafoglio.",
     "market_explainer": "Puoi scegliere quanto far pagare la tua offerta. Si noti che si partecipa e si compete in un mercato aperto: non c'è alcuna garanzia che gli altri partecipanti al mercato accettino la tua offerta. Essere scelti per una transazione collaborativa può richiedere del tempo. Le tariffe basse aumentano le possibilità.",
-    "alert_empty_report": "Il rapporto è vuoto.",
+    "alert_empty_report": "Il report è vuoto.",
     "text_report_length": "Visualizzazione di {{ visibleLines }} delle {{ linesWithoutHeader }} voci",
     "error_loading_report_failed": "Impossibile caricare il report dei guadagni.",
     "alert_starting": "Il servizio sta iniziando.",
     "alert_stopping": "Il servizio si sta fermando.",
-    "alert_running": "Offrire sats per guadagnare più sats...",
+    "alert_running": "Offrendo sats per guadagnare più sats...",
     "alert_coinjoin_in_progress": "È attualmente in corso una transazione collaborativa.",
-    "button_settings": "Opzioni di offerta",
+    "button_settings": "Opzioni dell'offerta",
     "radio_abs_offer_label": "Offerta assoluta",
     "radio_rel_offer_label": "Offerta relativa",
-    "label_rel_fee": "Commissione relativa {{ commissione }}",
+    "label_rel_fee": "Commissione relativa {{ fee }}",
     "description_rel_fee": "La commissione da addebitare agli altri, in percentuale sull'importo della transazione.",
     "feedback_invalid_rel_fee": "Fornisci una commissione relativa compresa tra {{feeRelPercentageMin}} e {{feeRelPercentageMax}}.",
     "label_abs_fee": "Commissione assoluta {{ fee }}",
@@ -402,7 +402,7 @@
         "text_secondary_button": "Cancella",
         "description_selected_utxos": "UTXO selezionati:",
         "description_unselected_utxos": "Il seguente UTXO non sarà utilizzato per il fidelity bond:",
-        "description_selected_utxos_to_freeze": "Verranno congelati per rimanere nel vaso {{ vaso }}. È possibile scongelarli in qualsiasi momento dopo aver creato il bond."
+        "description_selected_utxos_to_freeze": "Verranno congelati per rimanere nel vaso {{ jar }}. È possibile scongelarli in qualsiasi momento dopo aver creato il bond."
       },
       "review_inputs": {
         "text_primary_button": "Crea un fidelity bond",
@@ -478,7 +478,7 @@
   },
   "cheatsheet": {
     "title": "Riassunto",
-    "description": "Segui i passaggi seguenti per aumentare la tua privacy finanziaria. Si consiglia di passare da <2>guadagnare come maker</2> a <6>inviando come taker</6> avanti e indietro. <10>Per saperne di più.</10>",
+    "description": "Segui i passaggi seguenti per aumentare la tua privacy finanziaria. Si consiglia di passare da <2>guadagnare come maker</2> a <6>inviare come taker</6> più volte. <10>Per saperne di più.</10>",
     "receive": {
       "title": "<0>Finanzia</0> il tuo portafoglio.",
       "description": "Depositate voi stessi dei fondi o riceveteli da altri."
