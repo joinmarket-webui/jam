@@ -24,6 +24,16 @@ const languages = [
     description: 'Português (Brasil)',
     translation: pt_BR,
   },
+  {
+    key: 'zh-Hans',
+    description: 'Chinese Simplified',
+    translation: zh - Hans,
+  },
+  {
+    key: 'zh-Hant',
+    description: 'Chinese Traditional',
+    translation: zh - Hant,
+  },
 ]
 
 export default languages
