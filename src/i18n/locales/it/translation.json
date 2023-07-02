@@ -291,12 +291,12 @@
       "nested_hint_wait_for_block": "Seleziona un altro vaso da cui inviare o attendi un ulteriore blocco.",
       "nested_hint_wait_for_block_other": "Seleziona un altro vaso da cui inviare o attendi altri {{ count }} ulteriori blocchi.",
       "nested_hint_fund_jar": "Seleziona un altro vaso da cui inviare, oppure deposita in questo vaso e attendi un blocco.",
-      "nested_hint_fund_jar_other": "Selezionare un altro vaso da cui inviare, oppure finanziare questo vaso e attendere {{ count }} blocchi."
+      "nested_hint_fund_jar_other": "Seleziona un altro vaso da cui inviare, oppure deposita in questo vaso e attendi {{ count }} blocchi."
     }
   },
   "receive": {
     "title": "Ricevi",
-    "subtitle": "Invia sats all'indirizzo sottostante per finanziare il tuo wallet.",
+    "subtitle": "Invia sats all'indirizzo sottostante per depositare nel tuo wallet.",
     "error_loading_address_failed": "Impossibile ottenere un nuovo indirizzo.",
     "error_copy_address_failed": "Impossibile copiare l'indirizzo.",
     "button_copy_address": "Copia",
