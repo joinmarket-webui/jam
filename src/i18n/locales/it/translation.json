@@ -38,7 +38,7 @@
     "tab_receive": "Ricevi",
     "tab_earn": "Guadagna",
     "tab_sweep": "Sweep",
-    "joining_in_progress": "Disturbo",
+    "joining_in_progress": "Mescolamento in corso",
     "menu_mobile": "Menu",
     "menu_mobile_settings": "Impostazioni"
   },
@@ -47,7 +47,7 @@
     "warning_alert_title": "Avviso",
     "warning_alert_text": "Mentre JoinMarket è collaudato e testato, Jam non lo è. È in fase beta, quindi usalo con cautela.",
     "warning_alert_button_ok": "Accetto.",
-    "cheatsheet": "Riassunto",
+    "cheatsheet": "Introduzione",
     "connected": "Connesso",
     "disconnected": "Disconnesso"
   },
