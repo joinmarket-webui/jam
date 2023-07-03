@@ -63,6 +63,13 @@ interface CreateWalletRequest {
   password: string
 }
 
+interface RecoverWalletRequest {
+  wallettype: WalletType
+  walletname: WalletName
+  password: string
+  seedphrase: string
+}
+
 interface WalletUnlockRequest {
   password: string
 }
@@ -234,6 +241,15 @@ const postWalletCreate = async (req: CreateWalletRequest) => {
   const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
 
   return await fetch(`${basePath()}/v1/wallet/create`, {
+    method: 'POST',
+    body: JSON.stringify({ ...req, walletname, wallettype: 'sw-fb' }),
+  })
+}
+
+const postWalletRecover = async (req: RecoverWalletRequest) => {
+  const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
+
+  return await fetch(`${basePath()}/v1/wallet/recover`, {
     method: 'POST',
     body: JSON.stringify({ ...req, walletname, wallettype: 'sw-fb' }),
   })
@@ -456,6 +472,7 @@ export {
   getAddressTimelockNew,
   getWalletAll,
   postWalletCreate,
+  postWalletRecover,
   getWalletDisplay,
   getWalletLock,
   postWalletUnlock,
@@ -468,5 +485,6 @@ export {
   postSchedulerStart,
   getTakerStop,
   getSchedule,
+  getRescanBlockchain,
   Helper,
 }
