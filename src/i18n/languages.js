@@ -1,14 +1,11 @@
 import en from './locales/en/translation.json'
 import fr from './locales/fr/translation.json'
 import pt_BR from './locales/pt_BR/translation.json'
+import zh_Hans from './locales/zh_Hans/translation.json'
+import zh_Hant from './locales/zh_Hant/translation.json'
 import de from './locales/de/translation.json'
 
 const languages = [
-  {
-    key: 'de',
-    description: 'Deutsch',
-    translation: de,
-  },
   {
     key: 'en',
     description: 'English',
@@ -26,13 +23,18 @@ const languages = [
   },
   {
     key: 'zh-Hans',
-    description: 'Chinese Simplified',
-    translation: zh - Hans,
+    description: '中国语文科 (简化字)',
+    translation: zh_Hans,
   },
   {
     key: 'zh-Hant',
-    description: 'Chinese Traditional',
-    translation: zh - Hant,
+    description: '繁中国语文科 (繁体字)',
+    translation: zh_Hant,
+  },
+  {
+    key: 'de',
+    description: 'Deutsch',
+    translation: de,
   },
 ]
 
