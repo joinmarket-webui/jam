@@ -22,12 +22,12 @@ const languages = [
   },
   {
     key: 'zh-Hans',
-    description: '简化字',
+    description: '中国语文科 (简化字)',
     translation: zh_Hans,
   },
   {
     key: 'zh-Hant',
-    description: '繁体字',
+    description: '繁中国语文科 (繁体字)',
     translation: zh_Hant,
   },
 ]
