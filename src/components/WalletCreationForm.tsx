@@ -18,10 +18,11 @@ const initialValues: FormValues = {
 }
 
 interface WalletCreationFormProps {
+  submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
   onSubmit: (name: string, password: string) => Promise<void>
 }
 
-const WalletCreationForm = ({ onSubmit }: WalletCreationFormProps) => {
+const WalletCreationForm = ({ submitButtonText, onSubmit }: WalletCreationFormProps) => {
   const { t } = useTranslation()
 
   const validate = useCallback(
@@ -118,10 +119,10 @@ const WalletCreationForm = ({ onSubmit }: WalletCreationFormProps) => {
                     aria-hidden="true"
                     className="me-2"
                   />
-                  {t('create_wallet.button_creating')}
+                  {submitButtonText(isSubmitting)}
                 </div>
               ) : (
-                t('create_wallet.button_create')
+                submitButtonText(isSubmitting)
               )}
             </rb.Button>
           </rb.Form>

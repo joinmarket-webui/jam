@@ -253,7 +253,14 @@ export default function CreateWallet({ startWallet }) {
         <PageTitle title={t('create_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {canCreate && <WalletCreationForm onSubmit={createWallet} />}
+      {canCreate && (
+        <WalletCreationForm
+          onSubmit={createWallet}
+          submitButtonText={(isSubmitting) => (
+            <>{t(isSubmitting ? 'create_wallet.button_creating' : 'create_wallet.button_create')}</>
+          )}
+        />
+      )}
       {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">

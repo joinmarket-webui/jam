@@ -146,6 +146,11 @@
     "placeholder_seed_word_input": "Word",
     "hint_duration_text": "Please be patient, this may take a few minutes."
   },
+  "import_wallet": {
+    "title": "Import Wallet",
+    "button_import": "Continue",
+    "button_importing": "Continuing"
+  },
   "current_wallet": {
     "text_loading": "Loading",
     "button_deposit": "Receive",
