@@ -24,7 +24,7 @@
     },
     "errors": {
       "error_loading_wallet_failed": "Fehler beim Laden der Wallet. {{ reason }}",
-      "error_reloading_wallet_failed": "Erneuter Fehler beim Laden der Wallet. {{ reason }}",
+      "error_reloading_wallet_failed": "Fehler beim erneuten Laden der Wallet. {{ reason }}",
       "reason_unknown": "Unbekannter Grund"
     }
   },
@@ -54,7 +54,7 @@
   "onboarding": {
     "splashscreen_title": "Jam",
     "splashscreen_subtitle": "Privatsphäre für dich und andere",
-    "splashscreen_button_get_started": "Jetzt Starten",
+    "splashscreen_button_get_started": "Jetzt starten",
     "splashscreen_button_skip_intro": "Intro überspringen",
     "splashscreen_description_line1": "Deine Wallet, deine Coins. ",
     "splashscreen_description_line2": "100 % Open Source Code & Design",
@@ -62,20 +62,20 @@
     "splashscreen_warning_text": "Während JoinMarket bereits ausgiebig getestet wurde, ist Jam noch relativ neu. Also lies dir bitte <2>die Dokumentation</2> durch und benutze Jam mit Vorsicht. Du kannst <1>auch über Github mitwirken und mithelfen Jam zu verbessern</1>.",
     "screen_1_title": "Willkommen bei Jam für JoinMarket!",
     "screen_1_description": "Jam ist eine Benutzeroberfläche für JoinMarket, eine Softwarelösung mit dem Ziel, die Privatsphäre und Vertraulichkeit von Bitcointransaktionen zu verbessern. Diese Software soll gemeinsame Transaktionen über einen Peer-to-Peer-Marktplatz ermöglichen. ",
-    "screen_2_title": "Gemeinschafts-Transaktionen",
+    "screen_2_title": "Gemeinschaftliche Transaktionen",
     "screen_2_description": "Eine offene und transparente Bitcoin-Welt erfordert besondere Arten von Transaktionen, um Nutzern weiterhin notwendige Privatsphäre garantieren zu können. Jam hilft dir ebendiese Transaktionen in einer einfachen und automatisierten Art und Weise zu erstellen.",
     "screen_3_title": "Du hast die Kontrolle.",
     "screen_3_description": "Jam ist komplett non-custodial, was bedeutet, dass du immer die volle Kontrolle über deine Gelder hast. JoinMarket verwendet Bitcoin Smart Contracts, um sicherzustellen, dass alle Transaktionen atomar und deine Gelder jederzeit sicher sind.",
     "screen_4_title": "Keine vertrauten Drittparteien",
     "screen_4_description": "Weil JoinMarket ein peer-to-peer System ist, ist Vertrauen in Drittparteien zu keinem Zeitpunkt notwendig. Das ist eine einzigartige und vom Markt gesteuerte Methode, die Vertrauen in Gegenparteien minimiert. ",
     "screen_5_title": "Privatsphäre für alle",
-    "screen_5_description": "JoinMarket ist freie Open-Source-Software ohne Achillesferse. Jeder ist willkommen, mit ihr herumzuspielen, sie zu verändern, zu verteilen und auf ihr aufzubauen. Selbstverständlich kannst du JoinMarket auch nur benutzen, um deine eigene Privatsphäre und die von anderen zu verbessern. ",
+    "screen_5_description": "JoinMarket ist freie Open-Source-Software ohne Achillesferse. Jeder ist willkommen, mit ihr herumzuspielen, sie zu verändern, zu verteilen und auf ihr aufzubauen. Selbstverständlich kannst du JoinMarket auch benutzen, um deine eigene Privatsphäre und die von anderen zu verbessern. ",
     "button_next": "Weiter",
     "button_complete": "Los geht’s!"
   },
   "error_page": {
     "unknown_error": {
-      "title": "Ein unbekannter Fehler ist aufgetreten",
+      "title": "Irgendetwas ging schief :(",
       "subtitle": "Die Fehlerursache konnte nicht ermittelt werden."
     },
     "error_with_details": {
@@ -109,7 +109,7 @@
       "feedback_missing_password": "Bitte wähle ein Passwort für diese Wallet.",
       "modal_lock_wallet_title": "Wallet sperren",
       "modal_lock_wallet_maker_running_text": "Earn Modus aktiv. Das Sperren der Wallet wird diesen Service stoppen. ",
-      "modal_lock_wallet_coinjoin_in_progress_text": "Eine Gemeinschafts-Transaktion ist derzeit im Gange. Das Sperren der Wallet stoppt diese. ",
+      "modal_lock_wallet_coinjoin_in_progress_text": "Eine gemeinschaftliche Transaktion ist derzeit im Gange. Das Sperren der Wallet stoppt diese. ",
       "modal_lock_wallet_alternative_action_text": "Du kannst dein Browser Fenster schließen. Jam wird im Hintergrund weiterlaufen."
     }
   },
@@ -127,7 +127,7 @@
     "feedback_invalid_password": "Bitte wähle ein Passwort. ",
     "label_password_confirm": "Passwort bestätigen",
     "placeholder_password_confirm": "Passwort wiederholen...",
-    "feedback_invalid_password_confirm": "Die eingegebenen Passwörter sind unterschiedlich.",
+    "feedback_invalid_password_confirm": "Die eingegebenen Passwörter stimmen nicht überein.",
     "button_create": "Erstellen",
     "button_creating": "Erstelle",
     "alert_confirmation_failed": "Wallet Bestätigung fehlgeschlagen. ",
@@ -143,7 +143,7 @@
     "skip_button": "Überspringen",
     "next_button": "Weiter",
     "placeholder_seed_word_input": "Wort",
-    "hint_duration_text": "Bitte habe etwas Geduld, das könnte ein paar Minuten dauern. "
+    "hint_duration_text": "Bitte habe etwas Geduld, dieser Vorgang kann ein paar Minuten dauern. "
   },
   "current_wallet": {
     "text_loading": "Lade",
@@ -205,7 +205,7 @@
       "description_tx_fees_factor": "Zufällige Fees erhöhen deine Privatsphäre. Die Prozentzahl ist als +/- Bereich zur Base Fee zu verstehen. Z.B.: Gibst du eine Base Fee von 10 sats/vByte und eine Zufallsanpassung von 30% an, wird ein Wert zwischen 7 und 13 sats/vByte für deine Transaktion anwendet. Standardwert: 20%.",
       "feedback_invalid_tx_fees_factor": "Bitte gib einen gültigen Wert für die Zufallsanpassung zwischen {{ min }} und {{ max }} an.",
       "title_max_cj_fee_settings": "Collaborator Fees",
-      "subtitle_max_cj_fee": "Notiz: Ein Angebot für eine Gemeinschafts-Transaktion wird nur abgelehnt, wenn beide Limits überschritten werden.  ",
+      "subtitle_max_cj_fee": "Notiz: Ein Angebot für eine gemeinschaftliche Transaktion wird nur abgelehnt, wenn beide Limits überschritten werden.  ",
       "label_max_cj_fee_abs": "Absolutes Limit (pro Teilnehmer)",
       "description_max_cj_fee_abs": "Die maximale Fee, die für jeden Beteiligten zu zahlen ist. Beispiel: Bei einem Limit von 3000 Sats, liegt die maximale Gesamtgebühr bei 27.000 Sats für die Standardeinstellung von 9 Transaktionspartnern. ",
       "feedback_invalid_max_cj_fee_abs": "Bitte gib eine gültige maximale absolute Fee in Sats zwischen {{ min }} und {{ max }} an.",
@@ -226,7 +226,7 @@
   "send": {
     "loading": "Laden",
     "title": "Senden",
-    "subtitle": "Erstelle Gemeinschafts-Transaktionen, kurz Coinjoins, um deine Sicherheit und Privatsphäre zu verbessern. ",
+    "subtitle": "Erstelle gemeinschaftliche Transaktionen, kurz Coinjoins, um deine Sicherheit und Privatsphäre zu verbessern. ",
     "label_num_collaborators": "Anzahl der Transaktionspartner: {{ numCollaborators }}",
     "input_num_collaborators_placeholder": "Andere",
     "description_num_collaborators": "Eine höhere Anzahl ist besser für die Privatsphäre, steigert aber die Transaktionskosten. ",
@@ -236,7 +236,7 @@
     "error_loading_min_makers_failed": "Laden der Konfigurationseinstellung 'minimum_makers' fehlgeschlagen.",
     "alert_payment_successful": "Zahlung erfolgreich: {{ amount }} Sats an die Adresse {{ address }} in der Transaction {{ txid }} versendet.",
     "text_maker_running": "Der Earn Modus ist aktiv. Stoppe diesen Service, um gemeinschaftliche Transaktionen durchzuführen. ",
-    "text_coinjoin_already_running": "Derzeit wird eine Gemeinschafts-Transaktion durchgeführt. ",
+    "text_coinjoin_already_running": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",
     "label_recipient": "Empfänger",
     "placeholder_recipient": "Adresse eingeben oder Glas deiner Wallet auswählen...",
     "feedback_reused_address": "Diese Adresse wurde bereits verwendet. Nimm eine andere, um deine Privatsphäre zu bewahren. ",
@@ -246,8 +246,8 @@
     "placeholder_amount": "Gib einen Betrag ein...",
     "feedback_invalid_amount": "Bitte einen gültigen Betrag eingeben.",
     "sending_options": "Sendeoptionen",
-    "toggle_coinjoin": "Als Gemeinschaftliche-Transaktion senden",
-    "toggle_coinjoin_subtitle": "Gemeinschaftliche-Transaktionen verbessern die Privatsphäre von anderen und dir selbst. ",
+    "toggle_coinjoin": "Mit einer gemeinschaftlichen Transaktion senden",
+    "toggle_coinjoin_subtitle": "Gemeinschaftliche Transaktionen verbessern die Privatsphäre von anderen und dir selbst. ",
     "button_send": "Senden",
     "button_send_despite_warning": "Warnung ignorieren & senden",
     "button_send_without_improved_privacy": "Ohne Aufwertung der Privatsphäre versenden",
@@ -268,8 +268,8 @@
       "label_source_jar": "Senden von",
       "text_source_jar": "Glas {{ jarId }}",
       "label_num_collaborators": "Transaktionspartner",
-      "text_collaborative_tx_enabled": "Zahlung mit Verbesserung der Privatsphäre",
-      "text_collaborative_tx_disabled": "Zahlung ohne Verbesserung der Privatsphäre",
+      "text_collaborative_tx_enabled": "Zahlung mit verbesserter Privatsphäre",
+      "text_collaborative_tx_disabled": "Zahlung ohne verbesserte Privatsphäre",
       "label_estimated_max_collaborator_fee": "Collaborator Fee",
       "text_estimated_max_collaborator_fee_info_popover": "Dieser Wert stellt lediglich ein oberes Limit dar. Die tatsächlichen Gebühren sind wahrscheinlich niedriger. ",
       "label_miner_fee": "Mining Fee",
@@ -283,8 +283,8 @@
       "text_body": "Bist du dir sicher, dass du diese gemeinsame Transaktion abbrechen willst?"
     },
     "coinjoin_precondition": {
-      "hint_missing_utxos": "Damit Gemeinschafts-Transaktionen durchgeführt werden können, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen im Ursprungsglas. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
-      "hint_missing_confirmations": "Eine Gemeinschafts-Transaktion erfordert UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
+      "hint_missing_utxos": "Damit gemeinschaftliche Transaktionen durchgeführt werden können, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen im Ursprungsglas. $t(send.coinjoin_precondition.nested_hint_fund_jar, {\"count\": {{ minConfirmations }} })",
+      "hint_missing_confirmations": "Eine gemeinschaftliche Transaktion erfordert UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(send.coinjoin_precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",
       "hint_missing_retries": "Zu viele Versuche, die notwendigen Verpflichtungen für dieses Glas zu beschaffen, scheiterten. Für einen neuen Versuch brauchst du einen frischen UTXO im Glas. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
       "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos eingesetzt und kann nicht wiederverwendet werden: <1></1>",
       "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos eingesetzt und können nicht wiederverwendet werden: <1></1> ",
@@ -317,7 +317,7 @@
     "alert_starting": "Der Service startet.",
     "alert_stopping": "Der Service stoppt. ",
     "alert_running": "Sats anbieten, um Sats zu verdienen...",
-    "alert_coinjoin_in_progress": "Derzeit wird eine Gemeinschafts-Transaktion durchgeführt. ",
+    "alert_coinjoin_in_progress": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",
     "button_settings": "Angebots Optionen",
     "radio_abs_offer_label": "Absolutes Angebot",
     "radio_rel_offer_label": "Relatives Angebot",
@@ -440,7 +440,7 @@
       "subtitle": "Deine Sats werden vom Bitcoin Protokoll zeitlich gesperrt. Es ist unmöglich, sie vor dem Ablaufdatum des Bonds auszugeben.  ",
       "subtitle_fidelity_bond_exists": "Wenn mehr als ein Fidelity Bond existiert, wird nur <0>der wertvollste</0> verwendet werden.  ",
       "text_maker_running": "Der Earn Modus ist momentan aktiv. Stoppe den Service, um einen Fidelity Bond zu erstellen. ",
-      "text_coinjoin_already_running": "Derzeit wird eine Gemeinschafts-Transaktion durchgeführt. ",
+      "text_coinjoin_already_running": "Derzeit wird eine gemeinschaftliche Transaktion durchgeführt. ",
       "create_form": {
         "confirmation_toggle_title": "Ich habe meine Eingaben sorgfältig überprüft",
         "confirmation_toggle_subtitle": "Ich verstehe, dass gesperrte Gelder für den Zeitraum der Sperre nicht ausgegeben werden können",
@@ -478,14 +478,14 @@
   },
   "cheatsheet": {
     "title": "Schummelzettel",
-    "description": "Folge den Schritten unten, um deine finanzielle Privatsphäre zu erhöhen. Es ist empfehlenswert, den <2>Earn Modus als Maker</2> und das <6>Senden als Taker</6> hin und her zu wechseln. <10>Mehr dazu</10>",
+    "description": "Führe die folgenden Schritte aus, um deine finanzielle Privatsphäre zu erhöhen. Es ist empfehlenswert, den <2>Earn Modus als Maker</2> und das <6>Senden als Taker</6> hin und her zu wechseln. <10>Mehr dazu</10>",
     "receive": {
       "title": "<0>Befülle</0> deine Wallet.",
       "description": "Lade Geld auf oder empfange es von jemand anderem. "
     },
     "send": {
-      "title": "<0>Sende</0> eine Gemeinschafts-Transaktion an ein anderes Glas. ",
-      "description": "Gemeinschaftliche-Transaktionen verbessern die Privatsphäre von anderen und dir selbst. "
+      "title": "<0>Sende</0> eine gemeinschaftliche Transaktion an ein anderes Glas. ",
+      "description": "Gemeinschaftliche Transaktionen verbessern die Privatsphäre von anderen und dir selbst. "
     },
     "bond": {
       "title": "Optional: <1>Sperre</1> Gelder in einem Fidelity Bond.",
@@ -536,7 +536,7 @@
     "error_stopping_schedule_failed": "Der Scheduler konnte nicht gestoppt werden. ",
     "complete_wallet_title": "Gesamte Wallet ",
     "complete_wallet_subtitle": "Das wird alle deine nicht eingefrorenen Gelder verwenden. ",
-    "description_destination_addresses": "Der Scheduler wird alle verfügbaren Gelder in zufällige Teile aufteilen und sie an mehrere Adressen schicken. ",
+    "description_destination_addresses": "Der Scheduler wird alle verfügbaren Gelder in zufällige Beträge aufteilen und sie an mehrere Adressen schicken. ",
     "feedback_invalid_destination_address": "Bitte gib eine gültige Adresse ein. ",
     "feedback_reused_destination_address": "Diese Adresse wurde schon einmal verwendet. Nutze eine andere, um deine Privatsphäre zu bewahren. ",
     "label_destination_input": "Empfangsadresse {{ destination }}",
@@ -552,7 +552,7 @@
     "precondition": {
       "hint_missing_utxos": "Um den Scheduler zu starten, brauchst du UTXOs mit {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "Um den Scheduler zu starten, brauchen deine UTXOs {{ minConfirmations }} oder mehr Bestätigungen. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
-      "hint_missing_retries": "Zu viele Versuche, Commitments für diesen Jar zu beschaffen, sind fehlgeschlagen. Aus Sicherheitsgründen brauchst du einen frischen UTXO, um es erneut zu probieren. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
+      "hint_missing_retries": "Zu viele Versuche, Commitments für dieses Glas zu beschaffen, sind fehlgeschlagen. Aus Sicherheitsgründen brauchst du einen frischen UTXO, um es erneut zu probieren. Weitere Informationen findest du <1>in der Dokumentation</1>. ",
       "hint_missing_retries_detail_one": "Der folgende UTXO wurde bereits zu oft erfolglos verwendet und kann nicht wiederverwendet werden: <1></1>",
       "hint_missing_retries_detail_other": "Die folgenden {{ count }} UTXOs wurden zu oft erfolglos verwendet und können nicht wiederverwendet werden: <1></1> ",
       "nested_hint_wait_for_block": "Warte auf einen weiteren Block. ",
