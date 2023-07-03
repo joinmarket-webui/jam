@@ -6,40 +6,13 @@ import { Formik } from 'formik'
 import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
+import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './CreateWallet.module.css'
-
-const PreventLeavingPageByMistake = () => {
-  // prompt users before refreshing or closing the page when this component is present.
-  // Firefox will show: "This page is asking you to confirm that you want to leave [...]"
-  // Chrome: "Leave site? Changes you made may not be saved."
-  useEffect(() => {
-    const abortCtrl = new AbortController()
-
-    window.addEventListener(
-      'beforeunload',
-      (event) => {
-        // cancel the event as stated by the standard.
-        event.preventDefault()
-
-        // Chrome requires returnValue to be set.
-        event.returnValue = ''
-
-        // return something to trigger a dialog
-        return ''
-      },
-      { signal: abortCtrl.signal }
-    )
-
-    return () => abortCtrl.abort()
-  }, [])
-
-  return <></>
-}
 
 const WalletCreationForm = ({ createWallet }) => {
   const { t } = useTranslation()
