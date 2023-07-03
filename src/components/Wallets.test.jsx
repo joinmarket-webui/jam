@@ -103,7 +103,7 @@ describe('<Wallets />', () => {
     expect(newWalletButtonBeforeAfter.classList.contains('btn-lg')).toBe(true)
 
     const importWalletButton = screen.getByTestId('import-wallet-btn')
-    expect(importWalletButton.classList.contains('btn-lg')).toBe(false)
+    expect(importWalletButton.classList.contains('btn-lg')).toBe(true)
   })
 
   it('should display login for available wallets', async () => {
