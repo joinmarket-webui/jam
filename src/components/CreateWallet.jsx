@@ -1,132 +1,18 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
-import { Formik } from 'formik'
 import PageTitle from './PageTitle'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
+import WalletCreationForm from './WalletCreationForm'
 import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './CreateWallet.module.css'
-
-const WalletCreationForm = ({ createWallet }) => {
-  const { t } = useTranslation()
-
-  const initialValues = { walletName: '', password: '', passwordConfirm: '' }
-  const validate = (values) => {
-    const errors = {}
-    if (!values.walletName) {
-      errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
-    }
-    if (!values.password) {
-      errors.password = t('create_wallet.feedback_invalid_password')
-    }
-    if (!values.passwordConfirm || values.password !== values.passwordConfirm) {
-      errors.passwordConfirm = t('create_wallet.feedback_invalid_password_confirm')
-    }
-    return errors
-  }
-
-  const onSubmit = useCallback(
-    async (values) => {
-      const { walletName, password } = values
-      await createWallet(walletName, password)
-    },
-    [createWallet]
-  )
-
-  return (
-    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
-      {({ handleSubmit, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
-        <>
-          {isSubmitting && <PreventLeavingPageByMistake />}
-          <rb.Form onSubmit={handleSubmit} noValidate>
-            <rb.Form.Group className="mb-4" controlId="walletName">
-              <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
-              <rb.Form.Control
-                name="walletName"
-                type="text"
-                placeholder={t('create_wallet.placeholder_wallet_name')}
-                disabled={isSubmitting}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.walletName}
-                isValid={touched.walletName && !errors.walletName}
-                isInvalid={touched.walletName && errors.walletName}
-                className={styles.input}
-              />
-              <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
-              <rb.Form.Control.Feedback type="invalid">{errors.walletName}</rb.Form.Control.Feedback>
-            </rb.Form.Group>
-            <rb.Form.Group className="mb-4" controlId="password">
-              <rb.Form.Label>{t('create_wallet.label_password')}</rb.Form.Label>
-              <rb.Form.Control
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                placeholder={t('create_wallet.placeholder_password')}
-                disabled={isSubmitting}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.password}
-                isValid={touched.password && !errors.password}
-                isInvalid={touched.password && errors.password}
-                className={styles.input}
-              />
-              <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
-              <rb.Form.Control.Feedback type="invalid">{errors.password}</rb.Form.Control.Feedback>
-            </rb.Form.Group>
-            <rb.Form.Group className="mb-4" controlId="passwordConfirm">
-              <rb.Form.Label>{t('create_wallet.label_password_confirm')}</rb.Form.Label>
-              <rb.Form.Control
-                name="passwordConfirm"
-                type="password"
-                autoComplete="new-password"
-                placeholder={t('create_wallet.placeholder_password_confirm')}
-                disabled={isSubmitting}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.passwordConfirm}
-                isValid={touched.passwordConfirm && !errors.passwordConfirm}
-                isInvalid={touched.passwordConfirm && errors.passwordConfirm}
-                className={styles.input}
-              />
-              <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
-              <rb.Form.Control.Feedback type="invalid">{errors.passwordConfirm}</rb.Form.Control.Feedback>
-            </rb.Form.Group>
-            <rb.Button variant="dark" className={styles.button} type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <div className="d-flex justify-content-center align-items-center">
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="me-2"
-                  />
-                  {t('create_wallet.button_creating')}
-                </div>
-              ) : (
-                t('create_wallet.button_create')
-              )}
-            </rb.Button>
-          </rb.Form>
-          {isSubmitting && (
-            <div className="text-center text-muted small mt-4">
-              <p>{t('create_wallet.hint_duration_text')}</p>
-            </div>
-          )}
-        </>
-      )}
-    </Formik>
-  )
-}
 
 const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
   const { t } = useTranslation()
@@ -141,7 +27,7 @@ const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
 
   return (
     <rb.InputGroup>
-      <rb.InputGroup.Text className={styles['seedword-index-backup']}>{number}.</rb.InputGroup.Text>
+      <rb.InputGroup.Text className={styles.seedwordIndexBackup}>{number}.</rb.InputGroup.Text>
       <rb.FormControl
         type="text"
         placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${number}`}
@@ -301,7 +187,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
           <rb.Button
             variant="dark"
             disabled={!sensitiveInfoWasRevealed || !userConfirmed}
-            className={styles['button']}
+            className={styles.button}
             onClick={() => setStep(1)}
           >
             {t('create_wallet.next_button')}
@@ -367,7 +253,7 @@ export default function CreateWallet({ startWallet }) {
         <PageTitle title={t('create_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {canCreate && <WalletCreationForm createWallet={createWallet} />}
+      {canCreate && <WalletCreationForm onSubmit={createWallet} />}
       {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
