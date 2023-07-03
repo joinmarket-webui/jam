@@ -5,14 +5,98 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import PageTitle from './PageTitle'
 import WalletCreationForm from './WalletCreationForm'
+import MnemonicWordInput from './MnemonicWordInput'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
 import { walletDisplayName } from '../utils'
+import styles from './ImportWallet.module.css'
+
+const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: () => void }) => {
+  const { t } = useTranslation()
+  const [mnemonicPhraseWords, setMnemonicPhraseWords] = useState(new Array(12).fill(''))
+  const [showFillerButton] = useState(isDebugFeatureEnabled('importFillerMnemonicPhrase'))
+
+  return (
+    <div>
+      <rb.Form noValidate>
+        <div className="container slashed-zeroes p-0">
+          {mnemonicPhraseWords.map((_, outerIndex) => {
+            if (outerIndex % 2 !== 0) return null
+
+            const seedWords = mnemonicPhraseWords.slice(outerIndex, outerIndex + 2)
+
+            return (
+              <div className="row mb-4" key={outerIndex}>
+                {seedWords.map((givenWord, innerIndex) => {
+                  const wordIndex = outerIndex + innerIndex
+                  return (
+                    <div className="col" key={wordIndex}>
+                      <MnemonicWordInput
+                        index={wordIndex}
+                        value={givenWord}
+                        setValue={(value) =>
+                          setMnemonicPhraseWords((words) =>
+                            words.map((old, index) => (index === wordIndex ? value : old))
+                          )
+                        }
+                        isValid={undefined}
+                        disabled={false}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+      </rb.Form>
+
+      <rb.Button
+        variant="dark"
+        className={styles.button}
+        onClick={() => {
+          //walletConfirmed()
+        }}
+        disabled={true}
+      >
+        {t('import_wallet.mnemonic_phrase.text_button_submit')}
+      </rb.Button>
+
+      <div className="d-flex mt-4 mb-4 gap-4">
+        <rb.Button
+          variant="outline-dark"
+          disabled={false}
+          className={styles.button}
+          onClick={() => {
+            // parentStepSetter()
+          }}
+        >
+          {t('create_wallet.back_button')}
+        </rb.Button>
+
+        {showFillerButton && (
+          <rb.Button
+            variant="outline-dark"
+            className={styles.button}
+            onClick={() => {
+              //walletConfirmed()
+            }}
+            disabled={false}
+          >
+            {t('import_wallet.fill_with')}
+          </rb.Button>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function ImportWallet() {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
 
   const [alert] = useState<SimpleAlert>()
+  const [walletNameAndPassword, setWalletNameAndPassword] = useState<{ name: string; password: string }>()
   const [createdWallet] = useState<any>()
 
   const isCreated = useMemo(
@@ -21,25 +105,45 @@ export default function ImportWallet() {
   )
   const canCreate = useMemo(() => !isCreated && !serviceInfo?.walletName, [isCreated, serviceInfo])
 
+  const step = useMemo(() => {
+    if (!walletNameAndPassword) return 'input-wallet-details'
+    return 'input-mnemonic-phrase'
+  }, [walletNameAndPassword])
+
   return (
     <div className="import-wallet">
-      {isCreated ? (
+      {step === 'input-wallet-details' && <PageTitle title={t('import_wallet.wallet_details.title')} />}
+      {step === 'input-mnemonic-phrase' && (
         <PageTitle
-          title={t('create_wallet.title_wallet_created')}
-          subtitle={t('create_wallet.subtitle_wallet_created')}
-          success
+          title={t('import_wallet.mnemonic_phrase.title')}
+          subtitle={t('import_wallet.mnemonic_phrase.subtitle')}
         />
-      ) : (
-        <PageTitle title={t('import_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {canCreate && (
-        <WalletCreationForm
-          onSubmit={async () => {}}
-          submitButtonText={(isSubmitting) => (
-            <>{t(isSubmitting ? 'import_wallet.button_importing' : 'import_wallet.button_import')}</>
+        <>
+          {step === 'input-wallet-details' && (
+            <WalletCreationForm
+              onSubmit={async (name, password) => setWalletNameAndPassword({ name, password })}
+              submitButtonText={(isSubmitting) => (
+                <>
+                  {t(
+                    isSubmitting
+                      ? 'import_wallet.wallet_details.text_button_submitting'
+                      : 'import_wallet.wallet_details.text_button_submit'
+                  )}
+                </>
+              )}
+            />
           )}
-        />
+          {step === 'input-mnemonic-phrase' && (
+            <MnemonicPhraseInputForm
+              onSubmit={() => {
+                /* TODO */
+              }}
+            />
+          )}
+        </>
       )}
       {!canCreate && !isCreated && serviceInfo?.walletName && (
         <rb.Alert variant="warning">

@@ -147,9 +147,17 @@
     "hint_duration_text": "Please be patient, this may take a few minutes."
   },
   "import_wallet": {
-    "title": "Import Wallet",
-    "button_import": "Continue",
-    "button_importing": "Continuing"
+    "wallet_details": {
+      "title": "Import Wallet",
+      "text_button_submit": "Continue",
+      "text_button_submitting": "Continue"
+    },
+    "mnemonic_phrase": {
+      "title": "Please type your mnemonic phrase!",
+      "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
+      "text_button_submit": "Next: Rescan",
+      "text_button_submitting": "Next: Rescan"
+    }
   },
   "current_wallet": {
     "text_loading": "Loading",

@@ -255,9 +255,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
           <Link
             to={routes.importWallet}
             className={classNames('btn', 'btn-outline-dark', {
-              //'btn-lg': walletList?.length === 0,
-              //'btn-dark': walletList?.length === 0,
-              //'btn-outline-dark': !walletList || walletList.length > 0,
+              'btn-lg': walletList?.length === 0,
               disabled: isUnlocking,
             })}
             data-testid="import-wallet-btn"

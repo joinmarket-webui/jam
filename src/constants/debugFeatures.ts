@@ -3,6 +3,7 @@ interface DebugFeatures {
   allowCreatingExpiredFidelityBond: boolean
   skipWalletBackupConfirmation: boolean
   errorExamplePage: boolean
+  importFillerMnemonicPhrase: boolean
 }
 
 const devMode = process.env.NODE_ENV === 'development' && process.env.REACT_APP_JAM_DEV_MODE === 'true'
@@ -12,6 +13,7 @@ const debugFeatures: DebugFeatures = {
   insecureScheduleTesting: devMode,
   skipWalletBackupConfirmation: devMode,
   errorExamplePage: devMode,
+  importFillerMnemonicPhrase: devMode,
 }
 
 type DebugFeature = keyof DebugFeatures

@@ -7,6 +7,7 @@ import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import WalletCreationForm from './WalletCreationForm'
+import MnemonicWordInput from './MnemonicWordInput'
 import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
@@ -14,47 +15,16 @@ import { routes } from '../constants/routes'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './CreateWallet.module.css'
 
-const SeedWordInput = ({ number, targetWord, isValid, setIsValid }) => {
-  const { t } = useTranslation()
-  const [enteredWord, setEnteredWord] = useState('')
-
-  useEffect(() => {
-    if (!isValid && enteredWord === targetWord) {
-      // Only use effect when value changes from false -> true to prevent an endless re-rendering loop.
-      setIsValid(true)
-    }
-  }, [enteredWord, targetWord, setIsValid, isValid])
-
-  return (
-    <rb.InputGroup>
-      <rb.InputGroup.Text className={styles.seedwordIndexBackup}>{number}.</rb.InputGroup.Text>
-      <rb.FormControl
-        type="text"
-        placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${number}`}
-        value={enteredWord}
-        onChange={(e) => {
-          setEnteredWord(e.target.value)
-        }}
-        className={styles.input}
-        disabled={isValid}
-        isInvalid={!isValid && enteredWord.length > 0}
-        isValid={isValid}
-        required
-      />
-    </rb.InputGroup>
-  )
-}
-
 const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
-  const seedphrase = createdWallet.seedphrase.split(' ')
+  const seedphrase = useMemo(() => createdWallet.seedphrase.split(' '), [createdWallet])
 
   const { t } = useTranslation()
-  const [seedWordConfirmations, setSeedWordConfirmations] = useState(new Array(seedphrase.length).fill(false))
+  const [givenWords, setGivenWords] = useState(new Array(seedphrase.length).fill(''))
   const [showSkipButton] = useState(isDebugFeatureEnabled('skipWalletBackupConfirmation'))
 
   const isSeedBackupConfirmed = useMemo(
-    () => seedWordConfirmations.every((wordConfirmed) => wordConfirmed),
-    [seedWordConfirmations]
+    () => givenWords.every((word, index) => word === seedphrase[index]),
+    [givenWords, seedphrase]
   )
 
   return (
@@ -75,17 +45,14 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
                   const wordIndex = outerIndex + innerIndex
                   return (
                     <div className="col" key={wordIndex}>
-                      <SeedWordInput
-                        number={wordIndex + 1}
-                        targetWord={seedWord}
-                        isValid={seedWordConfirmations[wordIndex]}
-                        setIsValid={(isValid) => {
-                          setSeedWordConfirmations(
-                            seedWordConfirmations.map((confirmation, index) =>
-                              index === wordIndex ? isValid : confirmation
-                            )
-                          )
-                        }}
+                      <MnemonicWordInput
+                        index={wordIndex}
+                        value={givenWords[wordIndex]}
+                        setValue={(value) =>
+                          setGivenWords((words) => words.map((old, index) => (index === wordIndex ? value : old)))
+                        }
+                        isValid={givenWords[wordIndex] === seedWord}
+                        disabled={givenWords[wordIndex] === seedWord}
                       />
                     </div>
                   )
