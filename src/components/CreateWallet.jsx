@@ -3,8 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import PageTitle from './PageTitle'
-import Seedphrase from './Seedphrase'
-import ToggleSwitch from './ToggleSwitch'
+import WalletCreationConfirmation from './WalletCreationConfirmation'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import WalletCreationForm from './WalletCreationForm'
 import MnemonicWordInput from './MnemonicWordInput'
@@ -15,8 +14,8 @@ import { routes } from '../constants/routes'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './CreateWallet.module.css'
 
-const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }) => {
-  const seedphrase = useMemo(() => createdWallet.seedphrase.split(' '), [createdWallet])
+const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
+  const seedphrase = useMemo(() => wallet.seedphrase.split(' '), [wallet])
 
   const { t } = useTranslation()
   const [givenWords, setGivenWords] = useState(new Array(seedphrase.length).fill(''))
@@ -29,6 +28,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
 
   return (
     <div>
+      <PreventLeavingPageByMistake />
       <div className="fs-4">{t('create_wallet.confirm_backup_title')}</div>
       <p className="text-secondary">{t('create_wallet.confirm_backup_subtitle')}</p>
 
@@ -66,12 +66,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
         <div className="mb-4 text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>
       )}
 
-      <rb.Button
-        variant="dark"
-        className={styles.button}
-        onClick={() => walletConfirmed()}
-        disabled={!isSeedBackupConfirmed}
-      >
+      <rb.Button variant="dark" className={styles.button} onClick={() => onSuccess()} disabled={!isSeedBackupConfirmed}>
         {t('create_wallet.confirmation_button_fund_wallet')}
       </rb.Button>
 
@@ -80,9 +75,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
           variant="outline-dark"
           disabled={isSeedBackupConfirmed}
           className={styles.button}
-          onClick={() => {
-            parentStepSetter()
-          }}
+          onClick={() => onCancel()}
         >
           {t('create_wallet.back_button')}
         </rb.Button>
@@ -91,7 +84,7 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
           <rb.Button
             variant="outline-dark"
             className={styles.button}
-            onClick={() => walletConfirmed()}
+            onClick={() => onSuccess()}
             disabled={isSeedBackupConfirmed}
           >
             {t('create_wallet.skip_button')}
@@ -99,75 +92,6 @@ const BackupConfirmation = ({ createdWallet, walletConfirmed, parentStepSetter }
         )}
       </div>
     </div>
-  )
-}
-
-const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
-  const { t } = useTranslation()
-  const [userConfirmed, setUserConfirmed] = useState(false)
-  const [revealSensitiveInfo, setRevealSensitiveInfo] = useState(false)
-  const [sensitiveInfoWasRevealed, setSensitiveInfoWasRevealed] = useState(false)
-  const [step, setStep] = useState(0)
-
-  function childStepSetter() {
-    setRevealSensitiveInfo(false)
-    setSensitiveInfoWasRevealed(false)
-    setUserConfirmed(false)
-    setStep(0)
-  }
-
-  return (
-    <>
-      <PreventLeavingPageByMistake />
-      {step === 0 ? (
-        <div>
-          <div className="mb-4">
-            <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
-            <div className="fs-4">{walletDisplayName(createdWallet.walletFileName)}</div>
-          </div>
-          <div className="mb-4">
-            <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
-          </div>
-          <div className="mb-4">
-            <div>{t('create_wallet.confirmation_label_password')}</div>
-            <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
-              {!revealSensitiveInfo ? 'randomrandom' : createdWallet.password}
-            </div>
-          </div>
-          <div className="mb-2">
-            <ToggleSwitch
-              label={t('create_wallet.confirmation_toggle_reveal_info')}
-              toggledOn={revealSensitiveInfo}
-              onToggle={(isToggled) => {
-                setRevealSensitiveInfo(isToggled)
-                setSensitiveInfoWasRevealed(true)
-              }}
-            />
-          </div>
-          <div className="mb-4">
-            <ToggleSwitch
-              label={t('create_wallet.confirmation_toggle_info_written_down')}
-              toggledOn={userConfirmed}
-              onToggle={(isToggled) => setUserConfirmed(isToggled)}
-            />
-          </div>
-          <rb.Button
-            variant="dark"
-            disabled={!sensitiveInfoWasRevealed || !userConfirmed}
-            className={styles.button}
-            onClick={() => setStep(1)}
-          >
-            {t('create_wallet.next_button')}
-          </rb.Button>
-        </div>
-      ) : (
-        <BackupConfirmation
-          parentStepSetter={childStepSetter}
-          createdWallet={createdWallet}
-          walletConfirmed={walletConfirmed}
-        />
-      )}
-    </>
   )
 }
 
@@ -199,17 +123,22 @@ export default function CreateWallet({ startWallet }) {
     [setAlert, setCreatedWallet, t]
   )
 
-  const walletConfirmed = () => {
-    if (createdWallet.walletFileName && createdWallet.token) {
+  const walletConfirmed = useCallback(() => {
+    if (createdWallet?.walletFileName && createdWallet?.token) {
+      setAlert(null)
       startWallet(createdWallet.walletFileName, createdWallet.token)
       navigate(routes.wallet)
     } else {
       setAlert({ variant: 'danger', message: t('create_wallet.alert_confirmation_failed') })
     }
-  }
+  }, [createdWallet, startWallet, navigate, setAlert])
 
-  const isCreated = createdWallet?.walletFileName && createdWallet?.seedphrase && createdWallet?.password
-  const canCreate = !isCreated && !serviceInfo?.walletName
+  const isCreated = useMemo(
+    () => createdWallet?.walletFileName && createdWallet?.seedphrase && createdWallet?.password,
+    [createdWallet]
+  )
+  const canCreate = useMemo(() => !isCreated && !serviceInfo?.walletName, [isCreated, serviceInfo])
+  const [showBackupConfirmation, setShowBackupConfirmation] = useState(false)
 
   return (
     <div className="create-wallet">
@@ -231,7 +160,23 @@ export default function CreateWallet({ startWallet }) {
           )}
         />
       )}
-      {isCreated && <WalletCreationConfirmation createdWallet={createdWallet} walletConfirmed={walletConfirmed} />}
+      {isCreated && (
+        <>
+          {!showBackupConfirmation ? (
+            <>
+              <WalletCreationConfirmation wallet={createdWallet} onSubmit={() => setShowBackupConfirmation(true)} />
+            </>
+          ) : (
+            <>
+              <BackupConfirmation
+                wallet={createdWallet}
+                onSuccess={walletConfirmed}
+                onCancel={() => setShowBackupConfirmation(false)}
+              />
+            </>
+          )}
+        </>
+      )}
       {!canCreate && !isCreated && (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
