@@ -58,16 +58,16 @@ interface ApiError {
 type WalletType = 'sw-fb'
 
 interface CreateWalletRequest {
-  wallettype: WalletType
-  walletname: WalletName
+  walletname: WalletName | string
   password: string
+  wallettype?: WalletType
 }
 
 interface RecoverWalletRequest {
-  wallettype: WalletType
-  walletname: WalletName
+  walletname: WalletName | string
   password: string
   seedphrase: string
+  wallettype?: WalletType
 }
 
 interface WalletUnlockRequest {
@@ -237,21 +237,23 @@ const getWalletAll = async ({ signal }: ApiRequestContext) => {
   })
 }
 
-const postWalletCreate = async (req: CreateWalletRequest) => {
+const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWalletRequest) => {
   const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
 
   return await fetch(`${basePath()}/v1/wallet/create`, {
     method: 'POST',
-    body: JSON.stringify({ ...req, walletname, wallettype: 'sw-fb' }),
+    body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
+    signal,
   })
 }
 
-const postWalletRecover = async (req: RecoverWalletRequest) => {
+const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWalletRequest) => {
   const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
 
   return await fetch(`${basePath()}/v1/wallet/recover`, {
     method: 'POST',
-    body: JSON.stringify({ ...req, walletname, wallettype: 'sw-fb' }),
+    body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
+    signal,
   })
 }
 

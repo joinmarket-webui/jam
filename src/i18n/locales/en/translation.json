@@ -131,6 +131,7 @@
     "feedback_invalid_password_confirm": "Given passwords do not match.",
     "button_create": "Create",
     "button_creating": "Creating",
+    "error_creating_failed": "Error while creating the wallet. Reason: {{ reason }}",
     "alert_confirmation_failed": "Wallet confirmation failed.",
     "confirmation_label_wallet_name": "Wallet Name",
     "confirmation_label_password": "Password",
@@ -155,9 +156,19 @@
     "mnemonic_phrase": {
       "title": "Please type your mnemonic phrase!",
       "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
-      "text_button_submit": "Next: Rescan",
-      "text_button_submitting": "Next: Rescan"
-    }
+      "text_button_submit": "Next: Review",
+      "text_button_submitting": "Next: Review"
+    },
+    "confirmation": {
+      "text_button_submit": "Import",
+      "text_button_submitting": "Importing..."
+    },
+    "rescan": {
+      "text_button_submit": "Start rescan",
+      "text_button_submitting": "Starting rescan..."
+    },
+    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}",
+    "error_rescanning_failed": "Error while rescanning the blockchain. Reason: {{ reason }}"
   },
   "current_wallet": {
     "text_loading": "Loading",

@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
+import * as Api from '../libs/JmWalletApi'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { useServiceInfo } from '../context/ServiceInfoContext'
@@ -11,11 +12,15 @@ import { routes } from '../constants/routes'
 import { walletDisplayName } from '../utils'
 import styles from './ImportWallet.module.css'
 
-const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: () => void }) => {
+const fillerMnemonicPhrase =
+  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+
+const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: (mnemonicPhrase: string) => void }) => {
   const { t } = useTranslation()
-  const [mnemonicPhraseWords, setMnemonicPhraseWords] = useState(new Array(12).fill(''))
+  const [mnemonicPhraseWords, setMnemonicPhraseWords] = useState(new Array<string>(12).fill(''))
   const [showFillerButton] = useState(isDebugFeatureEnabled('importFillerMnemonicPhrase'))
 
+  const isMnemonicPhraseValid = useMemo(() => mnemonicPhraseWords.every((it) => it.length > 0), [mnemonicPhraseWords])
   return (
     <div>
       <rb.Form noValidate>
@@ -55,15 +60,17 @@ const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: () => void }) => {
         variant="dark"
         className={styles.button}
         onClick={() => {
-          //walletConfirmed()
+          if (isMnemonicPhraseValid) {
+            onSubmit(mnemonicPhraseWords.join(' '))
+          }
         }}
-        disabled={true}
+        disabled={!isMnemonicPhraseValid}
       >
         {t('import_wallet.mnemonic_phrase.text_button_submit')}
       </rb.Button>
 
       <div className="d-flex mt-4 mb-4 gap-4">
-        <rb.Button
+        {/*<rb.Button
           variant="outline-dark"
           disabled={false}
           className={styles.button}
@@ -72,14 +79,14 @@ const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: () => void }) => {
           }}
         >
           {t('create_wallet.back_button')}
-        </rb.Button>
+        </rb.Button>*/}
 
         {showFillerButton && (
           <rb.Button
             variant="outline-dark"
             className={styles.button}
             onClick={() => {
-              //walletConfirmed()
+              setMnemonicPhraseWords(fillerMnemonicPhrase.split(' '))
             }}
             disabled={false}
           >
@@ -95,20 +102,73 @@ export default function ImportWallet() {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
 
-  const [alert] = useState<SimpleAlert>()
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [walletNameAndPassword, setWalletNameAndPassword] = useState<{ name: string; password: string }>()
-  const [createdWallet] = useState<any>()
+  const [mnemonicPhrase, setMnemonicPhrase] = useState<string>()
+  const [recoveredWallet, setRecoveredWallet] = useState<{ walletName: Api.WalletName; token: Api.ApiToken }>()
+  const [isRecovering, setIsRecovering] = useState<boolean>(false)
+  const [isRescanning, setIsRescanning] = useState<boolean>(false)
 
-  const isCreated = useMemo(
-    () => createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password,
-    [createdWallet]
+  const isRecovered = useMemo(() => !!recoveredWallet?.walletName && recoveredWallet?.token, [recoveredWallet])
+  const canRecover = useMemo(() => !isRecovered && !serviceInfo?.walletName, [isRecovered, serviceInfo])
+
+  const recoverWallet = useCallback(
+    async (
+      signal: AbortSignal,
+      { walletname, password, seedphrase }: { walletname: Api.WalletName; password: string; seedphrase: string }
+    ) => {
+      setAlert(undefined)
+      setIsRecovering(true)
+
+      try {
+        const res = await Api.postWalletRecover({ signal }, { walletname, password, seedphrase })
+        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
+
+        const { walletname: importedWalletFileName, token } = body
+        setRecoveredWallet({ walletName: importedWalletFileName, token })
+      } catch (e: any) {
+        if (signal.aborted) return
+        const message = t('import_wallet.error_importing_failed', {
+          reason: e.message || 'Unknown reason',
+        })
+        setAlert({ variant: 'danger', message })
+      } finally {
+        setIsRecovering(false)
+      }
+    },
+    [setAlert, setRecoveredWallet, setIsRecovering, t]
   )
-  const canCreate = useMemo(() => !isCreated && !serviceInfo?.walletName, [isCreated, serviceInfo])
+
+  const startChainRescan = useCallback(
+    async (
+      signal: AbortSignal,
+      { walletName, token, blockheight }: { walletName: Api.WalletName; token: string; blockheight: number }
+    ) => {
+      setAlert(undefined)
+      setIsRescanning(true)
+
+      try {
+        const res = await Api.getRescanBlockchain({ signal, token, walletName, blockheight })
+        const success = await (res.ok ? true : Api.Helper.throwError(res))
+        setIsRescanning(success)
+      } catch (e: any) {
+        if (signal.aborted) return
+        setIsRescanning(false)
+        const message = t('import_wallet.error_rescanning_failed', {
+          reason: e.message || 'Unknown reason',
+        })
+        setAlert({ variant: 'danger', message })
+      }
+    },
+    [setAlert, setIsRescanning, t]
+  )
 
   const step = useMemo(() => {
     if (!walletNameAndPassword) return 'input-wallet-details'
-    return 'input-mnemonic-phrase'
-  }, [walletNameAndPassword])
+    if (!mnemonicPhrase) return 'input-mnemonic-phrase'
+    if (!recoveredWallet) return 'input-confirmation'
+    return 'start-rescan'
+  }, [walletNameAndPassword, mnemonicPhrase, recoveredWallet])
 
   return (
     <div className="import-wallet">
@@ -120,7 +180,7 @@ export default function ImportWallet() {
         />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {canCreate && (
+      {(canRecover || isRecovered) && (
         <>
           {step === 'input-wallet-details' && (
             <WalletCreationForm
@@ -138,14 +198,65 @@ export default function ImportWallet() {
           )}
           {step === 'input-mnemonic-phrase' && (
             <MnemonicPhraseInputForm
-              onSubmit={() => {
-                /* TODO */
+              onSubmit={(mnemonicPhrase) => {
+                setMnemonicPhrase(mnemonicPhrase)
               }}
             />
           )}
+          {step === 'input-confirmation' && (
+            <>
+              <>Review your inputs</>
+              <rb.Button
+                variant="outline-dark"
+                className={styles.button}
+                onClick={() => {
+                  const abortCtrl = new AbortController()
+
+                  recoverWallet(abortCtrl.signal, {
+                    walletname: walletNameAndPassword?.name! as Api.WalletName,
+                    password: walletNameAndPassword?.password!,
+                    seedphrase: mnemonicPhrase!,
+                  })
+                }}
+                disabled={isRecovering}
+              >
+                {isRecovering ? (
+                  <>{t('import_wallet.confirmation.text_button_submitting')}</>
+                ) : (
+                  <>{t('import_wallet.confirmation.text_button_submit')}</>
+                )}
+              </rb.Button>
+            </>
+          )}
+          {step === 'start-rescan' && (
+            <>
+              <>Your wallet has been imported.</>
+              <>In order for it to find existing funds, you need to rescan the blockchain.</>
+              <>Rescanning: {isRescanning || serviceInfo?.rescanning ? 'true' : 'false'}</>
+              <rb.Button
+                variant="outline-dark"
+                className={styles.button}
+                onClick={() => {
+                  const abortCtrl = new AbortController()
+
+                  startChainRescan(abortCtrl.signal, {
+                    ...recoveredWallet!,
+                    blockheight: 0,
+                  })
+                }}
+                disabled={isRescanning}
+              >
+                {isRescanning ? (
+                  <>{t('import_wallet.rescan.text_button_submitting')}</>
+                ) : (
+                  <>{t('import_wallet.rescan.text_button_submit')}</>
+                )}
+              </rb.Button>
+            </>
+          )}
         </>
       )}
-      {!canCreate && !isCreated && serviceInfo?.walletName && (
+      {!canRecover && !isRecovered && serviceInfo?.walletName && (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
             Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletName) }}</strong> is active. You need

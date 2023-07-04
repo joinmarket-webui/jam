@@ -19,7 +19,7 @@ const MnemonicWordInput = ({ index, value, setValue, isValid, disabled }: Mnemon
         type="text"
         placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${index + 1}`}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setValue(e.target.value.trim())}
         className={styles.input}
         disabled={disabled}
         isInvalid={isValid === false && value.length > 0}

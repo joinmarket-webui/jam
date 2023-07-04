@@ -184,16 +184,19 @@ export default function CreateWallet({ startWallet }) {
       setAlert(null)
 
       try {
-        const res = await Api.postWalletCreate({ walletname: walletName, password })
+        const res = await Api.postWalletCreate({}, { walletname: walletName, password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
         const { seedphrase, token, walletname: createdWalletName } = body
         setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
       } catch (e) {
-        setAlert({ variant: 'danger', message: e.message })
+        const message = t('create_wallet.error_creating_failed', {
+          reason: e.message || 'Unknown reason',
+        })
+        setAlert({ variant: 'danger', message })
       }
     },
-    [setAlert, setCreatedWallet]
+    [setAlert, setCreatedWallet, t]
   )
 
   const walletConfirmed = () => {
@@ -201,7 +204,7 @@ export default function CreateWallet({ startWallet }) {
       startWallet(createdWallet.name, createdWallet.token)
       navigate(routes.wallet)
     } else {
-      setAlert({ variant: 'danger', message: t('alert_confirmation_failed') })
+      setAlert({ variant: 'danger', message: t('create_wallet.alert_confirmation_failed') })
     }
   }
 
