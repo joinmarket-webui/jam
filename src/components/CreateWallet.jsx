@@ -123,7 +123,7 @@ const WalletCreationConfirmation = ({ createdWallet, walletConfirmed }) => {
         <div>
           <div className="mb-4">
             <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
-            <div className="fs-4">{walletDisplayName(createdWallet.name)}</div>
+            <div className="fs-4">{walletDisplayName(createdWallet.walletFileName)}</div>
           </div>
           <div className="mb-4">
             <Seedphrase seedphrase={createdWallet.seedphrase} isBlurred={!revealSensitiveInfo} />
@@ -187,8 +187,8 @@ export default function CreateWallet({ startWallet }) {
         const res = await Api.postWalletCreate({}, { walletname: walletName, password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
-        const { seedphrase, token, walletname: createdWalletName } = body
-        setCreatedWallet({ name: createdWalletName, seedphrase, password, token })
+        const { seedphrase, token, walletname: createdWalletFileName } = body
+        setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, token })
       } catch (e) {
         const message = t('create_wallet.error_creating_failed', {
           reason: e.message || 'Unknown reason',
@@ -200,15 +200,15 @@ export default function CreateWallet({ startWallet }) {
   )
 
   const walletConfirmed = () => {
-    if (createdWallet.name && createdWallet.token) {
-      startWallet(createdWallet.name, createdWallet.token)
+    if (createdWallet.walletFileName && createdWallet.token) {
+      startWallet(createdWallet.walletFileName, createdWallet.token)
       navigate(routes.wallet)
     } else {
       setAlert({ variant: 'danger', message: t('create_wallet.alert_confirmation_failed') })
     }
   }
 
-  const isCreated = createdWallet?.name && createdWallet?.seedphrase && createdWallet?.password
+  const isCreated = createdWallet?.walletFileName && createdWallet?.seedphrase && createdWallet?.password
   const canCreate = !isCreated && !serviceInfo?.walletName
 
   return (

@@ -9,6 +9,7 @@ import {
   RouterProvider,
   Outlet,
 } from 'react-router-dom'
+import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
@@ -38,7 +39,7 @@ export default function App() {
   const sessionConnectionError = useSessionConnectionError()
 
   const startWallet = useCallback(
-    (name, token) => {
+    (name: Api.WalletName, token: Api.ApiToken) => {
       setSession({ name, token })
       setCurrentWallet({ name, token })
     },
@@ -105,7 +106,11 @@ export default function App() {
                 path={routes.home}
                 element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
               />
-              <Route id="import-wallet" path={routes.importWallet} element={<ImportWallet />} />
+              <Route
+                id="import-wallet"
+                path={routes.importWallet}
+                element={<ImportWallet startWallet={startWallet} />}
+              />
               {currentWallet && (
                 <>
                   <Route id="wallet" path={routes.wallet} element={<MainWalletView wallet={currentWallet} />} />

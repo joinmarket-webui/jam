@@ -98,18 +98,22 @@ const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: (mnemonicPhrase: stri
   )
 }
 
-export default function ImportWallet() {
+interface ImportWalletProps {
+  startWallet: (name: Api.WalletName, token: Api.ApiToken) => void
+}
+
+export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
 
   const [alert, setAlert] = useState<SimpleAlert>()
   const [walletNameAndPassword, setWalletNameAndPassword] = useState<{ name: string; password: string }>()
   const [mnemonicPhrase, setMnemonicPhrase] = useState<string>()
-  const [recoveredWallet, setRecoveredWallet] = useState<{ walletName: Api.WalletName; token: Api.ApiToken }>()
+  const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; token: Api.ApiToken }>()
   const [isRecovering, setIsRecovering] = useState<boolean>(false)
-  const [isRescanning, setIsRescanning] = useState<boolean>(false)
+  const [isStartRescanning, setIsStartRescanning] = useState<boolean>(false)
 
-  const isRecovered = useMemo(() => !!recoveredWallet?.walletName && recoveredWallet?.token, [recoveredWallet])
+  const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
   const canRecover = useMemo(() => !isRecovered && !serviceInfo?.walletName, [isRecovered, serviceInfo])
 
   const recoverWallet = useCallback(
@@ -125,7 +129,8 @@ export default function ImportWallet() {
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
         const { walletname: importedWalletFileName, token } = body
-        setRecoveredWallet({ walletName: importedWalletFileName, token })
+        setRecoveredWallet({ walletFileName: importedWalletFileName, token })
+        startWallet(importedWalletFileName, token)
       } catch (e: any) {
         if (signal.aborted) return
         const message = t('import_wallet.error_importing_failed', {
@@ -142,25 +147,25 @@ export default function ImportWallet() {
   const startChainRescan = useCallback(
     async (
       signal: AbortSignal,
-      { walletName, token, blockheight }: { walletName: Api.WalletName; token: string; blockheight: number }
+      { walletFileName, token, blockheight }: { walletFileName: Api.WalletName; token: string; blockheight: number }
     ) => {
       setAlert(undefined)
-      setIsRescanning(true)
+      setIsStartRescanning(true)
 
       try {
-        const res = await Api.getRescanBlockchain({ signal, token, walletName, blockheight })
+        const res = await Api.getRescanBlockchain({ signal, token, walletName: walletFileName, blockheight })
         const success = await (res.ok ? true : Api.Helper.throwError(res))
-        setIsRescanning(success)
+        setIsStartRescanning(success)
       } catch (e: any) {
         if (signal.aborted) return
-        setIsRescanning(false)
+        setIsStartRescanning(false)
         const message = t('import_wallet.error_rescanning_failed', {
           reason: e.message || 'Unknown reason',
         })
         setAlert({ variant: 'danger', message })
       }
     },
-    [setAlert, setIsRescanning, t]
+    [setAlert, setIsStartRescanning, t]
   )
 
   const step = useMemo(() => {
@@ -232,26 +237,36 @@ export default function ImportWallet() {
             <>
               <>Your wallet has been imported.</>
               <>In order for it to find existing funds, you need to rescan the blockchain.</>
-              <>Rescanning: {isRescanning || serviceInfo?.rescanning ? 'true' : 'false'}</>
-              <rb.Button
-                variant="outline-dark"
-                className={styles.button}
-                onClick={() => {
-                  const abortCtrl = new AbortController()
 
-                  startChainRescan(abortCtrl.signal, {
-                    ...recoveredWallet!,
-                    blockheight: 0,
-                  })
-                }}
-                disabled={isRescanning}
-              >
-                {isRescanning ? (
-                  <>{t('import_wallet.rescan.text_button_submitting')}</>
+              <>
+                {serviceInfo?.rescanning ? (
+                  <>
+                    <>Rescan in progress...</>
+                  </>
                 ) : (
-                  <>{t('import_wallet.rescan.text_button_submit')}</>
+                  <>
+                    <rb.Button
+                      variant="outline-dark"
+                      className={styles.button}
+                      onClick={() => {
+                        const abortCtrl = new AbortController()
+
+                        startChainRescan(abortCtrl.signal, {
+                          ...recoveredWallet!,
+                          blockheight: 0,
+                        })
+                      }}
+                      disabled={isStartRescanning}
+                    >
+                      {isStartRescanning ? (
+                        <>{t('import_wallet.rescan.text_button_submitting')}</>
+                      ) : (
+                        <>{t('import_wallet.rescan.text_button_submit')}</>
+                      )}
+                    </rb.Button>
+                  </>
                 )}
-              </rb.Button>
+              </>
             </>
           )}
         </>
