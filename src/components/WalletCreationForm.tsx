@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
+import { sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
 
 export interface FormValues {
@@ -48,7 +49,8 @@ const WalletCreationForm = ({ submitButtonText, onSubmit }: WalletCreationFormPr
       validate={validate}
       onSubmit={async (values: FormValues) => {
         const { walletName, password } = values
-        await onSubmit(walletName, password)
+        const sanitizedWalletName = sanitizeWalletName(walletName)
+        await onSubmit(sanitizedWalletName, password)
       }}
     >
       {({ handleSubmit, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (

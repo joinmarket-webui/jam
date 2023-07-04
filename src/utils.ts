@@ -11,7 +11,11 @@ const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
-export const walletDisplayName = (name: string) => name.replace('.jmdat', '')
+export const JM_WALLET_FILE_EXTENSION = '.jmdat'
+
+export const sanitizeWalletName = (name: string) => name.replace(JM_WALLET_FILE_EXTENSION, '')
+
+export const walletDisplayName = (name: string) => sanitizeWalletName(name)
 
 export const displayDate = (string: string) => new Date(string).toLocaleString()
 

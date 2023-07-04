@@ -7,9 +7,10 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import PageTitle from './PageTitle'
 import WalletCreationForm from './WalletCreationForm'
 import MnemonicWordInput from './MnemonicWordInput'
+import WalletCreationConfirmation from './WalletCreationConfirmation'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
-import { walletDisplayName } from '../utils'
+import { JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
 import styles from './ImportWallet.module.css'
 
 const fillerMnemonicPhrase =
@@ -110,7 +111,6 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const [walletNameAndPassword, setWalletNameAndPassword] = useState<{ name: string; password: string }>()
   const [mnemonicPhrase, setMnemonicPhrase] = useState<string>()
   const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; token: Api.ApiToken }>()
-  const [isRecovering, setIsRecovering] = useState<boolean>(false)
   const [isStartRescanning, setIsStartRescanning] = useState<boolean>(false)
 
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
@@ -122,7 +122,6 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
       { walletname, password, seedphrase }: { walletname: Api.WalletName; password: string; seedphrase: string }
     ) => {
       setAlert(undefined)
-      setIsRecovering(true)
 
       try {
         const res = await Api.postWalletRecover({ signal }, { walletname, password, seedphrase })
@@ -137,11 +136,9 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
           reason: e.message || 'Unknown reason',
         })
         setAlert({ variant: 'danger', message })
-      } finally {
-        setIsRecovering(false)
       }
     },
-    [setAlert, setRecoveredWallet, setIsRecovering, t]
+    [setRecoveredWallet, startWallet, setAlert, t]
   )
 
   const startChainRescan = useCallback(
@@ -184,6 +181,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
           subtitle={t('import_wallet.mnemonic_phrase.subtitle')}
         />
       )}
+      {step === 'input-confirmation' && <PageTitle title={t('import_wallet.confirmation.title')} />}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {(canRecover || isRecovered) && (
         <>
@@ -209,29 +207,31 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
             />
           )}
           {step === 'input-confirmation' && (
-            <>
-              <>Review your inputs</>
-              <rb.Button
-                variant="outline-dark"
-                className={styles.button}
-                onClick={() => {
-                  const abortCtrl = new AbortController()
+            <WalletCreationConfirmation
+              wallet={{
+                walletFileName: walletNameAndPassword?.name! + JM_WALLET_FILE_EXTENSION,
+                password: walletNameAndPassword?.password!,
+                seedphrase: mnemonicPhrase!,
+              }}
+              submitButtonText={(isSubmitting) => (
+                <>
+                  {t(
+                    isSubmitting
+                      ? 'import_wallet.confirmation.text_button_submitting'
+                      : 'import_wallet.confirmation.text_button_submit'
+                  )}
+                </>
+              )}
+              onSubmit={() => {
+                const abortCtrl = new AbortController()
 
-                  recoverWallet(abortCtrl.signal, {
-                    walletname: walletNameAndPassword?.name! as Api.WalletName,
-                    password: walletNameAndPassword?.password!,
-                    seedphrase: mnemonicPhrase!,
-                  })
-                }}
-                disabled={isRecovering}
-              >
-                {isRecovering ? (
-                  <>{t('import_wallet.confirmation.text_button_submitting')}</>
-                ) : (
-                  <>{t('import_wallet.confirmation.text_button_submit')}</>
-                )}
-              </rb.Button>
-            </>
+                return recoverWallet(abortCtrl.signal, {
+                  walletname: walletNameAndPassword?.name! as Api.WalletName,
+                  password: walletNameAndPassword?.password!,
+                  seedphrase: mnemonicPhrase!,
+                })
+              }}
+            />
           )}
           {step === 'start-rescan' && (
             <>

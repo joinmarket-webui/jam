@@ -131,7 +131,7 @@ export default function CreateWallet({ startWallet }) {
     } else {
       setAlert({ variant: 'danger', message: t('create_wallet.alert_confirmation_failed') })
     }
-  }, [createdWallet, startWallet, navigate, setAlert])
+  }, [createdWallet, startWallet, navigate, setAlert, t])
 
   const isCreated = useMemo(
     () => createdWallet?.walletFileName && createdWallet?.seedphrase && createdWallet?.password,
@@ -164,7 +164,11 @@ export default function CreateWallet({ startWallet }) {
         <>
           {!showBackupConfirmation ? (
             <>
-              <WalletCreationConfirmation wallet={createdWallet} onSubmit={() => setShowBackupConfirmation(true)} />
+              <WalletCreationConfirmation
+                wallet={createdWallet}
+                submitButtonText={(_) => <>{t('create_wallet.next_button')}</>}
+                onSubmit={() => setShowBackupConfirmation(true)}
+              />
             </>
           ) : (
             <>
