@@ -4,6 +4,7 @@ import it from './locales/it/translation.json'
 import pt_BR from './locales/pt_BR/translation.json'
 import zh_Hans from './locales/zh_Hans/translation.json'
 import zh_Hant from './locales/zh_Hant/translation.json'
+import de from './locales/de/translation.json'
 
 const languages = [
   {
@@ -35,6 +36,11 @@ const languages = [
     key: 'zh-Hant',
     description: '繁中国语文科 (繁体字)',
     translation: zh_Hant,
+  },
+  {
+    key: 'de',
+    description: 'Deutsch',
+    translation: de,
   },
 ]
 
