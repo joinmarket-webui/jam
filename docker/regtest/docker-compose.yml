@@ -131,6 +131,8 @@ services:
       - 28332 # ZMQ
       - 28333 # ZMQ
       - 28334 # ZMQ
+    ports:
+      - "43782:43782"
     volumes:
       - "bitcoin_datadir:/data"
       - "bitcoin_wallet_datadir:/walletdata"
