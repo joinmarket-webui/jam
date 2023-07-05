@@ -24,8 +24,12 @@ script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket2 --unmatured --blocks 50
 . "$script_dir/fund-wallet.sh" --container jm_regtest_joinmarket3 --unmatured --blocks 50
 
+# first address (m/84'/1'/0'/0/0) of seed 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+# this is useful if you "import an existing wallet" and verify rescanning the chain works as expected.
+dummy_wallet_address='bcrt1q6rz28mcfaxtmd6v789l9rrlrusdprr9pz3cppk'
 # make block rewards spendable: 100 + 5 (default of `taker_utxo_age`) + 1 = 106
-. "$script_dir/mine-block.sh" 106 &>/dev/null
+. "$script_dir/mine-block.sh" 6 "$dummy_wallet_address" &>/dev/null
+. "$script_dir/mine-block.sh" 100 &>/dev/null
 
 start_maker() {
     local base_url; base_url=${1:-}

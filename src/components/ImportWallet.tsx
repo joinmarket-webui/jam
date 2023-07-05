@@ -10,11 +10,8 @@ import MnemonicWordInput from './MnemonicWordInput'
 import WalletCreationConfirmation from './WalletCreationConfirmation'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
-import { JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
+import { DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
 import styles from './ImportWallet.module.css'
-
-const fillerMnemonicPhrase =
-  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
 
 const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: (mnemonicPhrase: string) => void }) => {
   const { t } = useTranslation()
@@ -86,9 +83,7 @@ const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: (mnemonicPhrase: stri
           <rb.Button
             variant="outline-dark"
             className={styles.button}
-            onClick={() => {
-              setMnemonicPhraseWords(fillerMnemonicPhrase.split(' '))
-            }}
+            onClick={() => setMnemonicPhraseWords(DUMMY_MNEMONIC_PHRASE.split(' '))}
             disabled={false}
           >
             {t('import_wallet.fill_with')}
