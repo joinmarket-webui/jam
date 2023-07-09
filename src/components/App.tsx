@@ -28,6 +28,7 @@ import Navbar from './Navbar'
 import Onboarding from './Onboarding'
 import Receive from './Receive'
 import Send from './Send'
+import RescanChain from './RescanChain'
 import Settings from './Settings'
 import Wallets from './Wallets'
 
@@ -118,6 +119,7 @@ export default function App() {
                   <Route id="send" path={routes.send} element={<Send wallet={currentWallet} />} />
                   <Route id="earn" path={routes.earn} element={<Earn wallet={currentWallet} />} />
                   <Route id="receive" path={routes.receive} element={<Receive wallet={currentWallet} />} />
+                  <Route id="rescan" path={routes.rescanChain} element={<RescanChain wallet={currentWallet} />} />
                   <Route
                     id="settings"
                     path={routes.settings}

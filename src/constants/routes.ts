@@ -9,5 +9,6 @@ export const routes = {
   wallet: '/wallet',
   createWallet: '/create-wallet',
   importWallet: '/import-wallet',
+  rescanChain: '/rescan',
   __errorExample: '/error-example',
 }

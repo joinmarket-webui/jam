@@ -165,11 +165,15 @@
       "text_button_submitting": "Importing..."
     },
     "rescan": {
-      "text_button_submit": "Start rescan",
-      "text_button_submitting": "Starting rescan..."
+      "text_button_submit": "Next: Rescan chain"
     },
     "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}",
     "error_rescanning_failed": "Error while rescanning the blockchain. Reason: {{ reason }}"
+  },
+  "rescan_chain": {
+    "title": "Rescan chain",
+    "subtitle": "Lorem ipsum",
+    "text_button_submit": "Rescan chain"
   },
   "current_wallet": {
     "text_loading": "Loading",
@@ -205,6 +209,7 @@
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
     "button_create_wallet": "Create new wallet",
+    "button_rescan_chain": "Rescan chain",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "documentation": "Documentation",

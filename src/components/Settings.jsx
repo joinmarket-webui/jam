@@ -224,6 +224,11 @@ export default function Settings({ wallet, stopWallet }) {
               </>
             )}
           </rb.Button>
+
+          <Link to={routes.rescanChain} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
+            <Sprite symbol="block" width="24" height="24" />
+            {t('settings.button_rescan_chain')}
+          </Link>
         </div>
 
         <div className={styles['section-title']}>{t('settings.section_title_community')}</div>
