@@ -7,6 +7,12 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import { CurrentWallet } from '../context/WalletContext'
+import { useUpdateConfigValues } from '../context/ServiceConfigContext'
+
+const GAPLIMIT_CONFIGKEY = {
+  section: 'YIELDGENERATOR',
+  field: 'gaplimit',
+}
 
 type RescanChainFormValues = {
   blockheight: number
@@ -103,30 +109,32 @@ interface RescanChainProps {
 export default function RescanChain({ wallet }: RescanChainProps) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
+  const updateConfigValues = useUpdateConfigValues()
 
   const [alert, setAlert] = useState<SimpleAlert>()
-  const [isStartRescanning, setIsStartRescanning] = useState<boolean>(false)
+  // const [isStartRescanning, setIsStartRescanning] = useState<boolean>(false)
 
   const startChainRescan = useCallback(
     async (signal: AbortSignal, { blockheight }: { blockheight: number }) => {
       setAlert(undefined)
-      setIsStartRescanning(true)
+      // setIsStartRescanning(true)
 
       try {
         const requestContext = { walletName: wallet.name, token: wallet.token }
         const res = await Api.getRescanBlockchain({ signal, ...requestContext, blockheight })
-        const success = await (res.ok ? true : Api.Helper.throwError(res))
-        setIsStartRescanning(success)
+        if (!res.ok) await Api.Helper.throwError(res)
       } catch (e: any) {
         if (signal.aborted) return
-        setIsStartRescanning(false)
+
         const message = t('import_wallet.error_rescanning_failed', {
           reason: e.message || 'Unknown reason',
         })
         setAlert({ variant: 'danger', message })
+      } finally {
+        // setIsStartRescanning(false)
       }
     },
-    [wallet, setAlert, setIsStartRescanning, t]
+    [wallet, setAlert, t]
   )
 
   return (
@@ -151,9 +159,27 @@ export default function RescanChain({ wallet }: RescanChainProps) {
               onSubmit={async (values) => {
                 const abortCtrl = new AbortController()
 
-                return startChainRescan(abortCtrl.signal, {
-                  blockheight: values.blockheight,
+                return updateConfigValues({
+                  signal: abortCtrl.signal,
+                  updates: [
+                    {
+                      key: GAPLIMIT_CONFIGKEY,
+                      value: String(values.gaplimit),
+                    },
+                  ],
                 })
+                  .then((it) => {
+                    /*
+                     * TODO: verify that each jar has last address index > gaplimit
+                     * or else generate as many addresses to reach index := gaplimit
+                     */
+                    return it
+                  })
+                  .then((it) =>
+                    startChainRescan(abortCtrl.signal, {
+                      blockheight: values.blockheight,
+                    })
+                  )
               }}
             />
           )}
