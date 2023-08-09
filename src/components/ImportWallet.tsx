@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../libs/JmWalletApi'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import { useServiceInfo } from '../context/ServiceInfoContext'
+import { ConfigKey, useUpdateConfigValues } from '../context/ServiceConfigContext'
 import PageTitle from './PageTitle'
 import WalletCreationForm from './WalletCreationForm'
 import MnemonicWordInput from './MnemonicWordInput'
@@ -12,6 +13,11 @@ import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
 import { DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
 import styles from './ImportWallet.module.css'
+
+const GAPLIMIT_CONFIGKEY: ConfigKey = {
+  section: 'POLICY',
+  field: 'gaplimit',
+}
 
 const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: (mnemonicPhrase: string) => void }) => {
   const { t } = useTranslation()
@@ -100,11 +106,15 @@ interface ImportWalletProps {
 
 export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const serviceInfo = useServiceInfo()
+  const updateConfigValues = useUpdateConfigValues()
 
   const [alert, setAlert] = useState<SimpleAlert>()
   const [walletNameAndPassword, setWalletNameAndPassword] = useState<{ name: string; password: string }>()
   const [mnemonicPhrase, setMnemonicPhrase] = useState<string>()
+  const [gaplimit, setGaplimit] = useState<number>(205)
+  const [startBlockheight, setStartBlockheight] = useState<number>(0)
   const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; token: Api.ApiToken }>()
 
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
@@ -113,17 +123,54 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const recoverWallet = useCallback(
     async (
       signal: AbortSignal,
-      { walletname, password, seedphrase }: { walletname: Api.WalletName; password: string; seedphrase: string }
+      {
+        walletname,
+        password,
+        seedphrase,
+        gaplimit,
+        blockheight,
+      }: { walletname: Api.WalletName; password: string; seedphrase: string; gaplimit: number; blockheight: number }
     ) => {
       setAlert(undefined)
 
       try {
-        const res = await Api.postWalletRecover({ signal }, { walletname, password, seedphrase })
-        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
+        // Step #1: recover wallet
+        const recoverResponse = await Api.postWalletRecover({ signal }, { walletname, password, seedphrase })
+        const recoverBody = await (recoverResponse.ok ? recoverResponse.json() : Api.Helper.throwError(recoverResponse))
 
-        const { walletname: importedWalletFileName, token } = body
-        setRecoveredWallet({ walletFileName: importedWalletFileName, token })
-        startWallet(importedWalletFileName, token)
+        const { walletname: importedWalletFileName } = recoverBody
+        setRecoveredWallet({ walletFileName: importedWalletFileName, token: recoverBody.token })
+
+        // Step #2: update the gaplimit config value
+        await updateConfigValues({
+          signal,
+          updates: [
+            {
+              key: GAPLIMIT_CONFIGKEY,
+              value: String(gaplimit),
+            },
+          ],
+          wallet: { name: importedWalletFileName, token: recoverBody.token },
+        })
+
+        // Step #3: lock and unlock the wallet (for new addresses to be imported)
+        const lockResponse = await Api.getWalletLock({ walletName: importedWalletFileName, token: recoverBody.token })
+        if (!lockResponse.ok) await Api.Helper.throwError(lockResponse)
+
+        const unlockResponse = await Api.postWalletUnlock({ walletName: importedWalletFileName }, { password })
+        const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
+
+        // Step #4: invoke rescanning the timechain
+        const rescanResponse = await Api.getRescanBlockchain({
+          signal,
+          walletName: importedWalletFileName,
+          token: unlockBody.token,
+          blockheight,
+        })
+        if (!rescanResponse.ok) await Api.Helper.throwError(rescanResponse)
+
+        startWallet(importedWalletFileName, unlockBody.token)
+        navigate(routes.wallet)
       } catch (e: any) {
         if (signal.aborted) return
         const message = t('import_wallet.error_importing_failed', {
@@ -132,14 +179,13 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
         setAlert({ variant: 'danger', message })
       }
     },
-    [setRecoveredWallet, startWallet, setAlert, t]
+    [setRecoveredWallet, startWallet, navigate, setAlert, updateConfigValues, t]
   )
 
   const step = useMemo(() => {
     if (!walletNameAndPassword) return 'input-wallet-details'
     if (!mnemonicPhrase) return 'input-mnemonic-phrase'
-    if (!recoveredWallet) return 'input-confirmation'
-    return 'start-rescan'
+    return 'confirm-inputs-and-start-recovery'
   }, [walletNameAndPassword, mnemonicPhrase, recoveredWallet])
 
   return (
@@ -152,7 +198,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
             subtitle={t('import_wallet.mnemonic_phrase.subtitle')}
           />
         )}
-        {step === 'input-confirmation' && <PageTitle title={t('import_wallet.confirmation.title')} />}
+        {step === 'confirm-inputs-and-start-recovery' && <PageTitle title={t('import_wallet.confirmation.title')} />}
       </>
       {!canRecover && !isRecovered && serviceInfo?.walletName && (
         <rb.Alert variant="warning">
@@ -190,7 +236,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
               }}
             />
           )}
-          {step === 'input-confirmation' && (
+          {step === 'confirm-inputs-and-start-recovery' && (
             <WalletCreationConfirmation
               wallet={{
                 walletFileName: walletNameAndPassword?.name! + JM_WALLET_FILE_EXTENSION,
@@ -213,20 +259,11 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
                   walletname: walletNameAndPassword?.name! as Api.WalletName,
                   password: walletNameAndPassword?.password!,
                   seedphrase: mnemonicPhrase!,
+                  gaplimit,
+                  blockheight: startBlockheight,
                 })
               }}
             />
-          )}
-          {step === 'start-rescan' && (
-            <>
-              <>Your wallet has been successfully imported. You will now be able to start the rescan process.</>
-
-              <div>
-                <Link to={routes.rescanChain} className={`btn btn-dark btn-lg w-100`}>
-                  {t('import_wallet.rescan.text_button_submit')}
-                </Link>
-              </div>
-            </>
           )}
         </>
       )}

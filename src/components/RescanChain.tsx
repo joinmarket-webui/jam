@@ -7,10 +7,10 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import { CurrentWallet } from '../context/WalletContext'
-import { useUpdateConfigValues } from '../context/ServiceConfigContext'
+import { ConfigKey, useUpdateConfigValues } from '../context/ServiceConfigContext'
 
-const GAPLIMIT_CONFIGKEY = {
-  section: 'YIELDGENERATOR',
+const GAPLIMIT_CONFIGKEY: ConfigKey = {
+  section: 'POLICY',
   field: 'gaplimit',
 }
 
@@ -164,22 +164,14 @@ export default function RescanChain({ wallet }: RescanChainProps) {
                   updates: [
                     {
                       key: GAPLIMIT_CONFIGKEY,
-                      value: String(values.gaplimit),
+                      value: '205', //String(values.gaplimit),
                     },
                   ],
-                })
-                  .then((it) => {
-                    /*
-                     * TODO: verify that each jar has last address index > gaplimit
-                     * or else generate as many addresses to reach index := gaplimit
-                     */
-                    return it
+                }).then(() =>
+                  startChainRescan(abortCtrl.signal, {
+                    blockheight: values.blockheight,
                   })
-                  .then((it) =>
-                    startChainRescan(abortCtrl.signal, {
-                      blockheight: values.blockheight,
-                    })
-                  )
+                )
               }}
             />
           )}
