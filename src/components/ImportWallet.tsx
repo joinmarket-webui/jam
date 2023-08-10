@@ -112,7 +112,7 @@ const GAPLIMIT_SUGGESTIONS = {
   heavy: 221,
 }
 
-const SEGWIT_ACTIVATION_BLOCK = 477_120
+const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
   ? {
@@ -152,9 +152,9 @@ const ImportWalletDetailsForm = ({ walletInfo, submitButtonText, onSubmit }: Imp
       }}
       onSubmit={onSubmit}
     >
-      {({ handleSubmit, handleBlur, handleChange, values, touched, errors, isSubmitting }) => (
+      {({ handleSubmit, handleBlur, handleChange, values, touched, errors, isSubmitting, submitCount }) => (
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-          <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={true} />
+          <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
           <rb.Form.Group controlId="blockheight" className="mb-4">
             <rb.Form.Label>{t('rescan_chain.label_blockheight')}</rb.Form.Label>
             <rb.InputGroup hasValidation>
