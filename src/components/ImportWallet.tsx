@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as Api from '../libs/JmWalletApi'
 import { useServiceInfo } from '../context/ServiceInfoContext'
-import { ConfigKey, useUpdateConfigValues } from '../context/ServiceConfigContext'
+import { ConfigKey, useRefreshConfigValues, useUpdateConfigValues } from '../context/ServiceConfigContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import WalletCreationForm from './WalletCreationForm'
@@ -107,7 +107,8 @@ type ImportWalletDetailsFormValues = {
 }
 
 const GAPLIMIT_SUGGESTIONS = {
-  default: 21,
+  default: 6,
+  barely: 21,
   moderate: 121,
   heavy: 221,
 }
@@ -121,7 +122,7 @@ const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDe
     }
   : {
       blockheight: SEGWIT_ACTIVATION_BLOCK,
-      gaplimit: GAPLIMIT_SUGGESTIONS.default,
+      gaplimit: GAPLIMIT_SUGGESTIONS.barely,
     }
 
 interface ImportWalletDetailsFormProps {
@@ -243,6 +244,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const serviceInfo = useServiceInfo()
+  const refreshConfigValues = useRefreshConfigValues()
   const updateConfigValues = useUpdateConfigValues()
 
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -278,8 +280,15 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
         setRecoveredWallet({ walletFileName: importedWalletFileName, token: recoverBody.token })
 
         // Step #2: update the gaplimit config value
+        const currentGaplimit = await refreshConfigValues({
+          signal,
+          keys: [GAPLIMIT_CONFIGKEY],
+          wallet: { name: importedWalletFileName, token: recoverBody.token },
+        })
+          .then((it) => it[GAPLIMIT_CONFIGKEY.section] || {})
+          .then((it) => parseInt(it[GAPLIMIT_CONFIGKEY.field] || String(GAPLIMIT_SUGGESTIONS.default), 10))
         if (isDevMode()) {
-          console.debug('Will update gaplimit to', gaplimit)
+          console.debug('Will update gaplimit from %d to %d', currentGaplimit, gaplimit)
         }
         await updateConfigValues({
           signal,
@@ -299,9 +308,21 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
         const unlockResponse = await Api.postWalletUnlock({ walletName: importedWalletFileName }, { password })
         const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
 
-        // Step #4: invoke rescanning the timechain
+        // Step #4: reset `gaplimit´ to previous value
+        await updateConfigValues({
+          signal,
+          updates: [
+            {
+              key: GAPLIMIT_CONFIGKEY,
+              value: String(currentGaplimit),
+            },
+          ],
+          wallet: { name: importedWalletFileName, token: unlockBody.token },
+        })
+
+        // Step #5: invoke rescanning the timechain
         if (isDevMode()) {
-          console.debug('Will start rescanning timechain from block', blockheight)
+          console.debug('Will start rescanning timechain from block %d', blockheight)
         }
         const rescanResponse = await Api.getRescanBlockchain({
           signal,
@@ -321,7 +342,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
         setAlert({ variant: 'danger', message })
       }
     },
-    [setRecoveredWallet, startWallet, navigate, setAlert, updateConfigValues, t]
+    [setRecoveredWallet, startWallet, navigate, setAlert, refreshConfigValues, updateConfigValues, t]
   )
 
   const step = useMemo(() => {

@@ -32,6 +32,7 @@ type LoadConfigValueProps = {
 type RefreshConfigValuesProps = {
   signal?: AbortSignal
   keys: ConfigKey[]
+  wallet?: CurrentWallet
 }
 
 type UpdateConfigValuesProps = {
@@ -109,12 +110,13 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const serviceConfig = useRef<ServiceConfig | null>(null)
 
   const refreshConfigValues = useCallback(
-    async ({ signal, keys }: RefreshConfigValuesProps) => {
-      if (!currentWallet) {
-        throw new Error('Cannot load config: Wallet not present')
+    async ({ signal, keys, wallet }: RefreshConfigValuesProps) => {
+      const activeWallet = wallet || currentWallet
+      if (!activeWallet) {
+        throw new Error('Cannot refresh config: Wallet not present')
       }
 
-      return fetchConfigValues({ signal, wallet: currentWallet, configKeys: keys })
+      return fetchConfigValues({ signal, wallet: activeWallet, configKeys: keys })
         .then((updates) => updates.reduce(configReducer, serviceConfig.current || {}))
         .then((result) => {
           if (!signal || !signal.aborted) {
@@ -157,7 +159,7 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
     async ({ signal, updates, wallet }: UpdateConfigValuesProps) => {
       const activeWallet = wallet || currentWallet
       if (!activeWallet) {
-        throw new Error('Cannot load config: Wallet not present')
+        throw new Error('Cannot update config: Wallet not present')
       }
 
       return pushConfigValues({ signal, wallet: activeWallet, updates })
