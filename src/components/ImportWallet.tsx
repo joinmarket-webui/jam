@@ -92,7 +92,7 @@ const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: (mnemonicPhrase: stri
             onClick={() => setMnemonicPhraseWords(DUMMY_MNEMONIC_PHRASE.split(' '))}
             disabled={false}
           >
-            {t('import_wallet.fill_with')}
+            {t('import_wallet.mnemonic_phrase.__dev_fill_with_dummy_mnemonic_phrase')}
           </rb.Button>
         )}
       </div>
@@ -118,7 +118,10 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; token: Api.ApiToken }>()
 
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
-  const canRecover = useMemo(() => !isRecovered && !serviceInfo?.walletName, [isRecovered, serviceInfo])
+  const canRecover = useMemo(
+    () => !isRecovered && !serviceInfo?.walletName && !serviceInfo?.rescanning,
+    [isRecovered, serviceInfo]
+  )
 
   const recoverWallet = useCallback(
     async (
@@ -186,7 +189,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
     if (!walletNameAndPassword) return 'input-wallet-details'
     if (!mnemonicPhrase) return 'input-mnemonic-phrase'
     return 'confirm-inputs-and-start-recovery'
-  }, [walletNameAndPassword, mnemonicPhrase, recoveredWallet])
+  }, [walletNameAndPassword, mnemonicPhrase])
 
   return (
     <div className="import-wallet">
@@ -200,17 +203,32 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
         )}
         {step === 'confirm-inputs-and-start-recovery' && <PageTitle title={t('import_wallet.confirmation.title')} />}
       </>
-      {!canRecover && !isRecovered && serviceInfo?.walletName && (
-        <rb.Alert variant="warning">
-          <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-            Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletName) }}</strong> is active. You need
-            to lock it first.
-            <Link to={routes.walletList} className="alert-link">
-              Go back
-            </Link>
-            .
-          </Trans>
-        </rb.Alert>
+      {!canRecover && !isRecovered && (
+        <>
+          {serviceInfo?.walletName && (
+            <rb.Alert variant="warning">
+              <Trans i18nKey="import_wallet.alert_other_wallet_unlocked">
+                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletName) }}</strong> is active. You
+                need to lock it first.
+                <Link to={routes.walletList} className="alert-link">
+                  Go back
+                </Link>
+                .
+              </Trans>
+            </rb.Alert>
+          )}
+          {serviceInfo?.rescanning === true && (
+            <rb.Alert variant="warning">
+              <Trans i18nKey="import_wallet.alert_rescanning_already_in_progress">
+                Rescanning the timechain is currently in progress. Please wait till it finishes and then try again.
+                <Link to={routes.walletList} className="alert-link">
+                  Go back
+                </Link>
+                .
+              </Trans>
+            </rb.Alert>
+          )}
+        </>
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {(canRecover || isRecovered) && (

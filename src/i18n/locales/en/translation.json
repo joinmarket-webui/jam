@@ -148,6 +148,8 @@
     "hint_duration_text": "Please be patient, this may take a few minutes."
   },
   "import_wallet": {
+    "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",
+    "alert_rescanning_already_in_progress": "Rescanning the timechain is currently in progress. Please wait till it finishes and then try again. <1>Go back</1>.",
     "wallet_details": {
       "title": "Import Wallet",
       "text_button_submit": "Continue",
@@ -157,7 +159,8 @@
       "title": "Please enter your mnemonic phrase!",
       "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
       "text_button_submit": "Next: Review",
-      "text_button_submitting": "Next: Review"
+      "text_button_submitting": "Next: Review",
+      "__dev_fill_with_dummy_mnemonic_phrase": "[dev] Fill with dummy mnemonic phrase"
     },
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
