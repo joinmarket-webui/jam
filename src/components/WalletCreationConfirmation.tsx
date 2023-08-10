@@ -9,8 +9,40 @@ import { walletDisplayName } from '../utils'
 // TODO: currently reusing CreateWallet styles - mvoe to own module.css?
 import styles from './CreateWallet.module.css'
 
+export type WalletInfo = {
+  walletFileName: string
+  password: string
+  seedphrase: string
+}
+
+interface WalletCreationInfoSummaryProps {
+  walletInfo: WalletInfo
+  revealSensitiveInfo: boolean
+}
+
+export const WalletInfoSummary = ({ walletInfo, revealSensitiveInfo }: WalletCreationInfoSummaryProps) => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <div className="mb-4">
+        <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
+        <div className="fs-4">{walletDisplayName(walletInfo.walletFileName)}</div>
+      </div>
+      <div className="mb-4">
+        <Seedphrase seedphrase={walletInfo.seedphrase} isBlurred={!revealSensitiveInfo} />
+      </div>
+      <div className="mb-4">
+        <div>{t('create_wallet.confirmation_label_password')}</div>
+        <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
+          {!revealSensitiveInfo ? 'randomrandom' : walletInfo.password}
+        </div>
+      </div>
+    </>
+  )
+}
+
 interface WalletCreationConfirmationProps {
-  wallet: { walletFileName: string; password: string; seedphrase: string }
+  wallet: WalletInfo
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
   onSubmit: () => Promise<void>
 }
@@ -34,19 +66,7 @@ const WalletCreationConfirmation = ({ wallet, submitButtonText, onSubmit }: Wall
         <>
           <PreventLeavingPageByMistake />
           <rb.Form onSubmit={handleSubmit} noValidate>
-            <div className="mb-4">
-              <div>{t('create_wallet.confirmation_label_wallet_name')}</div>
-              <div className="fs-4">{walletDisplayName(wallet.walletFileName)}</div>
-            </div>
-            <div className="mb-4">
-              <Seedphrase seedphrase={wallet.seedphrase} isBlurred={!revealSensitiveInfo} />
-            </div>
-            <div className="mb-4">
-              <div>{t('create_wallet.confirmation_label_password')}</div>
-              <div className={`fs-4${revealSensitiveInfo ? '' : ' blurred-text'}`}>
-                {!revealSensitiveInfo ? 'randomrandom' : wallet.password}
-              </div>
-            </div>
+            <WalletInfoSummary walletInfo={wallet} revealSensitiveInfo={revealSensitiveInfo} />
             <div className="mb-2">
               <ToggleSwitch
                 label={t('create_wallet.confirmation_toggle_reveal_info')}

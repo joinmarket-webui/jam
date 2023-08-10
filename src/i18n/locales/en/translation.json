@@ -158,13 +158,13 @@
     "mnemonic_phrase": {
       "title": "Please enter your mnemonic phrase!",
       "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
-      "text_button_submit": "Next: Review",
-      "text_button_submitting": "Next: Review",
+      "text_button_submit": "Review",
+      "text_button_submitting": "Review",
       "__dev_fill_with_dummy_mnemonic_phrase": "[dev] Fill with dummy mnemonic phrase"
     },
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
-      "text_button_submit": "Next: Import",
+      "text_button_submit": "Import",
       "text_button_submitting": "Importing..."
     },
     "rescan": {

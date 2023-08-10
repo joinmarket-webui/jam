@@ -18,6 +18,8 @@ const debugFeatures: DebugFeatures = {
 
 type DebugFeature = keyof DebugFeatures
 
+export const isDevMode = (): boolean => devMode
+
 export const isDebugFeatureEnabled = (name: DebugFeature): boolean => {
   return debugFeatures[name] || false
 }
