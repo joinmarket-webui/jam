@@ -224,6 +224,11 @@ const ImportWalletDetailsForm = ({ walletInfo, submitButtonText, onSubmit }: Imp
               )}
             </div>
           </rb.Button>
+          {isSubmitting && (
+            <div className="text-center text-muted small mt-4">
+              <p>{t('create_wallet.hint_duration_text')}</p>
+            </div>
+          )}
         </rb.Form>
       )}
     </Formik>
