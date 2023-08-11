@@ -137,37 +137,7 @@ export default function CreateWallet({ parentRoute, startWallet }) {
         <PageTitle title={t('create_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {canCreate && (
-        <WalletCreationForm
-          onCancel={() => navigate(routes[parentRoute])}
-          onSubmit={createWallet}
-          submitButtonText={(isSubmitting) =>
-            t(isSubmitting ? 'create_wallet.button_creating' : 'create_wallet.button_create')
-          }
-        />
-      )}
-      {isCreated && (
-        <>
-          {!showBackupConfirmation ? (
-            <>
-              <WalletCreationConfirmation
-                wallet={createdWallet}
-                submitButtonText={(_) => t('create_wallet.next_button')}
-                onSubmit={() => setShowBackupConfirmation(true)}
-              />
-            </>
-          ) : (
-            <>
-              <BackupConfirmation
-                wallet={createdWallet}
-                onSuccess={walletConfirmed}
-                onCancel={() => setShowBackupConfirmation(false)}
-              />
-            </>
-          )}
-        </>
-      )}
-      {!canCreate && !isCreated && (
+      {!canCreate && !isCreated ? (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
             Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletName) }}</strong> is active. You need
@@ -178,6 +148,36 @@ export default function CreateWallet({ parentRoute, startWallet }) {
             .
           </Trans>
         </rb.Alert>
+      ) : (
+        <>
+          <PreventLeavingPageByMistake />
+          {canCreate && (
+            <WalletCreationForm
+              onCancel={() => navigate(routes[parentRoute])}
+              onSubmit={createWallet}
+              submitButtonText={(isSubmitting) =>
+                t(isSubmitting ? 'create_wallet.button_creating' : 'create_wallet.button_create')
+              }
+            />
+          )}
+          {isCreated && (
+            <>
+              {!showBackupConfirmation ? (
+                <WalletCreationConfirmation
+                  wallet={createdWallet}
+                  submitButtonText={(_) => t('create_wallet.next_button')}
+                  onSubmit={() => setShowBackupConfirmation(true)}
+                />
+              ) : (
+                <BackupConfirmation
+                  wallet={createdWallet}
+                  onSuccess={walletConfirmed}
+                  onCancel={() => setShowBackupConfirmation(false)}
+                />
+              )}
+            </>
+          )}
+        </>
       )}
     </div>
   )

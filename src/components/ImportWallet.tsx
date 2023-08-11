@@ -11,6 +11,7 @@ import Sprite from './Sprite'
 import Accordion from './Accordion'
 import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
 import MnemonicPhraseInput from './MnemonicPhraseInput'
+import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes, Route } from '../constants/routes'
@@ -469,6 +470,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         </>
       ) : (
         <>
+          <PreventLeavingPageByMistake />
           {step === 'input-wallet-details' && (
             <WalletCreationForm
               initialValues={createWalletFormValues}

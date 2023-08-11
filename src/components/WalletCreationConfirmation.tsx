@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Formik } from 'formik'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
-import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { walletDisplayName } from '../utils'
 // TODO: currently reusing CreateWallet styles - move to own module.css?
 import styles from './CreateWallet.module.css'
@@ -63,49 +62,39 @@ const WalletCreationConfirmation = ({ wallet, submitButtonText, onSubmit }: Wall
       }}
     >
       {({ handleSubmit, isSubmitting }) => (
-        <>
-          <PreventLeavingPageByMistake />
-          <rb.Form onSubmit={handleSubmit} noValidate>
-            <WalletInfoSummary walletInfo={wallet} revealSensitiveInfo={revealSensitiveInfo} />
-            <div className="mb-2">
-              <ToggleSwitch
-                label={t('create_wallet.confirmation_toggle_reveal_info')}
-                toggledOn={revealSensitiveInfo}
-                onToggle={(isToggled) => {
-                  setRevealSensitiveInfo(isToggled)
-                  setSensitiveInfoWasRevealed(true)
-                }}
-              />
+        <rb.Form onSubmit={handleSubmit} noValidate>
+          <WalletInfoSummary walletInfo={wallet} revealSensitiveInfo={revealSensitiveInfo} />
+          <div className="mb-2">
+            <ToggleSwitch
+              label={t('create_wallet.confirmation_toggle_reveal_info')}
+              toggledOn={revealSensitiveInfo}
+              onToggle={(isToggled) => {
+                setRevealSensitiveInfo(isToggled)
+                setSensitiveInfoWasRevealed(true)
+              }}
+            />
+          </div>
+          <div className="mb-4">
+            <ToggleSwitch
+              label={t('create_wallet.confirmation_toggle_info_written_down')}
+              toggledOn={userConfirmed}
+              onToggle={(isToggled) => setUserConfirmed(isToggled)}
+            />
+          </div>
+          <rb.Button
+            variant="dark"
+            className={styles.button}
+            type="submit"
+            disabled={!sensitiveInfoWasRevealed || !userConfirmed || isSubmitting}
+          >
+            <div className="d-flex justify-content-center align-items-center">
+              {isSubmitting && (
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              )}
+              {submitButtonText(isSubmitting)}
             </div>
-            <div className="mb-4">
-              <ToggleSwitch
-                label={t('create_wallet.confirmation_toggle_info_written_down')}
-                toggledOn={userConfirmed}
-                onToggle={(isToggled) => setUserConfirmed(isToggled)}
-              />
-            </div>
-            <rb.Button
-              variant="dark"
-              className={styles.button}
-              type="submit"
-              disabled={!sensitiveInfoWasRevealed || !userConfirmed || isSubmitting}
-            >
-              <div className="d-flex justify-content-center align-items-center">
-                {isSubmitting && (
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="me-2"
-                  />
-                )}
-                {submitButtonText(isSubmitting)}
-              </div>
-            </rb.Button>
-          </rb.Form>
-        </>
+          </rb.Button>
+        </rb.Form>
       )}
     </Formik>
   )
