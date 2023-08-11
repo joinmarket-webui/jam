@@ -9,7 +9,7 @@ import { ConfigKey, useRefreshConfigValues, useUpdateConfigValues } from '../con
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import Accordion from './Accordion'
-import WalletCreationForm, { WalletNameAndPassword } from './WalletCreationForm'
+import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
 import MnemonicWordInput from './MnemonicWordInput'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
@@ -49,11 +49,18 @@ const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDe
     }
 
 interface ImportWalletDetailsFormProps {
+  initialValues?: ImportWalletDetailsFormValues
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
+  onCancel: () => void
   onSubmit: (values: ImportWalletDetailsFormValues) => Promise<void>
 }
 
-const ImportWalletDetailsForm = ({ submitButtonText, onSubmit }: ImportWalletDetailsFormProps) => {
+const ImportWalletDetailsForm = ({
+  initialValues = initialImportWalletDetailsFormValues,
+  submitButtonText,
+  onCancel,
+  onSubmit,
+}: ImportWalletDetailsFormProps) => {
   const { t, i18n } = useTranslation()
   const [__dev_showFillerButton] = useState(isDebugFeatureEnabled('importFillerMnemonicPhrase'))
 
@@ -81,7 +88,7 @@ const ImportWalletDetailsForm = ({ submitButtonText, onSubmit }: ImportWalletDet
   )
 
   return (
-    <Formik initialValues={initialImportWalletDetailsFormValues} validate={validate} onSubmit={onSubmit}>
+    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
       {({ handleSubmit, handleBlur, handleChange, setFieldValue, values, touched, errors, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
           <div className="container slashed-zeroes p-0">
@@ -205,6 +212,12 @@ const ImportWalletDetailsForm = ({ submitButtonText, onSubmit }: ImportWalletDet
               )}
             </div>
           </rb.Button>
+          <div className="d-flex mt-4 mb-4 gap-4">
+            <rb.Button variant="outline-dark" disabled={isSubmitting} onClick={() => onCancel()}>
+              <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
+              {t('global.back')}
+            </rb.Button>
+          </div>
         </rb.Form>
       )}
     </Formik>
@@ -212,14 +225,15 @@ const ImportWalletDetailsForm = ({ submitButtonText, onSubmit }: ImportWalletDet
 }
 
 type ImportWalletConfirmationFormValues = {
-  walletDetails: WalletNameAndPassword
+  walletDetails: CreateWalletFormValues
   importDetails: ImportWalletDetailsFormValues
 }
 
 interface ImportWalletConfirmationProps {
-  walletDetails: WalletNameAndPassword
+  walletDetails: CreateWalletFormValues
   importDetails: ImportWalletDetailsFormValues
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
+  onCancel: () => void
   onSubmit: (values: ImportWalletConfirmationFormValues) => Promise<void>
 }
 
@@ -227,14 +241,15 @@ const ImportWalletConfirmation = ({
   walletDetails,
   importDetails,
   submitButtonText,
+  onCancel,
   onSubmit,
 }: ImportWalletConfirmationProps) => {
   const { t, i18n } = useTranslation()
 
   const walletInfo = useMemo<WalletInfo>(
     () => ({
-      walletFileName: walletDetails.name + JM_WALLET_FILE_EXTENSION,
-      password: walletDetails.name,
+      walletFileName: walletDetails.walletName + JM_WALLET_FILE_EXTENSION,
+      password: walletDetails.password,
       seedphrase: importDetails.mnemonicPhraseWords.join(' '),
     }),
     []
@@ -307,11 +322,19 @@ const ImportWalletConfirmation = ({
               )}
             </div>
           </rb.Button>
+
           {isSubmitting && (
             <div className="text-center text-muted small mt-4">
               <p>{t('create_wallet.hint_duration_text')}</p>
             </div>
           )}
+
+          <div className="d-flex mt-4 mb-4 gap-4">
+            <rb.Button variant="outline-dark" disabled={isSubmitting} onClick={() => onCancel()}>
+              <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
+              {t('global.back')}
+            </rb.Button>
+          </div>
         </rb.Form>
       )}
     </Formik>
@@ -330,9 +353,8 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const updateConfigValues = useUpdateConfigValues()
 
   const [alert, setAlert] = useState<SimpleAlert>()
-  const [walletNameAndPassword, setWalletNameAndPassword] = useState<WalletNameAndPassword>()
+  const [createWalletFormValues, setCreateWalletFormValues] = useState<CreateWalletFormValues>()
   const [importDetailsFormValues, setImportDetailsFormValues] = useState<ImportWalletDetailsFormValues>()
-  //const [mnemonicPhrase, setMnemonicPhrase] = useState<string>()
   const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; token: Api.ApiToken }>()
 
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
@@ -340,6 +362,30 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
     () => !isRecovered && !serviceInfo?.walletName && !serviceInfo?.rescanning,
     [isRecovered, serviceInfo]
   )
+
+  const [step, setStep] = useState('input-wallet-details')
+  const nextStep = () =>
+    setStep((old) => {
+      switch (step) {
+        case 'input-wallet-details':
+          return 'input-import-details'
+        case 'input-import-details':
+          return 'confirm-inputs-and-start-import'
+        default:
+          return old
+      }
+    })
+  const previousStep = () =>
+    setStep((old) => {
+      switch (step) {
+        case 'input-import-details':
+          return 'input-wallet-details'
+        case 'confirm-inputs-and-start-import':
+          return 'input-import-details'
+        default:
+          return old
+      }
+    })
 
   const recoverWallet = useCallback(
     async (
@@ -431,12 +477,6 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
     [setRecoveredWallet, startWallet, navigate, setAlert, refreshConfigValues, updateConfigValues, t]
   )
 
-  const step = useMemo(() => {
-    if (!walletNameAndPassword) return 'input-wallet-details'
-    if (!importDetailsFormValues) return 'input-import-details'
-    return 'confirm-inputs-and-start-import'
-  }, [walletNameAndPassword, importDetailsFormValues])
-
   return (
     <div className="import-wallet">
       <>
@@ -481,7 +521,11 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
         <>
           {step === 'input-wallet-details' && (
             <WalletCreationForm
-              onSubmit={async (value) => setWalletNameAndPassword(value)}
+              initialValues={createWalletFormValues}
+              onSubmit={async (values) => {
+                setCreateWalletFormValues(values)
+                nextStep()
+              }}
               submitButtonText={(isSubmitting) => (
                 <>
                   {t(
@@ -495,6 +539,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
           )}
           {step === 'input-import-details' && (
             <ImportWalletDetailsForm
+              initialValues={importDetailsFormValues}
               submitButtonText={(isSubmitting) => (
                 <>
                   {t(
@@ -504,12 +549,16 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
                   )}
                 </>
               )}
-              onSubmit={async (values) => setImportDetailsFormValues(values)}
+              onCancel={() => previousStep()}
+              onSubmit={async (values) => {
+                setImportDetailsFormValues(values)
+                nextStep()
+              }}
             />
           )}
           {step === 'confirm-inputs-and-start-import' && (
             <ImportWalletConfirmation
-              walletDetails={walletNameAndPassword!}
+              walletDetails={createWalletFormValues!}
               importDetails={importDetailsFormValues!}
               submitButtonText={(isSubmitting) => (
                 <>
@@ -520,11 +569,12 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
                   )}
                 </>
               )}
+              onCancel={() => previousStep()}
               onSubmit={(values) => {
                 const abortCtrl = new AbortController()
 
                 return recoverWallet(abortCtrl.signal, {
-                  walletname: values.walletDetails.name as Api.WalletName,
+                  walletname: (values.walletDetails.walletName + JM_WALLET_FILE_EXTENSION) as Api.WalletName,
                   password: values.walletDetails.password,
                   seedphrase: values.importDetails.mnemonicPhraseWords.join(' '),
                   gaplimit: values.importDetails.gaplimit,

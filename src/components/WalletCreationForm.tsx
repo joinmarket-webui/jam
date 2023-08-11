@@ -6,13 +6,13 @@ import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
 
-interface CreateWalletFormValues {
+export interface CreateWalletFormValues {
   walletName: string
   password: string
   passwordConfirm: string
 }
 
-const initialValues: CreateWalletFormValues = {
+const initialCreateWalletFormValues: CreateWalletFormValues = {
   walletName: '',
   password: '',
   passwordConfirm: '',
@@ -21,11 +21,16 @@ const initialValues: CreateWalletFormValues = {
 export type WalletNameAndPassword = { name: string; password: string }
 
 interface WalletCreationFormProps {
+  initialValues?: CreateWalletFormValues
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
-  onSubmit: (val: WalletNameAndPassword) => Promise<void>
+  onSubmit: (values: CreateWalletFormValues) => Promise<void>
 }
 
-const WalletCreationForm = ({ submitButtonText, onSubmit }: WalletCreationFormProps) => {
+const WalletCreationForm = ({
+  initialValues = initialCreateWalletFormValues,
+  submitButtonText,
+  onSubmit,
+}: WalletCreationFormProps) => {
   const { t, i18n } = useTranslation()
 
   const validate = useCallback(
@@ -50,9 +55,7 @@ const WalletCreationForm = ({ submitButtonText, onSubmit }: WalletCreationFormPr
       initialValues={initialValues}
       validate={validate}
       onSubmit={async (values) => {
-        const { walletName, password } = values
-        const sanitizedWalletName = sanitizeWalletName(walletName)
-        await onSubmit({ name: sanitizedWalletName, password })
+        await onSubmit({ ...values, walletName: sanitizeWalletName(values.walletName) })
       }}
     >
       {({ handleSubmit, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (

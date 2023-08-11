@@ -104,11 +104,11 @@ export default function CreateWallet({ startWallet }) {
   const [createdWallet, setCreatedWallet] = useState(null)
 
   const createWallet = useCallback(
-    async ({ name, password }) => {
+    async ({ walletName, password }) => {
       setAlert(null)
 
       try {
-        const res = await Api.postWalletCreate({}, { walletname: name, password })
+        const res = await Api.postWalletCreate({}, { walletname: walletName, password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
         const { seedphrase, token, walletname: createdWalletFileName } = body
