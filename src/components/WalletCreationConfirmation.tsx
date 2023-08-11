@@ -6,7 +6,7 @@ import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { walletDisplayName } from '../utils'
-// TODO: currently reusing CreateWallet styles - mvoe to own module.css?
+// TODO: currently reusing CreateWallet styles - move to own module.css?
 import styles from './CreateWallet.module.css'
 
 export type WalletInfo = {
@@ -90,8 +90,8 @@ const WalletCreationConfirmation = ({ wallet, submitButtonText, onSubmit }: Wall
               type="submit"
               disabled={!sensitiveInfoWasRevealed || !userConfirmed || isSubmitting}
             >
-              {isSubmitting ? (
-                <div className="d-flex justify-content-center align-items-center">
+              <div className="d-flex justify-content-center align-items-center">
+                {isSubmitting && (
                   <rb.Spinner
                     as="span"
                     animation="border"
@@ -100,11 +100,9 @@ const WalletCreationConfirmation = ({ wallet, submitButtonText, onSubmit }: Wall
                     aria-hidden="true"
                     className="me-2"
                   />
-                  {submitButtonText(isSubmitting)}
-                </div>
-              ) : (
-                submitButtonText(isSubmitting)
-              )}
+                )}
+                {submitButtonText(isSubmitting)}
+              </div>
             </rb.Button>
           </rb.Form>
         </>

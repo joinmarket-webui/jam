@@ -13,8 +13,8 @@ export const SATS: Unit = 'sats'
 
 export const JM_WALLET_FILE_EXTENSION = '.jmdat'
 
-export const DUMMY_MNEMONIC_PHRASE =
-  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+export const DUMMY_MNEMONIC_PHRASE: MnemonicPhrase =
+  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
 
 export const sanitizeWalletName = (name: string) => name.replace(JM_WALLET_FILE_EXTENSION, '')
 

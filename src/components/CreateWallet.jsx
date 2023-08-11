@@ -7,7 +7,7 @@ import Sprite from './Sprite'
 import WalletCreationConfirmation from './WalletCreationConfirmation'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import WalletCreationForm from './WalletCreationForm'
-import MnemonicWordInput from './MnemonicWordInput'
+import MnemonicPhraseInput from './MnemonicPhraseInput'
 import { walletDisplayName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
@@ -16,9 +16,9 @@ import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import styles from './CreateWallet.module.css'
 
 const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
-  const seedphrase = useMemo(() => wallet.seedphrase.split(' '), [wallet])
-
   const { t } = useTranslation()
+
+  const seedphrase = useMemo(() => wallet.seedphrase.split(' '), [wallet])
   const [givenWords, setGivenWords] = useState(new Array(seedphrase.length).fill(''))
   const [showSkipButton] = useState(isDebugFeatureEnabled('skipWalletBackupConfirmation'))
 
@@ -34,34 +34,12 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
       <p className="text-secondary">{t('create_wallet.confirm_backup_subtitle')}</p>
 
       <rb.Form noValidate>
-        <div className="container slashed-zeroes p-0">
-          {[...new Array(seedphrase.length)].map((_, outerIndex) => {
-            if (outerIndex % 2 !== 0) return null
-
-            const seedWords = seedphrase.slice(outerIndex, outerIndex + 2)
-
-            return (
-              <div className="row mb-4" key={outerIndex}>
-                {seedWords.map((seedWord, innerIndex) => {
-                  const wordIndex = outerIndex + innerIndex
-                  return (
-                    <div className="col" key={wordIndex}>
-                      <MnemonicWordInput
-                        index={wordIndex}
-                        value={givenWords[wordIndex]}
-                        setValue={(value) =>
-                          setGivenWords((words) => words.map((old, index) => (index === wordIndex ? value : old)))
-                        }
-                        isValid={givenWords[wordIndex] === seedWord}
-                        disabled={givenWords[wordIndex] === seedWord}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })}
-        </div>
+        <MnemonicPhraseInput
+          mnemonicPhrase={givenWords}
+          onChange={(val) => setGivenWords(val)}
+          isValid={(index) => givenWords[index] === seedphrase[index]}
+          isDisabled={(index) => givenWords[index] === seedphrase[index]}
+        />
       </rb.Form>
       {isSeedBackupConfirmed && (
         <div className="mb-4 text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>

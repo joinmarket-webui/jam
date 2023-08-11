@@ -93,7 +93,7 @@ describe('<CreateWallet />', () => {
         Promise.resolve({
           walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
-          seedphrase: DUMMY_MNEMONIC_PHRASE,
+          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
         }),
     })
 
@@ -126,7 +126,7 @@ describe('<CreateWallet />', () => {
         Promise.resolve({
           walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
-          seedphrase: DUMMY_MNEMONIC_PHRASE,
+          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
         }),
     })
 
@@ -168,7 +168,7 @@ describe('<CreateWallet />', () => {
         Promise.resolve({
           walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
-          seedphrase: DUMMY_MNEMONIC_PHRASE,
+          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
         }),
     })
 

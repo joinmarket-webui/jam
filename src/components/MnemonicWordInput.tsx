@@ -5,7 +5,7 @@ import styles from './CreateWallet.module.css'
 interface MnemonicWordInputProps {
   index: number
   value: string
-  setValue: (value: string) => void
+  setValue: (value: string, index: number) => void
   isValid?: boolean
   disabled?: boolean
 }
@@ -19,7 +19,7 @@ const MnemonicWordInput = ({ index, value, setValue, isValid, disabled }: Mnemon
         type="text"
         placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${index + 1}`}
         value={value}
-        onChange={(e) => setValue(e.target.value.trim())}
+        onChange={(e) => setValue(e.target.value.trim(), index)}
         className={styles.input}
         disabled={disabled}
         isInvalid={isValid === false && value.length > 0}

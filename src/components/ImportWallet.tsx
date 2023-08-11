@@ -10,7 +10,7 @@ import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import Accordion from './Accordion'
 import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
-import MnemonicWordInput from './MnemonicWordInput'
+import MnemonicPhraseInput from './MnemonicPhraseInput'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes, Route } from '../constants/routes'
@@ -31,19 +31,19 @@ const GAPLIMIT_DEFAULT = 6
 const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
 type ImportWalletDetailsFormValues = {
-  mnemonicPhraseWords: string[]
+  mnemonicPhrase: MnemonicPhrase
   blockheight: number
   gaplimit: number
 }
 
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
   ? {
-      mnemonicPhraseWords: new Array<string>(12).fill(''),
+      mnemonicPhrase: new Array<string>(12).fill(''),
       blockheight: 0,
       gaplimit: GAPLIMIT_SUGGESTIONS.heavy,
     }
   : {
-      mnemonicPhraseWords: new Array<string>(12).fill(''),
+      mnemonicPhrase: new Array<string>(12).fill(''),
       blockheight: SEGWIT_ACTIVATION_BLOCK,
       gaplimit: GAPLIMIT_SUGGESTIONS.barely,
     }
@@ -67,9 +67,9 @@ const ImportWalletDetailsForm = ({
   const validate = useCallback(
     (values: ImportWalletDetailsFormValues) => {
       const errors = {} as FormikErrors<ImportWalletDetailsFormValues>
-      const isMnemonicPhraseValid = values.mnemonicPhraseWords.every((it) => it.length > 0)
+      const isMnemonicPhraseValid = values.mnemonicPhrase.every((it) => it.length > 0)
       if (!isMnemonicPhraseValid) {
-        errors.mnemonicPhraseWords = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
+        errors.mnemonicPhrase = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
       if (values.blockheight < 0) {
@@ -91,42 +91,16 @@ const ImportWalletDetailsForm = ({
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
       {({ handleSubmit, handleBlur, handleChange, setFieldValue, values, touched, errors, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-          <div className="container slashed-zeroes p-0">
-            {values.mnemonicPhraseWords.map((_, outerIndex) => {
-              if (outerIndex % 2 !== 0) return null
-
-              const seedWords = values.mnemonicPhraseWords.slice(outerIndex, outerIndex + 2)
-
-              return (
-                <div className="row mb-4" key={outerIndex}>
-                  {seedWords.map((givenWord, innerIndex) => {
-                    const wordIndex = outerIndex + innerIndex
-                    return (
-                      <div className="col" key={wordIndex}>
-                        <MnemonicWordInput
-                          index={wordIndex}
-                          value={givenWord}
-                          setValue={(value) => {
-                            const newWords = values.mnemonicPhraseWords.map((old, index) =>
-                              index === wordIndex ? value : old
-                            )
-                            setFieldValue('mnemonicPhraseWords', newWords, true)
-                          }}
-                          isValid={undefined}
-                          disabled={isSubmitting}
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            })}
-          </div>
+          <MnemonicPhraseInput
+            mnemonicPhrase={values.mnemonicPhrase}
+            onChange={(val) => setFieldValue('mnemonicPhrase', val, true)}
+            isDisabled={(_) => isSubmitting}
+          />
           {__dev_showFillerButton && (
             <rb.Button
               variant="outline-dark"
               className="w-100 mb-4"
-              onClick={() => setFieldValue('mnemonicPhraseWords', DUMMY_MNEMONIC_PHRASE.split(' '), true)}
+              onClick={() => setFieldValue('mnemonicPhrase', DUMMY_MNEMONIC_PHRASE, true)}
               disabled={isSubmitting}
             >
               {t('import_wallet.import_details.__dev_fill_with_dummy_mnemonic_phrase')}
@@ -239,7 +213,7 @@ const ImportWalletConfirmation = ({
     () => ({
       walletFileName: walletDetails.walletName + JM_WALLET_FILE_EXTENSION,
       password: walletDetails.password,
-      seedphrase: importDetails.mnemonicPhraseWords.join(' '),
+      seedphrase: importDetails.mnemonicPhrase.join(' '),
     }),
     [walletDetails, importDetails]
   )
@@ -388,7 +362,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         setRecoveredWallet({ walletFileName: importedWalletFileName, token: recoverBody.token })
 
         // Step #2: update the gaplimit config value
-        const currentGaplimit = await refreshConfigValues({
+        const originalGaplimit = await refreshConfigValues({
           signal,
           keys: [GAPLIMIT_CONFIGKEY],
           wallet: { name: importedWalletFileName, token: recoverBody.token },
@@ -397,9 +371,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           .then((it) => parseInt(it[GAPLIMIT_CONFIGKEY.field] || String(GAPLIMIT_DEFAULT), 10))
           .then((it) => it || GAPLIMIT_DEFAULT)
 
-        if (isDevMode()) {
-          console.debug('Will update gaplimit from %d to %d', currentGaplimit, gaplimit)
-        }
+        console.info('Will update gaplimit from %d to %d', originalGaplimit, gaplimit)
 
         await updateConfigValues({
           signal,
@@ -420,21 +392,21 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
 
         // Step #4: reset `gaplimit´ to previous value
+        console.info('Will reset gaplimit to previous value %d', originalGaplimit)
         await updateConfigValues({
           signal,
           updates: [
             {
               key: GAPLIMIT_CONFIGKEY,
-              value: String(currentGaplimit),
+              value: String(originalGaplimit),
             },
           ],
           wallet: { name: importedWalletFileName, token: unlockBody.token },
         })
 
         // Step #5: invoke rescanning the timechain
-        if (isDevMode()) {
-          console.debug('Will start rescanning timechain from block %d', blockheight)
-        }
+        console.info('Will start rescanning timechain from block %d', blockheight)
+
         const rescanResponse = await Api.getRescanBlockchain({
           signal,
           walletName: importedWalletFileName,
@@ -468,7 +440,8 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         )}
         {step === 'confirm-inputs-and-start-import' && <PageTitle title={t('import_wallet.confirmation.title')} />}
       </>
-      {!canRecover && !isRecovered && (
+      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
+      {!canRecover && !isRecovered ? (
         <>
           {serviceInfo?.walletName && (
             <rb.Alert variant="warning">
@@ -494,9 +467,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
             </rb.Alert>
           )}
         </>
-      )}
-      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {(canRecover || isRecovered) && (
+      ) : (
         <>
           {step === 'input-wallet-details' && (
             <WalletCreationForm
@@ -550,7 +521,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 return recoverWallet(abortCtrl.signal, {
                   walletname: (values.walletDetails.walletName + JM_WALLET_FILE_EXTENSION) as Api.WalletName,
                   password: values.walletDetails.password,
-                  seedphrase: values.importDetails.mnemonicPhraseWords.join(' '),
+                  seedphrase: values.importDetails.mnemonicPhrase.join(' '),
                   gaplimit: values.importDetails.gaplimit,
                   blockheight: values.importDetails.blockheight,
                 })
