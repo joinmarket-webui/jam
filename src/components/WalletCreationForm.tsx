@@ -6,29 +6,31 @@ import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
 
-export interface FormValues {
+interface CreateWalletFormValues {
   walletName: string
   password: string
   passwordConfirm: string
 }
 
-const initialValues: FormValues = {
+const initialValues: CreateWalletFormValues = {
   walletName: '',
   password: '',
   passwordConfirm: '',
 }
 
+export type WalletNameAndPassword = { name: string; password: string }
+
 interface WalletCreationFormProps {
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
-  onSubmit: (name: string, password: string) => Promise<void>
+  onSubmit: (val: WalletNameAndPassword) => Promise<void>
 }
 
 const WalletCreationForm = ({ submitButtonText, onSubmit }: WalletCreationFormProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const validate = useCallback(
-    (values: FormValues) => {
-      const errors = {} as FormikErrors<FormValues>
+    (values: CreateWalletFormValues) => {
+      const errors = {} as FormikErrors<CreateWalletFormValues>
       if (!values.walletName) {
         errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
       }
@@ -47,16 +49,16 @@ const WalletCreationForm = ({ submitButtonText, onSubmit }: WalletCreationFormPr
     <Formik
       initialValues={initialValues}
       validate={validate}
-      onSubmit={async (values: FormValues) => {
+      onSubmit={async (values) => {
         const { walletName, password } = values
         const sanitizedWalletName = sanitizeWalletName(walletName)
-        await onSubmit(sanitizedWalletName, password)
+        await onSubmit({ name: sanitizedWalletName, password })
       }}
     >
       {({ handleSubmit, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
         <>
           {isSubmitting && <PreventLeavingPageByMistake />}
-          <rb.Form onSubmit={handleSubmit} noValidate>
+          <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
             <rb.Form.Group className="mb-4" controlId="walletName">
               <rb.Form.Label>{t('create_wallet.label_wallet_name')}</rb.Form.Label>
               <rb.Form.Control

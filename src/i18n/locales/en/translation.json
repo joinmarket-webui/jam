@@ -155,9 +155,14 @@
       "text_button_submit": "Continue",
       "text_button_submitting": "Continue"
     },
-    "mnemonic_phrase": {
+    "import_details": {
       "title": "Please enter your mnemonic phrase!",
       "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
+      "label_blockheight": "Blockheight",
+      "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
+      "label_gaplimit": "Gaplimit",
+      "feedback_invalid_gaplimit": "Please provide a valid gaplimit value greater than or equal to {{ min }}.",
+      "feedback_invalid_menmonic_phrase": "Please provide a valid mnemonic phrase",
       "text_button_submit": "Review",
       "text_button_submitting": "Review",
       "__dev_fill_with_dummy_mnemonic_phrase": "[dev] Fill with dummy mnemonic phrase"
@@ -179,8 +184,6 @@
     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     "label_blockheight": "Blockheight",
     "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
-    "label_gaplimit": "Gap limit",
-    "feedback_invalid_gaplimit": "Please provide a valid gaplimit value greater than or equal to {{ min }}.",
     "text_button_submit": "Rescan chain",
     "text_button_submitting": "Rescan chain"
   },

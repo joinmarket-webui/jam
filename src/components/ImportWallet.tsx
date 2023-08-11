@@ -8,162 +8,130 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import { ConfigKey, useRefreshConfigValues, useUpdateConfigValues } from '../context/ServiceConfigContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
-import WalletCreationForm from './WalletCreationForm'
+import WalletCreationForm, { WalletNameAndPassword } from './WalletCreationForm'
 import MnemonicWordInput from './MnemonicWordInput'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
 import { DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
-import styles from './ImportWallet.module.css'
 
 const GAPLIMIT_CONFIGKEY: ConfigKey = {
   section: 'POLICY',
   field: 'gaplimit',
 }
 
-const MnemonicPhraseInputForm = ({ onSubmit }: { onSubmit: (mnemonicPhrase: string) => void }) => {
-  const { t } = useTranslation()
-  const [mnemonicPhraseWords, setMnemonicPhraseWords] = useState(new Array<string>(12).fill(''))
-  const [showFillerButton] = useState(isDebugFeatureEnabled('importFillerMnemonicPhrase'))
-
-  const isMnemonicPhraseValid = useMemo(() => mnemonicPhraseWords.every((it) => it.length > 0), [mnemonicPhraseWords])
-  return (
-    <div>
-      <rb.Form noValidate className="mb-4">
-        <div className="container slashed-zeroes p-0">
-          {mnemonicPhraseWords.map((_, outerIndex) => {
-            if (outerIndex % 2 !== 0) return null
-
-            const seedWords = mnemonicPhraseWords.slice(outerIndex, outerIndex + 2)
-
-            return (
-              <div className="row mb-4" key={outerIndex}>
-                {seedWords.map((givenWord, innerIndex) => {
-                  const wordIndex = outerIndex + innerIndex
-                  return (
-                    <div className="col" key={wordIndex}>
-                      <MnemonicWordInput
-                        index={wordIndex}
-                        value={givenWord}
-                        setValue={(value) =>
-                          setMnemonicPhraseWords((words) =>
-                            words.map((old, index) => (index === wordIndex ? value : old))
-                          )
-                        }
-                        isValid={undefined}
-                        disabled={false}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })}
-        </div>
-        {showFillerButton && (
-          <rb.Button
-            variant="outline-dark"
-            className={styles.button}
-            onClick={() => setMnemonicPhraseWords(DUMMY_MNEMONIC_PHRASE.split(' '))}
-            disabled={false}
-          >
-            {t('import_wallet.mnemonic_phrase.__dev_fill_with_dummy_mnemonic_phrase')}
-          </rb.Button>
-        )}
-      </rb.Form>
-
-      <rb.Button
-        variant="dark"
-        className={styles.button}
-        onClick={() => {
-          if (isMnemonicPhraseValid) {
-            onSubmit(mnemonicPhraseWords.join(' '))
-          }
-        }}
-        disabled={!isMnemonicPhraseValid}
-      >
-        {t('import_wallet.mnemonic_phrase.text_button_submit')}
-      </rb.Button>
-
-      <div className="d-flex mt-4 mb-4 gap-4">
-        {/*<rb.Button
-          variant="outline-dark"
-          disabled={false}
-          className={styles.button}
-          onClick={() => {
-            // parentStepSetter()
-          }}
-        >
-          {t('create_wallet.back_button')}
-        </rb.Button>*/}
-      </div>
-    </div>
-  )
-}
-
-type ImportWalletDetailsFormValues = {
-  blockheight: number
-  gaplimit: number
-}
-
 const GAPLIMIT_SUGGESTIONS = {
-  default: 6,
   barely: 21,
   moderate: 121,
   heavy: 221,
 }
 
+const GAPLIMIT_DEFAULT = 6
 const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
+
+type ImportWalletDetailsFormValues = {
+  mnemonicPhraseWords: string[]
+  blockheight: number
+  gaplimit: number
+}
 
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
   ? {
+      mnemonicPhraseWords: new Array<string>(12).fill(''),
       blockheight: 0,
       gaplimit: GAPLIMIT_SUGGESTIONS.heavy,
     }
   : {
+      mnemonicPhraseWords: new Array<string>(12).fill(''),
       blockheight: SEGWIT_ACTIVATION_BLOCK,
       gaplimit: GAPLIMIT_SUGGESTIONS.barely,
     }
 
 interface ImportWalletDetailsFormProps {
-  walletInfo: WalletInfo
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
   onSubmit: (values: ImportWalletDetailsFormValues) => Promise<void>
 }
 
-const ImportWalletDetailsForm = ({ walletInfo, submitButtonText, onSubmit }: ImportWalletDetailsFormProps) => {
+const ImportWalletDetailsForm = ({ submitButtonText, onSubmit }: ImportWalletDetailsFormProps) => {
   const { t, i18n } = useTranslation()
+  const [__dev_showFillerButton] = useState(isDebugFeatureEnabled('importFillerMnemonicPhrase'))
+
+  const validate = useCallback(
+    (values: ImportWalletDetailsFormValues) => {
+      const errors = {} as FormikErrors<ImportWalletDetailsFormValues>
+      const isMnemonicPhraseValid = values.mnemonicPhraseWords.every((it) => it.length > 0)
+      if (!isMnemonicPhraseValid) {
+        errors.mnemonicPhraseWords = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
+      }
+
+      if (values.blockheight < 0) {
+        errors.blockheight = t('import_wallet.import_details.feedback_invalid_blockheight', {
+          min: 0,
+        })
+      }
+      if (values.gaplimit < 1) {
+        errors.gaplimit = t('import_wallet.import_details.feedback_invalid_gaplimit', {
+          min: 1,
+        })
+      }
+      return errors
+    },
+    [t]
+  )
 
   return (
-    <Formik
-      initialValues={initialImportWalletDetailsFormValues}
-      validate={(values) => {
-        const errors = {} as FormikErrors<ImportWalletDetailsFormValues>
-        if (values.blockheight < 0) {
-          errors.blockheight = t('rescan_chain.feedback_invalid_blockheight', {
-            min: 0,
-          })
-        }
-        if (values.gaplimit < 1) {
-          errors.gaplimit = t('rescan_chain.feedback_invalid_gaplimit', {
-            min: 1,
-          })
-        }
-        return errors
-      }}
-      onSubmit={onSubmit}
-    >
-      {({ handleSubmit, handleBlur, handleChange, values, touched, errors, isSubmitting, submitCount }) => (
+    <Formik initialValues={initialImportWalletDetailsFormValues} validate={validate} onSubmit={onSubmit}>
+      {({ handleSubmit, handleBlur, handleChange, setFieldValue, values, touched, errors, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-          <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
+          <div className="container slashed-zeroes p-0">
+            {values.mnemonicPhraseWords.map((_, outerIndex) => {
+              if (outerIndex % 2 !== 0) return null
+
+              const seedWords = values.mnemonicPhraseWords.slice(outerIndex, outerIndex + 2)
+
+              return (
+                <div className="row mb-4" key={outerIndex}>
+                  {seedWords.map((givenWord, innerIndex) => {
+                    const wordIndex = outerIndex + innerIndex
+                    return (
+                      <div className="col" key={wordIndex}>
+                        <MnemonicWordInput
+                          index={wordIndex}
+                          value={givenWord}
+                          setValue={(value) => {
+                            const newWords = values.mnemonicPhraseWords.map((old, index) =>
+                              index === wordIndex ? value : old
+                            )
+                            setFieldValue('mnemonicPhraseWords', newWords, true)
+                          }}
+                          isValid={undefined}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+          {__dev_showFillerButton && (
+            <rb.Button
+              variant="outline-dark"
+              className="w-100 mb-4"
+              onClick={() => setFieldValue('mnemonicPhraseWords', DUMMY_MNEMONIC_PHRASE.split(' '), true)}
+              disabled={isSubmitting}
+            >
+              {t('import_wallet.import_details.__dev_fill_with_dummy_mnemonic_phrase')}
+            </rb.Button>
+          )}
           <rb.Form.Group controlId="blockheight" className="mb-4">
-            <rb.Form.Label>{t('rescan_chain.label_blockheight')}</rb.Form.Label>
+            <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
             <rb.InputGroup hasValidation>
               <rb.InputGroup.Text id="blockheight-addon1">
                 <Sprite symbol="block" width="24" height="24" name="Block" />
               </rb.InputGroup.Text>
               <rb.Form.Control
-                aria-label={t('rescan_chain.label_blockheight')}
+                aria-label={t('import_wallet.import_details.label_blockheight')}
                 className="slashed-zeroes"
                 name="blockheight"
                 type="number"
@@ -182,13 +150,13 @@ const ImportWalletDetailsForm = ({ walletInfo, submitButtonText, onSubmit }: Imp
             </rb.InputGroup>
           </rb.Form.Group>
           <rb.Form.Group controlId="gaplimit" className="mb-4">
-            <rb.Form.Label>{t('rescan_chain.label_gaplimit')}</rb.Form.Label>
+            <rb.Form.Label>{t('import_wallet.import_details.label_gaplimit')}</rb.Form.Label>
             <rb.InputGroup hasValidation>
               <rb.InputGroup.Text id="gaplimit-addon1">
                 <Sprite symbol="gaplimit" width="24" height="24" name="Gaplimit" />
               </rb.InputGroup.Text>
               <rb.Form.Control
-                aria-label={t('rescan_chain.label_gaplimit')}
+                aria-label={t('import_wallet.import_details.label_gaplimit')}
                 className="slashed-zeroes"
                 name="gaplimit"
                 type="number"
@@ -204,6 +172,108 @@ const ImportWalletDetailsForm = ({ walletInfo, submitButtonText, onSubmit }: Imp
                 step="1"
               />
               <rb.Form.Control.Feedback type="invalid">{errors.gaplimit}</rb.Form.Control.Feedback>
+            </rb.InputGroup>
+          </rb.Form.Group>
+          <rb.Button className="w-100" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
+            <div className="d-flex justify-content-center align-items-center">
+              {isSubmitting ? (
+                <div className="d-flex justify-content-center align-items-center">
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="me-2"
+                  />
+                  {submitButtonText(isSubmitting)}
+                </div>
+              ) : (
+                submitButtonText(isSubmitting)
+              )}
+            </div>
+          </rb.Button>
+        </rb.Form>
+      )}
+    </Formik>
+  )
+}
+
+type ImportWalletConfirmationFormValues = {
+  walletDetails: WalletNameAndPassword
+  importDetails: ImportWalletDetailsFormValues
+}
+
+interface ImportWalletConfirmationProps {
+  walletDetails: WalletNameAndPassword
+  importDetails: ImportWalletDetailsFormValues
+  submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
+  onSubmit: (values: ImportWalletConfirmationFormValues) => Promise<void>
+}
+
+const ImportWalletConfirmation = ({
+  walletDetails,
+  importDetails,
+  submitButtonText,
+  onSubmit,
+}: ImportWalletConfirmationProps) => {
+  const { t, i18n } = useTranslation()
+
+  const walletInfo = useMemo<WalletInfo>(
+    () => ({
+      walletFileName: walletDetails.name + JM_WALLET_FILE_EXTENSION,
+      password: walletDetails.name,
+      seedphrase: importDetails.mnemonicPhraseWords.join(' '),
+    }),
+    []
+  )
+
+  return (
+    <Formik
+      initialValues={{
+        walletDetails,
+        importDetails,
+      }}
+      onSubmit={onSubmit}
+    >
+      {({ handleSubmit, values, isSubmitting, submitCount }) => (
+        <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
+          <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
+
+          <rb.Form.Group controlId="blockheight" className="mb-4">
+            <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
+            <rb.InputGroup hasValidation={false}>
+              <rb.InputGroup.Text id="blockheight-addon1">
+                <Sprite symbol="block" width="24" height="24" name="Block" />
+              </rb.InputGroup.Text>
+              <rb.Form.Control
+                aria-label={t('import_wallet.import_details.label_blockheight')}
+                className="slashed-zeroes"
+                name="blockheight"
+                type="number"
+                placeholder="0"
+                size="lg"
+                value={values.importDetails.blockheight}
+                disabled={true}
+              />
+            </rb.InputGroup>
+          </rb.Form.Group>
+          <rb.Form.Group controlId="gaplimit" className="mb-4">
+            <rb.Form.Label>{t('import_wallet.import_details.label_gaplimit')}</rb.Form.Label>
+            <rb.InputGroup hasValidation={false}>
+              <rb.InputGroup.Text id="gaplimit-addon1">
+                <Sprite symbol="gaplimit" width="24" height="24" name="Gaplimit" />
+              </rb.InputGroup.Text>
+              <rb.Form.Control
+                aria-label={t('import_wallet.import_details.label_gaplimit')}
+                className="slashed-zeroes"
+                name="gaplimit"
+                type="number"
+                placeholder="1"
+                size="lg"
+                value={values.importDetails.gaplimit}
+                disabled={true}
+              />
             </rb.InputGroup>
           </rb.Form.Group>
           <rb.Button className="w-100" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
@@ -248,8 +318,9 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
   const updateConfigValues = useUpdateConfigValues()
 
   const [alert, setAlert] = useState<SimpleAlert>()
-  const [walletNameAndPassword, setWalletNameAndPassword] = useState<{ name: string; password: string }>()
-  const [mnemonicPhrase, setMnemonicPhrase] = useState<string>()
+  const [walletNameAndPassword, setWalletNameAndPassword] = useState<WalletNameAndPassword>()
+  const [importDetailsFormValues, setImportDetailsFormValues] = useState<ImportWalletDetailsFormValues>()
+  //const [mnemonicPhrase, setMnemonicPhrase] = useState<string>()
   const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; token: Api.ApiToken }>()
 
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
@@ -286,10 +357,13 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
           wallet: { name: importedWalletFileName, token: recoverBody.token },
         })
           .then((it) => it[GAPLIMIT_CONFIGKEY.section] || {})
-          .then((it) => parseInt(it[GAPLIMIT_CONFIGKEY.field] || String(GAPLIMIT_SUGGESTIONS.default), 10))
+          .then((it) => parseInt(it[GAPLIMIT_CONFIGKEY.field] || String(GAPLIMIT_DEFAULT), 10))
+          .then((it) => it || GAPLIMIT_DEFAULT)
+
         if (isDevMode()) {
           console.debug('Will update gaplimit from %d to %d', currentGaplimit, gaplimit)
         }
+
         await updateConfigValues({
           signal,
           updates: [
@@ -347,21 +421,21 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
 
   const step = useMemo(() => {
     if (!walletNameAndPassword) return 'input-wallet-details'
-    if (!mnemonicPhrase) return 'input-mnemonic-phrase'
-    return 'confirm-inputs-and-start-recovery'
-  }, [walletNameAndPassword, mnemonicPhrase])
+    if (!importDetailsFormValues) return 'input-import-details'
+    return 'confirm-inputs-and-start-import'
+  }, [walletNameAndPassword, importDetailsFormValues])
 
   return (
     <div className="import-wallet">
       <>
         {step === 'input-wallet-details' && <PageTitle title={t('import_wallet.wallet_details.title')} />}
-        {step === 'input-mnemonic-phrase' && (
+        {step === 'input-import-details' && (
           <PageTitle
-            title={t('import_wallet.mnemonic_phrase.title')}
-            subtitle={t('import_wallet.mnemonic_phrase.subtitle')}
+            title={t('import_wallet.import_details.title')}
+            subtitle={t('import_wallet.import_details.subtitle')}
           />
         )}
-        {step === 'confirm-inputs-and-start-recovery' && <PageTitle title={t('import_wallet.confirmation.title')} />}
+        {step === 'confirm-inputs-and-start-import' && <PageTitle title={t('import_wallet.confirmation.title')} />}
       </>
       {!canRecover && !isRecovered && (
         <>
@@ -395,7 +469,7 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
         <>
           {step === 'input-wallet-details' && (
             <WalletCreationForm
-              onSubmit={async (name, password) => setWalletNameAndPassword({ name, password })}
+              onSubmit={async (value) => setWalletNameAndPassword(value)}
               submitButtonText={(isSubmitting) => (
                 <>
                   {t(
@@ -407,20 +481,24 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
               )}
             />
           )}
-          {step === 'input-mnemonic-phrase' && (
-            <MnemonicPhraseInputForm
-              onSubmit={(mnemonicPhrase) => {
-                setMnemonicPhrase(mnemonicPhrase)
-              }}
+          {step === 'input-import-details' && (
+            <ImportWalletDetailsForm
+              submitButtonText={(isSubmitting) => (
+                <>
+                  {t(
+                    isSubmitting
+                      ? 'import_wallet.import_details.text_button_submitting'
+                      : 'import_wallet.import_details.text_button_submit'
+                  )}
+                </>
+              )}
+              onSubmit={async (values) => setImportDetailsFormValues(values)}
             />
           )}
-          {step === 'confirm-inputs-and-start-recovery' && (
-            <ImportWalletDetailsForm
-              walletInfo={{
-                walletFileName: walletNameAndPassword?.name! + JM_WALLET_FILE_EXTENSION,
-                password: walletNameAndPassword?.password!,
-                seedphrase: mnemonicPhrase!,
-              }}
+          {step === 'confirm-inputs-and-start-import' && (
+            <ImportWalletConfirmation
+              walletDetails={walletNameAndPassword!}
+              importDetails={importDetailsFormValues!}
               submitButtonText={(isSubmitting) => (
                 <>
                   {t(
@@ -434,11 +512,11 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
                 const abortCtrl = new AbortController()
 
                 return recoverWallet(abortCtrl.signal, {
-                  walletname: walletNameAndPassword?.name! as Api.WalletName,
-                  password: walletNameAndPassword?.password!,
-                  seedphrase: mnemonicPhrase!,
-                  gaplimit: values.gaplimit,
-                  blockheight: values.blockheight,
+                  walletname: values.walletDetails.name as Api.WalletName,
+                  password: values.walletDetails.password,
+                  seedphrase: values.importDetails.mnemonicPhraseWords.join(' '),
+                  gaplimit: values.importDetails.gaplimit,
+                  blockheight: values.importDetails.blockheight,
                 })
               }}
             />
