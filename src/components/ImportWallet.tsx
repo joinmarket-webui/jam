@@ -13,7 +13,7 @@ import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm
 import MnemonicWordInput from './MnemonicWordInput'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
-import { routes } from '../constants/routes'
+import { routes, Route } from '../constants/routes'
 import { DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
 
 const GAPLIMIT_CONFIGKEY: ConfigKey = {
@@ -193,27 +193,16 @@ const ImportWalletDetailsForm = ({
               </rb.InputGroup>
             </rb.Form.Group>
           </Accordion>
-          <rb.Button className="w-100" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
+          <rb.Button className="w-100 mb-4" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
             <div className="d-flex justify-content-center align-items-center">
-              {isSubmitting ? (
-                <div className="d-flex justify-content-center align-items-center">
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="me-2"
-                  />
-                  {submitButtonText(isSubmitting)}
-                </div>
-              ) : (
-                submitButtonText(isSubmitting)
+              {isSubmitting && (
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               )}
+              {submitButtonText(isSubmitting)}
             </div>
           </rb.Button>
-          <div className="d-flex mt-4 mb-4 gap-4">
-            <rb.Button variant="outline-dark" disabled={isSubmitting} onClick={() => onCancel()}>
+          <div className="d-flex mb-4 gap-4">
+            <rb.Button variant="none" hidden={isSubmitting} disabled={isSubmitting} onClick={() => onCancel()}>
               <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
               {t('global.back')}
             </rb.Button>
@@ -252,7 +241,7 @@ const ImportWalletConfirmation = ({
       password: walletDetails.password,
       seedphrase: importDetails.mnemonicPhraseWords.join(' '),
     }),
-    []
+    [walletDetails, importDetails]
   )
 
   return (
@@ -303,34 +292,23 @@ const ImportWalletConfirmation = ({
               />
             </rb.InputGroup>
           </rb.Form.Group>
-          <rb.Button className="w-100" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
+          <rb.Button className="w-100 mb-4" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
             <div className="d-flex justify-content-center align-items-center">
-              {isSubmitting ? (
-                <div className="d-flex justify-content-center align-items-center">
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="me-2"
-                  />
-                  {submitButtonText(isSubmitting)}
-                </div>
-              ) : (
-                submitButtonText(isSubmitting)
+              {isSubmitting && (
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               )}
+              {submitButtonText(isSubmitting)}
             </div>
           </rb.Button>
 
           {isSubmitting && (
-            <div className="text-center text-muted small mt-4">
+            <div className="text-center text-muted small mb-4">
               <p>{t('create_wallet.hint_duration_text')}</p>
             </div>
           )}
 
-          <div className="d-flex mt-4 mb-4 gap-4">
-            <rb.Button variant="outline-dark" disabled={isSubmitting} onClick={() => onCancel()}>
+          <div className="d-flex mb-4 gap-4">
+            <rb.Button variant="none" hidden={isSubmitting} disabled={isSubmitting} onClick={() => onCancel()}>
               <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
               {t('global.back')}
             </rb.Button>
@@ -342,10 +320,11 @@ const ImportWalletConfirmation = ({
 }
 
 interface ImportWalletProps {
+  parentRoute: Route
   startWallet: (name: Api.WalletName, token: Api.ApiToken) => void
 }
 
-export default function ImportWallet({ startWallet }: ImportWalletProps) {
+export default function ImportWallet({ parentRoute, startWallet }: ImportWalletProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const serviceInfo = useServiceInfo()
@@ -522,33 +501,30 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
           {step === 'input-wallet-details' && (
             <WalletCreationForm
               initialValues={createWalletFormValues}
+              onCancel={() => navigate(routes[parentRoute])}
               onSubmit={async (values) => {
                 setCreateWalletFormValues(values)
                 nextStep()
               }}
-              submitButtonText={(isSubmitting) => (
-                <>
-                  {t(
-                    isSubmitting
-                      ? 'import_wallet.wallet_details.text_button_submitting'
-                      : 'import_wallet.wallet_details.text_button_submit'
-                  )}
-                </>
-              )}
+              submitButtonText={(isSubmitting) =>
+                t(
+                  isSubmitting
+                    ? 'import_wallet.wallet_details.text_button_submitting'
+                    : 'import_wallet.wallet_details.text_button_submit'
+                )
+              }
             />
           )}
           {step === 'input-import-details' && (
             <ImportWalletDetailsForm
               initialValues={importDetailsFormValues}
-              submitButtonText={(isSubmitting) => (
-                <>
-                  {t(
-                    isSubmitting
-                      ? 'import_wallet.import_details.text_button_submitting'
-                      : 'import_wallet.import_details.text_button_submit'
-                  )}
-                </>
-              )}
+              submitButtonText={(isSubmitting) =>
+                t(
+                  isSubmitting
+                    ? 'import_wallet.import_details.text_button_submitting'
+                    : 'import_wallet.import_details.text_button_submit'
+                )
+              }
               onCancel={() => previousStep()}
               onSubmit={async (values) => {
                 setImportDetailsFormValues(values)
@@ -560,15 +536,13 @@ export default function ImportWallet({ startWallet }: ImportWalletProps) {
             <ImportWalletConfirmation
               walletDetails={createWalletFormValues!}
               importDetails={importDetailsFormValues!}
-              submitButtonText={(isSubmitting) => (
-                <>
-                  {t(
-                    isSubmitting
-                      ? 'import_wallet.confirmation.text_button_submitting'
-                      : 'import_wallet.confirmation.text_button_submit'
-                  )}
-                </>
-              )}
+              submitButtonText={(isSubmitting) =>
+                t(
+                  isSubmitting
+                    ? 'import_wallet.confirmation.text_button_submitting'
+                    : 'import_wallet.confirmation.text_button_submit'
+                )
+              }
               onCancel={() => previousStep()}
               onSubmit={(values) => {
                 const abortCtrl = new AbortController()

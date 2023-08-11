@@ -85,7 +85,11 @@ export default function App() {
            * to the backend is down, e.g. "create-wallet" shows the seed quiz and it is important
            * that it stays visible in case the backend becomes unavailable.
            */}
-          <Route id="create-wallet" path={routes.createWallet} element={<CreateWallet startWallet={startWallet} />} />
+          <Route
+            id="create-wallet"
+            path={routes.createWallet}
+            element={<CreateWallet parentRoute={'home'} startWallet={startWallet} />}
+          />
 
           {sessionConnectionError ? (
             <Route
@@ -110,7 +114,7 @@ export default function App() {
               <Route
                 id="import-wallet"
                 path={routes.importWallet}
-                element={<ImportWallet startWallet={startWallet} />}
+                element={<ImportWallet parentRoute={'home'} startWallet={startWallet} />}
               />
               {currentWallet && (
                 <>

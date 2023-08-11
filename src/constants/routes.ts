@@ -12,3 +12,5 @@ export const routes = {
   rescanChain: '/rescan',
   __errorExample: '/error-example',
 }
+
+export type Route = keyof typeof routes

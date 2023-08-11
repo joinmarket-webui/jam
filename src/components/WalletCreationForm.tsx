@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
+import Sprite from './Sprite'
 import { sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
 
@@ -23,12 +24,14 @@ export type WalletNameAndPassword = { name: string; password: string }
 interface WalletCreationFormProps {
   initialValues?: CreateWalletFormValues
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
+  onCancel: () => void
   onSubmit: (values: CreateWalletFormValues) => Promise<void>
 }
 
 const WalletCreationForm = ({
   initialValues = initialCreateWalletFormValues,
   submitButtonText,
+  onCancel,
   onSubmit,
 }: WalletCreationFormProps) => {
   const { t, i18n } = useTranslation()
@@ -115,7 +118,7 @@ const WalletCreationForm = ({
               <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
               <rb.Form.Control.Feedback type="invalid">{errors.passwordConfirm}</rb.Form.Control.Feedback>
             </rb.Form.Group>
-            <rb.Button variant="dark" className={styles.button} type="submit" disabled={isSubmitting}>
+            <rb.Button className="w-100 mb-4" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <div className="d-flex justify-content-center align-items-center">
                   <rb.Spinner
@@ -132,12 +135,22 @@ const WalletCreationForm = ({
                 submitButtonText(isSubmitting)
               )}
             </rb.Button>
+            {isSubmitting && (
+              <div className="text-center text-muted small mb-4">
+                <p>{t('create_wallet.hint_duration_text')}</p>
+              </div>
+            )}
+            <rb.Button
+              className="w-100 mb-4"
+              variant="none"
+              hidden={isSubmitting}
+              disabled={isSubmitting}
+              onClick={() => onCancel()}
+            >
+              <Sprite symbol="cross" width="20" height="20" className="me-2" />
+              {t('global.cancel')}
+            </rb.Button>
           </rb.Form>
-          {isSubmitting && (
-            <div className="text-center text-muted small mt-4">
-              <p>{t('create_wallet.hint_duration_text')}</p>
-            </div>
-          )}
         </>
       )}
     </Formik>

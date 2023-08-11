@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import PageTitle from './PageTitle'
+import Sprite from './Sprite'
 import WalletCreationConfirmation from './WalletCreationConfirmation'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import WalletCreationForm from './WalletCreationForm'
@@ -77,7 +78,10 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
           className={styles.button}
           onClick={() => onCancel()}
         >
-          {t('create_wallet.back_button')}
+          <div className="d-flex justify-content-center align-items-center">
+            <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
+            {t('create_wallet.back_button')}
+          </div>
         </rb.Button>
 
         {showSkipButton && (
@@ -87,7 +91,10 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
             onClick={() => onSuccess()}
             disabled={isSeedBackupConfirmed}
           >
-            {t('create_wallet.skip_button')}
+            <div className="d-flex justify-content-center align-items-center">
+              {t('create_wallet.skip_button')}
+              <Sprite symbol="arrow-right" width="20" height="20" className="ms-2" />
+            </div>
           </rb.Button>
         )}
       </div>
@@ -95,7 +102,7 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
   )
 }
 
-export default function CreateWallet({ startWallet }) {
+export default function CreateWallet({ parentRoute, startWallet }) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
   const navigate = useNavigate()
@@ -154,10 +161,11 @@ export default function CreateWallet({ startWallet }) {
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {canCreate && (
         <WalletCreationForm
+          onCancel={() => navigate(routes[parentRoute])}
           onSubmit={createWallet}
-          submitButtonText={(isSubmitting) => (
-            <>{t(isSubmitting ? 'create_wallet.button_creating' : 'create_wallet.button_create')}</>
-          )}
+          submitButtonText={(isSubmitting) =>
+            t(isSubmitting ? 'create_wallet.button_creating' : 'create_wallet.button_create')
+          }
         />
       )}
       {isCreated && (
@@ -166,7 +174,7 @@ export default function CreateWallet({ startWallet }) {
             <>
               <WalletCreationConfirmation
                 wallet={createdWallet}
-                submitButtonText={(_) => <>{t('create_wallet.next_button')}</>}
+                submitButtonText={(_) => t('create_wallet.next_button')}
                 onSubmit={() => setShowBackupConfirmation(true)}
               />
             </>
