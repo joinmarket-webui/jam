@@ -8,6 +8,7 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import { ConfigKey, useRefreshConfigValues, useUpdateConfigValues } from '../context/ServiceConfigContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
+import Accordion from './Accordion'
 import WalletCreationForm, { WalletNameAndPassword } from './WalletCreationForm'
 import MnemonicWordInput from './MnemonicWordInput'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
@@ -124,56 +125,67 @@ const ImportWalletDetailsForm = ({ submitButtonText, onSubmit }: ImportWalletDet
               {t('import_wallet.import_details.__dev_fill_with_dummy_mnemonic_phrase')}
             </rb.Button>
           )}
-          <rb.Form.Group controlId="blockheight" className="mb-4">
-            <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
-            <rb.InputGroup hasValidation>
-              <rb.InputGroup.Text id="blockheight-addon1">
-                <Sprite symbol="block" width="24" height="24" name="Block" />
-              </rb.InputGroup.Text>
-              <rb.Form.Control
-                aria-label={t('import_wallet.import_details.label_blockheight')}
-                className="slashed-zeroes"
-                name="blockheight"
-                type="number"
-                placeholder="0"
-                size="lg"
-                value={values.blockheight}
-                disabled={isSubmitting}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                isValid={touched.blockheight && !errors.blockheight}
-                isInvalid={touched.blockheight && !!errors.blockheight}
-                min="0"
-                step="1000"
-              />
-              <rb.Form.Control.Feedback type="invalid">{errors.blockheight}</rb.Form.Control.Feedback>
-            </rb.InputGroup>
-          </rb.Form.Group>
-          <rb.Form.Group controlId="gaplimit" className="mb-4">
-            <rb.Form.Label>{t('import_wallet.import_details.label_gaplimit')}</rb.Form.Label>
-            <rb.InputGroup hasValidation>
-              <rb.InputGroup.Text id="gaplimit-addon1">
-                <Sprite symbol="gaplimit" width="24" height="24" name="Gaplimit" />
-              </rb.InputGroup.Text>
-              <rb.Form.Control
-                aria-label={t('import_wallet.import_details.label_gaplimit')}
-                className="slashed-zeroes"
-                name="gaplimit"
-                type="number"
-                placeholder="1"
-                size="lg"
-                value={values.gaplimit}
-                disabled={isSubmitting}
-                onBlur={handleBlur}
-                onChange={handleChange}
-                isValid={touched.gaplimit && !errors.gaplimit}
-                isInvalid={touched.gaplimit && !!errors.gaplimit}
-                min="1"
-                step="1"
-              />
-              <rb.Form.Control.Feedback type="invalid">{errors.gaplimit}</rb.Form.Control.Feedback>
-            </rb.InputGroup>
-          </rb.Form.Group>
+          <Accordion title={t('import_wallet.import_details.import_options')}>
+            <rb.Form.Group controlId="blockheight" className="mb-4">
+              <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
+              <rb.Form.Text className="d-block text-secondary mb-2">
+                {t('import_wallet.import_details.description_blockheight')}
+              </rb.Form.Text>
+              <rb.InputGroup hasValidation>
+                <rb.InputGroup.Text id="blockheight-addon1">
+                  <Sprite symbol="block" width="24" height="24" name="Block" />
+                </rb.InputGroup.Text>
+                <rb.Form.Control
+                  aria-label={t('import_wallet.import_details.label_blockheight')}
+                  className="slashed-zeroes"
+                  name="blockheight"
+                  type="number"
+                  placeholder="0"
+                  size="lg"
+                  value={values.blockheight}
+                  disabled={isSubmitting}
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  isValid={touched.blockheight && !errors.blockheight}
+                  isInvalid={touched.blockheight && !!errors.blockheight}
+                  min="0"
+                  step="1000"
+                  required
+                />
+                <rb.Form.Control.Feedback type="invalid">{errors.blockheight}</rb.Form.Control.Feedback>
+              </rb.InputGroup>
+            </rb.Form.Group>
+            <rb.Form.Group controlId="gaplimit" className="mb-4">
+              <rb.Form.Label>{t('import_wallet.import_details.label_gaplimit')}</rb.Form.Label>
+
+              <rb.Form.Text className="d-block text-secondary mb-2">
+                {t('import_wallet.import_details.description_gaplimit')}
+              </rb.Form.Text>
+              <rb.InputGroup hasValidation>
+                <rb.InputGroup.Text id="gaplimit-addon1">
+                  <Sprite symbol="gaplimit" width="24" height="24" name="Gaplimit" />
+                </rb.InputGroup.Text>
+                <rb.Form.Control
+                  aria-label={t('import_wallet.import_details.label_gaplimit')}
+                  className="slashed-zeroes"
+                  name="gaplimit"
+                  type="number"
+                  placeholder="1"
+                  size="lg"
+                  value={values.gaplimit}
+                  disabled={isSubmitting}
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  isValid={touched.gaplimit && !errors.gaplimit}
+                  isInvalid={touched.gaplimit && !!errors.gaplimit}
+                  min="1"
+                  step="1"
+                  required
+                />
+                <rb.Form.Control.Feedback type="invalid">{errors.gaplimit}</rb.Form.Control.Feedback>
+              </rb.InputGroup>
+            </rb.Form.Group>
+          </Accordion>
           <rb.Button className="w-100" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
             <div className="d-flex justify-content-center align-items-center">
               {isSubmitting ? (

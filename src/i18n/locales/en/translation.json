@@ -158,9 +158,12 @@
     "import_details": {
       "title": "Please enter your mnemonic phrase!",
       "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
-      "label_blockheight": "Blockheight",
+      "import_options": "Import options",
+      "label_blockheight": "Rescan height",
+      "description_blockheight": "The blockheight at which the rescan process starts to search for your funds. The earlier the wallet has been created, the lower this value should be. ",
       "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
       "label_gaplimit": "Gaplimit",
+      "description_gaplimit": "The number of unused addresses encountered beyond which no further addresses are imported. Increase this number if you created a lot of addresses which never received any funds.",
       "feedback_invalid_gaplimit": "Please provide a valid gaplimit value greater than or equal to {{ min }}.",
       "feedback_invalid_menmonic_phrase": "Please provide a valid mnemonic phrase",
       "text_button_submit": "Review",
