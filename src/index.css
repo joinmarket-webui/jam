@@ -590,7 +590,7 @@ h2 {
 }
 
 :root[data-theme='dark']
-  .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info) {
+  .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info):not(.border-light):not(.border-dark) {
   border-color: var(--bs-gray-800) !important;
 }
 

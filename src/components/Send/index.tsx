@@ -834,17 +834,19 @@ export default function Send({ wallet }: SendProps) {
                 minNumCollaborators={minNumCollaborators}
                 disabled={isLoading || isOperationDisabled}
               />
-              <AccordionInfo title={t('send.collaborators_fee_question')}>
-                <div className="mb-2">
+
+              <rb.Form.Label className="mb-0 mt-3">{t('send.fee_breakdown.title')}</rb.Form.Label>
+              <div className="mb-2">
+                <rb.Form.Text className="text-secondary">
                   <Trans
-                    i18nKey="send.collaborators_fee_info"
+                    i18nKey="send.fee_breakdown.subtitle"
                     components={{
                       a: <Link to={routes.settings} className="text-decoration-underline text-body" />,
                     }}
                   />
-                </div>
-                <FeeBreakdown numCollaborators={numCollaborators} amount={amount} isCoinjoin={isCoinjoin} />
-              </AccordionInfo>
+                </rb.Form.Text>
+              </div>
+              <FeeBreakdown numCollaborators={numCollaborators} amount={amount} isCoinjoin={isCoinjoin} />
             </div>
           </Accordion>
         </rb.Form>

@@ -1,10 +1,12 @@
 import { PropsWithChildren } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useEstimatedMaxCollaboratorFee, useFeeConfigValues, useMiningFeeText } from '../../hooks/Fees'
+import { useFeeConfigValues } from '../../hooks/Fees'
 import Balance from '../Balance'
 import * as rb from 'react-bootstrap'
-import Sprite from '../Sprite'
 import { useSettings } from '../../context/SettingsContext'
+import { Link } from 'react-router-dom'
+import { routes } from '../../constants/routes'
+import { formatSats } from '../../utils'
 
 interface FeeBreakdownProps {
   numCollaborators: number | null
@@ -12,13 +14,43 @@ interface FeeBreakdownProps {
   isCoinjoin: boolean
 }
 
+type FeeCardProps = {
+  amount: number | null
+  highlight?: boolean
+  subtitle?: React.ReactNode
+}
+const FeeCard = ({ amount, highlight, subtitle }: FeeCardProps) => {
+  const settings = useSettings()
+  const { t } = useTranslation()
+
+  return (
+    <rb.Card border={highlight ? (settings.theme === 'dark' ? 'light' : 'dark') : undefined}>
+      <rb.Card.Body className="text-center py-2">
+        <div style={{ fontSize: '1.2rem' }}>
+          {amount ? (
+            <Balance convertToUnit="sats" valueString={amount.toString()} showBalance={true} />
+          ) : (
+            t('send.fee_breakdown.too_low')
+          )}
+        </div>
+        <div style={{ fontSize: '0.8rem' }} className="text-secondary">
+          {subtitle}
+        </div>
+      </rb.Card.Body>
+    </rb.Card>
+  )
+}
+
 const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildren<FeeBreakdownProps>) => {
   const { t } = useTranslation()
   const feesConfig = useFeeConfigValues()
-  const maxCjRelativeFee = feesConfig?.max_cj_fee_rel
+
+  /** eg: "0.03%" */
+  const maxSettingsRelativeFee = feesConfig?.max_cj_fee_rel
     ? `${feesConfig.max_cj_fee_rel * 100}%`
     : t('send.fee_breakdown.not_set')
 
+  /** eg: 44658 (expressed in sats) */
   const maxEstimatedRelativeFee =
     feesConfig?.max_cj_fee_rel && numCollaborators && amount
       ? amount * feesConfig.max_cj_fee_rel * numCollaborators >= 1
@@ -26,94 +58,64 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
         : null
       : null
 
-  const maxCjAbsoluteFee = feesConfig?.max_cj_fee_abs
-    ? feesConfig?.max_cj_fee_abs.toString()
+  /** eg: "8,636 sats" */
+  const maxSettingsAbsoluteFee = feesConfig?.max_cj_fee_abs
+    ? `${formatSats(feesConfig.max_cj_fee_abs)} sats`
     : t('send.fee_breakdown.not_set')
+
+  /** eg: 77724 (expressed in sats) */
   const maxEstimatedAbsoluteFee =
     feesConfig?.max_cj_fee_abs && numCollaborators ? feesConfig.max_cj_fee_abs * numCollaborators : null
 
-  const miningFeeText = useMiningFeeText()
-  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({ amount, numCollaborators, isCoinjoin })
-  const settings = useSettings()
-
   return (
-    <div>
-      {maxEstimatedAbsoluteFee && (
-        <div className="d-flex justify-content-between text-secondary">
-          <div>
+    <rb.Row>
+      <rb.Col>
+        <rb.Form.Label className="mb-2">{t('send.fee_breakdown.absolute_limit')}</rb.Form.Label>
+        <FeeCard
+          amount={maxEstimatedAbsoluteFee}
+          subtitle={
             <Trans
-              i18nKey="send.fee_breakdown.absolute_limit"
+              i18nKey="send.fee_breakdown.fee_card_subtitle"
               components={{
-                balance: <Balance convertToUnit="sats" valueString={maxCjAbsoluteFee} showBalance={true} />,
+                a: <Link to={routes.settings} className="text-decoration-underline text-secondary" />,
               }}
-              values={{ num: numCollaborators }}
+              values={{
+                numCollaborators,
+                maxFee: maxSettingsAbsoluteFee,
+              }}
             />
-          </div>
-          <div>
-            <Balance convertToUnit="sats" valueString={maxEstimatedAbsoluteFee.toString()} showBalance={true} />
-          </div>
-        </div>
-      )}
-
-      <div className="d-flex justify-content-between text-secondary mb-2">
-        <div>
-          <Trans
-            i18nKey="send.fee_breakdown.or_relative_limit"
-            values={{ num: numCollaborators, percentage: maxCjRelativeFee }}
-          />
-        </div>
-        <div>
-          {amount ? (
-            maxEstimatedRelativeFee ? (
-              <Balance convertToUnit="sats" valueString={maxEstimatedRelativeFee.toString()} showBalance={true} />
-            ) : (
-              t('send.fee_breakdown.too_low')
-            )
-          ) : (
-            '-'
-          )}
-        </div>
-      </div>
-
-      <div className="d-flex justify-content-between" style={{ fontWeight: 600 }}>
-        <div style={{ gridColumnStart: 'span 2' }}>{t('send.fee_breakdown.total_estimate')}</div>
-        <div>
-          {estimatedMaxCollaboratorFee ? (
-            <Balance convertToUnit="sats" valueString={`${estimatedMaxCollaboratorFee ?? ''}`} showBalance={true} />
-          ) : (
-            '-'
-          )}
-        </div>
-      </div>
-      <div className="d-flex justify-content-between">
-        <div>
-          <span className="me-1">{t('send.fee_breakdown.plus_mining_fee')}</span>
-          <rb.OverlayTrigger
-            placement="right"
-            overlay={
-              <rb.Popover className={settings.theme === 'dark' ? 'border border-light' : 'border border-dark'}>
-                <rb.Popover.Header className={settings.theme === 'dark' ? 'text-bg-secondary' : undefined}>
-                  {t('send.fee_breakdown.why_cant_estimate_mining_fee')}
-                </rb.Popover.Header>
-                <rb.Popover.Body className={settings.theme === 'dark' ? 'text-bg-dark rounded-bottom' : undefined}>
-                  <Trans i18nKey="send.fee_breakdown.cant_estimate_mining_fee_info" components={{ br: <br /> }} />
-                </rb.Popover.Body>
-              </rb.Popover>
-            }
-          >
-            <div className="d-inline-flex align-items-center h-100">
-              <Sprite
-                className="rounded-circle border border-secondary text-body ms-1"
-                symbol="info"
-                width="13"
-                height="13"
-              />
-            </div>
-          </rb.OverlayTrigger>
-        </div>
-        <div>{miningFeeText}</div>
-      </div>
-    </div>
+          }
+          highlight={
+            maxEstimatedAbsoluteFee && maxEstimatedRelativeFee
+              ? maxEstimatedAbsoluteFee > maxEstimatedRelativeFee
+              : false
+          }
+        />
+      </rb.Col>
+      <rb.Col>
+        <rb.Form.Label className="mb-2">{t('send.fee_breakdown.relative_limit')}</rb.Form.Label>
+        <FeeCard
+          amount={maxEstimatedRelativeFee}
+          subtitle={
+            <Trans
+              i18nKey="send.fee_breakdown.fee_card_subtitle"
+              components={{
+                a: <Link to={routes.settings} className="text-decoration-underline text-secondary" />,
+              }}
+              values={{
+                numCollaborators,
+                maxFee: maxSettingsRelativeFee,
+              }}
+            />
+          }
+          highlight={
+            maxEstimatedAbsoluteFee && maxEstimatedRelativeFee
+              ? maxEstimatedRelativeFee > maxEstimatedAbsoluteFee
+              : false
+          }
+        />
+      </rb.Col>
+    </rb.Row>
   )
 }
 
