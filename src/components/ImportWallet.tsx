@@ -231,42 +231,19 @@ const ImportWalletConfirmation = ({
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
           <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
 
-          <rb.Form.Group controlId="blockheight" className="mb-4">
-            <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
-            <rb.InputGroup hasValidation={false}>
-              <rb.InputGroup.Text id="blockheight-addon1">
-                <Sprite symbol="block" width="24" height="24" name="Block" />
-              </rb.InputGroup.Text>
-              <rb.Form.Control
-                aria-label={t('import_wallet.import_details.label_blockheight')}
-                className="slashed-zeroes"
-                name="blockheight"
-                type="number"
-                placeholder="0"
-                size="lg"
-                value={values.importDetails.blockheight}
-                disabled={true}
-              />
-            </rb.InputGroup>
-          </rb.Form.Group>
-          <rb.Form.Group controlId="gaplimit" className="mb-4">
-            <rb.Form.Label>{t('import_wallet.import_details.label_gaplimit')}</rb.Form.Label>
-            <rb.InputGroup hasValidation={false}>
-              <rb.InputGroup.Text id="gaplimit-addon1">
-                <Sprite symbol="gaplimit" width="24" height="24" name="Gaplimit" />
-              </rb.InputGroup.Text>
-              <rb.Form.Control
-                aria-label={t('import_wallet.import_details.label_gaplimit')}
-                className="slashed-zeroes"
-                name="gaplimit"
-                type="number"
-                placeholder="1"
-                size="lg"
-                value={values.importDetails.gaplimit}
-                disabled={true}
-              />
-            </rb.InputGroup>
-          </rb.Form.Group>
+          <Accordion title={t('import_wallet.import_details.import_options')}>
+            <div className="mb-4">
+              <div>{t('import_wallet.import_details.label_blockheight')}</div>
+              <div className="text-secondary small">{t('import_wallet.import_details.description_blockheight')}</div>
+              <div className="fs-4">{values.importDetails.blockheight}</div>
+            </div>
+            <div className="mb-4">
+              <div>{t('import_wallet.import_details.label_gaplimit')}</div>
+              <div className="text-secondary small">{t('import_wallet.import_details.description_gaplimit')}</div>
+              <div className="fs-4">{values.importDetails.gaplimit}</div>
+            </div>
+          </Accordion>
+
           <rb.Button className="w-100 mb-4" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
             <div className="d-flex justify-content-center align-items-center">
               {isSubmitting && (
@@ -294,6 +271,12 @@ const ImportWalletConfirmation = ({
   )
 }
 
+enum ImportWalletSteps {
+  wallet_details,
+  import_details,
+  confirm_and_submit,
+}
+
 interface ImportWalletProps {
   parentRoute: Route
   startWallet: (name: Api.WalletName, token: Api.ApiToken) => void
@@ -317,14 +300,14 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
     [isRecovered, serviceInfo]
   )
 
-  const [step, setStep] = useState('input-wallet-details')
+  const [step, setStep] = useState<ImportWalletSteps>(ImportWalletSteps.wallet_details)
   const nextStep = () =>
     setStep((old) => {
       switch (step) {
-        case 'input-wallet-details':
-          return 'input-import-details'
-        case 'input-import-details':
-          return 'confirm-inputs-and-start-import'
+        case ImportWalletSteps.wallet_details:
+          return ImportWalletSteps.import_details
+        case ImportWalletSteps.import_details:
+          return ImportWalletSteps.confirm_and_submit
         default:
           return old
       }
@@ -332,10 +315,10 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   const previousStep = () =>
     setStep((old) => {
       switch (step) {
-        case 'input-import-details':
-          return 'input-wallet-details'
-        case 'confirm-inputs-and-start-import':
-          return 'input-import-details'
+        case ImportWalletSteps.import_details:
+          return ImportWalletSteps.wallet_details
+        case ImportWalletSteps.confirm_and_submit:
+          return ImportWalletSteps.import_details
         default:
           return old
       }
@@ -432,14 +415,14 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   return (
     <div className="import-wallet">
       <>
-        {step === 'input-wallet-details' && <PageTitle title={t('import_wallet.wallet_details.title')} />}
-        {step === 'input-import-details' && (
+        {step === ImportWalletSteps.wallet_details && <PageTitle title={t('import_wallet.wallet_details.title')} />}
+        {step === ImportWalletSteps.import_details && (
           <PageTitle
             title={t('import_wallet.import_details.title')}
             subtitle={t('import_wallet.import_details.subtitle')}
           />
         )}
-        {step === 'confirm-inputs-and-start-import' && <PageTitle title={t('import_wallet.confirmation.title')} />}
+        {step === ImportWalletSteps.confirm_and_submit && <PageTitle title={t('import_wallet.confirmation.title')} />}
       </>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {!canRecover && !isRecovered ? (
@@ -471,7 +454,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
       ) : (
         <>
           <PreventLeavingPageByMistake />
-          {step === 'input-wallet-details' && (
+          {step === ImportWalletSteps.wallet_details && (
             <WalletCreationForm
               initialValues={createWalletFormValues}
               onCancel={() => navigate(routes[parentRoute])}
@@ -488,7 +471,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
               }
             />
           )}
-          {step === 'input-import-details' && (
+          {step === ImportWalletSteps.import_details && (
             <ImportWalletDetailsForm
               initialValues={importDetailsFormValues}
               submitButtonText={(isSubmitting) =>
@@ -505,7 +488,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
               }}
             />
           )}
-          {step === 'confirm-inputs-and-start-import' && (
+          {step === ImportWalletSteps.confirm_and_submit && (
             <ImportWalletConfirmation
               walletDetails={createWalletFormValues!}
               importDetails={importDetailsFormValues!}
