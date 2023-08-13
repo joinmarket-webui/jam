@@ -9,9 +9,10 @@ import {
   RouterProvider,
   Outlet,
 } from 'react-router-dom'
+import classNames from 'classnames'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
-import { useSessionConnectionError } from '../context/ServiceInfoContext'
+import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
 import { clearSession, setSession } from '../session'
@@ -37,6 +38,7 @@ export default function App() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
+  const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
 
   const startWallet = useCallback(
@@ -157,5 +159,15 @@ export default function App() {
     )
   }
 
-  return <RouterProvider router={router} />
+  return (
+    <div
+      className={classNames({
+        'jm-coinjoin-in-progress': serviceInfo?.coinjoinInProgress === true,
+        'jm-rescan-in-progress': serviceInfo?.rescanning === true,
+        'jm-maker-running': serviceInfo?.makerRunning === true,
+      })}
+    >
+      <RouterProvider router={router} />
+    </div>
+  )
 }

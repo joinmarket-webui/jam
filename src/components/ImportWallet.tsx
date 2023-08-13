@@ -447,7 +447,8 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           {serviceInfo?.rescanning === true && (
             <rb.Alert variant="warning">
               <Trans i18nKey="import_wallet.alert_rescanning_already_in_progress">
-                Rescanning the timechain is currently in progress. Please wait till it finishes and then try again.
+                Rescanning the timechain is currently in progress. Please wait until the process finishes and then try
+                again.
                 <Link to={routes.walletList} className="alert-link">
                   Go back
                 </Link>
