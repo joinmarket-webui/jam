@@ -559,6 +559,10 @@ h2 {
   cursor: not-allowed;
 }
 
+.cursor-wait {
+  cursor: wait;
+}
+
 .accordion {
   --bs-accordion-color: var(--bs-black);
   --bs-accordion-active-color: var(--bs-black);

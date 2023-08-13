@@ -26,7 +26,6 @@ type ImportWalletDetailsFormValues = {
 
 const GAPLIMIT_SUGGESTIONS = {
   normal: JM_GAPLIMIT_DEFAULT,
-  moderate: JM_GAPLIMIT_DEFAULT * 2,
   heavy: JM_GAPLIMIT_DEFAULT * 4,
 }
 
@@ -123,8 +122,8 @@ const ImportWalletDetailsForm = ({
                   onChange={handleChange}
                   isValid={touched.blockheight && !errors.blockheight}
                   isInvalid={touched.blockheight && !!errors.blockheight}
-                  min="0"
-                  step="1000"
+                  min={0}
+                  step={1_000}
                   required
                 />
                 <rb.Form.Control.Feedback type="invalid">{errors.blockheight}</rb.Form.Control.Feedback>
@@ -153,8 +152,8 @@ const ImportWalletDetailsForm = ({
                   onChange={handleChange}
                   isValid={touched.gaplimit && !errors.gaplimit}
                   isInvalid={touched.gaplimit && !!errors.gaplimit}
-                  min="1"
-                  step="1"
+                  min={1}
+                  step={1}
                   required
                 />
                 <rb.Form.Control.Feedback type="invalid">{errors.gaplimit}</rb.Form.Control.Feedback>

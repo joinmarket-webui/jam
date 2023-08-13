@@ -262,7 +262,7 @@ export default function Jam({ wallet }: JamProps) {
   }, [currentSchedule, lastKnownSchedule, isWaitingSchedulerStop, walletInfo])
 
   const startSchedule = async (values: FormikValues) => {
-    if (isLoading || collaborativeOperationRunning) {
+    if (isLoading || collaborativeOperationRunning || serviceInfo?.rescanning === true) {
       return
     }
 
@@ -509,7 +509,7 @@ export default function Jam({ wallet }: JamProps) {
                             className={styles.submit}
                             variant="dark"
                             type="submit"
-                            disabled={isSubmitting || !isValid}
+                            disabled={isSubmitting || !isValid || serviceInfo?.rescanning === true}
                           >
                             <div className="d-flex justify-content-center align-items-center">
                               {t('scheduler.button_start')}

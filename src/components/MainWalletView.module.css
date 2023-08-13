@@ -15,6 +15,10 @@
   margin-bottom: 0.45rem;
 }
 
+:global(.jm-rescan-in-progress) .walletHeader {
+  cursor: wait;
+}
+
 :global(.jm-rescan-in-progress) .walletBody {
   filter: blur(2px);
 }

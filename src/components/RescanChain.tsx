@@ -60,8 +60,8 @@ const RescanChainForm = ({ submitButtonText, onSubmit }: RescanChainFormProps) =
                 onChange={handleChange}
                 isValid={touched.blockheight && !errors.blockheight}
                 isInvalid={touched.blockheight && !!errors.blockheight}
-                min="0"
-                step="1000"
+                min={0}
+                step={1_000}
               />
               <rb.Form.Control.Feedback type="invalid">{errors.blockheight}</rb.Form.Control.Feedback>
             </rb.InputGroup>
