@@ -22,12 +22,6 @@ const GAPLIMIT_CONFIGKEY: ConfigKey = {
   field: 'gaplimit',
 }
 
-const GAPLIMIT_SUGGESTIONS = {
-  barely: 21,
-  moderate: 121,
-  heavy: 221,
-}
-
 const GAPLIMIT_DEFAULT = 6
 const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
@@ -35,6 +29,12 @@ type ImportWalletDetailsFormValues = {
   mnemonicPhrase: MnemonicPhrase
   blockheight: number
   gaplimit: number
+}
+
+const GAPLIMIT_SUGGESTIONS = {
+  normal: GAPLIMIT_DEFAULT,
+  moderate: GAPLIMIT_DEFAULT * 2,
+  heavy: GAPLIMIT_DEFAULT * 4,
 }
 
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
@@ -46,7 +46,7 @@ const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDe
   : {
       mnemonicPhrase: new Array<string>(12).fill(''),
       blockheight: SEGWIT_ACTIVATION_BLOCK,
-      gaplimit: GAPLIMIT_SUGGESTIONS.barely,
+      gaplimit: GAPLIMIT_SUGGESTIONS.normal,
     }
 
 interface ImportWalletDetailsFormProps {
@@ -345,7 +345,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         const { walletname: importedWalletFileName } = recoverBody
         setRecoveredWallet({ walletFileName: importedWalletFileName, token: recoverBody.token })
 
-        // Step #2: update the gaplimit config value
+        // Step #2: update the gaplimit config value if necessary
         const originalGaplimit = await refreshConfigValues({
           signal,
           keys: [GAPLIMIT_CONFIGKEY],
@@ -355,18 +355,21 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           .then((it) => parseInt(it[GAPLIMIT_CONFIGKEY.field] || String(GAPLIMIT_DEFAULT), 10))
           .then((it) => it || GAPLIMIT_DEFAULT)
 
-        console.info('Will update gaplimit from %d to %d', originalGaplimit, gaplimit)
+        const gaplimitUpdateNecessary = gaplimit !== originalGaplimit
+        if (gaplimitUpdateNecessary) {
+          console.info('Will update gaplimit from %d to %d', originalGaplimit, gaplimit)
 
-        await updateConfigValues({
-          signal,
-          updates: [
-            {
-              key: GAPLIMIT_CONFIGKEY,
-              value: String(gaplimit),
-            },
-          ],
-          wallet: { name: importedWalletFileName, token: recoverBody.token },
-        })
+          await updateConfigValues({
+            signal,
+            updates: [
+              {
+                key: GAPLIMIT_CONFIGKEY,
+                value: String(gaplimit),
+              },
+            ],
+            wallet: { name: importedWalletFileName, token: recoverBody.token },
+          })
+        }
 
         // Step #3: lock and unlock the wallet (for new addresses to be imported)
         const lockResponse = await Api.getWalletLock({ walletName: importedWalletFileName, token: recoverBody.token })
@@ -375,18 +378,20 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         const unlockResponse = await Api.postWalletUnlock({ walletName: importedWalletFileName }, { password })
         const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
 
-        // Step #4: reset `gaplimit´ to previous value
-        console.info('Will reset gaplimit to previous value %d', originalGaplimit)
-        await updateConfigValues({
-          signal,
-          updates: [
-            {
-              key: GAPLIMIT_CONFIGKEY,
-              value: String(originalGaplimit),
-            },
-          ],
-          wallet: { name: importedWalletFileName, token: unlockBody.token },
-        })
+        // Step #4: reset `gaplimit´ to previous value if necessary
+        if (gaplimitUpdateNecessary) {
+          console.info('Will reset gaplimit to previous value %d', originalGaplimit)
+          await updateConfigValues({
+            signal,
+            updates: [
+              {
+                key: GAPLIMIT_CONFIGKEY,
+                value: String(originalGaplimit),
+              },
+            ],
+            wallet: { name: importedWalletFileName, token: unlockBody.token },
+          })
+        }
 
         // Step #5: invoke rescanning the timechain
         console.info('Will start rescanning timechain from block %d', blockheight)
