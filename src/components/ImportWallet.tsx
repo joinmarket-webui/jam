@@ -4,8 +4,8 @@ import { Formik, FormikErrors } from 'formik'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as Api from '../libs/JmWalletApi'
-import { useServiceInfo } from '../context/ServiceInfoContext'
-import { ConfigKey, useRefreshConfigValues, useUpdateConfigValues } from '../context/ServiceConfigContext'
+import { useServiceInfo, useDispatchServiceInfo } from '../context/ServiceInfoContext'
+import { useRefreshConfigValues, useUpdateConfigValues } from '../context/ServiceConfigContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import Accordion from './Accordion'
@@ -279,6 +279,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   const { t } = useTranslation()
   const navigate = useNavigate()
   const serviceInfo = useServiceInfo()
+  const dispatchServiceInfo = useDispatchServiceInfo()
   const refreshConfigValues = useRefreshConfigValues()
   const updateConfigValues = useUpdateConfigValues()
 
@@ -395,7 +396,13 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           token: unlockBody.token,
           blockheight,
         })
-        if (!rescanResponse.ok) await Api.Helper.throwError(rescanResponse)
+        if (!rescanResponse.ok) {
+          await Api.Helper.throwError(rescanResponse)
+        } else {
+          dispatchServiceInfo({
+            rescanning: true,
+          })
+        }
 
         startWallet(importedWalletFileName, unlockBody.token)
         navigate(routes.wallet)

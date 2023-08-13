@@ -3,7 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import * as Api from '../libs/JmWalletApi'
-import { useServiceInfo } from '../context/ServiceInfoContext'
+import { useServiceInfo, useDispatchServiceInfo } from '../context/ServiceInfoContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import { CurrentWallet } from '../context/WalletContext'
@@ -87,6 +87,7 @@ interface RescanChainProps {
 export default function RescanChain({ wallet }: RescanChainProps) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
+  const dispatchServiceInfo = useDispatchServiceInfo()
 
   const [alert, setAlert] = useState<SimpleAlert>()
 
@@ -98,6 +99,10 @@ export default function RescanChain({ wallet }: RescanChainProps) {
         const requestContext = { walletName: wallet.name, token: wallet.token }
         const res = await Api.getRescanBlockchain({ signal, ...requestContext, blockheight })
         if (!res.ok) await Api.Helper.throwError(res)
+
+        dispatchServiceInfo({
+          rescanning: true,
+        })
       } catch (e: any) {
         if (signal.aborted) return
 
