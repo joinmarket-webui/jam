@@ -24,29 +24,38 @@ const BalanceLoadingIndicator = () => {
 
 interface WalletPreviewProps {
   wallet: CurrentWallet
+  isRescanning?: boolean
   totalBalance?: AmountSats
   unit: Unit
   showBalance?: boolean
 }
 
-const WalletPreview = ({ wallet, totalBalance, unit, showBalance = false }: WalletPreviewProps) => {
+const WalletPreview = ({ wallet, isRescanning, totalBalance, unit, showBalance = false }: WalletPreviewProps) => {
+  const { t } = useTranslation()
+
   return (
     <div className="d-flex align-items-center">
       <Sprite symbol="wallet" width="30" height="30" className="text-body" />
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {totalBalance === undefined ? (
-          <BalanceLoadingIndicator />
-        ) : (
-          <div className="text-body">
-            <Balance
-              valueString={`${totalBalance}`}
-              convertToUnit={unit}
-              showBalance={showBalance}
-              enableVisibilityToggle={false}
-            />
-          </div>
-        )}
+        <div className="text-body">
+          {isRescanning ? (
+            <>{t('navbar.text_rescan_in_progress')}</>
+          ) : (
+            <>
+              {totalBalance === undefined ? (
+                <BalanceLoadingIndicator />
+              ) : (
+                <Balance
+                  valueString={`${totalBalance}`}
+                  convertToUnit={unit}
+                  showBalance={showBalance}
+                  enableVisibilityToggle={false}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -260,6 +269,7 @@ export default function Navbar() {
                     >
                       <WalletPreview
                         wallet={currentWallet}
+                        isRescanning={serviceInfo?.rescanning === true}
                         totalBalance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
                         showBalance={settings.showBalance}
                         unit={settings.unit}

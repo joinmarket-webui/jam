@@ -61,7 +61,7 @@ const WalletHeaderRescanning = ({ walletName, isLoading }: { walletName: string;
           <rb.Placeholder className={styles.subtitlePlaceholder} />
         </rb.Placeholder>
       ) : (
-        <h2>{t('Rescanning in progress..')}</h2>
+        <h2>{t('current_wallet.text_rescan_in_progress')}</h2>
       )}
     </div>
   )
