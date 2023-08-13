@@ -16,6 +16,7 @@ import languages from '../i18n/languages'
 import styles from './Settings.module.css'
 import SeedModal from './settings/SeedModal'
 import FeeConfigModal from './settings/FeeConfigModal'
+import { isDevMode } from '../constants/debugFeatures'
 
 export default function Settings({ wallet, stopWallet }) {
   const { t, i18n } = useTranslation()
@@ -225,10 +226,12 @@ export default function Settings({ wallet, stopWallet }) {
             )}
           </rb.Button>
 
-          <Link to={routes.rescanChain} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
-            <Sprite symbol="block" width="24" height="24" />
-            {t('settings.button_rescan_chain')}
-          </Link>
+          {isDevMode() && (
+            <Link to={routes.rescanChain} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
+              <Sprite symbol="block" width="24" height="24" />
+              {t('settings.button_rescan_chain')}
+            </Link>
+          )}
         </div>
 
         <div className={styles['section-title']}>{t('settings.section_title_community')}</div>

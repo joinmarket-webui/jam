@@ -7,28 +7,22 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import { CurrentWallet } from '../context/WalletContext'
-import { ConfigKey, useUpdateConfigValues } from '../context/ServiceConfigContext'
-
-const GAPLIMIT_CONFIGKEY: ConfigKey = {
-  section: 'POLICY',
-  field: 'gaplimit',
-}
+import { SEGWIT_ACTIVATION_BLOCK } from '../utils'
 
 type RescanChainFormValues = {
   blockheight: number
-  gaplimit: number
 }
 
 const initialRescanChainFormValues: RescanChainFormValues = {
-  blockheight: 0,
-  gaplimit: 6,
+  blockheight: SEGWIT_ACTIVATION_BLOCK,
 }
 
 interface RescanChainFormProps {
+  submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
   onSubmit: (values: RescanChainFormValues) => Promise<void>
 }
 
-const RescanChainForm = ({ onSubmit }: RescanChainFormProps) => {
+const RescanChainForm = ({ submitButtonText, onSubmit }: RescanChainFormProps) => {
   const { t, i18n } = useTranslation()
 
   return (
@@ -38,11 +32,6 @@ const RescanChainForm = ({ onSubmit }: RescanChainFormProps) => {
         const errors = {} as FormikErrors<RescanChainFormValues>
         if (values.blockheight < 0) {
           errors.blockheight = t('rescan_chain.feedback_invalid_blockheight', {
-            min: 0,
-          })
-        }
-        if (values.gaplimit < 0) {
-          errors.gaplimit = t('rescan_chain.feedback_invalid_gaplimit', {
             min: 0,
           })
         }
@@ -63,7 +52,7 @@ const RescanChainForm = ({ onSubmit }: RescanChainFormProps) => {
                 className="slashed-zeroes"
                 name="blockheight"
                 type="number"
-                placeholder="1"
+                placeholder="0"
                 size="lg"
                 value={values.blockheight}
                 disabled={isSubmitting}
@@ -72,28 +61,17 @@ const RescanChainForm = ({ onSubmit }: RescanChainFormProps) => {
                 isValid={touched.blockheight && !errors.blockheight}
                 isInvalid={touched.blockheight && !!errors.blockheight}
                 min="0"
-                step="1"
+                step="1000"
               />
               <rb.Form.Control.Feedback type="invalid">{errors.blockheight}</rb.Form.Control.Feedback>
             </rb.InputGroup>
           </rb.Form.Group>
           <rb.Button className="w-100" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
             <div className="d-flex justify-content-center align-items-center">
-              {isSubmitting ? (
-                <>
-                  <rb.Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                    className="me-2"
-                  />
-                  {t('rescan_chain.text_button_submitting')}
-                </>
-              ) : (
-                <>{t('rescan_chain.text_button_submit')}</>
+              {isSubmitting && (
+                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               )}
+              {submitButtonText(isSubmitting)}
             </div>
           </rb.Button>
         </rb.Form>
@@ -109,15 +87,12 @@ interface RescanChainProps {
 export default function RescanChain({ wallet }: RescanChainProps) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
-  const updateConfigValues = useUpdateConfigValues()
 
   const [alert, setAlert] = useState<SimpleAlert>()
-  // const [isStartRescanning, setIsStartRescanning] = useState<boolean>(false)
 
   const startChainRescan = useCallback(
     async (signal: AbortSignal, { blockheight }: { blockheight: number }) => {
       setAlert(undefined)
-      // setIsStartRescanning(true)
 
       try {
         const requestContext = { walletName: wallet.name, token: wallet.token }
@@ -130,8 +105,6 @@ export default function RescanChain({ wallet }: RescanChainProps) {
           reason: e.message || 'Unknown reason',
         })
         setAlert({ variant: 'danger', message })
-      } finally {
-        // setIsStartRescanning(false)
       }
     },
     [wallet, setAlert, t]
@@ -156,22 +129,15 @@ export default function RescanChain({ wallet }: RescanChainProps) {
             <>Rescan in progress...</>
           ) : (
             <RescanChainForm
+              submitButtonText={(isSubmitting) =>
+                t(isSubmitting ? 'rescan_chain.text_button_submitting' : 'rescan_chain.text_button_submit')
+              }
               onSubmit={async (values) => {
                 const abortCtrl = new AbortController()
 
-                return updateConfigValues({
-                  signal: abortCtrl.signal,
-                  updates: [
-                    {
-                      key: GAPLIMIT_CONFIGKEY,
-                      value: '205', //String(values.gaplimit),
-                    },
-                  ],
-                }).then(() =>
-                  startChainRescan(abortCtrl.signal, {
-                    blockheight: values.blockheight,
-                  })
-                )
+                return startChainRescan(abortCtrl.signal, {
+                  blockheight: values.blockheight,
+                })
               }}
             />
           )}

@@ -15,15 +15,8 @@ import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes, Route } from '../constants/routes'
-import { DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
-
-const GAPLIMIT_CONFIGKEY: ConfigKey = {
-  section: 'POLICY',
-  field: 'gaplimit',
-}
-
-const GAPLIMIT_DEFAULT = 6
-const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
+import { SEGWIT_ACTIVATION_BLOCK, DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
+import { JM_GAPLIMIT_DEFAULT, JM_GAPLIMIT_CONFIGKEY } from '../constants/config'
 
 type ImportWalletDetailsFormValues = {
   mnemonicPhrase: MnemonicPhrase
@@ -32,9 +25,9 @@ type ImportWalletDetailsFormValues = {
 }
 
 const GAPLIMIT_SUGGESTIONS = {
-  normal: GAPLIMIT_DEFAULT,
-  moderate: GAPLIMIT_DEFAULT * 2,
-  heavy: GAPLIMIT_DEFAULT * 4,
+  normal: JM_GAPLIMIT_DEFAULT,
+  moderate: JM_GAPLIMIT_DEFAULT * 2,
+  heavy: JM_GAPLIMIT_DEFAULT * 4,
 }
 
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
@@ -348,12 +341,12 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         // Step #2: update the gaplimit config value if necessary
         const originalGaplimit = await refreshConfigValues({
           signal,
-          keys: [GAPLIMIT_CONFIGKEY],
+          keys: [JM_GAPLIMIT_CONFIGKEY],
           wallet: { name: importedWalletFileName, token: recoverBody.token },
         })
-          .then((it) => it[GAPLIMIT_CONFIGKEY.section] || {})
-          .then((it) => parseInt(it[GAPLIMIT_CONFIGKEY.field] || String(GAPLIMIT_DEFAULT), 10))
-          .then((it) => it || GAPLIMIT_DEFAULT)
+          .then((it) => it[JM_GAPLIMIT_CONFIGKEY.section] || {})
+          .then((it) => parseInt(it[JM_GAPLIMIT_CONFIGKEY.field] || String(JM_GAPLIMIT_DEFAULT), 10))
+          .then((it) => it || JM_GAPLIMIT_DEFAULT)
 
         const gaplimitUpdateNecessary = gaplimit !== originalGaplimit
         if (gaplimitUpdateNecessary) {
@@ -363,7 +356,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
             signal,
             updates: [
               {
-                key: GAPLIMIT_CONFIGKEY,
+                key: JM_GAPLIMIT_CONFIGKEY,
                 value: String(gaplimit),
               },
             ],
@@ -385,7 +378,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
             signal,
             updates: [
               {
-                key: GAPLIMIT_CONFIGKEY,
+                key: JM_GAPLIMIT_CONFIGKEY,
                 value: String(originalGaplimit),
               },
             ],

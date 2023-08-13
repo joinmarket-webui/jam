@@ -1,5 +1,6 @@
 import * as fb from '../components/fb/utils'
 import { groupByJar, Utxos } from '../context/WalletContext'
+import { JM_TAKER_UTXO_AGE_DEFAULT } from '../constants/config'
 
 export type CoinjoinRequirementOptions = {
   minNumberOfUtxos: number // min amount of utxos available
@@ -9,7 +10,7 @@ export type CoinjoinRequirementOptions = {
 
 export const DEFAULT_REQUIREMENT_OPTIONS: CoinjoinRequirementOptions = {
   minNumberOfUtxos: 1,
-  minConfirmations: 5, // default of `taker_utxo_age` in jm config
+  minConfirmations: JM_TAKER_UTXO_AGE_DEFAULT,
 }
 
 export interface CoinjoinRequirementViolation {
