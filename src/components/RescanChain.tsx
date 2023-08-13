@@ -112,7 +112,7 @@ export default function RescanChain({ wallet }: RescanChainProps) {
         setAlert({ variant: 'danger', message })
       }
     },
-    [wallet, setAlert, t]
+    [wallet, setAlert, dispatchServiceInfo, t]
   )
 
   return (

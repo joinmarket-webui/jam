@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { Formik, FormikErrors } from 'formik'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
+import classNames from 'classnames'
 import * as Api from '../libs/JmWalletApi'
 import { useServiceInfo, useDispatchServiceInfo } from '../context/ServiceInfoContext'
 import { useRefreshConfigValues, useUpdateConfigValues } from '../context/ServiceConfigContext'
@@ -29,10 +30,13 @@ const GAPLIMIT_SUGGESTIONS = {
   heavy: JM_GAPLIMIT_DEFAULT * 4,
 }
 
+const MIN_BLOCKHEIGHT_VALUE = 0
+const MIN_GAPLIMIT_VALUE = 1
+
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
   ? {
       mnemonicPhrase: new Array<string>(12).fill(''),
-      blockheight: 0,
+      blockheight: MIN_BLOCKHEIGHT_VALUE,
       gaplimit: GAPLIMIT_SUGGESTIONS.heavy,
     }
   : {
@@ -65,14 +69,14 @@ const ImportWalletDetailsForm = ({
         errors.mnemonicPhrase = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
-      if (values.blockheight < 0) {
+      if (typeof values.blockheight !== 'number' || values.blockheight < MIN_BLOCKHEIGHT_VALUE) {
         errors.blockheight = t('import_wallet.import_details.feedback_invalid_blockheight', {
-          min: 0,
+          min: MIN_BLOCKHEIGHT_VALUE,
         })
       }
-      if (values.gaplimit < 1) {
+      if (typeof values.gaplimit !== 'number' || values.gaplimit < MIN_GAPLIMIT_VALUE) {
         errors.gaplimit = t('import_wallet.import_details.feedback_invalid_gaplimit', {
-          min: 1,
+          min: MIN_GAPLIMIT_VALUE,
         })
       }
       return errors
@@ -82,13 +86,34 @@ const ImportWalletDetailsForm = ({
 
   return (
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
-      {({ handleSubmit, handleBlur, handleChange, setFieldValue, values, touched, errors, isSubmitting }) => (
+      {({
+        handleSubmit,
+        handleBlur,
+        handleChange,
+        setFieldValue,
+        values,
+        touched,
+        errors,
+        isSubmitting,
+        submitCount,
+      }) => (
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
           <MnemonicPhraseInput
             mnemonicPhrase={values.mnemonicPhrase}
             onChange={(val) => setFieldValue('mnemonicPhrase', val, true)}
             isDisabled={(_) => isSubmitting}
           />
+          {!!errors.mnemonicPhrase && (
+            <>
+              <div
+                className={classNames('mb-2', 'text-danger', {
+                  hidden: submitCount === 0,
+                })}
+              >
+                {errors.mnemonicPhrase}
+              </div>
+            </>
+          )}
           {__dev_showFillerButton && (
             <rb.Button
               variant="outline-dark"
@@ -99,7 +124,17 @@ const ImportWalletDetailsForm = ({
               {t('import_wallet.import_details.__dev_fill_with_dummy_mnemonic_phrase')}
             </rb.Button>
           )}
-          <Accordion title={t('import_wallet.import_details.import_options')}>
+          <Accordion
+            title={
+              <span
+                className={classNames({
+                  'text-danger': !!errors.blockheight || !!errors.gaplimit,
+                })}
+              >
+                {t('import_wallet.import_details.import_options')}
+              </span>
+            }
+          >
             <rb.Form.Group controlId="blockheight" className="mb-4">
               <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
               <rb.Form.Text className="d-block text-secondary mb-2">
@@ -122,7 +157,7 @@ const ImportWalletDetailsForm = ({
                   onChange={handleChange}
                   isValid={touched.blockheight && !errors.blockheight}
                   isInvalid={touched.blockheight && !!errors.blockheight}
-                  min={0}
+                  min={MIN_BLOCKHEIGHT_VALUE}
                   step={1_000}
                   required
                 />
@@ -152,7 +187,7 @@ const ImportWalletDetailsForm = ({
                   onChange={handleChange}
                   isValid={touched.gaplimit && !errors.gaplimit}
                   isInvalid={touched.gaplimit && !!errors.gaplimit}
-                  min={1}
+                  min={MIN_GAPLIMIT_VALUE}
                   step={1}
                   required
                 />
@@ -413,7 +448,16 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         setAlert({ variant: 'danger', message })
       }
     },
-    [setRecoveredWallet, startWallet, navigate, setAlert, refreshConfigValues, updateConfigValues, t]
+    [
+      setRecoveredWallet,
+      startWallet,
+      navigate,
+      setAlert,
+      refreshConfigValues,
+      updateConfigValues,
+      dispatchServiceInfo,
+      t,
+    ]
   )
 
   return (

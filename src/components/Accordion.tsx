@@ -1,10 +1,10 @@
-import { PropsWithChildren, useState } from 'react'
+import React, { PropsWithChildren, useState } from 'react'
 import { useSettings } from '../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 
 interface AccordionProps {
-  title: string
+  title: string | React.ReactNode
   defaultOpen?: boolean
 }
 
