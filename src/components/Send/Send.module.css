@@ -157,7 +157,7 @@ input[type='number'] {
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   gap: 2rem;
   color: var(--bs-body-color);
   margin-bottom: 1.5rem;

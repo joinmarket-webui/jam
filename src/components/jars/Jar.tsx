@@ -14,6 +14,7 @@ type JarFillLevel = 0 | 1 | 2 | 3
 interface JarProps {
   index: JarIndex
   balance: AmountSats
+  frozenBalance: AmountSats
   fillLevel: JarFillLevel
   isOpen?: boolean
 }
@@ -83,7 +84,7 @@ const jarInitial = (index: JarIndex) => {
 /**
  * A jar with index and balance.
  */
-const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
+const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarProps) => {
   const settings = useSettings()
 
   const jarSymbol = useMemo(() => {
@@ -126,6 +127,16 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
         <div className={`${styles.jarBalance} jar-balance-container-hook`}>
           <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
         </div>
+        {frozenBalance && frozenBalance > 0 ? (
+          <div className={`${styles.jarBalance} ${styles.frozen} small jar-balance-container-hook`}>
+            <Sprite symbol="snowflake" width="14" height="14" />
+            <Balance
+              valueString={frozenBalance.toString()}
+              convertToUnit={settings.unit}
+              showBalance={settings.showBalance}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -137,6 +148,7 @@ const Jar = ({ index, balance, fillLevel, isOpen = false }: JarProps) => {
 const SelectableJar = ({
   index,
   balance,
+  frozenBalance,
   fillLevel,
   isSelectable,
   isSelected,
@@ -150,7 +162,7 @@ const SelectableJar = ({
       })}
       onClick={() => isSelectable && onClick(index)}
     >
-      <Jar index={index} balance={balance} fillLevel={fillLevel} />
+      <Jar index={index} balance={balance} frozenBalance={frozenBalance} fillLevel={fillLevel} />
       <div className={styles.selectionCircle}></div>
     </div>
   )
@@ -160,7 +172,14 @@ const SelectableJar = ({
  * A jar with index, balance, and a tooltip.
  * The jar symbol opens on hover.
  */
-const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarProps & TooltipJarProps) => {
+const OpenableJar = ({
+  index,
+  balance,
+  frozenBalance,
+  fillLevel,
+  tooltipText,
+  onClick,
+}: JarProps & TooltipJarProps) => {
   const [jarIsOpen, setJarIsOpen] = useState(false)
 
   const tooltipTarget = useRef(null)
@@ -192,7 +211,7 @@ const OpenableJar = ({ index, balance, fillLevel, tooltipText, onClick }: JarPro
       >
         {(props) => <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip>}
       </rb.Overlay>
-      <Jar index={index} balance={balance} fillLevel={fillLevel} isOpen={jarIsOpen} />
+      <Jar index={index} balance={balance} frozenBalance={frozenBalance} fillLevel={fillLevel} isOpen={jarIsOpen} />
     </div>
   )
 }
