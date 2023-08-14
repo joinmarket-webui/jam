@@ -177,20 +177,18 @@
       "text_button_submit": "Import",
       "text_button_submitting": "Importing..."
     },
-    "rescan": {
-      "text_button_submit": "Next: Rescan chain"
-    },
-    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}",
-    "error_rescanning_failed": "Error while rescanning the blockchain. Reason: {{ reason }}"
+    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}"
   },
   "rescan_chain": {
-    "title": "Rescan chain",
-    "subtitle": "Lorem ipsum",
-    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "title": "Rescan chain (Experimental)",
+    "subtitle": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
     "label_blockheight": "Blockheight",
+    "description_blockheight": "The height of the chain at which the rescan process is started.",
     "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
     "text_button_submit": "Rescan chain",
-    "text_button_submitting": "Rescan chain"
+    "text_button_submitting": "Rescan chain",
+    "alert_rescan_in_progress": "Rescanning in progress...",
+    "error_rescanning_failed": "Error while starting the rescan process. Reason: {{ reason }}"
   },
   "current_wallet": {
     "text_loading": "Loading",
@@ -227,7 +225,7 @@
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
     "button_create_wallet": "Create new wallet",
-    "button_rescan_chain": "Rescan chain",
+    "button_rescan_chain": "[dev] Rescan chain",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "documentation": "Documentation",

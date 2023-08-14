@@ -59,7 +59,7 @@ const ImportWalletDetailsForm = ({
   onSubmit,
 }: ImportWalletDetailsFormProps) => {
   const { t, i18n } = useTranslation()
-  const [__dev_showFillerButton] = useState(isDebugFeatureEnabled('importFillerMnemonicPhrase'))
+  const [__dev_showFillerButton] = useState(isDebugFeatureEnabled('importDummyMnemonicPhrase'))
 
   const validate = useCallback(
     (values: ImportWalletDetailsFormValues) => {

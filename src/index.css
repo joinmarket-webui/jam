@@ -435,10 +435,13 @@ footer .cheatsheet-link.nav-link {
   color: transparent;
   text-shadow: 0 0 15px var(--bs-gray-600);
 }
-
 :root[data-theme='dark'] .blurred-text {
   color: transparent;
   text-shadow: 0 0 15px var(--bs-gray-400);
+}
+
+.blurred {
+  filter: blur(2px);
 }
 
 /* Boostrap overrides */
