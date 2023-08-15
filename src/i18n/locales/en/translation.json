@@ -165,7 +165,7 @@
       "description_blockheight": "The blockheight at which the rescan process starts to search for your funds. The earlier the wallet has been created, the lower this value should be. ",
       "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
       "label_gaplimit": "Gaplimit",
-      "description_gaplimit": "The number of unused addresses encountered beyond which no further addresses are imported. Increase this number if you created a lot of addresses which never received any funds.",
+      "description_gaplimit": "Set to the highest address number used in any of the jars. Increase this number if your wallet is heavily used.",
       "feedback_invalid_gaplimit": "Please provide a valid gaplimit value greater than or equal to {{ min }}.",
       "feedback_invalid_menmonic_phrase": "Please provide a valid mnemonic phrase",
       "text_button_submit": "Review",
