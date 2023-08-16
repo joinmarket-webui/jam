@@ -6,9 +6,10 @@ import Sprite from './Sprite'
 interface AccordionProps {
   title: string | React.ReactNode
   defaultOpen?: boolean
+  disabled?: boolean
 }
 
-const Accordion = ({ title, defaultOpen = false, children }: PropsWithChildren<AccordionProps>) => {
+const Accordion = ({ title, defaultOpen = false, disabled = false, children }: PropsWithChildren<AccordionProps>) => {
   const settings = useSettings()
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
@@ -18,6 +19,7 @@ const Accordion = ({ title, defaultOpen = false, children }: PropsWithChildren<A
         variant={settings.theme}
         className="d-flex align-items-center bg-transparent border-0 w-100 px-0 py-2"
         onClick={() => setIsOpen((current) => !current)}
+        disabled={disabled}
       >
         {title}
         <Sprite symbol={`caret-${isOpen ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />

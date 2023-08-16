@@ -30,7 +30,8 @@
     }
   },
   "app": {
-    "alert_no_connection": "No connection to backend: {{ connectionError }}"
+    "alert_no_connection": "No connection to backend: {{ connectionError }}",
+    "alert_rescan_in_progress": "Rescanning in progress..."
   },
   "navbar": {
     "title": "Jam",
@@ -151,7 +152,7 @@
   },
   "import_wallet": {
     "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",
-    "alert_rescanning_already_in_progress": "Rescanning the timechain is currently in progress. Please wait until the process finishes and then try again. <1>Go back</1>.",
+    "alert_rescan_in_progress": "Rescanning the timechain is currently in progress. Please wait until the process finishes and then try again. <1>Go back</1>.",
     "wallet_details": {
       "title": "Import Wallet",
       "text_button_submit": "Continue",
@@ -187,7 +188,6 @@
     "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
     "text_button_submit": "Rescan chain",
     "text_button_submitting": "Rescan chain",
-    "alert_rescan_in_progress": "Rescanning in progress...",
     "error_rescanning_failed": "Error while starting the rescan process. Reason: {{ reason }}"
   },
   "current_wallet": {

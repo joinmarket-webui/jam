@@ -138,9 +138,7 @@ export default function RescanChain({ wallet }: RescanChainProps) {
       <PageTitle title={t('rescan_chain.title')} subtitle={t('rescan_chain.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <div className="mb-4">
-        {serviceInfo?.rescanning === true && (
-          <rb.Alert variant="success">{t('rescan_chain.alert_rescan_in_progress')}</rb.Alert>
-        )}
+        {serviceInfo?.rescanning === true && <rb.Alert variant="success">{t('app.alert_rescan_in_progress')}</rb.Alert>}
         <RescanChainForm
           disabled={serviceInfo?.rescanning}
           submitButtonText={(isSubmitting) =>
