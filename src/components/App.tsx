@@ -161,7 +161,7 @@ export default function App() {
 
   return (
     <div
-      className={classNames({
+      className={classNames('app', {
         'jm-coinjoin-in-progress': serviceInfo?.coinjoinInProgress === true,
         'jm-rescan-in-progress': serviceInfo?.rescanning === true,
         'jm-maker-running': serviceInfo?.makerRunning === true,

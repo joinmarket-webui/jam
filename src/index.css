@@ -190,11 +190,11 @@ html {
 
 html,
 body,
-#root {
+#root .app {
   min-height: 100vh;
 }
 
-#root {
+#root .app {
   display: flex;
   flex-direction: column;
 }
