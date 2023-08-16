@@ -57,8 +57,8 @@
   height: 2rem;
 }
 
-:global(.jm-rescan-in-progress) .dividerButton {
-  cursor: default;
+.jarsDividerContainer .dividerButton:disabled {
+  cursor: not-allowed;
 }
 
 .sendReceiveButton {

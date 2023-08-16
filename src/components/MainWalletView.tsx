@@ -168,7 +168,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
           <rb.Col xs={10} md={8}>
             <rb.Row>
               <rb.Col>
-                {/* Always receive on first mixdepth. */}
+                {/* Always receive to first jar. */}
                 <ExtendedLink
                   to={routes.receive}
                   state={{ account: 0 }}
@@ -182,8 +182,6 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
                 </ExtendedLink>
               </rb.Col>
               <rb.Col>
-                {/* Todo: Withdrawing needs to factor in the privacy levels as well.
-              Depending on the mixdepth/account there will be different amounts available. */}
                 <ExtendedLink
                   to={routes.send}
                   className={`${styles.sendReceiveButton} btn btn-outline-dark w-100`}
@@ -198,7 +196,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
             </rb.Row>
           </rb.Col>
         </rb.Row>
-        <rb.Collapse in={showJars}>
+        <rb.Collapse in={!serviceInfo?.rescanning && showJars}>
           <rb.Row>
             <div className="mb-5">
               <div>
@@ -221,9 +219,13 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
           <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
             <div className={styles.jarsDividerContainer}>
               <hr className={styles.dividerLine} />
-              <div className={styles.dividerButton} onClick={() => setShowJars((current) => !current)}>
+              <button
+                className={styles.dividerButton}
+                disabled={serviceInfo?.rescanning}
+                onClick={() => setShowJars((current) => !current)}
+              >
                 <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
-              </div>
+              </button>
               <hr className={styles.dividerLine} />
             </div>
           </rb.Col>
