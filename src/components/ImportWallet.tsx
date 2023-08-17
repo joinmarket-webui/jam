@@ -134,6 +134,7 @@ const ImportWalletDetailsForm = ({
                 {t('import_wallet.import_details.import_options')}
               </span>
             }
+            defaultOpen={true}
           >
             <rb.Form.Group controlId="blockheight" className="mb-4">
               <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
