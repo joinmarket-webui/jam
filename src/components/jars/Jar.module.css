@@ -75,7 +75,7 @@
 
 .selectableJarContainer:not(.selectable) {
   color: var(--bs-gray-600);
-  cursor: none;
+  cursor: not-allowed;
 }
 
 .selectableJarContainer .selectionCircle {
