@@ -204,21 +204,26 @@ export default function App() {
   )
 }
 
+const RELOAD_WALLET_INFO_DELAY: {
+  AFTER_RESCAN: Milliseconds
+  AFTER_UNLOCK: Milliseconds
+} = {
+  // After rescanning, it is necessary to give the JM backend some time to synchronize.
+  // A couple of seconds should be enough, however, this depends on the user hardware
+  // and the delay might need to be increased if users encounter problems, e.g. the
+  // balance changes again when switching views.
+  // As reference: 4 seconds was not enough, even on regtest. But keep in mind, this only
+  // takes effect after rescanning the chain, which should happen quite infrequently.
+  AFTER_RESCAN: 8_000,
+
+  // No delay is needed after normal unlock of wallet
+  AFTER_UNLOCK: 0,
+}
+
 interface WalletInfoAutoReloadProps {
   currentWallet: CurrentWallet | null
   reloadWalletInfo: (delay: Milliseconds) => Promise<void>
 }
-
-// It is necessary to give the JM backend some time to synchronize. A couple of seconds
-// should be enough, however, this depends on the user hardware and the delay might
-// need to be increased if users encounter problems, e.g. the balance changes again
-// when switching views, after importing an existing wallet.
-// As reference: 4 seconds was not enough, even on regtest. But keep in mind, this only
-// takes effect after rescanning the chain, which should happen quite infrequently.
-const RELOAD_WALLET_INFO_AFTER_RESCAN_DELAY: Milliseconds = 8_000
-
-// No delay is needed after normal unlock of wallet
-const RELOAD_WALLET_INFO_AFTER_UNLOCK_DELAY: Milliseconds = 0
 
 /**
  * A component that automatically reloads wallet information on certain state changes,
@@ -244,18 +249,18 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
   }, [serviceInfo, currentRescanning])
 
   useEffect(
-    function reloadAfterWalletChanges() {
+    function reloadAfterUnlock() {
       if (currentWallet) {
-        reloadWalletInfo(RELOAD_WALLET_INFO_AFTER_UNLOCK_DELAY).catch((err) => console.error(err))
+        reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_UNLOCK).catch((err) => console.error(err))
       }
     },
     [currentWallet, reloadWalletInfo]
   )
 
   useEffect(
-    function reloadAfterRescanFinished() {
+    function reloadAfterRescan() {
       if (currentWallet && rescaningFinished) {
-        reloadWalletInfo(RELOAD_WALLET_INFO_AFTER_RESCAN_DELAY).catch((err) => console.error(err))
+        reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN).catch((err) => console.error(err))
       }
     },
     [currentWallet, rescaningFinished, reloadWalletInfo]
