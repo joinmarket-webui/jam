@@ -15,6 +15,7 @@ import { routes } from '../constants/routes'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
 import {
+  WalletInfo,
   CurrentWallet,
   useCurrentWallet,
   useSetCurrentWallet,
@@ -46,7 +47,8 @@ export default function App() {
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
-  const [isReloadingWalletInfo, setIsReloadingWalletInfo] = useState(false)
+  const [reloadingWalletInfoCounter, setReloadingWalletInfoCounter] = useState(0)
+  const isReloadingWalletInfo = useMemo(() => reloadingWalletInfoCounter > 0, [reloadingWalletInfoCounter])
 
   const startWallet = useCallback(
     (name: Api.WalletName, token: Api.ApiToken) => {
@@ -63,18 +65,18 @@ export default function App() {
 
   const reloadWalletInfo = useCallback(
     (delay: Milliseconds) => {
-      setIsReloadingWalletInfo(true)
+      setReloadingWalletInfoCounter((current) => current + 1)
       console.info('Reloading wallet info...')
-      return new Promise<void>((resolve, reject) =>
+      return new Promise<WalletInfo>((resolve, reject) =>
         setTimeout(() => {
           const abortCtrl = new AbortController()
           reloadCurrentWalletInfo
             .reloadAll({ signal: abortCtrl.signal })
-            .then((_) => resolve())
+            .then((result) => resolve(result))
             .catch((error) => reject(error))
             .finally(() => {
               console.info('Finished reloading wallet info.')
-              setIsReloadingWalletInfo(false)
+              setReloadingWalletInfoCounter((current) => current - 1)
             })
         }, delay)
       )
@@ -220,9 +222,11 @@ const RELOAD_WALLET_INFO_DELAY: {
   AFTER_UNLOCK: 0,
 }
 
+const MAX_RECURSIVE_WALLET_INFO_RELOADS = 10
+
 interface WalletInfoAutoReloadProps {
   currentWallet: CurrentWallet | null
-  reloadWalletInfo: (delay: Milliseconds) => Promise<void>
+  reloadWalletInfo: (delay: Milliseconds) => Promise<WalletInfo>
 }
 
 /**
@@ -238,7 +242,7 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
   const serviceInfo = useServiceInfo()
   const [previousRescanning, setPreviousRescanning] = useState(serviceInfo?.rescanning || false)
   const [currentRescanning, setCurrentRescanning] = useState(serviceInfo?.rescanning || false)
-  const rescaningFinished = useMemo(
+  const rescanningFinished = useMemo(
     () => previousRescanning === true && currentRescanning === false,
     [previousRescanning, currentRescanning]
   )
@@ -250,20 +254,46 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
 
   useEffect(
     function reloadAfterUnlock() {
-      if (currentWallet) {
-        reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_UNLOCK).catch((err) => console.error(err))
-      }
+      if (!currentWallet) return
+
+      reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_UNLOCK).catch((err) => console.error(err))
     },
     [currentWallet, reloadWalletInfo]
   )
 
   useEffect(
     function reloadAfterRescan() {
-      if (currentWallet && rescaningFinished) {
-        reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN).catch((err) => console.error(err))
+      if (!currentWallet || !rescanningFinished) return
+
+      // Hacky: If the balance changes after a reload, the backend might still not have been fully synchronized - try again!
+      // Hint 1: Wallet might be empty in the first
+      // Hint 2: Just because wallet balance did not change, it does not mean everything has been found.
+      const reloadWhileBalanceChangesRecursively = async (
+        currentBalance: Api.AmountSats,
+        delay: Milliseconds,
+        callCounter: number,
+        maxCalls: number
+      ) => {
+        if (callCounter >= maxCalls) return
+        const info = await reloadWalletInfo(delay)
+        const newBalance = info.balanceSummary.calculatedTotalBalanceInSats
+        if (newBalance > currentBalance) {
+          await reloadWhileBalanceChangesRecursively(newBalance, callCounter++, maxCalls, delay)
+        }
       }
+
+      reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN)
+        .then((info) =>
+          reloadWhileBalanceChangesRecursively(
+            info.balanceSummary.calculatedTotalBalanceInSats,
+            RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN,
+            0,
+            MAX_RECURSIVE_WALLET_INFO_RELOADS
+          )
+        )
+        .catch((err) => console.error(err))
     },
-    [currentWallet, rescaningFinished, reloadWalletInfo]
+    [currentWallet, rescanningFinished, reloadWalletInfo]
   )
 
   return <></>

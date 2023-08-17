@@ -115,7 +115,7 @@ interface WalletContextEntry {
   setCurrentWallet: React.Dispatch<React.SetStateAction<CurrentWallet | null>>
   currentWalletInfo: WalletInfo | undefined
   reloadCurrentWalletInfo: {
-    reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<void>
+    reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
     reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<UtxosResponse>
   }
 }
@@ -244,9 +244,10 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   )
 
   const reloadAll = useCallback(
-    async ({ signal }: { signal: AbortSignal }): Promise<void> => {
-      await Promise.all([reloadUtxos({ signal }), reloadDisplay({ signal })])
-    },
+    ({ signal }: { signal: AbortSignal }): Promise<WalletInfo> =>
+      Promise.all([reloadUtxos({ signal }), reloadDisplay({ signal })])
+        .then((data) => toCombinedRawData(data[0], data[1]))
+        .then((raw) => toWalletInfo(raw)),
     [reloadUtxos, reloadDisplay]
   )
 
