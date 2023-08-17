@@ -6,3 +6,15 @@
 .balancePlaceholder {
   width: 7.5rem;
 }
+
+.loadingIndicator {
+  display: none !important;
+}
+
+:global(.jam-reload-wallet-info-in-progress) .walletSprite {
+  display: none !important;
+}
+
+:global(.jam-reload-wallet-info-in-progress) .loadingIndicator {
+  display: inline-block !important;
+}

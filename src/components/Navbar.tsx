@@ -36,7 +36,17 @@ const WalletPreview = ({ wallet, rescanInProgress, totalBalance, unit, showBalan
 
   return (
     <div className="d-flex align-items-center">
-      <Sprite symbol="wallet" width="30" height="30" className="text-body" />
+      <div className="d-flex align-items-center justify-content-center text-body" style={{ minWidth: '2rem' }}>
+        <Sprite className={styles.walletSprite} symbol="wallet" width="30" height="30" />
+        <rb.Spinner
+          className={styles.loadingIndicator}
+          as="span"
+          animation="border"
+          size="sm"
+          role="status"
+          aria-hidden="true"
+        />
+      </div>
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
         <div className="text-body">

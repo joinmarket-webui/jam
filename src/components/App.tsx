@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import {
@@ -14,7 +14,12 @@ import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { useSettings } from '../context/SettingsContext'
-import { useCurrentWallet, useSetCurrentWallet } from '../context/WalletContext'
+import {
+  CurrentWallet,
+  useCurrentWallet,
+  useSetCurrentWallet,
+  useReloadCurrentWalletInfo,
+} from '../context/WalletContext'
 import { clearSession, setSession } from '../session'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import CreateWallet from './CreateWallet'
@@ -38,8 +43,10 @@ export default function App() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
+  const [isReloadingWalletInfo, setIsReloadingWalletInfo] = useState(false)
 
   const startWallet = useCallback(
     (name: Api.WalletName, token: Api.ApiToken) => {
@@ -53,6 +60,27 @@ export default function App() {
     clearSession()
     setCurrentWallet(null)
   }, [setCurrentWallet])
+
+  const reloadWalletInfo = useCallback(
+    (delay: Milliseconds) => {
+      setIsReloadingWalletInfo(true)
+      console.info('Reloading wallet info...')
+      return new Promise<void>((resolve, reject) =>
+        setTimeout(() => {
+          const abortCtrl = new AbortController()
+          reloadCurrentWalletInfo
+            .reloadUtxos({ signal: abortCtrl.signal })
+            .then((_) => resolve())
+            .catch((error) => reject(error))
+            .finally(() => {
+              console.info('Finished reloading wallet info.')
+              setIsReloadingWalletInfo(false)
+            })
+        }, delay)
+      )
+    },
+    [reloadCurrentWalletInfo]
+  )
 
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -160,14 +188,58 @@ export default function App() {
   }
 
   return (
-    <div
-      className={classNames('app', {
-        'jm-coinjoin-in-progress': serviceInfo?.coinjoinInProgress === true,
-        'jm-rescan-in-progress': serviceInfo?.rescanning === true,
-        'jm-maker-running': serviceInfo?.makerRunning === true,
-      })}
-    >
-      <RouterProvider router={router} />
-    </div>
+    <>
+      <div
+        className={classNames('app', {
+          'jam-reload-wallet-info-in-progress': isReloadingWalletInfo,
+          'jm-coinjoin-in-progress': serviceInfo?.coinjoinInProgress === true,
+          'jm-rescan-in-progress': serviceInfo?.rescanning === true,
+          'jm-maker-running': serviceInfo?.makerRunning === true,
+        })}
+      >
+        <RouterProvider router={router} />
+      </div>
+      <WalletInfoAutoReload currentWallet={currentWallet} reloadWalletInfo={reloadWalletInfo} />
+    </>
   )
+}
+
+interface WalletInfoAutoReloadProps {
+  currentWallet: CurrentWallet | null
+  reloadWalletInfo: (delay: Milliseconds) => Promise<void>
+}
+
+// It is necessary to give the JM backend some time to synchronize. A couple of seconds
+// should be enough, however, this depends on the user hardware and the delay might
+// need to be increased if users encounter problems, e.g. the balance changes again
+// when switching views, after importing an existing wallet.
+// As reference: 4 seconds was not enough, even on regtest. But keep in mind, this only
+// takes effect after rescanning the chain, which should happen quite infrequently.
+const RELOAD_WALLLET_INFO_AFTER_RESCAN_DELAY: Milliseconds = 8_000
+
+/**
+ * A component that automatically reloads wallet information on certain state changes,
+ * e.g. when rescanning the chain finished successfully.
+ */
+const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAutoReloadProps) => {
+  const serviceInfo = useServiceInfo()
+  const [previousRescanning, setPreviousRescanning] = useState(serviceInfo?.rescanning || false)
+  const [currentRescanning, setCurrentRescanning] = useState(serviceInfo?.rescanning || false)
+  const rescaningFinished = useMemo(
+    () => previousRescanning === true && currentRescanning === false,
+    [previousRescanning, currentRescanning]
+  )
+
+  useEffect(() => {
+    setPreviousRescanning(currentRescanning)
+    setCurrentRescanning(serviceInfo?.rescanning || false)
+  }, [serviceInfo, currentRescanning])
+
+  useEffect(() => {
+    if (currentWallet && rescaningFinished) {
+      reloadWalletInfo(RELOAD_WALLLET_INFO_AFTER_RESCAN_DELAY).catch((err) => console.error(err))
+    }
+  }, [currentWallet, rescaningFinished, reloadWalletInfo])
+
+  return <></>
 }
