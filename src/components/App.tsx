@@ -69,7 +69,7 @@ export default function App() {
         setTimeout(() => {
           const abortCtrl = new AbortController()
           reloadCurrentWalletInfo
-            .reloadUtxos({ signal: abortCtrl.signal })
+            .reloadAll({ signal: abortCtrl.signal })
             .then((_) => resolve())
             .catch((error) => reject(error))
             .finally(() => {
@@ -215,11 +215,19 @@ interface WalletInfoAutoReloadProps {
 // when switching views, after importing an existing wallet.
 // As reference: 4 seconds was not enough, even on regtest. But keep in mind, this only
 // takes effect after rescanning the chain, which should happen quite infrequently.
-const RELOAD_WALLLET_INFO_AFTER_RESCAN_DELAY: Milliseconds = 8_000
+const RELOAD_WALLET_INFO_AFTER_RESCAN_DELAY: Milliseconds = 8_000
+
+// No delay is needed after normal unlock of wallet
+const RELOAD_WALLET_INFO_AFTER_UNLOCK_DELAY: Milliseconds = 0
 
 /**
  * A component that automatically reloads wallet information on certain state changes,
- * e.g. when rescanning the chain finished successfully.
+ * e.g. when the wallet is unlocked or rescanning the chain finished successfully.
+ *
+ * If the auto-reloading on wallet change fails, the error can currently
+ * only be logged and cannot be displayed to the user satisfactorily.
+ * This might change in the future but is okay for now - components can
+ * always trigger a reload on demand and inform the user as they see fit.
  */
 const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAutoReloadProps) => {
   const serviceInfo = useServiceInfo()
@@ -235,11 +243,23 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
     setCurrentRescanning(serviceInfo?.rescanning || false)
   }, [serviceInfo, currentRescanning])
 
-  useEffect(() => {
-    if (currentWallet && rescaningFinished) {
-      reloadWalletInfo(RELOAD_WALLLET_INFO_AFTER_RESCAN_DELAY).catch((err) => console.error(err))
-    }
-  }, [currentWallet, rescaningFinished, reloadWalletInfo])
+  useEffect(
+    function reloadAfterWalletChanges() {
+      if (currentWallet) {
+        reloadWalletInfo(RELOAD_WALLET_INFO_AFTER_UNLOCK_DELAY).catch((err) => console.error(err))
+      }
+    },
+    [currentWallet, reloadWalletInfo]
+  )
+
+  useEffect(
+    function reloadAfterRescanFinished() {
+      if (currentWallet && rescaningFinished) {
+        reloadWalletInfo(RELOAD_WALLET_INFO_AFTER_RESCAN_DELAY).catch((err) => console.error(err))
+      }
+    },
+    [currentWallet, rescaningFinished, reloadWalletInfo]
+  )
 
   return <></>
 }

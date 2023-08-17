@@ -274,23 +274,8 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
     if (!currentWallet) {
       setUtxoResponse(undefined)
       setDisplayResponse(undefined)
-    } else {
-      const abortCtrl = new AbortController()
-      const signal = abortCtrl.signal
-
-      reloadCurrentWalletInfo
-        .reloadAll({ signal })
-        // If the auto-reloading on wallet change fails, the error can currently
-        // only be logged and cannot be displayed to the user satisfactorily.
-        // This might change in the future but is okay for now - components can
-        // always trigger a reload on demand and inform the user as they see fit.
-        .catch((err) => console.error(err))
-
-      return () => {
-        abortCtrl.abort()
-      }
     }
-  }, [currentWallet, reloadCurrentWalletInfo])
+  }, [currentWallet])
 
   return (
     <WalletContext.Provider
