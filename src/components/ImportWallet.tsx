@@ -107,7 +107,7 @@ const ImportWalletDetailsForm = ({
             <>
               <div
                 className={classNames('mb-2', 'text-danger', {
-                  hidden: submitCount === 0,
+                  'd-none': submitCount === 0,
                 })}
               >
                 {errors.mnemonicPhrase}
@@ -340,7 +340,8 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           return old
       }
     })
-  const previousStep = () =>
+  const previousStep = () => {
+    setAlert(undefined)
     setStep((old) => {
       switch (step) {
         case ImportWalletSteps.import_details:
@@ -351,6 +352,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           return old
       }
     })
+  }
 
   const recoverWallet = useCallback(
     async (
