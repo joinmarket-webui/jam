@@ -100,7 +100,8 @@ const SelectJar = ({
           <SelectableJar
             key={index}
             index={account.accountIndex}
-            balance={account.calculatedTotalBalanceInSats}
+            balance={account.calculatedAvailableBalanceInSats}
+            frozenBalance={account.calculatedFrozenOrLockedBalanceInSats}
             isSelectable={isJarSelectable(account.accountIndex)}
             isSelected={selectedJar === account.accountIndex}
             fillLevel={jarFillLevel(account.calculatedTotalBalanceInSats, totalBalance)}

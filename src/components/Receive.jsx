@@ -117,7 +117,8 @@ export default function Receive({ wallet }) {
                   <SelectableJar
                     key={it.accountIndex}
                     index={it.accountIndex}
-                    balance={it.calculatedTotalBalanceInSats}
+                    balance={it.calculatedAvailableBalanceInSats}
+                    frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
                     isSelectable={true}
                     isSelected={it.accountIndex === selectedJarIndex}
                     fillLevel={jarFillLevel(

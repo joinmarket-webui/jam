@@ -689,6 +689,7 @@ export default function Send({ wallet }: SendProps) {
                     key={it.accountIndex}
                     index={it.accountIndex}
                     balance={it.calculatedAvailableBalanceInSats}
+                    frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
                     isSelectable={!isOperationDisabled && !isLoading && it.calculatedAvailableBalanceInSats > 0}
                     isSelected={it.accountIndex === sourceJarIndex}
                     fillLevel={jarFillLevel(

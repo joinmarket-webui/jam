@@ -58,6 +58,12 @@
   font-size: 0.8rem;
 }
 
+.frozen.jarBalance {
+  --bs-code-color: var(--bs-blue);
+  color: var(--bs-blue);
+  font-size: 0.75rem;
+}
+
 .selectableJarContainer {
   display: flex;
   flex-direction: column;
@@ -68,7 +74,7 @@
 
 .selectableJarContainer:not(.selectable) {
   color: var(--bs-gray-600);
-  cursor: unset;
+  cursor: none;
 }
 
 .selectableJarContainer > .selectionCircle {

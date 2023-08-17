@@ -77,7 +77,8 @@ export default function JarSelectorModal({
               <SelectableJar
                 key={account.accountIndex}
                 index={account.accountIndex}
-                balance={account.calculatedTotalBalanceInSats}
+                balance={account.calculatedAvailableBalanceInSats}
+                frozenBalance={account.calculatedFrozenOrLockedBalanceInSats}
                 isSelectable={account.accountIndex !== disabledJar}
                 isSelected={account.accountIndex === selectedJar}
                 fillLevel={jarFillLevel(account.calculatedTotalBalanceInSats, totalBalance)}

@@ -44,7 +44,8 @@ const Jars = ({ accountBalances, totalBalance, onClick }: JarsProps) => {
             <OpenableJar
               key={account.accountIndex}
               index={account.accountIndex}
-              balance={account.calculatedTotalBalanceInSats}
+              balance={account.calculatedAvailableBalanceInSats}
+              frozenBalance={account.calculatedFrozenOrLockedBalanceInSats}
               fillLevel={jarFillLevel(account.calculatedTotalBalanceInSats, totalBalance)}
               tooltipText={
                 account.accountIndex === 0 && jarIsEmpty
