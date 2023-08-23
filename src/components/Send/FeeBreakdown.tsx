@@ -35,7 +35,10 @@ const FeeCard = ({ amount, highlight, subtitle, onClick }: FeeCardProps) => {
       >
         <div className="fs-5">
           {amount ? (
-            <Balance convertToUnit={SATS} valueString={amount.toString()} showBalance={true} />
+            <>
+              &le;
+              <Balance convertToUnit={SATS} valueString={amount.toString()} showBalance={true} />
+            </>
           ) : (
             t('send.fee_breakdown.too_low')
           )}
