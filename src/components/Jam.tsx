@@ -391,9 +391,7 @@ export default function Jam({ wallet }: JamProps) {
                       <Sprite symbol="checkmark" width="25" height="25" className="text-secondary" />
                       <div className="d-flex flex-column">
                         <div>{t('scheduler.complete_wallet_title')}</div>
-                        <div className={`text-secondary ${styles['small-text']}`}>
-                          {t('scheduler.complete_wallet_subtitle')}
-                        </div>
+                        <div className="text-secondary text-small">{t('scheduler.complete_wallet_subtitle')}</div>
                       </div>
                     </div>
                     <>

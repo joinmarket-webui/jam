@@ -33,7 +33,7 @@ export default function ToggleSwitch({
       <span className={styles['toggle-switch']}></span>
       <div className="d-flex flex-column gap-0">
         <div>{label}</div>
-        {subtitle && <div className={`${styles['subtitle']} text-secondary`}>{subtitle}</div>}
+        {subtitle && <div className="text-secondary text-small">{subtitle}</div>}
       </div>
     </label>
   )

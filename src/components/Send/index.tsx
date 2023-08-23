@@ -834,9 +834,9 @@ export default function Send({ wallet }: SendProps) {
                 disabled={isLoading || isOperationDisabled}
               />
 
-              <rb.Form.Label className="mb-0 mt-3">{t('send.fee_breakdown.title')}</rb.Form.Label>
-              <div className="mb-2">
-                <rb.Form.Text className="text-secondary">
+              <rb.Form.Group className="mt-4">
+                <rb.Form.Label className="mb-0">{t('send.fee_breakdown.title')}</rb.Form.Label>
+                <rb.Form.Text className="d-block text-secondary mb-2">
                   <Trans
                     i18nKey="send.fee_breakdown.subtitle"
                     components={{
@@ -844,8 +844,8 @@ export default function Send({ wallet }: SendProps) {
                     }}
                   />
                 </rb.Form.Text>
-              </div>
-              <FeeBreakdown numCollaborators={numCollaborators} amount={amount} isCoinjoin={isCoinjoin} />
+                <FeeBreakdown numCollaborators={numCollaborators} amount={amount} />
+              </rb.Form.Group>
             </div>
           </Accordion>
         </rb.Form>

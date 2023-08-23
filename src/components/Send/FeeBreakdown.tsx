@@ -7,12 +7,11 @@ import * as rb from 'react-bootstrap'
 import { useSettings } from '../../context/SettingsContext'
 import { Link } from 'react-router-dom'
 import { routes } from '../../constants/routes'
-import { formatSats } from '../../utils'
+import { SATS, formatSats } from '../../utils'
 
 interface FeeBreakdownProps {
   numCollaborators: number | null
   amount: number | null
-  isCoinjoin: boolean
 }
 
 type FeeCardProps = {
@@ -31,22 +30,20 @@ const FeeCard = ({ amount, highlight, subtitle }: FeeCardProps) => {
           'text-muted': !highlight,
         })}
       >
-        <div style={{ fontSize: '1.2rem' }}>
+        <div className="fs-5">
           {amount ? (
-            <Balance convertToUnit="sats" valueString={amount.toString()} showBalance={true} />
+            <Balance convertToUnit={SATS} valueString={amount.toString()} showBalance={true} />
           ) : (
             t('send.fee_breakdown.too_low')
           )}
         </div>
-        <div style={{ fontSize: '0.8rem' }} className="text-secondary">
-          {subtitle}
-        </div>
+        <div className="text-secondary text-small">{subtitle}</div>
       </rb.Card.Body>
     </rb.Card>
   )
 }
 
-const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildren<FeeBreakdownProps>) => {
+const FeeBreakdown = ({ numCollaborators, amount }: PropsWithChildren<FeeBreakdownProps>) => {
   const { t } = useTranslation()
   const feesConfig = useFeeConfigValues()
 
@@ -75,7 +72,7 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
   return (
     <rb.Row className="mb-2">
       <rb.Col>
-        <rb.Form.Label>{t('send.fee_breakdown.absolute_limit')}</rb.Form.Label>
+        <rb.Form.Label className="text-small">{t('send.fee_breakdown.absolute_limit')}</rb.Form.Label>
         <FeeCard
           amount={maxEstimatedAbsoluteFee}
           subtitle={
@@ -98,7 +95,7 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
         />
       </rb.Col>
       <rb.Col>
-        <rb.Form.Label>{t('send.fee_breakdown.relative_limit')}</rb.Form.Label>
+        <rb.Form.Label className="text-small">{t('send.fee_breakdown.relative_limit')}</rb.Form.Label>
         <FeeCard
           amount={maxEstimatedRelativeFee}
           subtitle={

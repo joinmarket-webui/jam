@@ -289,6 +289,10 @@ main {
   color: inherit !important;
 }
 
+.text-small {
+  font-size: 0.875rem; /* var(--bs-font-size-sm); */
+}
+
 /* Fullscreen Overlays */
 .offcanvas-fullscreen {
   width: 100vw !important;
