@@ -36,7 +36,6 @@ import {
 } from './helpers'
 import { SATS, isValidNumber } from '../../utils'
 import styles from './Send.module.css'
-import AccordionInfo from '../AccordionInfo'
 import FeeBreakdown from './FeeBreakdown'
 
 const IS_COINJOIN_DEFAULT_VAL = true

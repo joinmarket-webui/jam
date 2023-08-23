@@ -261,7 +261,7 @@
     "sweep_amount_breakdown_explanation": "A sweep transaction will consume all UTXOs of a mixdepth leaving no coins behind except those that have been <1>frozen</1> or <3>time-locked</3>. Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero change. The exact transaction amount can only be calculated by JoinMarket at the point when the transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount. Refer to the <5>JoinMarket documentation</5> for more details.",
     "fee_breakdown": {
       "title": "Fee Estimation",
-      "subtitle": "Depending on the amount, the number of collaborators and the <a>preset limits</a>, you can see the maximum fees for the upcoming collaborative transaction. This does not include regular <a>mining fees<a/>.",
+      "subtitle": "Depending on the amount, the number of collaborators and the <a>preset limits</a>, you can see the maximum fees for the upcoming collaborative transaction. This does not include regular <a>mining fees</a>.",
       "absolute_limit": "Absolute fee limit",
       "relative_limit": "Relative fee limit",
       "fee_card_subtitle": "<a>{{ maxFee }}</a> * {{ numCollaborators }}",
