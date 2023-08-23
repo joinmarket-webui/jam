@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import { useMemo, PropsWithChildren } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import classNames from 'classnames'
 import { useFeeConfigValues } from '../../hooks/Fees'
@@ -48,32 +48,59 @@ const FeeBreakdown = ({ numCollaborators, amount }: PropsWithChildren<FeeBreakdo
   const feesConfig = useFeeConfigValues()
 
   /** eg: "0.03%" */
-  const maxSettingsRelativeFee = feesConfig?.max_cj_fee_rel
-    ? `${feesConfig.max_cj_fee_rel * 100}%`
-    : t('send.fee_breakdown.not_set')
+  const maxSettingsRelativeFee = useMemo(
+    () => (feesConfig?.max_cj_fee_rel ? `${feesConfig.max_cj_fee_rel * 100}%` : t('send.fee_breakdown.not_set')),
+    [feesConfig, t]
+  )
 
   /** eg: 44658 (expressed in sats) */
-  const maxEstimatedRelativeFee =
-    feesConfig?.max_cj_fee_rel && numCollaborators && amount
-      ? amount * feesConfig.max_cj_fee_rel * numCollaborators >= 1
-        ? Math.ceil(amount * feesConfig.max_cj_fee_rel) * numCollaborators
-        : null
-      : null
+  const maxEstimatedRelativeFee = useMemo(
+    () =>
+      feesConfig?.max_cj_fee_rel && numCollaborators && amount
+        ? amount * feesConfig.max_cj_fee_rel * numCollaborators >= 1
+          ? Math.ceil(amount * feesConfig.max_cj_fee_rel) * numCollaborators
+          : null
+        : null,
+    [feesConfig, amount, numCollaborators]
+  )
 
   /** eg: "8,636 sats" */
-  const maxSettingsAbsoluteFee = feesConfig?.max_cj_fee_abs
-    ? `${formatSats(feesConfig.max_cj_fee_abs)} sats`
-    : t('send.fee_breakdown.not_set')
+  const maxSettingsAbsoluteFee = useMemo(
+    () =>
+      feesConfig?.max_cj_fee_abs ? `${formatSats(feesConfig.max_cj_fee_abs)} sats` : t('send.fee_breakdown.not_set'),
+    [feesConfig, t]
+  )
 
   /** eg: 77724 (expressed in sats) */
-  const maxEstimatedAbsoluteFee =
-    feesConfig?.max_cj_fee_abs && numCollaborators ? feesConfig.max_cj_fee_abs * numCollaborators : null
+  const maxEstimatedAbsoluteFee = useMemo(
+    () => (feesConfig?.max_cj_fee_abs && numCollaborators ? feesConfig.max_cj_fee_abs * numCollaborators : null),
+    [feesConfig, numCollaborators]
+  )
+
+  const isAbsoluteFeeHighlighted = useMemo(
+    () =>
+      maxEstimatedAbsoluteFee && maxEstimatedRelativeFee ? maxEstimatedAbsoluteFee > maxEstimatedRelativeFee : false,
+    [maxEstimatedAbsoluteFee, maxEstimatedRelativeFee]
+  )
+
+  const isRelativeFeeHighlighted = useMemo(
+    () =>
+      maxEstimatedAbsoluteFee && maxEstimatedRelativeFee ? maxEstimatedRelativeFee > maxEstimatedAbsoluteFee : false,
+    [maxEstimatedAbsoluteFee, maxEstimatedRelativeFee]
+  )
 
   return (
     <rb.Row className="mb-2">
       <rb.Col>
-        <rb.Form.Label className="text-small">{t('send.fee_breakdown.absolute_limit')}</rb.Form.Label>
+        <rb.Form.Label
+          className={classNames('mb-1', 'text-small', {
+            'text-muted': !isAbsoluteFeeHighlighted,
+          })}
+        >
+          {t('send.fee_breakdown.absolute_limit')}
+        </rb.Form.Label>
         <FeeCard
+          highlight={isAbsoluteFeeHighlighted}
           amount={maxEstimatedAbsoluteFee}
           subtitle={
             <Trans
@@ -87,16 +114,18 @@ const FeeBreakdown = ({ numCollaborators, amount }: PropsWithChildren<FeeBreakdo
               }}
             />
           }
-          highlight={
-            maxEstimatedAbsoluteFee && maxEstimatedRelativeFee
-              ? maxEstimatedAbsoluteFee > maxEstimatedRelativeFee
-              : false
-          }
         />
       </rb.Col>
       <rb.Col>
-        <rb.Form.Label className="text-small">{t('send.fee_breakdown.relative_limit')}</rb.Form.Label>
+        <rb.Form.Label
+          className={classNames('mb-1', 'text-small', {
+            'text-muted': !isRelativeFeeHighlighted,
+          })}
+        >
+          {t('send.fee_breakdown.relative_limit')}
+        </rb.Form.Label>
         <FeeCard
+          highlight={isRelativeFeeHighlighted}
           amount={maxEstimatedRelativeFee}
           subtitle={
             <Trans
@@ -109,11 +138,6 @@ const FeeBreakdown = ({ numCollaborators, amount }: PropsWithChildren<FeeBreakdo
                 maxFee: maxSettingsRelativeFee,
               }}
             />
-          }
-          highlight={
-            maxEstimatedAbsoluteFee && maxEstimatedRelativeFee
-              ? maxEstimatedRelativeFee > maxEstimatedAbsoluteFee
-              : false
           }
         />
       </rb.Col>
