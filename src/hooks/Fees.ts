@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useCallback, useEffect, useState } from 'react'
 import { useRefreshConfigValues } from '../context/ServiceConfigContext'
 import { AmountSats } from '../libs/JmWalletApi'
 import { isValidNumber } from '../utils'
@@ -54,9 +53,10 @@ export const useLoadFeeConfigValues = () => {
   )
 }
 
-export const useFeeConfigValues = () => {
+export const useFeeConfigValues = (): [FeeValues | undefined, () => void] => {
   const loadFeeConfigValues = useLoadFeeConfigValues()
-  const [values, setValues] = useState<FeeValues | null>()
+  const [values, setValues] = useState<FeeValues>()
+  const [reloadCounter, setReloadCounter] = useState(0)
 
   useEffect(() => {
     const abortCtrl = new AbortController()
@@ -65,14 +65,15 @@ export const useFeeConfigValues = () => {
       .then((val) => setValues(val))
       .catch((e) => {
         console.log('Unable lo load fee config: ', e)
-        setValues(null)
+        setValues(undefined)
       })
 
     return () => {
       abortCtrl.abort()
     }
-  }, [setValues, loadFeeConfigValues])
-  return values
+  }, [loadFeeConfigValues, reloadCounter])
+
+  return [values, () => setReloadCounter((val) => val + 1)]
 }
 
 interface EstimatMaxCollaboratorFeeProps {
@@ -90,71 +91,4 @@ export const estimateMaxCollaboratorFee = ({
 }: EstimatMaxCollaboratorFeeProps) => {
   const maxFeePerCollaborator = Math.max(Math.ceil(amount * maxFeeRel), maxFeeAbs)
   return collaborators > 0 ? Math.min(maxFeePerCollaborator * collaborators, amount) : 0
-}
-
-export const useMiningFeeText = () => {
-  const feeConfigValues = useFeeConfigValues()
-  const { t } = useTranslation()
-
-  const miningFeeText = useMemo(() => {
-    if (!feeConfigValues) return null
-    if (!isValidNumber(feeConfigValues.tx_fees) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
-
-    const unit = toTxFeeValueUnit(feeConfigValues.tx_fees)
-    if (!unit) {
-      return null
-    } else if (unit === 'blocks') {
-      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
-    } else {
-      const feeTargetInSatsPerVByte = feeConfigValues.tx_fees! / 1_000
-      if (feeConfigValues.tx_fees_factor === 0) {
-        return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
-          value: feeTargetInSatsPerVByte.toLocaleString(undefined, {
-            maximumFractionDigits: Math.log10(1_000),
-          }),
-        })
-      }
-
-      const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor!))
-      const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor!)
-
-      return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
-        min: minFeeSatsPerVByte.toLocaleString(undefined, {
-          maximumFractionDigits: 1,
-        }),
-        max: maxFeeSatsPerVByte.toLocaleString(undefined, {
-          maximumFractionDigits: 1,
-        }),
-      })
-    }
-  }, [t, feeConfigValues])
-
-  return miningFeeText
-}
-
-interface useEstimatedMaxCollaboratorFeeArgs {
-  isCoinjoin: boolean
-  amount: number | null
-  numCollaborators?: number | null
-}
-export const useEstimatedMaxCollaboratorFee = ({
-  isCoinjoin,
-  amount,
-  numCollaborators,
-}: useEstimatedMaxCollaboratorFeeArgs) => {
-  const feeConfigValues = useFeeConfigValues()
-
-  const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (!isCoinjoin || !feeConfigValues || !amount) return null
-    if (!isValidNumber(amount) || !isValidNumber(numCollaborators ?? undefined)) return null
-    if (!isValidNumber(feeConfigValues.max_cj_fee_abs) || !isValidNumber(feeConfigValues.max_cj_fee_rel)) return null
-    return estimateMaxCollaboratorFee({
-      amount,
-      collaborators: numCollaborators!,
-      maxFeeAbs: feeConfigValues.max_cj_fee_abs!,
-      maxFeeRel: feeConfigValues.max_cj_fee_rel!,
-    })
-  }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
-
-  return estimatedMaxCollaboratorFee
 }

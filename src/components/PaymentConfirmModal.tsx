@@ -1,13 +1,82 @@
+import { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
-import { FeeValues, useEstimatedMaxCollaboratorFee, useMiningFeeText } from '../hooks/Fees'
+import { estimateMaxCollaboratorFee, FeeValues, toTxFeeValueUnit } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
 import styles from './PaymentConfirmModal.module.css'
 import { AmountSats } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
+import { isValidNumber } from '../utils'
+
+const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) => {
+  const { t } = useTranslation()
+
+  const miningFeeText = useMemo(() => {
+    if (!feeConfigValues) return null
+    if (!isValidNumber(feeConfigValues.tx_fees) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
+
+    const unit = toTxFeeValueUnit(feeConfigValues.tx_fees)
+    if (!unit) {
+      return null
+    } else if (unit === 'blocks') {
+      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
+    } else {
+      const feeTargetInSatsPerVByte = feeConfigValues.tx_fees! / 1_000
+      if (feeConfigValues.tx_fees_factor === 0) {
+        return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
+          value: feeTargetInSatsPerVByte.toLocaleString(undefined, {
+            maximumFractionDigits: Math.log10(1_000),
+          }),
+        })
+      }
+
+      const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor!))
+      const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor!)
+
+      return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
+        min: minFeeSatsPerVByte.toLocaleString(undefined, {
+          maximumFractionDigits: 1,
+        }),
+        max: maxFeeSatsPerVByte.toLocaleString(undefined, {
+          maximumFractionDigits: 1,
+        }),
+      })
+    }
+  }, [t, feeConfigValues])
+
+  return miningFeeText
+}
+
+interface EstimatedMaxCollaboratorFeeArgs {
+  feeConfigValues?: FeeValues
+  isCoinjoin: boolean
+  amount: AmountSats
+  numCollaborators?: number
+}
+
+const useEstimatedMaxCollaboratorFee = ({
+  feeConfigValues,
+  isCoinjoin,
+  amount,
+  numCollaborators,
+}: EstimatedMaxCollaboratorFeeArgs) => {
+  const estimatedMaxCollaboratorFee = useMemo(() => {
+    if (!isCoinjoin || !feeConfigValues || !amount) return null
+    if (!isValidNumber(amount) || !isValidNumber(numCollaborators ?? undefined)) return null
+    if (!isValidNumber(feeConfigValues.max_cj_fee_abs) || !isValidNumber(feeConfigValues.max_cj_fee_rel)) return null
+    return estimateMaxCollaboratorFee({
+      amount,
+      collaborators: numCollaborators!,
+      maxFeeAbs: feeConfigValues.max_cj_fee_abs!,
+      maxFeeRel: feeConfigValues.max_cj_fee_rel!,
+    })
+  }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
+
+  return estimatedMaxCollaboratorFee
+}
 
 interface PaymentDisplayInfo {
   sourceJarIndex?: JarIndex
@@ -40,9 +109,13 @@ export function PaymentConfirmModal({
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({ amount, numCollaborators, isCoinjoin })
-
-  const miningFeeText = useMiningFeeText()
+  const miningFeeText = useMiningFeeText({ feeConfigValues })
+  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
+    feeConfigValues,
+    amount,
+    numCollaborators,
+    isCoinjoin,
+  })
 
   return (
     <ConfirmModal {...confirmModalProps}>

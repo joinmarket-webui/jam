@@ -44,6 +44,8 @@ const CJ_FEE_REL_MAX = 0.05 // 5% - no enforcement by JM - this should be a "san
 interface FeeConfigModalProps {
   show: boolean
   onHide: () => void
+  onSuccess?: () => void
+  onCancel?: () => void
 }
 
 interface FeeConfigFormProps {
@@ -306,7 +308,7 @@ const FeeConfigForm = forwardRef(
   }
 )
 
-export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
+export default function FeeConfigModal({ show, onHide, onSuccess, onCancel }: FeeConfigModalProps) {
   const { t } = useTranslation()
   const updateConfigValues = useUpdateConfigValues()
   const loadFeeConfigValues = useLoadFeeConfigValues()
@@ -383,6 +385,7 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
       await updateConfigValues({ updates })
 
       setIsSubmitting(false)
+      onSuccess && onSuccess()
       onHide()
     } catch (err) {
       setIsSubmitting(false)
@@ -463,16 +466,17 @@ export default function FeeConfigModal({ show, onHide }: FeeConfigModalProps) {
     [t]
   )
 
-  const cancel = () => {
+  const cancel = useCallback(() => {
+    onCancel && onCancel()
     onHide()
-  }
+  }, [onCancel, onHide])
 
   return (
     <rb.Modal
       className={styles.feeConfigModal}
       size="lg"
       show={show}
-      onHide={onHide}
+      onHide={cancel}
       keyboard={false}
       centered={true}
       animation={true}

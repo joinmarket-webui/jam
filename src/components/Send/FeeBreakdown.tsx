@@ -1,30 +1,33 @@
 import { useMemo, PropsWithChildren } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import classNames from 'classnames'
-import { useFeeConfigValues } from '../../hooks/Fees'
 import Balance from '../Balance'
 import * as rb from 'react-bootstrap'
 import { useSettings } from '../../context/SettingsContext'
 import { Link } from 'react-router-dom'
 import { routes } from '../../constants/routes'
 import { SATS, formatSats } from '../../utils'
+import { FeeValues } from '../../hooks/Fees'
 
 interface FeeBreakdownProps {
+  feeConfigValues?: FeeValues
   numCollaborators: number | null
   amount: number | null
+  onClick?: () => void
 }
 
 type FeeCardProps = {
   amount: number | null
   highlight: boolean
   subtitle?: React.ReactNode
+  onClick: () => void
 }
-const FeeCard = ({ amount, highlight, subtitle }: FeeCardProps) => {
+const FeeCard = ({ amount, highlight, subtitle, onClick }: FeeCardProps) => {
   const settings = useSettings()
   const { t } = useTranslation()
 
   return (
-    <rb.Card border={highlight ? (settings.theme === 'dark' ? 'light' : 'dark') : undefined}>
+    <rb.Card onClick={onClick} border={highlight ? (settings.theme === 'dark' ? 'light' : 'dark') : undefined}>
       <rb.Card.Body
         className={classNames('text-center py-2', {
           'text-muted': !highlight,
@@ -43,38 +46,46 @@ const FeeCard = ({ amount, highlight, subtitle }: FeeCardProps) => {
   )
 }
 
-const FeeBreakdown = ({ numCollaborators, amount }: PropsWithChildren<FeeBreakdownProps>) => {
+const FeeBreakdown = ({
+  feeConfigValues,
+  numCollaborators,
+  amount,
+  onClick = () => {},
+}: PropsWithChildren<FeeBreakdownProps>) => {
   const { t } = useTranslation()
-  const feesConfig = useFeeConfigValues()
 
   /** eg: "0.03%" */
   const maxSettingsRelativeFee = useMemo(
-    () => (feesConfig?.max_cj_fee_rel ? `${feesConfig.max_cj_fee_rel * 100}%` : t('send.fee_breakdown.not_set')),
-    [feesConfig, t]
+    () =>
+      feeConfigValues?.max_cj_fee_rel ? `${feeConfigValues.max_cj_fee_rel * 100}%` : t('send.fee_breakdown.not_set'),
+    [feeConfigValues, t]
   )
 
   /** eg: 44658 (expressed in sats) */
   const maxEstimatedRelativeFee = useMemo(
     () =>
-      feesConfig?.max_cj_fee_rel && numCollaborators && amount
-        ? amount * feesConfig.max_cj_fee_rel * numCollaborators >= 1
-          ? Math.ceil(amount * feesConfig.max_cj_fee_rel) * numCollaborators
+      feeConfigValues?.max_cj_fee_rel && numCollaborators && amount
+        ? amount * feeConfigValues.max_cj_fee_rel * numCollaborators >= 1
+          ? Math.ceil(amount * feeConfigValues.max_cj_fee_rel) * numCollaborators
           : null
         : null,
-    [feesConfig, amount, numCollaborators]
+    [feeConfigValues, amount, numCollaborators]
   )
 
   /** eg: "8,636 sats" */
   const maxSettingsAbsoluteFee = useMemo(
     () =>
-      feesConfig?.max_cj_fee_abs ? `${formatSats(feesConfig.max_cj_fee_abs)} sats` : t('send.fee_breakdown.not_set'),
-    [feesConfig, t]
+      feeConfigValues?.max_cj_fee_abs
+        ? `${formatSats(feeConfigValues.max_cj_fee_abs)} sats`
+        : t('send.fee_breakdown.not_set'),
+    [feeConfigValues, t]
   )
 
   /** eg: 77724 (expressed in sats) */
   const maxEstimatedAbsoluteFee = useMemo(
-    () => (feesConfig?.max_cj_fee_abs && numCollaborators ? feesConfig.max_cj_fee_abs * numCollaborators : null),
-    [feesConfig, numCollaborators]
+    () =>
+      feeConfigValues?.max_cj_fee_abs && numCollaborators ? feeConfigValues.max_cj_fee_abs * numCollaborators : null,
+    [feeConfigValues, numCollaborators]
   )
 
   const isAbsoluteFeeHighlighted = useMemo(
@@ -114,6 +125,7 @@ const FeeBreakdown = ({ numCollaborators, amount }: PropsWithChildren<FeeBreakdo
               }}
             />
           }
+          onClick={onClick}
         />
       </rb.Col>
       <rb.Col>
@@ -139,6 +151,7 @@ const FeeBreakdown = ({ numCollaborators, amount }: PropsWithChildren<FeeBreakdo
               }}
             />
           }
+          onClick={onClick}
         />
       </rb.Col>
     </rb.Row>

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
-
 import PageTitle from '../PageTitle'
 import ToggleSwitch from '../ToggleSwitch'
 import Sprite from '../Sprite'
@@ -15,11 +14,12 @@ import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViolationAlert'
 import CollaboratorsSelector from './CollaboratorsSelector'
 import Accordion from '../Accordion'
+import FeeConfigModal from '../settings/FeeConfigModal'
+import { useFeeConfigValues } from '../../hooks/Fees'
 
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
-import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
 
 import * as Api from '../../libs/JmWalletApi'
@@ -74,7 +74,6 @@ export default function Send({ wallet }: SendProps) {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const loadConfigValue = useLoadConfigValue()
-  const loadFeeConfigValues = useLoadFeeConfigValues()
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
@@ -88,7 +87,8 @@ export default function Send({ wallet }: SendProps) {
   const [destinationJar, setDestinationJar] = useState<JarIndex | null>(null)
   const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
 
-  const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
+  const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
+  const [showingFeeConfig, setShowingFeeConfig] = useState(false)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<Alert>()
@@ -288,25 +288,13 @@ export default function Send({ wallet }: SendProps) {
           setAlert({ variant: 'danger', message: err.message })
         })
 
-      const loadFeeValues = loadFeeConfigValues(abortCtrl.signal)
-        .then((data) => {
-          if (abortCtrl.signal.aborted) return
-          setFeeConfigValues(data)
-        })
-        .catch(() => {
-          if (abortCtrl.signal.aborted) return
-          // As fee config is not essential, don't raise an error on purpose.
-          // Fee settings cannot be displayed, but making a payment is still possible.
-          setFeeConfigValues(undefined)
-        })
-
-      Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig, loadFeeValues]).finally(
+      Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
         () => !abortCtrl.signal.aborted && setIsInitializing(false)
       )
 
       return () => abortCtrl.abort()
     },
-    [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, loadFeeConfigValues, t]
+    [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t]
   )
 
   useEffect(
@@ -844,7 +832,20 @@ export default function Send({ wallet }: SendProps) {
                     }}
                   />
                 </rb.Form.Text>
-                <FeeBreakdown numCollaborators={numCollaborators} amount={amount} />
+                <FeeBreakdown
+                  feeConfigValues={feeConfigValues}
+                  numCollaborators={numCollaborators}
+                  amount={amount}
+                  onClick={() => setShowingFeeConfig(true)}
+                />
+
+                {showingFeeConfig && (
+                  <FeeConfigModal
+                    show={showingFeeConfig}
+                    onSuccess={() => reloadFeeConfigValues()}
+                    onHide={() => setShowingFeeConfig(false)}
+                  />
+                )}
               </rb.Form.Group>
             </div>
           </Accordion>
