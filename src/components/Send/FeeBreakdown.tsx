@@ -73,9 +73,9 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
     feesConfig?.max_cj_fee_abs && numCollaborators ? feesConfig.max_cj_fee_abs * numCollaborators : null
 
   return (
-    <rb.Row>
+    <rb.Row className="mb-2">
       <rb.Col>
-        <rb.Form.Label className="mb-2">{t('send.fee_breakdown.absolute_limit')}</rb.Form.Label>
+        <rb.Form.Label>{t('send.fee_breakdown.absolute_limit')}</rb.Form.Label>
         <FeeCard
           amount={maxEstimatedAbsoluteFee}
           subtitle={
@@ -98,7 +98,7 @@ const FeeBreakdown = ({ numCollaborators, amount, isCoinjoin }: PropsWithChildre
         />
       </rb.Col>
       <rb.Col>
-        <rb.Form.Label className="mb-2">{t('send.fee_breakdown.relative_limit')}</rb.Form.Label>
+        <rb.Form.Label>{t('send.fee_breakdown.relative_limit')}</rb.Form.Label>
         <FeeCard
           amount={maxEstimatedRelativeFee}
           subtitle={
