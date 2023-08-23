@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import classNames from 'classnames'
 import { useFeeConfigValues } from '../../hooks/Fees'
 import Balance from '../Balance'
 import * as rb from 'react-bootstrap'
@@ -16,7 +17,7 @@ interface FeeBreakdownProps {
 
 type FeeCardProps = {
   amount: number | null
-  highlight?: boolean
+  highlight: boolean
   subtitle?: React.ReactNode
 }
 const FeeCard = ({ amount, highlight, subtitle }: FeeCardProps) => {
@@ -25,7 +26,11 @@ const FeeCard = ({ amount, highlight, subtitle }: FeeCardProps) => {
 
   return (
     <rb.Card border={highlight ? (settings.theme === 'dark' ? 'light' : 'dark') : undefined}>
-      <rb.Card.Body className="text-center py-2">
+      <rb.Card.Body
+        className={classNames('text-center py-2', {
+          'text-muted': !highlight,
+        })}
+      >
         <div style={{ fontSize: '1.2rem' }}>
           {amount ? (
             <Balance convertToUnit="sats" valueString={amount.toString()} showBalance={true} />
