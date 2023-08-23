@@ -4,7 +4,7 @@ import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
-import { estimateMaxCollaboratorFee, FeeValues, toTxFeeValueUnit } from '../hooks/Fees'
+import { FeeValues, useEstimatedMaxCollaboratorFee, toTxFeeValueUnit } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
 import styles from './PaymentConfirmModal.module.css'
 import { AmountSats } from '../libs/JmWalletApi'
@@ -50,34 +50,6 @@ const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) 
   return miningFeeText
 }
 
-interface EstimatedMaxCollaboratorFeeArgs {
-  feeConfigValues?: FeeValues
-  isCoinjoin: boolean
-  amount: AmountSats
-  numCollaborators?: number
-}
-
-const useEstimatedMaxCollaboratorFee = ({
-  feeConfigValues,
-  isCoinjoin,
-  amount,
-  numCollaborators,
-}: EstimatedMaxCollaboratorFeeArgs) => {
-  const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (!isCoinjoin || !feeConfigValues || !amount) return null
-    if (!isValidNumber(amount) || !isValidNumber(numCollaborators ?? undefined)) return null
-    if (!isValidNumber(feeConfigValues.max_cj_fee_abs) || !isValidNumber(feeConfigValues.max_cj_fee_rel)) return null
-    return estimateMaxCollaboratorFee({
-      amount,
-      collaborators: numCollaborators!,
-      maxFeeAbs: feeConfigValues.max_cj_fee_abs!,
-      maxFeeRel: feeConfigValues.max_cj_fee_rel!,
-    })
-  }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
-
-  return estimatedMaxCollaboratorFee
-}
-
 interface PaymentDisplayInfo {
   sourceJarIndex?: JarIndex
   destination: String
@@ -111,10 +83,10 @@ export function PaymentConfirmModal({
 
   const miningFeeText = useMiningFeeText({ feeConfigValues })
   const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
+    isCoinjoin,
     feeConfigValues,
     amount,
-    numCollaborators,
-    isCoinjoin,
+    numCollaborators: numCollaborators || null,
   })
 
   return (

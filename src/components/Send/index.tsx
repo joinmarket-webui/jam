@@ -15,7 +15,7 @@ import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViola
 import CollaboratorsSelector from './CollaboratorsSelector'
 import Accordion from '../Accordion'
 import FeeConfigModal from '../settings/FeeConfigModal'
-import { useFeeConfigValues } from '../../hooks/Fees'
+import { useFeeConfigValues, useEstimatedMaxCollaboratorFee } from '../../hooks/Fees'
 
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
@@ -24,6 +24,7 @@ import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirement
 
 import * as Api from '../../libs/JmWalletApi'
 import { routes } from '../../constants/routes'
+import { SATS, formatSats, isValidNumber } from '../../utils'
 
 import {
   enhanceDirectPaymentErrorMessageIfNecessary,
@@ -34,7 +35,6 @@ import {
   isValidJarIndex,
   isValidNumCollaborators,
 } from './helpers'
-import { SATS, isValidNumber } from '../../utils'
 import styles from './Send.module.css'
 import FeeBreakdown from './FeeBreakdown'
 
@@ -115,6 +115,13 @@ export default function Send({ wallet }: SendProps) {
       (lhs, rhs) => lhs.accountIndex - rhs.accountIndex
     )
   }, [walletInfo])
+
+  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
+    feeConfigValues,
+    amount,
+    numCollaborators,
+    isCoinjoin,
+  })
 
   useEffect(
     function preSelectSourceJarIfPossible() {
@@ -823,7 +830,13 @@ export default function Send({ wallet }: SendProps) {
               />
 
               <rb.Form.Group className="mt-4">
-                <rb.Form.Label className="mb-0">{t('send.fee_breakdown.title')}</rb.Form.Label>
+                <rb.Form.Label className="mb-0">
+                  {t('send.fee_breakdown.title', {
+                    maxCollaboratorFee: estimatedMaxCollaboratorFee
+                      ? `≤${formatSats(estimatedMaxCollaboratorFee)} sats`
+                      : '...',
+                  })}
+                </rb.Form.Label>
                 <rb.Form.Text className="d-block text-secondary mb-2">
                   <Trans
                     i18nKey="send.fee_breakdown.subtitle"
