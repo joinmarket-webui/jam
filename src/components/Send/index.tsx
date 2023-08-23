@@ -14,7 +14,7 @@ import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViolationAlert'
 import CollaboratorsSelector from './CollaboratorsSelector'
 import Accordion from '../Accordion'
-import FeeConfigModal from '../settings/FeeConfigModal'
+import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
 import { useFeeConfigValues, useEstimatedMaxCollaboratorFee } from '../../hooks/Fees'
 
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
@@ -88,7 +88,8 @@ export default function Send({ wallet }: SendProps) {
   const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
 
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
-  const [showingFeeConfig, setShowingFeeConfig] = useState(false)
+  const [activeFeeConfigModalSection, setActiveFeeConfigModalSection] = useState<FeeConfigSectionKey>()
+  const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<Alert>()
@@ -841,7 +842,24 @@ export default function Send({ wallet }: SendProps) {
                   <Trans
                     i18nKey="send.fee_breakdown.subtitle"
                     components={{
-                      a: <Link to={routes.settings} className="text-decoration-underline text-body" />,
+                      1: (
+                        <span
+                          onClick={() => {
+                            setActiveFeeConfigModalSection('cj_fee')
+                            setShowFeeConfigModal(true)
+                          }}
+                          className="text-decoration-underline link-secondary"
+                        />
+                      ),
+                      2: (
+                        <span
+                          onClick={() => {
+                            setActiveFeeConfigModalSection('tx_fee')
+                            setShowFeeConfigModal(true)
+                          }}
+                          className="text-decoration-underline link-secondary"
+                        />
+                      ),
                     }}
                   />
                 </rb.Form.Text>
@@ -849,14 +867,18 @@ export default function Send({ wallet }: SendProps) {
                   feeConfigValues={feeConfigValues}
                   numCollaborators={numCollaborators}
                   amount={amount}
-                  onClick={() => setShowingFeeConfig(true)}
+                  onClick={() => {
+                    setActiveFeeConfigModalSection('cj_fee')
+                    setShowFeeConfigModal(true)
+                  }}
                 />
 
-                {showingFeeConfig && (
+                {showFeeConfigModal && (
                   <FeeConfigModal
-                    show={showingFeeConfig}
+                    show={showFeeConfigModal}
                     onSuccess={() => reloadFeeConfigValues()}
-                    onHide={() => setShowingFeeConfig(false)}
+                    onHide={() => setShowFeeConfigModal(false)}
+                    defaultActiveSectionKey={activeFeeConfigModalSection}
                   />
                 )}
               </rb.Form.Group>

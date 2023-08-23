@@ -4,9 +4,7 @@ import classNames from 'classnames'
 import Balance from '../Balance'
 import * as rb from 'react-bootstrap'
 import { useSettings } from '../../context/SettingsContext'
-import { Link } from 'react-router-dom'
-import { routes } from '../../constants/routes'
-import { SATS, formatSats } from '../../utils'
+import { SATS, formatSats, factorToPercentage } from '../../utils'
 import { FeeValues } from '../../hooks/Fees'
 
 interface FeeBreakdownProps {
@@ -20,7 +18,7 @@ type FeeCardProps = {
   amount: number | null
   highlight: boolean
   subtitle?: React.ReactNode
-  onClick: () => void
+  onClick?: () => void
 }
 const FeeCard = ({ amount, highlight, subtitle, onClick }: FeeCardProps) => {
   const settings = useSettings()
@@ -34,13 +32,13 @@ const FeeCard = ({ amount, highlight, subtitle, onClick }: FeeCardProps) => {
         })}
       >
         <div className="fs-5">
-          {amount ? (
+          {amount !== null ? (
             <>
               &le;
               <Balance convertToUnit={SATS} valueString={amount.toString()} showBalance={true} />
             </>
           ) : (
-            t('send.fee_breakdown.too_low')
+            t('send.fee_breakdown.placeholder_amount')
           )}
         </div>
         <div className="text-secondary text-small">{subtitle}</div>
@@ -60,17 +58,17 @@ const FeeBreakdown = ({
   /** eg: "0.03%" */
   const maxSettingsRelativeFee = useMemo(
     () =>
-      feeConfigValues?.max_cj_fee_rel ? `${feeConfigValues.max_cj_fee_rel * 100}%` : t('send.fee_breakdown.not_set'),
+      feeConfigValues?.max_cj_fee_rel
+        ? `${factorToPercentage(feeConfigValues.max_cj_fee_rel)}%`
+        : t('send.fee_breakdown.not_set'),
     [feeConfigValues, t]
   )
 
   /** eg: 44658 (expressed in sats) */
   const maxEstimatedRelativeFee = useMemo(
     () =>
-      feeConfigValues?.max_cj_fee_rel && numCollaborators && amount
-        ? amount * feeConfigValues.max_cj_fee_rel * numCollaborators >= 1
-          ? Math.ceil(amount * feeConfigValues.max_cj_fee_rel) * numCollaborators
-          : null
+      feeConfigValues?.max_cj_fee_rel && numCollaborators && amount && amount > 0
+        ? Math.ceil(amount * feeConfigValues.max_cj_fee_rel) * numCollaborators
         : null,
     [feeConfigValues, amount, numCollaborators]
   )
@@ -120,7 +118,7 @@ const FeeBreakdown = ({
             <Trans
               i18nKey="send.fee_breakdown.fee_card_subtitle"
               components={{
-                a: <Link to={routes.settings} className="text-decoration-underline text-secondary" />,
+                1: <span className="text-decoration-underline link-secondary" />,
               }}
               values={{
                 numCollaborators,
@@ -146,7 +144,7 @@ const FeeBreakdown = ({
             <Trans
               i18nKey="send.fee_breakdown.fee_card_subtitle"
               components={{
-                a: <Link to={routes.settings} className="text-decoration-underline text-secondary" />,
+                1: <span className="text-decoration-underline link-secondary" />,
               }}
               values={{
                 numCollaborators,

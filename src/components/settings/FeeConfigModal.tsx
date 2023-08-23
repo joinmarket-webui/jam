@@ -46,16 +46,25 @@ interface FeeConfigModalProps {
   onHide: () => void
   onSuccess?: () => void
   onCancel?: () => void
+  defaultActiveSectionKey?: FeeConfigSectionKey
 }
+
+export type FeeConfigSectionKey = 'tx_fee' | 'cj_fee'
+const TX_FEE_SECTION_KEY: FeeConfigSectionKey = 'tx_fee'
+const CJ_FEE_SECTION_KEY: FeeConfigSectionKey = 'cj_fee'
 
 interface FeeConfigFormProps {
   initialValues: FeeValues
   validate: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => FormikErrors<FeeValues>
   onSubmit: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => void
+  defaultActiveSectionKey?: FeeConfigSectionKey
 }
 
 const FeeConfigForm = forwardRef(
-  ({ onSubmit, validate, initialValues }: FeeConfigFormProps, ref: React.Ref<HTMLFormElement>) => {
+  (
+    { onSubmit, validate, initialValues, defaultActiveSectionKey }: FeeConfigFormProps,
+    ref: React.Ref<HTMLFormElement>
+  ) => {
     const { t, i18n } = useTranslation()
 
     const [txFeesUnit, setTxFeesUnit] = useState<TxFeeValueUnit>(toTxFeeValueUnit(initialValues.tx_fees) || 'blocks')
@@ -68,8 +77,8 @@ const FeeConfigForm = forwardRef(
       >
         {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
           <rb.Form ref={ref} onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-            <rb.Accordion flush>
-              <rb.Accordion.Item eventKey="0">
+            <rb.Accordion flush defaultActiveKey={defaultActiveSectionKey}>
+              <rb.Accordion.Item eventKey={TX_FEE_SECTION_KEY}>
                 <rb.Accordion.Header>
                   <span
                     className={classNames({
@@ -218,7 +227,7 @@ const FeeConfigForm = forwardRef(
                   </rb.Form.Group>
                 </rb.Accordion.Body>
               </rb.Accordion.Item>
-              <rb.Accordion.Item eventKey="1">
+              <rb.Accordion.Item eventKey={CJ_FEE_SECTION_KEY}>
                 <rb.Accordion.Header>
                   <span
                     className={classNames({
@@ -308,7 +317,13 @@ const FeeConfigForm = forwardRef(
   }
 )
 
-export default function FeeConfigModal({ show, onHide, onSuccess, onCancel }: FeeConfigModalProps) {
+export default function FeeConfigModal({
+  show,
+  onHide,
+  onSuccess,
+  onCancel,
+  defaultActiveSectionKey,
+}: FeeConfigModalProps) {
   const { t } = useTranslation()
   const updateConfigValues = useUpdateConfigValues()
   const loadFeeConfigValues = useLoadFeeConfigValues()
@@ -520,7 +535,13 @@ export default function FeeConfigModal({ show, onHide, onSuccess, onCancel }: Fe
           ) : (
             <>
               {feeConfigValues && (
-                <FeeConfigForm ref={formRef} initialValues={feeConfigValues} validate={validate} onSubmit={submit} />
+                <FeeConfigForm
+                  ref={formRef}
+                  initialValues={feeConfigValues}
+                  validate={validate}
+                  onSubmit={submit}
+                  defaultActiveSectionKey={defaultActiveSectionKey}
+                />
               )}
             </>
           )}

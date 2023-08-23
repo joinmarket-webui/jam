@@ -290,7 +290,7 @@ main {
 }
 
 .text-small {
-  font-size: 0.875rem; /* var(--bs-font-size-sm); */
+  font-size: 0.875rem;
 }
 
 /* Fullscreen Overlays */
@@ -486,6 +486,10 @@ h2 {
 .tooltip {
   /* allow tooltips in navbar and overlays */
   z-index: 1200;
+}
+
+.link-secondary:hover {
+  cursor: pointer;
 }
 
 /* Wallets Styles */
