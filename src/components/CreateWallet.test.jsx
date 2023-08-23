@@ -11,6 +11,7 @@ import CreateWallet from './CreateWallet'
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
+  getGetinfo: jest.fn(),
   getSession: jest.fn(),
   postWalletCreate: jest.fn(),
 }))
@@ -32,6 +33,7 @@ describe('<CreateWallet />', () => {
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
+    apiMock.getGetinfo.mockResolvedValue(neverResolvingPromise)
     apiMock.getSession.mockReturnValue(neverResolvingPromise)
   })
 

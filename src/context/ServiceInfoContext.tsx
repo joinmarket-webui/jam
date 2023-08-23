@@ -53,21 +53,57 @@ interface JmSessionData {
   rescanning: boolean
 }
 
+interface JmGetInfoData {
+  version: string
+}
+
+type SemVer = { major: number; minor: number; patch: number; raw: string }
+const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
+
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
 type RescanBlockchainInProgressFlag = { rescanning: boolean }
 
+type SessionInfo = {
+  walletName: Api.WalletName | null
+  schedule: Schedule | null
+  offers: Offer[] | null
+  nickname: string | null
+}
+type ServerInfo = {
+  server?: {
+    version?: SemVer
+  }
+}
+
 type ServiceInfo = SessionFlag &
   MakerRunningFlag &
   CoinjoinInProgressFlag &
-  RescanBlockchainInProgressFlag & {
-    walletName: Api.WalletName | null
-    schedule: Schedule | null
-    offers: Offer[] | null
-    nickname: string | null
+  RescanBlockchainInProgressFlag &
+  SessionInfo &
+  ServerInfo
+type ServiceInfoUpdate =
+  | ServiceInfo
+  | MakerRunningFlag
+  | CoinjoinInProgressFlag
+  | RescanBlockchainInProgressFlag
+  | ServerInfo
+
+const versionRegex = new RegExp(/^(\d+)\.(\d+)\.(\d+).*$/)
+const toSemVer = (data: JmGetInfoData): SemVer => {
+  const arr = versionRegex.exec(data.version)
+  if (!arr || arr.length < 4) {
+    return UNKNOWN_VERSION
   }
-type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag | RescanBlockchainInProgressFlag
+
+  return {
+    major: parseInt(arr[1], 10),
+    minor: parseInt(arr[2], 10),
+    patch: parseInt(arr[3], 10),
+    raw: data.version,
+  }
+}
 
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
@@ -90,6 +126,34 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
     null
   )
   const [connectionError, setConnectionError] = useState<Error>()
+
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    Api.getGetinfo({ signal: abortCtrl.signal })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((data: JmGetInfoData) => {
+        dispatchServiceInfo({
+          server: {
+            version: toSemVer(data),
+          },
+        })
+      })
+      .catch((err) => {
+        const notFound = err.response.status === 404
+        if (notFound) {
+          dispatchServiceInfo({
+            server: {
+              version: UNKNOWN_VERSION,
+            },
+          })
+        }
+      })
+
+    return () => {
+      abortCtrl.abort()
+    }
+  }, [connectionError])
 
   useEffect(() => {
     if (connectionError) {

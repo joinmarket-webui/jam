@@ -9,6 +9,7 @@ import Wallets from './Wallets'
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
+  getGetinfo: jest.fn(),
   getSession: jest.fn(),
   getWalletAll: jest.fn(),
   postWalletUnlock: jest.fn(),
@@ -37,6 +38,7 @@ describe('<Wallets />', () => {
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
+    apiMock.getGetinfo.mockResolvedValue(neverResolvingPromise)
     apiMock.getSession.mockResolvedValue(neverResolvingPromise)
   })
 
