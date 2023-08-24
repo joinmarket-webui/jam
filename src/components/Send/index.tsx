@@ -57,11 +57,6 @@ function SweepAccordionToggle({ eventKey }: SweepAccordionToggleProps) {
   )
 }
 
-type Alert = {
-  variant: 'success' | 'danger'
-  message: string
-}
-
 type SendProps = {
   wallet: CurrentWallet
 }
@@ -78,7 +73,7 @@ export default function Send({ wallet }: SendProps) {
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
 
-  const [alert, setAlert] = useState<Alert>()
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
@@ -90,7 +85,7 @@ export default function Send({ wallet }: SendProps) {
   const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
-  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<Alert>()
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning || waitForUtxosToBeSpent.length > 0,
@@ -636,9 +631,16 @@ export default function Send({ wallet }: SendProps) {
           </rb.Alert>
         )}
         {paymentSuccessfulInfoAlert && (
-          <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
-            {paymentSuccessfulInfoAlert.message}
-          </rb.Alert>
+          <>
+            <div className="d-flex align-items-center justify-content-center mb-2">
+              <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
+                <Sprite symbol="checkmark" width="24" height="24" />
+              </div>
+            </div>
+            <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
+              {paymentSuccessfulInfoAlert.message}
+            </rb.Alert>
+          </>
         )}
         {!isLoading && walletInfo && (
           <JarSelectorModal
