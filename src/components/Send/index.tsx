@@ -141,7 +141,7 @@ export default function Send({ wallet }: SendProps) {
     return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === sourceJarIndex)
   }, [walletInfo, sourceJarIndex])
 
-  const coinjoinPreconditionSummary = useMemo(() => {
+  const sourceJarCoinjoinPreconditionSummary = useMemo(() => {
     if (sourceJarUtxos === null) return null
     return buildCoinjoinRequirementSummary(sourceJarUtxos)
   }, [sourceJarUtxos])
@@ -151,23 +151,24 @@ export default function Send({ wallet }: SendProps) {
   const submitButtonRef = useRef<HTMLButtonElement>(null)
   const submitButtonOptions = useMemo(() => {
     if (!isLoading) {
-      if (!isCoinjoin)
+      if (!isCoinjoin) {
         return {
           variant: 'danger',
           text: t('send.button_send_without_improved_privacy'),
         }
-      if (coinjoinPreconditionSummary && !coinjoinPreconditionSummary.isFulfilled)
+      } else if (sourceJarCoinjoinPreconditionSummary?.isFulfilled === false) {
         return {
           variant: 'warning',
           text: t('send.button_send_despite_warning'),
         }
+      }
     }
 
     return {
       variant: 'dark',
       text: t('send.button_send'),
     }
-  }, [isLoading, isCoinjoin, coinjoinPreconditionSummary, t])
+  }, [isLoading, isCoinjoin, sourceJarCoinjoinPreconditionSummary, t])
 
   const formIsValid = useMemo(() => {
     return (
@@ -684,6 +685,13 @@ export default function Send({ wallet }: SendProps) {
                       it.calculatedTotalBalanceInSats,
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats
                     )}
+                    variant={
+                      it.accountIndex === sourceJarIndex &&
+                      isCoinjoin &&
+                      sourceJarCoinjoinPreconditionSummary?.isFulfilled === false
+                        ? 'warning'
+                        : undefined
+                    }
                     onClick={(jarIndex) => setSourceJarIndex(jarIndex)}
                   />
                 ))}
@@ -691,14 +699,17 @@ export default function Send({ wallet }: SendProps) {
             )}
           </rb.Form.Group>
 
-          {!isLoading && !isOperationDisabled && isCoinjoin && coinjoinPreconditionSummary?.isFulfilled === false && (
-            <div className="mb-4">
-              <CoinjoinPreconditionViolationAlert
-                summary={coinjoinPreconditionSummary}
-                i18nPrefix="send.coinjoin_precondition."
-              />
-            </div>
-          )}
+          {!isLoading &&
+            !isOperationDisabled &&
+            isCoinjoin &&
+            sourceJarCoinjoinPreconditionSummary?.isFulfilled === false && (
+              <div className="mb-4">
+                <CoinjoinPreconditionViolationAlert
+                  summary={sourceJarCoinjoinPreconditionSummary}
+                  i18nPrefix="send.coinjoin_precondition."
+                />
+              </div>
+            )}
 
           <rb.Form.Group className="mb-4" controlId="destination">
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>

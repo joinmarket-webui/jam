@@ -62,6 +62,7 @@
   --bs-code-color: var(--bs-blue);
   color: var(--bs-blue);
   font-size: 0.75rem;
+  min-height: 1rem;
 }
 
 .selectableJarContainer {
@@ -77,21 +78,20 @@
   cursor: none;
 }
 
-.selectableJarContainer > .selectionCircle {
-  height: 1.25rem;
-  width: 1.25rem;
-  margin-top: 0.8rem;
+.selectableJarContainer .selectionCircle {
+  height: 1.5rem;
+  width: 1.5rem;
 
   border-radius: 50%;
   display: inline-block;
   border: 1px solid var(--bs-body-color);
 }
 
-.selectableJarContainer:not(.selectable) > .selectionCircle {
+.selectableJarContainer:not(.selectable) .selectionCircle {
   visibility: hidden;
 }
 
-.selectableJarContainer.selected > .selectionCircle {
+.selectableJarContainer.selected .selectionCircle {
   visibility: visible !important;
   background-color: var(--bs-body-color);
 }

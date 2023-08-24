@@ -22,6 +22,7 @@ interface JarProps {
 interface SelectableJarProps {
   isSelectable: boolean
   isSelected: boolean
+  variant?: 'default' | 'warning'
   onClick: (index: JarIndex) => void
 }
 
@@ -127,16 +128,18 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarPr
         <div className={`${styles.jarBalance} jar-balance-container-hook`}>
           <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
         </div>
-        {frozenBalance && frozenBalance > 0 ? (
-          <div className={`${styles.jarBalance} ${styles.frozen} small jar-balance-container-hook`}>
-            <Sprite symbol="snowflake" width="14" height="14" />
-            <Balance
-              valueString={frozenBalance.toString()}
-              convertToUnit={settings.unit}
-              showBalance={settings.showBalance}
-            />
-          </div>
-        ) : null}
+        <div className={`${styles.jarBalance} ${styles.frozen} jar-balance-container-hook`}>
+          {frozenBalance && frozenBalance > 0 ? (
+            <>
+              <Sprite symbol="snowflake" width="14" height="14" />
+              <Balance
+                valueString={frozenBalance.toString()}
+                convertToUnit={settings.unit}
+                showBalance={settings.showBalance}
+              />
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   )
@@ -153,6 +156,7 @@ const SelectableJar = ({
   isSelectable,
   isSelected,
   onClick,
+  variant = 'default',
 }: JarProps & SelectableJarProps) => {
   return (
     <div
@@ -163,7 +167,14 @@ const SelectableJar = ({
       onClick={() => isSelectable && onClick(index)}
     >
       <Jar index={index} balance={balance} frozenBalance={frozenBalance} fillLevel={fillLevel} />
-      <div className={styles.selectionCircle}></div>
+      <div className="d-flex justify-content-center align-items-center gap-1 mt-2 position-relative">
+        <div className={styles.selectionCircle} />
+        {variant === 'warning' && (
+          <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark p-0">
+            <Sprite symbol="warn" width="20" height="20" />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
