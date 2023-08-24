@@ -556,10 +556,9 @@ export default function Send({ wallet }: SendProps) {
                   >
                     time-locked
                   </a>
-                  . Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero
-                  change. The exact transaction amount can only be calculated by JoinMarket at the point when the
-                  transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount.
-                  Refer to the
+                  . Mining fees and collaborator fees will be deducted from the amount so as to leave zero change. The
+                  exact transaction amount can only be calculated by JoinMarket at the point when the transaction is
+                  made. Therefore the estimated amount shown might deviate from the actually sent amount. Refer to the
                   <a
                     href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
                     target="_blank"
