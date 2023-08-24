@@ -850,7 +850,16 @@ export default function Send({ wallet }: SendProps) {
                           className="text-decoration-underline link-secondary"
                         />
                       ),
-                      2: (
+                    }}
+                  />
+                </rb.Form.Text>
+                <rb.Form.Text className="d-flex align-items-center mb-4">
+                  <Sprite className="rounded-circle border border-1 me-2" symbol="info" width="18" height="18" />
+                  <Trans
+                    i18nKey="send.fee_breakdown.alert_collaborator_fee_note"
+                    parent="div"
+                    components={{
+                      1: (
                         <span
                           onClick={() => {
                             setActiveFeeConfigModalSection('tx_fee')
