@@ -579,6 +579,7 @@ h2 {
   --bs-code-color: var(--bs-gray-300);
   --bs-gray-dark: #16191c;
   --bs-black: #000;
+  --bs-border-color-translucent: var(--bs-gray-800);
 }
 
 :root[data-theme='dark'] .accordion {
@@ -595,11 +596,6 @@ h2 {
 
 :root[data-theme='dark'] .card {
   background-color: var(--bs-gray-900);
-}
-
-:root[data-theme='dark']
-  .card:not(.border-success):not(.border-danger):not(.border-warning):not(.border-primary):not(.border-info):not(.border-light):not(.border-dark) {
-  border-color: var(--bs-gray-800) !important;
 }
 
 :root[data-theme='dark'] .btn:not(.btn-light) {
