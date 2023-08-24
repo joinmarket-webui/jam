@@ -117,13 +117,6 @@ export default function Send({ wallet }: SendProps) {
     )
   }, [walletInfo])
 
-  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
-    feeConfigValues,
-    amount,
-    numCollaborators,
-    isCoinjoin,
-  })
-
   useEffect(
     function preSelectSourceJarIfPossible() {
       if (isLoading) return
@@ -154,6 +147,13 @@ export default function Send({ wallet }: SendProps) {
     if (sourceJarUtxos === null) return null
     return buildCoinjoinRequirementSummary(sourceJarUtxos)
   }, [sourceJarUtxos])
+
+  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
+    feeConfigValues,
+    amount: isSweep && accountBalance ? accountBalance.calculatedAvailableBalanceInSats : amount,
+    numCollaborators,
+    isCoinjoin,
+  })
 
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
@@ -863,15 +863,18 @@ export default function Send({ wallet }: SendProps) {
                     }}
                   />
                 </rb.Form.Text>
-                <FeeBreakdown
-                  feeConfigValues={feeConfigValues}
-                  numCollaborators={numCollaborators}
-                  amount={amount}
-                  onClick={() => {
-                    setActiveFeeConfigModalSection('cj_fee')
-                    setShowFeeConfigModal(true)
-                  }}
-                />
+
+                {accountBalance && (
+                  <FeeBreakdown
+                    feeConfigValues={feeConfigValues}
+                    numCollaborators={numCollaborators}
+                    amount={isSweep ? accountBalance.calculatedAvailableBalanceInSats : amount}
+                    onClick={() => {
+                      setActiveFeeConfigModalSection('cj_fee')
+                      setShowFeeConfigModal(true)
+                    }}
+                  />
+                )}
 
                 {showFeeConfigModal && (
                   <FeeConfigModal
