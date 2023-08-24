@@ -629,18 +629,6 @@ export default function Send({ wallet }: SendProps) {
             {paymentSuccessfulInfoAlert.message}
           </rb.Alert>
         )}
-        {!isLoading &&
-          !isOperationDisabled &&
-          isCoinjoin &&
-          coinjoinPreconditionSummary &&
-          !coinjoinPreconditionSummary.isFulfilled && (
-            <div className="mb-4">
-              <CoinjoinPreconditionViolationAlert
-                summary={coinjoinPreconditionSummary}
-                i18nPrefix="send.coinjoin_precondition."
-              />
-            </div>
-          )}
         {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
@@ -702,6 +690,16 @@ export default function Send({ wallet }: SendProps) {
               </div>
             )}
           </rb.Form.Group>
+
+          {!isLoading && !isOperationDisabled && isCoinjoin && coinjoinPreconditionSummary?.isFulfilled === false && (
+            <div className="mb-4">
+              <CoinjoinPreconditionViolationAlert
+                summary={coinjoinPreconditionSummary}
+                i18nPrefix="send.coinjoin_precondition."
+              />
+            </div>
+          )}
+
           <rb.Form.Group className="mb-4" controlId="destination">
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
             <div className="position-relative">
