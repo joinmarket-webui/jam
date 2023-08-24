@@ -78,6 +78,89 @@ const FeeConfigForm = forwardRef(
         {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
           <rb.Form ref={ref} onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
             <rb.Accordion flush defaultActiveKey={defaultActiveSectionKey}>
+              <rb.Accordion.Item eventKey={CJ_FEE_SECTION_KEY}>
+                <rb.Accordion.Header>
+                  <span
+                    className={classNames({
+                      'text-danger': !!errors.max_cj_fee_abs || !!errors.max_cj_fee_rel,
+                    })}
+                  >
+                    {t('settings.fees.title_max_cj_fee_settings')}
+                  </span>
+                </rb.Accordion.Header>
+                <rb.Accordion.Body>
+                  <div className="mb-4 text-secondary">{t('settings.fees.description_max_cj_fee_settings')}</div>
+                  <rb.Form.Text className="d-flex align-items-center mb-4 fw-bold">
+                    <Sprite className={classNames(styles.infoIcon, 'me-2')} symbol="info" width="18" height="18" />
+                    <Trans i18nKey="settings.fees.subtitle_max_cj_fee" />
+                  </rb.Form.Text>
+                  <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
+                    <rb.Form.Label>{t('settings.fees.label_max_cj_fee_abs')}</rb.Form.Label>
+                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_abs')}</rb.Form.Text>
+                    <rb.InputGroup hasValidation>
+                      <rb.InputGroup.Text id="maxCjFeeAbs-addon1" className={styles.inputGroupText}>
+                        <Sprite symbol="sats" width="24" height="24" />
+                      </rb.InputGroup.Text>
+                      <rb.Form.Control
+                        aria-label={t('settings.fees.label_max_cj_fee_abs')}
+                        className="slashed-zeroes"
+                        name="max_cj_fee_abs"
+                        type="number"
+                        placeholder="1"
+                        value={isValidNumber(values.max_cj_fee_abs) ? values.max_cj_fee_abs : ''}
+                        disabled={isSubmitting}
+                        onBlur={handleBlur}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value, 10)
+                          setFieldValue('max_cj_fee_abs', value, true)
+                        }}
+                        isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
+                        isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
+                        min={CJ_FEE_ABS_MIN}
+                        max={CJ_FEE_ABS_MAX}
+                        step={1}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_abs}</rb.Form.Control.Feedback>
+                    </rb.InputGroup>
+                  </rb.Form.Group>
+
+                  <rb.Form.Group controlId="max_cj_fee_rel" className="mb-4">
+                    <rb.Form.Label>
+                      {t('settings.fees.label_max_cj_fee_rel', {
+                        fee: isValidNumber(values.max_cj_fee_rel)
+                          ? `(${factorToPercentage(values.max_cj_fee_rel!)}%)`
+                          : '',
+                      })}
+                    </rb.Form.Label>
+                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_rel')}</rb.Form.Text>
+                    <rb.InputGroup hasValidation>
+                      <rb.InputGroup.Text id="maxCjFeeRel-addon1" className={styles.inputGroupText}>
+                        %
+                      </rb.InputGroup.Text>
+                      <rb.Form.Control
+                        aria-label={t('settings.fees.label_max_cj_fee_rel')}
+                        className="slashed-zeroes"
+                        name="max_cj_fee_rel"
+                        type="number"
+                        placeholder="0"
+                        value={isValidNumber(values.max_cj_fee_rel) ? factorToPercentage(values.max_cj_fee_rel!) : ''}
+                        disabled={isSubmitting}
+                        onBlur={handleBlur}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value)
+                          setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
+                        }}
+                        isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
+                        isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
+                        min={factorToPercentage(CJ_FEE_REL_MIN)}
+                        max={factorToPercentage(CJ_FEE_REL_MAX)}
+                        step={0.0001}
+                      />
+                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_rel}</rb.Form.Control.Feedback>
+                    </rb.InputGroup>
+                  </rb.Form.Group>
+                </rb.Accordion.Body>
+              </rb.Accordion.Item>
               <rb.Accordion.Item eventKey={TX_FEE_SECTION_KEY}>
                 <rb.Accordion.Header>
                   <span
@@ -89,6 +172,7 @@ const FeeConfigForm = forwardRef(
                   </span>
                 </rb.Accordion.Header>
                 <rb.Accordion.Body>
+                  <div className="mb-4 text-secondary">{t('settings.fees.description_general_fee_settings')}</div>
                   <rb.Form.Label>{t('settings.fees.label_tx_fees')}</rb.Form.Label>
                   {txFeesUnit && (
                     <rb.Form.Group className="my-2 d-flex justify-content-center" controlId="offertype">
@@ -223,88 +307,6 @@ const FeeConfigForm = forwardRef(
                         step={0.01}
                       />
                       <rb.Form.Control.Feedback type="invalid">{errors.tx_fees_factor}</rb.Form.Control.Feedback>
-                    </rb.InputGroup>
-                  </rb.Form.Group>
-                </rb.Accordion.Body>
-              </rb.Accordion.Item>
-              <rb.Accordion.Item eventKey={CJ_FEE_SECTION_KEY}>
-                <rb.Accordion.Header>
-                  <span
-                    className={classNames({
-                      'text-danger': !!errors.max_cj_fee_abs || !!errors.max_cj_fee_rel,
-                    })}
-                  >
-                    {t('settings.fees.title_max_cj_fee_settings')}
-                  </span>
-                </rb.Accordion.Header>
-                <rb.Accordion.Body>
-                  <rb.Form.Text className="d-flex align-items-center mb-4">
-                    <Sprite className={classNames(styles.infoIcon, 'me-1')} symbol="info" width="18" height="18" />
-                    {t('settings.fees.subtitle_max_cj_fee')}
-                  </rb.Form.Text>
-                  <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
-                    <rb.Form.Label>{t('settings.fees.label_max_cj_fee_abs')}</rb.Form.Label>
-                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_abs')}</rb.Form.Text>
-                    <rb.InputGroup hasValidation>
-                      <rb.InputGroup.Text id="maxCjFeeAbs-addon1" className={styles.inputGroupText}>
-                        <Sprite symbol="sats" width="24" height="24" />
-                      </rb.InputGroup.Text>
-                      <rb.Form.Control
-                        aria-label={t('settings.fees.label_max_cj_fee_abs')}
-                        className="slashed-zeroes"
-                        name="max_cj_fee_abs"
-                        type="number"
-                        placeholder="1"
-                        value={isValidNumber(values.max_cj_fee_abs) ? values.max_cj_fee_abs : ''}
-                        disabled={isSubmitting}
-                        onBlur={handleBlur}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value, 10)
-                          setFieldValue('max_cj_fee_abs', value, true)
-                        }}
-                        isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
-                        isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
-                        min={CJ_FEE_ABS_MIN}
-                        max={CJ_FEE_ABS_MAX}
-                        step={1}
-                      />
-                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_abs}</rb.Form.Control.Feedback>
-                    </rb.InputGroup>
-                  </rb.Form.Group>
-
-                  <rb.Form.Group controlId="max_cj_fee_rel" className="mb-4">
-                    <rb.Form.Label>
-                      {t('settings.fees.label_max_cj_fee_rel', {
-                        fee: isValidNumber(values.max_cj_fee_rel)
-                          ? `(${factorToPercentage(values.max_cj_fee_rel!)}%)`
-                          : '',
-                      })}
-                    </rb.Form.Label>
-                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_rel')}</rb.Form.Text>
-                    <rb.InputGroup hasValidation>
-                      <rb.InputGroup.Text id="maxCjFeeRel-addon1" className={styles.inputGroupText}>
-                        %
-                      </rb.InputGroup.Text>
-                      <rb.Form.Control
-                        aria-label={t('settings.fees.label_max_cj_fee_rel')}
-                        className="slashed-zeroes"
-                        name="max_cj_fee_rel"
-                        type="number"
-                        placeholder="0"
-                        value={isValidNumber(values.max_cj_fee_rel) ? factorToPercentage(values.max_cj_fee_rel!) : ''}
-                        disabled={isSubmitting}
-                        onBlur={handleBlur}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value)
-                          setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
-                        }}
-                        isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
-                        isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
-                        min={factorToPercentage(CJ_FEE_REL_MIN)}
-                        max={factorToPercentage(CJ_FEE_REL_MAX)}
-                        step={0.0001}
-                      />
-                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_rel}</rb.Form.Control.Feedback>
                     </rb.InputGroup>
                   </rb.Form.Group>
                 </rb.Accordion.Body>
