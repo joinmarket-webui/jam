@@ -598,25 +598,35 @@ export default function Send({ wallet }: SendProps) {
                   <rb.Row className="align-items-center">
                     <rb.Col>{t('send.text_maker_running')}</rb.Col>
                     <rb.Col xs="auto">
-                      <Sprite symbol="caret-right" width="24px" height="24px" />
+                      <Sprite symbol="caret-right" width="24" height="24" />
                     </rb.Col>
                   </rb.Row>
                 </rb.Alert>
               </Link>
             )}
             {isCoinjoinInProgress && (
-              <rb.Alert variant="info" className="mb-4 d-flex align-items-center">
-                {t('send.text_coinjoin_already_running')}
-
+              <div className="mb-4">
+                <div className="d-flex align-items-center justify-content-center mb-2">
+                  <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
+                    <Sprite symbol="clock" width="32" height="32" />
+                  </div>
+                </div>
+                <rb.Alert variant="success" className="d-flex align-items-center">
+                  {t('send.text_coinjoin_already_running')}
+                  <Sprite className="ms-auto" symbol="joining" width="20" height="20" />
+                </rb.Alert>
                 <rb.Button
-                  variant={'outline-light'}
-                  className="ms-auto"
+                  variant="none"
+                  className="w-100 mb-4"
                   disabled={showConfirmAbortModal}
                   onClick={() => abortCoinjoin()}
                 >
-                  {t('global.abort')}
+                  <div className="d-flex justify-content-center align-items-center">
+                    <Sprite symbol="cancel" width="24" height="24" className="me-1" />
+                    {t('global.abort')}
+                  </div>
                 </rb.Button>
-              </rb.Alert>
+              </div>
             )}
           </>
         </rb.Fade>
