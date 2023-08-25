@@ -264,12 +264,12 @@
     "fee_breakdown": {
       "title": "Collaborator fees: {{ maxCollaboratorFee }}",
       "subtitle": "Depending on the amount, the number of collaborators and the <1>preset limits</1>, you can see the maximum collaborator fees for the upcoming collaborative transaction.",
-      "alert_collaborator_fee_note": "This <strong>does not include regular <1>mining fees</1><strong>.",
+      "alert_collaborator_fee_note": "This value <strong>does not include regular <1>mining fees</1><strong>.",
       "absolute_limit": "Absolute fee limit",
       "relative_limit": "Relative fee limit",
       "fee_card_subtitle": "<1>{{ maxFee }}</1> * {{ numCollaborators }}",
-      "not_set": "Not set",
-      "placeholder_amount": "Enter amount..."
+      "placeholder_config_value_not_present": "Undefined",
+      "placeholder_amount_missing_amount": "Enter amount..."
     },
     "confirm_send_modal": {
       "title": "Confirm payment",

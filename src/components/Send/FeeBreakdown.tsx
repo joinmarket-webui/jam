@@ -6,6 +6,7 @@ import * as rb from 'react-bootstrap'
 import { useSettings } from '../../context/SettingsContext'
 import { SATS, formatSats, factorToPercentage } from '../../utils'
 import { FeeValues } from '../../hooks/Fees'
+import { AmountSats } from '../../libs/JmWalletApi'
 
 interface FeeBreakdownProps {
   feeConfigValues?: FeeValues
@@ -15,12 +16,13 @@ interface FeeBreakdownProps {
 }
 
 type FeeCardProps = {
-  amount: number | null
+  amount: AmountSats | null
+  feeConfigValue: number | undefined
   highlight: boolean
   subtitle?: React.ReactNode
   onClick?: () => void
 }
-const FeeCard = ({ amount, highlight, subtitle, onClick }: FeeCardProps) => {
+const FeeCard = ({ amount, feeConfigValue, highlight, subtitle, onClick }: FeeCardProps) => {
   const settings = useSettings()
   const { t } = useTranslation()
 
@@ -32,13 +34,19 @@ const FeeCard = ({ amount, highlight, subtitle, onClick }: FeeCardProps) => {
         })}
       >
         <div className="fs-5">
-          {amount !== null ? (
-            <>
-              &le;
-              <Balance convertToUnit={SATS} valueString={amount.toString()} showBalance={true} />
-            </>
+          {feeConfigValue === undefined ? (
+            t('send.fee_breakdown.placeholder_config_value_not_present')
           ) : (
-            t('send.fee_breakdown.placeholder_amount')
+            <>
+              {amount === null ? (
+                t('send.fee_breakdown.placeholder_amount_missing_amount')
+              ) : (
+                <>
+                  &le;
+                  <Balance convertToUnit={SATS} valueString={amount.toString()} showBalance={true} />
+                </>
+              )}
+            </>
           )}
         </div>
         <div className="text-secondary text-small">{subtitle}</div>
@@ -60,7 +68,7 @@ const FeeBreakdown = ({
     () =>
       feeConfigValues?.max_cj_fee_rel
         ? `${factorToPercentage(feeConfigValues.max_cj_fee_rel)}%`
-        : t('send.fee_breakdown.not_set'),
+        : t('send.fee_breakdown.placeholder_config_value_not_present'),
     [feeConfigValues, t]
   )
 
@@ -78,7 +86,7 @@ const FeeBreakdown = ({
     () =>
       feeConfigValues?.max_cj_fee_abs
         ? `${formatSats(feeConfigValues.max_cj_fee_abs)} sats`
-        : t('send.fee_breakdown.not_set'),
+        : t('send.fee_breakdown.placeholder_config_value_not_present'),
     [feeConfigValues, t]
   )
 
@@ -114,6 +122,7 @@ const FeeBreakdown = ({
         <FeeCard
           highlight={isAbsoluteFeeHighlighted}
           amount={maxEstimatedAbsoluteFee}
+          feeConfigValue={feeConfigValues?.max_cj_fee_abs}
           subtitle={
             <Trans
               i18nKey="send.fee_breakdown.fee_card_subtitle"
@@ -140,6 +149,7 @@ const FeeBreakdown = ({
         <FeeCard
           highlight={isRelativeFeeHighlighted}
           amount={maxEstimatedRelativeFee}
+          feeConfigValue={feeConfigValues?.max_cj_fee_rel}
           subtitle={
             <Trans
               i18nKey="send.fee_breakdown.fee_card_subtitle"
