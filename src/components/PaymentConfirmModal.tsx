@@ -4,57 +4,15 @@ import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
-import { estimateMaxCollaboratorFee, FeeValues, toTxFeeValueUnit } from '../hooks/Fees'
-
-import { isValidNumber } from '../utils'
+import { FeeValues, useEstimatedMaxCollaboratorFee, toTxFeeValueUnit } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
-
 import styles from './PaymentConfirmModal.module.css'
 import { AmountSats } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
+import { isValidNumber } from '../utils'
 
-interface PaymentDisplayInfo {
-  sourceJarIndex?: JarIndex
-  destination: String
-  amount: AmountSats
-  isSweep: boolean
-  isCoinjoin: boolean
-  numCollaborators?: number
-  feeConfigValues?: FeeValues
-  showPrivacyInfo?: boolean
-}
-
-interface PaymentConfirmModalProps extends ConfirmModalProps {
-  data: PaymentDisplayInfo
-}
-
-export function PaymentConfirmModal({
-  data: {
-    sourceJarIndex,
-    destination,
-    amount,
-    isSweep,
-    isCoinjoin,
-    numCollaborators,
-    feeConfigValues,
-    showPrivacyInfo = true,
-  },
-  ...confirmModalProps
-}: PaymentConfirmModalProps) {
+const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) => {
   const { t } = useTranslation()
-  const settings = useSettings()
-
-  const estimatedMaxCollaboratorFee = useMemo(() => {
-    if (!isCoinjoin || !feeConfigValues) return null
-    if (!isValidNumber(amount) || !isValidNumber(numCollaborators)) return null
-    if (!isValidNumber(feeConfigValues.max_cj_fee_abs) || !isValidNumber(feeConfigValues.max_cj_fee_rel)) return null
-    return estimateMaxCollaboratorFee({
-      amount,
-      collaborators: numCollaborators!,
-      maxFeeAbs: feeConfigValues.max_cj_fee_abs!,
-      maxFeeRel: feeConfigValues.max_cj_fee_rel!,
-    })
-  }, [amount, isCoinjoin, numCollaborators, feeConfigValues])
 
   const miningFeeText = useMemo(() => {
     if (!feeConfigValues) return null
@@ -88,6 +46,48 @@ export function PaymentConfirmModal({
       })
     }
   }, [t, feeConfigValues])
+
+  return miningFeeText
+}
+
+interface PaymentDisplayInfo {
+  sourceJarIndex?: JarIndex
+  destination: String
+  amount: AmountSats
+  isSweep: boolean
+  isCoinjoin: boolean
+  numCollaborators?: number
+  feeConfigValues?: FeeValues
+  showPrivacyInfo?: boolean
+}
+
+interface PaymentConfirmModalProps extends ConfirmModalProps {
+  data: PaymentDisplayInfo
+}
+
+export function PaymentConfirmModal({
+  data: {
+    sourceJarIndex,
+    destination,
+    amount,
+    isSweep,
+    isCoinjoin,
+    numCollaborators,
+    feeConfigValues,
+    showPrivacyInfo = true,
+  },
+  ...confirmModalProps
+}: PaymentConfirmModalProps) {
+  const { t } = useTranslation()
+  const settings = useSettings()
+
+  const miningFeeText = useMiningFeeText({ feeConfigValues })
+  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
+    isCoinjoin,
+    feeConfigValues,
+    amount,
+    numCollaborators: numCollaborators || null,
+  })
 
   return (
     <ConfirmModal {...confirmModalProps}>

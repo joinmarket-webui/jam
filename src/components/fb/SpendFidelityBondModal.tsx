@@ -10,7 +10,7 @@ import Sprite from '../Sprite'
 import { SelectJar } from './FidelityBondSteps'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { jarInitial } from '../jars/Jar'
-import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
+import { useFeeConfigValues } from '../../hooks/Fees'
 
 import styles from './SpendFidelityBondModal.module.css'
 
@@ -156,7 +156,7 @@ const SpendFidelityBondModal = ({
 }: SpendFidelityBondModalProps) => {
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  const loadFeeConfigValues = useLoadFeeConfigValues()
+  const feeConfigValues = useFeeConfigValues()[0]
 
   const [alert, setAlert] = useState<SimpleAlert>()
   const [selectedDestinationJarIndex, setSelectedDestinationJarIndex] = useState<JarIndex | undefined>(
@@ -172,33 +172,12 @@ const SpendFidelityBondModal = ({
 
   const enableDestinationJarSelection = useMemo(() => destinationJarIndex === undefined, [destinationJarIndex])
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(!enableDestinationJarSelection)
-  const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
 
   const submitButtonRef = useRef<HTMLButtonElement>(null)
 
   const fidelityBond = useMemo(() => {
     return walletInfo.data.utxos.utxos.find((utxo) => utxo.utxo === fidelityBondId)
   }, [walletInfo, fidelityBondId])
-
-  useEffect(() => {
-    const abortCtrl = new AbortController()
-
-    loadFeeConfigValues(abortCtrl.signal)
-      .then((data) => {
-        if (abortCtrl.signal.aborted) return
-        setFeeConfigValues(data)
-      })
-      .catch((e) => {
-        if (abortCtrl.signal.aborted) return
-        // As fee config is not essential, don't raise an error on purpose.
-        // Fee settings cannot be displayed, but making a payment is still possible.
-        setFeeConfigValues(undefined)
-      })
-
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [loadFeeConfigValues])
 
   // This callback is responsible for updating the loading state when the
   // the payment is made. The wallet needs some time after a tx is sent

@@ -101,7 +101,7 @@ const ScheduleProgress = ({ schedule }) => {
             </Trans>
           )}
         </p>
-        <p className={['text-secondary', styles['text-small']].join(' ')}>{t('scheduler.progress_description')}</p>
+        <p className="text-secondary text-small">{t('scheduler.progress_description')}</p>
       </div>
       <div className={styles['schedule-progress']}>
         <div className={styles['progress-container']}>

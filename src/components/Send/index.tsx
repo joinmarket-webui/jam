@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
-
 import PageTitle from '../PageTitle'
 import ToggleSwitch from '../ToggleSwitch'
 import Sprite from '../Sprite'
@@ -15,15 +14,17 @@ import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViolationAlert'
 import CollaboratorsSelector from './CollaboratorsSelector'
 import Accordion from '../Accordion'
+import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
+import { useFeeConfigValues, useEstimatedMaxCollaboratorFee } from '../../hooks/Fees'
 
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
-import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
 
 import * as Api from '../../libs/JmWalletApi'
 import { routes } from '../../constants/routes'
+import { SATS, formatSats, isValidNumber } from '../../utils'
 
 import {
   enhanceDirectPaymentErrorMessageIfNecessary,
@@ -34,8 +35,8 @@ import {
   isValidJarIndex,
   isValidNumCollaborators,
 } from './helpers'
-import { SATS, isValidNumber } from '../../utils'
 import styles from './Send.module.css'
+import FeeBreakdown from './FeeBreakdown'
 
 const IS_COINJOIN_DEFAULT_VAL = true
 // initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
@@ -73,7 +74,6 @@ export default function Send({ wallet }: SendProps) {
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
   const loadConfigValue = useLoadConfigValue()
-  const loadFeeConfigValues = useLoadFeeConfigValues()
 
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
@@ -87,7 +87,9 @@ export default function Send({ wallet }: SendProps) {
   const [destinationJar, setDestinationJar] = useState<JarIndex | null>(null)
   const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
 
-  const [feeConfigValues, setFeeConfigValues] = useState<FeeValues>()
+  const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
+  const [activeFeeConfigModalSection, setActiveFeeConfigModalSection] = useState<FeeConfigSectionKey>()
+  const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<Alert>()
@@ -145,6 +147,13 @@ export default function Send({ wallet }: SendProps) {
     if (sourceJarUtxos === null) return null
     return buildCoinjoinRequirementSummary(sourceJarUtxos)
   }, [sourceJarUtxos])
+
+  const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
+    feeConfigValues,
+    amount: isSweep && accountBalance ? accountBalance.calculatedAvailableBalanceInSats : amount,
+    numCollaborators,
+    isCoinjoin,
+  })
 
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
@@ -287,25 +296,13 @@ export default function Send({ wallet }: SendProps) {
           setAlert({ variant: 'danger', message: err.message })
         })
 
-      const loadFeeValues = loadFeeConfigValues(abortCtrl.signal)
-        .then((data) => {
-          if (abortCtrl.signal.aborted) return
-          setFeeConfigValues(data)
-        })
-        .catch(() => {
-          if (abortCtrl.signal.aborted) return
-          // As fee config is not essential, don't raise an error on purpose.
-          // Fee settings cannot be displayed, but making a payment is still possible.
-          setFeeConfigValues(undefined)
-        })
-
-      Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig, loadFeeValues]).finally(
+      Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
         () => !abortCtrl.signal.aborted && setIsInitializing(false)
       )
 
       return () => abortCtrl.abort()
     },
-    [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, loadFeeConfigValues, t]
+    [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t]
   )
 
   useEffect(
@@ -559,10 +556,9 @@ export default function Send({ wallet }: SendProps) {
                   >
                     time-locked
                   </a>
-                  . Onchain transaction fees and market maker fees will be deducted from the amount so as to leave zero
-                  change. The exact transaction amount can only be calculated by JoinMarket at the point when the
-                  transaction is made. Therefore the estimated amount shown might deviate from the actually sent amount.
-                  Refer to the
+                  . Mining fees and collaborator fees will be deducted from the amount so as to leave zero change. The
+                  exact transaction amount can only be calculated by JoinMarket at the point when the transaction is
+                  made. Therefore the estimated amount shown might deviate from the actually sent amount. Refer to the
                   <a
                     href="https://github.com/JoinMarket-Org/JoinMarket-Docs/blob/master/High-level-design.md#joinmarket-transaction-types"
                     target="_blank"
@@ -833,6 +829,71 @@ export default function Send({ wallet }: SendProps) {
                 minNumCollaborators={minNumCollaborators}
                 disabled={isLoading || isOperationDisabled}
               />
+
+              <rb.Form.Group className="mt-4">
+                <rb.Form.Label className="mb-0">
+                  {t('send.fee_breakdown.title', {
+                    maxCollaboratorFee: estimatedMaxCollaboratorFee
+                      ? `≤${formatSats(estimatedMaxCollaboratorFee)} sats`
+                      : '...',
+                  })}
+                </rb.Form.Label>
+                <rb.Form.Text className="d-block text-secondary mb-2">
+                  <Trans
+                    i18nKey="send.fee_breakdown.subtitle"
+                    components={{
+                      1: (
+                        <span
+                          onClick={() => {
+                            setActiveFeeConfigModalSection('cj_fee')
+                            setShowFeeConfigModal(true)
+                          }}
+                          className="text-decoration-underline link-secondary"
+                        />
+                      ),
+                    }}
+                  />
+                </rb.Form.Text>
+                <rb.Form.Text className="d-flex align-items-center mb-4">
+                  <Sprite className="rounded-circle border border-1 me-2" symbol="info" width="18" height="18" />
+                  <Trans
+                    i18nKey="send.fee_breakdown.alert_collaborator_fee_note"
+                    parent="div"
+                    components={{
+                      1: (
+                        <span
+                          onClick={() => {
+                            setActiveFeeConfigModalSection('tx_fee')
+                            setShowFeeConfigModal(true)
+                          }}
+                          className="text-decoration-underline link-secondary"
+                        />
+                      ),
+                    }}
+                  />
+                </rb.Form.Text>
+
+                {accountBalance && (
+                  <FeeBreakdown
+                    feeConfigValues={feeConfigValues}
+                    numCollaborators={numCollaborators}
+                    amount={isSweep ? accountBalance.calculatedAvailableBalanceInSats : amount}
+                    onClick={() => {
+                      setActiveFeeConfigModalSection('cj_fee')
+                      setShowFeeConfigModal(true)
+                    }}
+                  />
+                )}
+
+                {showFeeConfigModal && (
+                  <FeeConfigModal
+                    show={showFeeConfigModal}
+                    onSuccess={() => reloadFeeConfigValues()}
+                    onHide={() => setShowFeeConfigModal(false)}
+                    defaultActiveSectionKey={activeFeeConfigModalSection}
+                  />
+                )}
+              </rb.Form.Group>
             </div>
           </Accordion>
         </rb.Form>
