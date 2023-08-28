@@ -58,11 +58,6 @@ function SweepAccordionToggle({ eventKey }: SweepAccordionToggleProps) {
   )
 }
 
-type Alert = {
-  variant: 'success' | 'danger'
-  message: string
-}
-
 type SendProps = {
   wallet: CurrentWallet
 }
@@ -78,7 +73,7 @@ export default function Send({ wallet }: SendProps) {
   const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
 
-  const [alert, setAlert] = useState<Alert>()
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
   const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
@@ -92,7 +87,7 @@ export default function Send({ wallet }: SendProps) {
   const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
 
   const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
-  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<Alert>()
+  const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning || waitForUtxosToBeSpent.length > 0,
@@ -143,7 +138,7 @@ export default function Send({ wallet }: SendProps) {
     return walletInfo.data.utxos.utxos.filter((it) => it.mixdepth === sourceJarIndex)
   }, [walletInfo, sourceJarIndex])
 
-  const coinjoinPreconditionSummary = useMemo(() => {
+  const sourceJarCoinjoinPreconditionSummary = useMemo(() => {
     if (sourceJarUtxos === null) return null
     return buildCoinjoinRequirementSummary(sourceJarUtxos)
   }, [sourceJarUtxos])
@@ -160,23 +155,24 @@ export default function Send({ wallet }: SendProps) {
   const submitButtonRef = useRef<HTMLButtonElement>(null)
   const submitButtonOptions = useMemo(() => {
     if (!isLoading) {
-      if (!isCoinjoin)
+      if (!isCoinjoin) {
         return {
           variant: 'danger',
           text: t('send.button_send_without_improved_privacy'),
         }
-      if (coinjoinPreconditionSummary && !coinjoinPreconditionSummary.isFulfilled)
+      } else if (sourceJarCoinjoinPreconditionSummary?.isFulfilled === false) {
         return {
           variant: 'warning',
           text: t('send.button_send_despite_warning'),
         }
+      }
     }
 
     return {
       variant: 'dark',
       text: t('send.button_send'),
     }
-  }, [isLoading, isCoinjoin, coinjoinPreconditionSummary, t])
+  }, [isLoading, isCoinjoin, sourceJarCoinjoinPreconditionSummary, t])
 
   const formIsValid = useMemo(() => {
     return (
@@ -593,25 +589,35 @@ export default function Send({ wallet }: SendProps) {
                   <rb.Row className="align-items-center">
                     <rb.Col>{t('send.text_maker_running')}</rb.Col>
                     <rb.Col xs="auto">
-                      <Sprite symbol="caret-right" width="24px" height="24px" />
+                      <Sprite symbol="caret-right" width="24" height="24" />
                     </rb.Col>
                   </rb.Row>
                 </rb.Alert>
               </Link>
             )}
             {isCoinjoinInProgress && (
-              <rb.Alert variant="info" className="mb-4 d-flex align-items-center">
-                {t('send.text_coinjoin_already_running')}
-
+              <div className="mb-4">
+                <div className="d-flex align-items-center justify-content-center mb-2">
+                  <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
+                    <Sprite symbol="clock" width="32" height="32" />
+                  </div>
+                </div>
+                <rb.Alert variant="success" className="d-flex align-items-center">
+                  {t('send.text_coinjoin_already_running')}
+                  <Sprite className="ms-auto" symbol="joining" width="20" height="20" />
+                </rb.Alert>
                 <rb.Button
-                  variant={'outline-light'}
-                  className="ms-auto"
+                  variant="none"
+                  className="w-100 mb-4"
                   disabled={showConfirmAbortModal}
                   onClick={() => abortCoinjoin()}
                 >
-                  {t('global.abort')}
+                  <div className="d-flex justify-content-center align-items-center">
+                    <Sprite symbol="cancel" width="24" height="24" className="me-1" />
+                    {t('global.abort')}
+                  </div>
                 </rb.Button>
-              </rb.Alert>
+              </div>
             )}
           </>
         </rb.Fade>
@@ -621,22 +627,17 @@ export default function Send({ wallet }: SendProps) {
           </rb.Alert>
         )}
         {paymentSuccessfulInfoAlert && (
-          <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
-            {paymentSuccessfulInfoAlert.message}
-          </rb.Alert>
-        )}
-        {!isLoading &&
-          !isOperationDisabled &&
-          isCoinjoin &&
-          coinjoinPreconditionSummary &&
-          !coinjoinPreconditionSummary.isFulfilled && (
-            <div className="mb-4">
-              <CoinjoinPreconditionViolationAlert
-                summary={coinjoinPreconditionSummary}
-                i18nPrefix="send.coinjoin_precondition."
-              />
+          <>
+            <div className="d-flex align-items-center justify-content-center mb-2">
+              <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
+                <Sprite symbol="checkmark" width="24" height="24" />
+              </div>
             </div>
-          )}
+            <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
+              {paymentSuccessfulInfoAlert.message}
+            </rb.Alert>
+          </>
+        )}
         {!isLoading && walletInfo && (
           <JarSelectorModal
             isShown={destinationJarPickerShown}
@@ -692,12 +693,32 @@ export default function Send({ wallet }: SendProps) {
                       it.calculatedTotalBalanceInSats,
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats
                     )}
+                    variant={
+                      it.accountIndex === sourceJarIndex &&
+                      isCoinjoin &&
+                      sourceJarCoinjoinPreconditionSummary?.isFulfilled === false
+                        ? 'warning'
+                        : undefined
+                    }
                     onClick={(jarIndex) => setSourceJarIndex(jarIndex)}
                   />
                 ))}
               </div>
             )}
           </rb.Form.Group>
+
+          {!isLoading &&
+            !isOperationDisabled &&
+            isCoinjoin &&
+            sourceJarCoinjoinPreconditionSummary?.isFulfilled === false && (
+              <div className="mb-4">
+                <CoinjoinPreconditionViolationAlert
+                  summary={sourceJarCoinjoinPreconditionSummary}
+                  i18nPrefix="send.coinjoin_precondition."
+                />
+              </div>
+            )}
+
           <rb.Form.Group className="mb-4" controlId="destination">
             <rb.Form.Label>{t('send.label_recipient')}</rb.Form.Label>
             <div className="position-relative">

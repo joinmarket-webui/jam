@@ -240,6 +240,9 @@
     <symbol id="info" viewBox="0 0 24 24" fill="currentColor">
         <circle cx="12" cy="7.25" r="1.25"></circle><path d="M11 10h2v8h-2z"></path>
     </symbol>
+    <symbol id="warn" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="12" cy="16.75" r="1.25"></circle><path d="M11 6h2v8h-2z"></path>
+    </symbol>
     <symbol id="lock" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <rect width="14" height="10" x="5" y="10.968" rx="2"></rect>
         <path d="M15.486 10.984V7.243a1.5 1.5 0 00-1.5-1.5h-3.972a1.5 1.5 0 00-1.5 1.5v3.74"></path>
