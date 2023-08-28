@@ -29,7 +29,7 @@ jobs:
         run: npm ci
       # Checks
       - name: Lint
-        run: npm run lint -- --version && npm run lint
+        run: npm run lint
       # Test
       - name: Test
         run: npm test
