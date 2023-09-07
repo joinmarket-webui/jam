@@ -170,8 +170,7 @@
       "description_gaplimit": "The amount of addresses that are imported per jar. Set to the highest address index used in any of the jars. Increase this number if your wallet is heavily used.",
       "feedback_invalid_gaplimit": "Please provide a valid gaplimit value greater than or equal to {{ min }}.",
       "text_button_submit": "Review",
-      "text_button_submitting": "Review",
-      "__dev_fill_with_dummy_mnemonic_phrase": "[dev] Fill with dummy mnemonic phrase"
+      "text_button_submitting": "Review"
     },
     "confirmation": {
       "title": "Please review your mnemonic phrase and password!",
@@ -225,7 +224,6 @@
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
     "button_create_wallet": "Create new wallet",
-    "button_rescan_chain": "[dev] Rescan chain",
     "error_loading_seed_failed": "Could not retrieve seed phrase.",
     "seed_modal_info_text": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
     "documentation": "Documentation",

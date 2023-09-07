@@ -227,9 +227,15 @@ export default function Settings({ wallet, stopWallet }) {
           </rb.Button>
 
           {isDebugFeatureEnabled('rescanChainPage') && (
-            <Link to={routes.rescanChain} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
+            <Link
+              to={routes.rescanChain}
+              className={`btn btn-outline-dark ${styles['settings-btn']} position-relative`}
+            >
               <Sprite symbol="block" width="24" height="24" />
-              {t('settings.button_rescan_chain')}
+              Rescan chain
+              <span className="position-absolute top-50 start-0 translate-middle badge rounded-pill bg-warning">
+                dev
+              </span>
             </Link>
           )}
         </div>

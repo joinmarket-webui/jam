@@ -117,11 +117,14 @@ const ImportWalletDetailsForm = ({
           {__dev_showFillerButton && (
             <rb.Button
               variant="outline-dark"
-              className="w-100 mb-4"
+              className="w-100 mb-4 position-relative"
               onClick={() => setFieldValue('mnemonicPhrase', DUMMY_MNEMONIC_PHRASE, true)}
               disabled={isSubmitting}
             >
-              {t('import_wallet.import_details.__dev_fill_with_dummy_mnemonic_phrase')}
+              Fill with dummy mnemonic phrase
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                dev
+              </span>
             </rb.Button>
           )}
           <Accordion

@@ -65,7 +65,7 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
         {showSkipButton && (
           <rb.Button
             variant="outline-dark"
-            className={styles.button}
+            className={`${styles.button} position-relative`}
             onClick={() => onSuccess()}
             disabled={isSeedBackupConfirmed}
           >
@@ -73,6 +73,9 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
               {t('create_wallet.skip_button')}
               <Sprite symbol="arrow-right" width="20" height="20" className="ms-2" />
             </div>
+            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+              dev
+            </span>
           </rb.Button>
         )}
       </div>
