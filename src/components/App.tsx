@@ -266,19 +266,19 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
       if (!currentWallet || !rescanningFinished) return
 
       // Hacky: If the balance changes after a reload, the backend might still not have been fully synchronized - try again!
-      // Hint 1: Wallet might be empty in the first
+      // Hint 1: Wallet might be empty after the first attempt
       // Hint 2: Just because wallet balance did not change, it does not mean everything has been found.
       const reloadWhileBalanceChangesRecursively = async (
         currentBalance: Api.AmountSats,
         delay: Milliseconds,
-        callCounter: number,
-        maxCalls: number
+        maxCalls: number,
+        callCounter: number = 0
       ) => {
         if (callCounter >= maxCalls) return
         const info = await reloadWalletInfo(delay)
         const newBalance = info.balanceSummary.calculatedTotalBalanceInSats
         if (newBalance > currentBalance) {
-          await reloadWhileBalanceChangesRecursively(newBalance, callCounter++, maxCalls, delay)
+          await reloadWhileBalanceChangesRecursively(newBalance, delay, maxCalls, callCounter++)
         }
       }
 
@@ -287,7 +287,6 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
           reloadWhileBalanceChangesRecursively(
             info.balanceSummary.calculatedTotalBalanceInSats,
             RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN,
-            0,
             MAX_RECURSIVE_WALLET_INFO_RELOADS
           )
         )
