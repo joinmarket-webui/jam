@@ -17,6 +17,7 @@ import styles from './Settings.module.css'
 import SeedModal from './settings/SeedModal'
 import FeeConfigModal from './settings/FeeConfigModal'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
+import { isFeatureEnabled } from '../constants/features'
 
 export default function Settings({ wallet, stopWallet }) {
   const { t, i18n } = useTranslation()
@@ -226,7 +227,7 @@ export default function Settings({ wallet, stopWallet }) {
             )}
           </rb.Button>
 
-          {isDebugFeatureEnabled('rescanChainPage') && (
+          {isFeatureEnabled('rescanChain', serviceInfo) && isDebugFeatureEnabled('rescanChainPage') && (
             <Link
               to={routes.rescanChain}
               className={`btn btn-outline-dark ${styles['settings-btn']} position-relative`}

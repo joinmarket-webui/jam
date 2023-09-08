@@ -2,10 +2,12 @@ import { ServiceInfo } from '../context/ServiceInfoContext'
 
 interface Features {
   importWallet: SemVer
+  rescanChain: SemVer
 }
 
 const features: Features = {
-  importWallet: { major: 0, minor: 9, patch: 10 },
+  importWallet: { major: 0, minor: 9, patch: 10 }, // added in https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1461
+  rescanChain: { major: 0, minor: 9, patch: 10 }, // added in https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1461
 }
 
 type Feature = keyof Features
