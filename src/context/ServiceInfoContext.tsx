@@ -57,7 +57,6 @@ interface JmGetInfoData {
   version: string
 }
 
-type SemVer = { major: number; minor: number; patch: number; raw: string }
 const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
 
 type SessionFlag = { sessionActive: boolean }
@@ -326,6 +325,7 @@ export {
   useReloadServiceInfo,
   useDispatchServiceInfo,
   useSessionConnectionError,
+  ServiceInfo,
   Schedule,
   StateFlag,
 }
