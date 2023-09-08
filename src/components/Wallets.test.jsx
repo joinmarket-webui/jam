@@ -39,10 +39,7 @@ describe('<Wallets />', () => {
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
     apiMock.getSession.mockResolvedValue(neverResolvingPromise)
-    apiMock.getGetinfo.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ version: '0.9.10dev' }),
-    })
+    apiMock.getGetinfo.mockResolvedValue(neverResolvingPromise)
   })
 
   it('should render without errors', () => {
@@ -91,6 +88,10 @@ describe('<Wallets />', () => {
       ok: true,
       json: () => Promise.resolve({ wallets: [] }),
     })
+    apiMock.getGetinfo.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ version: '0.9.10dev' }),
+    })
 
     act(() => setup({}))
 
@@ -126,6 +127,10 @@ describe('<Wallets />', () => {
       ok: true,
       json: () => Promise.resolve({ wallets: ['wallet0.jmdat', 'wallet1.jmdat'] }),
     })
+    apiMock.getGetinfo.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ version: '0.9.10dev' }),
+    })
 
     act(() => setup({}))
 
@@ -144,6 +149,35 @@ describe('<Wallets />', () => {
     const importWalletButton = await screen.findByTestId('import-wallet-btn')
     expect(importWalletButton.classList.contains('btn')).toBe(true)
     expect(importWalletButton.classList.contains('btn-lg')).toBe(false)
+  })
+
+  it('should hide "Import Wallet"-button on unsupported backend version', async () => {
+    apiMock.getSession.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          session: false,
+          maker_running: false,
+          coinjoin_in_process: false,
+          wallet_name: 'None',
+        }),
+    })
+    apiMock.getWalletAll.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ wallets: [] }),
+    })
+    apiMock.getGetinfo.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ version: '0.9.9' }),
+    })
+
+    act(() => setup({}))
+
+    expect(screen.getByText('wallets.text_loading')).toBeInTheDocument()
+    await waitForElementToBeRemoved(screen.getByText('wallets.text_loading'))
+
+    expect(screen.queryByTestId('import-wallet-btn')).not.toBeInTheDocument()
+    expect(screen.getByTestId('new-wallet-btn')).toBeInTheDocument()
   })
 
   describe('<Wallets /> lock/unlock flow', () => {

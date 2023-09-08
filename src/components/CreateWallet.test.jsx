@@ -34,7 +34,7 @@ describe('<CreateWallet />', () => {
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
     apiMock.getGetinfo.mockResolvedValue(neverResolvingPromise)
-    apiMock.getSession.mockReturnValue(neverResolvingPromise)
+    apiMock.getSession.mockResolvedValue(neverResolvingPromise)
   })
 
   it('should render without errors', () => {
