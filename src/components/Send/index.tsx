@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
+import * as Api from '../../libs/JmWalletApi'
 import PageTitle from '../PageTitle'
 import ToggleSwitch from '../ToggleSwitch'
 import Sprite from '../Sprite'
@@ -22,8 +23,8 @@ import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoC
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
 
-import * as Api from '../../libs/JmWalletApi'
 import { routes } from '../../constants/routes'
+import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
 import { SATS, formatSats, isValidNumber } from '../../utils'
 
 import {
@@ -39,8 +40,6 @@ import styles from './Send.module.css'
 import FeeBreakdown from './FeeBreakdown'
 
 const IS_COINJOIN_DEFAULT_VAL = true
-// initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
-const MINIMUM_MAKERS_DEFAULT_VAL = 4
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
@@ -70,13 +69,14 @@ export default function Send({ wallet }: SendProps) {
   const reloadServiceInfo = useReloadServiceInfo()
   const loadConfigValue = useLoadConfigValue()
 
-  const isCoinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
-  const isMakerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
+  const isCoinjoinInProgress = useMemo(() => serviceInfo?.coinjoinInProgress === true, [serviceInfo])
+  const isMakerRunning = useMemo(() => serviceInfo?.makerRunning === true, [serviceInfo])
+  const isRescanningInProgress = useMemo(() => serviceInfo?.rescanning === true, [serviceInfo])
 
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
   const [isCoinjoin, setIsCoinjoin] = useState(IS_COINJOIN_DEFAULT_VAL)
-  const [minNumCollaborators, setMinNumCollaborators] = useState(MINIMUM_MAKERS_DEFAULT_VAL)
+  const [minNumCollaborators, setMinNumCollaborators] = useState(JM_MINIMUM_MAKERS_DEFAULT)
   const [isSweep, setIsSweep] = useState(false)
   const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
   const [destinationJar, setDestinationJar] = useState<JarIndex | null>(null)
@@ -90,8 +90,8 @@ export default function Send({ wallet }: SendProps) {
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
   const isOperationDisabled = useMemo(
-    () => isCoinjoinInProgress || isMakerRunning || waitForUtxosToBeSpent.length > 0,
-    [isCoinjoinInProgress, isMakerRunning, waitForUtxosToBeSpent]
+    () => isCoinjoinInProgress || isMakerRunning || isRescanningInProgress || waitForUtxosToBeSpent.length > 0,
+    [isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent]
   )
   const [isInitializing, setIsInitializing] = useState(!isOperationDisabled)
   const isLoading = useMemo(

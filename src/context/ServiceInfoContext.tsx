@@ -2,8 +2,9 @@ import React, { createContext, useCallback, useContext, useReducer, useState, us
 // @ts-ignore
 import { useCurrentWallet, useSetCurrentWallet } from './WalletContext'
 // @ts-ignore
-import { useWebsocket, CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from './WebsocketContext'
+import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
+import { CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../constants/config'
 
 import * as Api from '../libs/JmWalletApi'
 
@@ -49,25 +50,29 @@ interface JmSessionData {
   schedule: Schedule | null
   offer_list: Offer[] | null
   nickname: string | null
+  rescanning: boolean
 }
 
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
+type RescanBlockchainInProgressFlag = { rescanning: boolean }
 
 type ServiceInfo = SessionFlag &
   MakerRunningFlag &
-  CoinjoinInProgressFlag & {
+  CoinjoinInProgressFlag &
+  RescanBlockchainInProgressFlag & {
     walletName: Api.WalletName | null
     schedule: Schedule | null
     offers: Offer[] | null
     nickname: string | null
   }
-type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag
+type ServiceInfoUpdate = ServiceInfo | MakerRunningFlag | CoinjoinInProgressFlag | RescanBlockchainInProgressFlag
 
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
   reloadServiceInfo: ({ signal }: { signal: AbortSignal }) => Promise<ServiceInfo>
+  dispatchServiceInfo: React.Dispatch<ServiceInfoUpdate>
   connectionError?: Error
 }
 
@@ -123,6 +128,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             coinjoin_in_process: coinjoinInProgress,
             wallet_name: walletNameOrNoneString,
             offer_list: offers,
+            rescanning,
             schedule,
             nickname,
           } = data
@@ -135,6 +141,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
             schedule,
             offers,
             nickname,
+            rescanning,
           }
         })
 
@@ -210,7 +217,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   }, [websocket, onWebsocketMessage])
 
   return (
-    <ServiceInfoContext.Provider value={{ serviceInfo, reloadServiceInfo, connectionError }}>
+    <ServiceInfoContext.Provider value={{ serviceInfo, reloadServiceInfo, dispatchServiceInfo, connectionError }}>
       {children}
     </ServiceInfoContext.Provider>
   )
@@ -223,12 +230,21 @@ const useServiceInfo = () => {
   }
   return context.serviceInfo
 }
+
 const useReloadServiceInfo = () => {
   const context = useContext(ServiceInfoContext)
   if (context === undefined) {
     throw new Error('useReloadServiceInfo must be used within a ServiceInfoProvider')
   }
   return context.reloadServiceInfo
+}
+
+const useDispatchServiceInfo = () => {
+  const context = useContext(ServiceInfoContext)
+  if (context === undefined) {
+    throw new Error('useDispatchServiceInfo must be used within a ServiceInfoProvider')
+  }
+  return context.dispatchServiceInfo
 }
 
 const useSessionConnectionError = () => {
@@ -244,6 +260,7 @@ export {
   ServiceInfoProvider,
   useServiceInfo,
   useReloadServiceInfo,
+  useDispatchServiceInfo,
   useSessionConnectionError,
   Schedule,
   StateFlag,

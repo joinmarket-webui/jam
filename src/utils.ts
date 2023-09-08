@@ -11,7 +11,16 @@ const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
-export const walletDisplayName = (name: string) => name.replace('.jmdat', '')
+export const JM_WALLET_FILE_EXTENSION = '.jmdat'
+
+export const DUMMY_MNEMONIC_PHRASE: MnemonicPhrase =
+  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
+
+export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
+
+export const sanitizeWalletName = (name: string) => name.replace(JM_WALLET_FILE_EXTENSION, '')
+
+export const walletDisplayName = (name: string) => sanitizeWalletName(name)
 
 export const displayDate = (string: string) => new Date(string).toLocaleString()
 

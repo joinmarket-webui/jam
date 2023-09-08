@@ -422,6 +422,7 @@ export default function Earn({ wallet }) {
                     serviceInfo &&
                     !serviceInfo.coinjoinInProgress &&
                     !serviceInfo.makerRunning &&
+                    !serviceInfo.rescanning &&
                     !isWaitingMakerStart &&
                     !isWaitingMakerStop &&
                     !isLoading
@@ -447,6 +448,8 @@ export default function Earn({ wallet }) {
                 })}
                 <>
                   {!serviceInfo?.makerRunning &&
+                    !serviceInfo?.coinjoinInProgress &&
+                    !serviceInfo?.rescanning &&
                     !isWaitingMakerStart &&
                     !isWaitingMakerStop &&
                     (!isLoading && currentWalletInfo ? (
@@ -598,7 +601,7 @@ export default function Earn({ wallet }) {
                                   isValid={touched.minsize && !errors.minsize}
                                   isInvalid={touched.minsize && errors.minsize}
                                   min={0}
-                                  step={1000}
+                                  step={1_000}
                                 />
                                 <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
                               </rb.InputGroup>
@@ -612,7 +615,13 @@ export default function Earn({ wallet }) {
                         variant="dark"
                         type="submit"
                         className={styles['earn-btn']}
-                        disabled={isLoading || isSubmitting || isWaitingMakerStart || isWaitingMakerStop}
+                        disabled={
+                          isLoading ||
+                          isSubmitting ||
+                          serviceInfo?.rescanning === true ||
+                          isWaitingMakerStart ||
+                          isWaitingMakerStop
+                        }
                       >
                         <div className="d-flex justify-content-center align-items-center">
                           {(isWaitingMakerStart || isWaitingMakerStop) && (

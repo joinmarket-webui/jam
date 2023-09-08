@@ -1,3 +1,20 @@
+:global(.jm-rescan-in-progress) :global(.center-nav-link),
+:global(.jm-rescan-in-progress) :global(.center-nav-link-divider) {
+  filter: blur(2px);
+}
+
 .balancePlaceholder {
   width: 7.5rem;
+}
+
+.loadingIndicator {
+  display: none !important;
+}
+
+:global(.jam-reload-wallet-info-in-progress) .walletSprite {
+  display: none !important;
+}
+
+:global(.jam-reload-wallet-info-in-progress) .loadingIndicator {
+  display: inline-block !important;
 }

@@ -5,6 +5,7 @@ import { act } from 'react-dom/test-utils'
 import { __testSetDebugFeatureEnabled } from '../constants/debugFeatures'
 
 import * as apiMock from '../libs/JmWalletApi'
+import { DUMMY_MNEMONIC_PHRASE } from '../utils'
 
 import CreateWallet from './CreateWallet'
 
@@ -92,7 +93,7 @@ describe('<CreateWallet />', () => {
         Promise.resolve({
           walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
-          seedphrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
         }),
     })
 
@@ -125,7 +126,7 @@ describe('<CreateWallet />', () => {
         Promise.resolve({
           walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
-          seedphrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
         }),
     })
 
@@ -167,7 +168,7 @@ describe('<CreateWallet />', () => {
         Promise.resolve({
           walletname: `${testWalletName}.jmdat`,
           token: 'ANY_TOKEN',
-          seedphrase: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about',
+          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
         }),
     })
 

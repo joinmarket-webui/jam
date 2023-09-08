@@ -3,8 +3,6 @@ import { CombinedRawWalletData, Utxos } from '../context/WalletContext'
 import * as fb from '../components/fb/utils'
 import { AmountSats } from '../libs/JmWalletApi'
 
-type Milliseconds = number
-
 type BalanceSummary = {
   /**
    * @description Manually calculated total balance in sats.

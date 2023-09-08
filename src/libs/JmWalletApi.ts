@@ -37,6 +37,9 @@ export type Lockdate = `${YYYY}-${MM}`
 type WithLockdate = {
   lockdate: Lockdate
 }
+type WithBlockheight = {
+  blockheight: number
+}
 
 interface ApiRequestContext {
   signal?: AbortSignal
@@ -55,9 +58,16 @@ interface ApiError {
 type WalletType = 'sw-fb'
 
 interface CreateWalletRequest {
-  wallettype: WalletType
-  walletname: WalletName
+  walletname: WalletName | string
   password: string
+  wallettype?: WalletType
+}
+
+interface RecoverWalletRequest {
+  walletname: WalletName | string
+  password: string
+  seedphrase: string
+  wallettype?: WalletType
 }
 
 interface WalletUnlockRequest {
@@ -227,12 +237,23 @@ const getWalletAll = async ({ signal }: ApiRequestContext) => {
   })
 }
 
-const postWalletCreate = async (req: CreateWalletRequest) => {
+const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWalletRequest) => {
   const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
 
   return await fetch(`${basePath()}/v1/wallet/create`, {
     method: 'POST',
-    body: JSON.stringify({ ...req, walletname, wallettype: 'sw-fb' }),
+    body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
+    signal,
+  })
+}
+
+const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWalletRequest) => {
+  const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
+
+  return await fetch(`${basePath()}/v1/wallet/recover`, {
+    method: 'POST',
+    body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
+    signal,
   })
 }
 
@@ -419,6 +440,21 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
   })
 }
 
+/**
+ * Use this operation on recovered wallets to re-sync the wallet
+ */
+const getRescanBlockchain = async ({
+  token,
+  signal,
+  walletName,
+  blockheight,
+}: WalletRequestContext & WithBlockheight) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/rescanblockchain/${blockheight}`, {
+    headers: { ...Helper.buildAuthHeader(token) },
+    signal,
+  })
+}
+
 export class JmApiError extends Error {
   public response: Response
 
@@ -438,6 +474,7 @@ export {
   getAddressTimelockNew,
   getWalletAll,
   postWalletCreate,
+  postWalletRecover,
   getWalletDisplay,
   getWalletLock,
   postWalletUnlock,
@@ -450,5 +487,6 @@ export {
   postSchedulerStart,
   getTakerStop,
   getSchedule,
+  getRescanBlockchain,
   Helper,
 }

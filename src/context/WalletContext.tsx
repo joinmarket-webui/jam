@@ -115,9 +115,8 @@ interface WalletContextEntry {
   setCurrentWallet: React.Dispatch<React.SetStateAction<CurrentWallet | null>>
   currentWalletInfo: WalletInfo | undefined
   reloadCurrentWalletInfo: {
-    reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<void>
+    reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
     reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<UtxosResponse>
-    reloadDisplay: ({ signal }: { signal: AbortSignal }) => Promise<WalletDisplayResponse>
   }
 }
 
@@ -245,9 +244,10 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   )
 
   const reloadAll = useCallback(
-    async ({ signal }: { signal: AbortSignal }): Promise<void> => {
-      await Promise.all([reloadUtxos({ signal }), reloadDisplay({ signal })])
-    },
+    ({ signal }: { signal: AbortSignal }): Promise<WalletInfo> =>
+      Promise.all([reloadUtxos({ signal }), reloadDisplay({ signal })])
+        .then((data) => toCombinedRawData(data[0], data[1]))
+        .then((raw) => toWalletInfo(raw)),
     [reloadUtxos, reloadDisplay]
   )
 
@@ -265,32 +265,16 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
     () => ({
       reloadAll,
       reloadUtxos,
-      reloadDisplay,
     }),
-    [reloadAll, reloadUtxos, reloadDisplay]
+    [reloadAll, reloadUtxos]
   )
 
   useEffect(() => {
     if (!currentWallet) {
       setUtxoResponse(undefined)
       setDisplayResponse(undefined)
-    } else {
-      const abortCtrl = new AbortController()
-      const signal = abortCtrl.signal
-
-      reloadCurrentWalletInfo
-        .reloadAll({ signal })
-        // If the auto-reloading on wallet change fails, the error can currently
-        // only be logged and cannot be displayed to the user satisfactorily.
-        // This might change in the future but is okay for now - components can
-        // always trigger a reload on demand and inform the user as they see fit.
-        .catch((err) => console.error(err))
-
-      return () => {
-        abortCtrl.abort()
-      }
     }
-  }, [currentWallet, reloadCurrentWalletInfo])
+  }, [currentWallet])
 
   return (
     <WalletContext.Provider

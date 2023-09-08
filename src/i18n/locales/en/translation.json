@@ -7,6 +7,7 @@
     "back": "Back",
     "close": "Close",
     "abort": "Abort",
+    "cancel": "Cancel",
     "table": {
       "pagination": {
         "items_per_page": {
@@ -29,10 +30,12 @@
     }
   },
   "app": {
-    "alert_no_connection": "No connection to backend: {{ connectionError }}"
+    "alert_no_connection": "No connection to backend: {{ connectionError }}",
+    "alert_rescan_in_progress": "Rescanning in progress..."
   },
   "navbar": {
     "title": "Jam",
+    "text_rescan_in_progress": "Rescanning...",
     "button_create_wallet": "Create Wallet",
     "tab_send": "Send",
     "tab_receive": "Receive",
@@ -91,6 +94,7 @@
     "subtitle_no_wallets": "It looks like you do not have a wallet, yet.",
     "text_loading": "Loading wallets",
     "button_new_wallet": "Create new wallet",
+    "button_import_wallet": "Import existing wallet",
     "alert_wallet_open": "There can be only one active wallet. If you want to open another wallet, please lock '{{ currentWalletName }}' first.",
     "error_loading_failed": "Loading wallets failed.",
     "wallet_preview": {
@@ -130,6 +134,7 @@
     "feedback_invalid_password_confirm": "Given passwords do not match.",
     "button_create": "Create",
     "button_creating": "Creating",
+    "error_creating_failed": "Error while creating the wallet. Reason: {{ reason }}",
     "alert_confirmation_failed": "Wallet confirmation failed.",
     "confirmation_label_wallet_name": "Wallet Name",
     "confirmation_label_password": "Password",
@@ -145,8 +150,38 @@
     "placeholder_seed_word_input": "Word",
     "hint_duration_text": "Please be patient, this may take a few minutes."
   },
+  "import_wallet": {
+    "alert_other_wallet_unlocked": "Currently <1>{{ walletName }}</1> is active. You need to lock it first. <3>Go back</3>.",
+    "alert_rescan_in_progress": "Rescanning the timechain is currently in progress. Please wait until the process finishes and then try again. <1>Go back</1>.",
+    "wallet_details": {
+      "title": "Import Wallet",
+      "text_button_submit": "Continue",
+      "text_button_submitting": "Continue"
+    },
+    "import_details": {
+      "title": "Please enter your mnemonic phrase!",
+      "subtitle": "Please enter your mnemonic phrase one by one in the correct order and start the rescan process.",
+      "feedback_invalid_menmonic_phrase": "Please provide a valid mnemonic phrase",
+      "import_options": "Import options",
+      "label_blockheight": "Rescan height",
+      "description_blockheight": "The blockheight at which the rescan process starts to search for your funds. The earlier the wallet has been created, the lower this value should be.",
+      "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
+      "label_gaplimit": "Address import limit",
+      "description_gaplimit": "The amount of addresses that are imported per jar. Set to the highest address index used in any of the jars. Increase this number if your wallet is heavily used.",
+      "feedback_invalid_gaplimit": "Please provide a valid gaplimit value greater than or equal to {{ min }}.",
+      "text_button_submit": "Review",
+      "text_button_submitting": "Review"
+    },
+    "confirmation": {
+      "title": "Please review your mnemonic phrase and password!",
+      "text_button_submit": "Import",
+      "text_button_submitting": "Importing..."
+    },
+    "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}"
+  },
   "current_wallet": {
     "text_loading": "Loading",
+    "text_rescan_in_progress": "Rescanning in progress...",
     "button_deposit": "Receive",
     "button_withdraw": "Send",
     "error_loading_failed": "Loading wallet failed.",
@@ -217,7 +252,7 @@
       "text_button_cancel": "Cancel",
       "text_button_submit": "Save",
       "text_button_submitting": "Saving...",
-      "error_loading_fee_config_failed": "Error while loading fee config values. ",
+      "error_loading_fee_config_failed": "Error while loading fee config values.",
       "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}"
     }
   },

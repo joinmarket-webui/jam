@@ -16,6 +16,7 @@ import languages from '../i18n/languages'
 import styles from './Settings.module.css'
 import SeedModal from './settings/SeedModal'
 import FeeConfigModal from './settings/FeeConfigModal'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 
 export default function Settings({ wallet, stopWallet }) {
   const { t, i18n } = useTranslation()
@@ -224,6 +225,19 @@ export default function Settings({ wallet, stopWallet }) {
               </>
             )}
           </rb.Button>
+
+          {isDebugFeatureEnabled('rescanChainPage') && (
+            <Link
+              to={routes.rescanChain}
+              className={`btn btn-outline-dark ${styles['settings-btn']} position-relative`}
+            >
+              <Sprite symbol="block" width="24" height="24" />
+              Rescan chain
+              <span className="position-absolute top-50 start-0 translate-middle badge rounded-pill bg-warning">
+                dev
+              </span>
+            </Link>
+          )}
         </div>
 
         <div className={styles['section-title']}>{t('settings.section_title_community')}</div>

@@ -48,6 +48,14 @@
   min-height: 16.25rem;
 }
 
+:global(.jm-rescan-in-progress) .cardContainer {
+  display: none;
+}
+
+:global(.jm-rescan-in-progress) .receiveForm {
+  filter: blur(2px);
+}
+
 .receive-placeholder-qr-container {
   width: 16.25rem;
 }

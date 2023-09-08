@@ -3,6 +3,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { useSettings } from '../context/SettingsContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import { BitcoinQR } from './BitcoinQR'
@@ -18,14 +19,16 @@ export default function Receive({ wallet }) {
   const { t } = useTranslation()
   const location = useLocation()
   const settings = useSettings()
+  const serviceInfo = useServiceInfo()
   const walletInfo = useCurrentWalletInfo()
   const [validated, setValidated] = useState(false)
-  const [alert, setAlert] = useState(null)
+  const [alert, setAlert] = useState()
   const [isLoading, setIsLoading] = useState(true)
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [selectedJarIndex, setSelectedJarIndex] = useState(parseInt(location.state?.account, 10) || 0)
   const [addressCount, setAddressCount] = useState(0)
+  const isFormEnabled = useMemo(() => serviceInfo && serviceInfo.rescanning !== true, [serviceInfo])
 
   const sortedAccountBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -35,10 +38,15 @@ export default function Receive({ wallet }) {
   }, [walletInfo])
 
   useEffect(() => {
+    if (!isFormEnabled) {
+      setIsLoading(false)
+      return
+    }
+
     const abortCtrl = new AbortController()
     const { name: walletName, token } = wallet
 
-    setAlert(null)
+    setAlert(undefined)
     setIsLoading(true)
 
     Api.getAddressNew({ walletName, mixdepth: selectedJarIndex, token, signal: abortCtrl.signal })
@@ -52,7 +60,7 @@ export default function Receive({ wallet }) {
       .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
 
     return () => abortCtrl.abort()
-  }, [wallet, selectedJarIndex, addressCount, t])
+  }, [isFormEnabled, wallet, selectedJarIndex, addressCount, t])
 
   const onSubmit = (e) => {
     e.preventDefault()
@@ -62,7 +70,7 @@ export default function Receive({ wallet }) {
     setValidated(true)
 
     if (isValid) {
-      setAddressCount(addressCount + 1)
+      setAddressCount((it) => it + 1)
     }
   }
 
@@ -70,7 +78,8 @@ export default function Receive({ wallet }) {
     <div className={`${styles.receive}`}>
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      <div className="qr-container mb-4">
+      {serviceInfo?.rescanning === true && <rb.Alert variant="success">{t('app.alert_rescan_in_progress')}</rb.Alert>}
+      <div className={`mb-4 ${styles.cardContainer}`}>
         <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
           <div className={styles['qr-container']}>
             {!isLoading && address && <BitcoinQR address={address} sats={amount} />}
@@ -104,8 +113,8 @@ export default function Receive({ wallet }) {
           </rb.Card.Body>
         </rb.Card>
       </div>
-      <rb.Form onSubmit={onSubmit} validated={validated} noValidate>
-        <Accordion title={t('receive.button_settings')}>
+      <rb.Form className={styles.receiveForm} onSubmit={onSubmit} validated={validated} noValidate>
+        <Accordion title={t('receive.button_settings')} disabled={!isFormEnabled}>
           <div className="mb-4">
             {!walletInfo || sortedAccountBalances.length === 0 ? (
               <rb.Placeholder as="div" animation="wave">
@@ -119,7 +128,7 @@ export default function Receive({ wallet }) {
                     index={it.accountIndex}
                     balance={it.calculatedAvailableBalanceInSats}
                     frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
-                    isSelectable={true}
+                    isSelectable={isFormEnabled}
                     isSelected={it.accountIndex === selectedJarIndex}
                     fillLevel={jarFillLevel(
                       it.calculatedTotalBalanceInSats,
@@ -143,7 +152,7 @@ export default function Receive({ wallet }) {
                   type="number"
                   placeholder="0"
                   value={amount}
-                  disabled={isLoading}
+                  disabled={!isFormEnabled || isLoading}
                   onChange={(e) => setAmount(e.target.value)}
                   min={0}
                   step={1}
@@ -158,7 +167,7 @@ export default function Receive({ wallet }) {
           <rb.Button
             variant="outline-dark"
             type="submit"
-            disabled={isLoading}
+            disabled={!isFormEnabled || isLoading}
             className="d-flex justify-content-center align-items-center"
           >
             {isLoading ? (

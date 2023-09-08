@@ -1,8 +1,6 @@
 import { Lockdate } from '../../libs/JmWalletApi'
 import { Utxo } from '../../context/WalletContext'
 
-type Milliseconds = number
-type Seconds = number
 type TimeInterval = number
 
 export type YearsRange = {

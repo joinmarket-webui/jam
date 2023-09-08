@@ -71,7 +71,7 @@ describe('<Wallets />', () => {
     expect(screen.getByText('wallets.button_new_wallet')).toBeInTheDocument()
   })
 
-  it('should display big call-to-action button if no wallet has been created yet', async () => {
+  it('should display big call-to-action buttons if no wallet has been created yet', async () => {
     apiMock.getSession.mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -91,16 +91,19 @@ describe('<Wallets />', () => {
 
     expect(screen.getByText('wallets.text_loading')).toBeInTheDocument()
 
-    const callToActionButtonBefore = screen.getByTestId('new-wallet-btn')
-    expect(callToActionButtonBefore.classList.contains('btn')).toBe(true)
-    expect(callToActionButtonBefore.classList.contains('btn-lg')).toBe(false)
+    const newWalletButtonBefore = screen.getByTestId('new-wallet-btn')
+    expect(newWalletButtonBefore.classList.contains('btn')).toBe(true)
+    expect(newWalletButtonBefore.classList.contains('btn-lg')).toBe(false)
 
     await waitForElementToBeRemoved(screen.getByText('wallets.text_loading'))
 
     expect(screen.getByText('wallets.subtitle_no_wallets')).toBeInTheDocument()
 
-    const callToActionButtonAfter = screen.getByTestId('new-wallet-btn')
-    expect(callToActionButtonAfter.classList.contains('btn-lg')).toBe(true)
+    const newWalletButtonBeforeAfter = screen.getByTestId('new-wallet-btn')
+    expect(newWalletButtonBeforeAfter.classList.contains('btn-lg')).toBe(true)
+
+    const importWalletButton = screen.getByTestId('import-wallet-btn')
+    expect(importWalletButton.classList.contains('btn-lg')).toBe(true)
   })
 
   it('should display login for available wallets', async () => {
@@ -129,9 +132,13 @@ describe('<Wallets />', () => {
     expect(screen.getByText('wallet0')).toBeInTheDocument()
     expect(screen.getByText('wallet1')).toBeInTheDocument()
 
-    const callToActionButton = screen.getByTestId('new-wallet-btn')
-    expect(callToActionButton.classList.contains('btn')).toBe(true)
-    expect(callToActionButton.classList.contains('btn-lg')).toBe(false)
+    const newWalletButton = screen.getByTestId('new-wallet-btn')
+    expect(newWalletButton.classList.contains('btn')).toBe(true)
+    expect(newWalletButton.classList.contains('btn-lg')).toBe(false)
+
+    const importWalletButton = screen.getByTestId('import-wallet-btn')
+    expect(importWalletButton.classList.contains('btn')).toBe(true)
+    expect(importWalletButton.classList.contains('btn-lg')).toBe(false)
   })
 
   describe('<Wallets /> lock/unlock flow', () => {

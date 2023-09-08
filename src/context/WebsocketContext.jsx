@@ -23,11 +23,6 @@ const connectionRetryDelayLinear = (attempt = 0) => {
 // path that will be proxied to the backend server
 const WEBSOCKET_ENDPOINT_PATH = `${window.JM.PUBLIC_PATH}/jmws`
 
-// possible values for property `coinjoin_state` in websocket messages
-const CJ_STATE_TAKER_RUNNING = 0
-const CJ_STATE_MAKER_RUNNING = 1
-const CJ_STATE_NONE_RUNNING = 2
-
 const NOOP = () => {}
 const logToDebugConsoleInDevMode = process.env.NODE_ENV === 'development' ? console.debug : NOOP
 
@@ -215,12 +210,4 @@ const useWebsocketState = () => {
   return context.websocketState
 }
 
-export {
-  WebsocketContext,
-  WebsocketProvider,
-  useWebsocket,
-  useWebsocketState,
-  CJ_STATE_TAKER_RUNNING,
-  CJ_STATE_MAKER_RUNNING,
-  CJ_STATE_NONE_RUNNING,
-}
+export { WebsocketContext, WebsocketProvider, useWebsocket, useWebsocketState }

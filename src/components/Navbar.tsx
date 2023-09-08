@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, NavLink, To } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import classNames from 'classnames'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
@@ -24,29 +25,48 @@ const BalanceLoadingIndicator = () => {
 
 interface WalletPreviewProps {
   wallet: CurrentWallet
+  rescanInProgress: boolean
   totalBalance?: AmountSats
   unit: Unit
   showBalance?: boolean
 }
 
-const WalletPreview = ({ wallet, totalBalance, unit, showBalance = false }: WalletPreviewProps) => {
+const WalletPreview = ({ wallet, rescanInProgress, totalBalance, unit, showBalance = false }: WalletPreviewProps) => {
+  const { t } = useTranslation()
+
   return (
     <div className="d-flex align-items-center">
-      <Sprite symbol="wallet" width="30" height="30" className="text-body" />
+      <div className="d-flex align-items-center justify-content-center text-body" style={{ minWidth: '2rem' }}>
+        <Sprite className={styles.walletSprite} symbol="wallet" width="30" height="30" />
+        <rb.Spinner
+          className={styles.loadingIndicator}
+          as="span"
+          animation="border"
+          size="sm"
+          role="status"
+          aria-hidden="true"
+        />
+      </div>
       <div className="d-flex flex-column ms-2 fs-6">
         {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
-        {totalBalance === undefined ? (
-          <BalanceLoadingIndicator />
-        ) : (
-          <div className="text-body">
-            <Balance
-              valueString={`${totalBalance}`}
-              convertToUnit={unit}
-              showBalance={showBalance}
-              enableVisibilityToggle={false}
-            />
-          </div>
-        )}
+        <div className="text-body">
+          {rescanInProgress ? (
+            <div className="cursor-wait">{t('navbar.text_rescan_in_progress')}</div>
+          ) : (
+            <>
+              {totalBalance === undefined ? (
+                <BalanceLoadingIndicator />
+              ) : (
+                <Balance
+                  valueString={`${totalBalance}`}
+                  convertToUnit={unit}
+                  showBalance={showBalance}
+                  enableVisibilityToggle={false}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -56,10 +76,17 @@ interface CenterNavProps {
   makerRunning: boolean
   schedulerRunning: boolean
   singleCoinJoinRunning: boolean
+  rescanInProgress: boolean
   onClick?: () => void
 }
 
-const CenterNav = ({ makerRunning, schedulerRunning, singleCoinJoinRunning, onClick }: CenterNavProps) => {
+const CenterNav = ({
+  makerRunning,
+  schedulerRunning,
+  singleCoinJoinRunning,
+  rescanInProgress,
+  onClick,
+}: CenterNavProps) => {
   const { t } = useTranslation()
 
   return (
@@ -69,7 +96,10 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCoinJoinRunning, onCl
           to={routes.receive}
           onClick={onClick}
           className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+            classNames('center-nav-link nav-link d-flex align-items-center justify-content-center', {
+              active: isActive,
+              disabled: rescanInProgress,
+            })
           }
         >
           {t('navbar.tab_receive')}
@@ -81,7 +111,10 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCoinJoinRunning, onCl
           to={routes.send}
           onClick={onClick}
           className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+            classNames('center-nav-link nav-link d-flex align-items-center justify-content-center', {
+              active: isActive,
+              disabled: rescanInProgress,
+            })
           }
         >
           <div className="d-flex align-items-start">
@@ -96,7 +129,10 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCoinJoinRunning, onCl
           to={routes.earn}
           onClick={onClick}
           className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+            classNames('center-nav-link nav-link d-flex align-items-center justify-content-center', {
+              active: isActive,
+              disabled: rescanInProgress,
+            })
           }
         >
           <div className="d-flex align-items-start">
@@ -111,7 +147,10 @@ const CenterNav = ({ makerRunning, schedulerRunning, singleCoinJoinRunning, onCl
           to={routes.jam}
           onClick={onClick}
           className={({ isActive }) =>
-            'center-nav-link nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
+            classNames('center-nav-link nav-link d-flex align-items-center justify-content-center', {
+              active: isActive,
+              disabled: rescanInProgress,
+            })
           }
         >
           <div className="d-flex align-items-start">
@@ -175,7 +214,8 @@ export default function Navbar() {
 
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const makerRunning = useMemo(() => serviceInfo?.makerRunning || false, [serviceInfo])
+  const makerRunning = useMemo(() => serviceInfo?.makerRunning === true, [serviceInfo])
+  const rescanInProgress = useMemo(() => serviceInfo?.rescanning === true, [serviceInfo])
   const schedulerRunning = useMemo(
     () => (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null) || false,
     [serviceInfo]
@@ -260,6 +300,7 @@ export default function Navbar() {
                     >
                       <WalletPreview
                         wallet={currentWallet}
+                        rescanInProgress={rescanInProgress}
                         totalBalance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
                         showBalance={settings.showBalance}
                         unit={settings.unit}
@@ -281,6 +322,7 @@ export default function Navbar() {
                       makerRunning={makerRunning}
                       schedulerRunning={schedulerRunning}
                       singleCoinJoinRunning={singleCoinJoinRunning}
+                      rescanInProgress={rescanInProgress}
                       onClick={() => setIsExpanded(!isExpanded)}
                     />
                     <TrailingNav joiningRoute={joiningRoute} onClick={() => setIsExpanded(!isExpanded)} />
@@ -291,6 +333,7 @@ export default function Navbar() {
                     makerRunning={makerRunning}
                     schedulerRunning={schedulerRunning}
                     singleCoinJoinRunning={singleCoinJoinRunning}
+                    rescanInProgress={rescanInProgress}
                   />
                 </rb.Container>
                 <rb.Container className="d-none d-md-flex flex-1 align-items-stretch">

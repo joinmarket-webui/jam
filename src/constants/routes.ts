@@ -8,5 +8,9 @@ export const routes = {
   settings: '/settings',
   wallet: '/wallet',
   createWallet: '/create-wallet',
+  importWallet: '/import-wallet',
+  rescanChain: '/rescan',
   __errorExample: '/error-example',
 }
+
+export type Route = keyof typeof routes
