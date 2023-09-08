@@ -12,6 +12,7 @@ import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
+import { isFeatureEnabled } from '../constants/features'
 
 function arrayEquals(a, b) {
   return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
@@ -232,40 +233,45 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
             )
           })
         )}
-        <div
-          className={classNames('d-flex', 'justify-content-center', 'gap-2', 'mt-4', {
-            'flex-column': walletList?.length === 0,
-          })}
-        >
-          <Link
-            to={routes.createWallet}
-            className={classNames('btn', {
-              'btn-lg': walletList?.length === 0,
-              'btn-dark': walletList?.length === 0,
-              'btn-outline-dark': !walletList || walletList.length > 0,
-              disabled: isUnlocking,
+
+        {serviceInfo && (
+          <div
+            className={classNames('d-flex', 'justify-content-center', 'gap-2', 'mt-4', {
+              'flex-column': walletList?.length === 0,
             })}
-            data-testid="new-wallet-btn"
           >
-            <div className="d-flex justify-content-center align-items-center">
-              <Sprite symbol="plus" width="20" height="20" className="me-2" />
-              <span>{t('wallets.button_new_wallet')}</span>
-            </div>
-          </Link>
-          <Link
-            to={routes.importWallet}
-            className={classNames('btn', 'btn-outline-dark', {
-              'btn-lg': walletList?.length === 0,
-              disabled: isUnlocking,
-            })}
-            data-testid="import-wallet-btn"
-          >
-            <div className="d-flex justify-content-center align-items-center">
-              <Sprite symbol="arrow-right" width="20" height="20" className="me-2" />
-              <span>{t('wallets.button_import_wallet')}</span>
-            </div>
-          </Link>
-        </div>
+            <Link
+              to={routes.createWallet}
+              className={classNames('btn', {
+                'btn-lg': walletList?.length === 0,
+                'btn-dark': walletList?.length === 0,
+                'btn-outline-dark': !walletList || walletList.length > 0,
+                disabled: isLoading || isUnlocking,
+              })}
+              data-testid="new-wallet-btn"
+            >
+              <div className="d-flex justify-content-center align-items-center">
+                <Sprite symbol="plus" width="20" height="20" className="me-2" />
+                <span>{t('wallets.button_new_wallet')}</span>
+              </div>
+            </Link>
+            {isFeatureEnabled('importWallet', serviceInfo) && (
+              <Link
+                to={routes.importWallet}
+                className={classNames('btn', 'btn-outline-dark', {
+                  'btn-lg': walletList?.length === 0,
+                  disabled: isLoading || isUnlocking,
+                })}
+                data-testid="import-wallet-btn"
+              >
+                <div className="d-flex justify-content-center align-items-center">
+                  <Sprite symbol="arrow-right" width="20" height="20" className="me-2" />
+                  <span>{t('wallets.button_import_wallet')}</span>
+                </div>
+              </Link>
+            )}
+          </div>
+        )}
       </div>
 
       <ConfirmModal
