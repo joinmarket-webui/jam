@@ -38,8 +38,11 @@ describe('<Wallets />', () => {
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
-    apiMock.getGetinfo.mockResolvedValue(neverResolvingPromise)
     apiMock.getSession.mockResolvedValue(neverResolvingPromise)
+    apiMock.getGetinfo.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ version: '0.9.10dev' }),
+    })
   })
 
   it('should render without errors', () => {
@@ -104,7 +107,7 @@ describe('<Wallets />', () => {
     const newWalletButtonBeforeAfter = screen.getByTestId('new-wallet-btn')
     expect(newWalletButtonBeforeAfter.classList.contains('btn-lg')).toBe(true)
 
-    const importWalletButton = screen.getByTestId('import-wallet-btn')
+    const importWalletButton = await screen.findByTestId('import-wallet-btn')
     expect(importWalletButton.classList.contains('btn-lg')).toBe(true)
   })
 
@@ -138,7 +141,7 @@ describe('<Wallets />', () => {
     expect(newWalletButton.classList.contains('btn')).toBe(true)
     expect(newWalletButton.classList.contains('btn-lg')).toBe(false)
 
-    const importWalletButton = screen.getByTestId('import-wallet-btn')
+    const importWalletButton = await screen.findByTestId('import-wallet-btn')
     expect(importWalletButton.classList.contains('btn')).toBe(true)
     expect(importWalletButton.classList.contains('btn-lg')).toBe(false)
   })

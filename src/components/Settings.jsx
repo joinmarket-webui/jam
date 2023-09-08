@@ -227,7 +227,7 @@ export default function Settings({ wallet, stopWallet }) {
             )}
           </rb.Button>
 
-          {isFeatureEnabled('rescanChain', serviceInfo) && isDebugFeatureEnabled('rescanChainPage') && (
+          {serviceInfo && isFeatureEnabled('rescanChain', serviceInfo) && isDebugFeatureEnabled('rescanChainPage') && (
             <Link
               to={routes.rescanChain}
               className={`btn btn-outline-dark ${styles['settings-btn']} position-relative`}
