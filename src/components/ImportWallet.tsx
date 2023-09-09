@@ -209,8 +209,10 @@ const ImportWalletDetailsForm = ({
           </rb.Button>
           <div className="d-flex mb-4 gap-4">
             <rb.Button variant="none" hidden={isSubmitting} disabled={isSubmitting} onClick={() => onCancel()}>
-              <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
-              {t('global.back')}
+              <div className="d-flex justify-content-center align-items-center">
+                <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
+                {t('global.back')}
+              </div>
             </rb.Button>
           </div>
         </rb.Form>
