@@ -920,10 +920,11 @@ export default function Send({ wallet }: SendProps) {
         </rb.Form>
         <rb.Button
           ref={submitButtonRef}
+          className={classNames('w-100', 'mb-4', styles.sendButton)}
           variant={submitButtonOptions.variant}
+          size="lg"
           type="submit"
           disabled={isOperationDisabled || isLoading || isSending || !formIsValid}
-          className={classNames(styles.button, styles.sendButton, 'mb-4')}
           form="send-form"
         >
           {isSending ? (
