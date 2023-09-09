@@ -1,5 +1,4 @@
-import React, { PropsWithChildren, useState, useEffect, useRef } from 'react'
-import Sprite from './Sprite'
+import { ReactNode, PropsWithChildren, useState, useEffect, useRef } from 'react'
 
 const copyToClipboard = (
   text: string,
@@ -69,10 +68,9 @@ function Copyable({ value, onSuccess, onError, className, children, ...props }: 
 }
 
 interface CopyButtonProps extends CopyableProps {
-  text: React.ReactNode | string
-  successText?: React.ReactNode | string
+  text: ReactNode
+  successText?: ReactNode
   successTextTimeout?: number
-  showSprites?: boolean
 }
 
 export function CopyButton({
@@ -83,7 +81,6 @@ export function CopyButton({
   successText = text,
   successTextTimeout = 1_500,
   className,
-  showSprites = true,
   ...props
 }: CopyButtonProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
@@ -112,16 +109,7 @@ export function CopyButton({
       }}
     >
       <div className="d-flex align-items-center justify-content-center">
-        {showSprites && (
-          <>
-            {showValueCopiedConfirmation ? (
-              <Sprite color="green" symbol="checkmark" className="me-1" width="20" height="20" />
-            ) : (
-              <Sprite symbol="copy" className="me-1" width="20" height="20" />
-            )}
-          </>
-        )}
-        <>{showValueCopiedConfirmation ? successText : text}</>
+        {showValueCopiedConfirmation ? successText : text}
       </div>
     </Copyable>
   )

@@ -77,7 +77,6 @@ const ExistingFidelityBond = ({ fidelityBond, children }: PropsWithChildren<Exis
           </div>
           <div className="d-flex align-items-center gap-2">
             <CopyButton
-              showSprites={false}
               text={<Sprite symbol="copy" width="18" height="18" />}
               successText={<Sprite symbol="checkmark" width="18" height="18" />}
               value={fidelityBond.address}

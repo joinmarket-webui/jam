@@ -103,7 +103,6 @@ export default function Receive({ wallet }) {
             <div className="d-flex justify-content-center gap-3 w-75">
               <CopyButton
                 className="btn btn-outline-dark flex-1"
-                showSprites={false}
                 value={address}
                 text={
                   <>

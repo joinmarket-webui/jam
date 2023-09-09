@@ -316,7 +316,6 @@ const ReviewInputs = ({ lockDate, jar, utxos, selectedUtxos, timelockedAddress }
     {
       icon: (
         <CopyButton
-          showSprites={false}
           text={<Sprite symbol="copy" width="18" height="18" />}
           successText={<Sprite symbol="checkmark" width="18" height="18" />}
           value={timelockedAddress}
@@ -391,7 +390,6 @@ const CreatedFidelityBond = ({ fbUtxo, frozenUtxos }: CreatedFidelityBondProps) 
             </div>
             <div className="d-flex align-items-center gap-2">
               <CopyButton
-                showSprites={false}
                 text={<Sprite symbol="copy" width="18" height="18" />}
                 successText={<Sprite symbol="checkmark" width="18" height="18" />}
                 value={fbUtxo.address}
