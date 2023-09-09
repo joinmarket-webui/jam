@@ -292,9 +292,15 @@ main {
 .text-small {
   font-size: 0.875rem;
 }
+.text-justify {
+  text-align: justify;
+}
 
 .cursor-pointer {
   cursor: pointer;
+}
+.cursor-wait {
+  cursor: wait;
 }
 
 /* Fullscreen Overlays */
@@ -550,19 +556,8 @@ h2 {
   }
 }
 
-/* Onboarding */
-
-.onboarding button {
-  height: 3rem;
-  width: 80%;
-}
-
 .btn:disabled:hover {
   cursor: not-allowed;
-}
-
-.cursor-wait {
-  cursor: wait;
 }
 
 .accordion {
