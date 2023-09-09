@@ -5,8 +5,6 @@ import { Formik } from 'formik'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { walletDisplayName } from '../utils'
-// TODO: currently reusing CreateWallet styles - move to own module.css?
-import styles from './CreateWallet.module.css'
 
 export type WalletInfo = {
   walletFileName: string
@@ -82,8 +80,9 @@ const WalletCreationConfirmation = ({ wallet, submitButtonText, onSubmit }: Wall
             />
           </div>
           <rb.Button
+            className="w-100 mb-4"
             variant="dark"
-            className={styles.button}
+            size="lg"
             type="submit"
             disabled={!sensitiveInfoWasRevealed || !userConfirmed || isSubmitting}
           >
