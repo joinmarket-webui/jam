@@ -293,6 +293,10 @@ main {
   font-size: 0.875rem;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 /* Fullscreen Overlays */
 .offcanvas-fullscreen {
   width: 100vw !important;

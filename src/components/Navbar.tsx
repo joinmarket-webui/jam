@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, NavLink, To } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
@@ -6,7 +6,7 @@ import classNames from 'classnames'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
-import { useSettings } from '../context/SettingsContext'
+import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
@@ -14,6 +14,7 @@ import { routes } from '../constants/routes'
 import { AmountSats } from '../libs/JmWalletApi'
 
 import styles from './Navbar.module.css'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 
 const BalanceLoadingIndicator = () => {
   return (
@@ -187,6 +188,11 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
           </div>
         </rb.Nav.Item>
       )}
+      {isDebugFeatureEnabled('fastThemeToggle') && (
+        <rb.Nav.Item className="d-flex align-items-center pe-2">
+          <FastThemeToggle />
+        </rb.Nav.Item>
+      )}
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.settings}
@@ -200,6 +206,32 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
         </NavLink>
       </rb.Nav.Item>
     </rb.Nav>
+  )
+}
+
+function FastThemeToggle() {
+  const settings = useSettings()
+  const settingsDispatch = useSettingsDispatch()
+  const isLightTheme = useMemo(() => settings.theme === window.JM.THEMES[0], [settings])
+
+  const setTheme = useCallback(
+    (theme) => {
+      if (window.JM.THEMES.includes(theme)) {
+        document.documentElement.setAttribute(window.JM.THEME_ROOT_ATTR, theme)
+        settingsDispatch({ theme })
+      }
+    },
+    [settingsDispatch]
+  )
+
+  return (
+    <Sprite
+      className="cursor-pointer"
+      onClick={() => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
+      symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]}
+      width="30"
+      height="30"
+    />
   )
 }
 

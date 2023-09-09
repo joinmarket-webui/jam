@@ -5,6 +5,7 @@ interface DebugFeatures {
   errorExamplePage: boolean
   importDummyMnemonicPhrase: boolean
   rescanChainPage: boolean
+  fastThemeToggle: boolean
 }
 
 const devMode = process.env.NODE_ENV === 'development' && process.env.REACT_APP_JAM_DEV_MODE === 'true'
@@ -16,6 +17,7 @@ const debugFeatures: DebugFeatures = {
   errorExamplePage: devMode,
   importDummyMnemonicPhrase: devMode,
   rescanChainPage: devMode,
+  fastThemeToggle: devMode,
 }
 
 type DebugFeature = keyof DebugFeatures
