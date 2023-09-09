@@ -368,7 +368,7 @@ export default function Earn({ wallet }) {
     <div className={styles['earn']}>
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
-      <rb.Row className="mb-4">
+      <rb.Row className="mb-2">
         <rb.Col>
           <rb.Fade in={serviceInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
             <rb.Alert variant="info" className="mb-4">
