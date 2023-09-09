@@ -522,7 +522,7 @@ export default function Jam({ wallet }: JamProps) {
                     )}
                   </Formik>
 
-                  <rb.Row className="mt-5 mb-3">
+                  <rb.Row className="mt-2 mb-4">
                     <rb.Col className="d-flex justify-content-center">
                       <rb.Button
                         variant="outline-dark"
