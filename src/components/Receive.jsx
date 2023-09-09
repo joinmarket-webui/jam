@@ -103,9 +103,20 @@ export default function Receive({ wallet }) {
             <div className="d-flex justify-content-center gap-3 w-75">
               <CopyButton
                 className="btn btn-outline-dark flex-1"
+                showSprites={false}
                 value={address}
-                text={t('receive.button_copy_address')}
-                successText={t('receive.text_copy_address_confirmed')}
+                text={
+                  <>
+                    <Sprite symbol="copy" className="me-1" width="24" height="24" />
+                    {t('receive.button_copy_address')}
+                  </>
+                }
+                successText={
+                  <>
+                    <Sprite color="green" symbol="checkmark" className="me-1" width="24" height="24" />
+                    {t('receive.text_copy_address_confirmed')}
+                  </>
+                }
                 disabled={!address || isLoading}
               />
               {checkIsWebShareAPISupported() && <ShareButton value={address} className="flex-1" />}
