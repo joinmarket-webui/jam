@@ -116,14 +116,12 @@ const WalletCreationForm = ({
             <rb.Form.Control.Feedback type="invalid">{errors.passwordConfirm}</rb.Form.Control.Feedback>
           </rb.Form.Group>
           <rb.Button className="w-100 mb-4" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <div className="d-flex justify-content-center align-items-center">
+            <div className="d-flex justify-content-center align-items-center">
+              {isSubmitting && (
                 <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                {submitButtonText(isSubmitting)}
-              </div>
-            ) : (
-              submitButtonText(isSubmitting)
-            )}
+              )}
+              {submitButtonText(isSubmitting)}
+            </div>
           </rb.Button>
           {isSubmitting && (
             <div className="text-center text-muted small mb-4">
@@ -137,8 +135,10 @@ const WalletCreationForm = ({
             disabled={isSubmitting}
             onClick={() => onCancel()}
           >
-            <Sprite symbol="cross" width="20" height="20" className="me-2" />
-            {t('global.cancel')}
+            <div className="d-flex justify-content-center align-items-center">
+              <Sprite symbol="cross" width="20" height="20" className="me-2" />
+              {t('global.cancel')}
+            </div>
           </rb.Button>
         </rb.Form>
       )}
