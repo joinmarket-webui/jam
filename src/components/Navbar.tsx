@@ -189,7 +189,7 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
         </rb.Nav.Item>
       )}
       {isDebugFeatureEnabled('fastThemeToggle') && (
-        <rb.Nav.Item className="d-flex align-items-center pe-2">
+        <rb.Nav.Item className="d-none d-md-flex align-items-center pe-2">
           <FastThemeToggle />
         </rb.Nav.Item>
       )}
