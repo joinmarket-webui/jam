@@ -345,8 +345,9 @@ export default function Jam({ wallet }: JamProps) {
                   </div>
 
                   <rb.Button
-                    className={styles.submit}
+                    className="w-100 mb-4"
                     variant="dark"
+                    size="lg"
                     disabled={isLoading}
                     onClick={async () => {
                       await stopSchedule()
@@ -506,8 +507,9 @@ export default function Jam({ wallet }: JamProps) {
                           <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
 
                           <rb.Button
-                            className={styles.submit}
+                            className="w-100 mb-4"
                             variant="dark"
+                            size="lg"
                             type="submit"
                             disabled={isSubmitting || !isValid || serviceInfo?.rescanning === true}
                           >
