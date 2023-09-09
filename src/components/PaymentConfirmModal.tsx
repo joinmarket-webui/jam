@@ -11,6 +11,13 @@ import { AmountSats } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
 
+const feeRange: (feeValues: FeeValues) => [number, number] = (feeValues) => {
+  const feeTargetInSatsPerVByte = feeValues.tx_fees! / 1_000
+  const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte)
+  const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeValues.tx_fees_factor!)
+  return [minFeeSatsPerVByte, maxFeeSatsPerVByte]
+}
+
 const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) => {
   const { t } = useTranslation()
 
@@ -24,24 +31,23 @@ const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) 
     } else if (unit === 'blocks') {
       return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
     } else {
-      const feeTargetInSatsPerVByte = feeConfigValues.tx_fees! / 1_000
-      if (feeConfigValues.tx_fees_factor === 0) {
+      const [minFeeSatsPerVByte, maxFeeSatsPerVByte] = feeRange(feeConfigValues)
+      const fractionDigits = 2
+
+      if (minFeeSatsPerVByte.toFixed(fractionDigits) === maxFeeSatsPerVByte.toFixed(fractionDigits)) {
         return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_exact', {
-          value: feeTargetInSatsPerVByte.toLocaleString(undefined, {
+          value: minFeeSatsPerVByte.toLocaleString(undefined, {
             maximumFractionDigits: Math.log10(1_000),
           }),
         })
       }
 
-      const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte * (1 - feeConfigValues.tx_fees_factor!))
-      const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeConfigValues.tx_fees_factor!)
-
       return t('send.confirm_send_modal.text_miner_fee_in_satspervbyte_randomized', {
         min: minFeeSatsPerVByte.toLocaleString(undefined, {
-          maximumFractionDigits: 1,
+          maximumFractionDigits: fractionDigits,
         }),
         max: maxFeeSatsPerVByte.toLocaleString(undefined, {
-          maximumFractionDigits: 1,
+          maximumFractionDigits: fractionDigits,
         }),
       })
     }
