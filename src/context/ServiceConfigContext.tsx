@@ -88,7 +88,7 @@ const pushConfigValues = async ({
         section: update.key.section,
         field: update.key.field,
         value: update.value,
-      }
+      },
     )
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
       .then((_) => update)
@@ -128,7 +128,7 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
           return result
         })
     },
-    [currentWallet]
+    [currentWallet],
   )
 
   const loadConfigValueIfAbsent = useCallback(
@@ -152,7 +152,7 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
         } as ServiceConfigUpdate
       })
     },
-    [refreshConfigValues]
+    [refreshConfigValues],
   )
 
   const updateConfigValues = useCallback(
@@ -174,7 +174,7 @@ const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
           return result
         })
     },
-    [currentWallet]
+    [currentWallet],
   )
 
   useEffect(() => {

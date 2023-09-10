@@ -85,7 +85,7 @@ const WalletUnlockForm = ({ walletName, unlockWallet }: WalletUnlockFormProps) =
       const { password } = values
       await unlockWallet(walletName, password)
     },
-    [walletName, unlockWallet]
+    [walletName, unlockWallet],
   )
 
   return (

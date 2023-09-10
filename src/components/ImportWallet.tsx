@@ -81,7 +81,7 @@ const ImportWalletDetailsForm = ({
       }
       return errors
     },
-    [t]
+    [t],
   )
 
   return (
@@ -249,7 +249,7 @@ const ImportWalletConfirmation = ({
       password: walletDetails.password,
       seedphrase: importDetails.mnemonicPhrase.join(' '),
     }),
-    [walletDetails, importDetails]
+    [walletDetails, importDetails],
   )
 
   return (
@@ -331,7 +331,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
   const canRecover = useMemo(
     () => !isRecovered && !serviceInfo?.walletName && !serviceInfo?.rescanning,
-    [isRecovered, serviceInfo]
+    [isRecovered, serviceInfo],
   )
 
   const [step, setStep] = useState<ImportWalletSteps>(ImportWalletSteps.wallet_details)
@@ -369,7 +369,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         seedphrase,
         gaplimit,
         blockheight,
-      }: { walletname: Api.WalletName; password: string; seedphrase: string; gaplimit: number; blockheight: number }
+      }: { walletname: Api.WalletName; password: string; seedphrase: string; gaplimit: number; blockheight: number },
     ) => {
       setAlert(undefined)
 
@@ -465,7 +465,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
       updateConfigValues,
       dispatchServiceInfo,
       t,
-    ]
+    ],
   )
 
   return (
@@ -523,7 +523,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 t(
                   isSubmitting
                     ? 'import_wallet.wallet_details.text_button_submitting'
-                    : 'import_wallet.wallet_details.text_button_submit'
+                    : 'import_wallet.wallet_details.text_button_submit',
                 )
               }
             />
@@ -535,7 +535,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 t(
                   isSubmitting
                     ? 'import_wallet.import_details.text_button_submitting'
-                    : 'import_wallet.import_details.text_button_submit'
+                    : 'import_wallet.import_details.text_button_submit',
                 )
               }
               onCancel={() => previousStep()}
@@ -553,7 +553,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 t(
                   isSubmitting
                     ? 'import_wallet.confirmation.text_button_submitting'
-                    : 'import_wallet.confirmation.text_button_submit'
+                    : 'import_wallet.confirmation.text_button_submit',
                 )
               }
               onCancel={() => previousStep()}

@@ -74,7 +74,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         setUnlockWalletName(undefined)
       }
     },
-    [currentWallet, setAlert, startWallet, t, navigate]
+    [currentWallet, setAlert, startWallet, t, navigate],
   )
 
   const lockWallet = useCallback(
@@ -135,7 +135,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         setAlert({ variant: 'danger', dismissible: false, message: e.message })
       }
     },
-    [currentWallet, coinjoinInProgress, makerRunning, setAlert, stopWallet, t]
+    [currentWallet, coinjoinInProgress, makerRunning, setAlert, stopWallet, t],
   )
 
   useEffect(() => {

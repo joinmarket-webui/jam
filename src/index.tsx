@@ -28,5 +28,5 @@ ReactDOM.render(
       </WalletProvider>
     </SettingsProvider>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById('root'),
 )

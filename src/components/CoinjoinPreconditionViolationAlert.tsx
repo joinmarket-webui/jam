@@ -96,5 +96,5 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
     }
 
     return <></>
-  }
+  },
 )

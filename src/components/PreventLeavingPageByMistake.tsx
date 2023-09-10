@@ -19,7 +19,7 @@ const PreventLeavingPageByMistake = () => {
         // return something to trigger a dialog
         return ''
       },
-      { signal: abortCtrl.signal }
+      { signal: abortCtrl.signal },
     )
 
     return () => abortCtrl.abort()

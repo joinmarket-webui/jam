@@ -32,7 +32,7 @@ export const isValidNumCollaborators = (candidate: number | null, minNumCollabor
 export const enhanceDirectPaymentErrorMessageIfNecessary = async (
   httpStatus: number,
   errorMessage: string,
-  onBadRequest: (errorMessage: string) => string
+  onBadRequest: (errorMessage: string) => string,
 ) => {
   const tryEnhanceMessage = httpStatus === 400
   if (tryEnhanceMessage) {
@@ -46,7 +46,7 @@ export const enhanceTakerErrorMessageIfNecessary = async (
   loadConfigValue: ServiceConfigContextEntry['loadConfigValueIfAbsent'],
   httpStatus: number,
   errorMessage: string,
-  onMaxFeeSettingsMissing: (errorMessage: string) => string
+  onMaxFeeSettingsMissing: (errorMessage: string) => string,
 ) => {
   const tryEnhanceMessage = httpStatus === 409
   if (tryEnhanceMessage) {

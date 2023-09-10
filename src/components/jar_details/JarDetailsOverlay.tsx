@@ -101,7 +101,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const serviceInfo = useServiceInfo()
   const isTakerOrMakerRunning = useMemo(
     () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
-    [serviceInfo]
+    [serviceInfo],
   )
 
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -132,7 +132,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const utxos = useMemo(() => props.walletInfo.utxosByJar[jarIndex] || [], [props.walletInfo, jarIndex])
   const selectedUtxos = useMemo(
     () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
-    [utxos, selectedUtxoIds]
+    [utxos, selectedUtxoIds],
   )
   const selectedUtxosBalance: Api.AmountSats = useMemo(() => {
     return selectedUtxos.map((it) => it.value).reduce((acc, curr) => acc + curr, 0)
@@ -140,11 +140,11 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
   const nextJar = useCallback(
     () => setJarIndex((current) => (current + 1 >= props.jars.length ? 0 : current + 1)),
-    [props.jars]
+    [props.jars],
   )
   const previousJar = useCallback(
     () => setJarIndex((current) => (current - 1 < 0 ? props.jars.length - 1 : current - 1)),
-    [props.jars]
+    [props.jars],
   )
 
   useEffect(() => {
@@ -179,7 +179,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       if (e.code === 'ArrowLeft') previousJar()
       else if (e.code === 'ArrowRight') nextJar()
     },
-    [previousJar, nextJar]
+    [previousJar, nextJar],
   )
 
   useEffect(() => {
@@ -228,11 +228,11 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
             if (!res.ok) {
               return Api.Helper.throwError(
                 res,
-                freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos')
+                freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos'),
               )
             }
-          }
-        )
+          },
+        ),
       )
 
       return Promise.all(freezeCalls)
@@ -247,7 +247,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
           freeze ? setIsLoadingFreeze(false) : setIsLoadingUnfreeze(false)
         })
     },
-    [isActionsEnabled, props.wallet, reloadCurrentWalletInfo, t]
+    [isActionsEnabled, props.wallet, reloadCurrentWalletInfo, t],
   )
 
   const utxoListTitle = useMemo(() => {

@@ -38,7 +38,7 @@ describe('<Wallet />', () => {
           coinjoinInProgress={coinjoinInProgress}
           makerRunning={makerRunning}
         />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
   }
 
@@ -89,7 +89,7 @@ describe('<Wallet />', () => {
         name: dummyWalletName,
         isActive: true,
         unlockWallet: mockUnlockWallet,
-      })
+      }),
     )
 
     expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
@@ -106,7 +106,7 @@ describe('<Wallet />', () => {
         name: dummyWalletName,
         isActive: true,
         lockWallet: mockLockWallet,
-      })
+      }),
     )
 
     expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
@@ -123,7 +123,7 @@ describe('<Wallet />', () => {
         name: dummyWalletName,
         isActive: true,
         lockWallet: mockLockWallet,
-      })
+      }),
     )
 
     expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()

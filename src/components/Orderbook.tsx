@@ -168,7 +168,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
           }),
         [SORT_KEYS.bondValue]: (array) => array.sort((a, b) => a.bondValue - b.bondValue),
       },
-    }
+    },
   )
 
   return (
@@ -283,7 +283,7 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
   const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
   const counterpartyCountFiltered = useMemo(
     () => new Set(tableData.nodes.map((it) => it.counterparty)).size,
-    [tableData]
+    [tableData],
   )
 
   useEffect(() => {
@@ -412,7 +412,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
           setAlert({ variant: 'danger', message })
         })
     },
-    [t]
+    [t],
   )
 
   useEffect(() => {

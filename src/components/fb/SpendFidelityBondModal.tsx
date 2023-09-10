@@ -62,7 +62,7 @@ type UtxoDirectSendHook = {
 const spendUtxosWithDirectSend = async (
   context: Api.WalletRequestContext,
   request: UtxoDirectSendRequest,
-  hooks: UtxoDirectSendHook
+  hooks: UtxoDirectSendHook,
 ) => {
   const utxosFromSameJar = request.utxos.every((it) => it.mixdepth === request.sourceJarIndex)
   if (!utxosFromSameJar || request.utxos.length === 0) {
@@ -93,7 +93,7 @@ const spendUtxosWithDirectSend = async (
       Api.postFreeze(context, { utxo: utxo.utxo, freeze: true }).then((res) => {
         if (!res.ok) return hooks.onFreezeUtxosError(res)
         utxosThatWereFrozen.push(utxo.utxo)
-      })
+      }),
     )
     // freeze unused coins not part of the payment
     await Promise.all(freezeCalls)
@@ -104,7 +104,7 @@ const spendUtxosWithDirectSend = async (
         Api.postFreeze(context, { utxo: utxo.utxo, freeze: false }).then((res) => {
           if (!res.ok) return hooks.onUnfreezeUtxosError(res)
           utxosThatWereUnfrozen.push(utxo.utxo)
-        })
+        }),
       )
     // unfreeze potentially frozen coins that are about to be spent
     await Promise.all(unfreezeCalls)
@@ -160,7 +160,7 @@ const SpendFidelityBondModal = ({
 
   const [alert, setAlert] = useState<SimpleAlert>()
   const [selectedDestinationJarIndex, setSelectedDestinationJarIndex] = useState<JarIndex | undefined>(
-    destinationJarIndex
+    destinationJarIndex,
   )
 
   const [txInfo, setTxInfo] = useState<TxInfo | undefined>()
@@ -290,7 +290,7 @@ const SpendFidelityBondModal = ({
           Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_unfreezing_fidelity_bond')),
         onSendError: (res) =>
           Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond')),
-      }
+      },
     )
   }
 
@@ -406,7 +406,7 @@ const SpendFidelityBondModal = ({
           data={{
             sourceJarIndex: undefined, // dont show a source jar - might be confusing in this context
             destination: String(
-              t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(selectedDestinationJarIndex) })
+              t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(selectedDestinationJarIndex) }),
             ),
             amount: fidelityBond.value,
             isSweep: true,

@@ -29,7 +29,7 @@ type ScheduleEntry = [
   SchedulerDestinationAddress,
   WaitTimeInMinutes,
   Rounding,
-  StateFlag
+  StateFlag,
 ]
 type Schedule = ScheduleEntry[]
 
@@ -121,8 +121,8 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const fetchSessionInProgress = useRef<Promise<ServiceInfo> | null>(null)
 
   const [serviceInfo, dispatchServiceInfo] = useReducer(
-    (state: ServiceInfo | null, obj: ServiceInfoUpdate) => ({ ...state, ...obj } as ServiceInfo | null),
-    null
+    (state: ServiceInfo | null, obj: ServiceInfoUpdate) => ({ ...state, ...obj }) as ServiceInfo | null,
+    null,
   )
   const [connectionError, setConnectionError] = useState<Error>()
 
@@ -238,7 +238,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
           throw err
         })
     },
-    [currentWallet, setCurrentWallet]
+    [currentWallet, setCurrentWallet],
   )
 
   useEffect(() => {

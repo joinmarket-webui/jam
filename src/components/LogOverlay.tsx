@@ -95,7 +95,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
           setIsLoading(false)
         })
     },
-    [currentWallet, t]
+    [currentWallet, t],
   )
 
   useEffect(() => {

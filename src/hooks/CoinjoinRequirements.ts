@@ -46,13 +46,13 @@ const filterUtxosViolatingTriesLeftRequirement = (utxos: Utxos) => {
 
 const buildCoinjoinViolationSummaryForJar = (
   utxos: Utxos,
-  options: CoinjoinRequirementOptions
+  options: CoinjoinRequirementOptions,
 ): CoinjoinRequirementViolation => {
   const eligibleUtxos = filterEligibleUtxos(utxos)
   const utxosViolatingRetriesLeft = filterUtxosViolatingTriesLeftRequirement(eligibleUtxos)
   const utxosViolatingMinConfirmations = filterUtxosViolatingMinConfirmationRequirement(
     eligibleUtxos,
-    options.minConfirmations
+    options.minConfirmations,
   )
 
   const hasViolations = utxosViolatingRetriesLeft.length > 0 || utxosViolatingMinConfirmations.length > 0
@@ -66,7 +66,7 @@ const buildCoinjoinViolationSummaryForJar = (
 
 export const buildCoinjoinRequirementSummary = (
   utxos: Utxos,
-  options = DEFAULT_REQUIREMENT_OPTIONS
+  options = DEFAULT_REQUIREMENT_OPTIONS,
 ): CoinjoinRequirementSummary => {
   const eligibleUtxos = filterEligibleUtxos(utxos)
   const utxosByJars = groupByJar(eligibleUtxos)
@@ -85,8 +85,8 @@ export const buildCoinjoinRequirementSummary = (
     .map((it) =>
       it.utxosViolatingMinConfirmations.reduce(
         (acc, utxo) => Math.min(acc, utxo.confirmations),
-        Number.MAX_SAFE_INTEGER
-      )
+        Number.MAX_SAFE_INTEGER,
+      ),
     )
     .reduce((acc, lowestConfPerJar) => Math.min(acc, lowestConfPerJar), Number.MAX_SAFE_INTEGER)
 

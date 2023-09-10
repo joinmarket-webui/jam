@@ -182,7 +182,7 @@ const Helper = (() => {
 
   const throwResolved = async (
     response: Response,
-    { resolver = DEFAULT_RESOLVER, fallbackReason = response.statusText } = {}
+    { resolver = DEFAULT_RESOLVER, fallbackReason = response.statusText } = {},
   ): Promise<never> => {
     const reason = await extractErrorMessage(response, fallbackReason)
     const errorMessage = resolver(response, reason) || reason
@@ -292,7 +292,7 @@ const getWalletLock = async ({ token, signal, walletName }: WalletRequestContext
 
 const postWalletUnlock = async (
   { signal, walletName }: ApiRequestContext & WithWalletName,
-  { password }: WalletUnlockRequest
+  { password }: WalletUnlockRequest,
 ) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/unlock`, {
     method: 'POST',
@@ -384,7 +384,7 @@ const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
 
 const postFreeze = async (
   { token, signal, walletName }: WalletRequestContext,
-  { utxo, freeze = true }: FreezeRequest
+  { utxo, freeze = true }: FreezeRequest,
 ) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/freeze`, {
     method: 'POST',

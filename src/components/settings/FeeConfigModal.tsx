@@ -63,7 +63,7 @@ interface FeeConfigFormProps {
 const FeeConfigForm = forwardRef(
   (
     { onSubmit, validate, initialValues, defaultActiveSectionKey }: FeeConfigFormProps,
-    ref: React.Ref<HTMLFormElement>
+    ref: React.Ref<HTMLFormElement>,
   ) => {
     const { t, i18n } = useTranslation()
 
@@ -210,7 +210,7 @@ const FeeConfigForm = forwardRef(
                     {t(
                       txFeesUnit === 'sats/kilo-vbyte'
                         ? 'settings.fees.description_tx_fees_satspervbyte'
-                        : 'settings.fees.description_tx_fees_blocks'
+                        : 'settings.fees.description_tx_fees_blocks',
                     )}
                   </rb.Form.Text>
                   <rb.Form.Group controlId="tx_fees" className="mb-4">
@@ -316,7 +316,7 @@ const FeeConfigForm = forwardRef(
         )}
       </Formik>
     )
-  }
+  },
 )
 
 export default function FeeConfigModal({
@@ -409,7 +409,7 @@ export default function FeeConfigModal({
       setSaveErrorMessage((_) =>
         t('settings.fees.error_saving_fee_config_failed', {
           reason: err instanceof Error ? err.message : 'Unknown',
-        })
+        }),
       )
     }
   }
@@ -480,7 +480,7 @@ export default function FeeConfigModal({
       }
       return errors
     },
-    [t]
+    [t],
   )
 
   const cancel = useCallback(() => {

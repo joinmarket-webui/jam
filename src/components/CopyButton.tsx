@@ -3,11 +3,11 @@ import { ReactNode, PropsWithChildren, useState, useEffect, useRef } from 'react
 const copyToClipboard = (
   text: string,
   fallbackInputField: HTMLInputElement,
-  errorMessage?: string
+  errorMessage?: string,
 ): Promise<boolean> => {
   const copyToClipboardFallback = (
     inputField: HTMLInputElement,
-    errorMessage = 'Cannot copy value to clipboard'
+    errorMessage = 'Cannot copy value to clipboard',
   ): Promise<boolean> =>
     new Promise((resolve, reject) => {
       inputField.select()

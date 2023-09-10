@@ -69,7 +69,7 @@ const FeeBreakdown = ({
       feeConfigValues?.max_cj_fee_rel
         ? `${factorToPercentage(feeConfigValues.max_cj_fee_rel)}%`
         : t('send.fee_breakdown.placeholder_config_value_not_present'),
-    [feeConfigValues, t]
+    [feeConfigValues, t],
   )
 
   /** eg: 44658 (expressed in sats) */
@@ -78,7 +78,7 @@ const FeeBreakdown = ({
       feeConfigValues?.max_cj_fee_rel && numCollaborators && amount && amount > 0
         ? Math.ceil(amount * feeConfigValues.max_cj_fee_rel) * numCollaborators
         : null,
-    [feeConfigValues, amount, numCollaborators]
+    [feeConfigValues, amount, numCollaborators],
   )
 
   /** eg: "8,636 sats" */
@@ -87,26 +87,26 @@ const FeeBreakdown = ({
       feeConfigValues?.max_cj_fee_abs
         ? `${formatSats(feeConfigValues.max_cj_fee_abs)} sats`
         : t('send.fee_breakdown.placeholder_config_value_not_present'),
-    [feeConfigValues, t]
+    [feeConfigValues, t],
   )
 
   /** eg: 77724 (expressed in sats) */
   const maxEstimatedAbsoluteFee = useMemo(
     () =>
       feeConfigValues?.max_cj_fee_abs && numCollaborators ? feeConfigValues.max_cj_fee_abs * numCollaborators : null,
-    [feeConfigValues, numCollaborators]
+    [feeConfigValues, numCollaborators],
   )
 
   const isAbsoluteFeeHighlighted = useMemo(
     () =>
       maxEstimatedAbsoluteFee && maxEstimatedRelativeFee ? maxEstimatedAbsoluteFee > maxEstimatedRelativeFee : false,
-    [maxEstimatedAbsoluteFee, maxEstimatedRelativeFee]
+    [maxEstimatedAbsoluteFee, maxEstimatedRelativeFee],
   )
 
   const isRelativeFeeHighlighted = useMemo(
     () =>
       maxEstimatedAbsoluteFee && maxEstimatedRelativeFee ? maxEstimatedRelativeFee > maxEstimatedAbsoluteFee : false,
-    [maxEstimatedAbsoluteFee, maxEstimatedRelativeFee]
+    [maxEstimatedAbsoluteFee, maxEstimatedRelativeFee],
   )
 
   return (

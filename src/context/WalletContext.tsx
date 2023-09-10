@@ -201,10 +201,10 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
 
       const { name: walletName, token } = currentWallet
       return await Api.getWalletUtxos({ walletName, token, signal }).then(
-        (res): Promise<UtxosResponse> => (res.ok ? res.json() : Api.Helper.throwError(res))
+        (res): Promise<UtxosResponse> => (res.ok ? res.json() : Api.Helper.throwError(res)),
       )
     },
-    [currentWallet]
+    [currentWallet],
   )
 
   const fetchDisplay = useCallback(
@@ -215,10 +215,10 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
 
       const { name: walletName, token } = currentWallet
       return await Api.getWalletDisplay({ walletName, token, signal }).then(
-        (res): Promise<WalletDisplayResponse> => (res.ok ? res.json() : Api.Helper.throwError(res))
+        (res): Promise<WalletDisplayResponse> => (res.ok ? res.json() : Api.Helper.throwError(res)),
       )
     },
-    [currentWallet]
+    [currentWallet],
   )
 
   const reloadUtxos = useCallback(
@@ -229,7 +229,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       }
       return response
     },
-    [fetchUtxos]
+    [fetchUtxos],
   )
 
   const reloadDisplay = useCallback(
@@ -240,7 +240,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       }
       return response
     },
-    [fetchDisplay]
+    [fetchDisplay],
   )
 
   const reloadAll = useCallback(
@@ -248,7 +248,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       Promise.all([reloadUtxos({ signal }), reloadDisplay({ signal })])
         .then((data) => toCombinedRawData(data[0], data[1]))
         .then((raw) => toWalletInfo(raw)),
-    [reloadUtxos, reloadDisplay]
+    [reloadUtxos, reloadDisplay],
   )
 
   const combinedRawData = useMemo<CombinedRawWalletData | undefined>(() => {
@@ -266,7 +266,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       reloadAll,
       reloadUtxos,
     }),
-    [reloadAll, reloadUtxos]
+    [reloadAll, reloadUtxos],
   )
 
   useEffect(() => {

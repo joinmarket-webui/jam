@@ -49,7 +49,7 @@ const WalletCreationForm = ({
       }
       return errors
     },
-    [t]
+    [t],
   )
 
   return (

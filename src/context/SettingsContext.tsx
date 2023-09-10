@@ -38,7 +38,7 @@ const settingsReducer = (oldSettings: Settings, action: Partial<Settings>) => {
 const SettingsProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const [settings, dispatch] = useReducer(
     settingsReducer,
-    Object.assign({}, initialSettings, JSON.parse(window.localStorage.getItem(localStorageKey) || '{}')) as Settings
+    Object.assign({}, initialSettings, JSON.parse(window.localStorage.getItem(localStorageKey) || '{}')) as Settings,
   )
 
   useEffect(() => {

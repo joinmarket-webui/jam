@@ -23,7 +23,7 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
 
   const isSeedBackupConfirmed = useMemo(
     () => givenWords.every((word, index) => word === seedphrase[index]),
-    [givenWords, seedphrase]
+    [givenWords, seedphrase],
   )
 
   return (
@@ -108,7 +108,7 @@ export default function CreateWallet({ parentRoute, startWallet }) {
         setAlert({ variant: 'danger', message })
       }
     },
-    [setAlert, setCreatedWallet, t]
+    [setAlert, setCreatedWallet, t],
   )
 
   const walletConfirmed = useCallback(() => {
@@ -123,7 +123,7 @@ export default function CreateWallet({ parentRoute, startWallet }) {
 
   const isCreated = useMemo(
     () => createdWallet?.walletFileName && createdWallet?.seedphrase && createdWallet?.password,
-    [createdWallet]
+    [createdWallet],
   )
   const canCreate = useMemo(() => !isCreated && !serviceInfo?.walletName, [isCreated, serviceInfo])
   const [showBackupConfirmation, setShowBackupConfirmation] = useState(false)

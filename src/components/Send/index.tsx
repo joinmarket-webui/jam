@@ -91,12 +91,12 @@ export default function Send({ wallet }: SendProps) {
 
   const isOperationDisabled = useMemo(
     () => isCoinjoinInProgress || isMakerRunning || isRescanningInProgress || waitForUtxosToBeSpent.length > 0,
-    [isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent]
+    [isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent],
   )
   const [isInitializing, setIsInitializing] = useState(!isOperationDisabled)
   const isLoading = useMemo(
     () => !walletInfo || isInitializing || waitForUtxosToBeSpent.length > 0,
-    [walletInfo, isInitializing, waitForUtxosToBeSpent]
+    [walletInfo, isInitializing, waitForUtxosToBeSpent],
   )
 
   const [destination, setDestination] = useState<Api.BitcoinAddress | null>(INITIAL_DESTINATION)
@@ -108,7 +108,7 @@ export default function Send({ wallet }: SendProps) {
   const sortedAccountBalances = useMemo(() => {
     if (!walletInfo) return []
     return Object.values(walletInfo.balanceSummary.accountBalances).sort(
-      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex
+      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex,
     )
   }, [walletInfo])
 
@@ -125,7 +125,7 @@ export default function Send({ wallet }: SendProps) {
         return jarsWithBalance[0].accountIndex
       })
     },
-    [isLoading, sourceJarIndex, sortedAccountBalances]
+    [isLoading, sourceJarIndex, sortedAccountBalances],
   )
 
   const accountBalance = useMemo(() => {
@@ -240,7 +240,7 @@ export default function Send({ wallet }: SendProps) {
         clearTimeout(timer)
       }
     },
-    [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t]
+    [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t],
   )
 
   useEffect(
@@ -293,12 +293,12 @@ export default function Send({ wallet }: SendProps) {
         })
 
       Promise.all([loadingServiceInfo, loadingWalletInfoAndUtxos, loadingMinimumMakerConfig]).finally(
-        () => !abortCtrl.signal.aborted && setIsInitializing(false)
+        () => !abortCtrl.signal.aborted && setIsInitializing(false),
       )
 
       return () => abortCtrl.abort()
     },
-    [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t]
+    [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t],
   )
 
   useEffect(
@@ -312,13 +312,13 @@ export default function Send({ wallet }: SendProps) {
 
       setDestinationIsReusedAddress(false)
     },
-    [walletInfo, destination]
+    [walletInfo, destination],
   )
 
   const sendPayment = async (
     sourceJarIndex: JarIndex,
     destination: Api.BitcoinAddress,
-    amount_sats: Api.AmountSats
+    amount_sats: Api.AmountSats,
   ) => {
     setAlert(undefined)
     setPaymentSuccessfulInfoAlert(undefined)
@@ -351,7 +351,7 @@ export default function Send({ wallet }: SendProps) {
         const displayMessage = await enhanceDirectPaymentErrorMessageIfNecessary(
           res.status,
           message,
-          (errorMessage) => `${errorMessage} ${t('send.direct_payment_error_message_bad_request')}`
+          (errorMessage) => `${errorMessage} ${t('send.direct_payment_error_message_bad_request')}`,
         )
         setAlert({ variant: 'danger', message: displayMessage })
       }
@@ -369,7 +369,7 @@ export default function Send({ wallet }: SendProps) {
     sourceJarIndex: JarIndex,
     destination: Api.BitcoinAddress,
     amount_sats: Api.AmountSats,
-    counterparties: number
+    counterparties: number,
   ) => {
     setAlert(undefined)
     setIsSending(true)
@@ -394,7 +394,7 @@ export default function Send({ wallet }: SendProps) {
           loadConfigValue,
           res.status,
           message,
-          (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`
+          (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`,
         )
 
         setAlert({ variant: 'danger', message: displayMessage })
@@ -655,7 +655,7 @@ export default function Send({ wallet }: SendProps) {
                 mixdepth: selectedJar,
               })
                 .then((res) =>
-                  res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))
+                  res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed')),
                 )
                 .then((data) => {
                   if (abortCtrl.signal.aborted) return
@@ -691,7 +691,7 @@ export default function Send({ wallet }: SendProps) {
                     isSelected={it.accountIndex === sourceJarIndex}
                     fillLevel={jarFillLevel(
                       it.calculatedTotalBalanceInSats,
-                      walletInfo.balanceSummary.calculatedTotalBalanceInSats
+                      walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
                     variant={
                       it.accountIndex === sourceJarIndex &&

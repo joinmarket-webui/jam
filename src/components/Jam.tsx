@@ -24,7 +24,7 @@ const DEST_ADDRESS_COUNT_TEST = 1
 const getNewAddressesForTesting = (
   walletInfo: WalletInfo,
   count: number,
-  mixdepth: number
+  mixdepth: number,
 ): Array<Api.BitcoinAddress> => {
   const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
     return branch.branch.split('\t')[0] === 'external addresses'
@@ -42,7 +42,7 @@ const getNewAddressesForTesting = (
 const getNewAddressesForTestingOrEmpty = (
   walletInfo: WalletInfo | undefined,
   count: number,
-  mixdepth = 0
+  mixdepth = 0,
 ): Array<Api.BitcoinAddress | ''> => {
   if (!walletInfo) {
     return Array(count).fill('')
@@ -67,7 +67,7 @@ const isValidAddress = (candidate: any) => {
 const isAddressReused = (
   walletInfo: WalletInfo,
   destination: Api.BitcoinAddress,
-  inputAddresses: Api.BitcoinAddress[]
+  inputAddresses: Api.BitcoinAddress[],
 ) => {
   if (!destination) return false
 
@@ -164,18 +164,18 @@ export default function Jam({ wallet }: JamProps) {
 
   const collaborativeOperationRunning = useMemo(
     () => serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false,
-    [serviceInfo]
+    [serviceInfo],
   )
 
   const schedulerPreconditionSummary = useMemo(
     () => buildCoinjoinRequirementSummary(walletInfo?.data.utxos.utxos || []),
-    [walletInfo]
+    [walletInfo],
   )
 
   const [useInsecureTestingSettings, setUseInsecureTestingSettings] = useState(false)
   const addressCount = useMemo(
     () => (useInsecureTestingSettings ? DEST_ADDRESS_COUNT_TEST : DEST_ADDRESS_COUNT_PROD),
-    [useInsecureTestingSettings]
+    [useInsecureTestingSettings],
   )
 
   const initialFormValues = useMemo<FormikValues>(() => {
@@ -207,7 +207,7 @@ export default function Jam({ wallet }: JamProps) {
           setIsLoading(false)
         })
     },
-    [reloadServiceInfo, reloadCurrentWalletInfo, t]
+    [reloadServiceInfo, reloadCurrentWalletInfo, t],
   )
 
   useEffect(() => {
@@ -462,7 +462,7 @@ export default function Jam({ wallet }: JamProps) {
                                     try {
                                       const newAddresses = getNewAddressesForTestingOrEmpty(
                                         walletInfo,
-                                        DEST_ADDRESS_COUNT_TEST
+                                        DEST_ADDRESS_COUNT_TEST,
                                       )
                                       newAddresses.forEach((newAddress, index) => {
                                         setFieldValue(`dest${index + 1}`, newAddress, true)

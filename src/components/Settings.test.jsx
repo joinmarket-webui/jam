@@ -12,7 +12,7 @@ describe('<Settings />', () => {
     render(
       <BrowserRouter>
         <Settings wallet={wallet} />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
   }
 
@@ -23,7 +23,7 @@ describe('<Settings />', () => {
           name: dummyWalletName,
           token: dummyToken,
         },
-      })
+      }),
     )
 
     expect(screen.getByText('settings.section_title_display')).toBeVisible()
