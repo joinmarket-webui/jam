@@ -9,6 +9,7 @@ import Wallet, { WalletProps } from './Wallet'
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
+  getGetinfo: jest.fn(),
   getSession: jest.fn(),
 }))
 
@@ -43,7 +44,8 @@ describe('<Wallet />', () => {
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise<Response>(() => {})
-    jest.mocked(apiMock.getSession).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
   })
 
   it('should render inactive wallet without errors', () => {

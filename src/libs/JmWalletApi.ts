@@ -210,6 +210,12 @@ const Helper = (() => {
   }
 })()
 
+const getGetinfo = async ({ signal }: ApiRequestContext) => {
+  return await fetch(`${basePath()}/v1/getinfo`, {
+    signal,
+  })
+}
+
 const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {
   return await fetch(`${basePath()}/v1/session`, {
     headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
@@ -465,6 +471,7 @@ export class JmApiError extends Error {
 }
 
 export {
+  getGetinfo,
   postMakerStart,
   getMakerStop,
   getSession,

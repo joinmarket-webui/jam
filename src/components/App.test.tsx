@@ -7,12 +7,14 @@ import App from './App'
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
+  getGetinfo: jest.fn(),
   getSession: jest.fn(),
 }))
 
 describe('<App />', () => {
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
     ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
   })
 
