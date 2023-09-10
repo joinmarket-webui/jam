@@ -103,24 +103,13 @@ input[type='number'] {
   color: var(--bs-white) !important;
 }
 
-.button {
-  height: 3rem;
-  width: 100%;
-}
-
 .inputLoader {
   height: 3.5rem;
   border-radius: 0.25rem;
 }
 
-.serviceRunning .sendForm {
-  filter: blur(2px);
-}
-
-.serviceRunning .collaboratorsSelector {
-  filter: blur(2px);
-}
-
+.serviceRunning .sendForm,
+.serviceRunning .collaboratorsSelector,
 .serviceRunning .sendButton {
   filter: blur(2px);
 }

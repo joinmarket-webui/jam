@@ -43,21 +43,6 @@
   display: none;
 }
 
-.buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.buttons > button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 2.2rem;
-  font-size: 1rem;
-}
-
 .successCheckmark {
   width: '2rem';
   height: '2rem';

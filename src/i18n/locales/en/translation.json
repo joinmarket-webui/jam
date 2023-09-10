@@ -133,7 +133,7 @@
     "placeholder_password_confirm": "Repeat the password...",
     "feedback_invalid_password_confirm": "Given passwords do not match.",
     "button_create": "Create",
-    "button_creating": "Creating",
+    "button_creating": "Creating...",
     "error_creating_failed": "Error while creating the wallet. Reason: {{ reason }}",
     "alert_confirmation_failed": "Wallet confirmation failed.",
     "confirmation_label_wallet_name": "Wallet Name",

@@ -368,7 +368,7 @@ export default function Earn({ wallet }) {
     <div className={styles['earn']}>
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
-      <rb.Row>
+      <rb.Row className="mb-2">
         <rb.Col>
           <rb.Fade in={serviceInfo?.coinjoinInProgress} mountOnEnter={true} unmountOnExit={true}>
             <rb.Alert variant="info" className="mb-4">
@@ -610,21 +610,22 @@ export default function Earn({ wallet }) {
                         </>
                       </Accordion>
                     )}
-                    <div className="mb-4">
-                      <rb.Button
-                        variant="dark"
-                        type="submit"
-                        className={styles['earn-btn']}
-                        disabled={
-                          isLoading ||
-                          isSubmitting ||
-                          serviceInfo?.rescanning === true ||
-                          isWaitingMakerStart ||
-                          isWaitingMakerStop
-                        }
-                      >
-                        <div className="d-flex justify-content-center align-items-center">
-                          {(isWaitingMakerStart || isWaitingMakerStop) && (
+                    <rb.Button
+                      className="w-100 mb-4"
+                      variant="dark"
+                      size="lg"
+                      type="submit"
+                      disabled={
+                        isLoading ||
+                        isSubmitting ||
+                        serviceInfo?.rescanning === true ||
+                        isWaitingMakerStart ||
+                        isWaitingMakerStop
+                      }
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        {isWaitingMakerStart || isWaitingMakerStop ? (
+                          <>
                             <rb.Spinner
                               as="span"
                               animation="border"
@@ -633,18 +634,14 @@ export default function Earn({ wallet }) {
                               aria-hidden="true"
                               className="me-2"
                             />
-                          )}
-                          {isWaitingMakerStart || isWaitingMakerStop ? (
-                            <>
-                              {isWaitingMakerStart && t('earn.text_starting')}
-                              {isWaitingMakerStop && t('earn.text_stopping')}
-                            </>
-                          ) : (
-                            <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
-                          )}
-                        </div>
-                      </rb.Button>
-                    </div>
+                            {isWaitingMakerStart && t('earn.text_starting')}
+                            {isWaitingMakerStop && t('earn.text_stopping')}
+                          </>
+                        ) : (
+                          <>{serviceInfo?.makerRunning === true ? t('earn.button_stop') : t('earn.button_start')}</>
+                        )}
+                      </div>
+                    </rb.Button>
                   </rb.Form>
                 </>
               )}
@@ -652,7 +649,7 @@ export default function Earn({ wallet }) {
           )}
         </rb.Col>
       </rb.Row>
-      <rb.Row className="my-3">
+      <rb.Row className="mb-4">
         <rb.Col className="d-flex justify-content-center">
           <OrderbookOverlay
             show={isShowOrderbook}
@@ -661,7 +658,7 @@ export default function Earn({ wallet }) {
           />
           <rb.Button
             variant="outline-dark"
-            className="border-0 mb-2 d-inline-flex align-items-center"
+            className="border-0 d-inline-flex align-items-center"
             onClick={() => setIsShowOrderbook(true)}
           >
             <Sprite symbol="globe" width="24" height="24" className="me-2" />
@@ -673,7 +670,7 @@ export default function Earn({ wallet }) {
 
           <rb.Button
             variant="outline-dark"
-            className="border-0 mb-2 d-inline-flex align-items-center"
+            className="border-0 d-inline-flex align-items-center"
             onClick={() => setIsShowReport(true)}
           >
             <Sprite symbol="show" width="24" height="24" className="me-2" />

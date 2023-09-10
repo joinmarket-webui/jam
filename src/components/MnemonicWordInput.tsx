@@ -1,6 +1,6 @@
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import styles from './CreateWallet.module.css'
+import styles from './MnemonicWordInput.module.css'
 
 interface MnemonicWordInputProps {
   index: number

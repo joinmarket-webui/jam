@@ -126,8 +126,7 @@ const DisplayBranchEntry = ({ entry, ...props }: DisplayBranchEntryProps) => {
           </rb.Col>
           <rb.Col xs={{ span: 12, order: 3 }} sm={{ span: 10 }} lg={{ span: true, order: 2 }}>
             <CopyButton
-              className={`${styles['address-copy-button']}`}
-              showSprites={false}
+              className={styles['address-copy-button']}
               text={
                 <>
                   <code className="text-break">{address}</code>

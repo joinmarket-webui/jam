@@ -452,7 +452,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     }
 
     if (currentStep === steps.selectJar) {
-      if (selectedJar !== null) {
+      if (selectedJar !== undefined) {
         return steps.selectUtxos
       }
     }
@@ -625,9 +625,10 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         <div>
           <hr />
           <div className="mb-5">{stepComponent(step)}</div>
-          <div className={styles.buttons}>
+          <div className="d-flex flex-column gap-2">
             {!isLoading && primaryButtonText(step) !== null && (
               <rb.Button
+                className="w-100"
                 variant={
                   nextStep(step) === steps.createFidelityBond && !onlyCjOutOrFbUtxosSelected() ? 'danger' : 'dark'
                 }
@@ -639,7 +640,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               </rb.Button>
             )}
             {!isLoading && secondaryButtonText(step) !== null && (
-              <rb.Button variant="white" type="submit" onClick={onSecondaryButtonClicked}>
+              <rb.Button className="w-100" variant="none" onClick={onSecondaryButtonClicked}>
                 {secondaryButtonText(step)}
               </rb.Button>
             )}

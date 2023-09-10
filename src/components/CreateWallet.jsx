@@ -13,7 +13,6 @@ import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
-import styles from './CreateWallet.module.css'
 
 const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
   const { t } = useTranslation()
@@ -45,17 +44,18 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
         <div className="mb-4 text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>
       )}
 
-      <rb.Button variant="dark" className={styles.button} onClick={() => onSuccess()} disabled={!isSeedBackupConfirmed}>
+      <rb.Button
+        className="w-100 mb-4"
+        variant="dark"
+        size="lg"
+        disabled={!isSeedBackupConfirmed}
+        onClick={() => onSuccess()}
+      >
         {t('create_wallet.confirmation_button_fund_wallet')}
       </rb.Button>
 
-      <div className="d-flex mt-4 mb-4 gap-4">
-        <rb.Button
-          variant="outline-dark"
-          disabled={isSeedBackupConfirmed}
-          className={styles.button}
-          onClick={() => onCancel()}
-        >
+      <div className="d-flex justify-content-between mb-4 gap-4">
+        <rb.Button variant="none" disabled={isSeedBackupConfirmed} onClick={() => onCancel()}>
           <div className="d-flex justify-content-center align-items-center">
             <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
             {t('create_wallet.back_button')}
@@ -64,10 +64,10 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
 
         {showSkipButton && (
           <rb.Button
+            className="position-relative"
             variant="outline-dark"
-            className={`${styles.button} position-relative`}
-            onClick={() => onSuccess()}
             disabled={isSeedBackupConfirmed}
+            onClick={() => onSuccess()}
           >
             <div className="d-flex justify-content-center align-items-center">
               {t('create_wallet.skip_button')}
