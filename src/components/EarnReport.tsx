@@ -157,7 +157,7 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
         [SORT_KEYS.inputCount]: (array) => array.sort((a, b) => +a.inputCount - +b.inputCount),
         [SORT_KEYS.inputAmountInSats]: (array) => array.sort((a, b) => +a.inputAmount - +b.inputAmount),
       },
-    }
+    },
   )
 
   return (
@@ -362,7 +362,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
           setAlert({ variant: 'danger', message })
         })
     },
-    [t]
+    [t],
   )
 
   useEffect(() => {

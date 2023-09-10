@@ -16,7 +16,7 @@ const makeUtxo = (id: string, address = '', frozen = false) =>
     confirmations: 0,
     frozen: frozen,
     utxo: id,
-  } as Utxo)
+  }) as Utxo
 
 describe('utils', () => {
   describe('lockdate', () => {
@@ -80,7 +80,7 @@ describe('utils', () => {
           makeUtxo('foo:2'),
           makeUtxo('foo:3'),
           makeUtxo('foo:4'),
-        ])
+        ]),
       ).toBe(true)
 
       expect(
@@ -90,7 +90,7 @@ describe('utils', () => {
           makeUtxo('foo:2'),
           makeUtxo('foo:3'),
           makeUtxo('foo:4'),
-        ])
+        ]),
       ).toBe(true)
 
       expect(
@@ -100,7 +100,7 @@ describe('utils', () => {
           makeUtxo('foo:2'),
           makeUtxo('foo:3'),
           makeUtxo('foo:4'),
-        ])
+        ]),
       ).toBe(true)
 
       expect(
@@ -110,7 +110,7 @@ describe('utils', () => {
           makeUtxo('foo:2'),
           makeUtxo('foo:3'),
           makeUtxo('foo:4'),
-        ])
+        ]),
       ).toBe(false)
     })
 

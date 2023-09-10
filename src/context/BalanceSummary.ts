@@ -42,22 +42,25 @@ const toBalanceSummary = (rawWalletData: CombinedRawWalletData, now?: Millisecon
   const accounts = rawWalletData.display.walletinfo.accounts
   const utxos = rawWalletData.utxos.utxos
 
-  const utxosByAccount = utxos.reduce((acc, utxo) => {
-    const key = `${utxo.mixdepth}`
-    acc[key] = acc[key] || []
-    acc[key].push(utxo)
-    return acc
-  }, {} as { [key: string]: Utxos })
+  const utxosByAccount = utxos.reduce(
+    (acc, utxo) => {
+      const key = `${utxo.mixdepth}`
+      acc[key] = acc[key] || []
+      acc[key].push(utxo)
+      return acc
+    },
+    {} as { [key: string]: Utxos },
+  )
 
   const totalCalculatedByAccount = Object.fromEntries(
     Object.entries(utxosByAccount).map(([account, utxos]) => {
       return [account, utxos.reduce((acc, utxo) => acc + utxo.value, 0)]
-    })
+    }),
   )
   const frozenOrLockedCalculatedByAccount = Object.fromEntries(
     Object.entries(utxosByAccount).map(([account, utxos]) => {
       return [account, calculateFrozenOrLockedBalance(utxos, refTime)]
-    })
+    }),
   )
 
   const accountsBalanceSummary = accounts
@@ -76,12 +79,12 @@ const toBalanceSummary = (rawWalletData: CombinedRawWalletData, now?: Millisecon
 
   const walletTotalCalculated: AmountSats = Object.values(totalCalculatedByAccount).reduce(
     (acc, totalSats) => acc + totalSats,
-    0
+    0,
   )
 
   const walletFrozenOrLockedCalculated: AmountSats = Object.values(frozenOrLockedCalculatedByAccount).reduce(
     (acc, frozenOrLockedSats) => acc + frozenOrLockedSats,
-    0
+    0,
   )
 
   const walletAvailableCalculated = walletTotalCalculated - walletFrozenOrLockedCalculated

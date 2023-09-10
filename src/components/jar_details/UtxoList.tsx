@@ -189,7 +189,7 @@ const UtxoList = ({
         _confs: utxoConfirmations(utxo),
       })),
     }),
-    [utxos, walletInfo, t]
+    [utxos, walletInfo, t],
   )
 
   const tableTheme = useTheme(TABLE_THEME)
@@ -213,7 +213,7 @@ const UtxoList = ({
     {
       rowSelect: SelectTypes.MultiSelect,
       buttonSelect: SelectTypes.MultiSelect,
-    }
+    },
   )
 
   const tableSort = useSort(
@@ -253,7 +253,7 @@ const UtxoList = ({
         [SORT_KEYS.tags]: (array) =>
           array.sort((a, b) => (String(a._tags[0]?.tag) || 'z').localeCompare(String(b._tags[0]?.tag) || 'z')),
       },
-    }
+    },
   )
 
   return (

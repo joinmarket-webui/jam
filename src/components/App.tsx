@@ -55,7 +55,7 @@ export default function App() {
       setSession({ name, token })
       setCurrentWallet({ name, token })
     },
-    [setCurrentWallet]
+    [setCurrentWallet],
   )
 
   const stopWallet = useCallback(() => {
@@ -78,10 +78,10 @@ export default function App() {
               console.info('Finished reloading wallet info.')
               setReloadingWalletInfoCounter((current) => current - 1)
             })
-        }, delay)
+        }, delay),
       )
     },
-    [reloadCurrentWalletInfo]
+    [reloadCurrentWalletInfo],
   )
 
   const router = createBrowserRouter(
@@ -170,11 +170,11 @@ export default function App() {
             </>
           )}
         </Route>
-      </Route>
+      </Route>,
     ),
     {
       basename: window.JM.PUBLIC_PATH,
-    }
+    },
   )
 
   if (settings.showOnboarding === true) {
@@ -244,7 +244,7 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
   const [currentRescanning, setCurrentRescanning] = useState(serviceInfo?.rescanning || false)
   const rescanningFinished = useMemo(
     () => previousRescanning === true && currentRescanning === false,
-    [previousRescanning, currentRescanning]
+    [previousRescanning, currentRescanning],
   )
 
   useEffect(() => {
@@ -258,7 +258,7 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
 
       reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_UNLOCK).catch((err) => console.error(err))
     },
-    [currentWallet, reloadWalletInfo]
+    [currentWallet, reloadWalletInfo],
   )
 
   useEffect(
@@ -272,7 +272,7 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
         currentBalance: Api.AmountSats,
         delay: Milliseconds,
         maxCalls: number,
-        callCounter: number = 0
+        callCounter: number = 0,
       ) => {
         if (callCounter >= maxCalls) return
         const info = await reloadWalletInfo(delay)
@@ -287,12 +287,12 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
           reloadWhileBalanceChangesRecursively(
             info.balanceSummary.calculatedTotalBalanceInSats,
             RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN,
-            MAX_RECURSIVE_WALLET_INFO_RELOADS
-          )
+            MAX_RECURSIVE_WALLET_INFO_RELOADS,
+          ),
         )
         .catch((err) => console.error(err))
     },
-    [currentWallet, rescanningFinished, reloadWalletInfo]
+    [currentWallet, rescanningFinished, reloadWalletInfo],
   )
 
   return <></>

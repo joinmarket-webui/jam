@@ -38,7 +38,7 @@ module.exports = (app) => {
         changeOrigin: true,
         secure: false,
         ws: true,
-      })
+      }),
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/api/`, {
@@ -51,7 +51,7 @@ module.exports = (app) => {
             proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
           }
         },
-      })
+      }),
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
@@ -59,7 +59,7 @@ module.exports = (app) => {
         pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
         changeOrigin: true,
         secure: false,
-      })
+      }),
     )
   } else if (JAM_BACKEND === BACKEND_STANDALONE) {
     /**
@@ -75,7 +75,7 @@ module.exports = (app) => {
         changeOrigin: true,
         secure: false,
         ws: true,
-      })
+      }),
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/api/`, {
@@ -83,7 +83,7 @@ module.exports = (app) => {
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
-      })
+      }),
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
@@ -91,7 +91,7 @@ module.exports = (app) => {
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
-      })
+      }),
     )
     app.use(
       createProxyMiddleware(`${PUBLIC_URL}/jam/`, {
@@ -99,7 +99,7 @@ module.exports = (app) => {
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
-      })
+      }),
     )
   }
 }

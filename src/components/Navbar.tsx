@@ -221,7 +221,7 @@ function FastThemeToggle() {
         settingsDispatch({ theme })
       }
     },
-    [settingsDispatch]
+    [settingsDispatch],
   )
 
   return (
@@ -250,11 +250,11 @@ export default function Navbar() {
   const rescanInProgress = useMemo(() => serviceInfo?.rescanning === true, [serviceInfo])
   const schedulerRunning = useMemo(
     () => (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule !== null) || false,
-    [serviceInfo]
+    [serviceInfo],
   )
   const singleCoinJoinRunning = useMemo(
     () => (serviceInfo?.coinjoinInProgress && serviceInfo?.schedule === null) || false,
-    [serviceInfo]
+    [serviceInfo],
   )
 
   const joiningRoute = useMemo(() => {

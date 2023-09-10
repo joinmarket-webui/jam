@@ -147,7 +147,7 @@ const WebsocketProvider = ({ children }) => {
       const needsForceClose = websocket.readyState === WebSocket.CONNECTING
       logToDebugConsoleInDevMode(
         `[Websocket] ${new Date().toLocaleString()} Check if a force-close is needed..`,
-        needsForceClose
+        needsForceClose,
       )
       if (needsForceClose) {
         websocket.close(1000, 'Force-close pending connection')
@@ -177,7 +177,7 @@ const WebsocketProvider = ({ children }) => {
           {
             once: true,
             signal: abortCtrl.signal,
-          }
+          },
         )
       }
     }

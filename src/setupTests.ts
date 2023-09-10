@@ -18,8 +18,8 @@ global.__DEV__.addToAppSettings = () => {
     JSON.stringify(
       Object.assign({}, global.localStorage.getItem(global.JM.SETTINGS_STORE_KEY) || {}, {
         showOnboarding: false,
-      })
-    )
+      }),
+    ),
   )
 }
 ;(function setupWebsocketServerMock() {

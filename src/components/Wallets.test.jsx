@@ -32,7 +32,7 @@ describe('<Wallets />', () => {
     render(
       <BrowserRouter>
         <Wallets currentWallet={currentWallet} startWallet={mockStartWallet} stopWallet={mockStopWallet} />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
   }
 
@@ -299,7 +299,7 @@ describe('<Wallets />', () => {
             name: dummyWalletName,
             token: dummyToken,
           },
-        })
+        }),
       )
 
       expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
@@ -346,7 +346,7 @@ describe('<Wallets />', () => {
             name: dummyWalletName,
             token: dummyToken,
           },
-        })
+        }),
       )
 
       expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
@@ -397,7 +397,7 @@ describe('<Wallets />', () => {
               name: dummyWalletName,
               token: dummyToken,
             },
-          })
+          }),
         )
 
         // modal is initially not shown
@@ -441,7 +441,7 @@ describe('<Wallets />', () => {
         await waitForElementToBeRemoved(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title'))
 
         expect(mockStopWallet).toHaveBeenCalled()
-      }
+      },
     )
   })
 })

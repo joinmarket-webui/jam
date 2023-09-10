@@ -47,7 +47,7 @@ describe('BalanceSummary', () => {
           },
         },
       },
-      now
+      now,
     )
 
     expect(balanceSummary).not.toBeNull()
@@ -117,7 +117,7 @@ describe('BalanceSummary', () => {
           },
         },
       },
-      now
+      now,
     )
 
     expect(balanceSummary).not.toBeNull()

@@ -57,7 +57,7 @@ const parseOrderbook = (res: Response): Promise<Order[]> => {
       .map((cols) => {
         const data: unknown = ORDER_KEYS.map((key, index) => ({ [key]: cols[index].innerHTML })).reduce(
           (acc, curr) => ({ ...acc, ...curr }),
-          {}
+          {},
         )
         return data as Order
       })

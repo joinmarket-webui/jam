@@ -36,7 +36,7 @@ const scheduleToSteps = (schedule) => {
   // it takes to find and talk to makers and wait for tx confirmations on the timechain.
   const totalWaitTime = Math.max(
     1,
-    schedule.slice(0, schedule.length - 1).reduce((acc, tx) => acc + tx[4] * 60, 0)
+    schedule.slice(0, schedule.length - 1).reduce((acc, tx) => acc + tx[4] * 60, 0),
   )
   // Distribute the tx's on the progress bar relative to the waittime after the previous tx completes.
   const txs = schedule.map((tx, i) => {

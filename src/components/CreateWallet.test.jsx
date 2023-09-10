@@ -27,7 +27,7 @@ describe('<CreateWallet />', () => {
     render(
       <BrowserRouter>
         <CreateWallet startWallet={startWallet} />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
   }
 

@@ -49,7 +49,7 @@ export const useLoadFeeConfigValues = () => {
       }
       return feeValues
     },
-    [refreshConfigValues]
+    [refreshConfigValues],
   )
 }
 

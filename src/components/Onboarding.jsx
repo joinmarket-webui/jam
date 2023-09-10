@@ -38,7 +38,7 @@ export default function Onboarding() {
         icon: <Sprite symbol="shield-outline" width="11rem" height="11rem" />,
       },
     ],
-    [t]
+    [t],
   )
 
   const next = useCallback(() => {

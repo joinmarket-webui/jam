@@ -69,7 +69,7 @@ export default function Settings({ wallet, stopWallet }) {
         setAlert({ variant: 'danger', dismissible: false, message: e.message })
       }
     },
-    [wallet, stopWallet, navigate, serviceInfo]
+    [wallet, stopWallet, navigate, serviceInfo],
   )
 
   useEffect(() => {

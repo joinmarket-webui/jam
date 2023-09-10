@@ -36,7 +36,7 @@ export const _selectableMonths = (
   year: number,
   yearsRange: fb.YearsRange,
   now = new Date(),
-  locale?: string
+  locale?: string,
 ): SelectableMonth[] => {
   const minMonth = _minMonth(year, yearsRange, now)
   return Array(12)
@@ -80,7 +80,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
   const selectableYears = useMemo(() => _selectableYears(_yearsRange, _now), [_yearsRange, _now])
   const selectableMonths = useMemo(
     () => _selectableMonths(lockdateYear, _yearsRange, _now, i18n.resolvedLanguage || i18n.language),
-    [lockdateYear, _yearsRange, _now, i18n]
+    [lockdateYear, _yearsRange, _now, i18n],
   )
 
   const isLockdateYearValid = useMemo(() => selectableYears.includes(lockdateYear), [lockdateYear, selectableYears])
@@ -90,7 +90,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
         .filter((it) => !it.disabled)
         .map((it) => it.value)
         .includes(lockdateMonth),
-    [lockdateMonth, selectableMonths]
+    [lockdateMonth, selectableMonths],
   )
 
   useEffect(() => {

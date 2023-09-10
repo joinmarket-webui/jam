@@ -33,7 +33,7 @@ export default function Receive({ wallet }) {
   const sortedAccountBalances = useMemo(() => {
     if (!walletInfo) return []
     return Object.values(walletInfo.balanceSummary.accountBalances).sort(
-      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex
+      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex,
     )
   }, [walletInfo])
 
@@ -142,7 +142,7 @@ export default function Receive({ wallet }) {
                     isSelected={it.accountIndex === selectedJarIndex}
                     fillLevel={jarFillLevel(
                       it.calculatedTotalBalanceInSats,
-                      walletInfo.balanceSummary.calculatedTotalBalanceInSats
+                      walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
                     onClick={(jarIndex) => setSelectedJarIndex(jarIndex)}
                   />
