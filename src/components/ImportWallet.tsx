@@ -37,6 +37,16 @@ const GAPLIMIT_SUGGESTIONS = {
 }
 
 const MIN_BLOCKHEIGHT_VALUE = 0
+/**
+ * Maximum blockheight value.
+ * Value choosen based on estimation of blockheight in tge year 2140 (plus some buffer):
+ * 365 × 144 × (2140 - 2009) = 6_885_360 = ~7_000_000
+ * This is necessary because javascript does not handle large values too well,
+ * and the `/rescanblockchain` errors. Not to mention that a value beyond the current
+ * height does not make any sense in the first place.
+ */
+const MAX_BLOCKHEIGHT_VALUE = 10_000_000
+
 const MIN_GAPLIMIT_VALUE = 1
 /**
  * Maximum gaplimit value for importing an existing wallet.
@@ -84,7 +94,11 @@ const ImportWalletDetailsForm = ({
         errors.mnemonicPhrase = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
-      if (!isValidNumber(values.blockheight) || values.blockheight < MIN_BLOCKHEIGHT_VALUE) {
+      if (
+        !isValidNumber(values.blockheight) ||
+        values.blockheight < MIN_BLOCKHEIGHT_VALUE ||
+        values.blockheight > MAX_BLOCKHEIGHT_VALUE
+      ) {
         errors.blockheight = t('import_wallet.import_details.feedback_invalid_blockheight', {
           min: MIN_BLOCKHEIGHT_VALUE.toLocaleString(),
         })
@@ -182,6 +196,7 @@ const ImportWalletDetailsForm = ({
                   isValid={touched.blockheight && !errors.blockheight}
                   isInvalid={touched.blockheight && !!errors.blockheight}
                   min={MIN_BLOCKHEIGHT_VALUE}
+                  max={MAX_BLOCKHEIGHT_VALUE}
                   step={1_000}
                   required
                 />

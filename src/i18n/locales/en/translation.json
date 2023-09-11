@@ -165,10 +165,10 @@
       "import_options": "Import options",
       "label_blockheight": "Rescan height",
       "description_blockheight": "The blockheight at which the rescan process starts to search for your funds. The earlier the wallet has been created, the lower this value should be.",
-      "feedback_invalid_blockheight": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
+      "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
       "label_gaplimit": "Address import limit",
       "description_gaplimit": "The amount of addresses that are imported per jar. Set to the highest address index used in any of the jars. Increase this number if your wallet is heavily used.",
-      "feedback_invalid_gaplimit": "Please provide a valid gaplimit value between {{ min }} and {{ max }}.",
+      "feedback_invalid_gaplimit": "Please provide a valid value between {{ min }} and {{ max }}.",
       "text_button_submit": "Review",
       "text_button_submitting": "Review"
     },
