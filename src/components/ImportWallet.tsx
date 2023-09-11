@@ -16,7 +16,13 @@ import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes, Route } from '../constants/routes'
-import { SEGWIT_ACTIVATION_BLOCK, DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
+import {
+  SEGWIT_ACTIVATION_BLOCK,
+  DUMMY_MNEMONIC_PHRASE,
+  JM_WALLET_FILE_EXTENSION,
+  walletDisplayName,
+  isValidNumber,
+} from '../utils'
 import { JM_GAPLIMIT_DEFAULT, JM_GAPLIMIT_CONFIGKEY } from '../constants/config'
 
 type ImportWalletDetailsFormValues = {
@@ -32,6 +38,15 @@ const GAPLIMIT_SUGGESTIONS = {
 
 const MIN_BLOCKHEIGHT_VALUE = 0
 const MIN_GAPLIMIT_VALUE = 1
+/**
+ * Maximum gaplimit value for importing an existing wallet.
+ * This value represents an upper limit based on declining performance of JM when many
+ * addresses have to be monitored. On network `regtest`, importing 10_000 addresses in
+ * an empty wallet takes ~10min and requesting the `/display` endpoint takes another
+ * ~10min. At this point, JM becomes practically unusable. However, goal is to find a
+ * balance between usability and freedom of users to do what they are trying to do.
+ */
+const MAX_GAPLIMIT_VALUE = 10_000
 
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
   ? {
@@ -69,14 +84,19 @@ const ImportWalletDetailsForm = ({
         errors.mnemonicPhrase = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
-      if (typeof values.blockheight !== 'number' || values.blockheight < MIN_BLOCKHEIGHT_VALUE) {
+      if (!isValidNumber(values.blockheight) || values.blockheight < MIN_BLOCKHEIGHT_VALUE) {
         errors.blockheight = t('import_wallet.import_details.feedback_invalid_blockheight', {
-          min: MIN_BLOCKHEIGHT_VALUE,
+          min: MIN_BLOCKHEIGHT_VALUE.toLocaleString(),
         })
       }
-      if (typeof values.gaplimit !== 'number' || values.gaplimit < MIN_GAPLIMIT_VALUE) {
+      if (
+        !isValidNumber(values.gaplimit) ||
+        values.gaplimit < MIN_GAPLIMIT_VALUE ||
+        values.gaplimit > MAX_GAPLIMIT_VALUE
+      ) {
         errors.gaplimit = t('import_wallet.import_details.feedback_invalid_gaplimit', {
-          min: MIN_GAPLIMIT_VALUE,
+          min: MIN_GAPLIMIT_VALUE.toLocaleString(),
+          max: MAX_GAPLIMIT_VALUE.toLocaleString(),
         })
       }
       return errors
@@ -192,6 +212,7 @@ const ImportWalletDetailsForm = ({
                   isValid={touched.gaplimit && !errors.gaplimit}
                   isInvalid={touched.gaplimit && !!errors.gaplimit}
                   min={MIN_GAPLIMIT_VALUE}
+                  max={MAX_GAPLIMIT_VALUE}
                   step={1}
                   required
                 />
