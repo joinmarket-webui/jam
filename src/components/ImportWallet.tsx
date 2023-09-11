@@ -64,15 +64,6 @@ const MAX_GAPLIMIT_VALUE = 10_000
  */
 const GAPLIMIT_WARN_THRESHOLD = 250
 
-const GaplimitWarning = () => {
-  const { t } = useTranslation()
-  return (
-    <rb.Alert variant="warning" className="d-flex align-items-center">
-      {t('import_wallet.import_details.alert_high_gaplimit_value')}
-    </rb.Alert>
-  )
-}
-
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
   ? {
       mnemonicPhrase: new Array<string>(12).fill(''),
@@ -180,25 +171,8 @@ const ImportWalletDetailsForm = ({
               </rb.Button>
             )}
             <Accordion
-              title={
-                <div
-                  className={classNames('d-flex align-items-center', {
-                    'text-danger': hasImportDetailsSectionErrors,
-                  })}
-                >
-                  {(hasImportDetailsSectionErrors || showGaplimitWarning) && (
-                    <div
-                      className={classNames('badge rounded-pill text-dark p-0 me-2', {
-                        'bg-warning': !hasImportDetailsSectionErrors && showGaplimitWarning,
-                        'bg-danger': hasImportDetailsSectionErrors,
-                      })}
-                    >
-                      <Sprite symbol="warn" width="20" height="20" />
-                    </div>
-                  )}
-                  {t('import_wallet.import_details.import_options')}
-                </div>
-              }
+              title={t('import_wallet.import_details.import_options')}
+              variant={hasImportDetailsSectionErrors ? 'danger' : showGaplimitWarning ? 'warning' : undefined}
               defaultOpen={true}
             >
               <rb.Form.Group controlId="blockheight" className="mb-4">
@@ -344,20 +318,8 @@ const ImportWalletConfirmation = ({
           <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
 
           <Accordion
-            title={
-              <div className="d-flex align-items-center">
-                {showGaplimitWarning && (
-                  <div
-                    className={classNames('badge rounded-pill text-dark p-0 me-2', {
-                      'bg-warning': showGaplimitWarning,
-                    })}
-                  >
-                    <Sprite symbol="warn" width="20" height="20" />
-                  </div>
-                )}
-                {t('import_wallet.import_details.import_options')}
-              </div>
-            }
+            title={t('import_wallet.import_details.import_options')}
+            variant={showGaplimitWarning ? 'warning' : undefined}
           >
             <div className="mb-4">
               <div>{t('import_wallet.import_details.label_blockheight')}</div>
