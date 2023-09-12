@@ -169,7 +169,7 @@
       "label_gaplimit": "Address import limit",
       "description_gaplimit": "The amount of addresses that are imported per jar. Set to the highest address index used in any of the jars. Increase this number if your wallet is heavily used.",
       "feedback_invalid_gaplimit": "Please provide a valid value between {{ min }} and {{ max }}.",
-      "alert_high_gaplimit_value": "The given value results in many addresses being imported and an extreme decline in performance and responsiveness is to be expected.",
+      "alert_high_gaplimit_value": "The given value causes many addresses to be imported, which can lead to a decline in performance and responsiveness.",
       "text_button_submit": "Review",
       "text_button_submitting": "Review"
     },
