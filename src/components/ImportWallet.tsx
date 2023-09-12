@@ -16,7 +16,13 @@ import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes, Route } from '../constants/routes'
-import { SEGWIT_ACTIVATION_BLOCK, DUMMY_MNEMONIC_PHRASE, JM_WALLET_FILE_EXTENSION, walletDisplayName } from '../utils'
+import {
+  SEGWIT_ACTIVATION_BLOCK,
+  DUMMY_MNEMONIC_PHRASE,
+  JM_WALLET_FILE_EXTENSION,
+  walletDisplayName,
+  isValidNumber,
+} from '../utils'
 import { JM_GAPLIMIT_DEFAULT, JM_GAPLIMIT_CONFIGKEY } from '../constants/config'
 
 type ImportWalletDetailsFormValues = {
@@ -31,7 +37,32 @@ const GAPLIMIT_SUGGESTIONS = {
 }
 
 const MIN_BLOCKHEIGHT_VALUE = 0
+/**
+ * Maximum blockheight value.
+ * Value choosen based on estimation of blockheight in tge year 2140 (plus some buffer):
+ * 365 × 144 × (2140 - 2009) = 6_885_360 = ~7_000_000
+ * This is necessary because javascript does not handle large values too well,
+ * and the `/rescanblockchain` errors. Not to mention that a value beyond the current
+ * height does not make any sense in the first place.
+ */
+const MAX_BLOCKHEIGHT_VALUE = 10_000_000
+
 const MIN_GAPLIMIT_VALUE = 1
+/**
+ * Maximum gaplimit value for importing an existing wallet.
+ * This value represents an upper limit based on declining performance of JM when many
+ * addresses have to be monitored. On network `regtest`, importing 10_000 addresses in
+ * an empty wallet takes ~10min and requesting the `/display` endpoint takes another
+ * ~10min. At this point, JM becomes practically unusable. However, goal is to find a
+ * balance between usability and freedom of users to do what they are trying to do.
+ */
+const MAX_GAPLIMIT_VALUE = 10_000
+/**
+ * A gaplimit threshold at which a warning is displayed that with the given value a
+ * decline in performance is to be expected. Importing 500 addresses (per jar!) leads to
+ * the `/display` endpoint taking more than ~15s.
+ */
+const GAPLIMIT_WARN_THRESHOLD = 250
 
 const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDevMode()
   ? {
@@ -69,14 +100,23 @@ const ImportWalletDetailsForm = ({
         errors.mnemonicPhrase = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
-      if (typeof values.blockheight !== 'number' || values.blockheight < MIN_BLOCKHEIGHT_VALUE) {
+      if (
+        !isValidNumber(values.blockheight) ||
+        values.blockheight < MIN_BLOCKHEIGHT_VALUE ||
+        values.blockheight > MAX_BLOCKHEIGHT_VALUE
+      ) {
         errors.blockheight = t('import_wallet.import_details.feedback_invalid_blockheight', {
-          min: MIN_BLOCKHEIGHT_VALUE,
+          min: MIN_BLOCKHEIGHT_VALUE.toLocaleString(),
         })
       }
-      if (typeof values.gaplimit !== 'number' || values.gaplimit < MIN_GAPLIMIT_VALUE) {
+      if (
+        !isValidNumber(values.gaplimit) ||
+        values.gaplimit < MIN_GAPLIMIT_VALUE ||
+        values.gaplimit > MAX_GAPLIMIT_VALUE
+      ) {
         errors.gaplimit = t('import_wallet.import_details.feedback_invalid_gaplimit', {
-          min: MIN_GAPLIMIT_VALUE,
+          min: MIN_GAPLIMIT_VALUE.toLocaleString(),
+          max: MAX_GAPLIMIT_VALUE.toLocaleString(),
         })
       }
       return errors
@@ -96,127 +136,138 @@ const ImportWalletDetailsForm = ({
         errors,
         isSubmitting,
         submitCount,
-      }) => (
-        <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-          <MnemonicPhraseInput
-            mnemonicPhrase={values.mnemonicPhrase}
-            onChange={(val) => setFieldValue('mnemonicPhrase', val, true)}
-            isDisabled={(_) => isSubmitting}
-          />
-          {!!errors.mnemonicPhrase && (
-            <>
-              <div
-                className={classNames('mb-2', 'text-danger', {
-                  'd-none': submitCount === 0,
-                })}
+      }) => {
+        const hasImportDetailsSectionErrors = !!errors.blockheight || !!errors.gaplimit
+        const showGaplimitWarning = !errors.gaplimit && values.gaplimit > GAPLIMIT_WARN_THRESHOLD
+        return (
+          <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
+            <MnemonicPhraseInput
+              mnemonicPhrase={values.mnemonicPhrase}
+              onChange={(val) => setFieldValue('mnemonicPhrase', val, true)}
+              isDisabled={(_) => isSubmitting}
+            />
+            {!!errors.mnemonicPhrase && (
+              <>
+                <div
+                  className={classNames('mb-2', 'text-danger', {
+                    'd-none': submitCount === 0,
+                  })}
+                >
+                  {errors.mnemonicPhrase}
+                </div>
+              </>
+            )}
+            {__dev_showFillerButton && (
+              <rb.Button
+                variant="outline-dark"
+                className="w-100 mb-4 position-relative"
+                onClick={() => setFieldValue('mnemonicPhrase', DUMMY_MNEMONIC_PHRASE, true)}
+                disabled={isSubmitting}
               >
-                {errors.mnemonicPhrase}
-              </div>
-            </>
-          )}
-          {__dev_showFillerButton && (
-            <rb.Button
-              variant="outline-dark"
-              className="w-100 mb-4 position-relative"
-              onClick={() => setFieldValue('mnemonicPhrase', DUMMY_MNEMONIC_PHRASE, true)}
-              disabled={isSubmitting}
+                Fill with dummy mnemonic phrase
+                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                  dev
+                </span>
+              </rb.Button>
+            )}
+            <Accordion
+              title={t('import_wallet.import_details.import_options')}
+              variant={hasImportDetailsSectionErrors ? 'danger' : showGaplimitWarning ? 'warning' : undefined}
+              defaultOpen={true}
             >
-              Fill with dummy mnemonic phrase
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                dev
-              </span>
-            </rb.Button>
-          )}
-          <Accordion
-            title={
-              <span
-                className={classNames({
-                  'text-danger': !!errors.blockheight || !!errors.gaplimit,
-                })}
-              >
-                {t('import_wallet.import_details.import_options')}
-              </span>
-            }
-            defaultOpen={true}
-          >
-            <rb.Form.Group controlId="blockheight" className="mb-4">
-              <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
-              <rb.Form.Text className="d-block text-secondary mb-2">
-                {t('import_wallet.import_details.description_blockheight')}
-              </rb.Form.Text>
-              <rb.InputGroup hasValidation>
-                <rb.InputGroup.Text id="blockheight-addon1">
-                  <Sprite symbol="block" width="24" height="24" name="Block" />
-                </rb.InputGroup.Text>
-                <rb.Form.Control
-                  aria-label={t('import_wallet.import_details.label_blockheight')}
-                  className="slashed-zeroes"
-                  name="blockheight"
-                  type="number"
-                  placeholder="0"
-                  size="lg"
-                  value={values.blockheight}
-                  disabled={isSubmitting}
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  isValid={touched.blockheight && !errors.blockheight}
-                  isInvalid={touched.blockheight && !!errors.blockheight}
-                  min={MIN_BLOCKHEIGHT_VALUE}
-                  step={1_000}
-                  required
-                />
-                <rb.Form.Control.Feedback type="invalid">{errors.blockheight}</rb.Form.Control.Feedback>
-              </rb.InputGroup>
-            </rb.Form.Group>
-            <rb.Form.Group controlId="gaplimit" className="mb-4">
-              <rb.Form.Label>{t('import_wallet.import_details.label_gaplimit')}</rb.Form.Label>
+              <rb.Form.Group controlId="blockheight" className="mb-4">
+                <rb.Form.Label>{t('import_wallet.import_details.label_blockheight')}</rb.Form.Label>
+                <rb.Form.Text className="d-block text-secondary mb-2">
+                  {t('import_wallet.import_details.description_blockheight')}
+                </rb.Form.Text>
+                <rb.InputGroup hasValidation>
+                  <rb.InputGroup.Text id="blockheight-addon1">
+                    <Sprite symbol="block" width="24" height="24" name="Block" />
+                  </rb.InputGroup.Text>
+                  <rb.Form.Control
+                    aria-label={t('import_wallet.import_details.label_blockheight')}
+                    className="slashed-zeroes"
+                    name="blockheight"
+                    type="number"
+                    placeholder="0"
+                    size="lg"
+                    value={values.blockheight}
+                    disabled={isSubmitting}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    isValid={touched.blockheight && !errors.blockheight}
+                    isInvalid={touched.blockheight && !!errors.blockheight}
+                    min={MIN_BLOCKHEIGHT_VALUE}
+                    max={MAX_BLOCKHEIGHT_VALUE}
+                    step={1_000}
+                    required
+                  />
+                  <rb.Form.Control.Feedback type="invalid">{errors.blockheight}</rb.Form.Control.Feedback>
+                </rb.InputGroup>
+              </rb.Form.Group>
+              <rb.Form.Group controlId="gaplimit" className="mb-4">
+                <rb.Form.Label>{t('import_wallet.import_details.label_gaplimit')}</rb.Form.Label>
 
-              <rb.Form.Text className="d-block text-secondary mb-2">
-                {t('import_wallet.import_details.description_gaplimit')}
-              </rb.Form.Text>
-              <rb.InputGroup hasValidation>
-                <rb.InputGroup.Text id="gaplimit-addon1">
-                  <Sprite symbol="gaplimit" width="24" height="24" name="Gaplimit" />
-                </rb.InputGroup.Text>
-                <rb.Form.Control
-                  aria-label={t('import_wallet.import_details.label_gaplimit')}
-                  className="slashed-zeroes"
-                  name="gaplimit"
-                  type="number"
-                  placeholder="1"
-                  size="lg"
-                  value={values.gaplimit}
-                  disabled={isSubmitting}
-                  onBlur={handleBlur}
-                  onChange={handleChange}
-                  isValid={touched.gaplimit && !errors.gaplimit}
-                  isInvalid={touched.gaplimit && !!errors.gaplimit}
-                  min={MIN_GAPLIMIT_VALUE}
-                  step={1}
-                  required
-                />
-                <rb.Form.Control.Feedback type="invalid">{errors.gaplimit}</rb.Form.Control.Feedback>
-              </rb.InputGroup>
-            </rb.Form.Group>
-          </Accordion>
-          <rb.Button className="w-100 mb-4" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
-            <div className="d-flex justify-content-center align-items-center">
-              {isSubmitting && (
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              )}
-              {submitButtonText(isSubmitting)}
-            </div>
-          </rb.Button>
-          <div className="d-flex mb-4 gap-4">
-            <rb.Button variant="none" hidden={isSubmitting} disabled={isSubmitting} onClick={() => onCancel()}>
+                <rb.Form.Text className="d-block text-secondary mb-2">
+                  {t('import_wallet.import_details.description_gaplimit')}
+                </rb.Form.Text>
+                <rb.InputGroup hasValidation>
+                  <rb.InputGroup.Text id="gaplimit-addon1">
+                    <Sprite symbol="gaplimit" width="24" height="24" name="Gaplimit" />
+                  </rb.InputGroup.Text>
+                  <rb.Form.Control
+                    aria-label={t('import_wallet.import_details.label_gaplimit')}
+                    className="slashed-zeroes"
+                    name="gaplimit"
+                    type="number"
+                    placeholder="1"
+                    size="lg"
+                    value={values.gaplimit}
+                    disabled={isSubmitting}
+                    onBlur={handleBlur}
+                    onChange={handleChange}
+                    isValid={touched.gaplimit && !errors.gaplimit}
+                    isInvalid={touched.gaplimit && !!errors.gaplimit}
+                    min={MIN_GAPLIMIT_VALUE}
+                    max={MAX_GAPLIMIT_VALUE}
+                    step={1}
+                    required
+                  />
+                  <rb.Form.Control.Feedback type="invalid">{errors.gaplimit}</rb.Form.Control.Feedback>
+                </rb.InputGroup>
+                {showGaplimitWarning && (
+                  <rb.Alert variant="warning" className="d-flex align-items-center mt-2">
+                    {t('import_wallet.import_details.alert_high_gaplimit_value')}
+                  </rb.Alert>
+                )}
+              </rb.Form.Group>
+            </Accordion>
+            <rb.Button className="w-100 mb-4" variant="dark" size="lg" type="submit" disabled={isSubmitting}>
               <div className="d-flex justify-content-center align-items-center">
-                <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
-                {t('global.back')}
+                {isSubmitting && (
+                  <rb.Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                    className="me-2"
+                  />
+                )}
+                {submitButtonText(isSubmitting)}
               </div>
             </rb.Button>
-          </div>
-        </rb.Form>
-      )}
+            <div className="d-flex mb-4 gap-4">
+              <rb.Button variant="none" hidden={isSubmitting} disabled={isSubmitting} onClick={() => onCancel()}>
+                <div className="d-flex justify-content-center align-items-center">
+                  <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
+                  {t('global.back')}
+                </div>
+              </rb.Button>
+            </div>
+          </rb.Form>
+        )
+      }}
     </Formik>
   )
 }
@@ -252,6 +303,8 @@ const ImportWalletConfirmation = ({
     [walletDetails, importDetails],
   )
 
+  const showGaplimitWarning = useMemo(() => importDetails.gaplimit > GAPLIMIT_WARN_THRESHOLD, [importDetails])
+
   return (
     <Formik
       initialValues={{
@@ -264,7 +317,10 @@ const ImportWalletConfirmation = ({
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
           <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
 
-          <Accordion title={t('import_wallet.import_details.import_options')}>
+          <Accordion
+            title={t('import_wallet.import_details.import_options')}
+            variant={showGaplimitWarning ? 'warning' : undefined}
+          >
             <div className="mb-4">
               <div>{t('import_wallet.import_details.label_blockheight')}</div>
               <div className="text-secondary small">{t('import_wallet.import_details.description_blockheight')}</div>
@@ -274,6 +330,12 @@ const ImportWalletConfirmation = ({
               <div>{t('import_wallet.import_details.label_gaplimit')}</div>
               <div className="text-secondary small">{t('import_wallet.import_details.description_gaplimit')}</div>
               <div className="fs-4">{values.importDetails.gaplimit}</div>
+
+              {showGaplimitWarning && (
+                <rb.Alert variant="warning" className="d-flex align-items-center mt-2">
+                  {t('import_wallet.import_details.alert_high_gaplimit_value')}
+                </rb.Alert>
+              )}
             </div>
           </Accordion>
 
