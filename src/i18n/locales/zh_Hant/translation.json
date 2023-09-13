@@ -7,6 +7,7 @@
     "back": "返回",
     "close": "關閉",
     "abort": "終止",
+    "cancel": "取消",
     "table": {
       "pagination": {
         "items_per_page": {
@@ -29,10 +30,12 @@
     }
   },
   "app": {
-    "alert_no_connection": "與後端無連結：{{ connectionError }}"
+    "alert_no_connection": "與後端無連結：{{ connectionError }}",
+    "alert_rescan_in_progress": "正在進行重新掃描..."
   },
   "navbar": {
     "title": "Jam",
+    "text_rescan_in_progress": "正在重新掃描...",
     "button_create_wallet": "創建錢包",
     "tab_send": "發送",
     "tab_receive": "接收",
@@ -91,6 +94,7 @@
     "subtitle_no_wallets": "看起來你目前還沒有任何錢包。",
     "text_loading": "正在加載錢包",
     "button_new_wallet": "創建新錢包",
+    "button_import_wallet": "導入現有的錢包",
     "alert_wallet_open": "只允許一個活躍錢包。如果你想打開另一個錢包，請先鎖上 '{{ currentWalletName }}'。",
     "error_loading_failed": "加載錢包失敗。",
     "wallet_preview": {
@@ -129,7 +133,8 @@
     "placeholder_password_confirm": "重複密碼...",
     "feedback_invalid_password_confirm": "輸入的密碼不匹配。",
     "button_create": "創建",
-    "button_creating": "正在創建中",
+    "button_creating": "正在創建...",
+    "error_creating_failed": "創建錢包時出錯了。原因：{{ reason }}",
     "alert_confirmation_failed": "錢包確認失敗。",
     "confirmation_label_wallet_name": "錢包名稱",
     "confirmation_label_password": "密碼",
@@ -145,8 +150,39 @@
     "placeholder_seed_word_input": "單詞",
     "hint_duration_text": "請耐心等待，這可能需要幾分鐘。"
   },
+  "import_wallet": {
+    "alert_other_wallet_unlocked": "目前 <1>{{ walletName }}</1> 正處於活躍狀態。你必須先把它鎖上。<3>返回</3>。",
+    "alert_rescan_in_progress": "目前正在重新掃描時間鏈。請等過程完成，然後重新嘗試。<1>返回</1>。",
+    "wallet_details": {
+      "title": "導入錢包",
+      "text_button_submit": "繼續",
+      "text_button_submitting": "繼續"
+    },
+    "import_details": {
+      "title": "請輸入你的助記詞組！",
+      "subtitle": "請按正確的順序輸入你的助記詞組，然後開始重新掃描過程。",
+      "feedback_invalid_menmonic_phrase": "請提供一個有效的助記詞組",
+      "import_options": "導入選項",
+      "label_blockheight": "重新掃描高度",
+      "description_blockheight": "掃描過程開始尋找你的資金的區塊高度。該錢包創建的越早，該值應該越低。",
+      "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
+      "label_gaplimit": "地址導入限制",
+      "description_gaplimit": "每個罐子導入的地址數量。設置為任何罐子中使用的最高地址索引。如果你大量使用你的錢包，則應增加此數字。",
+      "feedback_invalid_gaplimit": "Please provide a valid value between {{ min }} and {{ max }}.",
+      "alert_high_gaplimit_value": "The given value causes many addresses to be imported, which can lead to a decline in performance and responsiveness.",
+      "text_button_submit": "檢查",
+      "text_button_submitting": "檢查"
+    },
+    "confirmation": {
+      "title": "請檢查你的助記詞組和密碼！",
+      "text_button_submit": "導入",
+      "text_button_submitting": "正在導入..."
+    },
+    "error_importing_failed": "導入錢包時出錯了。原因：{{ reason }}"
+  },
   "current_wallet": {
     "text_loading": "正在加載",
+    "text_rescan_in_progress": "正在進行重新掃描...",
     "button_deposit": "接收",
     "button_withdraw": "發送",
     "error_loading_failed": "加載錢包失敗。",
@@ -192,8 +228,9 @@
     "confirm_locking_modal_body_jam": "協作式交易正在進行中。錢包上鎖將停止服務。你可以關閉瀏覽器窗口並讓它在背景中運行。",
     "fees": {
       "title": "費用限制",
-      "description": "按你的需求調整挖礦費和協作方費。挖礦費關聯交易優先級和內存池狀況。協作方費關聯流動性價格和市場狀況。每個交易的總交易費取決於協作方數量。協作方越多，隱私程度越高，但同時也會增加費用。這些設置在 JoinMarket 重啟時會被重置嗎，例如協調重啟時。有關更多信息，請<1>參閱關於費用的文檔</1>。",
+      "description": "根據你的需求調整挖礦費和協作方費用。這些設置將在 JoinMarket 重啟時重置，例如系統重啟時。有關更多信息，<1>請查看關於費用的文檔</1>。",
       "title_general_fee_settings": "挖礦費",
+      "description_general_fee_settings": "挖礦費關聯交易優先級並取決於內存池狀況。",
       "radio_tx_fees_blocks": "區塊目標",
       "radio_tx_fees_satspervbyte": "聰/字節",
       "label_tx_fees": "交易基本費用",
@@ -205,6 +242,7 @@
       "description_tx_fees_factor": "隨機費用改善隱私。該百分比應理解為圍繞基本費用的正負。例：如果將基本費用設為10聰/字節，並將隨機化值設為30%，則將使用7到13聰/字節之間的費用。默認：20%。",
       "feedback_invalid_tx_fees_factor": "請提供一個有效的費用隨機化值，從{{ min }}到{{ max }}。",
       "title_max_cj_fee_settings": "協作方費用",
+      "description_max_cj_fee_settings": "協作方費用關聯流動性價格並取決於市場狀況。每個交易的總費用取決於協作方總數。額外的協作方會增加隱私，但也會增加費用。",
       "subtitle_max_cj_fee": "注意：只有當兩個限制都被超過時才會拒絕報價。",
       "label_max_cj_fee_abs": "絕對限制（每個協作方）",
       "description_max_cj_fee_abs": "你願意支付給每個協作方的最高費用。例：當設為3000聰時，在使用默認的9個協作方時最高費用則是27000聰。",
@@ -215,7 +253,7 @@
       "text_button_cancel": "取消",
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
-      "error_loading_fee_config_failed": "加載費用配置值時出錯了。",
+      "error_loading_fee_config_failed": "加載費用設置時出錯了。",
       "error_saving_fee_config_failed": "保存費用配置值時出錯了。原因：{{ reason }}"
     }
   },
@@ -258,7 +296,17 @@
     "sweep_amount_breakdown_total_balance": "總餘額",
     "sweep_amount_breakdown_frozen_balance": "已凍結或已鎖定的餘額",
     "sweep_amount_breakdown_estimated_amount": "預計要發送的金額",
-    "sweep_amount_breakdown_explanation": "掃空交易將消耗一個混幣深度的所有 UTXO；除了<1>已凍結</1>或<3>時間鎖定</3>的比特幣之外，不會留下任何比特幣。鏈上交易費用和市場掛單方費用將從總金額扣除，以消除找零。確切的交易金額只有當交易執行的那一刻才能被 JoinMarket 計算。因此預計金額可能與實際金額有所差異。請參閱 <5>JoinMarket 文檔</5>瞭解更多。",
+    "sweep_amount_breakdown_explanation": "掃空交易將消耗一個混合深度的所有 UTXO，除了<1>已凍結</1>或<3>時間鎖定</3>的比特幣之外，不會留下任何比特幣。挖礦費和協作方費用將從金額中扣除，以保持零找零。確切的交易金額可能與實際發送的金額有所偏差。有關更多詳細信息，請參閱 <5>JoinMarket 文檔</5>。",
+    "fee_breakdown": {
+      "title": "協作方費用：{{ maxCollaboratorFee }}",
+      "subtitle": "根據金額、協作方數量和<1>預計限制</1>，你可以查看即將進行的協作交易的最高協作方費用。",
+      "alert_collaborator_fee_note": "該值<strong>不包括常規<1>挖礦費用</1><strong>。",
+      "absolute_limit": "絕對費用限制",
+      "relative_limit": "相對費用限制",
+      "fee_card_subtitle": "<1>{{ maxFee }}</1> * {{ numCollaborators }}",
+      "placeholder_config_value_not_present": "未定義",
+      "placeholder_amount_missing_amount": "輸入金額..."
+    },
     "confirm_send_modal": {
       "title": "確認付款",
       "label_amount": "金額",
@@ -368,6 +416,7 @@
       "error_unfreezing_utxos": "無法解凍 UTXOs。",
       "error_loading_address": "無法加載時間鎖地址。",
       "error_creating_fidelity_bond": "創建保證金的交易失敗了。",
+      "alert_all_funds_in_use": "<strong>請注意</strong>：當你使用所有可用資金來創建此保證金時，你將不會剩下任何 UTXO。<br /><br />保證金<strong>不會參與協作交易</strong>，你<strong>必須再次為你的錢包充值</strong>才能開始發送或收益。",
       "text_loading": "正在加載...",
       "text_creating": "正在創建...",
       "text_unfreezing": "正在解凍...",

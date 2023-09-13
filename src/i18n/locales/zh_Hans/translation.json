@@ -7,6 +7,7 @@
     "back": "返回",
     "close": "关闭",
     "abort": "终止",
+    "cancel": "取消",
     "table": {
       "pagination": {
         "items_per_page": {
@@ -29,10 +30,12 @@
     }
   },
   "app": {
-    "alert_no_connection": "与后端无连接：{{ connectionError }}"
+    "alert_no_connection": "与后端无连接：{{ connectionError }}",
+    "alert_rescan_in_progress": "正在进行重新扫描..."
   },
   "navbar": {
     "title": "Jam",
+    "text_rescan_in_progress": "正在重新扫描...",
     "button_create_wallet": "创建钱包",
     "tab_send": "发送",
     "tab_receive": "接收",
@@ -91,6 +94,7 @@
     "subtitle_no_wallets": "看起来你目前还没有任何钱包。",
     "text_loading": "正在加载钱包",
     "button_new_wallet": "创建新钱包",
+    "button_import_wallet": "导入现有的钱包",
     "alert_wallet_open": "只允许一个活跃钱包。如果你想要打开另一个钱包，请先锁上 '{{ currentWalletName }}'。",
     "error_loading_failed": "加载钱包失败。",
     "wallet_preview": {
@@ -129,7 +133,8 @@
     "placeholder_password_confirm": "重复密码...",
     "feedback_invalid_password_confirm": "输入的密码不匹配。",
     "button_create": "创建",
-    "button_creating": "正在创建中",
+    "button_creating": "正在创建...",
+    "error_creating_failed": "创建钱包时出错了。原因：{{ reason }}",
     "alert_confirmation_failed": "钱包确认失败。",
     "confirmation_label_wallet_name": "钱包名称",
     "confirmation_label_password": "密码",
@@ -145,8 +150,39 @@
     "placeholder_seed_word_input": "单词",
     "hint_duration_text": "请耐心等待，这可能需要几分钟。"
   },
+  "import_wallet": {
+    "alert_other_wallet_unlocked": "目前 <1>{{ walletName }}</1> 正处于活跃状态。你必须先将它锁上。<3>返回</3>。",
+    "alert_rescan_in_progress": "目前正在重新扫描时间链。 请等到过程完成，然后重试。<1>返回</1>。",
+    "wallet_details": {
+      "title": "导入钱包",
+      "text_button_submit": "继续",
+      "text_button_submitting": "继续"
+    },
+    "import_details": {
+      "title": "请输入你的助记词组！",
+      "subtitle": "请按正确的顺序输入你的助记词组，然后开始重新扫描过程。",
+      "feedback_invalid_menmonic_phrase": "请提供一个有效的助记词组",
+      "import_options": "导入选项",
+      "label_blockheight": "重新扫描高度",
+      "description_blockheight": "扫描过程开始寻找你的资金的区块高度。 该钱包创建的越早，该值应该越低。",
+      "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
+      "label_gaplimit": "地址导入限制",
+      "description_gaplimit": "每个罐子导入的地址数量。设置为任何罐子中使用的最高地址索引。 如果你大量使用你的钱包，则应增加此数字。",
+      "feedback_invalid_gaplimit": "Please provide a valid value between {{ min }} and {{ max }}.",
+      "alert_high_gaplimit_value": "The given value causes many addresses to be imported, which can lead to a decline in performance and responsiveness.",
+      "text_button_submit": "检查",
+      "text_button_submitting": "检查"
+    },
+    "confirmation": {
+      "title": "请检查你的助记词组和秘密！",
+      "text_button_submit": "导入",
+      "text_button_submitting": "正在导入..."
+    },
+    "error_importing_failed": "导入钱包时出错了。原因：{{ reason }}"
+  },
   "current_wallet": {
     "text_loading": "正在加载",
+    "text_rescan_in_progress": "正在进行重新扫描...",
     "button_deposit": "接收",
     "button_withdraw": "发送",
     "error_loading_failed": "加载钱包失败。",
@@ -192,8 +228,9 @@
     "confirm_locking_modal_body_jam": "协作式交易正在进行中。钱包上锁将停止服务。你可以关闭浏览器窗口并让它在背景中运行。",
     "fees": {
       "title": "费用限制",
-      "description": "按你的需求调整挖矿费和协作方费。挖矿费关联交易优先级和内存池状况。协作方费关联流动性价格和市场状况。每个交易的总费用取决于协作方数量。协作方越多，隐私程度越高，但同时也会增加费用。这些设置在 JoinMarket 重启时会被重置，例如系统重启时。有关更多信息，请<1>参阅关于费用的文档</1>。",
+      "description": "根据你的需求调整挖矿费和协作方费用。这些设置将在 JoinMarket 重启时重置，例如系统重启时。有关更多信息，<1>请查看关于费用的文档</1>。",
       "title_general_fee_settings": "挖矿费",
+      "description_general_fee_settings": "挖矿费关联交易优先级并取决于内存池状况。",
       "radio_tx_fees_blocks": "区块目标",
       "radio_tx_fees_satspervbyte": "聪/字节",
       "label_tx_fees": "交易基本费用",
@@ -205,6 +242,7 @@
       "description_tx_fees_factor": "随机费用改善隐私。该百分比应理解为围绕基本费用的正负。例：如果将基本费用设为10聪/字节，并将随机化值设为30%，则将使用7到13聪/字节之间的费用。默认：20%。",
       "feedback_invalid_tx_fees_factor": "请提供一个有效的费用随机化值，从{{ min }}到{{ max }}。",
       "title_max_cj_fee_settings": "协作方费用",
+      "description_max_cj_fee_settings": "协作方费用关联流动性价格并取决于市场状况。每个交易的总费用取决于协作方总数。额外的协作方会增加隐私，但也会增加费用。",
       "subtitle_max_cj_fee": "注意：只有当两个限制都被超过时才会拒绝报价。",
       "label_max_cj_fee_abs": "绝对限制（每个协作方）",
       "description_max_cj_fee_abs": "你愿意支付给每个协作方的最高费用。例：当设为3000聪时，在使用默认的9个协作方时最高费用则是27000聪。",
@@ -215,7 +253,7 @@
       "text_button_cancel": "取消",
       "text_button_submit": "保存",
       "text_button_submitting": "正在保存...",
-      "error_loading_fee_config_failed": "加载费用配置值时出错了。",
+      "error_loading_fee_config_failed": "加载费用设置时出错了。",
       "error_saving_fee_config_failed": "保存费用配置值时出错了。原因：{{ reason }}"
     }
   },
@@ -258,7 +296,17 @@
     "sweep_amount_breakdown_total_balance": "总余额",
     "sweep_amount_breakdown_frozen_balance": "已冻结或已锁定的余额",
     "sweep_amount_breakdown_estimated_amount": "预计要发送的金额",
-    "sweep_amount_breakdown_explanation": "扫空交易将消耗一个混币深度的所有 UTXO；除了<1>已冻结</1>或<3>时间锁定</3>的比特币之外，不会留下任何比特币。链上交易费用和市场挂单方费用将从总金额扣除，以消除找零。确切的交易金额只有当交易执行的那一刻才能被 JoinMarket 计算。因此预计金额可能与实际金额有所差异。请参阅 <5>JoinMarket 文档</5>了解更多。",
+    "sweep_amount_breakdown_explanation": "扫空交易将消耗一个混合深度的所有 UTXO，除了<1>已冻结</1>或<3>时间锁定</3>的比特币之外，不会留下任何比特币。挖矿费和协作方费用将从金额中扣除，以保持零找零。 确切的交易金额只能由 JoinMarket 在交易发生时计算。 因此，显示的估计金额可能与实际发送的金额有所偏差。有关更多详细信息，请参阅 <5>JoinMarket 文档</5>。",
+    "fee_breakdown": {
+      "title": "协作方费用：{{ maxCollaboratorFee }}",
+      "subtitle": "根据金额、协作方数量和<1>预设限制</1>，你可以查看即将进行的协作交易的最高协作方费用。",
+      "alert_collaborator_fee_note": "该值<strong>不包括常规<1>挖矿费用</1><strong>。",
+      "absolute_limit": "绝对费用限制",
+      "relative_limit": "相对费用限制",
+      "fee_card_subtitle": "<1>{{ maxFee }}</1> * {{ numCollaborators }}",
+      "placeholder_config_value_not_present": "未定义",
+      "placeholder_amount_missing_amount": "输入金额..."
+    },
     "confirm_send_modal": {
       "title": "确认付款",
       "label_amount": "金额",
@@ -368,6 +416,7 @@
       "error_unfreezing_utxos": "无法解冻 UTXOs。",
       "error_loading_address": "无法加载时间锁地址。",
       "error_creating_fidelity_bond": "创建保证金的交易失败了。",
+      "alert_all_funds_in_use": "<strong>请注意</strong>：当你使用所有可用资金来创建此保证金时，你将不会剩下任何 UTXO。<br /><br /> 保证金<strong>不会参与协作交易</strong>，你<strong>必须再次为你的钱包充值</strong>才能开始发送或收益。",
       "text_loading": "正在加载...",
       "text_creating": "正在创建...",
       "text_unfreezing": "正在解冻...",
