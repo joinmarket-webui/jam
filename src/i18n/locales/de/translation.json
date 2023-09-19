@@ -7,6 +7,7 @@
     "back": "Zurück",
     "close": "Schließen",
     "abort": "Abbrechen",
+    "cancel": "Abbrechen",
     "table": {
       "pagination": {
         "items_per_page": {
@@ -29,10 +30,12 @@
     }
   },
   "app": {
-    "alert_no_connection": "Keine Verbindung zum Backend: {{ connectionError }}"
+    "alert_no_connection": "Keine Verbindung zum Backend: {{ connectionError }}",
+    "alert_rescan_in_progress": "Erneuter Scan läuft..."
   },
   "navbar": {
     "title": "Jam",
+    "text_rescan_in_progress": "Scanne erneut...",
     "button_create_wallet": "Wallet erstellen",
     "tab_send": "Senden",
     "tab_receive": "Empfangen",
@@ -91,6 +94,7 @@
     "subtitle_no_wallets": "Es sieht so aus, als hättest du noch keine Wallet angelegt. ",
     "text_loading": "Wallets laden",
     "button_new_wallet": "Neue Wallet erstellen",
+    "button_import_wallet": "Bestehende Wallet importieren",
     "alert_wallet_open": "Es kann immer nur eine Wallet aktiv sein. Wenn du eine andere öffnen willst, sperre zuerst '{{ currentWalletName }}'.",
     "error_loading_failed": "Laden der Wallets fehlgeschlagen",
     "wallet_preview": {
@@ -129,7 +133,8 @@
     "placeholder_password_confirm": "Passwort wiederholen...",
     "feedback_invalid_password_confirm": "Die eingegebenen Passwörter stimmen nicht überein.",
     "button_create": "Erstellen",
-    "button_creating": "Erstelle",
+    "button_creating": "Erstelle...",
+    "error_creating_failed": "Fehler beim erstellen der Wallet. Begründung: {{ reason }}",
     "alert_confirmation_failed": "Wallet Bestätigung fehlgeschlagen. ",
     "confirmation_label_wallet_name": "Wallet Name",
     "confirmation_label_password": "Passwort",
@@ -145,8 +150,39 @@
     "placeholder_seed_word_input": "Wort",
     "hint_duration_text": "Bitte habe etwas Geduld, dieser Vorgang kann ein paar Minuten dauern. "
   },
+  "import_wallet": {
+    "alert_other_wallet_unlocked": "Derzeit ist <1>{{ walletName }}</1>aktiv. Du musst sie zuerst sperren. <3>Einen Schritt zurück</3>.",
+    "alert_rescan_in_progress": "Erneuter Scan der Timechain läuft derzeit. Bitte warte bis dieser Prozess abgeschlossen ist und versuche es dann erneut.<1>Einen Schritt zurück</1>.",
+    "wallet_details": {
+      "title": "Wallet importieren",
+      "text_button_submit": "Fortfahren",
+      "text_button_submitting": "Fortfahren"
+    },
+    "import_details": {
+      "title": "Bitte gib deine Mnemonic Phrase ein!",
+      "subtitle": "Bitte gib deine Mnemonic Phrase in der richtigen Reihenfolge ein, um den Rescan zu starten.",
+      "feedback_invalid_menmonic_phrase": "Bitte gib eine korrekte Mnemonic Phrase ein.",
+      "import_options": "Import Optionen",
+      "label_blockheight": "Rescan Blockhöhe ",
+      "description_blockheight": "Ab diesen Zeitpunkt beginnt der Rescan Prozess und sucht nach deinen Bitcoin UTXOs. Je früher die Wallet erstellt wurde, desto niedriger sollte der Wert sein.",
+      "feedback_invalid_blockheight": "Bitte gib einen gültigen Wert zwischen {{ min }} und der derzeitigen Blockhöhe an. ",
+      "label_gaplimit": "Adressen Import Limit",
+      "description_gaplimit": "Die Anzahl der importierten Adressen pro Glas. Setze diesen Wert auf den höchsten Adressen-Index deiner Gläser. Erhöhe diese Zahl, wenn du deine Wallet schon lange nutzt.",
+      "feedback_invalid_gaplimit": "Bitte gib einen gültigen Wert zwischen {{ min }} und {{ max }} an.",
+      "alert_high_gaplimit_value": "Der angegebene Wert bewirkt, dass viele Adressen importiert werden, was die Leistung und Reaktionsfähigkeit beeinträchtigen kann.",
+      "text_button_submit": "Überprüfen",
+      "text_button_submitting": "Überprüfen"
+    },
+    "confirmation": {
+      "title": "Bitte überprüfe deine Mnemonic Phrase und dein Passwort!",
+      "text_button_submit": "Importieren",
+      "text_button_submitting": "Importiere..."
+    },
+    "error_importing_failed": "Fehler beim Importieren der Wallet. Begründung: {{ reason }}"
+  },
   "current_wallet": {
     "text_loading": "Lade",
+    "text_rescan_in_progress": "Ein erneuter Scan wird derzeit ausgeführt...",
     "button_deposit": "Empfangen",
     "button_withdraw": "Senden",
     "error_loading_failed": "Laden der Wallet fehlgeschlagen.",
@@ -192,8 +228,9 @@
     "confirm_locking_modal_body_jam": "Eine gemeinschaftliche Transaktion ist derzeit im Gange. Das Sperren der Wallet wird diese beenden. Du kannst das Browserfenster schließen und Jam im Hintergrund weiterlaufen lassen. ",
     "fees": {
       "title": "Fee Limits",
-      "description": "Passe deine Mining- und Collaborator-Fees deinen Anforderungen entsprechend an. Erstere verändern die Transaktionspriorität und sollten der Auslastung des aktuellen Mempools angeglichen werden. Die Collaborator-Fees sind die Gegenleistung für das Bereitstellen von Liquidität für deinen Coinjoin und werden vom Markt bestimmt. Limits können aber von dir festgelegt werden. Zusätzliche Transaktionspartner erhöhen die Fees und deinen Gewinn an Privatsphäre. Somit ist die Anzahl aller Teilnehmer bei den Gesamtkosten von entscheidender Bedeutung. Veränderungen an diesen Einstellungen werden bei einem Neustart von JM auf Standardeinstellungen zurückgesetzt. Mehr Informationen dazu findest du <1>in der Dokumentation</1>. ",
+      "description": "Verändere die Mining- und Collaborator-Fees deinen Ansprüchen entsprechend. Die Einstellung wird zurückgesetzt, wenn der Joinmarket Service oder dein System neu gestartet wird. Mehr Informationen zu den Fees befinden sich in <1>der Dokumentation</1>.",
       "title_general_fee_settings": "Mining Fees",
+      "description_general_fee_settings": "Die Mining-Fees haben einen Einfluss auf die Transaktionspriorität und hängen von der Auslastung des Mempools ab.",
       "radio_tx_fees_blocks": "Block-Target",
       "radio_tx_fees_satspervbyte": "sats/vByte",
       "label_tx_fees": "Transaction base fee",
@@ -205,6 +242,7 @@
       "description_tx_fees_factor": "Zufällige Fees erhöhen deine Privatsphäre. Die Prozentzahl ist als +/- Bereich zur Base Fee zu verstehen. Z.B.: Gibst du eine Base Fee von 10 sats/vByte und eine Zufallsanpassung von 30% an, wird ein Wert zwischen 7 und 13 sats/vByte für deine Transaktion anwendet. Standardwert: 20%.",
       "feedback_invalid_tx_fees_factor": "Bitte gib einen gültigen Wert für die Zufallsanpassung zwischen {{ min }} und {{ max }} an.",
       "title_max_cj_fee_settings": "Collaborator Fees",
+      "description_max_cj_fee_settings": "Collaborator-Fees beziehen sich auf den Preis der Liquidität und werden vom Markt bestimmt. Der Preis einer Transaktion hängt von der Zahl der Transaktionspartner ab. Zusätzliche Partner erhöhen Privatsphäre und Fees.  ",
       "subtitle_max_cj_fee": "Notiz: Ein Angebot für eine gemeinschaftliche Transaktion wird nur abgelehnt, wenn beide Limits überschritten werden.  ",
       "label_max_cj_fee_abs": "Absolutes Limit (pro Teilnehmer)",
       "description_max_cj_fee_abs": "Die maximale Fee, die für jeden Beteiligten zu zahlen ist. Beispiel: Bei einem Limit von 3000 Sats, liegt die maximale Gesamtgebühr bei 27.000 Sats für die Standardeinstellung von 9 Transaktionspartnern. ",
@@ -215,7 +253,7 @@
       "text_button_cancel": "Abbrechen",
       "text_button_submit": "Speichern",
       "text_button_submitting": "Speichern...",
-      "error_loading_fee_config_failed": "Fehler beim Laden der Konfiguration",
+      "error_loading_fee_config_failed": "Fehler beim Laden der Konfigurationswerte.",
       "error_saving_fee_config_failed": "Fehler beim Speichern der Konfiguration. Begründung: {{ reason }}"
     }
   },
@@ -259,6 +297,16 @@
     "sweep_amount_breakdown_frozen_balance": "Eingefrorenes oder gesperrtes Guthaben",
     "sweep_amount_breakdown_estimated_amount": "Geschätzter zu versendender Betrag",
     "sweep_amount_breakdown_explanation": "Eine Sweep-Transaktion wird alle deine UTXOs bis auf <1>eingefrorene</1>oder <3>zeitlich gesperrte</3> nützen. Onchain- und Marketmaker-Fees werden von der Gesamtmenge abgezogen, sodass kein Wechselgeld zurückbleibt. Der exakte Transaktionsbetrag kann nur von JoinMarket zum Transaktionszeitpunkt berechnet werden. Die geschätzte Transaktionsmenge kann sich also von der tatsächlichen unterscheiden. Bitte schau in <5>die JM Dokumentation</5>für mehr Details. ",
+    "fee_breakdown": {
+      "title": "Collaborator-Fees: {{ maxCollaboratorFee }}",
+      "subtitle": "Abhängig von dem Transaktionsbetrag, der Anzahl deiner Partner und den <1>gewählten Limits</1>, findest du hier eine Schätzung der maximalen Collaborator-Fees für deine Transaktion. ",
+      "alert_collaborator_fee_note": "Dieser Wert <strong>beinhaltet keine regulären <1>Mining-Fees</1><strong>.",
+      "absolute_limit": "Absolutes Fee Limit",
+      "relative_limit": "Relatives Fee Limit",
+      "fee_card_subtitle": "<1>{{ maxFee }}</1> * {{ numCollaborators }}",
+      "placeholder_config_value_not_present": "Undefiniert",
+      "placeholder_amount_missing_amount": "Betrag eingeben..."
+    },
     "confirm_send_modal": {
       "title": "Zahlung freigeben",
       "label_amount": "Betrag",
@@ -368,6 +416,7 @@
       "error_unfreezing_utxos": "Die UTXOs konnten nicht aufgetaut werden.",
       "error_loading_address": "Die zeitlich gesperrte Adresse konnte nicht geladen werden.",
       "error_creating_fidelity_bond": "Die Transaktion zur Erstellung des Fidelity Bond ist fehlgeschlagen. ",
+      "alert_all_funds_in_use": "<strong>Denke daran</strong>: Da alle verfügbaren Mittel für die Erstellung des Fidelity Bonds verwendet werden, werden keine UTXOs übrig bleiben. <br /><br /> Ein Fidelity Bond <strong> wird nicht an gemeinsamen Transaktionen </strong> teilnehmen, und deshalb <strong> muss dein Wallet erneut </strong>aufgeladen werden, bevor du mit dem Senden oder Verdienen beginnen kannst.",
       "text_loading": "Laden...",
       "text_creating": "Erstellen...",
       "text_unfreezing": "Ensperren...",
