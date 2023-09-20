@@ -9,7 +9,7 @@ RUN apt-get update \
 
 ENV REPO https://github.com/JoinMarket-Org/joinmarket-clientserver
 ENV REPO_BRANCH master
-ENV REPO_REF master
+ENV REPO_REF v0.9.10
 
 WORKDIR /src
 RUN git clone "$REPO" . --depth=10 --branch "$REPO_BRANCH" && git checkout "$REPO_REF"
