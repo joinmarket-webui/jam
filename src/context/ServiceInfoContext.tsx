@@ -81,17 +81,11 @@ type ServiceInfo = SessionFlag &
   RescanBlockchainInProgressFlag &
   SessionInfo &
   ServerInfo
-type ServiceInfoUpdate =
-  | ServiceInfo
-  | MakerRunningFlag
-  | CoinjoinInProgressFlag
-  | RescanBlockchainInProgressFlag
-  | ServerInfo
 
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
   reloadServiceInfo: ({ signal }: { signal: AbortSignal }) => Promise<ServiceInfo>
-  dispatchServiceInfo: React.Dispatch<ServiceInfoUpdate>
+  dispatchServiceInfo: React.Dispatch<Partial<ServiceInfo>>
   connectionError?: Error
 }
 
@@ -105,7 +99,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const fetchSessionInProgress = useRef<Promise<ServiceInfo> | null>(null)
 
   const [serviceInfo, dispatchServiceInfo] = useReducer(
-    (state: ServiceInfo | null, obj: ServiceInfoUpdate) => ({ ...state, ...obj }) as ServiceInfo | null,
+    (state: ServiceInfo | null, obj: Partial<ServiceInfo>) => ({ ...state, ...obj }) as ServiceInfo | null,
     null,
   )
   const [connectionError, setConnectionError] = useState<Error>()
