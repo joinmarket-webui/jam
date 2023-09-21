@@ -57,6 +57,11 @@ interface ApiError {
 
 type WalletType = 'sw-fb'
 
+interface TokenRequest {
+  grant_type: string
+  refresh_token: string
+}
+
 interface CreateWalletRequest {
   walletname: WalletName | string
   password: string
@@ -219,6 +224,15 @@ const getGetinfo = async ({ signal }: ApiRequestContext) => {
 const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {
   return await fetch(`${basePath()}/v1/session`, {
     headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
+    signal,
+  })
+}
+
+const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenRequest) => {
+  return await fetch(`${basePath()}/v1/token`, {
+    headers: { ...Helper.buildAuthHeader(token) },
+    method: 'POST',
+    body: JSON.stringify(req),
     signal,
   })
 }
@@ -472,6 +486,7 @@ export class JmApiError extends Error {
 
 export {
   getGetinfo,
+  postToken,
   postMakerStart,
   getMakerStop,
   getSession,
