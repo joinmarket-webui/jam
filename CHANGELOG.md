@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.1.6](https://github.com/joinmarket-webui/jam/compare/v0.1.5...v0.1.6) (2023-09-22)
+
+#### Fixed
+
+* typo on orderbook page ([#661](https://github.com/joinmarket-webui/jam/issues/661)) ([a0fa434](https://github.com/joinmarket-webui/jam/commit/a0fa434eabea269e87b1e1786e9144a07d893269))
+* **ui:** consistent button styles ([#656](https://github.com/joinmarket-webui/jam/issues/656)) ([a559e1e](https://github.com/joinmarket-webui/jam/commit/a559e1e92c9e245a48f1e698c109b8f039e9b443))
+
+#### Added
+
+* backend version based feature toggles ([#647](https://github.com/joinmarket-webui/jam/issues/647)) ([6b45718](https://github.com/joinmarket-webui/jam/commit/6b457187593a37d34faf23e6d4898cb2a7fb59b7))
+* **balance:** display frozen balance on jars ([#635](https://github.com/joinmarket-webui/jam/issues/635)) ([b029c92](https://github.com/joinmarket-webui/jam/commit/b029c923823e6f9f441289f61b39c2d83b5bb983))
+* **i18n:** add Chinese translation (zh-Hans and zh-Hant) ([#628](https://github.com/joinmarket-webui/jam/issues/628)) ([550a435](https://github.com/joinmarket-webui/jam/commit/550a43588b1b003a52a4ed3ba00b4623b9e7dd1d))
+* **i18n:** add Italian translation (it)  ([#627](https://github.com/joinmarket-webui/jam/issues/627)) ([068042f](https://github.com/joinmarket-webui/jam/commit/068042fceb5ff192b99bbf479bd1a225d52d1b61))
+* **i18n:** adding translation in Brazilian Portuguese (pt-BR) ([#615](https://github.com/joinmarket-webui/jam/issues/615)) ([4d9171e](https://github.com/joinmarket-webui/jam/commit/4d9171e15fe45100dd26db621576739af9b7e012))
+* **i18n:** update german translation (de) ([#659](https://github.com/joinmarket-webui/jam/issues/659)) ([8b54f28](https://github.com/joinmarket-webui/jam/commit/8b54f28644fc04c58716102d3bcc6583e32b104a))
+* **i18n:** update to Chinese translations ([#660](https://github.com/joinmarket-webui/jam/issues/660)) ([c40938a](https://github.com/joinmarket-webui/jam/commit/c40938a2fab147695a03ef58ff0692bdd9fc1354))
+* import wallet ([#621](https://github.com/joinmarket-webui/jam/issues/621)) ([028f321](https://github.com/joinmarket-webui/jam/commit/028f32166a21778796dd10e2d1d7fbce5e07ed8f))
+* **Send:** Fee breakdown table ([#606](https://github.com/joinmarket-webui/jam/issues/606)) ([7a6b920](https://github.com/joinmarket-webui/jam/commit/7a6b920fd2f145b9e47f29ef0f27a2786bb87525))
+
 ### [0.1.5](https://github.com/joinmarket-webui/jam/compare/v0.1.4...v0.1.5) (2023-02-08)
 
 #### Fixed
