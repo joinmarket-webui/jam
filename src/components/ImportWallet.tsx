@@ -441,7 +441,17 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         const recoverBody = await (recoverResponse.ok ? recoverResponse.json() : Api.Helper.throwError(recoverResponse))
 
         const { walletname: importedWalletFileName } = recoverBody
+<<<<<<< HEAD
         let auth: Api.ApiAuthContext = Api.Helper.parseAuthProps(recoverBody)
+=======
+        let auth: Api.ApiAuthContext = {
+          token: recoverBody.token,
+          token_type: recoverBody.token_type,
+          expires_in: recoverBody.token_type,
+          scope: recoverBody.token_type,
+          refresh_token: recoverBody.token_type,
+        }
+>>>>>>> 7fe22ee (dev(auth): save auth context to session)
         setRecoveredWallet({ walletFileName: importedWalletFileName, auth })
 
         // Step #2: update the gaplimit config value if necessary
@@ -476,7 +486,17 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
 
         const unlockResponse = await Api.postWalletUnlock({ walletName: importedWalletFileName }, { password })
         const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
+<<<<<<< HEAD
         auth = Api.Helper.parseAuthProps(unlockBody)
+=======
+        auth = {
+          token: unlockBody.token,
+          token_type: unlockBody.token_type,
+          expires_in: unlockBody.expires_in,
+          scope: unlockBody.scope,
+          refresh_token: unlockBody.refresh_token,
+        }
+>>>>>>> 7fe22ee (dev(auth): save auth context to session)
 
         // Step #4: reset `gaplimit´ to previous value if necessary
         if (gaplimitUpdateNecessary) {

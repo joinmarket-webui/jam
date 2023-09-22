@@ -178,7 +178,16 @@ const WalletContext = createContext<WalletContextEntry<CurrentWalletImpl> | unde
 
 const restoreWalletFromSession = (): CurrentWalletImpl | null => {
   const session = getSession()
+<<<<<<< HEAD
   return session?.name && session?.auth?.token ? new CurrentWalletImpl(session.name, session.auth.token) : null
+=======
+  return session && session.name && session.auth && session.auth.token
+    ? {
+        name: session.name,
+        token: session.auth.token,
+      }
+    : null
+>>>>>>> 7fe22ee (dev(auth): save auth context to session)
 }
 
 export const groupByJar = (utxos: Utxos): UtxosByJar => {
