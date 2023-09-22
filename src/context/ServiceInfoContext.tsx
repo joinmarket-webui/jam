@@ -9,7 +9,7 @@ import {
   useEffect,
   useRef,
 } from 'react'
-import { useCurrentWallet, useSetCurrentWallet } from './WalletContext'
+import { useCurrentWallet, useClearCurrentWallet } from './WalletContext'
 // @ts-ignore
 import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
@@ -102,7 +102,7 @@ const ServiceInfoContext = createContext<ServiceInfoContextEntry | undefined>(un
 
 const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
-  const setCurrentWallet = useSetCurrentWallet()
+  const clearCurrentWallet = useClearCurrentWallet()
   const websocket = useWebsocket()
 
   const fetchSessionInProgress = useRef<Promise<ServiceInfo> | null>(null)
@@ -146,14 +146,14 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
       // Just reset the wallet info, not the session storage (token),
       // as the connection might be down shortly and auth information
       // is still valid most of the time.
-      setCurrentWallet(null)
+      clearCurrentWallet()
     }
-  }, [connectionError, setCurrentWallet])
+  }, [connectionError, clearCurrentWallet])
 
   const reloadServiceInfo = useCallback(
     async ({ signal }: { signal: AbortSignal }) => {
       const resetWalletAndClearSession = () => {
-        setCurrentWallet(null)
+        clearCurrentWallet()
         clearSession()
       }
 
@@ -225,7 +225,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
           throw err
         })
     },
-    [currentWallet, setCurrentWallet],
+    [currentWallet, clearCurrentWallet],
   )
 
   useEffect(() => {

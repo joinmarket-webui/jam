@@ -12,6 +12,24 @@ export interface CurrentWallet {
   token: Api.ApiToken
 }
 
+class CurrentWalletImpl implements CurrentWallet {
+  name: Api.WalletName
+  #token: Api.ApiToken
+
+  constructor(name: Api.WalletName, token: Api.ApiToken) {
+    this.name = name
+    this.#token = token
+  }
+
+  get token() {
+    return this.#token
+  }
+
+  updateToken(token: Api.ApiToken) {
+    this.#token = token
+  }
+}
+
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
 export type Utxo = {
   address: Api.BitcoinAddress
@@ -111,9 +129,10 @@ export interface WalletInfo {
   data: CombinedRawWalletData
 }
 
-interface WalletContextEntry {
-  currentWallet: CurrentWallet | null
-  setCurrentWallet: React.Dispatch<React.SetStateAction<CurrentWallet | null>>
+interface WalletContextEntry<T extends CurrentWallet> {
+  currentWallet: T | null
+  setCurrentWallet: (currentWallet: CurrentWallet) => void
+  clearCurrentWallet: () => void
   currentWalletInfo: WalletInfo | undefined
   reloadCurrentWalletInfo: {
     reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
@@ -150,16 +169,11 @@ const toFidelityBondSummary = (res: UtxosResponse): FidenlityBondSummary => {
   }
 }
 
-const WalletContext = createContext<WalletContextEntry | undefined>(undefined)
+const WalletContext = createContext<WalletContextEntry<CurrentWalletImpl> | undefined>(undefined)
 
-const restoreWalletFromSession = (): CurrentWallet | null => {
+const restoreWalletFromSession = (): CurrentWalletImpl | null => {
   const session = getSession()
-  return session && session.name && session.auth && session.auth.token
-    ? {
-        name: session.name,
-        token: session.auth.token,
-      }
-    : null
+  return session?.name && session?.auth?.token ? new CurrentWalletImpl(session.name, session.auth.token) : null
 }
 
 export const groupByJar = (utxos: Utxos): UtxosByJar => {
@@ -189,7 +203,18 @@ const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
 const toCombinedRawData = (utxos: UtxosResponse, display: WalletDisplayResponse) => ({ utxos, display })
 
 const WalletProvider = ({ children }: PropsWithChildren<any>) => {
-  const [currentWallet, setCurrentWallet] = useState(restoreWalletFromSession())
+  const [currentWallet, setCurrentWalletOrNull] = useState(restoreWalletFromSession())
+
+  const setCurrentWallet = useCallback(
+    (wallet: CurrentWallet) => {
+      setCurrentWalletOrNull(new CurrentWalletImpl(wallet.name, wallet.token))
+    },
+    [setCurrentWalletOrNull],
+  )
+
+  const clearCurrentWallet = useCallback(() => {
+    setCurrentWalletOrNull(null)
+  }, [setCurrentWalletOrNull])
 
   const [utxoResponse, setUtxoResponse] = useState<UtxosResponse>()
   const [displayResponse, setDisplayResponse] = useState<WalletDisplayResponse>()
@@ -282,9 +307,12 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
 
     const abortCtrl = new AbortController()
 
-    const refreshToken = () => {
+    const renewToken = () => {
       const session = getSession()
-      if (!session?.auth?.refresh_token) return
+      if (!session?.auth?.refresh_token) {
+        console.warn('Cannot renew auth token - no refresh_token available.')
+        return
+      }
 
       Api.postToken(
         { token: session.auth.token, signal: abortCtrl.signal },
@@ -303,23 +331,25 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
             refresh_token: body.refresh_token,
           }
           setSession({ name: currentWallet.name, auth })
-          setCurrentWallet({ ...currentWallet, token: auth.token })
+          currentWallet.updateToken(auth.token)
+          console.debug('Successfully renewed auth token.')
         })
         .catch((err) => console.error(err))
     }
 
-    const interval = setInterval(refreshToken, JM_API_AUTH_TOKEN_EXPIRY / 4)
+    const interval = setInterval(renewToken, JM_API_AUTH_TOKEN_EXPIRY / 3)
     return () => {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [currentWallet, setCurrentWallet])
+  }, [currentWallet])
 
   return (
     <WalletContext.Provider
       value={{
         currentWallet,
         setCurrentWallet,
+        clearCurrentWallet,
         currentWalletInfo,
         reloadCurrentWalletInfo,
       }}
@@ -329,7 +359,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   )
 }
 
-const useCurrentWallet = () => {
+const useCurrentWallet = (): CurrentWallet | null => {
   const context = useContext(WalletContext)
   if (context === undefined) {
     throw new Error('useCurrentWallet must be used within a WalletProvider')
@@ -343,6 +373,14 @@ const useSetCurrentWallet = () => {
     throw new Error('useSetCurrentWallet must be used within a WalletProvider')
   }
   return context.setCurrentWallet
+}
+
+const useClearCurrentWallet = () => {
+  const context = useContext(WalletContext)
+  if (context === undefined) {
+    throw new Error('useClearCurrentWallet must be used within a WalletProvider')
+  }
+  return context.clearCurrentWallet
 }
 
 const useCurrentWalletInfo = () => {
@@ -366,6 +404,7 @@ export {
   WalletProvider,
   useCurrentWallet,
   useSetCurrentWallet,
+  useClearCurrentWallet,
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
 }
