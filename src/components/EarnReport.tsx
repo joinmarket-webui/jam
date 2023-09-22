@@ -7,7 +7,6 @@ import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import * as Api from '../libs/JmWalletApi'
-// @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'

@@ -24,19 +24,19 @@ export type TxId = string
 export type UtxoId = `${TxId}:${Vout}`
 
 // for JM versions <0.9.11
-export type SingleApiTokenContext = {
+export type SingleTokenAuthContext = {
   token: ApiToken
 }
 
 // for JM versions >=0.9.11
-export type RefreshApiTokenContext = SingleApiTokenContext & {
+export type RefreshTokenAuthContext = SingleTokenAuthContext & {
   token_type: string // "bearer"
   expires_in: Seconds // 1800
   scope: string
   refresh_token: ApiToken
 }
 
-export type ApiTokenContext = SingleApiTokenContext | RefreshApiTokenContext
+export type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
 
 type WithWalletName = {
   walletName: WalletName

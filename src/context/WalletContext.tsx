@@ -153,10 +153,10 @@ const WalletContext = createContext<WalletContextEntry | undefined>(undefined)
 
 const restoreWalletFromSession = (): CurrentWallet | null => {
   const session = getSession()
-  return session && session.name && session.token
+  return session && session.name && session.auth && session.auth.token
     ? {
         name: session.name,
-        token: session.token,
+        token: session.auth.token,
       }
     : null
 }

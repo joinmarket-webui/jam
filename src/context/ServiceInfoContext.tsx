@@ -1,5 +1,14 @@
-import React, { createContext, useCallback, useContext, useReducer, useState, useEffect, useRef } from 'react'
-// @ts-ignore
+import {
+  PropsWithChildren,
+  Dispatch,
+  createContext,
+  useCallback,
+  useContext,
+  useReducer,
+  useState,
+  useEffect,
+  useRef,
+} from 'react'
 import { useCurrentWallet, useSetCurrentWallet } from './WalletContext'
 // @ts-ignore
 import { useWebsocket } from './WebsocketContext'
@@ -85,13 +94,13 @@ type ServiceInfo = SessionFlag &
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
   reloadServiceInfo: ({ signal }: { signal: AbortSignal }) => Promise<ServiceInfo>
-  dispatchServiceInfo: React.Dispatch<Partial<ServiceInfo>>
+  dispatchServiceInfo: Dispatch<Partial<ServiceInfo>>
   connectionError?: Error
 }
 
 const ServiceInfoContext = createContext<ServiceInfoContextEntry | undefined>(undefined)
 
-const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
+const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
   const websocket = useWebsocket()

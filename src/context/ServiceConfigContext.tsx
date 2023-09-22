@@ -1,5 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef } from 'react'
-// @ts-ignore
+import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useRef } from 'react'
 import { CurrentWallet, useCurrentWallet } from './WalletContext'
 
 import * as Api from '../libs/JmWalletApi'
@@ -105,7 +104,7 @@ export interface ServiceConfigContextEntry {
 
 const ServiceConfigContext = createContext<ServiceConfigContextEntry | undefined>(undefined)
 
-const ServiceConfigProvider = ({ children }: React.PropsWithChildren<{}>) => {
+const ServiceConfigProvider = ({ children }: PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
   const serviceConfig = useRef<ServiceConfig | null>(null)
 

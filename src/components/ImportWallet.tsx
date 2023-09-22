@@ -374,7 +374,7 @@ enum ImportWalletSteps {
 
 interface ImportWalletProps {
   parentRoute: Route
-  startWallet: (name: Api.WalletName, token: Api.ApiToken) => void
+  startWallet: (name: Api.WalletName, auth: Api.ApiAuthContext) => void
 }
 
 export default function ImportWallet({ parentRoute, startWallet }: ImportWalletProps) {
@@ -388,9 +388,9 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   const [alert, setAlert] = useState<SimpleAlert>()
   const [createWalletFormValues, setCreateWalletFormValues] = useState<CreateWalletFormValues>()
   const [importDetailsFormValues, setImportDetailsFormValues] = useState<ImportWalletDetailsFormValues>()
-  const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; token: Api.ApiToken }>()
+  const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; auth: Api.ApiAuthContext }>()
 
-  const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.token, [recoveredWallet])
+  const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.auth, [recoveredWallet])
   const canRecover = useMemo(
     () => !isRecovered && !serviceInfo?.walletName && !serviceInfo?.rescanning,
     [isRecovered, serviceInfo],
@@ -441,13 +441,20 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         const recoverBody = await (recoverResponse.ok ? recoverResponse.json() : Api.Helper.throwError(recoverResponse))
 
         const { walletname: importedWalletFileName } = recoverBody
-        setRecoveredWallet({ walletFileName: importedWalletFileName, token: recoverBody.token })
+        let auth: Api.ApiAuthContext = {
+          token: recoverBody.token,
+          token_type: recoverBody.token_type,
+          expires_in: recoverBody.token_type,
+          scope: recoverBody.token_type,
+          refresh_token: recoverBody.token_type,
+        }
+        setRecoveredWallet({ walletFileName: importedWalletFileName, auth })
 
         // Step #2: update the gaplimit config value if necessary
         const originalGaplimit = await refreshConfigValues({
           signal,
           keys: [JM_GAPLIMIT_CONFIGKEY],
-          wallet: { name: importedWalletFileName, token: recoverBody.token },
+          wallet: { name: importedWalletFileName, token: auth.token },
         })
           .then((it) => it[JM_GAPLIMIT_CONFIGKEY.section] || {})
           .then((it) => parseInt(it[JM_GAPLIMIT_CONFIGKEY.field] || String(JM_GAPLIMIT_DEFAULT), 10))
@@ -465,16 +472,23 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 value: String(gaplimit),
               },
             ],
-            wallet: { name: importedWalletFileName, token: recoverBody.token },
+            wallet: { name: importedWalletFileName, token: auth.token },
           })
         }
 
         // Step #3: lock and unlock the wallet (for new addresses to be imported)
-        const lockResponse = await Api.getWalletLock({ walletName: importedWalletFileName, token: recoverBody.token })
+        const lockResponse = await Api.getWalletLock({ walletName: importedWalletFileName, token: auth.token })
         if (!lockResponse.ok) await Api.Helper.throwError(lockResponse)
 
         const unlockResponse = await Api.postWalletUnlock({ walletName: importedWalletFileName }, { password })
         const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
+        auth = {
+          token: unlockBody.token,
+          token_type: unlockBody.token_type,
+          expires_in: unlockBody.expires_in,
+          scope: unlockBody.scope,
+          refresh_token: unlockBody.refresh_token,
+        }
 
         // Step #4: reset `gaplimit´ to previous value if necessary
         if (gaplimitUpdateNecessary) {
@@ -487,7 +501,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 value: String(originalGaplimit),
               },
             ],
-            wallet: { name: importedWalletFileName, token: unlockBody.token },
+            wallet: { name: importedWalletFileName, token: auth.token },
           })
         }
 
@@ -508,7 +522,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           })
         }
 
-        startWallet(importedWalletFileName, unlockBody.token)
+        startWallet(importedWalletFileName, auth)
         navigate(routes.wallet)
       } catch (e: any) {
         if (signal.aborted) return

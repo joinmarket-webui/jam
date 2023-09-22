@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import { Ref, forwardRef } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { useSettings } from '../context/SettingsContext'
@@ -14,7 +14,7 @@ interface CoinjoinPreconditionViolationAlertProps {
 }
 
 export const CoinjoinPreconditionViolationAlert = forwardRef(
-  ({ summary, i18nPrefix = '' }: CoinjoinPreconditionViolationAlertProps, ref: React.Ref<HTMLDivElement>) => {
+  ({ summary, i18nPrefix = '' }: CoinjoinPreconditionViolationAlertProps, ref: Ref<HTMLDivElement>) => {
     const { t } = useTranslation()
     const settings = useSettings()
 

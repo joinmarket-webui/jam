@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 
 import { satsToBtc } from '../utils'
