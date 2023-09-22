@@ -18,8 +18,8 @@ import { toSemVer, UNKNOWN_VERSION } from '../utils'
 
 import * as Api from '../libs/JmWalletApi'
 
-// interval in milliseconds for periodic session requests
-const SESSION_REQUEST_INTERVAL = 10_000
+// interval for periodic session requests
+const SESSION_REQUEST_INTERVAL: Milliseconds = 10_000
 
 type AmountFraction = number
 type AmountCounterparties = number

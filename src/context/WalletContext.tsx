@@ -1,10 +1,11 @@
 import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useMemo } from 'react'
 
-import { getSession } from '../session'
+import { getSession, setSession } from '../session'
 import * as fb from '../components/fb/utils'
 import * as Api from '../libs/JmWalletApi'
 
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
+import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/config'
 
 export interface CurrentWallet {
   name: Api.WalletName
@@ -275,6 +276,44 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       setDisplayResponse(undefined)
     }
   }, [currentWallet])
+
+  useEffect(() => {
+    if (!currentWallet) return
+
+    const abortCtrl = new AbortController()
+
+    const refreshToken = () => {
+      const session = getSession()
+      if (!session?.auth?.refresh_token) return
+
+      Api.postToken(
+        { token: session.auth.token, signal: abortCtrl.signal },
+        {
+          grant_type: 'refresh_token',
+          refresh_token: session.auth.refresh_token,
+        },
+      )
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+        .then((body) => {
+          const auth = {
+            token: body.token,
+            token_type: body.token_type,
+            expires_in: body.expires_in,
+            scope: body.scope,
+            refresh_token: body.refresh_token,
+          }
+          setSession({ name: currentWallet.name, auth })
+          setCurrentWallet({ ...currentWallet, token: auth.token })
+        })
+        .catch((err) => console.error(err))
+    }
+
+    const interval = setInterval(refreshToken, JM_API_AUTH_TOKEN_EXPIRY / 4)
+    return () => {
+      clearInterval(interval)
+      abortCtrl.abort()
+    }
+  }, [currentWallet, setCurrentWallet])
 
   return (
     <WalletContext.Provider

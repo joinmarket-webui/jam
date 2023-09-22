@@ -12,31 +12,33 @@
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
-export type ApiToken = string
-export type WalletName = `${string}.jmdat`
+type ApiToken = string
+type WalletName = `${string}.jmdat`
 
-export type Mixdepth = number
-export type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
-export type BitcoinAddress = string
+type Mixdepth = number
+type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
+type BitcoinAddress = string
 
 type Vout = number
-export type TxId = string
-export type UtxoId = `${TxId}:${Vout}`
+type TxId = string
+type UtxoId = `${TxId}:${Vout}`
 
 // for JM versions <0.9.11
-export type SingleTokenAuthContext = {
+type SingleTokenAuthContext = {
   token: ApiToken
+  refresh_token: undefined
 }
 
 // for JM versions >=0.9.11
-export type RefreshTokenAuthContext = SingleTokenAuthContext & {
+type RefreshTokenAuthContext = {
+  token: ApiToken
   token_type: string // "bearer"
   expires_in: Seconds // 1800
   scope: string
   refresh_token: ApiToken
 }
 
-export type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
+type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
 
 type WithWalletName = {
   walletName: WalletName
@@ -48,7 +50,7 @@ type WithMixdepth = {
 type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 type YYYY = `2${Digit}${Digit}${Digit}`
 type MM = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12'
-export type Lockdate = `${YYYY}-${MM}`
+type Lockdate = `${YYYY}-${MM}`
 type WithLockdate = {
   lockdate: Lockdate
 }
@@ -64,7 +66,7 @@ interface AuthApiRequestContext extends ApiRequestContext {
   token: ApiToken
 }
 
-export type WalletRequestContext = AuthApiRequestContext & WithWalletName
+type WalletRequestContext = AuthApiRequestContext & WithWalletName
 
 interface ApiError {
   message: string
@@ -135,12 +137,12 @@ interface ConfigGetRequest {
   field: string
 }
 
-export interface StartSchedulerRequest {
+interface StartSchedulerRequest {
   destination_addresses: BitcoinAddress[]
   tumbler_options?: TumblerOptions
 }
 
-export interface TumblerOptions {
+interface TumblerOptions {
   restart?: boolean
   schedulefile?: string
   addrcount?: number
@@ -490,7 +492,7 @@ const getRescanBlockchain = async ({
   })
 }
 
-export class JmApiError extends Error {
+class JmApiError extends Error {
   public response: Response
 
   constructor(response: Response, message: string) {
@@ -526,4 +528,16 @@ export {
   getSchedule,
   getRescanBlockchain,
   Helper,
+  JmApiError,
+  ApiAuthContext,
+  StartSchedulerRequest,
+  WalletRequestContext,
+  ApiToken,
+  WalletName,
+  Lockdate,
+  TxId,
+  UtxoId,
+  Mixdepth,
+  AmountSats,
+  BitcoinAddress,
 }

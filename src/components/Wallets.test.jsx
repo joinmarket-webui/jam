@@ -202,7 +202,12 @@ describe('<Wallets />', () => {
       })
       apiMock.postWalletUnlock.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ walletname: dummyWalletName, token: dummyToken }),
+        json: () =>
+          Promise.resolve({
+            walletname: dummyWalletName,
+            token: dummyToken,
+            refresh_token: dummyToken,
+          }),
       })
 
       await act(async () => setup({}))
@@ -223,7 +228,10 @@ describe('<Wallets />', () => {
         await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
       })
 
-      expect(mockStartWallet).toHaveBeenCalledWith(dummyWalletName, dummyToken)
+      expect(mockStartWallet).toHaveBeenCalledWith(dummyWalletName, {
+        token: dummyToken,
+        refresh_token: dummyToken,
+      })
       expect(mockedNavigate).toHaveBeenCalledWith('/wallet')
     })
 
