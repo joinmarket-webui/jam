@@ -6,14 +6,11 @@ import * as Api from '../libs/JmWalletApi'
 
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/config'
-<<<<<<< HEAD
 import { isDevMode } from '../constants/debugFeatures'
 
 const API_AUTH_TOKEN_RENEW_INTERVAL: Milliseconds = isDevMode()
   ? 60 * 1_000
   : Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75)
-=======
->>>>>>> ba8f975 (dev(auth): refresh token periodically)
 
 export interface CurrentWallet {
   name: Api.WalletName
