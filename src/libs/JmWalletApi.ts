@@ -40,21 +40,6 @@ type RefreshTokenAuthContext = {
 
 type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
 
-// for JM versions <0.9.11
-export type SingleTokenAuthContext = {
-  token: ApiToken
-}
-
-// for JM versions >=0.9.11
-export type RefreshTokenAuthContext = SingleTokenAuthContext & {
-  token_type: string // "bearer"
-  expires_in: Seconds // 1800
-  scope: string
-  refresh_token: ApiToken
-}
-
-export type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
-
 type WithWalletName = {
   walletName: WalletName
 }

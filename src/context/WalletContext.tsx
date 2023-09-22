@@ -6,11 +6,14 @@ import * as Api from '../libs/JmWalletApi'
 
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/config'
+<<<<<<< HEAD
 import { isDevMode } from '../constants/debugFeatures'
 
 const API_AUTH_TOKEN_RENEW_INTERVAL: Milliseconds = isDevMode()
   ? 60 * 1_000
   : Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75)
+=======
+>>>>>>> ba8f975 (dev(auth): refresh token periodically)
 
 export interface CurrentWallet {
   name: Api.WalletName
@@ -178,16 +181,7 @@ const WalletContext = createContext<WalletContextEntry<CurrentWalletImpl> | unde
 
 const restoreWalletFromSession = (): CurrentWalletImpl | null => {
   const session = getSession()
-<<<<<<< HEAD
   return session?.name && session?.auth?.token ? new CurrentWalletImpl(session.name, session.auth.token) : null
-=======
-  return session && session.name && session.auth && session.auth.token
-    ? {
-        name: session.name,
-        token: session.auth.token,
-      }
-    : null
->>>>>>> 7fe22ee (dev(auth): save auth context to session)
 }
 
 export const groupByJar = (utxos: Utxos): UtxosByJar => {
