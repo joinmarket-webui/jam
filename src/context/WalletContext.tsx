@@ -13,7 +13,7 @@ export interface CurrentWallet {
 }
 
 class CurrentWalletImpl implements CurrentWallet {
-  name: Api.WalletName
+  readonly name: Api.WalletName
   #token: Api.ApiToken
 
   constructor(name: Api.WalletName, token: Api.ApiToken) {
@@ -203,7 +203,7 @@ const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
 const toCombinedRawData = (utxos: UtxosResponse, display: WalletDisplayResponse) => ({ utxos, display })
 
 const WalletProvider = ({ children }: PropsWithChildren<any>) => {
-  const [currentWallet, setCurrentWalletOrNull] = useState(restoreWalletFromSession())
+  const [currentWallet, setCurrentWalletOrNull] = useState(restoreWalletFromSession)
 
   const setCurrentWallet = useCallback(
     (wallet: CurrentWallet) => {
