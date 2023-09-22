@@ -80,7 +80,7 @@ type SessionInfo = {
 }
 type ServerInfo = {
   server?: {
-    version?: SemVer
+    version: SemVer
   }
 }
 
@@ -118,20 +118,12 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
 
     Api.getGetinfo({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((data: JmGetInfoData) => {
-        dispatchServiceInfo({
-          server: {
-            version: toSemVer(data.version),
-          },
-        })
-      })
-      .catch((err) => {
-        const notFound = err.response.status === 404
-        if (notFound) {
+      .then((data: JmGetInfoData) => toSemVer(data.version))
+      .catch((_) => UNKNOWN_VERSION)
+      .then((version) => {
+        if (!abortCtrl.signal.aborted) {
           dispatchServiceInfo({
-            server: {
-              version: UNKNOWN_VERSION,
-            },
+            server: { version },
           })
         }
       })
