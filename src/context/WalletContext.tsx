@@ -6,6 +6,11 @@ import * as Api from '../libs/JmWalletApi'
 
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/config'
+import { isDevMode } from '../constants/debugFeatures'
+
+const API_AUTH_TOKEN_RENEW_INTERVAL: Milliseconds = isDevMode()
+  ? 60 * 1_000
+  : Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75)
 
 export interface CurrentWallet {
   name: Api.WalletName
@@ -337,7 +342,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
         .catch((err) => console.error(err))
     }
 
-    const interval = setInterval(renewToken, JM_API_AUTH_TOKEN_EXPIRY / 3)
+    const interval = setInterval(renewToken, API_AUTH_TOKEN_RENEW_INTERVAL)
     return () => {
       clearInterval(interval)
       abortCtrl.abort()
