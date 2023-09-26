@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -15,7 +15,7 @@ export default function Footer() {
   const websocketState = useWebsocketState()
   const currentWallet = useCurrentWallet()
 
-  const [websocketConnected, setWebsocketConnected] = useState()
+  const [websocketConnected, setWebsocketConnected] = useState(false)
   const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
@@ -27,7 +27,7 @@ export default function Footer() {
   }, [websocketState])
 
   useEffect(() => {
-    let timer
+    let timer: NodeJS.Timeout
     // show the cheatsheet once after the first wallet has been created
     if (cheatsheetEnabled && settings.showCheatsheet) {
       timer = setTimeout(() => {
