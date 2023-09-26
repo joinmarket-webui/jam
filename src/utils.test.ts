@@ -1,4 +1,4 @@
-import { shortenStringMiddle, percentageToFactor, factorToPercentage } from './utils'
+import { shortenStringMiddle, percentageToFactor, factorToPercentage, toSemVer, UNKNOWN_VERSION } from './utils'
 
 describe('shortenStringMiddle', () => {
   it('should shorten string in the middle', () => {
@@ -67,5 +67,49 @@ describe('factorToPercentage/percentageToFactor', () => {
     expect(testInverse(33)).toBe(33)
     expect(testInverse(100)).toBe(100)
     expect(testInverse(233.7)).toBe(233.7)
+  })
+})
+
+describe('toSemVer', () => {
+  it('should parse version correctly', () => {
+    expect(toSemVer('0.0.1')).toEqual({
+      major: 0,
+      minor: 0,
+      patch: 1,
+      raw: '0.0.1',
+    })
+    expect(toSemVer('0.9.11dev')).toEqual({
+      major: 0,
+      minor: 9,
+      patch: 11,
+      raw: '0.9.11dev',
+    })
+    expect(toSemVer('1.0.0-beta.2')).toEqual({
+      major: 1,
+      minor: 0,
+      patch: 0,
+      raw: '1.0.0-beta.2',
+    })
+    expect(toSemVer('21.42.1337-dev.2+devel.99ff4cd')).toEqual({
+      major: 21,
+      minor: 42,
+      patch: 1337,
+      raw: '21.42.1337-dev.2+devel.99ff4cd',
+    })
+  })
+  it('should parse invalid version as UNKNOWN', () => {
+    expect(toSemVer(undefined)).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer(' ')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('🧡')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21.42')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21.42.')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21.42.💯')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21.42.-1')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21.42.-1')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21.-1.42')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('-1.21.42')).toBe(UNKNOWN_VERSION)
+    expect(toSemVer('21million')).toBe(UNKNOWN_VERSION)
   })
 })

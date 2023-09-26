@@ -2,15 +2,24 @@ import { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import Sprite from './Sprite'
 import Cheatsheet from './Cheatsheet'
 import packageInfo from '../../package.json'
+import { isDevMode } from '../constants/debugFeatures'
+import { toSemVer } from '../utils'
+
+const APP_DISPLAY_VERSION = (() => {
+  const version = toSemVer(packageInfo.version)
+  return !isDevMode() ? version.raw : `${version.major}.${version.minor}.${version.patch + 1}dev`
+})()
 
 export default function Footer() {
   const { t } = useTranslation()
   const settings = useSettings()
+  const serviceInfo = useServiceInfo()
   const settingsDispatch = useSettingsDispatch()
   const websocketState = useWebsocketState()
   const currentWallet = useCurrentWallet()
@@ -46,9 +55,14 @@ export default function Footer() {
           <rb.Card className="warning-card translate-middle shadow-lg">
             <rb.Card.Body>
               <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
-              <p className="text-secondary">{t('footer.warning_alert_text')}</p>
+              <p>{t('footer.warning_alert_text')}</p>
+              <p className="text-secondary">
+                JoinMarket: v{serviceInfo?.server?.version?.raw || 'unknown'}
+                <br />
+                Jam: v{APP_DISPLAY_VERSION}
+              </p>
               <div className="text-center mt-3">
-                <rb.Button variant="secondary" onClick={() => setShowBetaWarning(false)}>
+                <rb.Button variant="dark" onClick={() => setShowBetaWarning(false)}>
                   {t('footer.warning_alert_button_ok')}
                 </rb.Button>
               </div>
@@ -100,7 +114,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="d-flex align-items-center text-secondary"
               >
-                v{packageInfo.version}
+                v{APP_DISPLAY_VERSION}
               </a>
             </div>
             <div className="d-flex gap-2 pe-2">

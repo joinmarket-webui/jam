@@ -5,6 +5,7 @@ import { useCurrentWallet, useSetCurrentWallet } from './WalletContext'
 import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
 import { CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../constants/config'
+import { toSemVer, UNKNOWN_VERSION } from '../utils'
 
 import * as Api from '../libs/JmWalletApi'
 
@@ -57,8 +58,6 @@ interface JmGetInfoData {
   version: string
 }
 
-const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
-
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
@@ -88,21 +87,6 @@ type ServiceInfoUpdate =
   | CoinjoinInProgressFlag
   | RescanBlockchainInProgressFlag
   | ServerInfo
-
-const versionRegex = new RegExp(/^(\d+)\.(\d+)\.(\d+).*$/)
-const toSemVer = (data: JmGetInfoData): SemVer => {
-  const arr = versionRegex.exec(data.version)
-  if (!arr || arr.length < 4) {
-    return UNKNOWN_VERSION
-  }
-
-  return {
-    major: parseInt(arr[1], 10),
-    minor: parseInt(arr[2], 10),
-    patch: parseInt(arr[3], 10),
-    raw: data.version,
-  }
-}
 
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
@@ -134,7 +118,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
       .then((data: JmGetInfoData) => {
         dispatchServiceInfo({
           server: {
-            version: toSemVer(data),
+            version: toSemVer(data.version),
           },
         })
       })
