@@ -24,7 +24,7 @@ const SESSION_REQUEST_INTERVAL: Milliseconds = 10_000
 type AmountFraction = number
 type AmountCounterparties = number
 type SchedulerDestinationAddress = 'INTERNAL' | Api.BitcoinAddress
-type WaitTimeInMinutes = number
+type WaitTimeInMinutes = Minutes
 type Rounding = number
 type StateFlag = 0 | 1 | Api.TxId
 

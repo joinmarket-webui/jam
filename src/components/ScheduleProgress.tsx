@@ -1,9 +1,9 @@
-import React from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import styles from './ScheduleProgress.module.css'
+import { Schedule } from '../context/ServiceInfoContext'
 
-const scheduleToSteps = (schedule) => {
+const scheduleToSteps = (schedule: Schedule) => {
   // Example Schedule:
   //
   // schedule = [
@@ -34,7 +34,7 @@ const scheduleToSteps = (schedule) => {
   // Calculate total wait time. Ignores the last element since there's no reason in waiting after the last element completed.
   // This is a lower bound estimate for the time the whole scheduler run will take since it doesn't take into account the time
   // it takes to find and talk to makers and wait for tx confirmations on the timechain.
-  const totalWaitTime = Math.max(
+  const totalWaitTime: Minutes = Math.max(
     1,
     schedule.slice(0, schedule.length - 1).reduce((acc, tx) => acc + tx[4] * 60, 0),
   )
@@ -58,7 +58,11 @@ const scheduleToSteps = (schedule) => {
   }
 }
 
-const ScheduleProgress = ({ schedule }) => {
+interface ScheduleProgressProps {
+  schedule: Schedule
+}
+
+const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
   const { t } = useTranslation()
 
   const steps = scheduleToSteps(schedule)

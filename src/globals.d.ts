@@ -4,6 +4,7 @@ declare type Unit = 'BTC' | 'sats'
 
 type Milliseconds = number
 type Seconds = number
+type Minutes = number
 
 declare type MnemonicPhrase = string[]
 
