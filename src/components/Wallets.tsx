@@ -13,12 +13,16 @@ import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
 import { isFeatureEnabled } from '../constants/features'
+import { CurrentWallet } from '../context/WalletContext'
 
-function arrayEquals(a, b) {
+function arrayEquals(a: any, b: any) {
   return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
 }
 
-function sortWallets(wallets, activeWalletFileName = null) {
+function sortWallets(
+  wallets: Api.WalletFileName[],
+  activeWalletFileName: Api.WalletFileName | null = null,
+): Api.WalletFileName[] {
   if (activeWalletFileName && wallets.indexOf(activeWalletFileName) >= 0) {
     return [activeWalletFileName, ...sortWallets(wallets.filter((a) => a !== activeWalletFileName))]
   } else {
@@ -26,20 +30,26 @@ function sortWallets(wallets, activeWalletFileName = null) {
   }
 }
 
-export default function Wallets({ currentWallet, startWallet, stopWallet }) {
+interface WalletsProps {
+  currentWallet: CurrentWallet | null
+  startWallet: (walletFileName: Api.WalletFileName, auth: Api.ApiAuthContext) => void
+  stopWallet: () => void
+}
+
+export default function Wallets({ currentWallet, startWallet, stopWallet }: WalletsProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const serviceInfo = useServiceInfo()
   const reloadServiceInfo = useReloadServiceInfo()
-  const [walletList, setWalletList] = useState(null)
+  const [walletList, setWalletList] = useState<Api.WalletFileName[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [unlockingWalletFileName, setUnlockWalletFileName] = useState(undefined)
   const isUnlocking = useMemo(() => unlockingWalletFileName !== undefined, [unlockingWalletFileName])
-  const [alert, setAlert] = useState(null)
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
 
-  const coinjoinInProgress = useMemo(() => serviceInfo && serviceInfo.coinjoinInProgress, [serviceInfo])
-  const makerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
+  const coinjoinInProgress = useMemo(() => serviceInfo !== null && serviceInfo.coinjoinInProgress, [serviceInfo])
+  const makerRunning = useMemo(() => serviceInfo !== null && serviceInfo.makerRunning, [serviceInfo])
 
   const unlockWallet = useCallback(
     async (walletFileName, password) => {
@@ -57,7 +67,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         return
       }
 
-      setAlert(null)
+      setAlert(undefined)
       setUnlockWalletFileName(walletFileName)
       try {
         const res = await Api.postWalletUnlock({ walletFileName }, { password })
@@ -68,8 +78,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         const auth = Api.Helper.parseAuthProps(body)
         startWallet(body.walletname, auth)
         navigate(routes.wallet)
-      } catch (e) {
-        const message = e.message.replace('Wallet', walletFileName)
+      } catch (e: any) {
+        const message = e.message?.replace('Wallet', walletFileName)
         setAlert({ variant: 'danger', dismissible: false, message })
         setUnlockWalletFileName(undefined)
       }
@@ -102,7 +112,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         return
       }
 
-      setAlert(null)
+      setAlert(undefined)
 
       try {
         const res = await Api.getWalletLock({ ...currentWallet })
@@ -129,7 +139,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
                 walletName: walletDisplayName(lockedWalletFileName),
               }),
         })
-      } catch (e) {
+      } catch (e: any) {
         setAlert({ variant: 'danger', dismissible: false, message: e.message })
       }
     },
@@ -196,7 +206,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       <div className="wallets">
         <PageTitle
           title={t('wallets.title')}
-          subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : null}
+          subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined}
           center={true}
         />
         {alert && <Alert {...alert} />}

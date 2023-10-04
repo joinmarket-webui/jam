@@ -4,7 +4,6 @@ import { act } from 'react-dom/test-utils'
 
 import Settings from './Settings'
 import { CurrentWallet } from '../context/WalletContext'
-import { walletDisplayNameToFileName } from '../utils'
 
 const dummyWalletFileName = 'dummy.jmdat'
 const dummyToken = 'dummyToken'
@@ -23,7 +22,7 @@ describe('<Settings />', () => {
       setup({
         wallet: {
           walletFileName: dummyWalletFileName,
-          displayName: walletDisplayNameToFileName(dummyWalletFileName),
+          displayName: dummyWalletFileName,
           token: dummyToken,
         },
       }),
