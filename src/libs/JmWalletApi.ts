@@ -75,7 +75,7 @@ interface ApiError {
 type WalletType = 'sw-fb'
 
 interface TokenRequest {
-  grant_type: string
+  grant_type: 'refresh_token' | string
   refresh_token: string
 }
 
@@ -224,11 +224,25 @@ const Helper = (() => {
     return { 'x-jm-authorization': `Bearer ${token}` }
   }
 
+  // Simple helper method to parse auth properties.
+  // TODO: This can be removed when the API methods
+  // return typed responses (see #670)
+  const parseAuthProps = (body: any): ApiAuthContext => {
+    return {
+      token: body.token,
+      token_type: body.token_type,
+      expires_in: body.expires_in,
+      scope: body.scope,
+      refresh_token: body.refresh_token,
+    }
+  }
+
   return {
     throwError,
     throwResolved,
     extractErrorMessage,
     buildAuthHeader,
+    parseAuthProps,
   }
 })()
 

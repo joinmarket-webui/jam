@@ -328,13 +328,8 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       )
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((body) => {
-          const auth = {
-            token: body.token,
-            token_type: body.token_type,
-            expires_in: body.expires_in,
-            scope: body.scope,
-            refresh_token: body.refresh_token,
-          }
+          const auth = Api.Helper.parseAuthProps(body)
+
           setSession({ name: currentWallet.name, auth })
           currentWallet.updateToken(auth.token)
           console.debug('Successfully renewed auth token.')
