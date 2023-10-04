@@ -195,7 +195,6 @@ export default function Earn({ wallet }) {
     setIsSending(true)
     setIsWaitingMakerStart(true)
 
-    const { name: walletName, token } = wallet
     const data = {
       ordertype,
       minsize,
@@ -206,7 +205,7 @@ export default function Earn({ wallet }) {
     // There is no response data to check if maker got started:
     // Wait for the websocket or session response!
     return (
-      Api.postMakerStart({ walletName, token }, data)
+      Api.postMakerStart({ ...wallet }, data)
         .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
         // show the loader a little longer to avoid flickering
         .then((result) => new Promise((r) => setTimeout(() => r(result), 200)))
@@ -222,11 +221,9 @@ export default function Earn({ wallet }) {
     setIsSending(true)
     setIsWaitingMakerStop(true)
 
-    const { name: walletName, token } = wallet
-
     // There is no response data to check if maker got stopped:
     // Wait for the websocket or session response!
-    return Api.getMakerStop({ walletName, token })
+    return Api.getMakerStop({ ...wallet })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
       .then((result) => new Promise((r) => setTimeout(() => r(result), MAKER_STOP_RESPONSE_DELAY_MS)))
       .catch((e) => {

@@ -326,7 +326,7 @@ export default function Send({ wallet }: SendProps) {
 
     let success = false
     try {
-      const res = await Api.postDirectSend(wallet, { mixdepth: sourceJarIndex, destination, amount_sats })
+      const res = await Api.postDirectSend({ ...wallet }, { mixdepth: sourceJarIndex, destination, amount_sats })
 
       if (res.ok) {
         // TODO: add type for json response
@@ -374,12 +374,15 @@ export default function Send({ wallet }: SendProps) {
 
     let success = false
     try {
-      const res = await Api.postCoinjoin(wallet, {
-        mixdepth: sourceJarIndex,
-        destination,
-        amount_sats,
-        counterparties,
-      })
+      const res = await Api.postCoinjoin(
+        { ...wallet },
+        {
+          mixdepth: sourceJarIndex,
+          destination,
+          amount_sats,
+          counterparties,
+        },
+      )
 
       if (res.ok) {
         const data = await res.json()

@@ -105,7 +105,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       setAlert(null)
 
       try {
-        const res = await Api.getWalletLock(currentWallet)
+        const res = await Api.getWalletLock({ ...currentWallet })
 
         // On status OK or UNAUTHORIZED, stop the wallet and clear all local
         // information. The token might have become invalid or another one might have been

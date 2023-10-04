@@ -122,7 +122,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     let utxosThatWereFrozen: Utxos = []
 
     const freezeCalls = utxos.map((utxo) =>
-      Api.postFreeze(wallet, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
+      Api.postFreeze({ ...wallet }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
         if (res.ok) {
           if (!utxo.frozen && freeze) {
             utxosThatWereFrozen.push(utxo)
