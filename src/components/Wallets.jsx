@@ -65,18 +65,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
         setUnlockWalletName(undefined)
 
-<<<<<<< HEAD
         const auth = Api.Helper.parseAuthProps(body)
-
-=======
-        const auth = {
-          token: body.token,
-          token_type: body.token_type,
-          expires_in: body.expires_in,
-          scope: body.scope,
-          refresh_token: body.refresh_token,
-        }
->>>>>>> 7fe22ee (dev(auth): save auth context to session)
         startWallet(body.walletname, auth)
         navigate(routes.wallet)
       } catch (e) {

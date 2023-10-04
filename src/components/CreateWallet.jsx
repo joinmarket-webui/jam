@@ -100,17 +100,8 @@ export default function CreateWallet({ parentRoute, startWallet }) {
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
         const { seedphrase, walletname: createdWalletFileName } = body
-<<<<<<< HEAD
         const auth = Api.Helper.parseAuthProps(body)
-=======
-        const auth = {
-          token: body.token,
-          token_type: body.token_type,
-          expires_in: body.expires_in,
-          scope: body.scope,
-          refresh_token: body.refresh_token,
-        }
->>>>>>> 7fe22ee (dev(auth): save auth context to session)
+        
         setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, auth })
       } catch (e) {
         const message = t('create_wallet.error_creating_failed', {
