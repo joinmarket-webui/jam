@@ -19,13 +19,17 @@ export type CurrentWallet = MinimalWalletContext & {
 
 class CurrentWalletImpl implements CurrentWallet {
   readonly walletFileName: Api.WalletFileName
-  readonly displayName: string
+  readonly #displayName: string
   token: Api.ApiToken // TODO: should be private
 
   constructor(ctx: MinimalWalletContext) {
     this.walletFileName = ctx.walletFileName
-    this.displayName = walletDisplayName(ctx.walletFileName)
+    this.#displayName = walletDisplayName(ctx.walletFileName)
     this.token = ctx.token
+  }
+
+  get displayName() {
+    return this.#displayName
   }
 
   updateToken(token: Api.ApiToken) {

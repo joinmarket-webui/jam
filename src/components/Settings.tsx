@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, To, useNavigate } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Sprite from './Sprite'
@@ -18,8 +18,14 @@ import SeedModal from './settings/SeedModal'
 import FeeConfigModal from './settings/FeeConfigModal'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { isFeatureEnabled } from '../constants/features'
+import { CurrentWallet } from '../context/WalletContext'
 
-export default function Settings({ wallet, stopWallet }) {
+interface SettingsProps {
+  wallet: CurrentWallet
+  stopWallet: () => void
+}
+
+export default function Settings({ wallet, stopWallet }: SettingsProps) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const settings = useSettings()
@@ -29,12 +35,12 @@ export default function Settings({ wallet, stopWallet }) {
   const [showingSeed, setShowingSeed] = useState(false)
   const [showingFeeConfig, setShowingFeeConfig] = useState(false)
   const [lockingWallet, setLockingWallet] = useState(false)
-  const [showConfirmLockModal, setShowConfirmLockModal] = useState(null)
+  const [showConfirmLockModal, setShowConfirmLockModal] = useState<{ navigateTo: To }>()
   const [showLogsEnabled, setShowLogsEnabled] = useState(false)
   const [showingLogs, setShowingLogs] = useState(false)
-  const [alert, setAlert] = useState(null)
+  const [alert, setAlert] = useState<SimpleAlert>()
 
-  const setTheme = (theme) => {
+  const setTheme = (theme: string) => {
     if (window.JM.THEMES.includes(theme)) {
       document.documentElement.setAttribute(window.JM.THEME_ROOT_ATTR, theme)
       settingsDispatch({ theme })
@@ -45,9 +51,9 @@ export default function Settings({ wallet, stopWallet }) {
   const isLightTheme = settings.theme === window.JM.THEMES[0]
 
   const lockWallet = useCallback(
-    async ({ force, destination }) => {
-      if (!force && (serviceInfo.coinjoinInProgress || serviceInfo.makerRunning)) {
-        setShowConfirmLockModal({ destination })
+    async ({ force, navigateTo }: { force: boolean; navigateTo: To }) => {
+      if (!force && (serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning)) {
+        setShowConfirmLockModal({ navigateTo })
         return
       }
 
@@ -59,11 +65,11 @@ export default function Settings({ wallet, stopWallet }) {
         setLockingWallet(false)
         if (res.ok || res.status === 401) {
           stopWallet()
-          navigate(destination)
+          navigate(navigateTo)
         } else {
           await Api.Helper.throwError(res)
         }
-      } catch (e) {
+      } catch (e: any) {
         setLockingWallet(false)
         setAlert({ variant: 'danger', dismissible: false, message: e.message })
       }
@@ -96,12 +102,13 @@ export default function Settings({ wallet, stopWallet }) {
         <div className={styles['section-title']}>{t('settings.section_title_display')}</div>
         {alert && <Alert {...alert} />}
         <ConfirmModal
-          isShown={showConfirmLockModal}
+          isShown={!!showConfirmLockModal}
           title={t('wallets.wallet_preview.modal_lock_wallet_title')}
-          onCancel={() => setShowConfirmLockModal(null)}
+          onCancel={() => setShowConfirmLockModal(undefined)}
           onConfirm={() => {
-            setShowConfirmLockModal(null)
-            lockWallet({ force: true, destination: showConfirmLockModal?.destination })
+            const navigateTo = showConfirmLockModal?.navigateTo || routes.home
+            setShowConfirmLockModal(undefined)
+            lockWallet({ force: true, navigateTo })
           }}
         >
           {(serviceInfo?.makerRunning
@@ -190,7 +197,7 @@ export default function Settings({ wallet, stopWallet }) {
           <rb.Button
             variant="outline-dark"
             className={styles['settings-btn']}
-            onClick={() => lockWallet({ force: false, destination: routes.walletList })}
+            onClick={() => lockWallet({ force: false, navigateTo: routes.walletList })}
           >
             {lockingWallet ? (
               <>
@@ -211,7 +218,7 @@ export default function Settings({ wallet, stopWallet }) {
           <rb.Button
             variant="outline-dark"
             className={styles['settings-btn']}
-            onClick={() => lockWallet({ force: false, destination: routes.createWallet })}
+            onClick={() => lockWallet({ force: false, navigateTo: routes.createWallet })}
           >
             {lockingWallet ? (
               <>
