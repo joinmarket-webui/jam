@@ -44,12 +44,11 @@ export default function Receive({ wallet }) {
     }
 
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = wallet
 
     setAlert(undefined)
     setIsLoading(true)
 
-    Api.getAddressNew({ walletName, mixdepth: selectedJarIndex, token, signal: abortCtrl.signal })
+    Api.getAddressNew({ ...wallet, mixdepth: selectedJarIndex, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
       .then((data) => setAddress(data.address))
       .catch((err) => {

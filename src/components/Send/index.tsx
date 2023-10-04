@@ -324,11 +324,9 @@ export default function Send({ wallet }: SendProps) {
     setPaymentSuccessfulInfoAlert(undefined)
     setIsSending(true)
 
-    const requestContext = { walletName: wallet.name, token: wallet.token }
-
     let success = false
     try {
-      const res = await Api.postDirectSend(requestContext, { mixdepth: sourceJarIndex, destination, amount_sats })
+      const res = await Api.postDirectSend(wallet, { mixdepth: sourceJarIndex, destination, amount_sats })
 
       if (res.ok) {
         // TODO: add type for json response
@@ -374,10 +372,9 @@ export default function Send({ wallet }: SendProps) {
     setAlert(undefined)
     setIsSending(true)
 
-    const requestContext = { walletName: wallet.name, token: wallet.token }
     let success = false
     try {
-      const res = await Api.postCoinjoin(requestContext, {
+      const res = await Api.postCoinjoin(wallet, {
         mixdepth: sourceJarIndex,
         destination,
         amount_sats,
@@ -432,7 +429,7 @@ export default function Send({ wallet }: SendProps) {
     setAlert(undefined)
 
     const abortCtrl = new AbortController()
-    return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }).catch((err) => {
+    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal }).catch((err) => {
       setAlert({ variant: 'danger', message: err.message })
     })
   }
@@ -649,9 +646,8 @@ export default function Send({ wallet }: SendProps) {
             onConfirm={(selectedJar) => {
               const abortCtrl = new AbortController()
               return Api.getAddressNew({
+                ...wallet,
                 signal: abortCtrl.signal,
-                walletName: wallet.name,
-                token: wallet.token,
                 mixdepth: selectedJar,
               })
                 .then((res) =>

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import Seedphrase from '../Seedphrase'
 import ToggleSwitch from '../ToggleSwitch'
 import { CurrentWallet } from '../../context/WalletContext'
-import { walletDisplayName } from '../../utils'
 import * as Api from '../../libs/JmWalletApi'
 
 interface SeedModalProps {
@@ -25,8 +24,7 @@ export default function SeedModal({ wallet, show, onHide }: SeedModalProps) {
     const loadSeed = async () => {
       setIsLoading(true)
       try {
-        const { name: walletName, token } = wallet
-        const res = await Api.getWalletSeed({ walletName, token })
+        const res = await Api.getWalletSeed(wallet)
         const { seedphrase } = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
         setIsLoading(false)
@@ -45,7 +43,7 @@ export default function SeedModal({ wallet, show, onHide }: SeedModalProps) {
   return (
     <rb.Modal size="lg" show={show} onHide={onHide} keyboard={false} centered={true} animation={true}>
       <rb.Modal.Header closeButton>
-        <rb.Modal.Title>{walletDisplayName(wallet.name)}</rb.Modal.Title>
+        <rb.Modal.Title>{wallet.displayName}</rb.Modal.Title>
       </rb.Modal.Header>
       <rb.Modal.Body>
         <>

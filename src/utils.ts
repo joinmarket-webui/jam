@@ -1,3 +1,5 @@
+import { WalletFileName } from './libs/JmWalletApi'
+
 const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
   minimumFractionDigits: 8,
@@ -11,7 +13,7 @@ const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
-export const JM_WALLET_FILE_EXTENSION = '.jmdat'
+const JM_WALLET_FILE_EXTENSION = '.jmdat'
 
 export const DUMMY_MNEMONIC_PHRASE: MnemonicPhrase =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
@@ -20,7 +22,9 @@ export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bit
 
 export const sanitizeWalletName = (name: string) => name.replace(JM_WALLET_FILE_EXTENSION, '')
 
-export const walletDisplayName = (name: string) => sanitizeWalletName(name)
+export const walletDisplayNameToFileName = (name: string) => (name + JM_WALLET_FILE_EXTENSION) as WalletFileName
+
+export const walletDisplayName = (fileName: WalletFileName) => sanitizeWalletName(fileName)
 
 export const displayDate = (string: string) => new Date(string).toLocaleString()
 

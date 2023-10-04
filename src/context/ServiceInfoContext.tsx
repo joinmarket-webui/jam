@@ -56,7 +56,7 @@ interface JmSessionData {
   session: boolean
   maker_running: boolean
   coinjoin_in_process: boolean
-  wallet_name: Api.WalletName | 'None'
+  wallet_name: Api.WalletFileName | 'None'
   schedule: Schedule | null
   offer_list: Offer[] | null
   nickname: string | null
@@ -73,7 +73,7 @@ type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
 type RescanBlockchainInProgressFlag = { rescanning: boolean }
 
 type SessionInfo = {
-  walletName: Api.WalletName | null
+  walletFileName: Api.WalletFileName | null
   schedule: Schedule | null
   offers: Offer[] | null
   nickname: string | null
@@ -168,15 +168,15 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
             session: sessionActive,
             maker_running: makerRunning,
             coinjoin_in_process: coinjoinInProgress,
-            wallet_name: walletNameOrNoneString,
+            wallet_name: walletFileNameOrNoneString,
             offer_list: offers,
             rescanning,
             schedule,
             nickname,
           } = data
-          const activeWalletName = walletNameOrNoneString !== 'None' ? walletNameOrNoneString : null
+          const activeWalletFileName = walletFileNameOrNoneString !== 'None' ? walletFileNameOrNoneString : null
           return {
-            walletName: activeWalletName,
+            walletFileName: activeWalletFileName,
             sessionActive,
             makerRunning,
             coinjoinInProgress,
@@ -198,7 +198,8 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
             dispatchServiceInfo(info)
             setConnectionError(undefined)
 
-            const activeWalletChanged = currentWallet && (!info.walletName || currentWallet.name !== info.walletName)
+            const activeWalletChanged =
+              currentWallet && (!info.walletFileName || currentWallet.walletFileName !== info.walletFileName)
             if (activeWalletChanged) {
               resetWalletAndClearSession()
             }

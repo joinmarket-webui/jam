@@ -121,9 +121,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
     let utxosThatWereFrozen: Utxos = []
 
-    const { name: walletName, token } = wallet
     const freezeCalls = utxos.map((utxo) =>
-      Api.postFreeze({ walletName, token }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
+      Api.postFreeze(wallet, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
         if (res.ok) {
           if (!utxo.frozen && freeze) {
             utxosThatWereFrozen.push(utxo)
@@ -155,8 +154,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     const abortCtrl = new AbortController()
 
     Api.getAddressTimelockNew({
-      walletName: wallet.name,
-      token: wallet.token,
+      ...wallet,
       signal: abortCtrl.signal,
       lockdate: lockDate,
     })
@@ -174,14 +172,11 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const directSweepToFidelityBond = (jarIndex: JarIndex, address: Api.BitcoinAddress) => {
     setIsLoading(true)
 
-    Api.postDirectSend(
-      { walletName: wallet.name, token: wallet.token },
-      {
-        mixdepth: jarIndex,
-        destination: address,
-        amount_sats: 0, // sweep
-      },
-    )
+    Api.postDirectSend(wallet, {
+      mixdepth: jarIndex,
+      destination: address,
+      amount_sats: 0, // sweep
+    })
       .then((res) =>
         res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_creating_fidelity_bond')),
       )

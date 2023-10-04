@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
-import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import Balance from './Balance'
@@ -147,7 +146,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
       )}
       {serviceInfo?.rescanning === true ? (
         <rb.Row>
-          <WalletHeaderRescanning walletName={walletDisplayName(wallet.name)} isLoading={isLoading} />
+          <WalletHeaderRescanning walletName={wallet.displayName} isLoading={isLoading} />
         </rb.Row>
       ) : (
         <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
@@ -155,7 +154,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
             <WalletHeaderPlaceholder />
           ) : (
             <WalletHeader
-              walletName={walletDisplayName(wallet.name)}
+              walletName={wallet.displayName}
               balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
               unit={settings.unit}
               showBalance={settings.showBalance}

@@ -181,7 +181,7 @@ describe('<Wallets />', () => {
   })
 
   describe('<Wallets /> lock/unlock flow', () => {
-    const dummyWalletName = 'dummy.jmdat'
+    const dummyWalletFileName = 'dummy.jmdat'
     const dummyToken = 'dummyToken'
     const dummyPassword = 'correct horse battery staple'
 
@@ -198,13 +198,13 @@ describe('<Wallets />', () => {
       })
       apiMock.getWalletAll.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ wallets: [dummyWalletName] }),
+        json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
       })
       apiMock.postWalletUnlock.mockResolvedValueOnce({
         ok: true,
         json: () =>
           Promise.resolve({
-            walletname: dummyWalletName,
+            walletname: dummyWalletFileName,
             token: dummyToken,
             refresh_token: dummyToken,
           }),
@@ -228,7 +228,7 @@ describe('<Wallets />', () => {
         await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
       })
 
-      expect(mockStartWallet).toHaveBeenCalledWith(dummyWalletName, {
+      expect(mockStartWallet).toHaveBeenCalledWith(dummyWalletFileName, {
         token: dummyToken,
         refresh_token: dummyToken,
       })
@@ -250,7 +250,7 @@ describe('<Wallets />', () => {
       })
       apiMock.getWalletAll.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ wallets: [dummyWalletName] }),
+        json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
       })
       apiMock.postWalletUnlock.mockResolvedValueOnce({
         ok: false,
@@ -278,7 +278,7 @@ describe('<Wallets />', () => {
       expect(mockStartWallet).not.toHaveBeenCalled()
       expect(mockedNavigate).not.toHaveBeenCalled()
 
-      expect(screen.getByText(apiErrorMessage.replace('Wallet', dummyWalletName))).toBeInTheDocument()
+      expect(screen.getByText(apiErrorMessage.replace('Wallet', dummyWalletFileName))).toBeInTheDocument()
     })
 
     it('should lock active wallet successfully', async () => {
@@ -289,22 +289,22 @@ describe('<Wallets />', () => {
             session: true,
             maker_running: false,
             coinjoin_in_process: false,
-            wallet_name: dummyWalletName,
+            wallet_name: dummyWalletFileName,
           }),
       })
       apiMock.getWalletAll.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ wallets: [dummyWalletName] }),
+        json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
       })
       apiMock.getWalletLock.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ walletname: dummyWalletName, already_locked: false }),
+        json: () => Promise.resolve({ walletname: dummyWalletFileName, already_locked: false }),
       })
 
       await act(async () =>
         setup({
           currentWallet: {
-            name: dummyWalletName,
+            walletFileName: dummyWalletFileName,
             token: dummyToken,
           },
         }),
@@ -335,12 +335,12 @@ describe('<Wallets />', () => {
             session: true,
             maker_running: false,
             coinjoin_in_process: false,
-            wallet_name: dummyWalletName,
+            wallet_name: dummyWalletFileName,
           }),
       })
       apiMock.getWalletAll.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ wallets: [dummyWalletName] }),
+        json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
       })
       apiMock.getWalletLock.mockResolvedValueOnce({
         ok: false,
@@ -351,7 +351,7 @@ describe('<Wallets />', () => {
       await act(async () =>
         setup({
           currentWallet: {
-            name: dummyWalletName,
+            walletFileName: dummyWalletFileName,
             token: dummyToken,
           },
         }),
@@ -387,22 +387,22 @@ describe('<Wallets />', () => {
               session: true,
               maker_running: makerRunning,
               coinjoin_in_process: coinjoinInProgress,
-              wallet_name: dummyWalletName,
+              wallet_name: dummyWalletFileName,
             }),
         })
         apiMock.getWalletAll.mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletName] }),
+          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
         })
         apiMock.getWalletLock.mockResolvedValueOnce({
           ok: true,
-          json: () => Promise.resolve({ walletname: dummyWalletName, already_locked: false }),
+          json: () => Promise.resolve({ walletname: dummyWalletFileName, already_locked: false }),
         })
 
         await act(async () =>
           setup({
             currentWallet: {
-              name: dummyWalletName,
+              walletFileName: dummyWalletFileName,
               token: dummyToken,
             },
           }),

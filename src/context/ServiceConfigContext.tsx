@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useRef } from 'react'
-import { CurrentWallet, useCurrentWallet } from './WalletContext'
+import { MinimalWalletContext, useCurrentWallet } from './WalletContext'
 
 import * as Api from '../libs/JmWalletApi'
 
@@ -31,13 +31,13 @@ type LoadConfigValueProps = {
 type RefreshConfigValuesProps = {
   signal?: AbortSignal
   keys: ConfigKey[]
-  wallet?: CurrentWallet
+  wallet?: MinimalWalletContext
 }
 
 type UpdateConfigValuesProps = {
   signal?: AbortSignal
   updates: ServiceConfigUpdate[]
-  wallet?: CurrentWallet
+  wallet?: MinimalWalletContext
 }
 
 const configReducer = (state: ServiceConfig, obj: ServiceConfigUpdate): ServiceConfig => {
@@ -52,12 +52,11 @@ const fetchConfigValues = async ({
   configKeys,
 }: {
   signal?: AbortSignal
-  wallet: CurrentWallet
+  wallet: MinimalWalletContext
   configKeys: ConfigKey[]
 }) => {
-  const { name: walletName, token } = wallet
   const fetches: Promise<ServiceConfigUpdate>[] = configKeys.map((configKey) => {
-    return Api.postConfigGet({ walletName, token, signal }, { section: configKey.section, field: configKey.field })
+    return Api.postConfigGet({ ...wallet, signal }, { section: configKey.section, field: configKey.field })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
       .then((data: JmConfigData) => {
         return {
@@ -76,13 +75,12 @@ const pushConfigValues = async ({
   updates,
 }: {
   signal?: AbortSignal
-  wallet: CurrentWallet
+  wallet: MinimalWalletContext
   updates: ServiceConfigUpdate[]
 }) => {
-  const { name: walletName, token } = wallet
   const fetches: Promise<ServiceConfigUpdate>[] = updates.map((update) => {
     return Api.postConfigSet(
-      { walletName, token, signal },
+      { ...wallet, signal },
       {
         section: update.key.section,
         field: update.key.field,

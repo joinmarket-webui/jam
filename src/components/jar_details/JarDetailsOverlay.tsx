@@ -220,10 +220,8 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
       const abortCtrl = new AbortController()
 
-      const { name: walletName, token } = props.wallet
-
       const freezeCalls = utxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
-        Api.postFreeze({ walletName, token, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: freeze }).then(
+        Api.postFreeze({ ...props.wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: freeze }).then(
           (res) => {
             if (!res.ok) {
               return Api.Helper.throwError(

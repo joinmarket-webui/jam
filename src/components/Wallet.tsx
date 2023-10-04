@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Formik, FormikErrors } from 'formik'
 import * as rb from 'react-bootstrap'
@@ -8,18 +8,19 @@ import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import Sprite from './Sprite'
 import { routes } from '../constants/routes'
 import styles from './Wallet.module.css'
+import { WalletFileName } from '../libs/JmWalletApi'
 
 interface WalletLockFormProps {
-  walletName: string
-  lockWallet: (walletName: string, options: { confirmed: boolean }) => Promise<void>
+  walletFileName: WalletFileName
+  lockWallet: (walletFileName: WalletFileName, options: { confirmed: boolean }) => Promise<void>
 }
 
-const WalletLockForm = ({ walletName, lockWallet }: WalletLockFormProps) => {
+const WalletLockForm = ({ walletFileName, lockWallet }: WalletLockFormProps) => {
   const { t } = useTranslation()
 
   const onSubmit = useCallback(async () => {
-    await lockWallet(walletName, { confirmed: false })
-  }, [walletName, lockWallet])
+    await lockWallet(walletFileName, { confirmed: false })
+  }, [walletFileName, lockWallet])
 
   return (
     <Formik initialValues={{}} validate={() => ({})} onSubmit={onSubmit}>
@@ -57,8 +58,8 @@ const WalletLockForm = ({ walletName, lockWallet }: WalletLockFormProps) => {
 }
 
 interface WalletUnlockFormProps {
-  walletName: string
-  unlockWallet: (walletName: string, password: string) => Promise<void>
+  walletFileName: WalletFileName
+  unlockWallet: (walletFileName: WalletFileName, password: string) => Promise<void>
 }
 
 type WalletUnlockFormValues = {
@@ -69,7 +70,7 @@ const walletUnlockFormInitialValues: WalletUnlockFormValues = {
   password: '',
 }
 
-const WalletUnlockForm = ({ walletName, unlockWallet }: WalletUnlockFormProps) => {
+const WalletUnlockForm = ({ walletFileName, unlockWallet }: WalletUnlockFormProps) => {
   const { t } = useTranslation()
 
   const validate = (values: WalletUnlockFormValues) => {
@@ -83,9 +84,9 @@ const WalletUnlockForm = ({ walletName, unlockWallet }: WalletUnlockFormProps) =
   const onSubmit = useCallback(
     async (values) => {
       const { password } = values
-      await unlockWallet(walletName, password)
+      await unlockWallet(walletFileName, password)
     },
-    [walletName, unlockWallet],
+    [walletFileName, unlockWallet],
   )
 
   return (
@@ -142,9 +143,9 @@ const WalletUnlockForm = ({ walletName, unlockWallet }: WalletUnlockFormProps) =
 }
 
 export interface WalletProps {
-  name: string
-  lockWallet?: (walletName: string, options: { confirmed: boolean }) => Promise<void>
-  unlockWallet?: (walletName: string, password: string) => Promise<void>
+  walletFileName: WalletFileName
+  lockWallet?: (walletFileName: WalletFileName, options: { confirmed: boolean }) => Promise<void>
+  unlockWallet?: (walletFileName: WalletFileName, password: string) => Promise<void>
   isActive?: boolean
   makerRunning?: boolean
   coinjoinInProgress?: boolean
@@ -152,7 +153,7 @@ export interface WalletProps {
 }
 
 export default function Wallet({
-  name,
+  walletFileName,
   lockWallet,
   unlockWallet,
   isActive,
@@ -161,6 +162,8 @@ export default function Wallet({
   ...props
 }: WalletProps) {
   const { t } = useTranslation()
+
+  const displayName = useMemo(() => walletDisplayName(walletFileName), [walletFileName])
 
   return (
     <>
@@ -173,16 +176,16 @@ export default function Wallet({
                   <span style={{ position: 'relative' }}>
                     {lockWallet ? (
                       <Link className="wallet-name" to={routes.wallet}>
-                        {walletDisplayName(name)}
+                        {displayName}
                       </Link>
                     ) : (
-                      <>{walletDisplayName(name)}</>
+                      <>{displayName}</>
                     )}
                     {makerRunning && <TabActivityIndicator isOn={true} />}
                     {coinjoinInProgress && <JoiningIndicator isOn={true} className="text-success" />}
                   </span>
                 ) : (
-                  <>{walletDisplayName(name)}</>
+                  <>{displayName}</>
                 )}
               </rb.Card.Title>
 
@@ -194,10 +197,10 @@ export default function Wallet({
             </div>
 
             {lockWallet ? (
-              <WalletLockForm walletName={name} lockWallet={lockWallet} />
+              <WalletLockForm walletFileName={walletFileName} lockWallet={lockWallet} />
             ) : (
               <div className={`w-100 mt-3 mt-md-0 ${styles.walletPasswordInput}`}>
-                {unlockWallet && <WalletUnlockForm walletName={name} unlockWallet={unlockWallet} />}
+                {unlockWallet && <WalletUnlockForm walletFileName={walletFileName} unlockWallet={unlockWallet} />}
               </div>
             )}
           </div>

@@ -8,7 +8,7 @@ import WalletCreationConfirmation from './WalletCreationConfirmation'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import WalletCreationForm from './WalletCreationForm'
 import MnemonicPhraseInput from './MnemonicPhraseInput'
-import { walletDisplayName } from '../utils'
+import { walletDisplayName, walletDisplayNameToFileName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
@@ -96,7 +96,7 @@ export default function CreateWallet({ parentRoute, startWallet }) {
       setAlert(null)
 
       try {
-        const res = await Api.postWalletCreate({}, { walletname: walletName, password })
+        const res = await Api.postWalletCreate({}, { walletname: walletDisplayNameToFileName(walletName), password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
         const { seedphrase, walletname: createdWalletFileName } = body
@@ -127,7 +127,7 @@ export default function CreateWallet({ parentRoute, startWallet }) {
     () => createdWallet?.walletFileName && createdWallet?.seedphrase && createdWallet?.password,
     [createdWallet],
   )
-  const canCreate = useMemo(() => !isCreated && !serviceInfo?.walletName, [isCreated, serviceInfo])
+  const canCreate = useMemo(() => !isCreated && !serviceInfo?.walletFileName, [isCreated, serviceInfo])
   const [showBackupConfirmation, setShowBackupConfirmation] = useState(false)
 
   return (
@@ -145,8 +145,8 @@ export default function CreateWallet({ parentRoute, startWallet }) {
       {!canCreate && !isCreated ? (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-            Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletName) }}</strong> is active. You need
-            to lock it first.
+            Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletFileName) }}</strong> is active. You
+            need to lock it first.
             <Link to={routes.walletList} className="alert-link">
               Go back
             </Link>

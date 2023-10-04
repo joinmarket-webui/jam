@@ -18,9 +18,9 @@ function arrayEquals(a, b) {
   return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
 }
 
-function sortWallets(wallets, activeWalletName = null) {
-  if (activeWalletName && wallets.indexOf(activeWalletName) >= 0) {
-    return [activeWalletName, ...sortWallets(wallets.filter((a) => a !== activeWalletName))]
+function sortWallets(wallets, activeWalletFileName = null) {
+  if (activeWalletFileName && wallets.indexOf(activeWalletFileName) >= 0) {
+    return [activeWalletFileName, ...sortWallets(wallets.filter((a) => a !== activeWalletFileName))]
   } else {
     return [...wallets].sort((a, b) => a.localeCompare(b))
   }
@@ -33,8 +33,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   const reloadServiceInfo = useReloadServiceInfo()
   const [walletList, setWalletList] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [unlockingWalletName, setUnlockWalletName] = useState(undefined)
-  const isUnlocking = useMemo(() => unlockingWalletName !== undefined, [unlockingWalletName])
+  const [unlockingWalletFileName, setUnlockWalletFileName] = useState(undefined)
+  const isUnlocking = useMemo(() => unlockingWalletFileName !== undefined, [unlockingWalletFileName])
   const [alert, setAlert] = useState(null)
   const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
 
@@ -42,55 +42,55 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
   const makerRunning = useMemo(() => serviceInfo && serviceInfo.makerRunning, [serviceInfo])
 
   const unlockWallet = useCallback(
-    async (walletName, password) => {
+    async (walletFileName, password) => {
       if (currentWallet) {
         setAlert({
           variant: 'warning',
           dismissible: false,
           message:
-            currentWallet.name === walletName
+            currentWallet.walletFileName === walletFileName
               ? // unlocking same wallet
-                t('wallets.wallet_preview.alert_wallet_already_unlocked', { walletName: walletDisplayName(walletName) })
+                t('wallets.wallet_preview.alert_wallet_already_unlocked', { walletName: currentWallet.displayName })
               : // unlocking another wallet while one is already unlocked
-                t('wallets.wallet_preview.alert_other_wallet_unlocked', { walletName: walletDisplayName(walletName) }),
+                t('wallets.wallet_preview.alert_other_wallet_unlocked', { walletName: currentWallet.displayName }),
         })
         return
       }
 
       setAlert(null)
-      setUnlockWalletName(walletName)
+      setUnlockWalletFileName(walletFileName)
       try {
-        const res = await Api.postWalletUnlock({ walletName }, { password })
+        const res = await Api.postWalletUnlock({ walletFileName }, { password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
-        setUnlockWalletName(undefined)
+        setUnlockWalletFileName(undefined)
 
         const auth = Api.Helper.parseAuthProps(body)
         startWallet(body.walletname, auth)
         navigate(routes.wallet)
       } catch (e) {
-        const message = e.message.replace('Wallet', walletName)
+        const message = e.message.replace('Wallet', walletFileName)
         setAlert({ variant: 'danger', dismissible: false, message })
-        setUnlockWalletName(undefined)
+        setUnlockWalletFileName(undefined)
       }
     },
     [currentWallet, setAlert, startWallet, t, navigate],
   )
 
   const lockWallet = useCallback(
-    async (lockableWalletName, { confirmed = false }) => {
-      if (!currentWallet || currentWallet.name !== lockableWalletName) {
+    async (lockableWalletFileName, { confirmed = false }) => {
+      if (!currentWallet || currentWallet.walletFileName !== lockableWalletFileName) {
         setAlert({
           variant: 'warning',
           dismissible: false,
           message: currentWallet
             ? // locking another wallet while active one is still unlocked
               t('wallets.wallet_preview.alert_other_wallet_unlocked', {
-                walletName: walletDisplayName(currentWallet.name),
+                walletName: currentWallet.displayName,
               })
             : // locking without active wallet
               t('wallets.wallet_preview.alert_wallet_already_locked', {
-                walletName: walletDisplayName(lockableWalletName),
+                walletName: walletDisplayName(lockableWalletFileName),
               }),
         })
         return
@@ -105,9 +105,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
       setAlert(null)
 
       try {
-        const { name: walletName, token } = currentWallet
-
-        const res = await Api.getWalletLock({ walletName, token })
+        const res = await Api.getWalletLock(currentWallet)
 
         // On status OK or UNAUTHORIZED, stop the wallet and clear all local
         // information. The token might have become invalid or another one might have been
@@ -118,17 +116,17 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         }
 
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
-        const { walletname: lockedWalletName, already_locked } = body
+        const { walletname: lockedWalletFileName, already_locked } = body
 
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           dismissible: false,
           message: already_locked
             ? t('wallets.wallet_preview.alert_wallet_already_locked', {
-                walletName: walletDisplayName(lockedWalletName),
+                walletName: walletDisplayName(lockedWalletFileName),
               })
             : t('wallets.wallet_preview.alert_wallet_locked_successfully', {
-                walletName: walletDisplayName(lockedWalletName),
+                walletName: walletDisplayName(lockedWalletFileName),
               }),
         })
       } catch (e) {
@@ -148,12 +146,12 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
     if (!currentWallet) return
 
     setShowLockConfirmModal(false)
-    await lockWallet(currentWallet.name, { confirmed: true })
+    await lockWallet(currentWallet.walletFileName, { confirmed: true })
   }, [currentWallet, lockWallet])
 
   useEffect(() => {
     if (walletList && serviceInfo) {
-      const sortedWalletList = sortWallets(walletList, serviceInfo.walletName)
+      const sortedWalletList = sortWallets(walletList, serviceInfo.walletFileName)
       if (!arrayEquals(walletList, sortedWalletList)) {
         setWalletList(sortedWalletList)
       }
@@ -168,7 +166,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
     const loadingWallets = Api.getWalletAll({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
-      .then((data) => sortWallets(data.wallets || [], currentWallet?.name))
+      .then((data) => sortWallets(data.wallets || [], currentWallet?.walletFileName))
       .then((sortedWalletList) => {
         if (abortCtrl.signal.aborted) return
 
@@ -177,7 +175,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
         if (currentWallet && sortedWalletList.length > 1) {
           setAlert({
             variant: 'info',
-            message: t('wallets.alert_wallet_open', { currentWalletName: walletDisplayName(currentWallet.name) }),
+            message: t('wallets.alert_wallet_open', { currentWalletName: currentWallet.displayName }),
             dismissible: false,
           })
         }
@@ -208,19 +206,20 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
             <span>{t('wallets.text_loading')}</span>
           </div>
         ) : (
-          walletList?.map((wallet, index) => {
-            const noneActive = !serviceInfo?.walletName
-            const isActive = serviceInfo?.walletName === wallet
-            const hasToken = currentWallet && currentWallet.token && currentWallet.name === serviceInfo?.walletName
+          walletList?.map((walletFileName, index) => {
+            const noneActive = !serviceInfo?.walletFileName
+            const isActive = serviceInfo?.walletFileName === walletFileName
+            const hasToken =
+              currentWallet && currentWallet.token && currentWallet.walletFileName === serviceInfo?.walletFileName
 
             const showLockOptions = isActive && hasToken
             const showUnlockOptions =
-              (!isUnlocking || unlockingWalletName === wallet) &&
+              (!isUnlocking || unlockingWalletFileName === walletFileName) &&
               (noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress))
             return (
               <Wallet
-                key={wallet}
-                name={wallet}
+                key={walletFileName}
+                walletFileName={walletFileName}
                 lockWallet={showLockOptions ? lockWallet : undefined}
                 unlockWallet={showUnlockOptions ? unlockWallet : undefined}
                 isActive={isActive}

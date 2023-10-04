@@ -5,9 +5,10 @@ import { Formik } from 'formik'
 import Seedphrase from './Seedphrase'
 import ToggleSwitch from './ToggleSwitch'
 import { walletDisplayName } from '../utils'
+import { WalletFileName } from '../libs/JmWalletApi'
 
 export type WalletInfo = {
-  walletFileName: string
+  walletFileName: WalletFileName
   password: string
   seedphrase: string
 }

@@ -9,7 +9,6 @@ import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
-import { walletDisplayName } from '../utils'
 import { routes } from '../constants/routes'
 import { AmountSats } from '../libs/JmWalletApi'
 
@@ -49,7 +48,7 @@ const WalletPreview = ({ wallet, rescanInProgress, totalBalance, unit, showBalan
         />
       </div>
       <div className="d-flex flex-column ms-2 fs-6">
-        {wallet && <div className="fw-normal">{walletDisplayName(wallet.name)}</div>}
+        {wallet && <div className="fw-normal">{wallet.displayName}</div>}
         <div className="text-body">
           {rescanInProgress ? (
             <div className="cursor-wait">{t('navbar.text_rescan_in_progress')}</div>

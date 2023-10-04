@@ -13,7 +13,7 @@
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
 type ApiToken = string
-type WalletName = `${string}.jmdat`
+type WalletFileName = `${string}.jmdat`
 
 type Mixdepth = number
 type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
@@ -40,8 +40,11 @@ type RefreshTokenAuthContext = {
 
 type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
 
-type WithWalletName = {
-  walletName: WalletName
+type WithWalletFileName = {
+  walletFileName: WalletFileName
+}
+type WithApiToken = {
+  token: ApiToken
 }
 type WithMixdepth = {
   mixdepth: Mixdepth
@@ -62,11 +65,8 @@ interface ApiRequestContext {
   signal?: AbortSignal
 }
 
-interface AuthApiRequestContext extends ApiRequestContext {
-  token: ApiToken
-}
-
-type WalletRequestContext = AuthApiRequestContext & WithWalletName
+type AuthApiRequestContext = ApiRequestContext & WithApiToken
+type WalletRequestContext = AuthApiRequestContext & WithWalletFileName
 
 interface ApiError {
   message: string
@@ -80,13 +80,13 @@ interface TokenRequest {
 }
 
 interface CreateWalletRequest {
-  walletname: WalletName | string
+  walletname: WalletFileName | string
   password: string
   wallettype?: WalletType
 }
 
 interface RecoverWalletRequest {
-  walletname: WalletName | string
+  walletname: WalletFileName | string
   password: string
   seedphrase: string
   wallettype?: WalletType
@@ -268,15 +268,20 @@ const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenReq
   })
 }
 
-const getAddressNew = async ({ token, signal, walletName, mixdepth }: WalletRequestContext & WithMixdepth) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/address/new/${mixdepth}`, {
+const getAddressNew = async ({ token, signal, walletFileName, mixdepth }: WalletRequestContext & WithMixdepth) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/address/new/${mixdepth}`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
-const getAddressTimelockNew = async ({ token, signal, walletName, lockdate }: WalletRequestContext & WithLockdate) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/address/timelock/new/${lockdate}`, {
+const getAddressTimelockNew = async ({
+  token,
+  signal,
+  walletFileName,
+  lockdate,
+}: WalletRequestContext & WithLockdate) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/address/timelock/new/${lockdate}`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
@@ -308,15 +313,15 @@ const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWall
   })
 }
 
-const getWalletDisplay = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/display`, {
+const getWalletDisplay = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/display`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
-const getWalletSeed = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/getseed`, {
+const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/getseed`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
@@ -328,33 +333,33 @@ const getWalletSeed = async ({ token, signal, walletName }: WalletRequestContext
  *
  * Note: Performs a non-idempotent GET request.
  */
-const getWalletLock = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/lock`, {
+const getWalletLock = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/lock`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
 const postWalletUnlock = async (
-  { signal, walletName }: ApiRequestContext & WithWalletName,
+  { signal, walletFileName }: ApiRequestContext & WithWalletFileName,
   { password }: WalletUnlockRequest,
 ) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/unlock`, {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/unlock`, {
     method: 'POST',
     body: JSON.stringify({ password }),
     signal,
   })
 }
 
-const getWalletUtxos = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/utxos`, {
+const getWalletUtxos = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/utxos`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
-const postMakerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartMakerRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/maker/start`, {
+const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestContext, req: StartMakerRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/maker/start`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({
@@ -374,15 +379,15 @@ const postMakerStart = async ({ token, signal, walletName }: WalletRequestContex
  *
  * Note: Performs a non-idempotent GET request.
  */
-const getMakerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/maker/stop`, {
+const getMakerStop = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/maker/stop`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
-const postDirectSend = async ({ token, signal, walletName }: WalletRequestContext, req: DirectSendRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/direct-send`, {
+const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestContext, req: DirectSendRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
@@ -390,8 +395,8 @@ const postDirectSend = async ({ token, signal, walletName }: WalletRequestContex
   })
 }
 
-const postCoinjoin = async ({ token, signal, walletName }: WalletRequestContext, req: DoCoinjoinRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/coinjoin`, {
+const postCoinjoin = async ({ token, signal, walletFileName }: WalletRequestContext, req: DoCoinjoinRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/coinjoin`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
@@ -428,10 +433,10 @@ const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
 }
 
 const postFreeze = async (
-  { token, signal, walletName }: WalletRequestContext,
+  { token, signal, walletFileName }: WalletRequestContext,
   { utxo, freeze = true }: FreezeRequest,
 ) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/freeze`, {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/freeze`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({
@@ -442,8 +447,11 @@ const postFreeze = async (
   })
 }
 
-const postSchedulerStart = async ({ token, signal, walletName }: WalletRequestContext, req: StartSchedulerRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/schedule`, {
+const postSchedulerStart = async (
+  { token, signal, walletFileName }: WalletRequestContext,
+  req: StartSchedulerRequest,
+) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/schedule`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({ ...req }),
@@ -451,15 +459,15 @@ const postSchedulerStart = async ({ token, signal, walletName }: WalletRequestCo
   })
 }
 
-const getTakerStop = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/stop`, {
+const getTakerStop = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/stop`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 }
 
-const getSchedule = async ({ token, signal, walletName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/taker/schedule`, {
+const getSchedule = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/schedule`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
@@ -468,8 +476,8 @@ const getSchedule = async ({ token, signal, walletName }: WalletRequestContext) 
 /**
  * Change a config variable (for the duration of this backend daemon process instance).
  */
-const postConfigSet = async ({ token, signal, walletName }: WalletRequestContext, req: ConfigSetRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/configset`, {
+const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigSetRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/configset`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
@@ -482,8 +490,8 @@ const postConfigSet = async ({ token, signal, walletName }: WalletRequestContext
  *
  * @returns an object with property `configvalue` as string
  */
-const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext, req: ConfigGetRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/configget`, {
+const postConfigGet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigGetRequest) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/configget`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
@@ -497,10 +505,10 @@ const postConfigGet = async ({ token, signal, walletName }: WalletRequestContext
 const getRescanBlockchain = async ({
   token,
   signal,
-  walletName,
+  walletFileName,
   blockheight,
 }: WalletRequestContext & WithBlockheight) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletName)}/rescanblockchain/${blockheight}`, {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/rescanblockchain/${blockheight}`, {
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
@@ -547,7 +555,9 @@ export {
   StartSchedulerRequest,
   WalletRequestContext,
   ApiToken,
-  WalletName,
+  WalletFileName,
+  WithWalletFileName,
+  WithApiToken,
   Lockdate,
   TxId,
   UtxoId,
