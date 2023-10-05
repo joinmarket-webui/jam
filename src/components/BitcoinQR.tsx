@@ -6,17 +6,17 @@ import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
 
 interface BitcoinQRProps {
   address: BitcoinAddress
-  sats: AmountSats
-  errorCorrectionLevel: QRCode.QRCodeErrorCorrectionLevel
+  amount?: AmountSats
+  errorCorrectionLevel?: QRCode.QRCodeErrorCorrectionLevel
   width?: number
 }
 
-export const BitcoinQR = ({ address, sats, errorCorrectionLevel = 'H', width = 260 }: BitcoinQRProps) => {
+export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width = 260 }: BitcoinQRProps) => {
   const [data, setData] = useState<string>()
   const [image, setImage] = useState<string>()
 
   useEffect(() => {
-    const btc = satsToBtc(String(sats)) || 0
+    const btc = amount ? satsToBtc(String(amount)) || 0 : 0
     const uri = `bitcoin:${address}${btc > 0 ? `?amount=${btc.toFixed(8)}` : ''}`
 
     QRCode.toDataURL(uri, {
@@ -31,7 +31,7 @@ export const BitcoinQR = ({ address, sats, errorCorrectionLevel = 'H', width = 2
         setImage(undefined)
         setData(uri)
       })
-  }, [address, sats, errorCorrectionLevel, width])
+  }, [address, amount, errorCorrectionLevel, width])
 
   return (
     <div>
