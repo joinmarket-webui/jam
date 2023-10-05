@@ -122,7 +122,7 @@ type AddressSummary = {
   [key: Api.BitcoinAddress]: AddressInfo
 }
 
-type FidenlityBondSummary = {
+type FidelityBondSummary = {
   fbOutputs: Utxos
 }
 
@@ -131,7 +131,7 @@ export type UtxosByJar = { [key: JarIndex]: Utxos }
 export interface WalletInfo {
   balanceSummary: WalletBalanceSummary
   addressSummary: AddressSummary
-  fidelityBondSummary: FidenlityBondSummary
+  fidelityBondSummary: FidelityBondSummary
   utxosByJar: UtxosByJar
   data: CombinedRawWalletData
 }
@@ -158,7 +158,7 @@ const toAddressSummary = (res: WalletDisplayResponse): AddressSummary => {
     }, {} as AddressSummary)
 }
 
-const toFidelityBondSummary = (res: UtxosResponse): FidenlityBondSummary => {
+const toFidelityBondSummary = (res: UtxosResponse): FidelityBondSummary => {
   const fbOutputs = res.utxos
     .filter((utxo) => fb.utxo.isFidelityBond(utxo))
     .sort((a, b) => {

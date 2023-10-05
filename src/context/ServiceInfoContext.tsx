@@ -43,9 +43,9 @@ type ScheduleEntry = [
 ]
 type Schedule = ScheduleEntry[]
 
-interface Offer {
+export interface Offer {
   oid: number
-  ordertype: string
+  ordertype: Api.OfferType
   minsize: Api.AmountSats
   maxsize: Api.AmountSats
   txfee: Api.AmountSats

@@ -99,12 +99,12 @@ interface WalletUnlockRequest {
 // only support starting the maker with native segwit offers
 type RelOfferType = 'sw0reloffer'
 type AbsOfferType = 'sw0absoffer'
-type OrderType = RelOfferType | AbsOfferType
+type OfferType = RelOfferType | AbsOfferType | string
 
 interface StartMakerRequest {
   cjfee_a: AmountSats
   cjfee_r: number
-  ordertype: OrderType
+  ordertype: OfferType
   minsize: AmountSats
 }
 
@@ -553,6 +553,7 @@ export {
   JmApiError,
   ApiAuthContext,
   StartSchedulerRequest,
+  StartMakerRequest,
   WalletRequestContext,
   ApiToken,
   WalletFileName,
@@ -563,5 +564,6 @@ export {
   UtxoId,
   Mixdepth,
   AmountSats,
+  OfferType,
   BitcoinAddress,
 }
