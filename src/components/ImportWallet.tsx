@@ -525,7 +525,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
       } catch (e: any) {
         if (signal.aborted) return
         const message = t('import_wallet.error_importing_failed', {
-          reason: e.message || 'Unknown reason',
+          reason: e.message || t('global.errors.reason_unknown'),
         })
         setAlert({ variant: 'danger', message })
       }

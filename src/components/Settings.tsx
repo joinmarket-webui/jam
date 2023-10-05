@@ -71,10 +71,12 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
         }
       } catch (e: any) {
         setLockingWallet(false)
-        setAlert({ variant: 'danger', dismissible: false, message: e.message })
+
+        const message = e.message || t('global.errors.reason_unknown')
+        setAlert({ variant: 'danger', dismissible: false, message })
       }
     },
-    [wallet, stopWallet, navigate, serviceInfo],
+    [wallet, stopWallet, navigate, serviceInfo, t],
   )
 
   useEffect(() => {

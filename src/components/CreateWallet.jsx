@@ -105,7 +105,7 @@ export default function CreateWallet({ parentRoute, startWallet }) {
         setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, auth })
       } catch (e) {
         const message = t('create_wallet.error_creating_failed', {
-          reason: e.message || 'Unknown reason',
+          reason: e.message || t('global.errors.reason_unknown'),
         })
         setAlert({ variant: 'danger', message })
       }

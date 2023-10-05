@@ -407,7 +407,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
         .catch((e) => {
           if (signal.aborted) return
           const message = t('orderbook.error_loading_orderbook_failed', {
-            reason: e.message || 'Unknown reason',
+            reason: e.message || t('global.errors.reason_unknown'),
           })
           setAlert({ variant: 'danger', message })
         })

@@ -356,7 +356,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
         .catch((e) => {
           if (signal.aborted) return
           const message = t('earn.error_loading_report_failed', {
-            reason: e.message || 'Unknown reason',
+            reason: e.message || t('global.errors.reason_unknown'),
           })
           setAlert({ variant: 'danger', message })
         })

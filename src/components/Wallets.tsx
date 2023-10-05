@@ -140,7 +140,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
               }),
         })
       } catch (e: any) {
-        setAlert({ variant: 'danger', dismissible: false, message: e.message })
+        const message = e.message || t('global.errors.reason_unknown')
+        setAlert({ variant: 'danger', dismissible: false, message })
       }
     },
     [currentWallet, coinjoinInProgress, makerRunning, setAlert, stopWallet, t],

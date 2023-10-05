@@ -404,11 +404,11 @@ export default function FeeConfigModal({
       setIsSubmitting(false)
       onSuccess && onSuccess()
       onHide()
-    } catch (err) {
+    } catch (err: any) {
       setIsSubmitting(false)
       setSaveErrorMessage((_) =>
         t('settings.fees.error_saving_fee_config_failed', {
-          reason: err instanceof Error ? err.message : 'Unknown',
+          reason: err.message || t('global.errors.reason_unknown'),
         }),
       )
     }
