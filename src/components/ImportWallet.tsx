@@ -13,7 +13,7 @@ import Accordion from './Accordion'
 import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
 import MnemonicPhraseInput from './MnemonicPhraseInput'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
-import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
+import { CreatedWalletInfo, WalletCreationInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes, Route } from '../constants/routes'
 import {
@@ -81,6 +81,10 @@ interface ImportWalletDetailsFormProps {
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
   onCancel: () => void
   onSubmit: (values: ImportWalletDetailsFormValues) => Promise<void>
+}
+
+type RecoveredWalletWithAuth = Pick<CreatedWalletInfo, 'walletFileName'> & {
+  auth: Api.ApiAuthContext
 }
 
 const ImportWalletDetailsForm = ({
@@ -294,7 +298,7 @@ const ImportWalletConfirmation = ({
 }: ImportWalletConfirmationProps) => {
   const { t, i18n } = useTranslation()
 
-  const walletInfo = useMemo<WalletInfo>(
+  const walletInfo = useMemo<CreatedWalletInfo>(
     () => ({
       walletFileName: walletDisplayNameToFileName(walletDetails.walletName),
       password: walletDetails.password,
@@ -315,7 +319,7 @@ const ImportWalletConfirmation = ({
     >
       {({ handleSubmit, values, isSubmitting, submitCount }) => (
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-          <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
+          <WalletCreationInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
 
           <Accordion
             title={t('import_wallet.import_details.import_options')}
@@ -388,10 +392,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   const [alert, setAlert] = useState<SimpleAlert>()
   const [createWalletFormValues, setCreateWalletFormValues] = useState<CreateWalletFormValues>()
   const [importDetailsFormValues, setImportDetailsFormValues] = useState<ImportWalletDetailsFormValues>()
-  const [recoveredWallet, setRecoveredWallet] = useState<{
-    walletFileName: Api.WalletFileName
-    auth: Api.ApiAuthContext
-  }>()
+  const [recoveredWallet, setRecoveredWallet] = useState<RecoveredWalletWithAuth>()
 
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.auth, [recoveredWallet])
   const canRecover = useMemo(

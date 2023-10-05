@@ -7,18 +7,18 @@ import ToggleSwitch from './ToggleSwitch'
 import { walletDisplayName } from '../utils'
 import { WalletFileName } from '../libs/JmWalletApi'
 
-export type WalletInfo = {
+export type CreatedWalletInfo = {
   walletFileName: WalletFileName
   password: string
   seedphrase: string
 }
 
 interface WalletCreationInfoSummaryProps {
-  walletInfo: WalletInfo
+  walletInfo: CreatedWalletInfo
   revealSensitiveInfo: boolean
 }
 
-export const WalletInfoSummary = ({ walletInfo, revealSensitiveInfo }: WalletCreationInfoSummaryProps) => {
+export const WalletCreationInfoSummary = ({ walletInfo, revealSensitiveInfo }: WalletCreationInfoSummaryProps) => {
   const { t } = useTranslation()
   return (
     <>
@@ -40,7 +40,7 @@ export const WalletInfoSummary = ({ walletInfo, revealSensitiveInfo }: WalletCre
 }
 
 interface WalletCreationConfirmationProps {
-  wallet: WalletInfo
+  wallet: CreatedWalletInfo
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
   onSubmit: () => Promise<void>
 }
@@ -62,7 +62,7 @@ const WalletCreationConfirmation = ({ wallet, submitButtonText, onSubmit }: Wall
     >
       {({ handleSubmit, isSubmitting }) => (
         <rb.Form onSubmit={handleSubmit} noValidate>
-          <WalletInfoSummary walletInfo={wallet} revealSensitiveInfo={revealSensitiveInfo} />
+          <WalletCreationInfoSummary walletInfo={wallet} revealSensitiveInfo={revealSensitiveInfo} />
           <div className="mb-2">
             <ToggleSwitch
               label={t('create_wallet.confirmation_toggle_reveal_info')}
