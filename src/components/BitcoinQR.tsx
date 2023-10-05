@@ -2,13 +2,21 @@ import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 
 import { satsToBtc } from '../utils'
+import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
 
-export const BitcoinQR = ({ address, sats, errorCorrectionLevel = 'H', width = 260 }) => {
-  const [data, setData] = useState(null)
-  const [image, setImage] = useState(null)
+interface BitcoinQRProps {
+  address: BitcoinAddress
+  sats: AmountSats
+  errorCorrectionLevel: QRCode.QRCodeErrorCorrectionLevel
+  width?: number
+}
+
+export const BitcoinQR = ({ address, sats, errorCorrectionLevel = 'H', width = 260 }: BitcoinQRProps) => {
+  const [data, setData] = useState<string>()
+  const [image, setImage] = useState<string>()
 
   useEffect(() => {
-    const btc = satsToBtc(parseInt(sats, 10)) || 0
+    const btc = satsToBtc(String(sats)) || 0
     const uri = `bitcoin:${address}${btc > 0 ? `?amount=${btc.toFixed(8)}` : ''}`
 
     QRCode.toDataURL(uri, {
@@ -20,7 +28,7 @@ export const BitcoinQR = ({ address, sats, errorCorrectionLevel = 'H', width = 2
         setData(uri)
       })
       .catch(() => {
-        setImage(null)
+        setImage(undefined)
         setData(uri)
       })
   }, [address, sats, errorCorrectionLevel, width])
