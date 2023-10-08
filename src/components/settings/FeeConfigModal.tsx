@@ -278,7 +278,7 @@ const FeeConfigForm = forwardRef(
                           : '',
                       })}
                     </rb.Form.Label>
-                    <rb.Form.Text>{t('settings.fees.description_tx_fees_factor')}</rb.Form.Text>
+                    <rb.Form.Text>{t('settings.fees.description_tx_fees_factor_^0.9.10')}</rb.Form.Text>
                     <rb.InputGroup hasValidation>
                       <rb.InputGroup.Text id="txFeesFactor-addon1" className={styles.inputGroupText}>
                         %
