@@ -340,7 +340,10 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
           currentWallet.updateToken(auth.token)
           console.debug('Successfully renewed auth token.')
         })
-        .catch((err) => console.error(err))
+        .catch((err) => {
+          if (abortCtrl.signal.aborted) return
+          console.error(err)
+        })
     }
 
     const interval = setInterval(renewToken, API_AUTH_TOKEN_RENEW_INTERVAL)

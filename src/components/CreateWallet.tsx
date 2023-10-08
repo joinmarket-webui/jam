@@ -116,7 +116,7 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
 
         const { seedphrase, walletname: createdWalletFileName } = body
         const auth = Api.Helper.parseAuthProps(body)
-        
+
         setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, auth })
       } catch (e: any) {
         const message = t('create_wallet.error_creating_failed', {

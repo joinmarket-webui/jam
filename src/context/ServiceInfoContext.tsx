@@ -225,7 +225,10 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     const abortCtrl = new AbortController()
 
     const refreshSession = () => {
-      reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => console.error(err))
+      reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
+        if (abortCtrl.signal.aborted) return
+        console.error(err)
+      })
     }
 
     refreshSession()
