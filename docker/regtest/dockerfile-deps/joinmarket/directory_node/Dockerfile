@@ -1,9 +1,9 @@
-FROM debian:bullseye-20220801-slim
+FROM python:3.11-slim-bookworm
 
 RUN apt-get update \
     && apt-get install -qq --no-install-recommends gnupg tini procps vim git iproute2 supervisor \
        # joinmarket dependencies
-       curl build-essential automake pkg-config libtool python3-dev python3-venv python3-pip python3-setuptools libltdl-dev \
+       curl build-essential automake pkg-config libtool libltdl-dev \
        tor \
        && rm -rf /var/lib/apt/lists/*
 
@@ -14,7 +14,7 @@ ENV REPO_REF master
 WORKDIR /src
 RUN git clone "$REPO" . --depth=10 --branch "$REPO_BRANCH" && git checkout "$REPO_REF"
 
-RUN ./install.sh --docker-install --disable-secp-check --without-qt
+RUN ./install.sh --docker-install --disable-os-deps-check --disable-secp-check --without-qt
 
 ENV DATADIR /root/.joinmarket
 ENV CONFIG ${DATADIR}/joinmarket.cfg
