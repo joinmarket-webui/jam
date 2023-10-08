@@ -4,17 +4,27 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
-import WalletCreationConfirmation from './WalletCreationConfirmation'
+import WalletCreationConfirmation, { CreatedWalletInfo } from './WalletCreationConfirmation'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
 import WalletCreationForm from './WalletCreationForm'
 import MnemonicPhraseInput from './MnemonicPhraseInput'
-import { walletDisplayName } from '../utils'
+import { walletDisplayName, walletDisplayNameToFileName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
 import * as Api from '../libs/JmWalletApi'
-import { routes } from '../constants/routes'
+import { Route, routes } from '../constants/routes'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 
-const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
+type CreatedWalletWithAuth = CreatedWalletInfo & {
+  auth: Api.ApiAuthContext
+}
+
+interface BackupConfirmationProps {
+  wallet: CreatedWalletInfo
+  onSuccess: () => void
+  onCancel: () => void
+}
+
+const BackupConfirmation = ({ wallet, onSuccess, onCancel }: BackupConfirmationProps) => {
   const { t } = useTranslation()
 
   const seedphrase = useMemo(() => wallet.seedphrase.split(' '), [wallet])
@@ -83,28 +93,34 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }) => {
   )
 }
 
-export default function CreateWallet({ parentRoute, startWallet }) {
+interface CreateWalletProps {
+  parentRoute: Route
+  startWallet: (name: Api.WalletFileName, auth: Api.ApiAuthContext) => void
+}
+
+export default function CreateWallet({ parentRoute, startWallet }: CreateWalletProps) {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
   const navigate = useNavigate()
 
-  const [alert, setAlert] = useState(null)
-  const [createdWallet, setCreatedWallet] = useState(null)
+  const [alert, setAlert] = useState<SimpleAlert>()
+  const [createdWallet, setCreatedWallet] = useState<CreatedWalletWithAuth>()
 
   const createWallet = useCallback(
     async ({ walletName, password }) => {
-      setAlert(null)
+      setAlert(undefined)
 
       try {
-        const res = await Api.postWalletCreate({}, { walletname: walletName, password })
+        const res = await Api.postWalletCreate({}, { walletname: walletDisplayNameToFileName(walletName), password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
         const { seedphrase, walletname: createdWalletFileName } = body
         const auth = Api.Helper.parseAuthProps(body)
+
         setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, auth })
-      } catch (e) {
+      } catch (e: any) {
         const message = t('create_wallet.error_creating_failed', {
-          reason: e.message || 'Unknown reason',
+          reason: e.message || t('global.errors.reason_unknown'),
         })
         setAlert({ variant: 'danger', message })
       }
@@ -113,8 +129,8 @@ export default function CreateWallet({ parentRoute, startWallet }) {
   )
 
   const walletConfirmed = useCallback(() => {
-    if (createdWallet?.walletFileName && createdWallet?.auth) {
-      setAlert(null)
+    if (createdWallet) {
+      setAlert(undefined)
       startWallet(createdWallet.walletFileName, createdWallet.auth)
       navigate(routes.wallet)
     } else {
@@ -122,16 +138,11 @@ export default function CreateWallet({ parentRoute, startWallet }) {
     }
   }, [createdWallet, startWallet, navigate, setAlert, t])
 
-  const isCreated = useMemo(
-    () => createdWallet?.walletFileName && createdWallet?.seedphrase && createdWallet?.password,
-    [createdWallet],
-  )
-  const canCreate = useMemo(() => !isCreated && !serviceInfo?.walletName, [isCreated, serviceInfo])
   const [showBackupConfirmation, setShowBackupConfirmation] = useState(false)
 
   return (
     <div className="create-wallet">
-      {isCreated ? (
+      {createdWallet ? (
         <PageTitle
           title={t('create_wallet.title_wallet_created')}
           subtitle={t('create_wallet.subtitle_wallet_created')}
@@ -141,11 +152,11 @@ export default function CreateWallet({ parentRoute, startWallet }) {
         <PageTitle title={t('create_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {!canCreate && !isCreated ? (
+      {serviceInfo?.walletFileName && !createdWallet ? (
         <rb.Alert variant="warning">
           <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-            Currently <strong>{{ walletName: walletDisplayName(serviceInfo?.walletName) }}</strong> is active. You need
-            to lock it first.
+            Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active. You
+            need to lock it first.
             <Link to={routes.walletList} className="alert-link">
               Go back
             </Link>
@@ -155,7 +166,7 @@ export default function CreateWallet({ parentRoute, startWallet }) {
       ) : (
         <>
           <PreventLeavingPageByMistake />
-          {canCreate && (
+          {!serviceInfo?.walletFileName && !createdWallet && (
             <WalletCreationForm
               onCancel={() => navigate(routes[parentRoute])}
               onSubmit={createWallet}
@@ -164,23 +175,20 @@ export default function CreateWallet({ parentRoute, startWallet }) {
               }
             />
           )}
-          {isCreated && (
-            <>
-              {!showBackupConfirmation ? (
-                <WalletCreationConfirmation
-                  wallet={createdWallet}
-                  submitButtonText={(_) => t('create_wallet.next_button')}
-                  onSubmit={() => setShowBackupConfirmation(true)}
-                />
-              ) : (
-                <BackupConfirmation
-                  wallet={createdWallet}
-                  onSuccess={walletConfirmed}
-                  onCancel={() => setShowBackupConfirmation(false)}
-                />
-              )}
-            </>
-          )}
+          {createdWallet &&
+            (!showBackupConfirmation ? (
+              <WalletCreationConfirmation
+                wallet={createdWallet}
+                submitButtonText={(_) => t('create_wallet.next_button')}
+                onSubmit={async () => setShowBackupConfirmation(true)}
+              />
+            ) : (
+              <BackupConfirmation
+                wallet={createdWallet}
+                onSuccess={walletConfirmed}
+                onCancel={() => setShowBackupConfirmation(false)}
+              />
+            ))}
         </>
       )}
     </div>

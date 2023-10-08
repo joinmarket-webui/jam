@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, FormEvent } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 import { useSettings } from '../context/SettingsContext'
 import { useServiceInfo } from '../context/ServiceInfoContext'
-import { useCurrentWalletInfo } from '../context/WalletContext'
+import { CurrentWallet, useCurrentWalletInfo } from '../context/WalletContext'
 import * as Api from '../libs/JmWalletApi'
 import { BitcoinQR } from './BitcoinQR'
 import PageTitle from './PageTitle'
@@ -15,20 +15,27 @@ import { SelectableJar, jarFillLevel } from './jars/Jar'
 import styles from './Receive.module.css'
 import Accordion from './Accordion'
 
-export default function Receive({ wallet }) {
+interface ReceiveProps {
+  wallet: CurrentWallet
+}
+
+export default function Receive({ wallet }: ReceiveProps) {
   const { t } = useTranslation()
   const location = useLocation()
   const settings = useSettings()
   const serviceInfo = useServiceInfo()
   const walletInfo = useCurrentWalletInfo()
-  const [validated, setValidated] = useState(false)
-  const [alert, setAlert] = useState()
+
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isLoading, setIsLoading] = useState(true)
+
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [selectedJarIndex, setSelectedJarIndex] = useState(parseInt(location.state?.account, 10) || 0)
+
   const [addressCount, setAddressCount] = useState(0)
-  const isFormEnabled = useMemo(() => serviceInfo && serviceInfo.rescanning !== true, [serviceInfo])
+  const isFormEnabled = useMemo(() => serviceInfo?.rescanning !== true, [serviceInfo])
+  const [validated, setValidated] = useState(false)
 
   const sortedAccountBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -44,12 +51,11 @@ export default function Receive({ wallet }) {
     }
 
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = wallet
 
     setAlert(undefined)
     setIsLoading(true)
 
-    Api.getAddressNew({ walletName, mixdepth: selectedJarIndex, token, signal: abortCtrl.signal })
+    Api.getAddressNew({ ...wallet, mixdepth: selectedJarIndex, signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
       .then((data) => setAddress(data.address))
       .catch((err) => {
@@ -62,7 +68,7 @@ export default function Receive({ wallet }) {
     return () => abortCtrl.abort()
   }, [isFormEnabled, wallet, selectedJarIndex, addressCount, t])
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const form = e.currentTarget
@@ -82,7 +88,7 @@ export default function Receive({ wallet }) {
       <div className={`mb-4 ${styles.cardContainer}`}>
         <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
           <div className={styles['qr-container']}>
-            {!isLoading && address && <BitcoinQR address={address} sats={amount} />}
+            {!isLoading && address && <BitcoinQR address={address} amount={parseInt(amount, 10) || 0} />}
             {(isLoading || !address) && (
               <rb.Placeholder as="div" animation="wave" className={styles['receive-placeholder-qr-container']}>
                 <rb.Placeholder className={styles['receive-placeholder-qr']} />
@@ -92,17 +98,18 @@ export default function Receive({ wallet }) {
           <rb.Card.Body
             className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0 d-flex flex-column align-items-center`}
           >
-            {address && (
-              <rb.Card.Text className={`${styles['address']} text-center slashed-zeroes`}>{address}</rb.Card.Text>
-            )}
-            {!address && (
+            {!address ? (
               <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
                 <rb.Placeholder xs={12} sm={10} md={8} className={styles['receive-placeholder']} />
               </rb.Placeholder>
+            ) : (
+              <rb.Card.Text className={`${styles['address']} text-center slashed-zeroes`}>{address}</rb.Card.Text>
             )}
+
             <div className="d-flex justify-content-center gap-3 w-75">
               <CopyButton
                 className="btn btn-outline-dark flex-1"
+                disabled={!address || isLoading}
                 value={address}
                 text={
                   <>
@@ -116,7 +123,6 @@ export default function Receive({ wallet }) {
                     {t('receive.text_copy_address_confirmed')}
                   </>
                 }
-                disabled={!address || isLoading}
               />
               {checkIsWebShareAPISupported() && <ShareButton value={address} className="flex-1" />}
             </div>

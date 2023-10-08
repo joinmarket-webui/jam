@@ -3,15 +3,16 @@ import { render, screen } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 
 import Settings from './Settings'
+import { CurrentWallet } from '../context/WalletContext'
 
-const dummyWalletName = 'dummy.jmdat'
+const dummyWalletFileName = 'dummy.jmdat'
 const dummyToken = 'dummyToken'
 
 describe('<Settings />', () => {
-  const setup = ({ wallet }) => {
+  const setup = ({ wallet }: { wallet: CurrentWallet }) => {
     render(
       <BrowserRouter>
-        <Settings wallet={wallet} />
+        <Settings wallet={wallet} stopWallet={() => ({})} />
       </BrowserRouter>,
     )
   }
@@ -20,7 +21,8 @@ describe('<Settings />', () => {
     await act(async () =>
       setup({
         wallet: {
-          name: dummyWalletName,
+          walletFileName: dummyWalletFileName,
+          displayName: dummyWalletFileName,
           token: dummyToken,
         },
       }),

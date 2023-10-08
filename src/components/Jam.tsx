@@ -294,7 +294,7 @@ export default function Jam({ wallet }: JamProps) {
     }
 
     const abortCtrl = new AbortController()
-    return Api.postSchedulerStart({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token }, body)
+    return Api.postSchedulerStart({ ...wallet, signal: abortCtrl.signal }, body)
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
       .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .catch((err) => {
@@ -313,7 +313,7 @@ export default function Jam({ wallet }: JamProps) {
     setIsWaitingSchedulerStop(true)
 
     const abortCtrl = new AbortController()
-    return Api.getTakerStop({ signal: abortCtrl.signal, walletName: wallet.name, token: wallet.token })
+    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal })
       .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
       .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .catch((err) => {

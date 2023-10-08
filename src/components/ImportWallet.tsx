@@ -13,15 +13,15 @@ import Accordion from './Accordion'
 import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
 import MnemonicPhraseInput from './MnemonicPhraseInput'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
-import { WalletInfo, WalletInfoSummary } from './WalletCreationConfirmation'
+import { CreatedWalletInfo, WalletCreationInfoSummary } from './WalletCreationConfirmation'
 import { isDevMode, isDebugFeatureEnabled } from '../constants/debugFeatures'
 import { routes, Route } from '../constants/routes'
 import {
   SEGWIT_ACTIVATION_BLOCK,
   DUMMY_MNEMONIC_PHRASE,
-  JM_WALLET_FILE_EXTENSION,
   walletDisplayName,
   isValidNumber,
+  walletDisplayNameToFileName,
 } from '../utils'
 import { JM_GAPLIMIT_DEFAULT, JM_GAPLIMIT_CONFIGKEY } from '../constants/config'
 
@@ -81,6 +81,10 @@ interface ImportWalletDetailsFormProps {
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
   onCancel: () => void
   onSubmit: (values: ImportWalletDetailsFormValues) => Promise<void>
+}
+
+type RecoveredWalletWithAuth = Pick<CreatedWalletInfo, 'walletFileName'> & {
+  auth: Api.ApiAuthContext
 }
 
 const ImportWalletDetailsForm = ({
@@ -294,9 +298,9 @@ const ImportWalletConfirmation = ({
 }: ImportWalletConfirmationProps) => {
   const { t, i18n } = useTranslation()
 
-  const walletInfo = useMemo<WalletInfo>(
+  const walletInfo = useMemo<CreatedWalletInfo>(
     () => ({
-      walletFileName: walletDetails.walletName + JM_WALLET_FILE_EXTENSION,
+      walletFileName: walletDisplayNameToFileName(walletDetails.walletName),
       password: walletDetails.password,
       seedphrase: importDetails.mnemonicPhrase.join(' '),
     }),
@@ -315,7 +319,7 @@ const ImportWalletConfirmation = ({
     >
       {({ handleSubmit, values, isSubmitting, submitCount }) => (
         <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-          <WalletInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
+          <WalletCreationInfoSummary walletInfo={walletInfo} revealSensitiveInfo={!isSubmitting && submitCount === 0} />
 
           <Accordion
             title={t('import_wallet.import_details.import_options')}
@@ -374,7 +378,7 @@ enum ImportWalletSteps {
 
 interface ImportWalletProps {
   parentRoute: Route
-  startWallet: (name: Api.WalletName, auth: Api.ApiAuthContext) => void
+  startWallet: (name: Api.WalletFileName, auth: Api.ApiAuthContext) => void
 }
 
 export default function ImportWallet({ parentRoute, startWallet }: ImportWalletProps) {
@@ -388,11 +392,11 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   const [alert, setAlert] = useState<SimpleAlert>()
   const [createWalletFormValues, setCreateWalletFormValues] = useState<CreateWalletFormValues>()
   const [importDetailsFormValues, setImportDetailsFormValues] = useState<ImportWalletDetailsFormValues>()
-  const [recoveredWallet, setRecoveredWallet] = useState<{ walletFileName: Api.WalletName; auth: Api.ApiAuthContext }>()
+  const [recoveredWallet, setRecoveredWallet] = useState<RecoveredWalletWithAuth>()
 
   const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.auth, [recoveredWallet])
   const canRecover = useMemo(
-    () => !isRecovered && !serviceInfo?.walletName && !serviceInfo?.rescanning,
+    () => !isRecovered && !serviceInfo?.walletFileName && !serviceInfo?.rescanning,
     [isRecovered, serviceInfo],
   )
 
@@ -431,7 +435,13 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         seedphrase,
         gaplimit,
         blockheight,
-      }: { walletname: Api.WalletName; password: string; seedphrase: string; gaplimit: number; blockheight: number },
+      }: {
+        walletname: Api.WalletFileName
+        password: string
+        seedphrase: string
+        gaplimit: number
+        blockheight: number
+      },
     ) => {
       setAlert(undefined)
 
@@ -440,15 +450,15 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         const recoverResponse = await Api.postWalletRecover({ signal }, { walletname, password, seedphrase })
         const recoverBody = await (recoverResponse.ok ? recoverResponse.json() : Api.Helper.throwError(recoverResponse))
 
-        const { walletname: importedWalletFileName } = recoverBody
+        const { walletname: walletFileName } = recoverBody
         let auth: Api.ApiAuthContext = Api.Helper.parseAuthProps(recoverBody)
-        setRecoveredWallet({ walletFileName: importedWalletFileName, auth })
+        setRecoveredWallet({ walletFileName, auth })
 
         // Step #2: update the gaplimit config value if necessary
         const originalGaplimit = await refreshConfigValues({
           signal,
           keys: [JM_GAPLIMIT_CONFIGKEY],
-          wallet: { name: importedWalletFileName, token: auth.token },
+          wallet: { walletFileName, token: auth.token },
         })
           .then((it) => it[JM_GAPLIMIT_CONFIGKEY.section] || {})
           .then((it) => parseInt(it[JM_GAPLIMIT_CONFIGKEY.field] || String(JM_GAPLIMIT_DEFAULT), 10))
@@ -466,16 +476,17 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 value: String(gaplimit),
               },
             ],
-            wallet: { name: importedWalletFileName, token: auth.token },
+            wallet: { walletFileName, token: auth.token },
           })
         }
 
         // Step #3: lock and unlock the wallet (for new addresses to be imported)
-        const lockResponse = await Api.getWalletLock({ walletName: importedWalletFileName, token: auth.token })
+        const lockResponse = await Api.getWalletLock({ walletFileName, token: auth.token })
         if (!lockResponse.ok) await Api.Helper.throwError(lockResponse)
 
-        const unlockResponse = await Api.postWalletUnlock({ walletName: importedWalletFileName }, { password })
+        const unlockResponse = await Api.postWalletUnlock({ walletFileName }, { password })
         const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
+
         auth = Api.Helper.parseAuthProps(unlockBody)
 
         // Step #4: reset `gaplimit´ to previous value if necessary
@@ -489,7 +500,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 value: String(originalGaplimit),
               },
             ],
-            wallet: { name: importedWalletFileName, token: auth.token },
+            wallet: { walletFileName, token: auth.token },
           })
         }
 
@@ -498,7 +509,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
 
         const rescanResponse = await Api.getRescanBlockchain({
           signal,
-          walletName: importedWalletFileName,
+          walletFileName,
           token: unlockBody.token,
           blockheight,
         })
@@ -510,12 +521,12 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           })
         }
 
-        startWallet(importedWalletFileName, auth)
+        startWallet(walletFileName, auth)
         navigate(routes.wallet)
       } catch (e: any) {
         if (signal.aborted) return
         const message = t('import_wallet.error_importing_failed', {
-          reason: e.message || 'Unknown reason',
+          reason: e.message || t('global.errors.reason_unknown'),
         })
         setAlert({ variant: 'danger', message })
       }
@@ -547,11 +558,11 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {!canRecover && !isRecovered ? (
         <>
-          {serviceInfo?.walletName && (
+          {serviceInfo?.walletFileName && (
             <rb.Alert variant="warning">
               <Trans i18nKey="import_wallet.alert_other_wallet_unlocked">
-                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletName) }}</strong> is active. You
-                need to lock it first.
+                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active.
+                You need to lock it first.
                 <Link to={routes.walletList} className="alert-link">
                   Go back
                 </Link>
@@ -625,7 +636,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 const abortCtrl = new AbortController()
 
                 return recoverWallet(abortCtrl.signal, {
-                  walletname: (values.walletDetails.walletName + JM_WALLET_FILE_EXTENSION) as Api.WalletName,
+                  walletname: walletDisplayNameToFileName(values.walletDetails.walletName),
                   password: values.walletDetails.password,
                   seedphrase: values.importDetails.mnemonicPhrase.join(' '),
                   gaplimit: values.importDetails.gaplimit,

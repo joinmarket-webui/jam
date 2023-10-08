@@ -38,15 +38,25 @@ interface CopyableProps {
   onSuccess?: () => void
   onError?: (e: Error) => void
   className?: string
+  disabled?: boolean
 }
 
-function Copyable({ value, onSuccess, onError, className, children, ...props }: PropsWithChildren<CopyableProps>) {
+function Copyable({
+  value,
+  onSuccess,
+  onError,
+  className,
+  children,
+  disabled,
+  ...props
+}: PropsWithChildren<CopyableProps>) {
   const valueFallbackInputRef = useRef(null)
 
   return (
     <>
       <button
         {...props}
+        disabled={disabled}
         className={className}
         onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
       >
@@ -71,6 +81,7 @@ interface CopyButtonProps extends CopyableProps {
   text: ReactNode
   successText?: ReactNode
   successTextTimeout?: number
+  disabled?: boolean
 }
 
 export function CopyButton({
@@ -81,6 +92,7 @@ export function CopyButton({
   successText = text,
   successTextTimeout = 1_500,
   className,
+  disabled,
   ...props
 }: CopyButtonProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
@@ -100,6 +112,7 @@ export function CopyButton({
   return (
     <Copyable
       {...props}
+      disabled={disabled}
       className={`btn ${className || ''}`}
       value={value}
       onError={onError}

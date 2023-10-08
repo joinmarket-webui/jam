@@ -22,23 +22,26 @@ describe('<CreateWallet />', () => {
   const testWalletName = 'wallet'
   const testWalletPassword = 'correct horse battery staple'
 
-  const setup = (props) => {
-    const startWallet = props?.startWallet || NOOP
+  const setup = ({
+    startWallet = NOOP,
+  }: {
+    startWallet?: (name: apiMock.WalletFileName, auth: apiMock.ApiAuthContext) => void
+  }) => {
     render(
       <BrowserRouter>
-        <CreateWallet startWallet={startWallet} />
+        <CreateWallet startWallet={startWallet} parentRoute="home" />
       </BrowserRouter>,
     )
   }
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
-    apiMock.getGetinfo.mockResolvedValue(neverResolvingPromise)
-    apiMock.getSession.mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
   })
 
   it('should render without errors', () => {
-    act(setup)
+    act(() => setup({}))
 
     expect(screen.getByText('create_wallet.title')).toBeVisible()
     expect(screen.getByLabelText('create_wallet.label_wallet_name')).toBeVisible()
@@ -51,7 +54,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should show validation messages to user if form is invalid', async () => {
-    act(setup)
+    act(() => setup({}))
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
 
@@ -67,7 +70,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should not submit form if passwords do not match', async () => {
-    act(setup)
+    act(() => setup({}))
 
     expect(await screen.findByPlaceholderText('create_wallet.placeholder_password')).toBeVisible()
     expect(await screen.findByPlaceholderText('create_wallet.placeholder_password_confirm')).toBeVisible()
@@ -89,7 +92,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should advance to WalletCreationConfirmation after wallet is created', async () => {
-    apiMock.postWalletCreate.mockResolvedValueOnce({
+    ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -99,7 +102,7 @@ describe('<CreateWallet />', () => {
         }),
     })
 
-    act(setup)
+    act(() => setup({}))
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
     expect(await screen.queryByText('create_wallet.title_wallet_created')).not.toBeInTheDocument()
@@ -122,7 +125,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should verify that "skip" button is NOT visible by default (feature is disabled)', async () => {
-    apiMock.postWalletCreate.mockResolvedValueOnce({
+    ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -132,7 +135,7 @@ describe('<CreateWallet />', () => {
         }),
     })
 
-    act(setup)
+    act(() => setup({}))
 
     act(() => {
       user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
@@ -163,8 +166,7 @@ describe('<CreateWallet />', () => {
 
   it('should verify that "skip" button IS visible when feature is enabled', async () => {
     __testSetDebugFeatureEnabled('skipWalletBackupConfirmation', true)
-
-    apiMock.postWalletCreate.mockResolvedValueOnce({
+    ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -174,7 +176,7 @@ describe('<CreateWallet />', () => {
         }),
     })
 
-    act(setup)
+    act(() => setup({}))
 
     act(() => {
       user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)

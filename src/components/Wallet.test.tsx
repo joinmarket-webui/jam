@@ -14,14 +14,14 @@ jest.mock('../libs/JmWalletApi', () => ({
 }))
 
 describe('<Wallet />', () => {
-  const dummyWalletName = 'dummy.jmdat'
+  const dummyWalletFileName = 'dummy.jmdat'
   const dummyPassword = 'correct horse battery staple'
 
   const mockUnlockWallet = jest.fn()
   const mockLockWallet = jest.fn()
 
   const setup = ({
-    name,
+    walletFileName,
     lockWallet = undefined,
     unlockWallet = undefined,
     isActive = false,
@@ -31,7 +31,7 @@ describe('<Wallet />', () => {
     render(
       <BrowserRouter>
         <Wallet
-          name={name}
+          walletFileName={walletFileName}
           lockWallet={lockWallet}
           unlockWallet={unlockWallet}
           isActive={isActive}
@@ -49,9 +49,9 @@ describe('<Wallet />', () => {
   })
 
   it('should render inactive wallet without errors', () => {
-    act(() => setup({ name: dummyWalletName }))
+    act(() => setup({ walletFileName: dummyWalletFileName }))
 
-    expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
+    expect(screen.getByText(walletDisplayName(dummyWalletFileName))).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.wallet_inactive')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('wallets.wallet_preview.placeholder_password')).not.toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_unlock')).not.toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('<Wallet />', () => {
   })
 
   it('should unlock inactive wallet successfully', async () => {
-    await act(async () => setup({ name: dummyWalletName, unlockWallet: mockUnlockWallet }))
+    await act(async () => setup({ walletFileName: dummyWalletFileName, unlockWallet: mockUnlockWallet }))
 
     expect(screen.getByText('wallets.wallet_preview.wallet_inactive')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
@@ -80,19 +80,19 @@ describe('<Wallet />', () => {
       await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
     })
 
-    expect(mockUnlockWallet).toHaveBeenCalledWith(dummyWalletName, dummyPassword)
+    expect(mockUnlockWallet).toHaveBeenCalledWith(dummyWalletFileName, dummyPassword)
   })
 
   it('should provide ability to unlock active wallet (i.e. when auth token is missing)', () => {
     act(() =>
       setup({
-        name: dummyWalletName,
+        walletFileName: dummyWalletFileName,
         isActive: true,
         unlockWallet: mockUnlockWallet,
       }),
     )
 
-    expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
+    expect(screen.getByText(walletDisplayName(dummyWalletFileName))).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
@@ -103,13 +103,13 @@ describe('<Wallet />', () => {
   it('should render active wallet without errors', () => {
     act(() =>
       setup({
-        name: dummyWalletName,
+        walletFileName: dummyWalletFileName,
         isActive: true,
         lockWallet: mockLockWallet,
       }),
     )
 
-    expect(screen.getByText(walletDisplayName(dummyWalletName))).toBeInTheDocument()
+    expect(screen.getByText(walletDisplayName(dummyWalletFileName))).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_open')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
@@ -120,7 +120,7 @@ describe('<Wallet />', () => {
   it('should lock active wallet successfully', async () => {
     act(() =>
       setup({
-        name: dummyWalletName,
+        walletFileName: dummyWalletFileName,
         isActive: true,
         lockWallet: mockLockWallet,
       }),
@@ -137,18 +137,18 @@ describe('<Wallet />', () => {
       await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
     })
 
-    expect(mockLockWallet).toHaveBeenCalledWith(dummyWalletName, { confirmed: false })
+    expect(mockLockWallet).toHaveBeenCalledWith(dummyWalletFileName, { confirmed: false })
   })
 
   it('should display earn indicator when maker is running', () => {
-    act(() => setup({ name: dummyWalletName, isActive: true, makerRunning: true }))
+    act(() => setup({ walletFileName: dummyWalletFileName, isActive: true, makerRunning: true }))
 
     expect(document.querySelector('.earn-indicator')).toBeInTheDocument()
     expect(document.querySelector('.joining-indicator')).toBeNull()
   })
 
   it('should display joining indicator when taker is running', () => {
-    act(() => setup({ name: dummyWalletName, isActive: true, coinjoinInProgress: true }))
+    act(() => setup({ walletFileName: dummyWalletFileName, isActive: true, coinjoinInProgress: true }))
 
     expect(document.querySelector('.joining-indicator')).toBeInTheDocument()
     expect(document.querySelector('.earn-indicator')).toBeNull()

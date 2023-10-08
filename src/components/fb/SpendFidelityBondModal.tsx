@@ -264,8 +264,7 @@ const SpendFidelityBondModal = ({
     }
 
     const abortCtrl = new AbortController()
-    const { name: walletName, token } = wallet
-    const requestContext = { walletName, token, signal: abortCtrl.signal }
+    const requestContext = { ...wallet, signal: abortCtrl.signal }
 
     const destination = await Api.getAddressNew({ ...requestContext, mixdepth: targetJarIndex })
       .then((res) => {

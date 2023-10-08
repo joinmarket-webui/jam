@@ -1,37 +1,39 @@
 import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useMemo } from 'react'
-
 import { getSession, setSession } from '../session'
 import * as fb from '../components/fb/utils'
 import * as Api from '../libs/JmWalletApi'
-
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/config'
 import { isDevMode } from '../constants/debugFeatures'
+import { walletDisplayName } from '../utils'
 
 const API_AUTH_TOKEN_RENEW_INTERVAL: Milliseconds = isDevMode()
   ? 60 * 1_000
   : Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75)
 
-export interface CurrentWallet {
-  name: Api.WalletName
-  token: Api.ApiToken
+export type MinimalWalletContext = Api.WithWalletFileName & Api.WithApiToken
+
+export type CurrentWallet = MinimalWalletContext & {
+  displayName: string
 }
 
 class CurrentWalletImpl implements CurrentWallet {
-  readonly name: Api.WalletName
-  #token: Api.ApiToken
+  readonly walletFileName: Api.WalletFileName
+  readonly #displayName: string
+  token: Api.ApiToken // TODO: should be private
 
-  constructor(name: Api.WalletName, token: Api.ApiToken) {
-    this.name = name
-    this.#token = token
+  constructor(ctx: MinimalWalletContext) {
+    this.walletFileName = ctx.walletFileName
+    this.#displayName = walletDisplayName(ctx.walletFileName)
+    this.token = ctx.token
   }
 
-  get token() {
-    return this.#token
+  get displayName() {
+    return this.#displayName
   }
 
   updateToken(token: Api.ApiToken) {
-    this.#token = token
+    this.token = token
   }
 }
 
@@ -120,7 +122,7 @@ type AddressSummary = {
   [key: Api.BitcoinAddress]: AddressInfo
 }
 
-type FidenlityBondSummary = {
+type FidelityBondSummary = {
   fbOutputs: Utxos
 }
 
@@ -129,14 +131,14 @@ export type UtxosByJar = { [key: JarIndex]: Utxos }
 export interface WalletInfo {
   balanceSummary: WalletBalanceSummary
   addressSummary: AddressSummary
-  fidelityBondSummary: FidenlityBondSummary
+  fidelityBondSummary: FidelityBondSummary
   utxosByJar: UtxosByJar
   data: CombinedRawWalletData
 }
 
 interface WalletContextEntry<T extends CurrentWallet> {
   currentWallet: T | null
-  setCurrentWallet: (currentWallet: CurrentWallet) => void
+  setCurrentWallet: (props: MinimalWalletContext) => void
   clearCurrentWallet: () => void
   currentWalletInfo: WalletInfo | undefined
   reloadCurrentWalletInfo: {
@@ -156,7 +158,7 @@ const toAddressSummary = (res: WalletDisplayResponse): AddressSummary => {
     }, {} as AddressSummary)
 }
 
-const toFidelityBondSummary = (res: UtxosResponse): FidenlityBondSummary => {
+const toFidelityBondSummary = (res: UtxosResponse): FidelityBondSummary => {
   const fbOutputs = res.utxos
     .filter((utxo) => fb.utxo.isFidelityBond(utxo))
     .sort((a, b) => {
@@ -178,7 +180,12 @@ const WalletContext = createContext<WalletContextEntry<CurrentWalletImpl> | unde
 
 const restoreWalletFromSession = (): CurrentWalletImpl | null => {
   const session = getSession()
-  return session?.name && session?.auth?.token ? new CurrentWalletImpl(session.name, session.auth.token) : null
+  return session?.walletFileName && session?.auth?.token
+    ? new CurrentWalletImpl({
+        walletFileName: session.walletFileName,
+        token: session.auth.token,
+      })
+    : null
 }
 
 export const groupByJar = (utxos: Utxos): UtxosByJar => {
@@ -211,8 +218,8 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   const [currentWallet, setCurrentWalletOrNull] = useState(restoreWalletFromSession)
 
   const setCurrentWallet = useCallback(
-    (wallet: CurrentWallet) => {
-      setCurrentWalletOrNull(new CurrentWalletImpl(wallet.name, wallet.token))
+    (ctx: MinimalWalletContext) => {
+      setCurrentWalletOrNull(new CurrentWalletImpl(ctx))
     },
     [setCurrentWalletOrNull],
   )
@@ -230,8 +237,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
         throw new Error('Cannot load wallet info: Wallet not present')
       }
 
-      const { name: walletName, token } = currentWallet
-      return await Api.getWalletUtxos({ walletName, token, signal }).then(
+      return await Api.getWalletUtxos({ ...currentWallet, signal }).then(
         (res): Promise<UtxosResponse> => (res.ok ? res.json() : Api.Helper.throwError(res)),
       )
     },
@@ -244,8 +250,8 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
         throw new Error('Cannot load wallet info: Wallet not present')
       }
 
-      const { name: walletName, token } = currentWallet
-      return await Api.getWalletDisplay({ walletName, token, signal }).then(
+      const { walletFileName, token } = currentWallet
+      return await Api.getWalletDisplay({ walletFileName, token, signal }).then(
         (res): Promise<WalletDisplayResponse> => (res.ok ? res.json() : Api.Helper.throwError(res)),
       )
     },
@@ -330,11 +336,14 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
         .then((body) => {
           const auth = Api.Helper.parseAuthProps(body)
 
-          setSession({ name: currentWallet.name, auth })
+          setSession({ walletFileName: currentWallet.walletFileName, auth })
           currentWallet.updateToken(auth.token)
           console.debug('Successfully renewed auth token.')
         })
-        .catch((err) => console.error(err))
+        .catch((err) => {
+          if (abortCtrl.signal.aborted) return
+          console.error(err)
+        })
     }
 
     const interval = setInterval(renewToken, API_AUTH_TOKEN_RENEW_INTERVAL)

@@ -53,9 +53,9 @@ export default function App() {
   const isReloadingWalletInfo = useMemo(() => reloadingWalletInfoCounter > 0, [reloadingWalletInfoCounter])
 
   const startWallet = useCallback(
-    (name: Api.WalletName, auth: Api.ApiAuthContext) => {
-      setSession({ name, auth })
-      setCurrentWallet({ name, token: auth.token })
+    (walletFileName: Api.WalletFileName, auth: Api.ApiAuthContext) => {
+      setSession({ walletFileName, auth })
+      setCurrentWallet({ walletFileName, token: auth.token })
     },
     [setCurrentWallet],
   )
