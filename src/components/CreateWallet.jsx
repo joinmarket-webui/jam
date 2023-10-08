@@ -99,8 +99,9 @@ export default function CreateWallet({ parentRoute, startWallet }) {
         const res = await Api.postWalletCreate({}, { walletname: walletName, password })
         const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
 
-        const { seedphrase, token, walletname: createdWalletFileName } = body
-        setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, token })
+        const { seedphrase, walletname: createdWalletFileName } = body
+        const auth = Api.Helper.parseAuthProps(body)
+        setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, auth })
       } catch (e) {
         const message = t('create_wallet.error_creating_failed', {
           reason: e.message || 'Unknown reason',
@@ -112,9 +113,9 @@ export default function CreateWallet({ parentRoute, startWallet }) {
   )
 
   const walletConfirmed = useCallback(() => {
-    if (createdWallet?.walletFileName && createdWallet?.token) {
+    if (createdWallet?.walletFileName && createdWallet?.auth) {
       setAlert(null)
-      startWallet(createdWallet.walletFileName, createdWallet.token)
+      startWallet(createdWallet.walletFileName, createdWallet.auth)
       navigate(routes.wallet)
     } else {
       setAlert({ variant: 'danger', message: t('create_wallet.alert_confirmation_failed') })

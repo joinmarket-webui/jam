@@ -12,16 +12,33 @@
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
-export type ApiToken = string
-export type WalletName = `${string}.jmdat`
+type ApiToken = string
+type WalletName = `${string}.jmdat`
 
-export type Mixdepth = number
-export type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
-export type BitcoinAddress = string
+type Mixdepth = number
+type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
+type BitcoinAddress = string
 
 type Vout = number
-export type TxId = string
-export type UtxoId = `${TxId}:${Vout}`
+type TxId = string
+type UtxoId = `${TxId}:${Vout}`
+
+// for JM versions <0.9.11
+type SingleTokenAuthContext = {
+  token: ApiToken
+  refresh_token: undefined
+}
+
+// for JM versions >=0.9.11
+type RefreshTokenAuthContext = {
+  token: ApiToken
+  token_type: string // "bearer"
+  expires_in: Seconds // 1800
+  scope: string
+  refresh_token: ApiToken
+}
+
+type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
 
 type WithWalletName = {
   walletName: WalletName
@@ -33,7 +50,7 @@ type WithMixdepth = {
 type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 type YYYY = `2${Digit}${Digit}${Digit}`
 type MM = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12'
-export type Lockdate = `${YYYY}-${MM}`
+type Lockdate = `${YYYY}-${MM}`
 type WithLockdate = {
   lockdate: Lockdate
 }
@@ -49,13 +66,18 @@ interface AuthApiRequestContext extends ApiRequestContext {
   token: ApiToken
 }
 
-export type WalletRequestContext = AuthApiRequestContext & WithWalletName
+type WalletRequestContext = AuthApiRequestContext & WithWalletName
 
 interface ApiError {
   message: string
 }
 
 type WalletType = 'sw-fb'
+
+interface TokenRequest {
+  grant_type: 'refresh_token' | string
+  refresh_token: string
+}
 
 interface CreateWalletRequest {
   walletname: WalletName | string
@@ -115,12 +137,12 @@ interface ConfigGetRequest {
   field: string
 }
 
-export interface StartSchedulerRequest {
+interface StartSchedulerRequest {
   destination_addresses: BitcoinAddress[]
   tumbler_options?: TumblerOptions
 }
 
-export interface TumblerOptions {
+interface TumblerOptions {
   restart?: boolean
   schedulefile?: string
   addrcount?: number
@@ -202,11 +224,25 @@ const Helper = (() => {
     return { 'x-jm-authorization': `Bearer ${token}` }
   }
 
+  // Simple helper method to parse auth properties.
+  // TODO: This can be removed when the API methods
+  // return typed responses (see #670)
+  const parseAuthProps = (body: any): ApiAuthContext => {
+    return {
+      token: body.token,
+      token_type: body.token_type,
+      expires_in: body.expires_in,
+      scope: body.scope,
+      refresh_token: body.refresh_token,
+    }
+  }
+
   return {
     throwError,
     throwResolved,
     extractErrorMessage,
     buildAuthHeader,
+    parseAuthProps,
   }
 })()
 
@@ -219,6 +255,15 @@ const getGetinfo = async ({ signal }: ApiRequestContext) => {
 const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {
   return await fetch(`${basePath()}/v1/session`, {
     headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
+    signal,
+  })
+}
+
+const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenRequest) => {
+  return await fetch(`${basePath()}/v1/token`, {
+    headers: { ...Helper.buildAuthHeader(token) },
+    method: 'POST',
+    body: JSON.stringify(req),
     signal,
   })
 }
@@ -461,7 +506,7 @@ const getRescanBlockchain = async ({
   })
 }
 
-export class JmApiError extends Error {
+class JmApiError extends Error {
   public response: Response
 
   constructor(response: Response, message: string) {
@@ -472,6 +517,7 @@ export class JmApiError extends Error {
 
 export {
   getGetinfo,
+  postToken,
   postMakerStart,
   getMakerStop,
   getSession,
@@ -496,4 +542,16 @@ export {
   getSchedule,
   getRescanBlockchain,
   Helper,
+  JmApiError,
+  ApiAuthContext,
+  StartSchedulerRequest,
+  WalletRequestContext,
+  ApiToken,
+  WalletName,
+  Lockdate,
+  TxId,
+  UtxoId,
+  Mixdepth,
+  AmountSats,
+  BitcoinAddress,
 }

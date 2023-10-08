@@ -1,4 +1,4 @@
-import React from 'react'
+import { ChangeEvent } from 'react'
 import styles from './ToggleSwitch.module.css'
 
 interface ToggleSwitchProps {
@@ -16,7 +16,7 @@ export default function ToggleSwitch({
   toggledOn,
   disabled = false,
 }: ToggleSwitchProps) {
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
     onToggle(e.currentTarget.checked)
   }

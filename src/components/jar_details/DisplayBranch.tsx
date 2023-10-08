@@ -1,9 +1,7 @@
-import React from 'react'
+import { ReactNode } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-// @ts-ignore
 import Balance from '../Balance'
-// @ts-ignore
 import { useSettings } from '../../context/SettingsContext'
 import { Branch, BranchEntry } from '../../context/WalletContext'
 import styles from './DisplayBranch.module.css'
@@ -28,7 +26,7 @@ const toSimpleStatus = (value: string) => {
   return value.substring(0, indexOfBracket).trim()
 }
 
-const toLabelNode = (simpleStatus: string): React.ReactNode => {
+const toLabelNode = (simpleStatus: string): ReactNode => {
   if (simpleStatus === 'new') return <rb.Badge bg="success">{simpleStatus}</rb.Badge>
   if (simpleStatus === 'used') return <rb.Badge bg="secondary">{simpleStatus}</rb.Badge>
 

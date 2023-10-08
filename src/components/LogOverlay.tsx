@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Helper as ApiHelper } from '../libs/JmWalletApi'
 import { fetchLog } from '../libs/JamApi'
-// @ts-ignore
 import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet } from '../context/WalletContext'
 import Sprite from './Sprite'

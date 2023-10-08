@@ -17,3 +17,5 @@ export const JM_MINIMUM_MAKERS_DEFAULT = 4
 export const CJ_STATE_TAKER_RUNNING = 0
 export const CJ_STATE_MAKER_RUNNING = 1
 export const CJ_STATE_NONE_RUNNING = 2
+
+export const JM_API_AUTH_TOKEN_EXPIRY: Milliseconds = Math.round(0.5 * 60 * 60 * 1_000)

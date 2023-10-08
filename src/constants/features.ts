@@ -22,5 +22,5 @@ const __isFeatureEnabled = (name: Feature, version: SemVer): boolean => {
 }
 
 export const isFeatureEnabled = (name: Feature, serviceInfo: ServiceInfo): boolean => {
-  return !!serviceInfo.server?.version && __isFeatureEnabled(name, serviceInfo.server.version)
+  return !!serviceInfo.server && __isFeatureEnabled(name, serviceInfo.server.version)
 }

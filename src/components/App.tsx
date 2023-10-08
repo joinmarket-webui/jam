@@ -19,6 +19,7 @@ import {
   CurrentWallet,
   useCurrentWallet,
   useSetCurrentWallet,
+  useClearCurrentWallet,
   useReloadCurrentWalletInfo,
 } from '../context/WalletContext'
 import { clearSession, setSession } from '../session'
@@ -44,6 +45,7 @@ export default function App() {
   const settings = useSettings()
   const currentWallet = useCurrentWallet()
   const setCurrentWallet = useSetCurrentWallet()
+  const clearCurrentWallet = useClearCurrentWallet()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
   const sessionConnectionError = useSessionConnectionError()
@@ -51,17 +53,17 @@ export default function App() {
   const isReloadingWalletInfo = useMemo(() => reloadingWalletInfoCounter > 0, [reloadingWalletInfoCounter])
 
   const startWallet = useCallback(
-    (name: Api.WalletName, token: Api.ApiToken) => {
-      setSession({ name, token })
-      setCurrentWallet({ name, token })
+    (name: Api.WalletName, auth: Api.ApiAuthContext) => {
+      setSession({ name, auth })
+      setCurrentWallet({ name, token: auth.token })
     },
     [setCurrentWallet],
   )
 
   const stopWallet = useCallback(() => {
+    clearCurrentWallet()
     clearSession()
-    setCurrentWallet(null)
-  }, [setCurrentWallet])
+  }, [clearCurrentWallet])
 
   const reloadWalletInfo = useCallback(
     (delay: Milliseconds) => {

@@ -1,8 +1,7 @@
-import React from 'react'
+import { StrictMode } from 'react'
 import ReactDOM from 'react-dom'
-// @ts-ignore
+
 import App from './components/App'
-// @ts-ignore
 import { SettingsProvider } from './context/SettingsContext'
 // @ts-ignore
 import { WebsocketProvider } from './context/WebsocketContext'
@@ -15,7 +14,7 @@ import './index.css'
 import './i18n/config'
 
 ReactDOM.render(
-  <React.StrictMode>
+  <StrictMode>
     <SettingsProvider>
       <WalletProvider>
         <ServiceConfigProvider>
@@ -27,6 +26,6 @@ ReactDOM.render(
         </ServiceConfigProvider>
       </WalletProvider>
     </SettingsProvider>
-  </React.StrictMode>,
+  </StrictMode>,
   document.getElementById('root'),
 )

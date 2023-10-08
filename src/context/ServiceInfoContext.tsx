@@ -1,6 +1,15 @@
-import React, { createContext, useCallback, useContext, useReducer, useState, useEffect, useRef } from 'react'
-// @ts-ignore
-import { useCurrentWallet, useSetCurrentWallet } from './WalletContext'
+import {
+  PropsWithChildren,
+  Dispatch,
+  createContext,
+  useCallback,
+  useContext,
+  useReducer,
+  useState,
+  useEffect,
+  useRef,
+} from 'react'
+import { useCurrentWallet, useClearCurrentWallet } from './WalletContext'
 // @ts-ignore
 import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
@@ -9,8 +18,8 @@ import { toSemVer, UNKNOWN_VERSION } from '../utils'
 
 import * as Api from '../libs/JmWalletApi'
 
-// interval in milliseconds for periodic session requests
-const SESSION_REQUEST_INTERVAL = 10_000
+// interval for periodic session requests
+const SESSION_REQUEST_INTERVAL: Milliseconds = 10_000
 
 type AmountFraction = number
 type AmountCounterparties = number
@@ -71,7 +80,7 @@ type SessionInfo = {
 }
 type ServerInfo = {
   server?: {
-    version?: SemVer
+    version: SemVer
   }
 }
 
@@ -81,31 +90,25 @@ type ServiceInfo = SessionFlag &
   RescanBlockchainInProgressFlag &
   SessionInfo &
   ServerInfo
-type ServiceInfoUpdate =
-  | ServiceInfo
-  | MakerRunningFlag
-  | CoinjoinInProgressFlag
-  | RescanBlockchainInProgressFlag
-  | ServerInfo
 
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
   reloadServiceInfo: ({ signal }: { signal: AbortSignal }) => Promise<ServiceInfo>
-  dispatchServiceInfo: React.Dispatch<ServiceInfoUpdate>
+  dispatchServiceInfo: Dispatch<Partial<ServiceInfo>>
   connectionError?: Error
 }
 
 const ServiceInfoContext = createContext<ServiceInfoContextEntry | undefined>(undefined)
 
-const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
+const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   const currentWallet = useCurrentWallet()
-  const setCurrentWallet = useSetCurrentWallet()
+  const clearCurrentWallet = useClearCurrentWallet()
   const websocket = useWebsocket()
 
   const fetchSessionInProgress = useRef<Promise<ServiceInfo> | null>(null)
 
   const [serviceInfo, dispatchServiceInfo] = useReducer(
-    (state: ServiceInfo | null, obj: ServiceInfoUpdate) => ({ ...state, ...obj }) as ServiceInfo | null,
+    (state: ServiceInfo | null, obj: Partial<ServiceInfo>) => ({ ...state, ...obj }) as ServiceInfo | null,
     null,
   )
   const [connectionError, setConnectionError] = useState<Error>()
@@ -115,20 +118,12 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
 
     Api.getGetinfo({ signal: abortCtrl.signal })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((data: JmGetInfoData) => {
-        dispatchServiceInfo({
-          server: {
-            version: toSemVer(data.version),
-          },
-        })
-      })
-      .catch((err) => {
-        const notFound = err.response.status === 404
-        if (notFound) {
+      .then((data: JmGetInfoData) => toSemVer(data.version))
+      .catch((_) => UNKNOWN_VERSION)
+      .then((version) => {
+        if (!abortCtrl.signal.aborted) {
           dispatchServiceInfo({
-            server: {
-              version: UNKNOWN_VERSION,
-            },
+            server: { version },
           })
         }
       })
@@ -143,14 +138,14 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
       // Just reset the wallet info, not the session storage (token),
       // as the connection might be down shortly and auth information
       // is still valid most of the time.
-      setCurrentWallet(null)
+      clearCurrentWallet()
     }
-  }, [connectionError, setCurrentWallet])
+  }, [connectionError, clearCurrentWallet])
 
   const reloadServiceInfo = useCallback(
     async ({ signal }: { signal: AbortSignal }) => {
       const resetWalletAndClearSession = () => {
-        setCurrentWallet(null)
+        clearCurrentWallet()
         clearSession()
       }
 
@@ -222,7 +217,7 @@ const ServiceInfoProvider = ({ children }: React.PropsWithChildren<{}>) => {
           throw err
         })
     },
-    [currentWallet, setCurrentWallet],
+    [currentWallet, clearCurrentWallet],
   )
 
   useEffect(() => {

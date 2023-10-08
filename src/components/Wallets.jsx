@@ -65,8 +65,9 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }) {
 
         setUnlockWalletName(undefined)
 
-        const { walletname: unlockedWalletName, token } = body
-        startWallet(unlockedWalletName, token)
+        const auth = Api.Helper.parseAuthProps(body)
+
+        startWallet(body.walletname, auth)
         navigate(routes.wallet)
       } catch (e) {
         const message = e.message.replace('Wallet', walletName)
