@@ -64,6 +64,8 @@ export const useFeeConfigValues = (): [FeeValues | undefined, () => void] => {
     loadFeeConfigValues(abortCtrl.signal)
       .then((val) => setValues(val))
       .catch((e) => {
+        if (abortCtrl.signal.aborted) return
+
         console.log('Unable lo load fee config: ', e)
         setValues(undefined)
       })

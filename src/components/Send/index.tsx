@@ -90,8 +90,13 @@ export default function Send({ wallet }: SendProps) {
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
   const isOperationDisabled = useMemo(
-    () => isCoinjoinInProgress || isMakerRunning || isRescanningInProgress || waitForUtxosToBeSpent.length > 0,
-    [isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent],
+    () =>
+      !feeConfigValues ||
+      isCoinjoinInProgress ||
+      isMakerRunning ||
+      isRescanningInProgress ||
+      waitForUtxosToBeSpent.length > 0,
+    [feeConfigValues, isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent],
   )
   const [isInitializing, setIsInitializing] = useState(!isOperationDisabled)
   const isLoading = useMemo(
@@ -255,7 +260,7 @@ export default function Send({ wallet }: SendProps) {
       setAlert(undefined)
       setIsInitializing(true)
 
-      // reloading service info is important, is it must be known as soon as possible
+      // reloading service info is important, as it must be known as soon as possible
       // if the operation is even allowed, i.e. if no other service is running
       const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
         if (abortCtrl.signal.aborted) return
@@ -315,18 +320,17 @@ export default function Send({ wallet }: SendProps) {
     [walletInfo, destination],
   )
 
-  const sendPayment = async (
-    sourceJarIndex: JarIndex,
-    destination: Api.BitcoinAddress,
-    amount_sats: Api.AmountSats,
-  ) => {
+  const sendPayment = async (sourceJarIndex: JarIndex, destination: Api.BitcoinAddress, amountSats: Api.AmountSats) => {
     setAlert(undefined)
     setPaymentSuccessfulInfoAlert(undefined)
     setIsSending(true)
 
     let success = false
     try {
-      const res = await Api.postDirectSend({ ...wallet }, { mixdepth: sourceJarIndex, destination, amount_sats })
+      const res = await Api.postDirectSend(
+        { ...wallet },
+        { mixdepth: sourceJarIndex, amount_sats: amountSats, destination },
+      )
 
       if (res.ok) {
         // TODO: add type for json response
@@ -366,7 +370,7 @@ export default function Send({ wallet }: SendProps) {
   const startCoinjoin = async (
     sourceJarIndex: JarIndex,
     destination: Api.BitcoinAddress,
-    amount_sats: Api.AmountSats,
+    amountSats: Api.AmountSats,
     counterparties: number,
   ) => {
     setAlert(undefined)
@@ -378,8 +382,8 @@ export default function Send({ wallet }: SendProps) {
         { ...wallet },
         {
           mixdepth: sourceJarIndex,
+          amount_sats: amountSats,
           destination,
-          amount_sats,
           counterparties,
         },
       )
@@ -433,6 +437,7 @@ export default function Send({ wallet }: SendProps) {
 
     const abortCtrl = new AbortController()
     return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal }).catch((err) => {
+      if (abortCtrl.signal.aborted) return
       setAlert({ variant: 'danger', message: err.message })
     })
   }
@@ -623,6 +628,11 @@ export default function Send({ wallet }: SendProps) {
             )}
           </>
         </rb.Fade>
+        {!isLoading && !feeConfigValues && (
+          <rb.Alert className="slashed-zeroes" variant="danger">
+            {t('send.taker_error_message_max_fees_config_missing')}
+          </rb.Alert>
+        )}
         {alert && (
           <rb.Alert className="slashed-zeroes" variant={alert.variant}>
             {alert.message}
@@ -834,7 +844,7 @@ export default function Send({ wallet }: SendProps) {
             </rb.Form.Control.Feedback>
             {isSweep && <>{frozenOrLockedWarning}</>}
           </rb.Form.Group>
-          <Accordion title={t('send.sending_options')}>
+          <Accordion title={t('send.sending_options')} disabled={isOperationDisabled}>
             <rb.Form.Group controlId="isCoinjoin" className="mb-3">
               <ToggleSwitch
                 label={t('send.toggle_coinjoin')}
