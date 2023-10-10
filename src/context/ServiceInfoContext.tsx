@@ -14,7 +14,7 @@ import { useCurrentWallet, useClearCurrentWallet } from './WalletContext'
 import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
 import { CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../constants/config'
-import { toSemVer, UNKNOWN_VERSION } from '../utils'
+import { noop, setIntervalDebounced, toSemVer, UNKNOWN_VERSION } from '../utils'
 
 import * as Api from '../libs/JmWalletApi'
 
@@ -224,16 +224,21 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   useEffect(() => {
     const abortCtrl = new AbortController()
 
-    const refreshSession = () => {
-      reloadServiceInfo({ signal: abortCtrl.signal }).catch((err) => {
-        if (abortCtrl.signal.aborted) return
-        console.error(err)
-      })
+    const refreshSession = (): Promise<void> => {
+      return reloadServiceInfo({ signal: abortCtrl.signal })
+        .then(noop)
+        .catch((err) => {
+          if (!abortCtrl.signal.aborted) {
+            console.error(err)
+          }
+        })
     }
 
     refreshSession()
 
-    const interval = setInterval(refreshSession, SESSION_REQUEST_INTERVAL)
+    let interval: NodeJS.Timer
+    setIntervalDebounced(refreshSession, SESSION_REQUEST_INTERVAL, (timerId) => (interval = timerId))
+
     return () => {
       clearInterval(interval)
       abortCtrl.abort()

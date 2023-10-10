@@ -1,6 +1,8 @@
-import React, { createContext, useEffect, useState, useContext } from 'react'
+import { createContext, useEffect, useState, useContext } from 'react'
 
 import { useCurrentWallet } from './WalletContext'
+import { noop } from '../utils'
+import { isDevMode } from '../constants/debugFeatures'
 
 const WEBSOCKET_RECONNECT_DELAY_STEP = 1_000
 const WEBSOCKET_RECONNECT_MAX_DELAY = 10_000
@@ -23,8 +25,7 @@ const connectionRetryDelayLinear = (attempt = 0) => {
 // path that will be proxied to the backend server
 const WEBSOCKET_ENDPOINT_PATH = `${window.JM.PUBLIC_PATH}/jmws`
 
-const NOOP = () => {}
-const logToDebugConsoleInDevMode = process.env.NODE_ENV === 'development' ? console.debug : NOOP
+const logToDebugConsoleInDevMode = isDevMode() ? console.debug : noop
 
 const createWebSocket = () => {
   const { protocol, host } = window.location
