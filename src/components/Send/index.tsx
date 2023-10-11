@@ -28,8 +28,6 @@ import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
 import { SATS, formatSats, isValidNumber, scrollToTop } from '../../utils'
 
 import {
-  enhanceDirectPaymentErrorMessageIfNecessary,
-  enhanceTakerErrorMessageIfNecessary,
   initialNumCollaborators,
   isValidAddress,
   isValidAmount,
@@ -354,13 +352,11 @@ export default function Send({ wallet }: SendProps) {
         setWaitForUtxosToBeSpent(inputs.map((it: any) => it.outpoint))
         success = true
       } else {
-        const message = await Api.Helper.extractErrorMessage(res)
-        const displayMessage = await enhanceDirectPaymentErrorMessageIfNecessary(
-          res.status,
-          message,
-          (errorMessage) => `${errorMessage} ${t('send.direct_payment_error_message_bad_request')}`,
-        )
-        setAlert({ variant: 'danger', message: displayMessage })
+        const errorMessage = await Api.Helper.extractErrorMessage(res)
+        const message = `${errorMessage} ${
+          res.status === 400 ? t('send.direct_payment_error_message_bad_request') : ''
+        }`
+        setAlert({ variant: 'danger', message })
       }
 
       setIsSending(false)
@@ -399,14 +395,7 @@ export default function Send({ wallet }: SendProps) {
         success = true
       } else {
         const message = await Api.Helper.extractErrorMessage(res)
-        const displayMessage = await enhanceTakerErrorMessageIfNecessary(
-          loadConfigValue,
-          res.status,
-          message,
-          (errorMessage) => `${errorMessage} ${t('send.taker_error_message_max_fees_config_missing')}`,
-        )
-
-        setAlert({ variant: 'danger', message: displayMessage })
+        setAlert({ variant: 'danger', message })
       }
 
       setIsSending(false)
