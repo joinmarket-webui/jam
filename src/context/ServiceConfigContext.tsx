@@ -23,6 +23,11 @@ export interface ServiceConfigUpdate {
   value: string
 }
 
+export interface ServiceConfigValue {
+  key: ConfigKey
+  value: string | null
+}
+
 type LoadConfigValueProps = {
   signal?: AbortSignal
   key: ConfigKey
@@ -40,7 +45,7 @@ type UpdateConfigValuesProps = {
   wallet?: MinimalWalletContext
 }
 
-const configReducer = (state: ServiceConfig, obj: ServiceConfigUpdate): ServiceConfig => {
+const configReducer = (state: ServiceConfig, obj: ServiceConfigValue): ServiceConfig => {
   const data = { ...state }
   data[obj.key.section] = { ...data[obj.key.section], [obj.key.field]: obj.value }
   return data
@@ -55,14 +60,23 @@ const fetchConfigValues = async ({
   wallet: MinimalWalletContext
   configKeys: ConfigKey[]
 }) => {
-  const fetches: Promise<ServiceConfigUpdate>[] = configKeys.map((configKey) => {
+  const fetches: Promise<ServiceConfigValue>[] = configKeys.map((configKey) => {
     return Api.postConfigGet({ ...wallet, signal }, { section: configKey.section, field: configKey.field })
       .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
       .then((data: JmConfigData) => {
         return {
           key: configKey,
           value: data.configvalue,
-        } as ServiceConfigUpdate
+        } as ServiceConfigValue
+      })
+      .catch((e) => {
+        if (e instanceof Api.JmApiError && e.response.status === 409) {
+          return {
+            key: configKey,
+            value: null,
+          } as ServiceConfigValue
+        }
+        throw e
       })
   })
 
@@ -95,7 +109,7 @@ const pushConfigValues = async ({
 }
 
 export interface ServiceConfigContextEntry {
-  loadConfigValueIfAbsent: (props: LoadConfigValueProps) => Promise<ServiceConfigUpdate>
+  loadConfigValueIfAbsent: (props: LoadConfigValueProps) => Promise<ServiceConfigValue>
   refreshConfigValues: (props: RefreshConfigValuesProps) => Promise<ServiceConfig>
   updateConfigValues: (props: UpdateConfigValuesProps) => Promise<ServiceConfig>
 }
@@ -138,7 +152,7 @@ const ServiceConfigProvider = ({ children }: PropsWithChildren<{}>) => {
           return {
             key,
             value: serviceConfig.current[key.section][key.field],
-          } as ServiceConfigUpdate
+          } as ServiceConfigValue
         }
       }
 
@@ -146,7 +160,7 @@ const ServiceConfigProvider = ({ children }: PropsWithChildren<{}>) => {
         return {
           key,
           value: conf[key.section][key.field],
-        } as ServiceConfigUpdate
+        } as ServiceConfigValue
       })
     },
     [refreshConfigValues],

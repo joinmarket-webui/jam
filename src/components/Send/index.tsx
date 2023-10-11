@@ -83,6 +83,11 @@ export default function Send({ wallet }: SendProps) {
   const [destinationIsReusedAddress, setDestinationIsReusedAddress] = useState(false)
 
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
+  const maxFeesConfigMissing = useMemo(
+    () =>
+      feeConfigValues && (feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined),
+    [feeConfigValues],
+  )
   const [activeFeeConfigModalSection, setActiveFeeConfigModalSection] = useState<FeeConfigSectionKey>()
   const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
 
@@ -91,12 +96,12 @@ export default function Send({ wallet }: SendProps) {
 
   const isOperationDisabled = useMemo(
     () =>
-      !feeConfigValues ||
+      maxFeesConfigMissing ||
       isCoinjoinInProgress ||
       isMakerRunning ||
       isRescanningInProgress ||
       waitForUtxosToBeSpent.length > 0,
-    [feeConfigValues, isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent],
+    [maxFeesConfigMissing, isCoinjoinInProgress, isMakerRunning, isRescanningInProgress, waitForUtxosToBeSpent],
   )
   const [isInitializing, setIsInitializing] = useState(!isOperationDisabled)
   const isLoading = useMemo(
@@ -285,10 +290,10 @@ export default function Send({ wallet }: SendProps) {
         signal: abortCtrl.signal,
         key: { section: 'POLICY', field: 'minimum_makers' },
       })
-        .then((data) => {
+        .then((data) => (data.value !== null ? parseInt(data.value, 10) : JM_MINIMUM_MAKERS_DEFAULT))
+        .then((minimumMakers) => {
           if (abortCtrl.signal.aborted) return
 
-          const minimumMakers = parseInt(data.value, 10)
           setMinNumCollaborators(minimumMakers)
           setNumCollaborators(initialNumCollaborators(minimumMakers))
         })
@@ -628,7 +633,7 @@ export default function Send({ wallet }: SendProps) {
             )}
           </>
         </rb.Fade>
-        {!isLoading && !feeConfigValues && (
+        {maxFeesConfigMissing && (
           <rb.Alert className="slashed-zeroes" variant="danger">
             {t('send.taker_error_message_max_fees_config_missing')}
           </rb.Alert>
