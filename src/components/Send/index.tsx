@@ -112,22 +112,6 @@ export default function Send({ wallet }: SendProps) {
     )
   }, [walletInfo])
 
-  useEffect(
-    function preSelectSourceJarIfPossible() {
-      if (isLoading) return
-
-      const jarsWithBalance = sortedAccountBalances.filter((it) => it.calculatedAvailableBalanceInSats > 0)
-      setSourceJarIndex((current) => {
-        if (jarsWithBalance.length === 0) return null
-
-        const currentJarHasBalance = current !== null && jarsWithBalance.some((it) => it.accountIndex === current)
-        if (currentJarHasBalance) return current
-        return jarsWithBalance[0].accountIndex
-      })
-    },
-    [isLoading, sourceJarIndex, sortedAccountBalances],
-  )
-
   const accountBalance = useMemo(() => {
     if (sourceJarIndex === null) return null
     return sortedAccountBalances[sourceJarIndex]
@@ -469,6 +453,7 @@ export default function Send({ wallet }: SendProps) {
         : await sendPayment(sourceJarIndex, destination, amount)
 
       if (success) {
+        setSourceJarIndex(INITIAL_SOURCE_JAR_INDEX)
         setDestination(INITIAL_DESTINATION)
         setDestinationJar(null)
         setAmount(INITIAL_AMOUNT)
@@ -477,9 +462,9 @@ export default function Send({ wallet }: SendProps) {
         setIsSweep(false)
 
         form.reset()
-
-        scrollToTop()
       }
+
+      scrollToTop()
     }
   }
 
