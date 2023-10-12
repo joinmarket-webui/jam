@@ -1,4 +1,3 @@
-import { ServiceConfigContextEntry } from '../../context/ServiceConfigContext'
 import { isValidNumber } from '../../utils'
 
 export const initialNumCollaborators = (minValue: number) => {
@@ -27,50 +26,4 @@ export const isValidAmount = (candidate: number | null, isSweep: boolean) => {
 
 export const isValidNumCollaborators = (candidate: number | null, minNumCollaborators: number) => {
   return candidate !== null && isValidNumber(candidate) && candidate >= minNumCollaborators && candidate <= 99
-}
-
-export const enhanceDirectPaymentErrorMessageIfNecessary = async (
-  httpStatus: number,
-  errorMessage: string,
-  onBadRequest: (errorMessage: string) => string,
-) => {
-  const tryEnhanceMessage = httpStatus === 400
-  if (tryEnhanceMessage) {
-    return onBadRequest(errorMessage)
-  }
-
-  return errorMessage
-}
-
-export const enhanceTakerErrorMessageIfNecessary = async (
-  loadConfigValue: ServiceConfigContextEntry['loadConfigValueIfAbsent'],
-  httpStatus: number,
-  errorMessage: string,
-  onMaxFeeSettingsMissing: (errorMessage: string) => string,
-) => {
-  const tryEnhanceMessage = httpStatus === 409
-  if (tryEnhanceMessage) {
-    const abortCtrl = new AbortController()
-
-    const configExists = (section: string, field: string) =>
-      loadConfigValue({
-        signal: abortCtrl.signal,
-        key: { section, field },
-      })
-        .then((val) => val.value !== null)
-        .catch(() => false)
-
-    const maxFeeSettingsPresent = await Promise.all([
-      configExists('POLICY', 'max_cj_fee_rel'),
-      configExists('POLICY', 'max_cj_fee_abs'),
-    ])
-      .then((arr) => arr.every((e) => e))
-      .catch(() => false)
-
-    if (!maxFeeSettingsPresent) {
-      return onMaxFeeSettingsMissing(errorMessage)
-    }
-  }
-
-  return errorMessage
 }

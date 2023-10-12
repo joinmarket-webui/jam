@@ -104,8 +104,6 @@ export const scrollToTop = (options?: ScrollOptions) => {
   setTimeout(() => window.scrollTo({ behavior: 'smooth', ...options, top: 0, left: 0 }), 21)
 }
 
-export const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-
 export const noop = () => {}
 
 export const setIntervalDebounced = (

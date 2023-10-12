@@ -27,7 +27,11 @@ const FeeCard = ({ amount, feeConfigValue, highlight, subtitle, onClick }: FeeCa
   const { t } = useTranslation()
 
   return (
-    <rb.Card onClick={onClick} border={highlight ? (settings.theme === 'dark' ? 'light' : 'dark') : undefined}>
+    <rb.Card
+      className={onClick ? 'cursor-pointer' : undefined}
+      onClick={onClick}
+      border={highlight ? (settings.theme === 'dark' ? 'light' : 'dark') : undefined}
+    >
       <rb.Card.Body
         className={classNames('text-center py-2', {
           'text-muted': !highlight,
