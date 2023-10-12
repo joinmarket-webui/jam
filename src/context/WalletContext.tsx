@@ -5,7 +5,7 @@ import * as Api from '../libs/JmWalletApi'
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/config'
 import { isDevMode } from '../constants/debugFeatures'
-import { walletDisplayName } from '../utils'
+import { setIntervalDebounced, walletDisplayName } from '../utils'
 
 const API_AUTH_TOKEN_RENEW_INTERVAL: Milliseconds = isDevMode()
   ? 60 * 1_000
@@ -318,14 +318,14 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
 
     const abortCtrl = new AbortController()
 
-    const renewToken = () => {
+    const renewToken = async () => {
       const session = getSession()
       if (!session?.auth?.refresh_token) {
         console.warn('Cannot renew auth token - no refresh_token available.')
         return
       }
 
-      Api.postToken(
+      return Api.postToken(
         { token: session.auth.token, signal: abortCtrl.signal },
         {
           grant_type: 'refresh_token',
@@ -341,12 +341,15 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
           console.debug('Successfully renewed auth token.')
         })
         .catch((err) => {
-          if (abortCtrl.signal.aborted) return
-          console.error(err)
+          if (!abortCtrl.signal.aborted) {
+            console.error(err)
+          }
         })
     }
 
-    const interval = setInterval(renewToken, API_AUTH_TOKEN_RENEW_INTERVAL)
+    let interval: NodeJS.Timer
+    setIntervalDebounced(renewToken, API_AUTH_TOKEN_RENEW_INTERVAL, (timerId) => (interval = timerId))
+
     return () => {
       clearInterval(interval)
       abortCtrl.abort()

@@ -94,3 +94,20 @@ export const toSemVer = (raw?: string): SemVer => {
 }
 
 export const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+
+export const noop = () => {}
+
+export const setIntervalDebounced = (
+  callback: () => Promise<void>,
+  delay: Milliseconds,
+  onTimerIdChanged: (timerId: NodeJS.Timer) => void,
+) => {
+  ;(function loop() {
+    onTimerIdChanged(
+      setTimeout(async () => {
+        await callback()
+        loop()
+      }, delay),
+    )
+  })()
+}
