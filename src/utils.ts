@@ -93,6 +93,17 @@ export const toSemVer = (raw?: string): SemVer => {
   }
 }
 
+/**
+ * Scrolls to the top of the page.
+ *
+ * Hint: There is a small delay before the scrolling is initiated,
+ * in order to mitigate some weird browser behaviour, where it
+ * did not properly work without a timeout.
+ */
+export const scrollToTop = (options?: ScrollOptions) => {
+  setTimeout(() => window.scrollTo({ behavior: 'smooth', ...options, top: 0, left: 0 }), 21)
+}
+
 export const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
 
 export const noop = () => {}
