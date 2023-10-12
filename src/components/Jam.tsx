@@ -17,6 +17,7 @@ import ScheduleProgress from './ScheduleProgress'
 import FeeConfigModal from './settings/FeeConfigModal'
 
 import styles from './Jam.module.css'
+import { useFeeConfigValues } from '../hooks/Fees'
 
 const DEST_ADDRESS_COUNT_PROD = 3
 const DEST_ADDRESS_COUNT_TEST = 1
@@ -155,16 +156,29 @@ export default function Jam({ wallet }: JamProps) {
 
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isLoading, setIsLoading] = useState(true)
-  const [showingFeeConfig, setShowingFeeConfig] = useState(false)
+  const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
   const [isWaitingSchedulerStart, setIsWaitingSchedulerStart] = useState(false)
   const [isWaitingSchedulerStop, setIsWaitingSchedulerStop] = useState(false)
   const [currentSchedule, setCurrentSchedule] = useState<Schedule | null>(null)
   const [lastKnownSchedule, resetLastKnownSchedule] = useLatestTruthy(currentSchedule ?? undefined)
   const [isShowSuccessMessage, setIsShowSuccessMessage] = useState(false)
+  const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
+  const maxFeesConfigMissing = useMemo(
+    () =>
+      feeConfigValues && (feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined),
+    [feeConfigValues],
+  )
+
+  const isRescanningInProgress = useMemo(() => serviceInfo?.rescanning === true, [serviceInfo])
 
   const collaborativeOperationRunning = useMemo(
     () => serviceInfo?.coinjoinInProgress || serviceInfo?.makerRunning || false,
     [serviceInfo],
+  )
+
+  const isOperationDisabled = useMemo(
+    () => maxFeesConfigMissing || collaborativeOperationRunning || isRescanningInProgress,
+    [maxFeesConfigMissing, collaborativeOperationRunning, isRescanningInProgress],
   )
 
   const schedulerPreconditionSummary = useMemo(
@@ -262,7 +276,7 @@ export default function Jam({ wallet }: JamProps) {
   }, [currentSchedule, lastKnownSchedule, isWaitingSchedulerStop, walletInfo])
 
   const startSchedule = async (values: FormikValues) => {
-    if (isLoading || collaborativeOperationRunning || serviceInfo?.rescanning === true) {
+    if (isLoading || collaborativeOperationRunning || isOperationDisabled) {
       return
     }
 
@@ -375,6 +389,11 @@ export default function Jam({ wallet }: JamProps) {
                 </div>
               ) : (
                 <>
+                  {maxFeesConfigMissing && (
+                    <rb.Alert className="slashed-zeroes" variant="danger">
+                      {t('send.taker_error_message_max_fees_config_missing')}
+                    </rb.Alert>
+                  )}
                   <rb.Fade
                     in={!schedulerPreconditionSummary.isFulfilled}
                     mountOnEnter={true}
@@ -480,7 +499,7 @@ export default function Jam({ wallet }: JamProps) {
                                     })
                                   }
                                 }}
-                                disabled={isSubmitting}
+                                disabled={isOperationDisabled || isSubmitting}
                               />
                             </rb.Form.Group>
                           )}
@@ -498,6 +517,7 @@ export default function Jam({ wallet }: JamProps) {
                                   onBlur={handleBlur}
                                   isInvalid={touched[key] && !!errors[key]}
                                   className={`${styles.input} slashed-zeroes`}
+                                  disabled={isOperationDisabled || isSubmitting}
                                 />
                                 <rb.Form.Control.Feedback type="invalid">{errors[key]}</rb.Form.Control.Feedback>
                               </rb.Form.Group>
@@ -511,7 +531,7 @@ export default function Jam({ wallet }: JamProps) {
                             variant="dark"
                             size="lg"
                             type="submit"
-                            disabled={isSubmitting || !isValid || serviceInfo?.rescanning === true}
+                            disabled={isOperationDisabled || isSubmitting || !isValid}
                           >
                             <div className="d-flex justify-content-center align-items-center">
                               {t('scheduler.button_start')}
@@ -527,13 +547,17 @@ export default function Jam({ wallet }: JamProps) {
                       <rb.Button
                         variant="outline-dark"
                         className="border-0 mb-2 d-inline-flex align-items-center"
-                        onClick={() => setShowingFeeConfig(true)}
+                        onClick={() => setShowFeeConfigModal(true)}
                       >
                         <Sprite symbol="coins" width="24" height="24" className="me-1" />
                         {t('settings.show_fee_config')}
                       </rb.Button>
-                      {showingFeeConfig && (
-                        <FeeConfigModal show={showingFeeConfig} onHide={() => setShowingFeeConfig(false)} />
+                      {showFeeConfigModal && (
+                        <FeeConfigModal
+                          show={showFeeConfigModal}
+                          onSuccess={() => reloadFeeConfigValues()}
+                          onHide={() => setShowFeeConfigModal(false)}
+                        />
                       )}
                     </rb.Col>
                   </rb.Row>
