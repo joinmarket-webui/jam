@@ -647,6 +647,10 @@ h2 {
   --bs-popover-border-color: var(--bs-gray-700);
 }
 
+:root[data-theme='dark'] .table {
+  --bs-table-color: var(--bs-body-color);
+}
+
 :root[data-theme='dark'] .tooltip {
   --bs-tooltip-color: var(--bs-white);
   --bs-tooltip-bg: var(--bs-black);
@@ -667,6 +671,10 @@ h2 {
 :root[data-theme='dark'] .btn-dark {
   background-color: var(--bs-gray-800);
   border-color: var(--bs-gray-800);
+}
+
+:root[data-theme='dark'] .input-group-text {
+  background-color: var(--bs-gray-800);
 }
 
 :root[data-theme='dark'] .btn-dark:hover {
