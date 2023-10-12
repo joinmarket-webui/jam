@@ -239,7 +239,7 @@
       "feedback_invalid_tx_fees_blocks": "Please provide a valid block target between {{ min }} and {{ max }}.",
       "feedback_invalid_tx_fees_satspervbyte": "Please provide a valid transaction fee in sats/vByte between {{ min }} and {{ max }}.",
       "label_tx_fees_factor": "Fee randomization",
-      "description_tx_fees_factor": "Random fees improve privacy. The percentage is to be understood as a +/- around the base fee. Example: If you set the base fee to 10 sats/vByte and the randomization to 30%, a value between 7 and 13 sats/vByte will be used. Default: 20%.",
+      "description_tx_fees_factor_^0.9.10": "Random fees improve privacy. The percentage is an upward randomization factor of the base fee. Example: If you set the base fee to 10 sats/vByte and the randomization to 30%, a value between 10 and 13 sats/vByte will be used. Default: 20%.",
       "feedback_invalid_tx_fees_factor": "Please provide a valid fee randomization value between {{ min }} and {{ max }}.",
       "title_max_cj_fee_settings": "Collaborator fees",
       "description_max_cj_fee_settings": "Collaborator fees relate to liquidity price and depend on market conditions. Total fees paid for each transaction depend on the amount of collaborators. Additional collaborators increase privacy, but also fees.",
