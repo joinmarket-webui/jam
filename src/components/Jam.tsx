@@ -392,6 +392,10 @@ export default function Jam({ wallet }: JamProps) {
                   {maxFeesConfigMissing && (
                     <rb.Alert className="slashed-zeroes" variant="danger">
                       {t('send.taker_error_message_max_fees_config_missing')}
+                      &nbsp;
+                      <rb.Alert.Link onClick={() => setShowFeeConfigModal(true)}>
+                        {t('settings.show_fee_config')}
+                      </rb.Alert.Link>
                     </rb.Alert>
                   )}
                   <rb.Fade
@@ -557,6 +561,7 @@ export default function Jam({ wallet }: JamProps) {
                           show={showFeeConfigModal}
                           onSuccess={() => reloadFeeConfigValues()}
                           onHide={() => setShowFeeConfigModal(false)}
+                          defaultActiveSectionKey={'cj_fee'}
                         />
                       )}
                     </rb.Col>

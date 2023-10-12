@@ -625,6 +625,15 @@ export default function Send({ wallet }: SendProps) {
         {maxFeesConfigMissing && (
           <rb.Alert className="slashed-zeroes" variant="danger">
             {t('send.taker_error_message_max_fees_config_missing')}
+            &nbsp;
+            <rb.Alert.Link
+              onClick={() => {
+                setActiveFeeConfigModalSection('cj_fee')
+                setShowFeeConfigModal(true)
+              }}
+            >
+              {t('settings.show_fee_config')}
+            </rb.Alert.Link>
           </rb.Alert>
         )}
         {alert && (
