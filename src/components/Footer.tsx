@@ -18,22 +18,17 @@ const APP_DISPLAY_VERSION = (() => {
 
 export default function Footer() {
   const { t } = useTranslation()
+  const currentWallet = useCurrentWallet()
   const settings = useSettings()
   const serviceInfo = useServiceInfo()
   const settingsDispatch = useSettingsDispatch()
   const websocketState = useWebsocketState()
-  const currentWallet = useCurrentWallet()
 
-  const [websocketConnected, setWebsocketConnected] = useState(false)
   const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
 
   const cheatsheetEnabled = useMemo(() => !!currentWallet, [currentWallet])
-
-  // update the connection indicator based on the websocket connection state
-  useEffect(() => {
-    setWebsocketConnected(websocketState === WebSocket.OPEN)
-  }, [websocketState])
+  const websocketConnected = useMemo(() => websocketState === WebSocket.OPEN, [websocketState])
 
   useEffect(() => {
     let timer: NodeJS.Timeout
@@ -142,12 +137,16 @@ export default function Footer() {
                 placement="top"
                 overlay={(props) => (
                   <rb.Tooltip {...props}>
-                    {websocketConnected ? t('footer.connected') : t('footer.disconnected')}
+                    {websocketConnected ? (
+                      <>{t('footer.websocket_connected')}</>
+                    ) : (
+                      <>{t('footer.websocket_disconnected')}</>
+                    )}
                   </rb.Tooltip>
                 )}
               >
                 <span
-                  className={`mx-1 ${websocketConnected ? 'text-success' : 'text-danger'}`}
+                  className={`mx-1 ${websocketConnected ? 'text-success' : 'text-secondary'}`}
                   data-testid="connection-indicator-icon"
                 >
                   <Sprite symbol="node" width="24px" height="24px" />
