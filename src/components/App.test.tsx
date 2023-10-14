@@ -74,12 +74,12 @@ describe('<App />', () => {
       render(<App />)
     })
 
-    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-danger')).toBe(true)
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-secondary')).toBe(true)
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(false)
 
     await global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.connected
 
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(true)
-    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-danger')).toBe(false)
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-secondary')).toBe(false)
   })
 })

@@ -51,8 +51,8 @@
     "warning_alert_text": "While JoinMarket is tried and tested, Jam is not. It is in a beta stage, so use with caution.",
     "warning_alert_button_ok": "Fine with me.",
     "cheatsheet": "Cheatsheet",
-    "connected": "Connected",
-    "disconnected": "Disconnected"
+    "websocket_connected": "Websocket connected",
+    "websocket_disconnected": "Websocket disconnected"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
