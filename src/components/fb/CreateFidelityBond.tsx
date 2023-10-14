@@ -254,8 +254,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         return (
           <SelectDate
             description={t('earn.fidelity_bond.select_date.description')}
-            selectableYearsRange={yearsRange}
-            onDateSelected={(date) => setLockDate(date)}
+            yearsRange={yearsRange}
+            onChange={(date) => setLockDate(date)}
           />
         )
       case steps.selectJar:

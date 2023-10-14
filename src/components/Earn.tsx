@@ -14,7 +14,7 @@ import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
-import { SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
+import { RenewFidelityBondModal, SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -614,6 +614,20 @@ export default function Earn({ wallet }: EarnProps) {
                     destinationJarIndex={0}
                     onClose={({ mustReload }) => {
                       setMoveToJarFidelityBondId(undefined)
+                      if (mustReload) {
+                        reloadFidelityBonds({ delay: 0 })
+                      }
+                    }}
+                  />
+                )}
+                {currentWalletInfo && renewFidelityBondId && (
+                  <RenewFidelityBondModal
+                    show={true}
+                    fidelityBondId={renewFidelityBondId}
+                    wallet={wallet}
+                    walletInfo={currentWalletInfo}
+                    onClose={({ mustReload }) => {
+                      setRenewFidelityBondId(undefined)
                       if (mustReload) {
                         reloadFidelityBonds({ delay: 0 })
                       }

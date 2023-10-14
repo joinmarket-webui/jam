@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -58,13 +58,14 @@ export const _selectableYears = (yearsRange: fb.YearsRange, now = new Date()): n
     .map((_, index) => index + now.getUTCFullYear() + extra)
 }
 
-interface LockdateFormProps {
+export interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
   yearsRange?: fb.YearsRange
   now?: Date
+  disabled?: boolean
 }
 
-const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
+const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps) => {
   const { i18n } = useTranslation()
   const _now = useMemo<Date>(() => now || new Date(), [now])
   const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
@@ -115,6 +116,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
               onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
               required
               isInvalid={!isLockdateYearValid}
+              disabled={disabled}
               data-testid="select-lockdate-year"
             >
               {selectableYears.map((year) => (
@@ -135,6 +137,7 @@ const LockdateForm = ({ onChange, now, yearsRange }: LockdateFormProps) => {
               onChange={(e) => setLockdateMonth(parseInt(e.target.value, 10) as Month)}
               required
               isInvalid={!isLockdateMonthValid}
+              disabled={disabled}
               data-testid="select-lockdate-month"
             >
               {selectableMonths.map((it) => (
