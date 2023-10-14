@@ -515,7 +515,8 @@
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
         "label_address": "Timelocked address",
-        "button_spend": "Unlock Funds"
+        "button_spend": "Unlock Funds",
+        "button_renew": "Renew Bond"
       },
       "move": {
         "title": "Unlock Funds",
