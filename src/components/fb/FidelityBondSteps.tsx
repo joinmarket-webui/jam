@@ -60,7 +60,7 @@ interface ReviewInputsProps {
   jar: JarIndex
   utxos: Array<Utxo>
   selectedUtxos: Array<Utxo>
-  timelockedAddress: string
+  timelockedAddress: Api.BitcoinAddress
 }
 
 interface CreatedFidelityBondProps {

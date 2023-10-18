@@ -15,6 +15,7 @@ import { useFeeConfigValues } from '../../hooks/Fees'
 import styles from './SpendFidelityBondModal.module.css'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import { CopyButton } from '../CopyButton'
+import { LockInfoAlert } from './CreateFidelityBond'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -501,9 +502,9 @@ const RenewFidelityBondModal = ({
           </div>
         </rb.Modal.Footer>
       </rb.Modal>
-      {showConfirmSendModal && fidelityBond && timelockedAddress !== undefined && (
+      {lockDate && fidelityBond && timelockedAddress !== undefined && (
         <PaymentConfirmModal
-          isShown={true}
+          isShown={showConfirmSendModal}
           title={t(`earn.fidelity_bond.renew.${timelockedAddress ? 'confirm_send_modal.title' : 'title'}`)}
           onCancel={() => {
             setShowConfirmSendModal(false)
@@ -522,7 +523,9 @@ const RenewFidelityBondModal = ({
             feeConfigValues,
             showPrivacyInfo: false,
           }}
-        />
+        >
+          <LockInfoAlert className="text-start mt-4" lockDate={lockDate} />
+        </PaymentConfirmModal>
       )}
     </>
   )
