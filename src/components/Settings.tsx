@@ -86,7 +86,10 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
       .then((data) => data && data.features)
       .then((features) => {
         if (abortCtrl.signal.aborted) return
-        setShowLogsEnabled(features && features.logs === true)
+        const hasLogsFeatureOld = features && features.logs === true
+        const hasLogsFeature =
+          features && Array.isArray(features) && features.some((it) => it.name === 'logs' && it.enabled === true)
+        setShowLogsEnabled(hasLogsFeatureOld || hasLogsFeature)
       })
       .catch((_) => {
         if (abortCtrl.signal.aborted) return
