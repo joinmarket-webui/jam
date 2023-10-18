@@ -547,7 +547,7 @@ h2 {
 
 .tooltip {
   /* allow tooltips in navbar and overlays */
-  z-index: 1200;
+  --bs-tooltip-zindex: 1200;
 }
 
 .link-secondary:hover {
@@ -622,14 +622,16 @@ h2 {
 /* Theme overrides */
 :root[data-theme='dark'] {
   --bs-body-color-rgb: var(--bs-white-rgb);
-  --bs-body-bg-rgb: 33, 37, 41;
   --bs-body-color: var(--bs-white);
+  --bs-body-bg-rgb: 33, 37, 41;
   --bs-body-bg: var(--bs-gray-900);
   --bs-border-color: var(--bs-gray-800);
+  --bs-border-color-translucent: var(--bs-gray-800);
+  --bs-black: #000;
   --bs-code-color: var(--bs-gray-300);
   --bs-gray-dark: #16191c;
-  --bs-black: #000;
-  --bs-border-color-translucent: var(--bs-gray-800);
+  --bs-secondary-color: #6c757d;
+  --bs-tertiary-bg: var(--bs-gray-900);
 }
 
 :root[data-theme='dark'] .accordion {
@@ -638,6 +640,20 @@ h2 {
   --bs-accordion-btn-color: var(--bs-white);
   --bs-accordion-btn-icon: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27 fill=%27%23fff%27%3e%3cpath fill-rule=%27evenodd%27 d=%27M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z%27/%3e%3c/svg%3e');
   --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
+}
+
+:root[data-theme='dark'] .popover {
+  --bs-popover-bg: var(--bs-gray-800);
+  --bs-popover-border-color: var(--bs-gray-700);
+}
+
+:root[data-theme='dark'] .table {
+  --bs-table-color: var(--bs-body-color);
+}
+
+:root[data-theme='dark'] .tooltip {
+  --bs-tooltip-color: var(--bs-white);
+  --bs-tooltip-bg: var(--bs-black);
 }
 
 :root[data-theme='dark'] a.nav-link.active {
@@ -655,6 +671,10 @@ h2 {
 :root[data-theme='dark'] .btn-dark {
   background-color: var(--bs-gray-800);
   border-color: var(--bs-gray-800);
+}
+
+:root[data-theme='dark'] .input-group-text {
+  background-color: var(--bs-gray-800);
 }
 
 :root[data-theme='dark'] .btn-dark:hover {
@@ -687,6 +707,11 @@ h2 {
 
 :root[data-theme='dark'] .modal-header .btn-close {
   background-color: var(--bs-gray-900) !important;
+}
+
+:root[data-theme='dark'] .form-control {
+  color: var(--bs-body-bg);
+  background-color: var(--bs-white);
 }
 
 :root[data-theme='dark'] .form-control:disabled,

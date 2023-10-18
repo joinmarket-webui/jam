@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import { useSettings } from '../../context/SettingsContext'
@@ -192,37 +192,28 @@ const OpenableJar = ({
   onClick,
 }: JarProps & TooltipJarProps) => {
   const [jarIsOpen, setJarIsOpen] = useState(false)
-
-  const tooltipTarget = useRef(null)
   const onMouseOver = () => setJarIsOpen(true)
   const onMouseOut = () => setJarIsOpen(false)
 
   return (
-    <div
-      ref={tooltipTarget}
-      className={styles.tooltipJarContainer}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
-      onClick={onClick}
-    >
-      <rb.Overlay
-        target={tooltipTarget.current}
-        show={jarIsOpen}
-        placement="top"
+    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
+      <rb.OverlayTrigger
         popperConfig={{
           modifiers: [
             {
               name: 'offset',
               options: {
-                offset: [0, 5],
+                offset: [0, 10],
               },
             },
           ],
         }}
+        overlay={(props) => <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip>}
       >
-        {(props) => <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip>}
-      </rb.Overlay>
-      <Jar index={index} balance={balance} frozenBalance={frozenBalance} fillLevel={fillLevel} isOpen={jarIsOpen} />
+        <div className={styles.tooltipJarContainer} onClick={onClick}>
+          <Jar index={index} balance={balance} frozenBalance={frozenBalance} fillLevel={fillLevel} isOpen={jarIsOpen} />
+        </div>
+      </rb.OverlayTrigger>
     </div>
   )
 }
