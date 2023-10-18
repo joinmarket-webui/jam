@@ -217,23 +217,6 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
             <Sprite symbol="wallet" width="24" height="24" />
             {t('settings.button_switch_wallet')}
           </Link>
-          <rb.Button
-            variant="outline-dark"
-            className={styles['settings-btn']}
-            onClick={() => lockWallet({ force: false, navigateTo: routes.createWallet })}
-          >
-            {lockingWallet ? (
-              <>
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="mx-1" />
-                {t('settings.button_locking_wallet')}
-              </>
-            ) : (
-              <>
-                <Sprite symbol="plus" width="24" height="24" />
-                {t('settings.button_create_wallet')}
-              </>
-            )}
-          </rb.Button>
 
           {serviceInfo && isFeatureEnabled('rescanChain', serviceInfo) && isDebugFeatureEnabled('rescanChainPage') && (
             <Link
