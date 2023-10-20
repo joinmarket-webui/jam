@@ -13,7 +13,7 @@ const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
-const JM_WALLET_FILE_EXTENSION = '.jmdat'
+export const JM_WALLET_FILE_EXTENSION = '.jmdat'
 
 export const DUMMY_MNEMONIC_PHRASE: MnemonicPhrase =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')

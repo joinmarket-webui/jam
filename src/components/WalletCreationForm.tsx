@@ -3,7 +3,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import Sprite from './Sprite'
-import { sanitizeWalletName } from '../utils'
+import { JM_WALLET_FILE_EXTENSION, sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
 
 export interface CreateWalletFormValues {
@@ -20,7 +20,8 @@ const initialCreateWalletFormValues: CreateWalletFormValues = {
 
 export type WalletNameAndPassword = { name: string; password: string }
 
-const validateWalletName = (input: string) => /^\w+$/.test(input)
+const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
+const validateWalletName = (input: string) => input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
 interface WalletCreationFormProps {
   initialValues?: CreateWalletFormValues
@@ -77,6 +78,7 @@ const WalletCreationForm = ({
               isValid={touched.walletName && !errors.walletName}
               isInvalid={touched.walletName && !!errors.walletName}
               className={styles.input}
+              maxLength={MAX_WALLET_NAME_LENGTH}
             />
             <rb.Form.Control.Feedback>{t('create_wallet.feedback_valid')}</rb.Form.Control.Feedback>
             <rb.Form.Control.Feedback type="invalid">{errors.walletName}</rb.Form.Control.Feedback>
