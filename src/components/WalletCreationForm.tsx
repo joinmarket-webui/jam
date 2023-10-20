@@ -20,6 +20,8 @@ const initialCreateWalletFormValues: CreateWalletFormValues = {
 
 export type WalletNameAndPassword = { name: string; password: string }
 
+const validateWalletName = (input: string) => /^\w+$/.test(input)
+
 interface WalletCreationFormProps {
   initialValues?: CreateWalletFormValues
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
@@ -38,7 +40,7 @@ const WalletCreationForm = ({
   const validate = useCallback(
     (values: CreateWalletFormValues) => {
       const errors = {} as FormikErrors<CreateWalletFormValues>
-      if (!values.walletName) {
+      if (!values.walletName || !validateWalletName(values.walletName)) {
         errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
       }
       if (!values.password) {

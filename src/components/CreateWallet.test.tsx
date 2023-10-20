@@ -19,7 +19,8 @@ jest.mock('../libs/JmWalletApi', () => ({
 const NOOP = () => {}
 
 describe('<CreateWallet />', () => {
-  const testWalletName = 'wallet'
+  const testWalletName = 'test_wallet21'
+  const invalidTestWalletName = 'invalid_wallet_name!'
   const testWalletPassword = 'correct horse battery staple'
 
   const setup = ({
@@ -56,12 +57,14 @@ describe('<CreateWallet />', () => {
   it('should show validation messages to user if form is invalid', async () => {
     act(() => setup({}))
 
+    expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
+    expect(await screen.queryByText('create_wallet.feedback_invalid_password')).not.toBeInTheDocument()
+    expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
 
     act(() => {
       // click on the "create" button without filling the form
-      const createWalletButton = screen.getByText('create_wallet.button_create')
-      user.click(createWalletButton)
+      user.click(screen.getByText('create_wallet.button_create'))
     })
 
     expect(await screen.findByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
@@ -69,11 +72,32 @@ describe('<CreateWallet />', () => {
     expect(await screen.findByText('create_wallet.feedback_invalid_password_confirm')).toBeVisible()
   })
 
+  it('should not submit form if wallet name contains invalid characters', async () => {
+    act(() => setup({}))
+
+    expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
+    expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
+
+    act(() => {
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), invalidTestWalletName)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    })
+
+    act(() => user.click(screen.getByText('create_wallet.button_create')))
+
+    expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
+    expect(await screen.findByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
+    expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
+  })
+
   it('should not submit form if passwords do not match', async () => {
     act(() => setup({}))
 
     expect(await screen.findByPlaceholderText('create_wallet.placeholder_password')).toBeVisible()
     expect(await screen.findByPlaceholderText('create_wallet.placeholder_password_confirm')).toBeVisible()
+    expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
+    expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
 
     act(() => {
@@ -82,12 +106,10 @@ describe('<CreateWallet />', () => {
       user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), 'a_mismatching_input')
     })
 
-    act(() => {
-      const createWalletButton = screen.getByText('create_wallet.button_create')
-      user.click(createWalletButton)
-    })
+    act(() => user.click(screen.getByText('create_wallet.button_create')))
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
+    expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
     expect(await screen.findByText('create_wallet.feedback_invalid_password_confirm')).toBeVisible()
   })
 
@@ -114,8 +136,7 @@ describe('<CreateWallet />', () => {
     })
 
     await act(async () => {
-      const createWalletButton = screen.getByText('create_wallet.button_create')
-      user.click(createWalletButton)
+      user.click(screen.getByText('create_wallet.button_create'))
 
       await waitFor(() => screen.findByText(/create_wallet.button_creating/))
     })
