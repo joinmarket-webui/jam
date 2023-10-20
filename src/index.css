@@ -726,6 +726,7 @@ h2 {
 
 :root[data-theme='dark'] .link-dark {
   color: var(--bs-white) !important;
+  text-decoration-color: RGBA(var(--bs-white), var(--bs-link-underline-opacity, 1)) !important;
 }
 
 :root[data-theme='dark'] .toast {

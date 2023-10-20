@@ -8,8 +8,10 @@ import { useCurrentWallet } from '../context/WalletContext'
 import Sprite from './Sprite'
 import Cheatsheet from './Cheatsheet'
 import packageInfo from '../../package.json'
-import { isDevMode } from '../constants/debugFeatures'
+import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import { toSemVer } from '../utils'
+import { Link } from 'react-router-dom'
+import { routes } from '../constants/routes'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -52,7 +54,7 @@ export default function Footer() {
               <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
               <p>{t('footer.warning_alert_text')}</p>
               <p className="text-secondary">
-                JoinMarket: v{serviceInfo?.server?.version?.raw || 'unknown'}
+                JoinMarket: v{serviceInfo?.server?.version?.raw || '_unknown'}
                 <br />
                 Jam: v{APP_DISPLAY_VERSION}
               </p>
@@ -103,14 +105,20 @@ export default function Footer() {
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
             <div className="warning-hint text-start text-secondary d-none d-md-block pe-1">
-              <a
-                href="https://github.com/joinmarket-webui/jam/tags"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="d-flex align-items-center text-secondary"
-              >
-                v{APP_DISPLAY_VERSION}
-              </a>
+              {!isDebugFeatureEnabled('devSetupPage') ? (
+                <a
+                  href="https://github.com/joinmarket-webui/jam/tags"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="d-flex align-items-center text-secondary"
+                >
+                  v{APP_DISPLAY_VERSION}
+                </a>
+              ) : (
+                <Link className="text-secondary" to={routes.__devSetup}>
+                  v{APP_DISPLAY_VERSION}
+                </Link>
+              )}
             </div>
             <div className="d-flex gap-2 pe-2">
               <a

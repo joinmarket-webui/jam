@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import {
@@ -27,7 +27,7 @@ import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 import CreateWallet from './CreateWallet'
 import ImportWallet from './ImportWallet'
 import Earn from './Earn'
-import ErrorPage, { ErrorThrowingComponent } from './ErrorPage'
+import ErrorPage from './ErrorPage'
 import Footer from './Footer'
 import Jam from './Jam'
 import Layout from './Layout'
@@ -39,6 +39,7 @@ import Send from './Send'
 import RescanChain from './RescanChain'
 import Settings from './Settings'
 import Wallets from './Wallets'
+const DevSetupPage = lazy(() => import('./DevSetupPage'))
 
 export default function App() {
   const { t } = useTranslation()
@@ -168,6 +169,17 @@ export default function App() {
               {isDebugFeatureEnabled('errorExamplePage') && (
                 <Route id="error-example" path={routes.__errorExample} element={<ErrorThrowingComponent />} />
               )}
+              {isDebugFeatureEnabled('devSetupPage') && (
+                <Route
+                  id="dev-env"
+                  path={routes.__devSetup}
+                  element={
+                    <Suspense fallback={<Loading />}>
+                      <DevSetupPage />
+                    </Suspense>
+                  }
+                />
+              )}
               <Route id="404" path="*" element={<Navigate to={routes.home} replace={true} />} />
             </>
           )}
@@ -206,6 +218,23 @@ export default function App() {
       <WalletInfoAutoReload currentWallet={currentWallet} reloadWalletInfo={reloadWalletInfo} />
     </>
   )
+}
+
+const Loading = () => {
+  const { t } = useTranslation()
+  return (
+    <div className="text-center">
+      <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+      {t('global.loading')}
+    </div>
+  )
+}
+
+const ErrorThrowingComponent = () => {
+  useEffect(() => {
+    throw new Error('This error is thrown on purpose. Only to be used for testing.')
+  }, [])
+  return <></>
 }
 
 const RELOAD_WALLET_INFO_DELAY: {
