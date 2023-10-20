@@ -461,7 +461,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
               .map((_, index) => {
                 return (
                   <rb.Placeholder key={index} as="div" animation="wave">
-                    <rb.Placeholder xs={12} className={styles['orderbook-line-placeholder']} />
+                    <rb.Placeholder xs={12} className={styles.orderbookContentPlaceholder} />
                   </rb.Placeholder>
                 )
               })

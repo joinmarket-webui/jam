@@ -144,7 +144,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
       <rb.Offcanvas.Body>
         <rb.Container fluid="lg" className="py-3">
           {!isInitialized && isLoading ? (
-            Array(12)
+            Array(5)
               .fill('')
               .map((_, index) => {
                 return (
