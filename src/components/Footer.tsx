@@ -105,14 +105,11 @@ export default function Footer() {
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
             {isDebugFeatureEnabled('devSetupPage') && (
-              <>
-                <div className="d-none d-md-block text-small text-start text-secondary mx-1">
-                  <Link className="text-secondary" to={routes.__devSetup}>
-                    Dev Setup
-                  </Link>
-                </div>
-                <div className="d-none d-md-block text-secondary">|</div>
-              </>
+              <div className="d-none d-md-block text-small text-start mx-1">
+                <Link className="text-warning" to={routes.__devSetup}>
+                  Dev Setup
+                </Link>
+              </div>
             )}
             <div className="text-small text-start text-secondary mx-1">
               <a

@@ -1,32 +1,31 @@
+import { Link } from 'react-router-dom'
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
-import { Link } from 'react-router-dom'
 import { routes } from '../constants/routes'
 
-const LINK_JM_REGTEST_JOINMARKET2 = 'http://localhost:29080'
-const LINK_JM_REGTEST_JOINMARKET2_AUTH = {
+const DEFAULT_BASIC_AUTH = {
   user: 'joinmarket',
   password: 'joinmarket',
 }
+
+const LINK_JM_REGTEST_JOINMARKET2 = 'http://localhost:29080'
+const LINK_JM_REGTEST_JOINMARKET2_AUTH = DEFAULT_BASIC_AUTH
 const LINK_JM_REGTEST_JOINMARKET3 = 'http://localhost:30080'
 const LINK_JM_REGTEST_EXPLORER = 'http://localhost:3002'
-const LINK_JM_REGTEST_EXPLORER_AUTH = {
-  user: 'joinmarket',
-  password: 'joinmarket',
-}
-const LINK_JM_REGTEST_RPC_TERMINAL = 'http://localhost:3002/rpc-terminal'
+const LINK_JM_REGTEST_EXPLORER_AUTH = DEFAULT_BASIC_AUTH
+const LINK_JM_REGTEST_RPC_TERMINAL = `${LINK_JM_REGTEST_EXPLORER}/rpc-terminal`
 
 export default function DevSetupPage() {
   return (
-    <div className="">
+    <div>
       <PageTitle title="Development setup" subtitle="" />
       <div className="d-flex flex-column gap-3">
         <div className="mb-4">
           <h5>Test Wallet</h5>
           <div className="ms-3 my-2">
-            Name: <code>Satoshi</code>
+            Name: <span className="font-monospace">Satoshi</span>
             <br />
-            Password: <code>test</code>
+            Password: <span className="font-monospace">test</span>
           </div>
         </div>
       </div>
@@ -57,9 +56,9 @@ export default function DevSetupPage() {
             Basic Authentication
             <br />
             <small>
-              User: <code>{LINK_JM_REGTEST_JOINMARKET2_AUTH.user}</code>
+              User: <span className="font-monospace">{LINK_JM_REGTEST_JOINMARKET2_AUTH.user}</span>
               <br />
-              Password: <code>{LINK_JM_REGTEST_JOINMARKET2_AUTH.password}</code>
+              Password: <span className="font-monospace">{LINK_JM_REGTEST_JOINMARKET2_AUTH.password}</span>
             </small>
           </div>
           <div className="d-flex align-items-center">
@@ -87,9 +86,9 @@ export default function DevSetupPage() {
             Basic Authentication
             <br />
             <small>
-              User: <code>{LINK_JM_REGTEST_EXPLORER_AUTH.user}</code>
+              User: <span className="font-monospace">{LINK_JM_REGTEST_EXPLORER_AUTH.user}</span>
               <br />
-              Password: <code>{LINK_JM_REGTEST_EXPLORER_AUTH.password}</code>
+              Password: <span className="font-monospace">{LINK_JM_REGTEST_EXPLORER_AUTH.password}</span>
             </small>
           </div>
         </div>
