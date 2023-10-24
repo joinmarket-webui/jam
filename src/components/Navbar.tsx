@@ -299,6 +299,11 @@ export default function Navbar() {
                     <span>{t('navbar.menu')}</span>
                   </rb.Navbar.Toggle>
                 </div>
+                {isDebugFeatureEnabled('fastThemeToggle') && (
+                  <rb.Nav.Item className="d-none d-md-flex align-items-center pe-2">
+                    <FastThemeToggle />
+                  </rb.Nav.Item>
+                )}
                 <rb.Navbar.Offcanvas className={`navbar-offcanvas navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
