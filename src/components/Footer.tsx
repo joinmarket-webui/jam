@@ -71,12 +71,12 @@ export default function Footer() {
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
           <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
-            <div className="warning-hint text-start text-secondary">
+            <div className="text-small text-start text-secondary">
               <Trans i18nKey="footer.warning">
                 This is pre-alpha software.
                 <rb.Button
                   variant="link"
-                  className="warning-hint text-start border-0 p-0 text-secondary"
+                  className="text-small text-start border-0 p-0 text-secondary"
                   onClick={() => setShowBetaWarning(true)}
                 >
                   Read this before using.
@@ -104,7 +104,7 @@ export default function Footer() {
             )}
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
-            <div className="warning-hint text-start text-secondary d-none d-md-block pe-1">
+            <div className="text-small text-start text-secondary d-none d-md-block pe-1">
               {!isDebugFeatureEnabled('devSetupPage') ? (
                 <a
                   href="https://github.com/joinmarket-webui/jam/tags"

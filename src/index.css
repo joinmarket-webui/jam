@@ -573,10 +573,6 @@ h2 {
 }
 /* Alpha Warning */
 
-.warning-hint {
-  font-size: 0.8rem;
-}
-
 .warning-card-wrapper {
   position: fixed;
   height: 100%;
