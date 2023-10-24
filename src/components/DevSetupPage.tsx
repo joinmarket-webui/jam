@@ -1,5 +1,7 @@
 import Sprite from './Sprite'
 import PageTitle from './PageTitle'
+import { Link } from 'react-router-dom'
+import { routes } from '../constants/routes'
 
 const LINK_JM_REGTEST_JOINMARKET2 = 'http://localhost:29080'
 const LINK_JM_REGTEST_JOINMARKET2_AUTH = {
@@ -25,6 +27,17 @@ export default function DevSetupPage() {
             Name: <code>Satoshi</code>
             <br />
             Password: <code>test</code>
+          </div>
+        </div>
+      </div>
+
+      <div className="d-flex flex-column gap-3">
+        <div className="mb-4">
+          <h5>Links</h5>
+          <div className="my-2">
+            <Link className="link-dark" to={routes.__errorExample}>
+              Error Example Page
+            </Link>
           </div>
         </div>
       </div>
