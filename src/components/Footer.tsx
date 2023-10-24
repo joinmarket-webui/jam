@@ -70,7 +70,7 @@ export default function Footer() {
 
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
-          <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
+          <div className="flex-1 order-0 justify-content-start align-items-center">
             <div className="text-small text-start text-secondary">
               <Trans i18nKey="footer.warning">
                 This is pre-alpha software.
@@ -104,23 +104,27 @@ export default function Footer() {
             )}
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
-            <div className="text-small text-start text-secondary d-none d-md-block pe-1">
-              {!isDebugFeatureEnabled('devSetupPage') ? (
-                <a
-                  href="https://github.com/joinmarket-webui/jam/tags"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="d-flex align-items-center text-secondary"
-                >
-                  v{APP_DISPLAY_VERSION}
-                </a>
-              ) : (
-                <Link className="text-secondary" to={routes.__devSetup}>
-                  v{APP_DISPLAY_VERSION}
-                </Link>
-              )}
+            {isDebugFeatureEnabled('devSetupPage') && (
+              <>
+                <div className="d-none d-md-block text-small text-start text-secondary mx-1">
+                  <Link className="text-secondary" to={routes.__devSetup}>
+                    Dev Setup
+                  </Link>
+                </div>
+                <div className="d-none d-md-block text-secondary">|</div>
+              </>
+            )}
+            <div className="text-small text-start text-secondary mx-1">
+              <a
+                href="https://github.com/joinmarket-webui/jam/tags"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="d-flex align-items-center text-secondary"
+              >
+                v{APP_DISPLAY_VERSION}
+              </a>
             </div>
-            <div className="d-flex gap-2 pe-2">
+            <div className="d-flex gap-2 me-2">
               <a
                 href="https://github.com/joinmarket-webui/jam"
                 target="_blank"
@@ -138,7 +142,7 @@ export default function Footer() {
                 <Sprite symbol="telegram" width="18px" height="18px" />
               </a>
             </div>
-            <div className="d-flex text-secondary">|</div>
+            <div className="text-secondary">|</div>
             <div className="d-flex">
               <rb.OverlayTrigger
                 delay={{ hide: 300, show: 200 }}
