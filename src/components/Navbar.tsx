@@ -314,6 +314,15 @@ export default function Navbar() {
                           {t('navbar.button_create_wallet')}
                         </Link>
                       </rb.Nav.Item>
+                      <rb.Nav.Item>
+                        <Link
+                          to={routes.importWallet}
+                          onClick={() => isExpanded && setIsExpanded(false)}
+                          className="nav-link"
+                        >
+                          {t('navbar.button_import_wallet')}
+                        </Link>
+                      </rb.Nav.Item>
                     </rb.Nav>
                   </rb.Offcanvas.Body>
                 </rb.Navbar.Offcanvas>
