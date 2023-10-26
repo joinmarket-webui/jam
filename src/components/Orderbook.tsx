@@ -13,7 +13,7 @@ import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
-import { isAbsoluteOffer, isRelativeOffer } from '../utils'
+import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
 import styles from './Orderbook.module.css'
 import { isDevMode } from '../constants/debugFeatures'
 
@@ -96,7 +96,10 @@ interface OrderTableEntry {
   type: OrderTypeProps
   counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
   orderId: string // example: "0" (not unique!)
-  fee: string // example: "250" (abs offers) or "0.000100%" (rel offers)
+  fee: {
+    value: number
+    displayValue: string // example: "250" (abs offers) or "0.000100%" (rel offers)
+  }
   minerFeeContribution: string // example: "0"
   minimumSize: string // example: "27300"
   maximumSize: string // example: "237499972700"
@@ -140,7 +143,11 @@ const orderTypeProps = (offer: ObwatchApi.Offer, t: TFunction): OrderTypeProps =
 }
 
 const renderOrderFee = (val: string, settings: any) => {
-  return val.includes('%') ? <>{val}</> : <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />
+  return val.includes('%') ? (
+    <span className="font-monospace">{val}</span>
+  ) : (
+    <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />
+  )
 }
 
 interface OrderbookTableProps {
@@ -176,28 +183,16 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
       },
       sortToggleType: SortToggleType.AlternateWithReset,
       sortFns: {
-        [SORT_KEYS.type]: (array) => array.sort((a, b) => a.type.value.localeCompare(b.type.value)),
+        [SORT_KEYS.type]: (array) => array.sort((a, b) => a.type.displayValue.localeCompare(b.type.displayValue)),
         [SORT_KEYS.fee]: (array) =>
           array.sort((a, b) => {
             const aOrder = asOrderTableEntry(a)
             const bOrder = asOrderTableEntry(b)
 
-            if (aOrder.type.value !== bOrder.type.value) {
+            if (aOrder.type.isAbsolute !== bOrder.type.isAbsolute) {
               return aOrder.type.isAbsolute === true ? 1 : -1
             }
-
-            if (aOrder.type.isAbsolute === true) {
-              return +aOrder.fee - +bOrder.fee
-            } else if (aOrder.type.isRelative === true) {
-              const aIndexOfPercent = aOrder.fee.indexOf('%')
-              const bIndexOfPercent = bOrder.fee.indexOf('%')
-
-              if (aIndexOfPercent > 0 && bIndexOfPercent > 0) {
-                return +aOrder.fee.substring(0, aIndexOfPercent) - +bOrder.fee.substring(0, bIndexOfPercent)
-              }
-            }
-
-            return 0
+            return aOrder.fee.value - bOrder.fee.value
           }),
         [SORT_KEYS.minimumSize]: (array) => array.sort((a, b) => a.minimumSize - b.minimumSize),
         [SORT_KEYS.maximumSize]: (array) => array.sort((a, b) => a.maximumSize - b.maximumSize),
@@ -253,7 +248,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                     <Cell>{order.counterparty}</Cell>
                     <Cell>{order.orderId}</Cell>
                     <Cell>{renderOrderType(order.type)}</Cell>
-                    <Cell>{renderOrderFee(order.fee, settings)}</Cell>
+                    <Cell>{renderOrderFee(order.fee.displayValue, settings)}</Cell>
                     <Cell>
                       <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
                     </Cell>
@@ -287,7 +282,19 @@ const offerToTableEntry = (offer: ObwatchApi.Offer, t: TFunction): OrderTableEnt
     type: orderTypeProps(offer, t),
     counterparty: offer.counterparty,
     orderId: String(offer.oid),
-    fee: typeof offer.cjfee === 'number' ? String(offer.cjfee) : (parseFloat(offer.cjfee) * 100).toFixed(6) + '%',
+    fee:
+      typeof offer.cjfee === 'number'
+        ? {
+            value: offer.cjfee,
+            displayValue: String(offer.cjfee),
+          }
+        : (() => {
+            const value = parseFloat(offer.cjfee)
+            return {
+              value,
+              displayValue: factorToPercentage(value).toFixed(4) + '%',
+            }
+          })(),
     minerFeeContribution: String(offer.txfee),
     minimumSize: String(offer.minsize),
     maximumSize: String(offer.maxsize),
@@ -318,7 +325,7 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
             return (
               entry.type.displayValue.toLowerCase().includes(searchVal) ||
               entry.counterparty.toLowerCase().includes(searchVal) ||
-              entry.fee.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.fee.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
               entry.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
               entry.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
               entry.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
