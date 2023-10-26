@@ -11,11 +11,10 @@ import { SelectDate, SelectJar } from './FidelityBondSteps'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { jarInitial } from '../jars/Jar'
 import { useFeeConfigValues } from '../../hooks/Fees'
-
-import styles from './SpendFidelityBondModal.module.css'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import { CopyButton } from '../CopyButton'
 import { LockInfoAlert } from './CreateFidelityBond'
+import styles from './SpendFidelityBondModal.module.css'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -263,7 +262,7 @@ const RenewFidelityBondModal = ({
 
     // Delaying the poll requests gives the wallet some time to synchronize
     // the utxo set and reduces amount of http requests
-    const initialDelayInMs = 250
+    const initialDelayInMs = 1_000
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 
@@ -305,41 +304,48 @@ const RenewFidelityBondModal = ({
 
   const loadTimeLockedAddress = useCallback(
     (lockdate: Api.Lockdate, signal: AbortSignal) => {
-      setIsLoadingTimelockAddress(true)
-      setAlert(undefined)
-
-      return (
-        Api.getAddressTimelockNew({
-          ...wallet,
-          lockdate,
-          signal,
-        })
-          .then((res) => {
-            return res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_loading_address'))
-          })
-          // show the loader a little longer to avoid flickering
-          .then((result) => new Promise((r) => setTimeout(() => r(result), 221)))
-          .then((data: any) => {
-            if (signal.aborted) return
-            setTimelockedAddress(data.address)
-            setIsLoadingTimelockAddress(false)
-          })
-          .catch((err) => {
-            if (signal.aborted) return
-            setAlert({ variant: 'danger', message: err.message })
-            setIsLoadingTimelockAddress(false)
-          })
-      )
+      return Api.getAddressTimelockNew({
+        ...wallet,
+        lockdate,
+        signal,
+      }).then((res) => {
+        return res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_loading_address'))
+      })
     },
     [wallet, t],
   )
 
-  useEffect(() => {
-    if (!lockDate) return
-    const abortCtrl = new AbortController()
-    loadTimeLockedAddress(lockDate, abortCtrl.signal)
-    return () => abortCtrl.abort()
-  }, [loadTimeLockedAddress, lockDate])
+  useEffect(
+    function loadTimelockedAddressOnLockDateChange() {
+      if (!lockDate) return
+      const abortCtrl = new AbortController()
+
+      setIsLoadingTimelockAddress(true)
+      setAlert(undefined)
+
+      const timer = setTimeout(
+        () =>
+          loadTimeLockedAddress(lockDate, abortCtrl.signal)
+            .then((data: any) => {
+              if (abortCtrl.signal.aborted) return
+              setTimelockedAddress(data.address)
+              setIsLoadingTimelockAddress(false)
+            })
+            .catch((err) => {
+              if (abortCtrl.signal.aborted) return
+              setAlert({ variant: 'danger', message: err.message })
+              setIsLoadingTimelockAddress(false)
+            }),
+        250,
+      )
+
+      return () => {
+        clearTimeout(timer)
+        abortCtrl.abort()
+      }
+    },
+    [loadTimeLockedAddress, lockDate],
+  )
 
   const primaryButtonContent = useMemo(() => {
     if (isSending) {
@@ -383,28 +389,32 @@ const RenewFidelityBondModal = ({
         <SelectDate
           description={t('earn.fidelity_bond.select_date.description')}
           yearsRange={yearsRange}
-          disabled={isLoading || isLoadingTimelockedAddress}
+          disabled={isLoading}
           onChange={onSelectedDateChanged}
         />
-        {timelockedAddress && (
-          <>
-            <div className="d-flex flex-column gap-3">
-              <div className="d-flex align-items-center gap-2">
-                <CopyButton
-                  text={<Sprite symbol="copy" width="18" height="18" />}
-                  successText={<Sprite symbol="checkmark" width="18" height="18" />}
-                  value={timelockedAddress}
-                />
-                <div className="d-flex flex-column">
-                  <div>{t('earn.fidelity_bond.review_inputs.label_address')}</div>
-                  <div>
-                    <code>{timelockedAddress}</code>
-                  </div>
-                </div>
+
+        <>
+          <div className="d-flex flex-column gap-3">
+            <div className="d-flex align-items-center gap-2">
+              <CopyButton
+                className={!timelockedAddress || isLoadingTimelockedAddress || isLoading ? 'invisible' : ''}
+                text={<Sprite symbol="copy" width="18" height="18" />}
+                successText={<Sprite symbol="checkmark" width="18" height="18" />}
+                value={timelockedAddress || ''}
+              />
+              <div className="d-flex flex-column flex-grow-1">
+                <div>{t('earn.fidelity_bond.review_inputs.label_address')}</div>
+                {!isLoading && !isLoadingTimelockedAddress ? (
+                  <div className="font-monospace text-small pt-1">{timelockedAddress}</div>
+                ) : (
+                  <rb.Placeholder as="div" animation="wave">
+                    <rb.Placeholder xs={12} />
+                  </rb.Placeholder>
+                )}
               </div>
             </div>
-          </>
-        )}
+          </div>
+        </>
       </div>
     )
   }, [
@@ -505,7 +515,7 @@ const RenewFidelityBondModal = ({
       {lockDate && fidelityBond && timelockedAddress !== undefined && (
         <PaymentConfirmModal
           isShown={showConfirmSendModal}
-          title={t(`earn.fidelity_bond.renew.${timelockedAddress ? 'confirm_send_modal.title' : 'title'}`)}
+          title={t('earn.fidelity_bond.renew.confirm_send_modal.title')}
           onCancel={() => {
             setShowConfirmSendModal(false)
             onClose({ txInfo, mustReload: parentMustReload })
@@ -584,7 +594,7 @@ const SpendFidelityBondModal = ({
 
     // Delaying the poll requests gives the wallet some time to synchronize
     // the utxo set and reduces amount of http requests
-    const initialDelayInMs = 250
+    const initialDelayInMs = 1_000
     const timer = setTimeout(() => {
       if (abortCtrl.signal.aborted) return
 

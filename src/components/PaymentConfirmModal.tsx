@@ -6,7 +6,7 @@ import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { FeeValues, TxFee, useEstimatedMaxCollaboratorFee } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
-import { AmountSats } from '../libs/JmWalletApi'
+import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
 import styles from './PaymentConfirmModal.module.css'
@@ -57,7 +57,7 @@ const useMiningFeeText = ({ tx_fees, tx_fees_factor }: Pick<FeeValues, 'tx_fees'
 
 interface PaymentDisplayInfo {
   sourceJarIndex?: JarIndex
-  destination: String
+  destination: BitcoinAddress | string
   amount: AmountSats
   isSweep: boolean
   isCoinjoin: boolean
