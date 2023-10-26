@@ -13,17 +13,9 @@ import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
+import { isAbsoluteOffer, isRelativeOffer } from '../utils'
 import styles from './Orderbook.module.css'
-
-const SORT_KEYS = {
-  type: 'TYPE',
-  counterparty: 'COUNTERPARTY',
-  fee: 'FEE',
-  minimumSize: 'MINIMUM_SIZE',
-  maximumSize: 'MAXIMUM_SIZE',
-  minerFeeContribution: 'MINER_FEE_CONTRIBUTION',
-  bondValue: 'BOND_VALUE',
-}
+import { isDevMode } from '../constants/debugFeatures'
 
 const TABLE_THEME = {
   Table: `
@@ -84,17 +76,67 @@ const withTooltip = (node: ReactElement, tooltip: string) => {
   )
 }
 
-// `TableNode` is known to have same properties as `ObwatchApi.Order`, hence prefer casting over object destructuring
-const toOrder = (tableNode: TableTypes.TableNode) => tableNode as unknown as ObwatchApi.Order
+// `TableNode` is known to have same properties as `OrderTableEntry`, hence prefer casting over object destructuring
+const asOrderTableEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as OrderTableEntry
 
-const renderOrderType = (val: string, t: TFunction) => {
-  if (val === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
-    return withTooltip(<rb.Badge bg="info">{t('orderbook.text_offer_type_absolute')}</rb.Badge>, val)
+const renderOrderType = (type: OrderTypeProps) => {
+  const elem = <rb.Badge bg={type.badgeColor}>{type.displayValue}</rb.Badge>
+  return type.tooltip ? withTooltip(elem, type.tooltip) : elem
+}
+
+type OrderTypeProps = {
+  value: string // original value, example: 'sw0reloffer', 'swreloffer', 'reloffer', 'sw0absoffer', 'swabsoffer', 'absoffer'
+  displayValue: string // example: "absolute" or "relative" (respecting i18n)
+  badgeColor: 'info' | 'primary' | 'secondary'
+  tooltip?: 'Native SW Absolute Fee' | 'Native SW Relative Fee' | string
+  isAbsolute?: boolean
+  isRelative?: boolean
+}
+interface OrderTableEntry {
+  type: OrderTypeProps
+  counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
+  orderId: string // example: "0" (not unique!)
+  fee: string // example: "250" (abs offers) or "0.000100%" (rel offers)
+  minerFeeContribution: string // example: "0"
+  minimumSize: string // example: "27300"
+  maximumSize: string // example: "237499972700"
+  bondValue: string // example: "0" (no fb) or "0.0000052877962973"
+}
+
+const SORT_KEYS = {
+  type: 'TYPE',
+  counterparty: 'COUNTERPARTY',
+  fee: 'FEE',
+  minimumSize: 'MINIMUM_SIZE',
+  maximumSize: 'MAXIMUM_SIZE',
+  minerFeeContribution: 'MINER_FEE_CONTRIBUTION',
+  bondValue: 'BOND_VALUE',
+}
+
+const orderTypeProps = (offer: ObwatchApi.Offer, t: TFunction): OrderTypeProps => {
+  if (isAbsoluteOffer(offer.ordertype)) {
+    return {
+      value: offer.ordertype,
+      displayValue: t('orderbook.text_offer_type_absolute'),
+      badgeColor: 'info',
+      tooltip: offer.ordertype === 'sw0absoffer' ? 'Native SW Absolute Fee' : offer.ordertype,
+      isAbsolute: true,
+    }
   }
-  if (val === ObwatchApi.RELATIVE_ORDER_TYPE_VAL) {
-    return withTooltip(<rb.Badge bg="primary">{t('orderbook.text_offer_type_relative')}</rb.Badge>, val)
+  if (isRelativeOffer(offer.ordertype)) {
+    return {
+      value: offer.ordertype,
+      displayValue: t('orderbook.text_offer_type_relative'),
+      badgeColor: 'primary',
+      tooltip: offer.ordertype === 'sw0reloffer' ? 'Native SW Relative Fee' : offer.ordertype,
+      isRelative: true,
+    }
   }
-  return <rb.Badge bg="secondary">{val}</rb.Badge>
+  return {
+    value: offer.ordertype,
+    displayValue: offer.ordertype,
+    badgeColor: 'secondary',
+  }
 }
 
 const renderOrderFee = (val: string, settings: any) => {
@@ -134,19 +176,19 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
       },
       sortToggleType: SortToggleType.AlternateWithReset,
       sortFns: {
-        [SORT_KEYS.type]: (array) => array.sort((a, b) => a.type.localeCompare(b.type)),
+        [SORT_KEYS.type]: (array) => array.sort((a, b) => a.type.value.localeCompare(b.type.value)),
         [SORT_KEYS.fee]: (array) =>
           array.sort((a, b) => {
-            const aOrder = toOrder(a)
-            const bOrder = toOrder(b)
+            const aOrder = asOrderTableEntry(a)
+            const bOrder = asOrderTableEntry(b)
 
-            if (aOrder.type !== bOrder.type) {
-              return aOrder.type === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL ? 1 : -1
+            if (aOrder.type.value !== bOrder.type.value) {
+              return aOrder.type.isAbsolute === true ? 1 : -1
             }
 
-            if (aOrder.type === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
+            if (aOrder.type.isAbsolute === true) {
               return +aOrder.fee - +bOrder.fee
-            } else {
+            } else if (aOrder.type.isRelative === true) {
               const aIndexOfPercent = aOrder.fee.indexOf('%')
               const bIndexOfPercent = bOrder.fee.indexOf('%')
 
@@ -205,12 +247,12 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
             </Header>
             <Body>
               {tableList.map((item) => {
-                const order = toOrder(item)
+                const order = asOrderTableEntry(item)
                 return (
                   <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
                     <Cell>{order.counterparty}</Cell>
                     <Cell>{order.orderId}</Cell>
-                    <Cell>{renderOrderType(order.type, t)}</Cell>
+                    <Cell>{renderOrderType(order.type)}</Cell>
                     <Cell>{renderOrderFee(order.fee, settings)}</Cell>
                     <Cell>
                       <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
@@ -240,35 +282,48 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
   )
 }
 
+const offerToTableEntry = (offer: ObwatchApi.Offer, t: TFunction): OrderTableEntry => {
+  return {
+    type: orderTypeProps(offer, t),
+    counterparty: offer.counterparty,
+    orderId: String(offer.oid),
+    fee: typeof offer.cjfee === 'number' ? String(offer.cjfee) : (parseFloat(offer.cjfee) * 100).toFixed(6) + '%',
+    minerFeeContribution: String(offer.txfee),
+    minimumSize: String(offer.minsize),
+    maximumSize: String(offer.maxsize),
+    bondValue: String(offer.fidelity_bond_value),
+  }
+}
+
 interface OrderbookProps {
-  orders: ObwatchApi.Order[]
+  entries: OrderTableEntry[]
   refresh: (signal: AbortSignal) => Promise<void>
   nickname?: string
 }
 
-export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
+export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
   const { t } = useTranslation()
   const settings = useSettings()
   const [search, setSearch] = useState('')
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isHighlightOwnOffers, setIsHighlightOwnOffers] = useState(false)
-  const [highlightedOrders, setHighlightedOrders] = useState<ObwatchApi.Order[]>([])
+  const [highlightedOrders, setHighlightedOrders] = useState<OrderTableEntry[]>([])
 
   const tableData: TableTypes.Data = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
     const filteredOrders =
       searchVal === ''
-        ? orders
-        : orders.filter((order) => {
+        ? entries
+        : entries.filter((entry) => {
             return (
-              order.type.toLowerCase().includes(searchVal) ||
-              order.counterparty.toLowerCase().includes(searchVal) ||
-              order.fee.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.orderId.toLowerCase().includes(searchVal)
+              entry.type.displayValue.toLowerCase().includes(searchVal) ||
+              entry.counterparty.toLowerCase().includes(searchVal) ||
+              entry.fee.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.orderId.toLowerCase().includes(searchVal)
             )
           })
     const nodes = filteredOrders.map((order) => ({
@@ -278,9 +333,9 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
     }))
 
     return { nodes }
-  }, [orders, search, highlightedOrders])
+  }, [entries, search, highlightedOrders])
 
-  const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
+  const counterpartyCount = useMemo(() => new Set(entries.map((it) => it.counterparty)).size, [entries])
   const counterpartyCountFiltered = useMemo(
     () => new Set(tableData.nodes.map((it) => it.counterparty)).size,
     [tableData],
@@ -290,9 +345,9 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
     if (!nickname || !isHighlightOwnOffers) {
       setHighlightedOrders([])
     } else {
-      setHighlightedOrders(orders.filter((it) => it.counterparty === nickname))
+      setHighlightedOrders(entries.filter((it) => it.counterparty === nickname))
     }
-  }, [orders, nickname, isHighlightOwnOffers])
+  }, [entries, nickname, isHighlightOwnOffers])
 
   return (
     <div className={styles.orderbookContainer}>
@@ -323,7 +378,7 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
             {search === '' ? (
               <>
                 {t('orderbook.text_orderbook_summary', {
-                  count: orders.length,
+                  count: entries.length,
                   counterpartyCount,
                 })}
               </>
@@ -352,7 +407,7 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
       </div>
 
       <div className="px-md-3 pb-2">
-        {orders.length === 0 ? (
+        {entries.length === 0 ? (
           <rb.Alert variant="info">{t('orderbook.alert_empty_orderbook')}</rb.Alert>
         ) : (
           <>
@@ -385,24 +440,29 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [orders, setOrders] = useState<ObwatchApi.Order[] | null>(null)
+  const [offers, setOffers] = useState<ObwatchApi.Offer[]>()
+  const tableEntries = useMemo(() => offers && offers.map((offer) => offerToTableEntry(offer, t)), [offers, t])
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
-      return ObwatchApi.refreshOrderbook({ signal })
+      return ObwatchApi.refreshOffers({ signal })
         .then((res) => {
           if (!res.ok) {
             // e.g. error is raised if ob-watcher is not running
             return ApiHelper.throwError(res)
           }
 
-          return ObwatchApi.fetchOrderbook({ signal })
+          return ObwatchApi.fetchOffers({ signal })
         })
-        .then((orders) => {
+        .then((offers) => {
           if (signal.aborted) return
 
-          setOrders(orders)
+          setOffers(offers)
           setAlert(undefined)
+
+          if (isDevMode()) {
+            console.table(offers)
+          }
         })
         .catch((e) => {
           if (signal.aborted) return
@@ -468,10 +528,10 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
           ) : (
             <>
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-              {orders && (
+              {tableEntries && (
                 <rb.Row>
                   <rb.Col className="px-0">
-                    <Orderbook nickname={nickname} orders={orders} refresh={refresh} />
+                    <Orderbook nickname={nickname} entries={tableEntries} refresh={refresh} />
                   </rb.Col>
                 </rb.Row>
               )}
