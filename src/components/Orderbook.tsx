@@ -14,8 +14,8 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
-import styles from './Orderbook.module.css'
 import { isDevMode } from '../constants/debugFeatures'
+import styles from './Orderbook.module.css'
 
 const TABLE_THEME = {
   Table: `
@@ -70,9 +70,11 @@ const TABLE_THEME = {
   `,
 }
 
-const withTooltip = (node: ReactElement, tooltip: string) => {
+const withTooltip = (node: ReactElement, tooltip: string, overlayProps?: Partial<rb.OverlayTriggerProps>) => {
   return (
-    <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
+    <rb.OverlayTrigger {...overlayProps} overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>
+      {node}
+    </rb.OverlayTrigger>
   )
 }
 
@@ -103,7 +105,10 @@ interface OrderTableEntry {
   minerFeeContribution: string // example: "0"
   minimumSize: string // example: "27300"
   maximumSize: string // example: "237499972700"
-  bondValue: string // example: "0" (no fb) or "0.0000052877962973"
+  bondValue: {
+    value: number
+    displayValue: string // example: "0" (no fb) or "114557102085.28133"
+  }
 }
 
 const SORT_KEYS = {
@@ -203,7 +208,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
             const val = a.counterparty.localeCompare(b.counterparty)
             return val !== 0 ? val : +a.orderId - +b.orderId
           }),
-        [SORT_KEYS.bondValue]: (array) => array.sort((a, b) => a.bondValue - b.bondValue),
+        [SORT_KEYS.bondValue]: (array) => array.sort((a, b) => a.bondValue.value - b.bondValue.value),
       },
     },
   )
@@ -262,7 +267,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                         showBalance={true}
                       />
                     </Cell>
-                    <Cell className="font-monospace">{order.bondValue}</Cell>
+                    <Cell className="font-monospace">{order.bondValue.displayValue}</Cell>
                   </Row>
                 )
               })}
@@ -298,7 +303,10 @@ const offerToTableEntry = (offer: ObwatchApi.Offer, t: TFunction): OrderTableEnt
     minerFeeContribution: String(offer.txfee),
     minimumSize: String(offer.minsize),
     maximumSize: String(offer.maxsize),
-    bondValue: String(offer.fidelity_bond_value),
+    bondValue: {
+      value: offer.fidelity_bond_value,
+      displayValue: String(offer.fidelity_bond_value.toFixed(0)),
+    },
   }
 }
 
@@ -329,7 +337,7 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
               entry.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
               entry.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
               entry.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
-              entry.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.bondValue.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
               entry.orderId.toLowerCase().includes(searchVal)
             )
           })
@@ -452,20 +460,20 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
-      return ObwatchApi.refreshOffers({ signal })
+      return ObwatchApi.refreshOrderbook({ signal })
         .then((res) => {
           if (!res.ok) {
             // e.g. error is raised if ob-watcher is not running
             return ApiHelper.throwError(res)
           }
 
-          return ObwatchApi.fetchOffers({ signal })
+          return ObwatchApi.fetchOrderbook({ signal })
         })
-        .then((offers) => {
+        .then((orderbook) => {
           if (signal.aborted) return
 
-          setOffers(offers)
           setAlert(undefined)
+          setOffers(orderbook.offers || [])
 
           if (isDevMode()) {
             console.table(offers)

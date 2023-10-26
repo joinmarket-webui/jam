@@ -10,7 +10,11 @@ export interface Offer {
   maxsize: AmountSats // example: 237499972700
   txfee: AmountSats // example: 0
   cjfee: AmountSats | string // example: 250 (abs offers) or "0.00017" (rel offers)
-  fidelity_bond_value: number // example: 0 (no fb) or 0.0000052877962973
+  fidelity_bond_value: number // example: 0 (no fb) or 114557102085.28133
+}
+
+export interface OrderbookJson {
+  offers?: Offer[]
 }
 
 const orderbookJson = async ({ signal }: { signal: AbortSignal }) => {
@@ -19,17 +23,15 @@ const orderbookJson = async ({ signal }: { signal: AbortSignal }) => {
   })
 }
 
-const fetchOffers = async (options: { signal: AbortSignal }) => {
-  return orderbookJson(options)
-    .then((res) => (res.ok ? res.json() : ApiHelper.throwError(res)))
-    .then((res) => (res.offers || []) as Offer[])
+const fetchOrderbook = async (options: { signal: AbortSignal }): Promise<OrderbookJson> => {
+  return orderbookJson(options).then((res) => (res.ok ? res.json() : ApiHelper.throwError(res)))
 }
 
-const refreshOffers = async ({ signal }: { signal: AbortSignal }) => {
+const refreshOrderbook = async ({ signal }: { signal: AbortSignal }) => {
   return await fetch(`${basePath()}/refreshorderbook`, {
     method: 'POST',
     signal,
   })
 }
 
-export { fetchOffers, refreshOffers }
+export { fetchOrderbook, refreshOrderbook }
