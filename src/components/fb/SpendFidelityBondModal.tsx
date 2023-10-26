@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import { CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos, WalletInfo } from '../../context/WalletContext'
+import { CurrentWallet, Utxo, Utxos, WalletInfo } from '../../context/WalletContext'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
 import Alert from '../Alert'
@@ -14,6 +14,7 @@ import { useFeeConfigValues } from '../../hooks/Fees'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import { CopyButton } from '../CopyButton'
 import { LockInfoAlert } from './CreateFidelityBond'
+import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import styles from './SpendFidelityBondModal.module.css'
 
 type Input = {
@@ -226,7 +227,6 @@ const RenewFidelityBondModal = ({
   ...modalProps
 }: RenewFidelityBondModalProps) => {
   const { t } = useTranslation()
-  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const feeConfigValues = useFeeConfigValues()[0]
 
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -250,50 +250,21 @@ const RenewFidelityBondModal = ({
     return walletInfo.data.utxos.utxos.find((utxo) => utxo.utxo === fidelityBondId)
   }, [walletInfo, fidelityBondId])
 
-  // This callback is responsible for updating the loading state when the
-  // the payment is made. The wallet needs some time after a tx is sent
-  // to reflect the changes internally. All outputs in
-  // `waitForUtxosToBeSpent` must have been removed from the wallet
-  // for the payment to be considered done.
-  useEffect(() => {
-    if (waitForUtxosToBeSpent.length === 0) return
-
-    const abortCtrl = new AbortController()
-
-    // Delaying the poll requests gives the wallet some time to synchronize
-    // the utxo set and reduces amount of http requests
-    const initialDelayInMs = 1_000
-    const timer = setTimeout(() => {
-      if (abortCtrl.signal.aborted) return
-
-      reloadCurrentWalletInfo
-        .reloadUtxos({ signal: abortCtrl.signal })
-        .then((res) => {
-          if (abortCtrl.signal.aborted) return
-
-          const outputs = res.utxos.map((it) => it.utxo)
-          const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
-          setWaitForUtxosToBeSpent([...utxosStillPresent])
+  const waitForUtxosToBeSpentContext = useMemo(
+    () => ({
+      waitForUtxosToBeSpent,
+      setWaitForUtxosToBeSpent,
+      onError: (error: any) => {
+        const message = t('global.errors.error_reloading_wallet_failed', {
+          reason: error.message || t('global.errors.reason_unknown'),
         })
-        .catch((err) => {
-          if (abortCtrl.signal.aborted) return
+        setAlert({ variant: 'danger', message })
+      },
+    }),
+    [waitForUtxosToBeSpent, t],
+  )
 
-          // Stop waiting for wallet synchronization on errors, but inform
-          // the user that loading the wallet info failed
-          setWaitForUtxosToBeSpent([])
-
-          const message = t('global.errors.error_reloading_wallet_failed', {
-            reason: err.message || t('global.errors.reason_unknown'),
-          })
-          setAlert({ variant: 'danger', message })
-        })
-    }, initialDelayInMs)
-
-    return () => {
-      abortCtrl.abort()
-      clearTimeout(timer)
-    }
-  }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
+  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
   const yearsRange = useMemo(() => {
     if (isDebugFeatureEnabled('allowCreatingExpiredFidelityBond')) {
@@ -361,7 +332,7 @@ const RenewFidelityBondModal = ({
     return <>{t('earn.fidelity_bond.renew.text_button_submit')}</>
   }, [isSending, txInfo, t])
 
-  const onSelectedDateChanged = useCallback((date) => {
+  const onSelectedDateChanged = useCallback((date: Api.Lockdate | null) => {
     setTimelockedAddress(undefined)
     setLockDate(date ?? undefined)
   }, [])
@@ -558,7 +529,6 @@ const SpendFidelityBondModal = ({
   ...modalProps
 }: SpendFidelityBondModalProps) => {
   const { t } = useTranslation()
-  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const feeConfigValues = useFeeConfigValues()[0]
 
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -582,50 +552,21 @@ const SpendFidelityBondModal = ({
     return walletInfo.data.utxos.utxos.find((utxo) => utxo.utxo === fidelityBondId)
   }, [walletInfo, fidelityBondId])
 
-  // This callback is responsible for updating the loading state when the
-  // the payment is made. The wallet needs some time after a tx is sent
-  // to reflect the changes internally. All outputs in
-  // `waitForUtxosToBeSpent` must have been removed from the wallet
-  // for the payment to be considered done.
-  useEffect(() => {
-    if (waitForUtxosToBeSpent.length === 0) return
-
-    const abortCtrl = new AbortController()
-
-    // Delaying the poll requests gives the wallet some time to synchronize
-    // the utxo set and reduces amount of http requests
-    const initialDelayInMs = 1_000
-    const timer = setTimeout(() => {
-      if (abortCtrl.signal.aborted) return
-
-      reloadCurrentWalletInfo
-        .reloadUtxos({ signal: abortCtrl.signal })
-        .then((res) => {
-          if (abortCtrl.signal.aborted) return
-
-          const outputs = res.utxos.map((it) => it.utxo)
-          const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
-          setWaitForUtxosToBeSpent([...utxosStillPresent])
+  const waitForUtxosToBeSpentContext = useMemo(
+    () => ({
+      waitForUtxosToBeSpent,
+      setWaitForUtxosToBeSpent,
+      onError: (error: any) => {
+        const message = t('global.errors.error_reloading_wallet_failed', {
+          reason: error.message || t('global.errors.reason_unknown'),
         })
-        .catch((err) => {
-          if (abortCtrl.signal.aborted) return
+        setAlert({ variant: 'danger', message })
+      },
+    }),
+    [waitForUtxosToBeSpent, t],
+  )
 
-          // Stop waiting for wallet synchronization on errors, but inform
-          // the user that loading the wallet info failed
-          setWaitForUtxosToBeSpent([])
-
-          const message = t('global.errors.error_reloading_wallet_failed', {
-            reason: err.message || t('global.errors.reason_unknown'),
-          })
-          setAlert({ variant: 'danger', message })
-        })
-    }, initialDelayInMs)
-
-    return () => {
-      abortCtrl.abort()
-      clearTimeout(timer)
-    }
-  }, [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t])
+  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
   const onPrimaryButtonClicked = () => {
     if (isLoading) return

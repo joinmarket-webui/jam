@@ -6,18 +6,20 @@ import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import PageTitle from '../PageTitle'
 import Sprite from '../Sprite'
+import { SendForm, SendFormValues } from './SendForm'
 import { ConfirmModal } from '../Modal'
+import { scrollToTop } from '../../utils'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
 import { FeeValues, TxFee, useFeeConfigValues } from '../../hooks/Fees'
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
+import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-import { scrollToTop } from '../../utils'
+
 import { initialNumCollaborators } from './helpers'
-import { SendForm, SendFormValues } from './SendForm'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
@@ -105,7 +107,7 @@ export default function Send({ wallet }: SendProps) {
     [feeConfigValues],
   )
 
-  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<Api.UtxoId[]>([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
   const isOperationDisabled = useMemo(
@@ -160,53 +162,21 @@ export default function Send({ wallet }: SendProps) {
     [wallet, setAlert, t],
   )
 
-  // This callback is responsible for updating `waitForUtxosToBeSpent` while
-  // the wallet is synchronizing. The wallet needs some time after a tx is sent
-  // to reflect the changes internally. In order to show the actual balance,
-  // all outputs in `waitForUtxosToBeSpent` must have been removed from the
-  // wallet's utxo set.
-  useEffect(
-    function updateWaitForUtxosToBeSpentHook() {
-      if (waitForUtxosToBeSpent.length === 0) return
-
-      const abortCtrl = new AbortController()
-
-      // Delaying the poll requests gives the wallet some time to synchronize
-      // the utxo set and reduces amount of http requests
-      const initialDelayInMs = 250
-      const timer = setTimeout(() => {
-        if (abortCtrl.signal.aborted) return
-
-        reloadCurrentWalletInfo
-          .reloadUtxos({ signal: abortCtrl.signal })
-          .then((res) => {
-            if (abortCtrl.signal.aborted) return
-            const outputs = res.utxos.map((it) => it.utxo)
-            const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
-            setWaitForUtxosToBeSpent([...utxosStillPresent])
-          })
-
-          .catch((err) => {
-            if (abortCtrl.signal.aborted) return
-
-            // Stop waiting for wallet synchronization on errors, but inform
-            // the user that loading the wallet info failed
-            setWaitForUtxosToBeSpent([])
-
-            const message = t('global.errors.error_reloading_wallet_failed', {
-              reason: err.message || t('global.errors.reason_unknown'),
-            })
-            setAlert({ variant: 'danger', message })
-          })
-      }, initialDelayInMs)
-
-      return () => {
-        abortCtrl.abort()
-        clearTimeout(timer)
-      }
-    },
-    [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t],
+  const waitForUtxosToBeSpentContext = useMemo(
+    () => ({
+      waitForUtxosToBeSpent,
+      setWaitForUtxosToBeSpent,
+      onError: (error: any) => {
+        const message = t('global.errors.error_reloading_wallet_failed', {
+          reason: error.message || t('global.errors.reason_unknown'),
+        })
+        setAlert({ variant: 'danger', message })
+      },
+    }),
+    [waitForUtxosToBeSpent, t],
   )
+
+  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
   useEffect(
     function initialize() {
