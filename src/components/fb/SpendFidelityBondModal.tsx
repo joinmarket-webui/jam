@@ -67,10 +67,15 @@ const spendUtxosWithDirectSend = async (
   request: UtxoDirectSendRequest,
   hooks: UtxoDirectSendHook,
 ) => {
-  const utxosFromSameJar = request.utxos.every((it) => it.mixdepth === request.sourceJarIndex)
-  if (!utxosFromSameJar || request.utxos.length === 0) {
+  if (request.utxos.length === 0) {
     // this is a programming error (no translation needed)
-    throw new Error('Precondition failed: UTXOs must be from the same jar')
+    throw new Error('Precondition failed: No UTXO(s) provided.')
+  }
+
+  const utxosFromSameJar = request.utxos.every((it) => it.mixdepth === request.sourceJarIndex)
+  if (!utxosFromSameJar) {
+    // this is a programming error (no translation needed)
+    throw new Error('Precondition failed: UTXOs must be from the same jar.')
   }
 
   const spendableUtxoIds = request.utxos.map((it) => it.utxo)
@@ -83,6 +88,10 @@ const spendUtxosWithDirectSend = async (
   ).filter((utxo) => utxo.mixdepth === request.sourceJarIndex)
 
   const utxosToSpend = utxosFromSourceJar.filter((it) => spendableUtxoIds.includes(it.utxo))
+
+  if (spendableUtxoIds.length !== utxosToSpend.length) {
+    throw new Error('Precondition failed: Specified UTXO(s) cannot be used for this payment.')
+  }
 
   const utxosToFreeze = utxosFromSourceJar
     .filter((it) => !it.frozen)
@@ -236,10 +245,12 @@ const RenewFidelityBondModal = ({
 
   const [lockDate, setLockDate] = useState<Api.Lockdate>()
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
+  const [isLoadingTimelockedAddress, setIsLoadingTimelockAddress] = useState(false)
+  const [timelockedAddressAlert, setTimelockedAddressAlert] = useState<SimpleAlert>()
 
   const [parentMustReload, setParentMustReload] = useState(false)
   const [isSending, setIsSending] = useState(false)
-  const [isLoadingTimelockedAddress, setIsLoadingTimelockAddress] = useState(false)
+
   const isLoading = useMemo(() => isSending || waitForUtxosToBeSpent.length > 0, [isSending, waitForUtxosToBeSpent])
 
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false)
@@ -292,7 +303,7 @@ const RenewFidelityBondModal = ({
       const abortCtrl = new AbortController()
 
       setIsLoadingTimelockAddress(true)
-      setAlert(undefined)
+      setTimelockedAddressAlert(undefined)
 
       const timer = setTimeout(
         () =>
@@ -304,8 +315,9 @@ const RenewFidelityBondModal = ({
             })
             .catch((err) => {
               if (abortCtrl.signal.aborted) return
-              setAlert({ variant: 'danger', message: err.message })
               setIsLoadingTimelockAddress(false)
+              setTimelockedAddress(undefined)
+              setTimelockedAddressAlert({ variant: 'danger', message: err.message })
             }),
         250,
       )
@@ -364,28 +376,36 @@ const RenewFidelityBondModal = ({
           onChange={onSelectedDateChanged}
         />
 
-        <>
-          <div className="d-flex flex-column gap-3">
-            <div className="d-flex align-items-center gap-2">
-              <CopyButton
-                className={!timelockedAddress || isLoadingTimelockedAddress || isLoading ? 'invisible' : ''}
-                text={<Sprite symbol="copy" width="18" height="18" />}
-                successText={<Sprite symbol="checkmark" width="18" height="18" />}
-                value={timelockedAddress || ''}
+        <div className="d-flex flex-column gap-3">
+          <div className="d-flex align-items-center gap-2">
+            {timelockedAddressAlert ? (
+              <Alert
+                {...timelockedAddressAlert}
+                className="mt-0"
+                onClose={() => setTimelockedAddressAlert(undefined)}
               />
-              <div className="d-flex flex-column flex-grow-1">
-                <div>{t('earn.fidelity_bond.review_inputs.label_address')}</div>
-                {!isLoading && !isLoadingTimelockedAddress ? (
-                  <div className="font-monospace text-small pt-1">{timelockedAddress}</div>
-                ) : (
-                  <rb.Placeholder as="div" animation="wave">
-                    <rb.Placeholder xs={12} />
-                  </rb.Placeholder>
-                )}
-              </div>
-            </div>
+            ) : (
+              <>
+                <CopyButton
+                  className={!timelockedAddress || isLoadingTimelockedAddress || isLoading ? 'invisible' : ''}
+                  text={<Sprite symbol="copy" width="18" height="18" />}
+                  successText={<Sprite symbol="checkmark" width="18" height="18" />}
+                  value={timelockedAddress || ''}
+                />
+                <div className="d-flex flex-column flex-grow-1">
+                  <div>{t('earn.fidelity_bond.review_inputs.label_address')}</div>
+                  {!isLoading && !isLoadingTimelockedAddress ? (
+                    <div className="font-monospace text-small pt-1">{timelockedAddress || '...'}</div>
+                  ) : (
+                    <rb.Placeholder as="div" animation="wave">
+                      <rb.Placeholder xs={12} />
+                    </rb.Placeholder>
+                  )}
+                </div>
+              </>
+            )}
           </div>
-        </>
+        </div>
       </div>
     )
   }, [
@@ -394,6 +414,7 @@ const RenewFidelityBondModal = ({
     yearsRange,
     timelockedAddress,
     isLoadingTimelockedAddress,
+    timelockedAddressAlert,
     txInfo,
     onSelectedDateChanged,
     t,
