@@ -19,7 +19,7 @@ import styles from './Orderbook.module.css'
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 1fr 5rem 1fr 1fr 2fr 2fr 2fr 2fr;
+    --data-table-library_grid-template-columns: 1fr 5rem 1fr 2fr 2fr 2fr 2fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -203,6 +203,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
         [SORT_KEYS.maximumSize]: (array) => array.sort((a, b) => a.maximumSize - b.maximumSize),
         [SORT_KEYS.minerFeeContribution]: (array) =>
           array.sort((a, b) => a.minerFeeContribution - b.minerFeeContribution),
+
         [SORT_KEYS.counterparty]: (array) =>
           array.sort((a, b) => {
             const val = a.counterparty.localeCompare(b.counterparty)
@@ -239,7 +240,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                 <HeaderCellSort sortKey={SORT_KEYS.maximumSize}>
                   {t('orderbook.table.heading_maximum_size')}
                 </HeaderCellSort>
-                <HeaderCellSort sortKey={SORT_KEYS.minerFeeContribution}>
+                <HeaderCellSort hide={true} sortKey={SORT_KEYS.minerFeeContribution}>
                   {t('orderbook.table.heading_miner_fee_contribution')}
                 </HeaderCellSort>
                 <HeaderCellSort sortKey={SORT_KEYS.bondValue}>{t('orderbook.table.heading_bond_value')}</HeaderCellSort>
@@ -250,7 +251,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                 const order = asOrderTableEntry(item)
                 return (
                   <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
-                    <Cell className="slashed-zeroes">{order.counterparty}</Cell>
+                    <Cell className="font-monospace">{order.counterparty}</Cell>
                     <Cell>{order.orderId}</Cell>
                     <Cell>{renderOrderType(order.type)}</Cell>
                     <Cell>{renderOrderFee(order.fee.displayValue, settings)}</Cell>
@@ -260,7 +261,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                     <Cell>
                       <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
                     </Cell>
-                    <Cell>
+                    <Cell hide={true}>
                       <Balance
                         valueString={order.minerFeeContribution}
                         convertToUnit={settings.unit}
@@ -476,7 +477,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
           setOffers(orderbook.offers || [])
 
           if (isDevMode()) {
-            console.table(offers)
+            console.table(orderbook.offers)
           }
         })
         .catch((e) => {
