@@ -245,7 +245,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                 const order = asOrderTableEntry(item)
                 return (
                   <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
-                    <Cell>{order.counterparty}</Cell>
+                    <Cell className="slashed-zeroes">{order.counterparty}</Cell>
                     <Cell>{order.orderId}</Cell>
                     <Cell>{renderOrderType(order.type)}</Cell>
                     <Cell>{renderOrderFee(order.fee.displayValue, settings)}</Cell>
@@ -262,7 +262,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                         showBalance={true}
                       />
                     </Cell>
-                    <Cell>{order.bondValue}</Cell>
+                    <Cell className="font-monospace">{order.bondValue}</Cell>
                   </Row>
                 )
               })}
