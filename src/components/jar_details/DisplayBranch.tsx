@@ -63,27 +63,13 @@ export function DisplayBranchHeader({ branch }: DisplayBranchProps) {
 }
 
 export function DisplayBranchBody({ branch }: DisplayBranchProps) {
-  const { branch: detailsString, entries } = branch
-  const xpub: string | undefined = detailsString.split('\t')[2]
   return (
     <rb.Container className="mb-2" fluid>
-      <rb.Row>
-        <rb.Col>
-          {xpub && (
-            <div className="p-3 mb-1">
-              <div>Extended public key</div>
-              <code className="text-secondary text-break">{xpub}</code>
-            </div>
-          )}
-        </rb.Col>
-      </rb.Row>
-      {entries.map((entry, index) => (
+      {branch.entries.map((entry) => (
         <DisplayBranchEntry
           key={entry.address}
           entry={entry}
-          className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
-            index === 0 ? 'border-top-1 mt-2' : 'border-top-0'
-          }`}
+          className="bg-transparent rounded-0 border-start-0 border-end-0 border-bottom-0"
         />
       ))}
     </rb.Container>
