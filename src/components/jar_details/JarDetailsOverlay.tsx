@@ -414,16 +414,18 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                   </>
                 ) : (
                   <rb.Accordion flush className="p-3 p-lg-0">
-                    {jar.branches.map((branch, index) => (
-                      <rb.Accordion.Item className={styles.jarItem} key={branch.branch} eventKey={`${index}`}>
-                        <rb.Accordion.Header>
-                          <DisplayBranchHeader branch={branch} />
-                        </rb.Accordion.Header>
-                        <rb.Accordion.Body>
-                          <DisplayBranchBody branch={branch} />
-                        </rb.Accordion.Body>
-                      </rb.Accordion.Item>
-                    ))}
+                    {jar.branches
+                      .filter((it) => it.entries.length > 0)
+                      .map((branch, index) => (
+                        <rb.Accordion.Item className={styles.jarItem} key={branch.branch} eventKey={`${index}`}>
+                          <rb.Accordion.Header>
+                            <DisplayBranchHeader branch={branch} />
+                          </rb.Accordion.Header>
+                          <rb.Accordion.Body>
+                            <DisplayBranchBody branch={branch} />
+                          </rb.Accordion.Body>
+                        </rb.Accordion.Item>
+                      ))}
                   </rb.Accordion>
                 )}
               </div>

@@ -208,7 +208,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
         })
         .catch((err) => {
           if (!signal.aborted) {
-            const isUnauthorized = err instanceof Api.JmApiError && err.response.status === 401
+            const isUnauthorized = err instanceof Api.JmApiError && err.response?.status === 401
             if (isUnauthorized) {
               resetWalletAndClearSession()
             } else {

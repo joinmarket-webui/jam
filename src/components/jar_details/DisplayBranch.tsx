@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next'
 import Balance from '../Balance'
 import { useSettings } from '../../context/SettingsContext'
 import { Branch, BranchEntry } from '../../context/WalletContext'
-import styles from './DisplayBranch.module.css'
 import { CopyButton } from '../CopyButton'
 import Sprite from '../Sprite'
+import styles from './DisplayBranch.module.css'
 
 const toHdPathIndex = (hdPath: string) => {
   const indexOfLastSeparator = hdPath.lastIndexOf('/')
@@ -73,15 +73,6 @@ export function DisplayBranchBody({ branch }: DisplayBranchProps) {
         />
       ))}
     </rb.Container>
-  )
-}
-
-export default function DisplayBranch({ branch }: DisplayBranchProps) {
-  return (
-    <article>
-      <DisplayBranchHeader branch={branch} />
-      <DisplayBranchBody branch={branch} />
-    </article>
   )
 }
 
