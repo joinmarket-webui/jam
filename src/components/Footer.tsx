@@ -8,8 +8,10 @@ import { useCurrentWallet } from '../context/WalletContext'
 import Sprite from './Sprite'
 import Cheatsheet from './Cheatsheet'
 import packageInfo from '../../package.json'
-import { isDevMode } from '../constants/debugFeatures'
+import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import { toSemVer } from '../utils'
+import { Link } from 'react-router-dom'
+import { routes } from '../constants/routes'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -52,7 +54,7 @@ export default function Footer() {
               <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
               <p>{t('footer.warning_alert_text')}</p>
               <p className="text-secondary">
-                JoinMarket: v{serviceInfo?.server?.version?.raw || 'unknown'}
+                JoinMarket: v{serviceInfo?.server?.version?.raw || '_unknown'}
                 <br />
                 Jam: v{APP_DISPLAY_VERSION}
               </p>
@@ -68,13 +70,13 @@ export default function Footer() {
 
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
-          <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
-            <div className="warning-hint text-start text-secondary">
+          <div className="flex-1 order-0 justify-content-start align-items-center">
+            <div className="text-small text-start text-secondary">
               <Trans i18nKey="footer.warning">
                 This is pre-alpha software.
                 <rb.Button
                   variant="link"
-                  className="warning-hint text-start border-0 p-0 text-secondary"
+                  className="text-small text-start border-0 p-0 text-secondary"
                   onClick={() => setShowBetaWarning(true)}
                 >
                   Read this before using.
@@ -102,7 +104,14 @@ export default function Footer() {
             )}
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
-            <div className="warning-hint text-start text-secondary d-none d-md-block pe-1">
+            {isDebugFeatureEnabled('devSetupPage') && (
+              <div className="d-none d-md-block text-small text-start mx-1">
+                <Link className="text-warning" to={routes.__devSetup}>
+                  Dev Setup
+                </Link>
+              </div>
+            )}
+            <div className="text-small text-start text-secondary mx-1">
               <a
                 href="https://github.com/joinmarket-webui/jam/tags"
                 target="_blank"
@@ -112,7 +121,7 @@ export default function Footer() {
                 v{APP_DISPLAY_VERSION}
               </a>
             </div>
-            <div className="d-flex gap-2 pe-2">
+            <div className="d-flex gap-2 me-2">
               <a
                 href="https://github.com/joinmarket-webui/jam"
                 target="_blank"
@@ -130,7 +139,7 @@ export default function Footer() {
                 <Sprite symbol="telegram" width="18px" height="18px" />
               </a>
             </div>
-            <div className="d-flex text-secondary">|</div>
+            <div className="text-secondary">|</div>
             <div className="d-flex">
               <rb.OverlayTrigger
                 delay={{ hide: 300, show: 200 }}

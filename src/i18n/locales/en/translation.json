@@ -37,6 +37,7 @@
     "title": "Jam",
     "text_rescan_in_progress": "Rescanning...",
     "button_create_wallet": "Create Wallet",
+    "button_import_wallet": "Import Wallet",
     "tab_send": "Send",
     "tab_receive": "Receive",
     "tab_earn": "Earn",

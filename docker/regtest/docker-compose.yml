@@ -175,6 +175,10 @@ services:
       BTCEXP_BITCOIND_PORT: 43782
       BTCEXP_BITCOIND_USER: regtest
       BTCEXP_BITCOIND_PASS: regtest
+      BTCEXP_BASIC_AUTH_PASSWORD: joinmarket
+      BTCEXP_PRIVACY_MODE: 'true'
+      BTCEXP_NO_RATES: 'true'
+      BTCEXP_RPC_ALLOWALL: 'true'
     ports:
       - "3002:3002"
     depends_on:

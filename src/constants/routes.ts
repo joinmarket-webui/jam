@@ -11,6 +11,7 @@ export const routes = {
   importWallet: '/import-wallet',
   rescanChain: '/rescan',
   __errorExample: '/error-example',
+  __devSetup: '/dev-setup',
 }
 
 export type Route = keyof typeof routes
