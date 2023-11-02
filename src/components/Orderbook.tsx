@@ -13,21 +13,13 @@ import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
+import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
+import { isDevMode } from '../constants/debugFeatures'
 import styles from './Orderbook.module.css'
-
-const SORT_KEYS = {
-  type: 'TYPE',
-  counterparty: 'COUNTERPARTY',
-  fee: 'FEE',
-  minimumSize: 'MINIMUM_SIZE',
-  maximumSize: 'MAXIMUM_SIZE',
-  minerFeeContribution: 'MINER_FEE_CONTRIBUTION',
-  bondValue: 'BOND_VALUE',
-}
 
 const TABLE_THEME = {
   Table: `
-    --data-table-library_grid-template-columns: 1fr 5rem 1fr 1fr 2fr 2fr 2fr 2fr;
+    --data-table-library_grid-template-columns: 1fr 5rem 1fr 2fr 2fr 2fr 2fr;
     font-size: 0.9rem;
   `,
   BaseCell: `
@@ -78,27 +70,89 @@ const TABLE_THEME = {
   `,
 }
 
-const withTooltip = (node: ReactElement, tooltip: string) => {
+const withTooltip = (node: ReactElement, tooltip: string, overlayProps?: Partial<rb.OverlayTriggerProps>) => {
   return (
-    <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
+    <rb.OverlayTrigger {...overlayProps} overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>
+      {node}
+    </rb.OverlayTrigger>
   )
 }
 
-// `TableNode` is known to have same properties as `ObwatchApi.Order`, hence prefer casting over object destructuring
-const toOrder = (tableNode: TableTypes.TableNode) => tableNode as unknown as ObwatchApi.Order
+// `TableNode` is known to have same properties as `OrderTableEntry`, hence prefer casting over object destructuring
+const asOrderTableEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as OrderTableEntry
 
-const renderOrderType = (val: string, t: TFunction) => {
-  if (val === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
-    return withTooltip(<rb.Badge bg="info">{t('orderbook.text_offer_type_absolute')}</rb.Badge>, val)
+const renderOrderType = (type: OrderTypeProps) => {
+  const elem = <rb.Badge bg={type.badgeColor}>{type.displayValue}</rb.Badge>
+  return type.tooltip ? withTooltip(elem, type.tooltip) : elem
+}
+
+type OrderTypeProps = {
+  value: string // original value, example: 'sw0reloffer', 'swreloffer', 'reloffer', 'sw0absoffer', 'swabsoffer', 'absoffer'
+  displayValue: string // example: "absolute" or "relative" (respecting i18n)
+  badgeColor: 'info' | 'primary' | 'secondary'
+  tooltip?: 'Native SW Absolute Fee' | 'Native SW Relative Fee' | string
+  isAbsolute?: boolean
+  isRelative?: boolean
+}
+interface OrderTableEntry {
+  type: OrderTypeProps
+  counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
+  orderId: string // example: "0" (not unique!)
+  fee: {
+    value: number
+    displayValue: string // example: "250" (abs offers) or "0.000100%" (rel offers)
   }
-  if (val === ObwatchApi.RELATIVE_ORDER_TYPE_VAL) {
-    return withTooltip(<rb.Badge bg="primary">{t('orderbook.text_offer_type_relative')}</rb.Badge>, val)
+  minerFeeContribution: string // example: "0"
+  minimumSize: string // example: "27300"
+  maximumSize: string // example: "237499972700"
+  bondValue: {
+    value: number
+    displayValue: string // example: "0" (no fb) or "114557102085.28133"
   }
-  return <rb.Badge bg="secondary">{val}</rb.Badge>
+}
+
+const SORT_KEYS = {
+  type: 'TYPE',
+  counterparty: 'COUNTERPARTY',
+  fee: 'FEE',
+  minimumSize: 'MINIMUM_SIZE',
+  maximumSize: 'MAXIMUM_SIZE',
+  minerFeeContribution: 'MINER_FEE_CONTRIBUTION',
+  bondValue: 'BOND_VALUE',
+}
+
+const orderTypeProps = (offer: ObwatchApi.Offer, t: TFunction): OrderTypeProps => {
+  if (isAbsoluteOffer(offer.ordertype)) {
+    return {
+      value: offer.ordertype,
+      displayValue: t('orderbook.text_offer_type_absolute'),
+      badgeColor: 'info',
+      tooltip: offer.ordertype === 'sw0absoffer' ? 'Native SW Absolute Fee' : offer.ordertype,
+      isAbsolute: true,
+    }
+  }
+  if (isRelativeOffer(offer.ordertype)) {
+    return {
+      value: offer.ordertype,
+      displayValue: t('orderbook.text_offer_type_relative'),
+      badgeColor: 'primary',
+      tooltip: offer.ordertype === 'sw0reloffer' ? 'Native SW Relative Fee' : offer.ordertype,
+      isRelative: true,
+    }
+  }
+  return {
+    value: offer.ordertype,
+    displayValue: offer.ordertype,
+    badgeColor: 'secondary',
+  }
 }
 
 const renderOrderFee = (val: string, settings: any) => {
-  return val.includes('%') ? <>{val}</> : <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />
+  return val.includes('%') ? (
+    <span className="font-monospace">{val}</span>
+  ) : (
+    <Balance valueString={val} convertToUnit={settings.unit} showBalance={true} />
+  )
 }
 
 interface OrderbookTableProps {
@@ -134,39 +188,28 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
       },
       sortToggleType: SortToggleType.AlternateWithReset,
       sortFns: {
-        [SORT_KEYS.type]: (array) => array.sort((a, b) => a.type.localeCompare(b.type)),
+        [SORT_KEYS.type]: (array) => array.sort((a, b) => a.type.displayValue.localeCompare(b.type.displayValue)),
         [SORT_KEYS.fee]: (array) =>
           array.sort((a, b) => {
-            const aOrder = toOrder(a)
-            const bOrder = toOrder(b)
+            const aOrder = asOrderTableEntry(a)
+            const bOrder = asOrderTableEntry(b)
 
-            if (aOrder.type !== bOrder.type) {
-              return aOrder.type === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL ? 1 : -1
+            if (aOrder.type.isAbsolute !== bOrder.type.isAbsolute) {
+              return aOrder.type.isAbsolute === true ? 1 : -1
             }
-
-            if (aOrder.type === ObwatchApi.ABSOLUTE_ORDER_TYPE_VAL) {
-              return +aOrder.fee - +bOrder.fee
-            } else {
-              const aIndexOfPercent = aOrder.fee.indexOf('%')
-              const bIndexOfPercent = bOrder.fee.indexOf('%')
-
-              if (aIndexOfPercent > 0 && bIndexOfPercent > 0) {
-                return +aOrder.fee.substring(0, aIndexOfPercent) - +bOrder.fee.substring(0, bIndexOfPercent)
-              }
-            }
-
-            return 0
+            return aOrder.fee.value - bOrder.fee.value
           }),
         [SORT_KEYS.minimumSize]: (array) => array.sort((a, b) => a.minimumSize - b.minimumSize),
         [SORT_KEYS.maximumSize]: (array) => array.sort((a, b) => a.maximumSize - b.maximumSize),
         [SORT_KEYS.minerFeeContribution]: (array) =>
           array.sort((a, b) => a.minerFeeContribution - b.minerFeeContribution),
+
         [SORT_KEYS.counterparty]: (array) =>
           array.sort((a, b) => {
             const val = a.counterparty.localeCompare(b.counterparty)
             return val !== 0 ? val : +a.orderId - +b.orderId
           }),
-        [SORT_KEYS.bondValue]: (array) => array.sort((a, b) => a.bondValue - b.bondValue),
+        [SORT_KEYS.bondValue]: (array) => array.sort((a, b) => a.bondValue.value - b.bondValue.value),
       },
     },
   )
@@ -197,7 +240,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
                 <HeaderCellSort sortKey={SORT_KEYS.maximumSize}>
                   {t('orderbook.table.heading_maximum_size')}
                 </HeaderCellSort>
-                <HeaderCellSort sortKey={SORT_KEYS.minerFeeContribution}>
+                <HeaderCellSort hide={true} sortKey={SORT_KEYS.minerFeeContribution}>
                   {t('orderbook.table.heading_miner_fee_contribution')}
                 </HeaderCellSort>
                 <HeaderCellSort sortKey={SORT_KEYS.bondValue}>{t('orderbook.table.heading_bond_value')}</HeaderCellSort>
@@ -205,27 +248,27 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
             </Header>
             <Body>
               {tableList.map((item) => {
-                const order = toOrder(item)
+                const order = asOrderTableEntry(item)
                 return (
                   <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
-                    <Cell>{order.counterparty}</Cell>
+                    <Cell className="font-monospace">{order.counterparty}</Cell>
                     <Cell>{order.orderId}</Cell>
-                    <Cell>{renderOrderType(order.type, t)}</Cell>
-                    <Cell>{renderOrderFee(order.fee, settings)}</Cell>
+                    <Cell>{renderOrderType(order.type)}</Cell>
+                    <Cell>{renderOrderFee(order.fee.displayValue, settings)}</Cell>
                     <Cell>
                       <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
                     </Cell>
                     <Cell>
                       <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
                     </Cell>
-                    <Cell>
+                    <Cell hide={true}>
                       <Balance
                         valueString={order.minerFeeContribution}
                         convertToUnit={settings.unit}
                         showBalance={true}
                       />
                     </Cell>
-                    <Cell>{order.bondValue}</Cell>
+                    <Cell className="font-monospace">{order.bondValue.displayValue}</Cell>
                   </Row>
                 )
               })}
@@ -240,35 +283,63 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
   )
 }
 
+const offerToTableEntry = (offer: ObwatchApi.Offer, t: TFunction): OrderTableEntry => {
+  return {
+    type: orderTypeProps(offer, t),
+    counterparty: offer.counterparty,
+    orderId: String(offer.oid),
+    fee:
+      typeof offer.cjfee === 'number'
+        ? {
+            value: offer.cjfee,
+            displayValue: String(offer.cjfee),
+          }
+        : (() => {
+            const value = parseFloat(offer.cjfee)
+            return {
+              value,
+              displayValue: factorToPercentage(value).toFixed(4) + '%',
+            }
+          })(),
+    minerFeeContribution: String(offer.txfee),
+    minimumSize: String(offer.minsize),
+    maximumSize: String(offer.maxsize),
+    bondValue: {
+      value: offer.fidelity_bond_value,
+      displayValue: String(offer.fidelity_bond_value.toFixed(0)),
+    },
+  }
+}
+
 interface OrderbookProps {
-  orders: ObwatchApi.Order[]
+  entries: OrderTableEntry[]
   refresh: (signal: AbortSignal) => Promise<void>
   nickname?: string
 }
 
-export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
+export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
   const { t } = useTranslation()
   const settings = useSettings()
   const [search, setSearch] = useState('')
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isHighlightOwnOffers, setIsHighlightOwnOffers] = useState(false)
-  const [highlightedOrders, setHighlightedOrders] = useState<ObwatchApi.Order[]>([])
+  const [highlightedOrders, setHighlightedOrders] = useState<OrderTableEntry[]>([])
 
   const tableData: TableTypes.Data = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
     const filteredOrders =
       searchVal === ''
-        ? orders
-        : orders.filter((order) => {
+        ? entries
+        : entries.filter((entry) => {
             return (
-              order.type.toLowerCase().includes(searchVal) ||
-              order.counterparty.toLowerCase().includes(searchVal) ||
-              order.fee.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.bondValue.replace('.', '').toLowerCase().includes(searchVal) ||
-              order.orderId.toLowerCase().includes(searchVal)
+              entry.type.displayValue.toLowerCase().includes(searchVal) ||
+              entry.counterparty.toLowerCase().includes(searchVal) ||
+              entry.fee.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.bondValue.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
+              entry.orderId.toLowerCase().includes(searchVal)
             )
           })
     const nodes = filteredOrders.map((order) => ({
@@ -278,9 +349,9 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
     }))
 
     return { nodes }
-  }, [orders, search, highlightedOrders])
+  }, [entries, search, highlightedOrders])
 
-  const counterpartyCount = useMemo(() => new Set(orders.map((it) => it.counterparty)).size, [orders])
+  const counterpartyCount = useMemo(() => new Set(entries.map((it) => it.counterparty)).size, [entries])
   const counterpartyCountFiltered = useMemo(
     () => new Set(tableData.nodes.map((it) => it.counterparty)).size,
     [tableData],
@@ -290,9 +361,9 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
     if (!nickname || !isHighlightOwnOffers) {
       setHighlightedOrders([])
     } else {
-      setHighlightedOrders(orders.filter((it) => it.counterparty === nickname))
+      setHighlightedOrders(entries.filter((it) => it.counterparty === nickname))
     }
-  }, [orders, nickname, isHighlightOwnOffers])
+  }, [entries, nickname, isHighlightOwnOffers])
 
   return (
     <div className={styles.orderbookContainer}>
@@ -323,7 +394,7 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
             {search === '' ? (
               <>
                 {t('orderbook.text_orderbook_summary', {
-                  count: orders.length,
+                  count: entries.length,
                   counterpartyCount,
                 })}
               </>
@@ -352,7 +423,7 @@ export function Orderbook({ orders, refresh, nickname }: OrderbookProps) {
       </div>
 
       <div className="px-md-3 pb-2">
-        {orders.length === 0 ? (
+        {entries.length === 0 ? (
           <rb.Alert variant="info">{t('orderbook.alert_empty_orderbook')}</rb.Alert>
         ) : (
           <>
@@ -385,7 +456,8 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [orders, setOrders] = useState<ObwatchApi.Order[] | null>(null)
+  const [offers, setOffers] = useState<ObwatchApi.Offer[]>()
+  const tableEntries = useMemo(() => offers && offers.map((offer) => offerToTableEntry(offer, t)), [offers, t])
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
@@ -398,11 +470,15 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
 
           return ObwatchApi.fetchOrderbook({ signal })
         })
-        .then((orders) => {
+        .then((orderbook) => {
           if (signal.aborted) return
 
-          setOrders(orders)
           setAlert(undefined)
+          setOffers(orderbook.offers || [])
+
+          if (isDevMode()) {
+            console.table(orderbook.offers)
+          }
         })
         .catch((e) => {
           if (signal.aborted) return
@@ -468,10 +544,10 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
           ) : (
             <>
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-              {orders && (
+              {tableEntries && (
                 <rb.Row>
                   <rb.Col className="px-0">
-                    <Orderbook nickname={nickname} orders={orders} refresh={refresh} />
+                    <Orderbook nickname={nickname} entries={tableEntries} refresh={refresh} />
                   </rb.Col>
                 </rb.Row>
               )}

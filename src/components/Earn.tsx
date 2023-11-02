@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Formik, FormikErrors } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import { TFunction } from 'i18next'
 import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
-import { factorToPercentage, isValidNumber, percentageToFactor } from '../utils'
+import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import * as fb from './fb/utils'
 import Sprite from './Sprite'
@@ -19,7 +20,6 @@ import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
 import styles from './Earn.module.css'
 import Accordion from './Accordion'
-import { TFunction } from 'i18next'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -31,14 +31,8 @@ const MAKER_STOP_RESPONSE_DELAY_MS = 2_000
 // that the UTXO corresponding to the fidelity bond is correctly marked as such.
 const RELOAD_FIDELITY_BONDS_DELAY_MS = 2_000
 
-const OFFERTYPE_REL = 'sw0reloffer'
-const OFFERTYPE_ABS = 'sw0absoffer'
-
-// can be any of ['sw0reloffer', 'swreloffer', 'reloffer']
-const isRelativeOffer = (offertype: string) => offertype.includes('reloffer')
-
-// can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
-const isAbsoluteOffer = (offertype: string) => offertype.includes('absoffer')
+const OFFERTYPE_REL: Api.OfferType = 'sw0reloffer'
+const OFFERTYPE_ABS: Api.OfferType = 'sw0absoffer'
 
 const FORM_INPUT_LOCAL_STORAGE_KEYS = {
   offertype: 'jm-offertype',

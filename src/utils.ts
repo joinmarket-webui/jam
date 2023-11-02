@@ -1,4 +1,4 @@
-import { WalletFileName } from './libs/JmWalletApi'
+import { OfferType, WalletFileName } from './libs/JmWalletApi'
 
 const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
@@ -73,6 +73,12 @@ export const factorToPercentage = (val: number, precision = 6) => {
   // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
   return Number((val * 100).toFixed(precision))
 }
+
+// can be any of ['sw0reloffer', 'swreloffer', 'reloffer']
+export const isRelativeOffer = (offertype: OfferType) => offertype.includes('reloffer')
+
+// can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
+export const isAbsoluteOffer = (offertype: OfferType) => offertype.includes('absoffer')
 
 export const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
 
