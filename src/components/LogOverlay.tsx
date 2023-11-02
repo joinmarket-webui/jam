@@ -7,6 +7,7 @@ import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet } from '../context/WalletContext'
 import Sprite from './Sprite'
 import styles from './LogOverlay.module.css'
+import { isDevMode } from '../constants/debugFeatures'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
 
@@ -74,7 +75,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [content, setContent] = useState<string | null>(null)
+  const [content, setContent] = useState<string>()
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
@@ -85,9 +86,14 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
           setAlert(undefined)
           setContent(data)
         })
-        .catch((err) => {
+        .catch((e) => {
           if (signal.aborted) return
-          setAlert({ variant: 'danger', message: t('logs.error_loading_logs_failed') })
+          setAlert({
+            variant: 'danger',
+            message: t('logs.error_loading_logs_failed', {
+              reason: e.message || t('global.errors.reason_unknown'),
+            }),
+          })
         })
         .finally(() => {
           if (signal.aborted) return
@@ -138,7 +144,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
       <rb.Offcanvas.Body>
         <rb.Container fluid="lg" className="py-3">
           {!isInitialized && isLoading ? (
-            Array(12)
+            Array(5)
               .fill('')
               .map((_, index) => {
                 return (
@@ -149,6 +155,13 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
               })
           ) : (
             <>
+              {alert && !content && isDevMode() && (
+                <div className="my-4">
+                  <span className="badge rounded-pill bg-warning me-2">dev</span>
+                  In order to test the log file feature, start the application with
+                  <code className="mx-2">npm run dev:start:secondary</code>.
+                </div>
+              )}
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {content && (
                 <rb.Row>

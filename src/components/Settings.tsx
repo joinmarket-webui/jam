@@ -16,7 +16,7 @@ import languages from '../i18n/languages'
 import styles from './Settings.module.css'
 import SeedModal from './settings/SeedModal'
 import FeeConfigModal from './settings/FeeConfigModal'
-import { isDebugFeatureEnabled } from '../constants/debugFeatures'
+import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import { isFeatureEnabled } from '../constants/features'
 import { CurrentWallet } from '../context/WalletContext'
 
@@ -86,11 +86,14 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
       .then((data) => data && data.features)
       .then((features) => {
         if (abortCtrl.signal.aborted) return
-        setShowLogsEnabled(features && features.logs === true)
+        const hasLogsFeatureOld = features && features.logs === true
+        const hasLogsFeature =
+          features && Array.isArray(features) && features.some((it) => it.name === 'logs' && it.enabled === true)
+        setShowLogsEnabled(hasLogsFeatureOld || hasLogsFeature)
       })
       .catch((_) => {
         if (abortCtrl.signal.aborted) return
-        setShowLogsEnabled(false)
+        setShowLogsEnabled(isDevMode())
       })
 
     return () => {
@@ -179,15 +182,6 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
         </rb.Button>
         {showingFeeConfig && <FeeConfigModal show={showingFeeConfig} onHide={() => setShowingFeeConfig(false)} />}
 
-        {showLogsEnabled && (
-          <>
-            <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={() => setShowingLogs(true)}>
-              <Sprite symbol="console" width="24" height="24" />
-              {t('settings.show_logs')}
-            </rb.Button>
-            <LogOverlay currentWallet={wallet} show={showingLogs} onHide={() => setShowingLogs(false)} />
-          </>
-        )}
         <div className={styles['section-title']}>{t('settings.section_title_wallet')}</div>
         <div className={styles['settings-group-container']}>
           <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={(e) => setShowingSeed(true)}>
@@ -229,6 +223,16 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
                 dev
               </span>
             </Link>
+          )}
+
+          {showLogsEnabled && (
+            <>
+              <rb.Button variant="outline-dark" className={styles['settings-btn']} onClick={() => setShowingLogs(true)}>
+                <Sprite symbol="console" width="24" height="24" />
+                {t('settings.show_logs')}
+              </rb.Button>
+              <LogOverlay currentWallet={wallet} show={showingLogs} onHide={() => setShowingLogs(false)} />
+            </>
           )}
         </div>
 
