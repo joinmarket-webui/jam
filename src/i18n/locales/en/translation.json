@@ -126,7 +126,7 @@
     "feedback_valid": "Looks good!",
     "label_wallet_name": "Wallet name",
     "placeholder_wallet_name": "Your Wallet...",
-    "feedback_invalid_wallet_name": "Please set a wallet name.",
+    "feedback_invalid_wallet_name": "Please choose a valid wallet name: Use only letters, numbers, underscores or hyphens.",
     "label_password": "Password to unlock the wallet",
     "placeholder_password": "Choose a secure password...",
     "feedback_invalid_password": "Please set a password.",
