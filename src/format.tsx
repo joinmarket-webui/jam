@@ -9,19 +9,19 @@ const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
 })
 
 const _decimalPoint = '\u002E'
-const _nbHalfSpace = '\u202F'
+const _thinSpace = '\u2009'
 
 export type FormatBtcProps = {
   deemphasize?: (char: string) => string | JSX.Element
 }
 
-const DEFAULT_FORMAT_BTC_PROPS = {
-  deemphasize: (char: string) => <span className="opacity-50">{char}</span>,
+const DEFAULT_FORMAT_BTC_PROPS: FormatBtcProps = {
+  deemphasize: (char) => <span className="opacity-50">{char}</span>,
 }
 
 export const formatBtc = (
   value: number,
-  { deemphasize = DEFAULT_FORMAT_BTC_PROPS.deemphasize }: FormatBtcProps = DEFAULT_FORMAT_BTC_PROPS,
+  { deemphasize = DEFAULT_FORMAT_BTC_PROPS.deemphasize! }: FormatBtcProps = DEFAULT_FORMAT_BTC_PROPS,
 ) => {
   const numberString = BTC_FORMATTER.format(value)
   const [integerPart, fractionalPart] = numberString.split(_decimalPoint)
@@ -39,7 +39,7 @@ export const formatBtc = (
     .map((val, index) =>
       index === 2 || index === 5 ? (
         <>
-          {_nbHalfSpace}
+          {_thinSpace}
           {val}
         </>
       ) : (
