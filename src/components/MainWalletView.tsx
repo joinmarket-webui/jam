@@ -149,7 +149,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
           <WalletHeaderRescanning walletName={wallet.displayName} isLoading={isLoading} />
         </rb.Row>
       ) : (
-        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} style={{ cursor: 'pointer' }}>
+        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} className="cursor-pointer">
           {!currentWalletInfo || isLoading ? (
             <WalletHeaderPlaceholder />
           ) : (

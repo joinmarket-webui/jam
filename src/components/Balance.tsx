@@ -129,13 +129,13 @@ export default function Balance({
 
     console.warn('<Balance /> component cannot determine balance format')
     return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} />
-  }, [valueString, displayMode])
+  }, [valueString, displayMode, formatBtcProps])
 
   if (!enableVisibilityToggle) {
     return <>{balanceComponent}</>
   } else {
     return (
-      <span onClick={toggleVisibility} style={{ cursor: 'pointer' }}>
+      <span onClick={toggleVisibility} className="cursor-pointer">
         {balanceComponent}
       </span>
     )
