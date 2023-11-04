@@ -1,5 +1,6 @@
 import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react'
-import { SATS, BTC, btcToSats, satsToBtc, formatBtc, formatSats, isValidNumber } from '../utils'
+import { SATS, BTC, btcToSats, satsToBtc, isValidNumber } from '../utils'
+import { FormatBtcProps, formatBtc, formatSats } from '../format'
 import Sprite from './Sprite'
 
 const DISPLAY_MODE_BTC = 0
@@ -15,7 +16,7 @@ const getDisplayMode = (unit: Unit, showBalance: boolean) => {
 
 interface BalanceComponentProps {
   symbol: JSX.Element
-  value: any
+  value: string | JSX.Element
   symbolIsPrefix: boolean
 }
 
@@ -48,6 +49,7 @@ interface BalanceProps {
   convertToUnit: Unit
   showBalance?: boolean
   enableVisibilityToggle?: boolean
+  formatBtcProps?: FormatBtcProps
 }
 
 /**
@@ -58,6 +60,7 @@ export default function Balance({
   convertToUnit,
   showBalance = false,
   enableVisibilityToggle = !showBalance,
+  formatBtcProps,
 }: BalanceProps) {
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
   const displayMode = useMemo(() => getDisplayMode(convertToUnit, isBalanceVisible), [convertToUnit, isBalanceVisible])
@@ -107,14 +110,22 @@ export default function Balance({
     const satSymbol = <Sprite className="balance-symbol-hook" symbol="sats" width="1.2em" height="1.2em" />
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
-      return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueNumber)} symbolIsPrefix={true} />
+      return (
+        <BalanceComponent symbol={btcSymbol} value={formatBtc(valueNumber, formatBtcProps)} symbolIsPrefix={true} />
+      )
     if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
       return <BalanceComponent symbol={satSymbol} value={formatSats(valueNumber)} symbolIsPrefix={false} />
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
       return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(valueString))} symbolIsPrefix={false} />
     if (valueIsSats && displayMode === DISPLAY_MODE_BTC)
-      return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
+      return (
+        <BalanceComponent
+          symbol={btcSymbol}
+          value={formatBtc(satsToBtc(valueString), formatBtcProps)}
+          symbolIsPrefix={true}
+        />
+      )
 
     console.warn('<Balance /> component cannot determine balance format')
     return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} />
