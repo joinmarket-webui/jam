@@ -116,12 +116,17 @@ export const setIntervalDebounced = (
   callback: () => Promise<void>,
   delay: Milliseconds,
   onTimerIdChanged: (timerId: NodeJS.Timer) => void,
+  onErrorCallback: (error: any, loop: () => void) => void = (_, loop) => loop(),
 ) => {
   ;(function loop() {
     onTimerIdChanged(
       setTimeout(async () => {
-        await callback()
-        loop()
+        try {
+          await callback()
+          loop()
+        } catch (e: any) {
+          onErrorCallback(e, loop)
+        }
       }, delay),
     )
   })()
