@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react'
 import { SATS, BTC, btcToSats, satsToBtc, formatBtc, formatSats, isValidNumber } from '../utils'
 import Sprite from './Sprite'
 
@@ -66,7 +66,7 @@ export default function Balance({
     setIsBalanceVisible(showBalance)
   }, [showBalance])
 
-  const toggleVisibility = useCallback((e) => {
+  const toggleVisibility: MouseEventHandler = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
 
