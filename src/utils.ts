@@ -1,5 +1,17 @@
 import { OfferType, WalletFileName } from './libs/JmWalletApi'
 
+const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
+  minimumIntegerDigits: 1,
+  minimumFractionDigits: 8,
+  maximumFractionDigits: 8,
+})
+
+const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
+  minimumIntegerDigits: 1,
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+})
+
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
@@ -21,6 +33,10 @@ export const displayDate = (string: string) => new Date(string).toLocaleString()
 export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100000000)
 
 export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
+
+export const formatBtc = (value: number) => BTC_FORMATTER.format(value)
+
+export const formatSats = (value: number) => SATS_FORMATTER.format(value)
 
 export const shortenStringMiddle = (value: string, chars = 8, separator = '\u2026' /* \u2026 = … */) => {
   const prefixLength = Math.max(Math.floor(chars / 2), 1)
@@ -86,7 +102,7 @@ export const setIntervalDebounced = (
   callback: () => Promise<void>,
   delay: Milliseconds,
   onTimerIdChanged: (timerId: NodeJS.Timer) => void,
-  onErrorCallback: (error: any, loop: () => void) => void = (_, loop) => loop(),
+  onError: (error: any, loop: () => void) => void = (_, loop) => loop(),
 ) => {
   ;(function loop() {
     onTimerIdChanged(
@@ -95,7 +111,7 @@ export const setIntervalDebounced = (
           await callback()
           loop()
         } catch (e: any) {
-          onErrorCallback(e, loop)
+          onError(e, loop)
         }
       }, delay),
     )

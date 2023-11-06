@@ -1,0 +1,34 @@
+:root {
+  --jam-deemphasize-opacity: 0.5;
+}
+
+[data-theme='dark'] {
+  --jam-deemphasize-opacity: 0.5;
+}
+
+.bitcoinSymbol {
+  padding-right: 0.1em;
+}
+
+/** Integer Part **/
+.bitcoinAmount[data-integer-part-is-zero="true"] .integerPart,
+/** Decimal Point **/
+.bitcoinAmount[data-integer-part-is-zero="true"] .decimalPoint,
+.bitcoinAmount[data-fractional-part-starts-with-zero="true"] .decimalPoint,
+/** Fractional Part **/
+.bitcoinAmount[data-integer-part-is-zero="false"] .fractionalPart,
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]),
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] {
+  opacity: var(--jam-deemphasize-opacity);
+}
+
+.bitcoinAmount .fractionalPart :nth-child(3)::before,
+.bitcoinAmount .fractionalPart :nth-child(6)::before {
+  content: '\202F';
+}

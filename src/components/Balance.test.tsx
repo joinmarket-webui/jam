@@ -1,14 +1,9 @@
-import { act } from 'react-dom/test-utils'
+import { render } from '@testing-library/react'
 import user from '@testing-library/user-event'
-import { render, screen } from '../testUtils'
+import { act } from 'react-dom/test-utils'
+import { screen } from '../testUtils'
 import { BTC, SATS } from '../utils'
-
 import Balance from './Balance'
-import { FormatBtcProps } from '../format'
-
-const TEST_FORMAT_BTC_PROPS: FormatBtcProps = {
-  deemphasize: (val) => val, // render as plain string (to be able to use `getByText`)
-}
 
 describe('<Balance />', () => {
   it('should render invalid param as given', () => {
@@ -17,16 +12,14 @@ describe('<Balance />', () => {
   })
 
   it('should render BTC using satscomma formatting', () => {
-    render(
-      <Balance valueString={'123.456'} convertToUnit={BTC} showBalance={true} formatBtcProps={TEST_FORMAT_BTC_PROPS} />,
-    )
-    expect(screen.getByText(`123.45 600 000`)).toBeInTheDocument()
+    render(<Balance valueString={'123.456'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.45600000`)
   })
 
   it('should hide balance for BTC by default', () => {
     render(<Balance valueString={'123.456'} convertToUnit={BTC} />)
     expect(screen.getByText(`*****`)).toBeInTheDocument()
-    expect(screen.queryByText(`123.45 600 000`)).not.toBeInTheDocument()
+    expect(screen.queryByTestId('bitcoin-amount')).not.toBeInTheDocument()
   })
 
   it('should hide balance for SATS by default', () => {
@@ -36,15 +29,8 @@ describe('<Balance />', () => {
   })
 
   it('should render a string BTC value correctly as BTC', () => {
-    render(
-      <Balance
-        valueString={'123.03224961'}
-        convertToUnit={BTC}
-        showBalance={true}
-        formatBtcProps={TEST_FORMAT_BTC_PROPS}
-      />,
-    )
-    expect(screen.getByText(`123.03 224 961`)).toBeInTheDocument()
+    render(<Balance valueString={'123.03224961'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.03224961`)
   })
 
   it('should render a string BTC value correctly as SATS', () => {
@@ -53,15 +39,8 @@ describe('<Balance />', () => {
   })
 
   it('should render a zero string BTC value correctly as BTC', () => {
-    render(
-      <Balance
-        valueString={'0.00000000'}
-        convertToUnit={BTC}
-        showBalance={true}
-        formatBtcProps={TEST_FORMAT_BTC_PROPS}
-      />,
-    )
-    expect(screen.getByText(`0.00 000 000`)).toBeInTheDocument()
+    render(<Balance valueString={'0.00000000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00000000`)
   })
 
   it('should render a zero string BTC value correctly as SATS', () => {
@@ -70,15 +49,8 @@ describe('<Balance />', () => {
   })
 
   it('should render a large string BTC value correctly as BTC', () => {
-    render(
-      <Balance
-        valueString={'20999999.97690000'}
-        convertToUnit={BTC}
-        showBalance={true}
-        formatBtcProps={TEST_FORMAT_BTC_PROPS}
-      />,
-    )
-    expect(screen.getByText(`20,999,999.97 690 000`)).toBeInTheDocument()
+    render(<Balance valueString={'20999999.97690000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`20,999,999.97690000`)
   })
 
   it('should render a large string BTC value correctly as SATS', () => {
@@ -87,15 +59,8 @@ describe('<Balance />', () => {
   })
 
   it('should render a max string BTC value correctly as BTC', () => {
-    render(
-      <Balance
-        valueString={'21000000.00000000'}
-        convertToUnit={BTC}
-        showBalance={true}
-        formatBtcProps={TEST_FORMAT_BTC_PROPS}
-      />,
-    )
-    expect(screen.getByText(`21,000,000.00 000 000`)).toBeInTheDocument()
+    render(<Balance valueString={'21000000.00000000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`21,000,000.00000000`)
   })
 
   it('should render a max string BTC value correctly as SATS', () => {
@@ -109,15 +74,13 @@ describe('<Balance />', () => {
   })
 
   it('should render a string SATS value correctly as BTC', () => {
-    render(
-      <Balance valueString={'43000'} convertToUnit={BTC} showBalance={true} formatBtcProps={TEST_FORMAT_BTC_PROPS} />,
-    )
-    expect(screen.getByText(`0.00 043 000`)).toBeInTheDocument()
+    render(<Balance valueString={'43000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00043000`)
   })
 
   it('should render a zero string SATS value correctly as BTC', () => {
-    render(<Balance valueString={'0'} convertToUnit={BTC} showBalance={true} formatBtcProps={TEST_FORMAT_BTC_PROPS} />)
-    expect(screen.getByText(`0.00 000 000`)).toBeInTheDocument()
+    render(<Balance valueString={'0'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`0.00000000`)
   })
 
   it('should render a zero string SATS value correctly as SATS', () => {
@@ -126,15 +89,8 @@ describe('<Balance />', () => {
   })
 
   it('should render a large string SATS value correctly as BTC', () => {
-    render(
-      <Balance
-        valueString={'2099999997690000'}
-        convertToUnit={BTC}
-        showBalance={true}
-        formatBtcProps={TEST_FORMAT_BTC_PROPS}
-      />,
-    )
-    expect(screen.getByText(`20,999,999.97 690 000`)).toBeInTheDocument()
+    render(<Balance valueString={'2099999997690000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`20,999,999.97690000`)
   })
 
   it('should render a large string SATS value correctly as SATS', () => {
@@ -143,15 +99,8 @@ describe('<Balance />', () => {
   })
 
   it('should render a max string SATS value correctly as BTC', () => {
-    render(
-      <Balance
-        valueString={'2100000000000000'}
-        convertToUnit={BTC}
-        showBalance={true}
-        formatBtcProps={TEST_FORMAT_BTC_PROPS}
-      />,
-    )
-    expect(screen.getByText(`21,000,000.00 000 000`)).toBeInTheDocument()
+    render(<Balance valueString={'2100000000000000'} convertToUnit={BTC} showBalance={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`21,000,000.00000000`)
   })
 
   it('should render a max string SATS value correctly as SATS', () => {

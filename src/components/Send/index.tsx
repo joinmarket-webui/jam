@@ -25,8 +25,7 @@ import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirement
 
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-import { SATS, isValidNumber, scrollToTop } from '../../utils'
-import { formatSats } from '../../format'
+import { SATS, formatSats, isValidNumber, scrollToTop } from '../../utils'
 
 import {
   initialNumCollaborators,
