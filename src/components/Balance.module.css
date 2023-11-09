@@ -11,8 +11,6 @@
 .frozen {
   --jam-balance-color: #0d6efd;
   --jam-balance-deemphasize-color: #7eb2ff;
-
-  font-size: 0.75rem;
 }
 
 :root[data-theme='dark'] .frozen {
@@ -48,6 +46,30 @@
 .bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
 .bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
 .bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] {
+  color: var(--jam-balance-deemphasize-color);
+}
+
+.satAmount[data-value='0'] {
+  color: var(--jam-balance-deemphasize-color);
+}
+
+/* deemphasize symbol on zero balance
+ * @implNote: `:has(+ ...) is currently not supported by firefox
+ * @see https://developer.mozilla.org/en-US/docs/Web/CSS/:has#browser_compatibility
+ */
+.satAmount[data-value='0'] + .satsSymbol,
+.bitcoinSymbol:has(
+    + .bitcoinAmount[data-integer-part-is-zero='true']
+      .fractionalPart
+      :nth-child(1):is(span[data-value='0'])
+      + span[data-value='0']
+      + span[data-value='0']
+      + span[data-value='0']
+      + span[data-value='0']
+      + span[data-value='0']
+      + span[data-value='0']
+      + span[data-value='0']
+  ) {
   color: var(--jam-balance-deemphasize-color);
 }
 

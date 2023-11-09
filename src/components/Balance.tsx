@@ -1,6 +1,7 @@
 import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react'
-import { SATS, BTC, btcToSats, satsToBtc, isValidNumber, formatBtc, formatSats } from '../utils'
+import classNames from 'classnames'
 import Sprite from './Sprite'
+import { SATS, BTC, btcToSats, satsToBtc, isValidNumber, formatBtc, formatSats } from '../utils'
 import styles from './Balance.module.css'
 
 const DISPLAY_MODE_BTC = 0
@@ -47,7 +48,11 @@ const BitcoinAmountComponent = ({ value }: { value: number }) => {
 }
 
 const SatsAmountComponent = ({ value }: { value: number }) => {
-  return <span className="slashed-zeroes">{formatSats(value)}</span>
+  return (
+    <span className={`${styles.satAmount} slashed-zeroes`} data-value={value}>
+      {formatSats(value)}
+    </span>
+  )
 }
 
 interface BalanceComponentProps {
@@ -59,7 +64,11 @@ interface BalanceComponentProps {
 
 const BalanceComponent = ({ symbol, value, symbolIsPrefix, frozen = false }: BalanceComponentProps) => {
   return (
-    <span className={`${styles.balance} ${frozen ? styles.frozen : ''} d-inline-flex align-items-center balance-hook`}>
+    <span
+      className={classNames(styles.balance, 'balance-hook', 'd-inline-flex align-items-center', {
+        [styles.frozen]: frozen,
+      })}
+    >
       {frozen && FROZEN_SYMBOL}
       {symbolIsPrefix && symbol}
       {value}

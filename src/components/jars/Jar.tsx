@@ -128,7 +128,7 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarPr
         <div className={`${styles.jarBalance} jar-balance-container-hook`}>
           <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
         </div>
-        <div className={`${styles.jarBalance} jar-balance-container-hook`}>
+        <div className={`${styles.jarBalance} ${styles.frozen} jar-balance-container-hook`}>
           {frozenBalance > 0 && (
             <Balance
               valueString={frozenBalance.toString()}
