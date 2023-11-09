@@ -26,7 +26,7 @@ const BitcoinAmountComponent = ({ value }: { value: number }) => {
 
   return (
     <span
-      className={styles.bitcoinAmount}
+      className={`${styles.bitcoinAmount} slashed-zeroes`}
       data-testid="bitcoin-amount"
       data-integer-part-is-zero={integerPartIsZero}
       data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
@@ -47,22 +47,22 @@ const BitcoinAmountComponent = ({ value }: { value: number }) => {
 }
 
 const SatsAmountComponent = ({ value }: { value: number }) => {
-  return <>{formatSats(value)}</>
+  return <span className="slashed-zeroes">{formatSats(value)}</span>
 }
 
 interface BalanceComponentProps {
   symbol: JSX.Element
-  value: string | JSX.Element
+  value: JSX.Element
   symbolIsPrefix: boolean
   frozen?: boolean
 }
 
 const BalanceComponent = ({ symbol, value, symbolIsPrefix, frozen = false }: BalanceComponentProps) => {
   return (
-    <span className={`${frozen ? styles.frozen : ''} d-inline-flex align-items-center balance-hook`}>
+    <span className={`${styles.balance} ${frozen ? styles.frozen : ''} d-inline-flex align-items-center balance-hook`}>
       {frozen && FROZEN_SYMBOL}
       {symbolIsPrefix && symbol}
-      <span className="slashed-zeroes">{value}</span>
+      {value}
       {!symbolIsPrefix && symbol}
     </span>
   )
@@ -125,7 +125,7 @@ export default function Balance({
       return (
         <BalanceComponent
           symbol={<Sprite symbol="hide" width="1.2em" height="1.2em" className={styles.hideSymbol} />}
-          value={'*****'}
+          value={<span className="slashed-zeroes">{'*****'}</span>}
           symbolIsPrefix={false}
           frozen={frozen}
         />
@@ -135,7 +135,7 @@ export default function Balance({
     const valueNumber = parseFloat(valueString)
     if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
-      return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} frozen={frozen} />
+      return <BalanceComponent symbol={<></>} value={<>{valueString}</>} symbolIsPrefix={false} frozen={frozen} />
     }
 
     // Treat integers as sats.
@@ -182,7 +182,7 @@ export default function Balance({
       )
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} frozen={frozen} />
+    return <BalanceComponent symbol={<></>} value={<>{valueString}</>} symbolIsPrefix={false} frozen={frozen} />
   }, [valueString, displayMode, frozen])
 
   if (!enableVisibilityToggle) {

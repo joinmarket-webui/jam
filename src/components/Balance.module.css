@@ -1,9 +1,27 @@
 :root {
-  --jam-deemphasize-opacity: 0.5;
+  --jam-balance-color: #212529;
+  --jam-balance-deemphasize-color: #9eacba;
 }
 
-[data-theme='dark'] {
-  --jam-deemphasize-opacity: 0.5;
+:root[data-theme='dark'] {
+  --jam-balance-color: #ffffff;
+  --jam-balance-deemphasize-color: #555c62;
+}
+
+.frozen {
+  --jam-balance-color: #0d6efd;
+  --jam-balance-deemphasize-color: #7eb2ff;
+
+  font-size: 0.75rem;
+}
+
+:root[data-theme='dark'] .frozen {
+  --jam-balance-color: #1372ff;
+  --jam-balance-deemphasize-color: #1153b5;
+}
+
+.balance {
+  color: var(--jam-balance-color);
 }
 
 .bitcoinSymbol {
@@ -12,6 +30,7 @@
 
 .hideSymbol {
   padding-left: 0.25rem;
+  color: var(--jam-balance-deemphasize-color);
 }
 
 /** Integer Part **/
@@ -29,15 +48,10 @@
 .bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
 .bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
 .bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] {
-  opacity: var(--jam-deemphasize-opacity);
+  color: var(--jam-balance-deemphasize-color);
 }
 
 .bitcoinAmount .fractionalPart :nth-child(3)::before,
 .bitcoinAmount .fractionalPart :nth-child(6)::before {
   content: '\202F';
-}
-
-.frozen {
-  color: var(--bs-blue);
-  font-size: 0.75rem;
 }
