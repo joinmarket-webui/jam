@@ -324,6 +324,7 @@ const UtxoList = ({
                         valueString={utxo.value.toString()}
                         convertToUnit={settings.unit}
                         showBalance={settings.showBalance}
+                        frozen={utxo.frozen}
                       />
                     </Cell>
                     <Cell>

@@ -81,7 +81,9 @@ const BTC_SYMBOL = <span className={styles.bitcoinSymbol}>{'\u20BF'}</span>
 
 const SAT_SYMBOL = <Sprite className={styles.satsSymbol} symbol="sats" width="1.2em" height="1.2em" />
 
-const FROZEN_SYMBOL = <Sprite className={styles.frozenSymbol} symbol="snowflake" width="1.2em" height="1.2em" />
+const FROZEN_SYMBOL = (
+  <Sprite className={`${styles.frozenSymbol} frozen-symbol-hook`} symbol="snowflake" width="1.2em" height="1.2em" />
+)
 
 /**
  * Options argument for Balance component.

@@ -27,7 +27,7 @@
 }
 
 .hideSymbol {
-  padding-left: 0.25rem;
+  padding-left: 0.1em;
   color: var(--jam-balance-deemphasize-color);
 }
 
