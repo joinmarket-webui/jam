@@ -54,15 +54,8 @@
     - 1.5ch for the dot and spaces
   */
   min-width: 11.5ch;
-
-  font-size: 0.8rem;
-}
-
-.frozen.jarBalance {
-  --bs-code-color: var(--bs-blue);
-  color: var(--bs-blue);
-  font-size: 0.75rem;
   min-height: 1rem;
+  font-size: 0.8rem;
 }
 
 .selectableJarContainer {

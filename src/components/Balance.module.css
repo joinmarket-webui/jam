@@ -10,6 +10,10 @@
   padding-right: 0.1em;
 }
 
+.hideSymbol {
+  padding-left: 0.25rem;
+}
+
 /** Integer Part **/
 .bitcoinAmount[data-integer-part-is-zero="true"] .integerPart,
 /** Decimal Point **/
@@ -31,4 +35,9 @@
 .bitcoinAmount .fractionalPart :nth-child(3)::before,
 .bitcoinAmount .fractionalPart :nth-child(6)::before {
   content: '\202F';
+}
+
+.frozen {
+  color: var(--bs-blue);
+  font-size: 0.75rem;
 }
