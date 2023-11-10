@@ -22,13 +22,28 @@
   color: var(--jam-balance-color);
 }
 
+.frozenSymbol {
+  order: -2;
+}
+
 .bitcoinSymbol {
   padding-right: 0.1em;
+  order: -1;
+}
+
+.satsSymbol {
+  padding-right: 0.1em;
+  order: 6;
 }
 
 .hideSymbol {
   padding-left: 0.1em;
   color: var(--jam-balance-deemphasize-color);
+}
+
+.bitcoinAmount .fractionalPart :nth-child(3)::before,
+.bitcoinAmount .fractionalPart :nth-child(6)::before {
+  content: '\202F';
 }
 
 /** Integer Part **/
@@ -38,42 +53,20 @@
 .bitcoinAmount[data-fractional-part-starts-with-zero="true"] .decimalPoint,
 /** Fractional Part **/
 .bitcoinAmount[data-integer-part-is-zero="false"] .fractionalPart,
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]),
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"],
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"],
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"],
-.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-value="0"]) + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] + span[data-value="0"] {
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]),
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"],
+.bitcoinAmount[data-integer-part-is-zero="true"] .fractionalPart :nth-child(1):is(span[data-digit="0"]) + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"] + span[data-digit="0"],
+/** Symbol */
+.bitcoinAmount[data-raw-value="0"] + .bitcoinSymbol {
   color: var(--jam-balance-deemphasize-color);
 }
 
-.satAmount[data-value='0'] {
+.satsAmount[data-raw-value='0'],
+.satsAmount[data-raw-value='0'] + .satsSymbol {
   color: var(--jam-balance-deemphasize-color);
-}
-
-/* deemphasize symbol on zero balance
- * @implNote: `:has(+ ...) is currently not supported by firefox
- * @see https://developer.mozilla.org/en-US/docs/Web/CSS/:has#browser_compatibility
- */
-.satAmount[data-value='0'] + .satsSymbol,
-.bitcoinSymbol:has(
-    + .bitcoinAmount[data-integer-part-is-zero='true']
-      .fractionalPart
-      :nth-child(1):is(span[data-value='0'])
-      + span[data-value='0']
-      + span[data-value='0']
-      + span[data-value='0']
-      + span[data-value='0']
-      + span[data-value='0']
-      + span[data-value='0']
-      + span[data-value='0']
-  ) {
-  color: var(--jam-balance-deemphasize-color);
-}
-
-.bitcoinAmount .fractionalPart :nth-child(3)::before,
-.bitcoinAmount .fractionalPart :nth-child(6)::before {
-  content: '\202F';
 }

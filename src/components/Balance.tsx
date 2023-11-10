@@ -37,9 +37,9 @@ const BitcoinAmountComponent = ({ value }: { value: number }) => {
       <span className={styles.integerPart}>{integerPart}</span>
       <span className={styles.decimalPoint}>{DECIMAL_POINT_CHAR}</span>
       <span className={styles.fractionalPart}>
-        {fractionPartArray.map((val, index) => (
-          <span key={index} data-value={val}>
-            {val}
+        {fractionPartArray.map((digit, index) => (
+          <span key={index} data-digit={digit}>
+            {digit}
           </span>
         ))}
       </span>
@@ -49,30 +49,8 @@ const BitcoinAmountComponent = ({ value }: { value: number }) => {
 
 const SatsAmountComponent = ({ value }: { value: number }) => {
   return (
-    <span className={`${styles.satAmount} slashed-zeroes`} data-value={value}>
+    <span className={`${styles.satsAmount} slashed-zeroes`} data-testid="sats-amount" data-raw-value={value}>
       {formatSats(value)}
-    </span>
-  )
-}
-
-interface BalanceComponentProps {
-  symbol: JSX.Element
-  value: JSX.Element
-  symbolIsPrefix: boolean
-  frozen?: boolean
-}
-
-const BalanceComponent = ({ symbol, value, symbolIsPrefix, frozen = false }: BalanceComponentProps) => {
-  return (
-    <span
-      className={classNames(styles.balance, 'balance-hook', 'd-inline-flex align-items-center', {
-        [styles.frozen]: frozen,
-      })}
-    >
-      {frozen && FROZEN_SYMBOL}
-      {symbolIsPrefix && symbol}
-      {value}
-      {!symbolIsPrefix && symbol}
     </span>
   )
 }
@@ -84,6 +62,26 @@ const SAT_SYMBOL = <Sprite className={styles.satsSymbol} symbol="sats" width="1.
 const FROZEN_SYMBOL = (
   <Sprite className={`${styles.frozenSymbol} frozen-symbol-hook`} symbol="snowflake" width="1.2em" height="1.2em" />
 )
+
+interface BalanceComponentProps {
+  symbol: JSX.Element
+  value: JSX.Element
+  frozen?: boolean
+}
+
+const BalanceComponent = ({ symbol, value, frozen = false }: BalanceComponentProps) => {
+  return (
+    <span
+      className={classNames(styles.balance, 'balance-hook', 'd-inline-flex align-items-center', {
+        [styles.frozen]: frozen,
+      })}
+    >
+      {frozen && FROZEN_SYMBOL}
+      {value}
+      {symbol}
+    </span>
+  )
+}
 
 /**
  * Options argument for Balance component.
@@ -137,7 +135,6 @@ export default function Balance({
         <BalanceComponent
           symbol={<Sprite symbol="hide" width="1.2em" height="1.2em" className={styles.hideSymbol} />}
           value={<span className="slashed-zeroes">{'*****'}</span>}
-          symbolIsPrefix={false}
           frozen={frozen}
         />
       )
@@ -146,7 +143,7 @@ export default function Balance({
     const valueNumber = parseFloat(valueString)
     if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
-      return <BalanceComponent symbol={<></>} value={<>{valueString}</>} symbolIsPrefix={false} frozen={frozen} />
+      return <BalanceComponent symbol={<></>} value={<>{valueString}</>} frozen={frozen} />
     }
 
     // Treat integers as sats.
@@ -156,21 +153,11 @@ export default function Balance({
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
       return (
-        <BalanceComponent
-          symbol={BTC_SYMBOL}
-          value={<BitcoinAmountComponent value={valueNumber} />}
-          symbolIsPrefix={true}
-          frozen={frozen}
-        />
+        <BalanceComponent symbol={BTC_SYMBOL} value={<BitcoinAmountComponent value={valueNumber} />} frozen={frozen} />
       )
     if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
       return (
-        <BalanceComponent
-          symbol={SAT_SYMBOL}
-          value={<SatsAmountComponent value={valueNumber} />}
-          symbolIsPrefix={false}
-          frozen={frozen}
-        />
+        <BalanceComponent symbol={SAT_SYMBOL} value={<SatsAmountComponent value={valueNumber} />} frozen={frozen} />
       )
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
@@ -178,7 +165,6 @@ export default function Balance({
         <BalanceComponent
           symbol={SAT_SYMBOL}
           value={<SatsAmountComponent value={btcToSats(valueString)} />}
-          symbolIsPrefix={false}
           frozen={frozen}
         />
       )
@@ -187,13 +173,12 @@ export default function Balance({
         <BalanceComponent
           symbol={BTC_SYMBOL}
           value={<BitcoinAmountComponent value={satsToBtc(valueString)} />}
-          symbolIsPrefix={true}
           frozen={frozen}
         />
       )
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <BalanceComponent symbol={<></>} value={<>{valueString}</>} symbolIsPrefix={false} frozen={frozen} />
+    return <BalanceComponent symbol={<></>} value={<>{valueString}</>} frozen={frozen} />
   }, [valueString, displayMode, frozen])
 
   if (!enableVisibilityToggle) {
