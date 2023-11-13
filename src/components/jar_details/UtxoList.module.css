@@ -32,6 +32,9 @@
 .utxoList tr.frozen .quickFreezeUnfreezeBtn {
   color: var(--bs-red);
 }
+.utxoList tr.frozen :global .balance-hook .frozen-symbol-hook {
+  display: none !important;
+}
 
 .utxoList .utxoIcon > .iconLocked {
   margin-bottom: 3px;

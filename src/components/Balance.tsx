@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { SATS, BTC, btcToSats, satsToBtc, formatBtc, formatSats, isValidNumber } from '../utils'
+import { MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react'
+import classNames from 'classnames'
 import Sprite from './Sprite'
+import { SATS, BTC, btcToSats, satsToBtc, isValidNumber, formatBtc, formatSats } from '../utils'
+import styles from './Balance.module.css'
 
 const DISPLAY_MODE_BTC = 0
 const DISPLAY_MODE_SATS = 1
@@ -13,18 +15,70 @@ const getDisplayMode = (unit: Unit, showBalance: boolean) => {
   return DISPLAY_MODE_HIDDEN
 }
 
-interface BalanceComponentProps {
-  symbol: JSX.Element
-  value: any
-  symbolIsPrefix: boolean
+const DECIMAL_POINT_CHAR = '.'
+
+const BitcoinAmountComponent = ({ value }: { value: number }) => {
+  const numberString = formatBtc(value)
+  const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
+
+  const fractionPartArray = fractionalPart.split('')
+  const integerPartIsZero = integerPart === '0'
+  const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
+
+  return (
+    <span
+      className={`${styles.bitcoinAmount} slashed-zeroes`}
+      data-testid="bitcoin-amount"
+      data-integer-part-is-zero={integerPartIsZero}
+      data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
+      data-raw-value={value}
+      data-formatted-value={numberString}
+    >
+      <span className={styles.integerPart}>{integerPart}</span>
+      <span className={styles.decimalPoint}>{DECIMAL_POINT_CHAR}</span>
+      <span className={styles.fractionalPart}>
+        {fractionPartArray.map((digit, index) => (
+          <span key={index} data-digit={digit}>
+            {digit}
+          </span>
+        ))}
+      </span>
+    </span>
+  )
 }
 
-const BalanceComponent = ({ symbol, value, symbolIsPrefix }: BalanceComponentProps) => {
+const SatsAmountComponent = ({ value }: { value: number }) => {
   return (
-    <span className="d-inline-flex align-items-center">
-      {symbolIsPrefix && symbol}
-      <span className="d-inline-flex align-items-center slashed-zeroes balance-value-hook">{value}</span>
-      {!symbolIsPrefix && symbol}
+    <span className={`${styles.satsAmount} slashed-zeroes`} data-testid="sats-amount" data-raw-value={value}>
+      {formatSats(value)}
+    </span>
+  )
+}
+
+const BTC_SYMBOL = <span className={styles.bitcoinSymbol}>{'\u20BF'}</span>
+
+const SAT_SYMBOL = <Sprite className={styles.satsSymbol} symbol="sats" width="1.2em" height="1.2em" />
+
+const FROZEN_SYMBOL = (
+  <Sprite className={`${styles.frozenSymbol} frozen-symbol-hook`} symbol="snowflake" width="1.2em" height="1.2em" />
+)
+
+interface BalanceComponentProps {
+  symbol: JSX.Element
+  value: JSX.Element
+  frozen?: boolean
+}
+
+const BalanceComponent = ({ symbol, value, frozen = false }: BalanceComponentProps) => {
+  return (
+    <span
+      className={classNames(styles.balance, 'balance-hook', 'd-inline-flex align-items-center', {
+        [styles.frozen]: frozen,
+      })}
+    >
+      {frozen && FROZEN_SYMBOL}
+      {value}
+      {symbol}
     </span>
   )
 }
@@ -48,6 +102,7 @@ interface BalanceProps {
   convertToUnit: Unit
   showBalance?: boolean
   enableVisibilityToggle?: boolean
+  frozen?: boolean
 }
 
 /**
@@ -58,6 +113,7 @@ export default function Balance({
   convertToUnit,
   showBalance = false,
   enableVisibilityToggle = !showBalance,
+  frozen = false,
 }: BalanceProps) {
   const [isBalanceVisible, setIsBalanceVisible] = useState(showBalance)
   const displayMode = useMemo(() => getDisplayMode(convertToUnit, isBalanceVisible), [convertToUnit, isBalanceVisible])
@@ -66,7 +122,7 @@ export default function Balance({
     setIsBalanceVisible(showBalance)
   }, [showBalance])
 
-  const toggleVisibility = useCallback((e) => {
+  const toggleVisibility: MouseEventHandler = useCallback((e) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -77,13 +133,9 @@ export default function Balance({
     if (displayMode === DISPLAY_MODE_HIDDEN) {
       return (
         <BalanceComponent
-          symbol={
-            <span className="d-inline-flex align-items-center text-muted">
-              <Sprite symbol="hide" width="1.2em" height="1.2em" className="ps-1" />
-            </span>
-          }
-          value={'*****'}
-          symbolIsPrefix={false}
+          symbol={<Sprite symbol="hide" width="1.2em" height="1.2em" className={styles.hideSymbol} />}
+          value={<span className="slashed-zeroes">{'*****'}</span>}
+          frozen={frozen}
         />
       )
     }
@@ -91,7 +143,7 @@ export default function Balance({
     const valueNumber = parseFloat(valueString)
     if (!isValidNumber(valueNumber)) {
       console.warn('<Balance /> component expects number input as string')
-      return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} />
+      return <BalanceComponent symbol={<></>} value={<>{valueString}</>} frozen={frozen} />
     }
 
     // Treat integers as sats.
@@ -99,32 +151,41 @@ export default function Balance({
     // Treat decimal numbers as btc.
     const valueIsBtc = !valueIsSats && valueString.indexOf('.') > -1
 
-    const btcSymbol = (
-      <span className="balance-symbol-hook" style={{ paddingRight: '0.1em' }}>
-        {'\u20BF'}
-      </span>
-    )
-    const satSymbol = <Sprite className="balance-symbol-hook" symbol="sats" width="1.2em" height="1.2em" />
-
     if (valueIsBtc && displayMode === DISPLAY_MODE_BTC)
-      return <BalanceComponent symbol={btcSymbol} value={formatBtc(valueNumber)} symbolIsPrefix={true} />
+      return (
+        <BalanceComponent symbol={BTC_SYMBOL} value={<BitcoinAmountComponent value={valueNumber} />} frozen={frozen} />
+      )
     if (valueIsSats && displayMode === DISPLAY_MODE_SATS)
-      return <BalanceComponent symbol={satSymbol} value={formatSats(valueNumber)} symbolIsPrefix={false} />
+      return (
+        <BalanceComponent symbol={SAT_SYMBOL} value={<SatsAmountComponent value={valueNumber} />} frozen={frozen} />
+      )
 
     if (valueIsBtc && displayMode === DISPLAY_MODE_SATS)
-      return <BalanceComponent symbol={satSymbol} value={formatSats(btcToSats(valueString))} symbolIsPrefix={false} />
+      return (
+        <BalanceComponent
+          symbol={SAT_SYMBOL}
+          value={<SatsAmountComponent value={btcToSats(valueString)} />}
+          frozen={frozen}
+        />
+      )
     if (valueIsSats && displayMode === DISPLAY_MODE_BTC)
-      return <BalanceComponent symbol={btcSymbol} value={formatBtc(satsToBtc(valueString))} symbolIsPrefix={true} />
+      return (
+        <BalanceComponent
+          symbol={BTC_SYMBOL}
+          value={<BitcoinAmountComponent value={satsToBtc(valueString)} />}
+          frozen={frozen}
+        />
+      )
 
     console.warn('<Balance /> component cannot determine balance format')
-    return <BalanceComponent symbol={<></>} value={valueString} symbolIsPrefix={false} />
-  }, [valueString, displayMode])
+    return <BalanceComponent symbol={<></>} value={<>{valueString}</>} frozen={frozen} />
+  }, [valueString, displayMode, frozen])
 
   if (!enableVisibilityToggle) {
     return <>{balanceComponent}</>
   } else {
     return (
-      <span onClick={toggleVisibility} style={{ cursor: 'pointer' }}>
+      <span onClick={toggleVisibility} className="cursor-pointer">
         {balanceComponent}
       </span>
     )

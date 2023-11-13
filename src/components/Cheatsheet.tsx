@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react'
+import { PropsWithChildren } from 'react'
 import * as rb from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'

@@ -3,11 +3,13 @@ import { OfferType, WalletFileName } from './libs/JmWalletApi'
 const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
   minimumFractionDigits: 8,
+  maximumFractionDigits: 8,
 })
 
 const SATS_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
   minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
 })
 
 export const BTC: Unit = 'BTC'
@@ -32,27 +34,11 @@ export const btcToSats = (value: string) => Math.round(parseFloat(value) * 10000
 
 export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
 
-export const formatBtc = (value: number) => {
-  const decimalPoint = '\u002E'
-  const nbHalfSpace = '\u202F'
+export const formatBtc = (value: number) => BTC_FORMATTER.format(value)
 
-  const numberString = BTC_FORMATTER.format(value)
+export const formatSats = (value: number) => SATS_FORMATTER.format(value)
 
-  const [integerPart, fractionalPart] = numberString.split(decimalPoint)
-
-  const formattedFractionalPart = fractionalPart
-    .split('')
-    .map((char, idx) => (idx === 2 || idx === 5 ? `${nbHalfSpace}${char}` : char))
-    .join('')
-
-  return integerPart + decimalPoint + formattedFractionalPart
-}
-
-export const formatSats = (value: number) => {
-  return SATS_FORMATTER.format(value)
-}
-
-export const shortenStringMiddle = (value: string, chars = 8, separator = '…') => {
+export const shortenStringMiddle = (value: string, chars = 8, separator = '\u2026' /* \u2026 = … */) => {
   const prefixLength = Math.max(Math.floor(chars / 2), 1)
   if (value.length <= prefixLength * 2) {
     return `${value}`
@@ -116,12 +102,17 @@ export const setIntervalDebounced = (
   callback: () => Promise<void>,
   delay: Milliseconds,
   onTimerIdChanged: (timerId: NodeJS.Timer) => void,
+  onError: (error: any, loop: () => void) => void = (_, loop) => loop(),
 ) => {
   ;(function loop() {
     onTimerIdChanged(
       setTimeout(async () => {
-        await callback()
-        loop()
+        try {
+          await callback()
+          loop()
+        } catch (e: any) {
+          onError(e, loop)
+        }
       }, delay),
     )
   })()

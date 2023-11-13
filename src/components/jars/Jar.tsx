@@ -129,16 +129,14 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarPr
           <Balance valueString={balance.toString()} convertToUnit={settings.unit} showBalance={settings.showBalance} />
         </div>
         <div className={`${styles.jarBalance} ${styles.frozen} jar-balance-container-hook`}>
-          {frozenBalance && frozenBalance > 0 ? (
-            <>
-              <Sprite symbol="snowflake" width="14" height="14" />
-              <Balance
-                valueString={frozenBalance.toString()}
-                convertToUnit={settings.unit}
-                showBalance={settings.showBalance}
-              />
-            </>
-          ) : null}
+          {frozenBalance > 0 && (
+            <Balance
+              valueString={frozenBalance.toString()}
+              convertToUnit={settings.unit}
+              showBalance={settings.showBalance}
+              frozen={true}
+            />
+          )}
         </div>
       </div>
     </div>

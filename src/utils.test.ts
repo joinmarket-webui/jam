@@ -1,4 +1,12 @@
-import { shortenStringMiddle, percentageToFactor, factorToPercentage, toSemVer, UNKNOWN_VERSION } from './utils'
+import {
+  shortenStringMiddle,
+  percentageToFactor,
+  factorToPercentage,
+  toSemVer,
+  UNKNOWN_VERSION,
+  formatSats,
+  formatBtc,
+} from './utils'
 
 describe('shortenStringMiddle', () => {
   it('should shorten string in the middle', () => {
@@ -111,5 +119,37 @@ describe('toSemVer', () => {
     expect(toSemVer('21.-1.42')).toBe(UNKNOWN_VERSION)
     expect(toSemVer('-1.21.42')).toBe(UNKNOWN_VERSION)
     expect(toSemVer('21million')).toBe(UNKNOWN_VERSION)
+  })
+})
+
+describe('formatSats', () => {
+  it('should format given value as amount in sats', () => {
+    expect(formatSats(-1_000)).toBe('-1,000')
+    expect(formatSats(-21)).toBe('-21')
+    expect(formatSats(-1)).toBe('-1')
+    expect(formatSats(0)).toBe('0')
+    expect(formatSats(1)).toBe('1')
+    expect(formatSats(999)).toBe('999')
+    expect(formatSats(1_000)).toBe('1,000')
+    expect(formatSats(2099999997690000)).toBe('2,099,999,997,690,000')
+    expect(formatSats(2100000000000000)).toBe('2,100,000,000,000,000')
+  })
+})
+
+describe('formatBtc', () => {
+  it('should format given value as amount in BTC', () => {
+    expect(formatBtc(-1_000)).toBe('-1,000.00000000')
+    expect(formatBtc(-21)).toBe('-21.00000000')
+    expect(formatBtc(-1)).toBe('-1.00000000')
+    expect(formatBtc(0)).toBe('0.00000000')
+    expect(formatBtc(1)).toBe('1.00000000')
+    expect(formatBtc(123.03224961)).toBe('123.03224961')
+    expect(formatBtc(123.456)).toBe('123.45600000')
+    expect(formatBtc(1_000)).toBe('1,000.00000000')
+    expect(formatBtc(20999999.9769)).toBe('20,999,999.97690000')
+    expect(formatBtc(20999999.9769)).toBe('20,999,999.97690000')
+    expect(formatBtc(21000000)).toBe('21,000,000.00000000')
+    expect(formatBtc(21000000.0)).toBe('21,000,000.00000000')
+    expect(formatBtc(21000000.0)).toBe('21,000,000.00000000')
   })
 })

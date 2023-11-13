@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import Balance from '../Balance'
 import * as rb from 'react-bootstrap'
 import { useSettings } from '../../context/SettingsContext'
-import { SATS, formatSats, factorToPercentage } from '../../utils'
+import { SATS, factorToPercentage, formatSats } from '../../utils'
 import { FeeValues } from '../../hooks/Fees'
 import { AmountSats } from '../../libs/JmWalletApi'
 
