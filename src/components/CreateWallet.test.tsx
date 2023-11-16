@@ -41,6 +41,22 @@ describe('<CreateWallet />', () => {
     ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
   })
 
+  it('should display alert when rescanning is active', async () => {
+    ;(apiMock.getSession as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          rescanning: true,
+        }),
+    })
+
+    await act(async () => setup({}))
+
+    expect(screen.getByText('create_wallet.title')).toBeVisible()
+    expect(screen.getByTestId('alert-rescanning')).toBeVisible()
+    expect(screen.queryByText('create_wallet.button_create')).not.toBeInTheDocument()
+  })
+
   it('should render without errors', () => {
     act(() => setup({}))
 

@@ -394,7 +394,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   const [importDetailsFormValues, setImportDetailsFormValues] = useState<ImportWalletDetailsFormValues>()
   const [recoveredWallet, setRecoveredWallet] = useState<RecoveredWalletWithAuth>()
 
-  const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && recoveredWallet?.auth, [recoveredWallet])
+  const isRecovered = useMemo(() => !!recoveredWallet?.walletFileName && !!recoveredWallet?.auth, [recoveredWallet])
   const canRecover = useMemo(
     () => !isRecovered && !serviceInfo?.walletFileName && !serviceInfo?.rescanning,
     [isRecovered, serviceInfo],
@@ -571,7 +571,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
             </rb.Alert>
           )}
           {serviceInfo?.rescanning === true && (
-            <rb.Alert variant="warning">
+            <rb.Alert variant="warning" data-testid="alert-rescanning">
               <Trans i18nKey="import_wallet.alert_rescan_in_progress">
                 Rescanning the timechain is currently in progress. Please wait until the process finishes and then try
                 again.
