@@ -105,6 +105,8 @@
       "alert_wallet_already_locked": "{{ walletName }} already locked.",
       "wallet_active": "Active",
       "wallet_inactive": "Inactive",
+      "wallet_locked": "Locked",
+      "wallet_unlocked": "Unlocked",
       "placeholder_password": "Password",
       "button_open": "Open",
       "button_lock": "Lock",
