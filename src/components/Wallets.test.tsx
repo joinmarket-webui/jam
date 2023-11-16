@@ -6,7 +6,6 @@ import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
 
 import Wallets from './Wallets'
-import { walletDisplayName } from '../utils'
 import { CurrentWallet } from '../context/WalletContext'
 
 jest.mock('../libs/JmWalletApi', () => ({
@@ -44,7 +43,7 @@ describe('<Wallets />', () => {
     ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
   })
 
-  it('should render without errors', () => {
+  it('should display loading indicator while fetching data', () => {
     const neverResolvingPromise = new Promise(() => {})
     ;(apiMock.getSession as jest.Mock).mockResolvedValueOnce(neverResolvingPromise)
     ;(apiMock.getWalletAll as jest.Mock).mockResolvedValueOnce(neverResolvingPromise)
@@ -73,6 +72,24 @@ describe('<Wallets />', () => {
 
     expect(screen.getByText('wallets.error_loading_failed')).toBeInTheDocument()
     expect(screen.getByText('wallets.button_new_wallet')).toBeInTheDocument()
+  })
+
+  it('should display alert when rescanning is active', async () => {
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+    })
+    ;(apiMock.getSession as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          rescanning: true,
+        }),
+    })
+
+    await act(async () => setup({}))
+
+    expect(screen.getByText('wallets.title')).toBeVisible()
+    expect(screen.getByTestId('alert-rescanning')).toBeVisible()
   })
 
   it('should display big call-to-action buttons if no wallet has been created yet', async () => {

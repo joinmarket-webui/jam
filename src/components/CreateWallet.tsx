@@ -108,7 +108,7 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
 
   const isCreated = useMemo(() => !!createdWallet?.walletFileName && !!createdWallet?.auth, [createdWallet])
   const canCreate = useMemo(
-    () => !createdWallet && !serviceInfo?.walletFileName && !serviceInfo?.rescanning,
+    () => !isCreated && !serviceInfo?.walletFileName && !serviceInfo?.rescanning,
     [isCreated, serviceInfo],
   )
 

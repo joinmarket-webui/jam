@@ -210,6 +210,11 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
           subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined}
           center={true}
         />
+        {serviceInfo?.rescanning === true && (
+          <rb.Alert variant="info" data-testid="alert-rescanning">
+            {t('app.alert_rescan_in_progress')}
+          </rb.Alert>
+        )}
         {alert && <Alert {...alert} />}
         {isLoading ? (
           <div className="d-flex justify-content-center align-items-center">
