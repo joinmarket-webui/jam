@@ -190,9 +190,9 @@ export default function Wallet({
               </rb.Card.Title>
 
               {isActive ? (
-                <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
+                <span className="text-success">{t('wallets.wallet_preview.wallet_unlocked')}</span>
               ) : (
-                <span className="text-muted">{t('wallets.wallet_preview.wallet_inactive')}</span>
+                <span className="text-muted">{t('wallets.wallet_preview.wallet_locked')}</span>
               )}
             </div>
 

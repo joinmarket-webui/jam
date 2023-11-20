@@ -106,6 +106,12 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
   const [alert, setAlert] = useState<SimpleAlert>()
   const [createdWallet, setCreatedWallet] = useState<CreatedWalletWithAuth>()
 
+  const isCreated = useMemo(() => !!createdWallet?.walletFileName && !!createdWallet?.auth, [createdWallet])
+  const canCreate = useMemo(
+    () => !isCreated && !serviceInfo?.walletFileName && !serviceInfo?.rescanning,
+    [isCreated, serviceInfo],
+  )
+
   const createWallet = useCallback(
     async ({ walletName, password }) => {
       setAlert(undefined)
@@ -152,17 +158,33 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
         <PageTitle title={t('create_wallet.title')} />
       )}
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {serviceInfo?.walletFileName && !createdWallet ? (
-        <rb.Alert variant="warning">
-          <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-            Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active. You
-            need to lock it first.
-            <Link to={routes.walletList} className="alert-link">
-              Go back
-            </Link>
-            .
-          </Trans>
-        </rb.Alert>
+      {!canCreate && !isCreated ? (
+        <>
+          {serviceInfo?.walletFileName && (
+            <rb.Alert variant="warning">
+              <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
+                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active.
+                You need to lock it first.
+                <Link to={routes.walletList} className="alert-link">
+                  Go back
+                </Link>
+                .
+              </Trans>
+            </rb.Alert>
+          )}
+          {serviceInfo?.rescanning === true && (
+            <rb.Alert variant="warning" data-testid="alert-rescanning">
+              <Trans i18nKey="create_wallet.alert_rescan_in_progress">
+                Rescanning the timechain is currently in progress. Please wait until the process finishes and then try
+                again.
+                <Link to={routes.walletList} className="alert-link">
+                  Go back
+                </Link>
+                .
+              </Trans>
+            </rb.Alert>
+          )}
+        </>
       ) : (
         <>
           <PreventLeavingPageByMistake />
