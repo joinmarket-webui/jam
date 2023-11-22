@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Formik, FormikErrors, FormikProps, Field } from 'formik'
 import classNames from 'classnames'
 import Sprite from '../Sprite'
-import TxFeeInputField from './TxFeeInputField'
+import { TxFeeInputField, validateTxFee } from './TxFeeInputField'
 import { FEE_CONFIG_KEYS, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
@@ -14,24 +14,6 @@ import styles from './FeeConfigModal.module.css'
 
 const __dev_allowFeeValuesReset = isDebugFeatureEnabled('allowFeeValuesReset')
 
-type SatsPerKiloVByte = number
-
-const TX_FEES_BLOCKS_MIN = 1
-const TX_FEES_BLOCKS_MAX = 1_000
-
-/**
- * When the fee target is low, JM sometimes constructs transactions, which are
- * declined from being relayed. In order to mitigate such situations, the
- * minimum fee target (when provided in sats/vbyte) must be higher than
- * 1 sats/vbyte, till the problem is addressed. Once resolved, this
- * can be lowered to 1 sats/vbyte again.
- * See https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1360#issuecomment-1262295463
- * Last checked on 2022-10-06.
- */
-const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
-// 350 sats/vbyte - no enforcement by JM - this should be a "sane" max value (taken default value of "absurd_fee_per_kb")
-const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 350_000
-const TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN = 1_001 // actual min of `tx_fees` if unit is sats/kilo-vbyte
 const TX_FEES_FACTOR_MIN = 0 // 0%
 /**
  * For the same reasons as stated above (comment for `TX_FEES_SATSPERKILOVBYTE_MIN`),
@@ -300,21 +282,12 @@ export default function FeeConfigModal({
   const submit = async (feeValues: FeeValues) => {
     const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
     if (!allValuesPresent) return
-
-    let adjustedTxFees = feeValues.tx_fees!.value
-    if (feeValues.tx_fees?.unit === 'sats/kilo-vbyte') {
-      // There is one special case for value `tx_fees`:
-      // Users are allowed to specify the value in "sats/vbyte", but this might
-      // be interpreted by JM as "targeted blocks". This adaption makes sure
-      // that it is in fact closer to what the user actually expects, albeit it
-      // can be surprising that the value is slightly different as specified.
-      adjustedTxFees = Math.max(adjustedTxFees, TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN)
-    }
+    if (feeValues.tx_fees?.value === undefined) return
 
     const updates = [
       {
         key: FEE_CONFIG_KEYS.tx_fees,
-        value: String(adjustedTxFees),
+        value: String(feeValues.tx_fees?.value!),
       },
       {
         key: FEE_CONFIG_KEYS.tx_fees_factor,
@@ -369,32 +342,9 @@ export default function FeeConfigModal({
         })
       }
 
-      if (values.tx_fees?.unit === 'sats/kilo-vbyte') {
-        if (
-          !isValidNumber(values.tx_fees.value) ||
-          values.tx_fees.value! < TX_FEES_SATSPERKILOVBYTE_MIN ||
-          values.tx_fees.value! > TX_FEES_SATSPERKILOVBYTE_MAX
-        ) {
-          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
-            min: (TX_FEES_SATSPERKILOVBYTE_MIN / 1_000).toLocaleString(undefined, {
-              maximumFractionDigits: Math.log10(1_000),
-            }),
-            max: (TX_FEES_SATSPERKILOVBYTE_MAX / 1_000).toLocaleString(undefined, {
-              maximumFractionDigits: Math.log10(1_000),
-            }),
-          })
-        }
-      } else {
-        if (
-          !isValidNumber(values.tx_fees?.value) ||
-          values.tx_fees?.value! < TX_FEES_BLOCKS_MIN ||
-          values.tx_fees?.value! > TX_FEES_BLOCKS_MAX
-        ) {
-          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_blocks', {
-            min: TX_FEES_BLOCKS_MIN.toLocaleString(),
-            max: TX_FEES_BLOCKS_MAX.toLocaleString(),
-          })
-        }
+      const txFeeErrors = validateTxFee(values.tx_fees, t)
+      if (txFeeErrors.value) {
+        errors.tx_fees = txFeeErrors.value
       }
 
       if (
