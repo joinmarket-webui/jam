@@ -280,6 +280,7 @@
     "text_coinjoin_already_running": "A collaborative transaction is currently in progress.",
     "label_recipient": "Recipient",
     "placeholder_recipient": "Enter address or choose jar from wallet...",
+    "feedback_invalid_destination_address": "Please enter valid a destination address.",
     "feedback_reused_address": "This address is already used. To preserve your privacy please choose another one.",
     "label_source_jar": "Send from",
     "title_jar_selector": "Select a jar from your wallet to send the funds to.",

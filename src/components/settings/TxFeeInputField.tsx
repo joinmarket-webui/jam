@@ -162,7 +162,7 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
             />
           ) : (
             <rb.Form.Control
-              aria-label={t('settings.fees.label_tx_fees')}
+              aria-label={label}
               className={`slashed-zeroes`}
               name={field.name}
               type="number"

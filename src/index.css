@@ -345,11 +345,14 @@ main {
   text-align: justify;
 }
 
+.cursor-not-allowed {
+  cursor: not-allowed !important;
+}
 .cursor-pointer {
-  cursor: pointer;
+  cursor: pointer !important;
 }
 .cursor-wait {
-  cursor: wait;
+  cursor: wait !important;
 }
 
 /* Fullscreen Overlays */
