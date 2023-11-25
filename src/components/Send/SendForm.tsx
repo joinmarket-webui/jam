@@ -23,7 +23,7 @@ import {
 import styles from './Send.module.css'
 import FeeBreakdown from './FeeBreakdown'
 import { Formik, FormikErrors, FormikProps } from 'formik'
-import { AccountBalanceSummary, AccountBalances } from '../../context/BalanceSummary'
+import { AccountBalanceSummary } from '../../context/BalanceSummary'
 import { DestinationInputField, DestinationValue } from './DestinationInputField'
 import { AmountInputField, AmountValue } from './AmountInputField'
 import { SweepBreakdown } from './SweepBreakdown'
@@ -180,33 +180,44 @@ const InnerSendForm = ({
 
   const sourceJarCoinjoinPreconditionSummary = useMemo(() => {
     if (sourceJarUtxos === null) return null
-    console.log(1)
     return buildCoinjoinRequirementSummary(sourceJarUtxos)
   }, [sourceJarUtxos])
 
   const sourceJarBalance =
     props.values.sourceJarIndex !== undefined ? jarBalances[props.values.sourceJarIndex] : undefined
 
-  const submitButtonOptions = (() => {
+  const submitButtonOptions = useMemo(() => {
+    if (props.isSubmitting) {
+      return {
+        variant: 'dark',
+        element: (
+          <>
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+            {t('send.text_sending')}
+          </>
+        ),
+      }
+    }
+
     if (!isLoading) {
       if (!props.values.isCoinJoin) {
         return {
           variant: 'danger',
-          text: t('send.button_send_without_improved_privacy'),
+          element: <>{t('send.button_send_without_improved_privacy')}</>,
         }
       } else if (sourceJarCoinjoinPreconditionSummary?.isFulfilled === false) {
         return {
           variant: 'warning',
-          text: t('send.button_send_despite_warning'),
+          element: <>{t('send.button_send_despite_warning')}</>,
         }
       }
     }
 
     return {
       variant: 'dark',
-      text: t('send.button_send'),
+      element: <>{t('send.button_send')}</>,
     }
-  })()
+  }, [isLoading, props.isSubmitting, props.values.isCoinJoin, sourceJarCoinjoinPreconditionSummary?.isFulfilled, t])
 
   return (
     <>
@@ -315,16 +326,7 @@ const InnerSendForm = ({
           type="submit"
           disabled={disabled || props.isSubmitting}
         >
-          <div className="d-flex justify-content-center align-items-center">
-            {props.isSubmitting ? (
-              <>
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                {t('send.text_sending')}
-              </>
-            ) : (
-              <>{submitButtonOptions.text}</>
-            )}
-          </div>
+          <div className="d-flex justify-content-center align-items-center">{submitButtonOptions.element}</div>
         </rb.Button>
       </rb.Form>
     </>

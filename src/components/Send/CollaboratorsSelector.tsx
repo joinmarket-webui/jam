@@ -25,12 +25,16 @@ const CollaboratorsSelector = ({
   const [field] = useField<number>(name)
   const form = useFormikContext<any>()
 
-  const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
+  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>()
 
   const defaultCollaboratorsSelection = useMemo(() => {
     const start = Math.max(minNumCollaborators, 8)
     return [start, start + 1, start + 2]
   }, [minNumCollaborators])
+
+  const usesCustomNumCollaborators = useMemo(() => {
+    return field.value === undefined || String(field.value) === customNumCollaboratorsInput
+  }, [field.value, customNumCollaboratorsInput])
 
   const validateAndSetCustomNumCollaborators = (candidate: string) => {
     const parsed = parseInt(candidate, 10)
@@ -60,7 +64,6 @@ const CollaboratorsSelector = ({
                 [styles.selected]: isSelected,
               })}
               onClick={() => {
-                setUsesCustomNumCollaborators(false)
                 validateAndSetCustomNumCollaborators(String(number))
               }}
               disabled={disabled}
@@ -75,20 +78,19 @@ const CollaboratorsSelector = ({
           max={maxNumCollaborators}
           isInvalid={usesCustomNumCollaborators && !isValidNumCollaborators(field.value, minNumCollaborators)}
           placeholder={t('send.input_num_collaborators_placeholder')}
-          defaultValue=""
+          value={customNumCollaboratorsInput || ''}
           className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
             [styles.selected]: usesCustomNumCollaborators,
           })}
           onChange={(e) => {
-            setUsesCustomNumCollaborators(true)
+            setCustomNumCollaboratorsInput(e.target.value)
             validateAndSetCustomNumCollaborators(e.target.value)
           }}
-          onClick={(e) => {
-            // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
-            if (e.target.value !== '') {
-              setUsesCustomNumCollaborators(true)
-              // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
-              validateAndSetCustomNumCollaborators(e.target.value)
+          onClick={(e: any) => {
+            const val = e.target?.value
+            if (val !== undefined && val !== '') {
+              setCustomNumCollaboratorsInput(val)
+              validateAndSetCustomNumCollaborators(val)
             }
           }}
           disabled={disabled}
