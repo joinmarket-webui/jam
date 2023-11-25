@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
@@ -24,7 +23,6 @@ export const SourceJarSelector = ({
   isLoading,
   disabled = false,
 }: SourceJarSelectorProps) => {
-  const { t } = useTranslation()
   const [field] = useField<JarIndex>(name)
   const form = useFormikContext<any>()
 
