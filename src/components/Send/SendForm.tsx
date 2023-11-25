@@ -144,6 +144,57 @@ function CollaborativeTransactionOptions({
   )
 }
 
+type SubmitButtonProps = {
+  isLoading: boolean
+  isSubmitting: boolean
+  isCoinJoin: boolean
+  isPreconditionFulfilled: boolean
+  disabled?: boolean
+}
+
+function SubmitButton({ isLoading, isSubmitting, isCoinJoin, isPreconditionFulfilled, disabled }: SubmitButtonProps) {
+  const { t } = useTranslation()
+
+  const submitButtonOptions = useMemo(() => {
+    if (isSubmitting) {
+      return {
+        variant: 'dark',
+        element: (
+          <>
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+            {t('send.text_sending')}
+          </>
+        ),
+      }
+    }
+
+    if (!isLoading) {
+      if (!isCoinJoin) {
+        return {
+          variant: 'danger',
+          element: <>{t('send.button_send_without_improved_privacy')}</>,
+        }
+      } else if (!isPreconditionFulfilled) {
+        return {
+          variant: 'warning',
+          element: <>{t('send.button_send_despite_warning')}</>,
+        }
+      }
+    }
+
+    return {
+      variant: 'dark',
+      element: <>{t('send.button_send')}</>,
+    }
+  }, [isLoading, isSubmitting, isCoinJoin, isPreconditionFulfilled, t])
+
+  return (
+    <rb.Button className="w-100 mb-4" variant={submitButtonOptions.variant} size="lg" type="submit" disabled={disabled}>
+      <div className="d-flex justify-content-center align-items-center">{submitButtonOptions.element}</div>
+    </rb.Button>
+  )
+}
+
 export interface SendFormValues {
   sourceJarIndex?: JarIndex
   destination?: DestinationValue
@@ -155,23 +206,28 @@ export interface SendFormValues {
 interface InnerSendFormProps {
   props: FormikProps<SendFormValues>
   isLoading: boolean
-  disabled?: boolean
   walletInfo?: WalletInfo
   loadNewWalletAddress: (props: { signal: AbortSignal; jarIndex: JarIndex }) => Promise<Api.BitcoinAddress>
-  jarBalances: AccountBalanceSummary[]
   minNumCollaborators: number
+  disabled?: boolean
 }
 
 const InnerSendForm = ({
   props,
-  loadNewWalletAddress,
   isLoading,
   walletInfo,
-  disabled,
-  jarBalances,
+  loadNewWalletAddress,
   minNumCollaborators,
+  disabled,
 }: InnerSendFormProps) => {
   const { t } = useTranslation()
+
+  const jarBalances = useMemo(() => {
+    if (!walletInfo) return []
+    return Object.values(walletInfo.balanceSummary.accountBalances).sort(
+      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex,
+    )
+  }, [walletInfo])
 
   const sourceJarUtxos = useMemo(() => {
     if (!walletInfo || props.values.sourceJarIndex === undefined) return null
@@ -185,39 +241,6 @@ const InnerSendForm = ({
 
   const sourceJarBalance =
     props.values.sourceJarIndex !== undefined ? jarBalances[props.values.sourceJarIndex] : undefined
-
-  const submitButtonOptions = useMemo(() => {
-    if (props.isSubmitting) {
-      return {
-        variant: 'dark',
-        element: (
-          <>
-            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-            {t('send.text_sending')}
-          </>
-        ),
-      }
-    }
-
-    if (!isLoading) {
-      if (!props.values.isCoinJoin) {
-        return {
-          variant: 'danger',
-          element: <>{t('send.button_send_without_improved_privacy')}</>,
-        }
-      } else if (sourceJarCoinjoinPreconditionSummary?.isFulfilled === false) {
-        return {
-          variant: 'warning',
-          element: <>{t('send.button_send_despite_warning')}</>,
-        }
-      }
-    }
-
-    return {
-      variant: 'dark',
-      element: <>{t('send.button_send')}</>,
-    }
-  }, [isLoading, props.isSubmitting, props.values.isCoinJoin, sourceJarCoinjoinPreconditionSummary?.isFulfilled, t])
 
   return (
     <>
@@ -319,15 +342,13 @@ const InnerSendForm = ({
           </div>
         </Accordion>
 
-        <rb.Button
-          className="w-100 mb-4"
-          variant={submitButtonOptions.variant}
-          size="lg"
-          type="submit"
-          disabled={disabled || props.isSubmitting}
-        >
-          <div className="d-flex justify-content-center align-items-center">{submitButtonOptions.element}</div>
-        </rb.Button>
+        <SubmitButton
+          isLoading={isLoading}
+          isSubmitting={props.isSubmitting}
+          isCoinJoin={props.values.isCoinJoin}
+          isPreconditionFulfilled={sourceJarCoinjoinPreconditionSummary?.isFulfilled !== false}
+          disabled={disabled || props.isSubmitting || isLoading}
+        />
       </rb.Form>
     </>
   )
@@ -355,13 +376,6 @@ export const SendForm = ({
   formRef,
 }: SendFormProps) => {
   const { t } = useTranslation()
-
-  const sortedJarBalances = useMemo(() => {
-    if (!walletInfo) return []
-    return Object.values(walletInfo.balanceSummary.accountBalances).sort(
-      (lhs, rhs) => lhs.accountIndex - rhs.accountIndex,
-    )
-  }, [walletInfo])
 
   const validate = (values: SendFormValues) => {
     const errors = {} as FormikErrors<SendFormValues>
@@ -406,11 +420,10 @@ export const SendForm = ({
         return (
           <InnerSendForm
             props={props}
-            jarBalances={sortedJarBalances}
-            minNumCollaborators={minNumCollaborators}
-            loadNewWalletAddress={loadNewWalletAddress}
             isLoading={isLoading}
             walletInfo={walletInfo}
+            loadNewWalletAddress={loadNewWalletAddress}
+            minNumCollaborators={minNumCollaborators}
             disabled={disabled}
           />
         )
