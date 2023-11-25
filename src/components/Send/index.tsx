@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { FormikProps } from 'formik'
 import { useTranslation } from 'react-i18next'
@@ -136,6 +136,27 @@ export default function Send({ wallet }: SendProps) {
   const initialValues = useMemo(() => createInitialValues(minNumCollaborators), [minNumCollaborators])
 
   const formRef = useRef<FormikProps<SendFormValues>>(null)
+
+  const loadNewWalletAddress = useCallback(
+    (props: { signal: AbortSignal; jarIndex: JarIndex }): Promise<Api.BitcoinAddress> => {
+      return Api.getAddressNew({
+        ...wallet,
+        signal: props.signal,
+        mixdepth: props.jarIndex,
+      })
+        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
+        .then((data) => {
+          return data.address
+        })
+        .catch((err) => {
+          if (!props.signal.aborted) {
+            setAlert({ variant: 'danger', message: err.message })
+          }
+          throw err
+        })
+    },
+    [wallet, setAlert, t],
+  )
 
   // This callback is responsible for updating `waitForUtxosToBeSpent` while
   // the wallet is synchronizing. The wallet needs some time after a tx is sent
@@ -472,15 +493,14 @@ export default function Send({ wallet }: SendProps) {
         )}
 
         <SendForm
-          initialValues={initialValues}
-          minNumCollaborators={minNumCollaborators}
-          isLoading={isLoading}
-          onSubmit={onSubmit}
-          wallet={wallet}
-          walletInfo={walletInfo}
-          setAlert={setAlert}
-          disabled={isOperationDisabled}
           formRef={formRef}
+          initialValues={initialValues}
+          onSubmit={onSubmit}
+          disabled={isOperationDisabled}
+          isLoading={isLoading}
+          walletInfo={walletInfo}
+          minNumCollaborators={minNumCollaborators}
+          loadNewWalletAddress={loadNewWalletAddress}
         />
 
         {showConfirmAbortModal && (

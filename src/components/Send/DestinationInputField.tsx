@@ -8,7 +8,7 @@ import Sprite from '../Sprite'
 import { jarName } from '../jars/Jar'
 import JarSelectorModal from '../JarSelectorModal'
 
-import { CurrentWallet, WalletInfo } from '../../context/WalletContext'
+import { WalletInfo } from '../../context/WalletContext'
 import { noop } from '../../utils'
 import styles from './DestinationInputField.module.css'
 
@@ -21,10 +21,9 @@ export type DestinationInputFieldProps = {
   name: string
   label: string
   className?: string
-  wallet: CurrentWallet
-  setAlert: (value: SimpleAlert | undefined) => void
   walletInfo?: WalletInfo
   sourceJarIndex?: JarIndex
+  loadNewWalletAddress: (props: { signal: AbortSignal; jarIndex: JarIndex }) => Promise<Api.BitcoinAddress>
   isLoading: boolean
   disabled?: boolean
 }
@@ -33,10 +32,9 @@ export const DestinationInputField = ({
   name,
   label,
   className,
-  wallet,
   walletInfo,
-  setAlert,
   sourceJarIndex,
+  loadNewWalletAddress,
   isLoading,
   disabled = false,
 }: DestinationInputFieldProps) => {
@@ -59,20 +57,17 @@ export const DestinationInputField = ({
             onCancel={() => setDestinationJarPickerShown(false)}
             onConfirm={(selectedJar) => {
               const abortCtrl = new AbortController()
-              return Api.getAddressNew({
-                ...wallet,
+
+              return loadNewWalletAddress({
                 signal: abortCtrl.signal,
-                mixdepth: selectedJar,
+                jarIndex: selectedJar,
               })
-                .then((res) =>
-                  res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed')),
-                )
-                .then((data) => {
+                .then((address) => {
                   if (abortCtrl.signal.aborted) return
                   form.setFieldValue(
                     field.name,
                     {
-                      value: data.address,
+                      value: address,
                       fromJar: selectedJar,
                     },
                     true,
@@ -82,7 +77,6 @@ export const DestinationInputField = ({
                 })
                 .catch((err) => {
                   if (abortCtrl.signal.aborted) return
-                  setAlert({ variant: 'danger', message: err.message })
                   setDestinationJarPickerShown(false)
                 })
             }}

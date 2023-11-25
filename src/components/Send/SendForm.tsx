@@ -1,6 +1,7 @@
-import { useState, useMemo, RefObject } from 'react'
+import { useState, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
+import * as Api from '../../libs/JmWalletApi'
 import ToggleSwitch from '../ToggleSwitch'
 import Sprite from '../Sprite'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
@@ -9,10 +10,9 @@ import CollaboratorsSelector from './CollaboratorsSelector'
 import Accordion from '../Accordion'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
 import { useFeeConfigValues, useEstimatedMaxCollaboratorFee } from '../../hooks/Fees'
-import { CurrentWallet, WalletInfo } from '../../context/WalletContext'
+import { WalletInfo } from '../../context/WalletContext'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
 import { formatSats } from '../../utils'
-
 import {
   MAX_NUM_COLLABORATORS,
   isValidAddress,
@@ -156,17 +156,15 @@ interface InnerSendFormProps {
   props: FormikProps<SendFormValues>
   isLoading: boolean
   disabled?: boolean
-  wallet: CurrentWallet
   walletInfo?: WalletInfo
-  setAlert: (value: SimpleAlert | undefined) => void
+  loadNewWalletAddress: (props: { signal: AbortSignal; jarIndex: JarIndex }) => Promise<Api.BitcoinAddress>
   jarBalances: AccountBalanceSummary[]
   minNumCollaborators: number
 }
 
 const InnerSendForm = ({
   props,
-  wallet,
-  setAlert,
+  loadNewWalletAddress,
   isLoading,
   walletInfo,
   disabled,
@@ -260,11 +258,10 @@ const InnerSendForm = ({
         <DestinationInputField
           className={styles.input}
           name="destination"
-          wallet={wallet}
           walletInfo={walletInfo}
           label={t('send.label_recipient')}
-          setAlert={setAlert}
           sourceJarIndex={props.values.sourceJarIndex}
+          loadNewWalletAddress={loadNewWalletAddress}
           isLoading={isLoading}
           disabled={disabled}
         />
@@ -339,9 +336,8 @@ interface SendFormProps {
   onSubmit: (values: SendFormValues) => Promise<void>
   isLoading: boolean
   disabled?: boolean
-  wallet: CurrentWallet
   walletInfo?: WalletInfo
-  setAlert: (value: SimpleAlert | undefined) => void
+  loadNewWalletAddress: (props: { signal: AbortSignal; jarIndex: JarIndex }) => Promise<Api.BitcoinAddress>
   minNumCollaborators: number
   formRef?: React.Ref<FormikProps<SendFormValues>>
 }
@@ -351,9 +347,8 @@ export const SendForm = ({
   onSubmit,
   isLoading,
   disabled = false,
-  wallet,
+  loadNewWalletAddress,
   walletInfo,
-  setAlert,
   minNumCollaborators,
   formRef,
 }: SendFormProps) => {
@@ -411,10 +406,9 @@ export const SendForm = ({
             props={props}
             jarBalances={sortedJarBalances}
             minNumCollaborators={minNumCollaborators}
+            loadNewWalletAddress={loadNewWalletAddress}
             isLoading={isLoading}
-            wallet={wallet}
             walletInfo={walletInfo}
-            setAlert={setAlert}
             disabled={disabled}
           />
         )
