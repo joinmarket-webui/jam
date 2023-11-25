@@ -5,11 +5,11 @@ import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import ToggleSwitch from '../ToggleSwitch'
 import Sprite from '../Sprite'
-import { jarFillLevel, SelectableJar } from '../jars/Jar'
+import { SourceJarSelector } from './SourceJarSelector'
 import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViolationAlert'
-import CollaboratorsSelector from './CollaboratorsSelector'
 import { DestinationInputField, DestinationValue } from './DestinationInputField'
 import { AmountInputField, AmountValue } from './AmountInputField'
+import CollaboratorsSelector from './CollaboratorsSelector'
 import { SweepBreakdown } from './SweepBreakdown'
 import FeeBreakdown from './FeeBreakdown'
 import Accordion from '../Accordion'
@@ -251,61 +251,37 @@ const InnerSendForm = ({
   const sourceJarBalance =
     props.values.sourceJarIndex !== undefined ? jarBalances[props.values.sourceJarIndex] : undefined
 
+  const showCoinjoinPreconditionViolationAlert =
+    !isLoading && !disabled && props.values.isCoinJoin && sourceJarCoinjoinPreconditionSummary?.isFulfilled === false
+
   return (
     <>
       <rb.Form onSubmit={props.handleSubmit} noValidate className={className}>
-        <rb.Form.Group className="mb-4 flex-grow-1" controlId="sourceJarIndex">
-          <rb.Form.Label>{t('send.label_source_jar')}</rb.Form.Label>
-          {!walletInfo || jarBalances.length === 0 ? (
-            <rb.Placeholder as="div" animation="wave">
-              <rb.Placeholder className={styles.sourceJarsPlaceholder} />
-            </rb.Placeholder>
-          ) : (
-            <div className={styles.sourceJarsContainer}>
-              {jarBalances.map((it) => (
-                <SelectableJar
-                  key={it.accountIndex}
-                  index={it.accountIndex}
-                  balance={it.calculatedAvailableBalanceInSats}
-                  frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
-                  isSelectable={!disabled && !isLoading && it.calculatedAvailableBalanceInSats > 0}
-                  isSelected={it.accountIndex === props.values.sourceJarIndex}
-                  fillLevel={jarFillLevel(
-                    it.calculatedTotalBalanceInSats,
-                    walletInfo.balanceSummary.calculatedTotalBalanceInSats,
-                  )}
-                  variant={
-                    it.accountIndex === props.values.sourceJarIndex &&
-                    props.values.isCoinJoin &&
-                    sourceJarCoinjoinPreconditionSummary?.isFulfilled === false
-                      ? 'warning'
-                      : undefined
-                  }
-                  onClick={(jarIndex) => props.setFieldValue('sourceJarIndex', jarIndex, true)}
-                />
-              ))}
-            </div>
-          )}
-        </rb.Form.Group>
-        {!isLoading &&
-          !disabled &&
-          props.values.isCoinJoin &&
-          sourceJarCoinjoinPreconditionSummary?.isFulfilled === false && (
-            <div className="mb-4">
-              <CoinjoinPreconditionViolationAlert
-                summary={sourceJarCoinjoinPreconditionSummary}
-                i18nPrefix="send.coinjoin_precondition."
-              />
-            </div>
-          )}
-        <DestinationInputField
-          name="destination"
+        <SourceJarSelector
+          name="sourceJarIndex"
+          label={t('send.label_source_jar')}
           walletInfo={walletInfo}
-          label={t('send.label_recipient')}
-          sourceJarIndex={props.values.sourceJarIndex}
-          loadNewWalletAddress={loadNewWalletAddress}
           isLoading={isLoading}
           disabled={disabled}
+          variant={showCoinjoinPreconditionViolationAlert ? 'warning' : 'default'}
+        />
+        {showCoinjoinPreconditionViolationAlert && (
+          <div className="mb-4">
+            <CoinjoinPreconditionViolationAlert
+              summary={sourceJarCoinjoinPreconditionSummary}
+              i18nPrefix="send.coinjoin_precondition."
+            />
+          </div>
+        )}
+
+        <DestinationInputField
+          name="destination"
+          label={t('send.label_recipient')}
+          walletInfo={walletInfo}
+          sourceJarIndex={props.values.sourceJarIndex}
+          isLoading={isLoading}
+          disabled={disabled}
+          loadNewWalletAddress={loadNewWalletAddress}
         />
 
         <AmountInputField
