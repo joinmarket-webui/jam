@@ -137,6 +137,13 @@ describe('<Balance />', () => {
     expect(screen.getByTestId('frozen-symbol')).toBeVisible()
   })
 
+  it('should render balance without symbol', () => {
+    render(<Balance valueString={'123.456'} convertToUnit={SATS} showBalance={true} frozen={true} showSymbol={false} />)
+    expect(screen.getByTestId('sats-amount')).toBeVisible()
+    expect(screen.getByTestId('frozen-symbol')).toBeVisible()
+    expect(screen.queryByTestId('sats-symbol')).not.toBeInTheDocument()
+  })
+
   it('should toggle visibility of initially hidden balance on click by default', () => {
     render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={false} />)
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
