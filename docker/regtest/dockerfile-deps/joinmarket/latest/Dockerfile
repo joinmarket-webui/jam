@@ -7,10 +7,9 @@ RUN apt-get update \
        tor \
        && rm -rf /var/lib/apt/lists/*
 
-#ENV REPO https://github.com/JoinMarket-Org/joinmarket-clientserver
-ENV REPO https://github.com/kristapsk/joinmarket-clientserver
-ENV REPO_BRANCH wallet_rpc-direct-send-txfee
-ENV REPO_REF wallet_rpc-direct-send-txfee
+ENV REPO https://github.com/JoinMarket-Org/joinmarket-clientserver
+ENV REPO_BRANCH master
+ENV REPO_REF master
 
 WORKDIR /src
 RUN git clone "$REPO" . --depth=10 --branch "$REPO_BRANCH" && git checkout "$REPO_REF"
