@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import { Formik, FormikErrors, FormikProps } from 'formik'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import ToggleSwitch from '../ToggleSwitch'
@@ -7,10 +8,13 @@ import Sprite from '../Sprite'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViolationAlert'
 import CollaboratorsSelector from './CollaboratorsSelector'
+import { DestinationInputField, DestinationValue } from './DestinationInputField'
+import { AmountInputField, AmountValue } from './AmountInputField'
+import { SweepBreakdown } from './SweepBreakdown'
+import FeeBreakdown from './FeeBreakdown'
 import Accordion from '../Accordion'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
-import { useFeeConfigValues, useEstimatedMaxCollaboratorFee } from '../../hooks/Fees'
-import { WalletInfo } from '../../context/WalletContext'
+import { useEstimatedMaxCollaboratorFee, FeeValues } from '../../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
 import { formatSats } from '../../utils'
 import {
@@ -20,13 +24,9 @@ import {
   isValidJarIndex,
   isValidNumCollaborators,
 } from './helpers'
-import styles from './Send.module.css'
-import FeeBreakdown from './FeeBreakdown'
-import { Formik, FormikErrors, FormikProps } from 'formik'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
-import { DestinationInputField, DestinationValue } from './DestinationInputField'
-import { AmountInputField, AmountValue } from './AmountInputField'
-import { SweepBreakdown } from './SweepBreakdown'
+import { WalletInfo } from '../../context/WalletContext'
+import styles from './SendForm.module.css'
 
 type CollaborativeTransactionOptionsProps = {
   selectedAmount?: AmountValue
@@ -37,6 +37,8 @@ type CollaborativeTransactionOptionsProps = {
   minNumCollaborators: number
   numCollaborators: number | null
   setNumCollaborators: (val: number | null) => void
+  feeConfigValues?: FeeValues
+  reloadFeeConfigValues: () => void
 }
 
 function CollaborativeTransactionOptions({
@@ -46,10 +48,11 @@ function CollaborativeTransactionOptions({
   isLoading,
   disabled,
   minNumCollaborators,
+  feeConfigValues,
+  reloadFeeConfigValues,
 }: CollaborativeTransactionOptionsProps) {
   const { t } = useTranslation()
 
-  const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
   const [activeFeeConfigModalSection, setActiveFeeConfigModalSection] = useState<FeeConfigSectionKey>()
   const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
 
@@ -205,20 +208,26 @@ export interface SendFormValues {
 
 interface InnerSendFormProps {
   props: FormikProps<SendFormValues>
+  className?: string
   isLoading: boolean
   walletInfo?: WalletInfo
   loadNewWalletAddress: (props: { signal: AbortSignal; jarIndex: JarIndex }) => Promise<Api.BitcoinAddress>
   minNumCollaborators: number
+  feeConfigValues?: FeeValues
+  reloadFeeConfigValues: () => void
   disabled?: boolean
 }
 
 const InnerSendForm = ({
   props,
+  className,
   isLoading,
   walletInfo,
   loadNewWalletAddress,
   minNumCollaborators,
-  disabled,
+  feeConfigValues,
+  reloadFeeConfigValues,
+  disabled = false,
 }: InnerSendFormProps) => {
   const { t } = useTranslation()
 
@@ -244,7 +253,7 @@ const InnerSendForm = ({
 
   return (
     <>
-      <rb.Form onSubmit={props.handleSubmit} noValidate>
+      <rb.Form onSubmit={props.handleSubmit} noValidate className={className}>
         <rb.Form.Group className="mb-4 flex-grow-1" controlId="sourceJarIndex">
           <rb.Form.Label>{t('send.label_source_jar')}</rb.Form.Label>
           {!walletInfo || jarBalances.length === 0 ? (
@@ -290,7 +299,6 @@ const InnerSendForm = ({
             </div>
           )}
         <DestinationInputField
-          className={styles.input}
           name="destination"
           walletInfo={walletInfo}
           label={t('send.label_recipient')}
@@ -301,7 +309,6 @@ const InnerSendForm = ({
         />
 
         <AmountInputField
-          className={styles.input}
           name="amount"
           label={t('send.label_amount')}
           isLoading={isLoading}
@@ -338,6 +345,8 @@ const InnerSendForm = ({
               minNumCollaborators={minNumCollaborators}
               numCollaborators={props.values.numCollaborators ?? null}
               setNumCollaborators={(val) => props.setFieldValue('numCollaborators', val, true)}
+              feeConfigValues={feeConfigValues}
+              reloadFeeConfigValues={reloadFeeConfigValues}
             />
           </div>
         </Accordion>
@@ -354,26 +363,21 @@ const InnerSendForm = ({
   )
 }
 
-interface SendFormProps {
+type SendFormProps = Omit<InnerSendFormProps, 'props' | 'className'> & {
   initialValues: SendFormValues
   onSubmit: (values: SendFormValues) => Promise<void>
-  isLoading: boolean
-  disabled?: boolean
-  walletInfo?: WalletInfo
-  loadNewWalletAddress: (props: { signal: AbortSignal; jarIndex: JarIndex }) => Promise<Api.BitcoinAddress>
-  minNumCollaborators: number
   formRef?: React.Ref<FormikProps<SendFormValues>>
+  blurred?: boolean
 }
 
 export const SendForm = ({
   initialValues,
   onSubmit,
-  isLoading,
-  disabled = false,
-  loadNewWalletAddress,
+  formRef,
+  blurred = false,
   walletInfo,
   minNumCollaborators,
-  formRef,
+  ...innerProps
 }: SendFormProps) => {
   const { t } = useTranslation()
 
@@ -420,11 +424,10 @@ export const SendForm = ({
         return (
           <InnerSendForm
             props={props}
-            isLoading={isLoading}
+            className={blurred ? styles.blurred : undefined}
             walletInfo={walletInfo}
-            loadNewWalletAddress={loadNewWalletAddress}
             minNumCollaborators={minNumCollaborators}
-            disabled={disabled}
+            {...innerProps}
           />
         )
       }}

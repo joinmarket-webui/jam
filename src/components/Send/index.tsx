@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { FormikProps } from 'formik'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
-import classNames from 'classnames'
 import * as Api from '../../libs/JmWalletApi'
 import PageTitle from '../PageTitle'
 import Sprite from '../Sprite'
@@ -19,7 +18,6 @@ import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
 import { scrollToTop } from '../../utils'
 import { initialNumCollaborators } from './helpers'
 import { SendForm, SendFormValues } from './SendForm'
-import styles from './Send.module.css'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
@@ -423,119 +421,116 @@ export default function Send({ wallet }: SendProps) {
   }
 
   return (
-    <>
-      <div
-        className={classNames({
-          [styles.serviceRunning]: isMakerRunning || isCoinjoinInProgress,
-        })}
-      >
-        <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
-        <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
-          <>
-            {isMakerRunning && (
-              <Link to={routes.earn} className="unstyled">
-                <rb.Alert variant="info" className="mb-4">
-                  <rb.Row className="align-items-center">
-                    <rb.Col>{t('send.text_maker_running')}</rb.Col>
-                    <rb.Col xs="auto">
-                      <Sprite symbol="caret-right" width="24" height="24" />
-                    </rb.Col>
-                  </rb.Row>
-                </rb.Alert>
-              </Link>
-            )}
-            {isCoinjoinInProgress && (
-              <div className="mb-4">
-                <div className="d-flex align-items-center justify-content-center mb-2">
-                  <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
-                    <Sprite symbol="clock" width="32" height="32" />
-                  </div>
+    <div>
+      <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
+      <rb.Fade in={isOperationDisabled} mountOnEnter={true} unmountOnExit={true}>
+        <>
+          {isMakerRunning && (
+            <Link to={routes.earn} className="unstyled">
+              <rb.Alert variant="info" className="mb-4">
+                <rb.Row className="align-items-center">
+                  <rb.Col>{t('send.text_maker_running')}</rb.Col>
+                  <rb.Col xs="auto">
+                    <Sprite symbol="caret-right" width="24" height="24" />
+                  </rb.Col>
+                </rb.Row>
+              </rb.Alert>
+            </Link>
+          )}
+          {isCoinjoinInProgress && (
+            <div className="mb-4">
+              <div className="d-flex align-items-center justify-content-center mb-2">
+                <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
+                  <Sprite symbol="clock" width="32" height="32" />
                 </div>
-                <rb.Alert variant="success" className="d-flex align-items-center">
-                  {t('send.text_coinjoin_already_running')}
-                  <Sprite className="ms-auto" symbol="joining" width="20" height="20" />
-                </rb.Alert>
-                <rb.Button
-                  variant="none"
-                  className="w-100 mb-4"
-                  disabled={showConfirmAbortModal}
-                  onClick={() => abortCoinjoin()}
-                >
-                  <div className="d-flex justify-content-center align-items-center">
-                    <Sprite symbol="cancel" width="24" height="24" className="me-1" />
-                    {t('global.abort')}
-                  </div>
-                </rb.Button>
               </div>
-            )}
-          </>
-        </rb.Fade>
-
-        {maxFeesConfigMissing && <MaxFeeConfigMissingAlert onSuccess={() => reloadFeeConfigValues()} />}
-
-        {alert && (
-          <rb.Alert className="slashed-zeroes" variant={alert.variant}>
-            {alert.message}
-          </rb.Alert>
-        )}
-
-        {paymentSuccessfulInfoAlert && (
-          <>
-            <div className="d-flex align-items-center justify-content-center mb-2">
-              <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
-                <Sprite symbol="checkmark" width="24" height="24" />
-              </div>
+              <rb.Alert variant="success" className="d-flex align-items-center">
+                {t('send.text_coinjoin_already_running')}
+                <Sprite className="ms-auto" symbol="joining" width="20" height="20" />
+              </rb.Alert>
+              <rb.Button
+                variant="none"
+                className="w-100 mb-4"
+                disabled={showConfirmAbortModal}
+                onClick={() => abortCoinjoin()}
+              >
+                <div className="d-flex justify-content-center align-items-center">
+                  <Sprite symbol="cancel" width="24" height="24" className="me-1" />
+                  {t('global.abort')}
+                </div>
+              </rb.Button>
             </div>
-            <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
-              {paymentSuccessfulInfoAlert.message}
-            </rb.Alert>
-          </>
-        )}
+          )}
+        </>
+      </rb.Fade>
 
-        <SendForm
-          formRef={formRef}
-          initialValues={initialValues}
-          onSubmit={onSubmit}
-          disabled={isOperationDisabled}
-          isLoading={isLoading}
-          walletInfo={walletInfo}
-          minNumCollaborators={minNumCollaborators}
-          loadNewWalletAddress={loadNewWalletAddress}
+      {maxFeesConfigMissing && <MaxFeeConfigMissingAlert onSuccess={() => reloadFeeConfigValues()} />}
+
+      {alert && (
+        <rb.Alert className="slashed-zeroes" variant={alert.variant}>
+          {alert.message}
+        </rb.Alert>
+      )}
+
+      {paymentSuccessfulInfoAlert && (
+        <>
+          <div className="d-flex align-items-center justify-content-center mb-2">
+            <div className="d-flex align-items-center justify-content-center alert alert-success rounded-circle p-3">
+              <Sprite symbol="checkmark" width="24" height="24" />
+            </div>
+          </div>
+          <rb.Alert className="small slashed-zeroes break-word" variant={paymentSuccessfulInfoAlert.variant}>
+            {paymentSuccessfulInfoAlert.message}
+          </rb.Alert>
+        </>
+      )}
+
+      <SendForm
+        formRef={formRef}
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        blurred={isMakerRunning || isCoinjoinInProgress}
+        disabled={isOperationDisabled}
+        isLoading={isLoading}
+        walletInfo={walletInfo}
+        minNumCollaborators={minNumCollaborators}
+        loadNewWalletAddress={loadNewWalletAddress}
+        feeConfigValues={feeConfigValues}
+        reloadFeeConfigValues={reloadFeeConfigValues}
+      />
+
+      {showConfirmAbortModal && (
+        <ConfirmModal
+          isShown={showConfirmAbortModal}
+          title={t('send.confirm_abort_modal.title')}
+          onCancel={() => setShowConfirmAbortModal(false)}
+          onConfirm={() => abortCoinjoin()}
+        >
+          {t('send.confirm_abort_modal.text_body')}
+        </ConfirmModal>
+      )}
+
+      {showConfirmSendModal && (
+        <PaymentConfirmModal
+          isShown={true}
+          title={t('send.confirm_send_modal.title')}
+          onCancel={() => setShowConfirmSendModal(undefined)}
+          onConfirm={() => {
+            formRef.current?.submitForm()
+          }}
+          data={{
+            sourceJarIndex: showConfirmSendModal.sourceJarIndex,
+            destination: showConfirmSendModal.destination?.value!,
+            amount: showConfirmSendModal.amount!.isSweep
+              ? sortedAccountBalances[showConfirmSendModal.sourceJarIndex!].calculatedAvailableBalanceInSats
+              : showConfirmSendModal.amount!.value!,
+            isSweep: showConfirmSendModal.amount!.isSweep,
+            isCoinjoin: showConfirmSendModal.isCoinJoin,
+            numCollaborators: showConfirmSendModal.numCollaborators!,
+            feeConfigValues,
+          }}
         />
-
-        {showConfirmAbortModal && (
-          <ConfirmModal
-            isShown={showConfirmAbortModal}
-            title={t('send.confirm_abort_modal.title')}
-            onCancel={() => setShowConfirmAbortModal(false)}
-            onConfirm={() => abortCoinjoin()}
-          >
-            {t('send.confirm_abort_modal.text_body')}
-          </ConfirmModal>
-        )}
-
-        {showConfirmSendModal && (
-          <PaymentConfirmModal
-            isShown={true}
-            title={t('send.confirm_send_modal.title')}
-            onCancel={() => setShowConfirmSendModal(undefined)}
-            onConfirm={() => {
-              formRef.current?.submitForm()
-            }}
-            data={{
-              sourceJarIndex: showConfirmSendModal.sourceJarIndex,
-              destination: showConfirmSendModal.destination?.value!,
-              amount: showConfirmSendModal.amount!.isSweep
-                ? sortedAccountBalances[showConfirmSendModal.sourceJarIndex!].calculatedAvailableBalanceInSats
-                : showConfirmSendModal.amount!.value!,
-              isSweep: showConfirmSendModal.amount!.isSweep,
-              isCoinjoin: showConfirmSendModal.isCoinJoin,
-              numCollaborators: showConfirmSendModal.numCollaborators!,
-              feeConfigValues,
-            }}
-          />
-        )}
-      </div>
-    </>
+      )}
+    </div>
   )
 }
