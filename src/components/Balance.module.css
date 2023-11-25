@@ -22,23 +22,35 @@
   color: var(--jam-balance-color);
 }
 
-.frozenSymbol {
-  order: -2;
-}
-
-.bitcoinSymbol {
-  padding-right: 0.1em;
-  order: -1;
-}
-
-.satsSymbol {
-  padding-right: 0.1em;
-  order: 6;
-}
-
 .hideSymbol {
   padding-left: 0.1em;
   color: var(--jam-balance-deemphasize-color);
+}
+
+.bitcoinSymbol {
+  order: -1;
+  width: 1em;
+  padding-right: 0.1em;
+}
+
+.satsSymbol {
+  order: 5;
+}
+
+.frozenSymbol {
+  order: 5;
+}
+.bitcoinAmount + .frozenSymbol {
+  order: -2;
+  width: 1em;
+  height: 1em;
+}
+
+.frozenSymbol,
+.bitcoinSymbol,
+.satsSymbol {
+  display: flex;
+  justify-content: center;
 }
 
 .bitcoinAmount .fractionalPart :nth-child(3)::before,

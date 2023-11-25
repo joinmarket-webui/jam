@@ -58,10 +58,6 @@
   font-size: 0.8rem;
 }
 
-.frozen.jarBalance {
-  font-size: 0.7rem;
-}
-
 .selectableJarContainer {
   display: flex;
   flex-direction: column;

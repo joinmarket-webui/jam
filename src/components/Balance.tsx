@@ -1,4 +1,4 @@
-import { PropsWithChildren, MouseEventHandler, useCallback, useEffect, useMemo, useState } from 'react'
+import { PropsWithChildren, MouseEventHandler, useEffect, useMemo, useState } from 'react'
 import classNames from 'classnames'
 import Sprite from './Sprite'
 import { SATS, BTC, btcToSats, satsToBtc, isValidNumber, formatBtc, formatSats } from '../utils'
@@ -53,9 +53,9 @@ const BalanceComponent = ({
         [styles.frozen]: frozen,
       })}
     >
-      {frozen && FROZEN_SYMBOL}
       {children}
       {showSymbol && symbol}
+      {frozen && FROZEN_SYMBOL}
     </span>
   )
 }
