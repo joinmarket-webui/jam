@@ -11,31 +11,46 @@ describe('<Balance />', () => {
     expect(screen.getByText(`NaN`)).toBeInTheDocument()
   })
 
-  it('should render BTC using satscomma formatting', () => {
+  it('should render balance in BTC', () => {
     render(<Balance valueString={'123.456'} convertToUnit={BTC} showBalance={true} />)
     expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.45600000`)
+    expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
+    expect(screen.queryByTestId('sats-symbol')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('frozen-symbol')).not.toBeInTheDocument()
+  })
+
+  it('should render balance in SATS', () => {
+    render(<Balance valueString={'123.456'} convertToUnit={SATS} showBalance={true} />)
+    expect(screen.getByTestId('sats-amount')).toHaveTextContent(`12,345,600,000`)
+    expect(screen.getByTestId('sats-symbol')).toBeVisible()
+    expect(screen.queryByTestId('bitcoin-symbol')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('frozen-symbol')).not.toBeInTheDocument()
   })
 
   it('should hide balance for BTC by default', () => {
     render(<Balance valueString={'123.456'} convertToUnit={BTC} />)
     expect(screen.getByText(`*****`)).toBeInTheDocument()
     expect(screen.queryByTestId('bitcoin-amount')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('bitcoin-symbol')).not.toBeInTheDocument()
   })
 
   it('should hide balance for SATS by default', () => {
     render(<Balance valueString={'123'} convertToUnit={SATS} />)
     expect(screen.getByText(`*****`)).toBeInTheDocument()
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
+    expect(screen.queryByTestId('sats-symbol')).not.toBeInTheDocument()
   })
 
   it('should render a string BTC value correctly as BTC', () => {
     render(<Balance valueString={'123.03224961'} convertToUnit={BTC} showBalance={true} />)
     expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.03224961`)
+    expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
   })
 
   it('should render a string BTC value correctly as SATS', () => {
     render(<Balance valueString={'123.03224961'} convertToUnit={SATS} showBalance={true} />)
     expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`12,303,224,961`)
+    expect(screen.getByTestId('sats-symbol')).toBeVisible()
   })
 
   it('should render a zero string BTC value correctly as BTC', () => {
@@ -106,6 +121,20 @@ describe('<Balance />', () => {
   it('should render a max string SATS value correctly as SATS', () => {
     render(<Balance valueString={'2100000000000000'} convertToUnit={SATS} showBalance={true} />)
     expect(screen.getByTestId(`sats-amount`)).toHaveTextContent(`2,100,000,000,000,000`)
+  })
+
+  it('should render frozen balance in BTC', () => {
+    render(<Balance valueString={'123.456'} convertToUnit={BTC} showBalance={true} frozen={true} />)
+    expect(screen.getByTestId('bitcoin-amount').dataset.formattedValue).toBe(`123.45600000`)
+    expect(screen.getByTestId('bitcoin-symbol')).toBeVisible()
+    expect(screen.getByTestId('frozen-symbol')).toBeVisible()
+  })
+
+  it('should render frozen balance in SATS', () => {
+    render(<Balance valueString={'123.456'} convertToUnit={SATS} showBalance={true} frozen={true} />)
+    expect(screen.getByTestId('sats-amount')).toHaveTextContent(`12,345,600,000`)
+    expect(screen.getByTestId('sats-symbol')).toBeVisible()
+    expect(screen.getByTestId('frozen-symbol')).toBeVisible()
   })
 
   it('should toggle visibility of initially hidden balance on click by default', () => {

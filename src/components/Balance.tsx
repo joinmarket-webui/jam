@@ -55,12 +55,24 @@ const SatsAmountComponent = ({ value }: { value: number }) => {
   )
 }
 
-const BTC_SYMBOL = <span className={styles.bitcoinSymbol}>{'\u20BF'}</span>
+const BTC_SYMBOL = (
+  <span data-testid="bitcoin-symbol" className={styles.bitcoinSymbol}>
+    {'\u20BF'}
+  </span>
+)
 
-const SAT_SYMBOL = <Sprite className={styles.satsSymbol} symbol="sats" width="1.2em" height="1.2em" />
+const SAT_SYMBOL = (
+  <Sprite data-testid="sats-symbol" className={styles.satsSymbol} symbol="sats" width="1.2em" height="1.2em" />
+)
 
 const FROZEN_SYMBOL = (
-  <Sprite className={`${styles.frozenSymbol} frozen-symbol-hook`} symbol="snowflake" width="1.2em" height="1.2em" />
+  <Sprite
+    data-testid="frozen-symbol"
+    className={`${styles.frozenSymbol} frozen-symbol-hook`}
+    symbol="snowflake"
+    width="1.2em"
+    height="1.2em"
+  />
 )
 
 interface BalanceComponentProps {
