@@ -1,8 +1,8 @@
-import { ChangeEvent } from 'react'
+import { ReactNode, ChangeEvent } from 'react'
 import styles from './ToggleSwitch.module.css'
 
 interface ToggleSwitchProps {
-  label: string
+  label: string | ReactNode
   subtitle?: string
   onToggle: (isToggled: boolean) => void
   toggledOn: boolean

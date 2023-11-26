@@ -1,7 +1,7 @@
 import { forwardRef, useRef, useCallback, useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
-import { Formik, FormikErrors } from 'formik'
+import { Formik, FormikErrors, FormikProps } from 'formik'
 import classNames from 'classnames'
 import { FEE_CONFIG_KEYS, TxFeeValueUnit, toTxFeeValueUnit, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
@@ -9,6 +9,10 @@ import { isValidNumber, factorToPercentage, percentageToFactor } from '../../uti
 import Sprite from '../Sprite'
 import SegmentedTabs from '../SegmentedTabs'
 import styles from './FeeConfigModal.module.css'
+import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
+import ToggleSwitch from '../ToggleSwitch'
+
+const __dev_allowFeeValuesReset = isDebugFeatureEnabled('allowFeeValuesReset')
 
 type SatsPerKiloVByte = number
 
@@ -53,17 +57,21 @@ export type FeeConfigSectionKey = 'tx_fee' | 'cj_fee'
 const TX_FEE_SECTION_KEY: FeeConfigSectionKey = 'tx_fee'
 const CJ_FEE_SECTION_KEY: FeeConfigSectionKey = 'cj_fee'
 
+type FeeFormValues = FeeValues & {
+  enableValidation?: boolean
+}
+
 interface FeeConfigFormProps {
-  initialValues: FeeValues
-  validate: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => FormikErrors<FeeValues>
-  onSubmit: (values: FeeValues, txFeesUnit: TxFeeValueUnit) => void
+  initialValues: FeeFormValues
+  validate: (values: FeeFormValues, txFeesUnit: TxFeeValueUnit) => FormikErrors<FeeFormValues>
+  onSubmit: (values: FeeFormValues, txFeesUnit: TxFeeValueUnit) => void
   defaultActiveSectionKey?: FeeConfigSectionKey
 }
 
 const FeeConfigForm = forwardRef(
   (
     { onSubmit, validate, initialValues, defaultActiveSectionKey }: FeeConfigFormProps,
-    ref: React.Ref<HTMLFormElement>,
+    ref: React.Ref<FormikProps<FeeFormValues>>,
   ) => {
     const { t, i18n } = useTranslation()
 
@@ -71,12 +79,34 @@ const FeeConfigForm = forwardRef(
 
     return (
       <Formik
+        innerRef={ref}
         initialValues={initialValues}
         validate={(values) => validate(values, txFeesUnit)}
         onSubmit={(values) => onSubmit(values, txFeesUnit)}
       >
         {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
-          <rb.Form ref={ref} onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
+          <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
+            {__dev_allowFeeValuesReset && (
+              <div className="mb-4">
+                <ToggleSwitch
+                  label={
+                    <>
+                      Enable form validation
+                      <span className="ms-2 badge rounded-pill bg-warning">dev</span>
+                    </>
+                  }
+                  subtitle={
+                    'Ability to reset fee values to test what the UI looks like, when a user does not have these values configured.'
+                  }
+                  toggledOn={values.enableValidation ?? true}
+                  onToggle={(isToggled) => {
+                    setFieldValue('enableValidation', isToggled, true)
+                  }}
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
+
             <rb.Accordion flush defaultActiveKey={defaultActiveSectionKey}>
               <rb.Accordion.Item eventKey={CJ_FEE_SECTION_KEY}>
                 <rb.Accordion.Header>
@@ -332,9 +362,9 @@ export default function FeeConfigModal({
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState(false)
-  const [saveErrorMessage, setSaveErrorMessage] = useState<string | undefined>(undefined)
-  const [feeConfigValues, setFeeConfigValues] = useState<FeeValues | null>(null)
-  const formRef = useRef<HTMLFormElement>(null)
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string>()
+  const [feeFormValues, setFeeFormValues] = useState<FeeFormValues | null>(null)
+  const formRef = useRef<FormikProps<FeeFormValues>>(null)
 
   useEffect(() => {
     setLoadError(false)
@@ -347,7 +377,7 @@ export default function FeeConfigModal({
         .then((val) => {
           if (abortCtrl.signal.aborted) return
           setIsLoading(false)
-          setFeeConfigValues(val)
+          setFeeFormValues(val)
         })
         .catch((e) => {
           if (abortCtrl.signal.aborted) return
@@ -415,8 +445,14 @@ export default function FeeConfigModal({
   }
 
   const validate = useCallback(
-    (values: FeeValues, txFeesUnit: TxFeeValueUnit) => {
-      const errors = {} as FormikErrors<FeeValues>
+    (values: FeeFormValues, txFeesUnit: TxFeeValueUnit) => {
+      const errors = {} as FormikErrors<FeeFormValues>
+
+      if (values.enableValidation === false) {
+        // do not validate form to enable resetting the values
+        // this can only be done in dev mode!
+        return errors
+      }
 
       if (
         !isValidNumber(values.tx_fees_factor) ||
@@ -536,10 +572,10 @@ export default function FeeConfigModal({
             </>
           ) : (
             <>
-              {feeConfigValues && (
+              {feeFormValues && (
                 <FeeConfigForm
                   ref={formRef}
-                  initialValues={feeConfigValues}
+                  initialValues={feeFormValues}
                   validate={validate}
                   onSubmit={submit}
                   defaultActiveSectionKey={defaultActiveSectionKey}
@@ -559,12 +595,32 @@ export default function FeeConfigModal({
           <rb.Button variant="light" onClick={cancel} className="d-flex justify-content-center align-items-center">
             {t('settings.fees.text_button_cancel')}
           </rb.Button>
+
+          {__dev_allowFeeValuesReset && (
+            <rb.Button
+              variant="outline-dark"
+              className="position-relative"
+              onClick={() => {
+                formRef.current?.setFieldValue('max_cj_fee_abs', '', false)
+                formRef.current?.setFieldValue('max_cj_fee_rel', '', false)
+                formRef.current?.setFieldValue('tx_fees', '', false)
+                formRef.current?.setFieldValue('tx_fees_factor', '', false)
+                setTimeout(() => formRef.current?.validateForm(), 4)
+              }}
+              disabled={isLoading || isSubmitting}
+            >
+              Reset form values
+              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                dev
+              </span>
+            </rb.Button>
+          )}
           <rb.Button
             variant="dark"
             type="submit"
             className="d-flex justify-content-center align-items-center"
             disabled={isLoading || isSubmitting}
-            onClick={() => formRef.current?.requestSubmit()}
+            onClick={() => formRef.current?.submitForm()}
           >
             {isSubmitting ? (
               <>

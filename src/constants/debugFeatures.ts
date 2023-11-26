@@ -6,6 +6,7 @@ interface DebugFeatures {
   devSetupPage: boolean
   importDummyMnemonicPhrase: boolean
   rescanChainPage: boolean
+  allowFeeValuesReset: boolean
   fastThemeToggle: boolean
 }
 
@@ -19,6 +20,7 @@ const debugFeatures: DebugFeatures = {
   devSetupPage: devMode,
   importDummyMnemonicPhrase: devMode,
   rescanChainPage: devMode,
+  allowFeeValuesReset: devMode,
   fastThemeToggle: devMode,
 }
 
