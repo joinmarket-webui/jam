@@ -140,7 +140,7 @@ export const DestinationInputField = ({
                     disabled={disabled}
                   />
                   <rb.Button
-                    variant="light"
+                    variant="outline-dark"
                     className={styles.button}
                     onClick={() => setDestinationJarPickerShown(true)}
                     disabled={disabled || !walletInfo}

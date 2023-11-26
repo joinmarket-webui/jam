@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { Formik, FormikErrors } from 'formik'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import { walletDisplayName } from '../utils'
 import { TabActivityIndicator, JoiningIndicator } from './ActivityIndicators'
 import Sprite from './Sprite'
 import { routes } from '../constants/routes'
-import styles from './Wallet.module.css'
+import { walletDisplayName } from '../utils'
 import { WalletFileName } from '../libs/JmWalletApi'
+import styles from './Wallet.module.css'
 
 interface WalletLockFormProps {
   walletFileName: WalletFileName
@@ -82,9 +82,8 @@ const WalletUnlockForm = ({ walletFileName, unlockWallet }: WalletUnlockFormProp
   }
 
   const onSubmit = useCallback(
-    async (values) => {
-      const { password } = values
-      await unlockWallet(walletFileName, password)
+    async (values: WalletUnlockFormValues) => {
+      await unlockWallet(walletFileName, values.password)
     },
     [walletFileName, unlockWallet],
   )

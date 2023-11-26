@@ -6,11 +6,4 @@
 .input {
   height: 3.5rem;
   width: 100%;
-  border-right: none !important;
-}
-
-.button {
-  --bs-btn-border-color: var(--bs-border-color) !important;
-  --bs-btn-hover-border-color: var(--bs-btn-border-color) !important;
-  border-left: none !important;
 }

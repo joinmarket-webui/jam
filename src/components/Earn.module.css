@@ -20,16 +20,6 @@
   font-size: 1.2rem;
 }
 
-.earn hr {
-  border-color: rgba(222, 222, 222, 1);
-  opacity: 100%;
-}
-
-:root[data-theme='dark'] .earn hr {
-  border-color: var(--bs-gray-800);
-  opacity: 100%;
-}
-
 .offerLoader {
   height: 10rem;
   border-radius: 0.25rem;

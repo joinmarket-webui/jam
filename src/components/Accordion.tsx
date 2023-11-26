@@ -25,7 +25,7 @@ const Accordion = ({
     <div>
       <rb.Button
         variant={settings.theme}
-        className="d-flex align-items-center bg-transparent border-0 w-100 px-0 py-2"
+        className="d-flex align-items-center bg-transparent border-0 rounded-0 w-100 px-0 py-2"
         onClick={() => setIsOpen((current) => !current)}
         disabled={disabled}
       >
@@ -50,7 +50,7 @@ const Accordion = ({
         </div>
         <Sprite symbol={`caret-${isOpen ? 'up' : 'down'}`} className="ms-1" width="20" height="20" />
       </rb.Button>
-      <hr className="m-0 pb-4 text-secondary" />
+      <div className="m-0 mb-4 border-0 border-bottom" />
       <rb.Collapse in={isOpen}>
         <div>{children}</div>
       </rb.Collapse>

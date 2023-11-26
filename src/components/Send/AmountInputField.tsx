@@ -109,7 +109,7 @@ export const AmountInputField = ({
                     disabled={disabled}
                   />
                   <rb.Button
-                    variant="light"
+                    variant="outline-dark"
                     className={classNames(styles.button, {
                       'cursor-not-allowed': !sourceJarBalance,
                     })}
@@ -124,7 +124,7 @@ export const AmountInputField = ({
                         true,
                       )
                     }}
-                    disabled={disabled}
+                    disabled={disabled || !sourceJarBalance}
                   >
                     <div className="d-flex justify-content-center align-items-center">
                       <Sprite symbol="sweep" width="24px" height="24px" className="me-1" />
