@@ -1,5 +1,4 @@
-import { render, screen } from '../testUtils'
-import { act } from 'react-dom/test-utils'
+import { render, screen, act } from '../testUtils'
 import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
 

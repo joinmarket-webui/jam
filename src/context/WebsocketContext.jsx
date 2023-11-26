@@ -1,5 +1,4 @@
 import { createContext, useEffect, useState, useContext } from 'react'
-
 import { useCurrentWallet } from './WalletContext'
 import { noop } from '../utils'
 import { isDevMode } from '../constants/debugFeatures'
@@ -30,7 +29,8 @@ const logToDebugConsoleInDevMode = isDevMode() ? console.debug : noop
 const createWebSocket = () => {
   const { protocol, host } = window.location
   const scheme = protocol === 'https:' ? 'wss' : 'ws'
-  const websocket = new WebSocket(`${scheme}://${host}${WEBSOCKET_ENDPOINT_PATH}`)
+  const url = `${scheme}://${host}${WEBSOCKET_ENDPOINT_PATH}`
+  const websocket = new WebSocket(url)
 
   websocket.onerror = (error) => {
     console.error('[Websocket] error', error)
