@@ -523,6 +523,10 @@ h2 {
   color: currentColor;
 }
 
+.form-control.is-invalid + .btn {
+  --bs-btn-border-color: var(--bs-form-invalid-border-color) !important;
+}
+
 .alert-info {
   color: var(--bs-white);
   background-color: var(--bs-gray-800);
@@ -709,13 +713,14 @@ h2 {
 }
 
 :root[data-theme='dark'] .form-control {
+  background-color: var(--bs-light);
   color: var(--bs-body-bg);
-  background-color: var(--bs-white);
 }
 
 :root[data-theme='dark'] .form-control:disabled,
 :root[data-theme='dark'] .form-select:disabled,
 .form-control[readonly] {
+  --bs-border-color: var(--bs-gray-500);
   background-color: var(--bs-gray-500);
 }
 

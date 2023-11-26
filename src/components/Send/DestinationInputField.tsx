@@ -92,7 +92,7 @@ export const DestinationInputField = ({
         ) : (
           <>
             {field.value.fromJar !== null ? (
-              <rb.InputGroup>
+              <rb.InputGroup hasValidation={false}>
                 <rb.Form.Control
                   className={classNames('slashed-zeroes', styles.input, className)}
                   value={`${jarName(field.value.fromJar)} (${field.value.value})`}
@@ -116,7 +116,7 @@ export const DestinationInputField = ({
               </rb.InputGroup>
             ) : (
               <div className={form.touched[field.name] && !!form.errors[field.name] ? 'is-invalid' : ''}>
-                <rb.InputGroup>
+                <rb.InputGroup hasValidation={true}>
                   <rb.Form.Control
                     aria-label={label}
                     name={field.name}
@@ -154,11 +154,10 @@ export const DestinationInputField = ({
                       />
                     </div>
                   </rb.Button>
+                  <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
                 </rb.InputGroup>
               </div>
             )}
-
-            <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
           </>
         )}
       </rb.Form.Group>

@@ -11,14 +11,6 @@
 
 .button {
   --bs-btn-border-color: var(--bs-border-color) !important;
+  --bs-btn-hover-border-color: var(--bs-btn-border-color) !important;
   border-left: none !important;
-}
-
-/* hack to show feedback element with input-groups */
-:global div.is-invalid .invalid-feedback {
-  display: block;
-}
-
-:global .form-control.is-invalid + button {
-  --bs-btn-border-color: red !important;
 }

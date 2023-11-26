@@ -56,7 +56,7 @@ export const AmountInputField = ({
         ) : (
           <>
             {field.value?.isSweep === true ? (
-              <rb.InputGroup>
+              <rb.InputGroup hasValidation={false}>
                 <rb.Form.Control
                   aria-label={label}
                   name={field.name}
@@ -83,7 +83,7 @@ export const AmountInputField = ({
               </rb.InputGroup>
             ) : (
               <div className={form.touched[field.name] && !!form.errors[field.name] ? 'is-invalid' : ''}>
-                <rb.InputGroup>
+                <rb.InputGroup hasValidation={true}>
                   <rb.Form.Control
                     aria-label={label}
                     name={field.name}
@@ -131,12 +131,12 @@ export const AmountInputField = ({
                       {t('send.button_sweep')}
                     </div>
                   </rb.Button>
+                  <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
                 </rb.InputGroup>
               </div>
             )}
           </>
         )}
-        <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
       </rb.Form.Group>
     </>
   )
