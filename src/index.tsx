@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 
 import App from './components/App'
 import { SettingsProvider } from './context/SettingsContext'
-// @ts-ignore
 import { WebsocketProvider } from './context/WebsocketContext'
 import { ServiceInfoProvider } from './context/ServiceInfoContext'
 import { WalletProvider } from './context/WalletContext'

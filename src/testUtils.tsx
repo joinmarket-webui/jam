@@ -5,7 +5,6 @@ import { WalletProvider } from './context/WalletContext'
 import { ServiceInfoProvider } from './context/ServiceInfoContext'
 import { ServiceConfigProvider } from './context/ServiceConfigContext'
 import { SettingsProvider } from './context/SettingsContext'
-// @ts-ignore
 import { WebsocketProvider } from './context/WebsocketContext'
 import i18n from './i18n/testConfig'
 

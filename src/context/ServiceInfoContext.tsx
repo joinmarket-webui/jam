@@ -10,7 +10,6 @@ import {
   useRef,
 } from 'react'
 import { useCurrentWallet, useClearCurrentWallet } from './WalletContext'
-// @ts-ignore
 import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
 import { CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../constants/config'

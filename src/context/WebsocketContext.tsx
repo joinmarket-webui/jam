@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useContext } from 'react'
+import { PropsWithChildren, createContext, useEffect, useState, useContext } from 'react'
 import { useCurrentWallet } from './WalletContext'
 import { noop } from '../utils'
 import { isDevMode } from '../constants/debugFeatures'
@@ -49,14 +49,19 @@ const createWebSocket = () => {
 
 const initialWebsocket = createWebSocket()
 
-const WebsocketContext = createContext()
+export interface WebsocketContextEntry {
+  websocket: WebSocket
+  websocketState: number
+}
+
+const WebsocketContext = createContext<WebsocketContextEntry | undefined>(undefined)
 
 /**
  * Provider of a websocket connection to jmwalletd.
  *
  * See Websocket docs: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.5/docs/JSON-RPC-API-using-jmwalletd.md#websocket
  */
-const WebsocketProvider = ({ children }) => {
+const WebsocketProvider = ({ children }: PropsWithChildren<{}>) => {
   const [websocket, setWebsocket] = useState(initialWebsocket)
   const [websocketState, setWebsocketState] = useState(initialWebsocket.readyState)
   const [isWebsocketHealthy, setIsWebsocketHealthy] = useState(false)
@@ -88,9 +93,9 @@ const WebsocketProvider = ({ children }) => {
   // reconnect handling in case the socket is closed
   useEffect(() => {
     const abortCtrl = new AbortController()
-    let assumeHealthyDelayTimer
-    let retryDelayTimer
-    const onOpen = (event) => {
+    let assumeHealthyDelayTimer: NodeJS.Timeout
+    let retryDelayTimer: NodeJS.Timeout
+    const onOpen = (event: Event) => {
       assumeHealthyDelayTimer = setTimeout(() => {
         if (abortCtrl.signal.aborted) return
 
