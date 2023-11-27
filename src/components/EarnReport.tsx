@@ -73,6 +73,8 @@ interface EarnReportEntry {
   notes: string | null
 }
 
+interface EarnReportTableRow extends EarnReportEntry, TableTypes.TableNode {}
+
 // in the form of yyyy/MM/dd HH:mm:ss - e.g 2009/01/03 02:54:42
 type RawYielgenTimestamp = string
 
@@ -114,11 +116,8 @@ export const yieldgenReportToEarnReportEntries = (lines: YieldgenReportLinesWith
     .map((entry) => entry!)
 }
 
-// `TableNode` is known to have same properties as `EarnReportEntry`, hence prefer casting over object destructuring
-const toEarnReportEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as EarnReportEntry
-
 interface EarnReportTableProps {
-  data: TableTypes.Data
+  data: TableTypes.Data<EarnReportTableRow>
 }
 
 const EarnReportTable = ({ data }: EarnReportTableProps) => {
@@ -169,7 +168,7 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
         layout={{ custom: true, horizontalScroll: true }}
         className="table striped"
       >
-        {(tableList) => (
+        {(tableList: TableTypes.TableProps<EarnReportTableRow>) => (
           <>
             <Header>
               <HeaderRow>
@@ -188,34 +187,33 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
               </HeaderRow>
             </Header>
             <Body>
-              {tableList.map((item) => {
-                const entry = toEarnReportEntry(item)
+              {tableList.map((item: EarnReportTableRow) => {
                 return (
                   <Row key={item.id} item={item}>
-                    <Cell>{entry.timestamp.toLocaleString()}</Cell>
+                    <Cell>{item.timestamp.toLocaleString()}</Cell>
                     <Cell>
                       <Balance
-                        valueString={entry.earnedAmount?.toString() || ''}
+                        valueString={item.earnedAmount?.toString() || ''}
                         convertToUnit={settings.unit}
                         showBalance={true}
                       />
                     </Cell>
                     <Cell>
                       <Balance
-                        valueString={entry.cjTotalAmount?.toString() || ''}
+                        valueString={item.cjTotalAmount?.toString() || ''}
                         convertToUnit={settings.unit}
                         showBalance={true}
                       />
                     </Cell>
-                    <Cell>{entry.inputCount}</Cell>
+                    <Cell>{item.inputCount}</Cell>
                     <Cell>
                       <Balance
-                        valueString={entry.inputAmount?.toString() || ''}
+                        valueString={item.inputAmount?.toString() || ''}
                         convertToUnit={settings.unit}
                         showBalance={true}
                       />
                     </Cell>
-                    <Cell>{entry.notes}</Cell>
+                    <Cell>{item.notes}</Cell>
                   </Row>
                 )
               })}
@@ -241,7 +239,7 @@ export function EarnReport({ entries, refresh }: EarnReportProps) {
   const [search, setSearch] = useState('')
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
 
-  const tableData: TableTypes.Data = useMemo(() => {
+  const tableData: TableTypes.Data<EarnReportTableRow> = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
     const filteredEntries =
       searchVal === ''

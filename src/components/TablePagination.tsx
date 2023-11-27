@@ -10,8 +10,8 @@ const DEFAULT_PAGE_SIZES = [25, 50, 100]
 const DEFAULT_ALLOW_SHOW_ALL = true
 
 interface TablePaginationProps {
-  data: TableTypes.Data
-  pagination: Pagination
+  data: TableTypes.Data<any>
+  pagination: Pagination<any>
   pageSizes?: number[]
   allowShowAll?: boolean
 }

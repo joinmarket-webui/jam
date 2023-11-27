@@ -159,6 +159,12 @@ const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
   return utxo as Utxo
 }
 
+interface UtxoTableRow extends Utxo, TableTypes.TableNode {
+  _icon: JSX.Element
+  _tags: Tag[]
+  _confs: JSX.Element
+}
+
 interface UtxoListProps {
   utxos: Array<Utxo>
   walletInfo: WalletInfo
@@ -179,7 +185,7 @@ const UtxoList = ({
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const tableData: TableTypes.Data = useMemo(
+  const tableData: TableTypes.Data<UtxoTableRow> = useMemo(
     () => ({
       nodes: utxos.map((utxo: Utxo) => ({
         ...utxo,
@@ -266,7 +272,7 @@ const UtxoList = ({
         sort={tableSort}
         layout={{ custom: true, horizontalScroll: true }}
       >
-        {(tableList) => (
+        {(tableList: TableTypes.TableProps<UtxoTableRow>) => (
           <>
             <Header>
               <HeaderRow>
@@ -289,15 +295,14 @@ const UtxoList = ({
               </HeaderRow>
             </Header>
             <Body>
-              {tableList.map((item) => {
-                const utxo = toUtxo(item)
+              {tableList.map((item: UtxoTableRow) => {
                 return (
                   <Row
                     key={item.id}
                     item={item}
                     className={classNames({
-                      [styles.frozen]: !fb.utxo.isLocked(utxo) && utxo.frozen,
-                      [styles.fidelityBond]: fb.utxo.isFidelityBond(utxo),
+                      [styles.frozen]: !fb.utxo.isLocked(item) && item.frozen,
+                      [styles.fidelityBond]: fb.utxo.isFidelityBond(item),
                     })}
                   >
                     <CellSelect item={item} />
@@ -306,12 +311,12 @@ const UtxoList = ({
                       onClick={async (e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        toggleFreezeState && (await toggleFreezeState(utxo))
+                        toggleFreezeState && (await toggleFreezeState(item))
                       }}
                     >
                       {toggleFreezeState && (
                         <span className={styles.quickFreezeUnfreezeBtn}>
-                          {utxo.frozen ? (
+                          {item.frozen ? (
                             <Sprite symbol="unfreeze" width="20" height="20" />
                           ) : (
                             <Sprite symbol="freeze" width="20" height="20" />
@@ -321,27 +326,27 @@ const UtxoList = ({
                     </Cell>
                     <Cell>
                       <Balance
-                        valueString={utxo.value.toString()}
+                        valueString={item.value.toString()}
                         convertToUnit={settings.unit}
                         showBalance={settings.showBalance}
-                        frozen={utxo.frozen}
+                        frozen={item.frozen}
                       />
                     </Cell>
                     <Cell>
                       <div className="d-block d-lg-none">
                         {withTooltip({
-                          node: <code>{shortenStringMiddle(utxo.address, 16)}</code>,
-                          tooltip: <div className="break-word">{utxo.address}</div>,
+                          node: <code>{shortenStringMiddle(item.address, 16)}</code>,
+                          tooltip: <div className="break-word">{item.address}</div>,
                         })}
                       </div>
                       <div className="d-none d-lg-block d-xl-none">
                         {withTooltip({
-                          node: <code>{shortenStringMiddle(utxo.address, 32)}</code>,
-                          tooltip: <div className="break-word">{utxo.address}</div>,
+                          node: <code>{shortenStringMiddle(item.address, 32)}</code>,
+                          tooltip: <div className="break-word">{item.address}</div>,
                         })}
                       </div>
                       <div className="d-none d-xl-block">
-                        <code>{utxo.address}</code>
+                        <code>{item.address}</code>
                       </div>
                     </Cell>
                     <Cell>{item._confs}</Cell>
@@ -358,7 +363,7 @@ const UtxoList = ({
                       <rb.Button
                         className={styles.utxoListButtonDetails}
                         variant="link"
-                        onClick={() => setDetailUtxo(utxo)}
+                        onClick={() => setDetailUtxo(item)}
                       >
                         {t('jar_details.utxo_list.row_button_details')}
                       </rb.Button>
