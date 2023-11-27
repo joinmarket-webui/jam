@@ -58,20 +58,31 @@ describe('<App />', () => {
     expect(screen.getByText('footer.warning_alert_button_ok')).toBeInTheDocument()
   })
 
-  /*it('should display a websocket connection indicator', async () => {
+  it('should display websocket connection indicator as CONNECTED', async () => {
     global.__DEV__.addToAppSettings({ showOnboarding: false })
 
     await act(async () => {
       render(<App />)
     })
 
-    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-secondary')).toBe(true)
-    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(false)
+    await global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.connected
 
-    await act(async () => {
-      await global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.connected
-    })
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(true)
     expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-secondary')).toBe(false)
-  })*/
+  })
+
+  it('should display websocket connection indicator AS DISCONNECTED', async () => {
+    global.__DEV__.addToAppSettings({ showOnboarding: false })
+
+    await act(async () => {
+      render(<App />)
+    })
+
+    await act(async () => {
+      global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.close()
+    })
+
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-success')).toBe(false)
+    expect(screen.getByTestId('connection-indicator-icon').classList.contains('text-secondary')).toBe(true)
+  })
 })
