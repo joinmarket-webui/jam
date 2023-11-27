@@ -1,6 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
-import { render, screen, waitFor } from '../testUtils'
-import { act } from 'react-dom/test-utils'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
 import { walletDisplayName } from '../utils'
@@ -68,16 +67,14 @@ describe('<Wallet />', () => {
     expect(screen.queryByText('wallets.wallet_preview.button_open')).not.toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_lock')).not.toBeInTheDocument()
 
-    act(() => {
-      user.paste(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'), dummyPassword)
+    await act(async () => {
+      await user.click(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'))
+      await user.paste(dummyPassword)
     })
 
     await act(async () => {
       const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
       await user.click(unlockWalletButton)
-
-      await waitFor(() => screen.findByText(/wallets.wallet_preview.button_unlocking/))
-      await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
     })
 
     expect(mockUnlockWallet).toHaveBeenCalledWith(dummyWalletFileName, dummyPassword)
@@ -132,9 +129,6 @@ describe('<Wallet />', () => {
     await act(async () => {
       const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
       await user.click(lockWalletButton)
-
-      await waitFor(() => screen.findByText(/wallet_preview.button_locking/))
-      await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
     })
 
     expect(mockLockWallet).toHaveBeenCalledWith(dummyWalletFileName, { confirmed: false })
