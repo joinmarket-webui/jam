@@ -144,66 +144,66 @@ describe('<Balance />', () => {
     expect(screen.queryByTestId('sats-symbol')).not.toBeInTheDocument()
   })
 
-  it('should toggle visibility of initially hidden balance on click by default', () => {
+  it('should toggle visibility of initially hidden balance on click by default', async () => {
     render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={false} />)
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
 
-    act(() => {
-      user.click(screen.getByText(`*****`))
+    await act(async () => {
+      await user.click(screen.getByText(`*****`))
     })
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
 
-    act(() => {
-      user.click(screen.getByTestId(`sats-amount`))
+    await act(async () => {
+      await user.click(screen.getByTestId(`sats-amount`))
     })
 
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
   })
 
-  it('should NOT toggle visibility of initially hidden balance on click when disabled via flag', () => {
+  it('should NOT toggle visibility of initially hidden balance on click when disabled via flag', async () => {
     render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={false} enableVisibilityToggle={false} />)
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
 
-    act(() => {
-      user.click(screen.getByText(`*****`))
+    await act(async () => {
+      await user.click(screen.getByText(`*****`))
     })
 
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
   })
 
-  it('should NOT toggle visibility of initially visible balance on click by default', () => {
+  it('should NOT toggle visibility of initially visible balance on click by default', async () => {
     render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={true} />)
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
 
-    act(() => {
-      user.click(screen.getByTestId(`sats-amount`))
+    await act(async () => {
+      await user.click(screen.getByTestId(`sats-amount`))
     })
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
   })
 
-  it('should toggle visibility of initially visible balance on click when enabled via flag', () => {
+  it('should toggle visibility of initially visible balance on click when enabled via flag', async () => {
     render(<Balance valueString={`21`} convertToUnit={SATS} showBalance={true} enableVisibilityToggle={true} />)
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
 
-    act(() => {
-      user.click(screen.getByTestId(`sats-amount`))
+    await act(async () => {
+      await user.click(screen.getByTestId(`sats-amount`))
     })
 
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
 
-    act(() => {
-      user.click(screen.getByText(`*****`))
+    await act(async () => {
+      await user.click(screen.getByText(`*****`))
     })
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()

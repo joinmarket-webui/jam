@@ -1,6 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import user from '@testing-library/user-event'
-import { render, screen, waitFor } from '../testUtils'
+import { render, screen } from '../testUtils'
 import { act } from 'react-dom/test-utils'
 import { __testSetDebugFeatureEnabled } from '../constants/debugFeatures'
 
@@ -78,9 +78,9 @@ describe('<CreateWallet />', () => {
     expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
 
-    act(() => {
+    await act(async () => {
       // click on the "create" button without filling the form
-      user.click(screen.getByText('create_wallet.button_create'))
+      await user.click(screen.getByText('create_wallet.button_create'))
     })
 
     expect(await screen.findByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
@@ -94,13 +94,13 @@ describe('<CreateWallet />', () => {
     expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
     expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
 
-    act(() => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), invalidTestWalletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), invalidTestWalletName)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
     })
 
-    act(() => user.click(screen.getByText('create_wallet.button_create')))
+    await act(async () => await user.click(screen.getByText('create_wallet.button_create')))
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
     expect(await screen.findByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
@@ -116,13 +116,13 @@ describe('<CreateWallet />', () => {
     expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
 
-    act(() => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), '.*')
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), 'a_mismatching_input')
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), '.*')
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), 'a_mismatching_input')
     })
 
-    act(() => user.click(screen.getByText('create_wallet.button_create')))
+    await act(async () => await user.click(screen.getByText('create_wallet.button_create')))
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
     expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
@@ -145,16 +145,14 @@ describe('<CreateWallet />', () => {
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
     expect(await screen.queryByText('create_wallet.title_wallet_created')).not.toBeInTheDocument()
 
-    act(() => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
     })
 
     await act(async () => {
-      user.click(screen.getByText('create_wallet.button_create'))
-
-      await waitFor(() => screen.findByText(/create_wallet.button_creating/))
+      await user.click(screen.getByText('create_wallet.button_create'))
     })
 
     expect(screen.getByText('create_wallet.title_wallet_created')).toBeVisible()
@@ -174,26 +172,24 @@ describe('<CreateWallet />', () => {
 
     act(() => setup({}))
 
-    act(() => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
     })
 
     await act(async () => {
       const createWalletButton = screen.getByText('create_wallet.button_create')
-      user.click(createWalletButton)
-
-      await waitFor(() => screen.findByText(/create_wallet.button_creating/))
+      await user.click(createWalletButton)
 
       const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
-      user.click(revealToggle)
+      await user.click(revealToggle)
 
       const confirmToggle = screen.getByText('create_wallet.confirmation_toggle_info_written_down')
-      user.click(confirmToggle)
+      await user.click(confirmToggle)
 
       const nextButton = screen.getByText('create_wallet.next_button')
-      user.click(nextButton)
+      await user.click(nextButton)
     })
 
     expect(screen.queryByText('create_wallet.skip_button')).not.toBeInTheDocument()
@@ -215,26 +211,24 @@ describe('<CreateWallet />', () => {
 
     act(() => setup({}))
 
-    act(() => {
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+    await act(async () => {
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
     })
 
     await act(async () => {
       const createWalletButton = screen.getByText('create_wallet.button_create')
-      user.click(createWalletButton)
-
-      await waitFor(() => screen.findByText(/create_wallet.button_creating/))
+      await user.click(createWalletButton)
 
       const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
-      user.click(revealToggle)
+      await user.click(revealToggle)
 
       const confirmToggle = screen.getByText('create_wallet.confirmation_toggle_info_written_down')
-      user.click(confirmToggle)
+      await user.click(confirmToggle)
 
       const nextButton = screen.getByText('create_wallet.next_button')
-      user.click(nextButton)
+      await user.click(nextButton)
     })
 
     expect(screen.getByText('create_wallet.skip_button')).toBeVisible()

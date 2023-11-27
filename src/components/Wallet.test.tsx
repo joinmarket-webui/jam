@@ -74,7 +74,7 @@ describe('<Wallet />', () => {
 
     await act(async () => {
       const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
-      user.click(unlockWalletButton)
+      await user.click(unlockWalletButton)
 
       await waitFor(() => screen.findByText(/wallets.wallet_preview.button_unlocking/))
       await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
@@ -131,7 +131,7 @@ describe('<Wallet />', () => {
 
     await act(async () => {
       const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-      user.click(lockWalletButton)
+      await user.click(lockWalletButton)
 
       await waitFor(() => screen.findByText(/wallet_preview.button_locking/))
       await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))

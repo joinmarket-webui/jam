@@ -241,7 +241,7 @@ describe('<Wallets />', () => {
 
       await act(async () => {
         const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
-        user.click(unlockWalletButton)
+        await user.click(unlockWalletButton)
 
         await waitFor(() => screen.findByText(/wallets.wallet_preview.button_unlocking/))
         await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
@@ -288,7 +288,7 @@ describe('<Wallets />', () => {
 
       await act(async () => {
         const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
-        user.click(unlockWalletButton)
+        await user.click(unlockWalletButton)
 
         await waitFor(() => screen.findByText(/wallets.wallet_preview.button_unlocking/))
         await waitFor(() => screen.findByText('wallets.wallet_preview.button_unlock'))
@@ -335,7 +335,7 @@ describe('<Wallets />', () => {
 
       await act(async () => {
         const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-        user.click(lockWalletButton)
+        await user.click(lockWalletButton)
 
         await waitFor(() => screen.findByText(/wallet_preview.button_locking/))
         await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
@@ -383,7 +383,7 @@ describe('<Wallets />', () => {
 
       await act(async () => {
         const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-        user.click(lockWalletButton)
+        await user.click(lockWalletButton)
 
         await waitFor(() => screen.findByText(/wallets.wallet_preview.button_locking/))
         await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
@@ -437,7 +437,7 @@ describe('<Wallets />', () => {
         await act(async () => {
           // click on the "lock" button
           const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-          user.click(lockWalletButton)
+          await user.click(lockWalletButton)
         })
 
         // modal appeared
@@ -446,10 +446,10 @@ describe('<Wallets />', () => {
         expect(screen.getByText('modal.confirm_button_accept')).toBeInTheDocument()
         expect(screen.getByText('modal.confirm_button_reject')).toBeInTheDocument()
 
-        act(() => {
+        await act(async () => {
           // click on the modal's "cancel" button
           const lockWalletButton = screen.getByText('modal.confirm_button_reject')
-          user.click(lockWalletButton)
+          await user.click(lockWalletButton)
         })
         await waitForElementToBeRemoved(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title'))
 
@@ -457,16 +457,16 @@ describe('<Wallets />', () => {
 
         await act(async () => {
           const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-          user.click(lockWalletButton)
+          await user.click(lockWalletButton)
         })
 
         // modal appeared
         expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title')).toBeInTheDocument()
 
-        act(() => {
+        await act(async () => {
           // click on the modal's "confirm" button
           const lockWalletButton = screen.getByText('modal.confirm_button_accept')
-          user.click(lockWalletButton)
+          await user.click(lockWalletButton)
         })
         await waitForElementToBeRemoved(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title'))
 
