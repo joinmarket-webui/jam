@@ -25,9 +25,13 @@ global.__DEV__.addToAppSettings = () => {
 ;(function setupWebsocketServerMock() {
   global.__DEV__.JM_WEBSOCKET_SERVER_MOCK = new WebSocketServer('ws://localhost/jmws', { jsonProtocol: true })
 
+  afterEach(() => {
+    // gracefully close all open connections and reset the environment between test runs
+    WebSocketServer.clean()
+  })
+
   afterAll(() => {
     global.__DEV__.JM_WEBSOCKET_SERVER_MOCK.close()
-    WebSocketServer.clean()
   })
 })()
 
