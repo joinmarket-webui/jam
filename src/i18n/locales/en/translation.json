@@ -182,6 +182,10 @@
       "text_button_submit": "Import",
       "text_button_submitting": "Importing..."
     },
+    "success": {
+      "title": "Wallet imported successfully!",
+      "subtitle": "The rescanning process now searches for your balance. Please be patient, this may take some time."
+    },
     "error_importing_failed": "Error while importing the wallet. Reason: {{ reason }}"
   },
   "current_wallet": {

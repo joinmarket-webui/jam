@@ -374,6 +374,7 @@ enum ImportWalletSteps {
   wallet_details,
   import_details,
   confirm_and_submit,
+  success,
 }
 
 interface ImportWalletProps {
@@ -401,30 +402,37 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   )
 
   const [step, setStep] = useState<ImportWalletSteps>(ImportWalletSteps.wallet_details)
-  const nextStep = () =>
-    setStep((old) => {
-      switch (step) {
-        case ImportWalletSteps.wallet_details:
-          return ImportWalletSteps.import_details
-        case ImportWalletSteps.import_details:
-          return ImportWalletSteps.confirm_and_submit
-        default:
-          return old
-      }
-    })
-  const previousStep = () => {
+  const nextStep = useCallback(
+    () =>
+      setStep((old) => {
+        switch (old) {
+          case ImportWalletSteps.wallet_details:
+            return ImportWalletSteps.import_details
+          case ImportWalletSteps.import_details:
+            return ImportWalletSteps.confirm_and_submit
+          case ImportWalletSteps.confirm_and_submit:
+            return ImportWalletSteps.success
+          default:
+            return old
+        }
+      }),
+    [],
+  )
+  const previousStep = useCallback(() => {
     setAlert(undefined)
     setStep((old) => {
-      switch (step) {
+      switch (old) {
         case ImportWalletSteps.import_details:
           return ImportWalletSteps.wallet_details
         case ImportWalletSteps.confirm_and_submit:
           return ImportWalletSteps.import_details
+        case ImportWalletSteps.success:
+          return ImportWalletSteps.success // cannot go back from success page
         default:
           return old
       }
     })
-  }
+  }, [])
 
   const recoverWallet = useCallback(
     async (
@@ -522,7 +530,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         }
 
         startWallet(walletFileName, auth)
-        navigate(routes.wallet)
+        nextStep()
       } catch (e: any) {
         if (signal.aborted) return
         const message = t('import_wallet.error_importing_failed', {
@@ -534,7 +542,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
     [
       setRecoveredWallet,
       startWallet,
-      navigate,
+      nextStep,
       setAlert,
       refreshConfigValues,
       updateConfigValues,
@@ -554,6 +562,13 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           />
         )}
         {step === ImportWalletSteps.confirm_and_submit && <PageTitle title={t('import_wallet.confirmation.title')} />}
+        {step === ImportWalletSteps.success && (
+          <PageTitle
+            title={t('import_wallet.success.title')}
+            subtitle={t('import_wallet.success.subtitle')}
+            success={true}
+          />
+        )}
       </>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {!canRecover && !isRecovered ? (
@@ -649,6 +664,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
               }}
             />
           )}
+          {step === ImportWalletSteps.success && <>{/*empty on purpuse - just a title is shown*/}</>}
         </>
       )}
     </div>
