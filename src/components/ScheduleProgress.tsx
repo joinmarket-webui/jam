@@ -94,14 +94,26 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
       <div>
         <p className="mb-1">
           {Math.ceil(steps.totalWaitTime / 60 / 60) <= 1 ? (
-            <Trans i18nKey="scheduler.progress_tldr_seconds">
-              Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
-              <strong>{{ seconds: Math.ceil(steps.totalWaitTime) }}</strong> seconds.
+            <Trans
+              i18nKey="scheduler.progress_tldr_seconds"
+              values={{
+                length: steps.txs.length,
+                seconds: Math.ceil(steps.totalWaitTime),
+              }}
+            >
+              Currently running a schedule of <strong>length</strong> transactions over
+              <strong>seconds</strong> seconds.
             </Trans>
           ) : (
-            <Trans i18nKey="scheduler.progress_tldr_hours">
-              Currently running a schedule of <strong>{{ length: steps.txs.length }}</strong> transactions over
-              <strong>{{ hours: Math.ceil(steps.totalWaitTime / 60 / 60) }}</strong> hours.
+            <Trans
+              i18nKey="scheduler.progress_tldr_hours"
+              values={{
+                length: steps.txs.length,
+                hours: Math.ceil(steps.totalWaitTime / 60 / 60),
+              }}
+            >
+              Currently running a schedule of <strong>length</strong> transactions over
+              <strong>hours</strong> hours.
             </Trans>
           )}
         </p>
@@ -126,9 +138,15 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
                   aria-hidden="true"
                   className="ms-1 me-2"
                 />
-                <Trans i18nKey="scheduler.progress_current_state">
-                  Waiting for transaction <strong>{{ current: steps.completedTxs + 1 }}</strong> of
-                  <strong>{{ total: steps.txs.length }}</strong> to process...
+                <Trans
+                  i18nKey="scheduler.progress_current_state"
+                  values={{
+                    current: steps.completedTxs + 1,
+                    total: steps.txs.length,
+                  }}
+                >
+                  Waiting for transaction <strong>current</strong> of
+                  <strong>total</strong> to process...
                 </Trans>
               </div>
             </>

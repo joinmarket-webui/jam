@@ -101,7 +101,7 @@ const ImportWalletDetailsForm = ({
       const errors = {} as FormikErrors<ImportWalletDetailsFormValues>
       const isMnemonicPhraseValid = values.mnemonicPhrase.every((it) => it.length > 0)
       if (!isMnemonicPhraseValid) {
-        errors.mnemonicPhrase = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
+        errors.mnemonicPhrase = t('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
       if (
@@ -560,9 +560,13 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         <>
           {serviceInfo?.walletFileName && (
             <rb.Alert variant="warning">
-              <Trans i18nKey="import_wallet.alert_other_wallet_unlocked">
-                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active.
-                You need to lock it first.
+              <Trans
+                i18nKey="import_wallet.alert_other_wallet_unlocked"
+                values={{
+                  walletName: walletDisplayName(serviceInfo.walletFileName),
+                }}
+              >
+                Currently <strong>walletName</strong> is active. You need to lock it first.
                 <Link to={routes.walletList} className="alert-link">
                   Go back
                 </Link>

@@ -162,9 +162,13 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
         <>
           {serviceInfo?.walletFileName && (
             <rb.Alert variant="warning">
-              <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active.
-                You need to lock it first.
+              <Trans
+                i18nKey="create_wallet.alert_other_wallet_unlocked"
+                values={{
+                  walletName: walletDisplayName(serviceInfo.walletFileName),
+                }}
+              >
+                Currently <strong>walletName</strong> is active. You need to lock it first.
                 <Link to={routes.walletList} className="alert-link">
                   Go back
                 </Link>
