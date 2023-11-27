@@ -58,7 +58,8 @@ describe('<Wallets />', () => {
     ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
     ;(apiMock.getSession as jest.Mock).mockReturnValue(
       Promise.resolve({
-        ok: false,
+        ok: true,
+        json: () => Promise.resolve({}),
       }),
     )
     ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
