@@ -1,6 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
-import { render, screen } from '../testUtils'
-import { act } from 'react-dom/test-utils'
+import { render, screen, act } from '../testUtils'
 
 import Settings from './Settings'
 import { CurrentWallet } from '../context/WalletContext'

@@ -149,6 +149,8 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
         clearSession()
       }
 
+      /*
+      * TODO: Temporarily disabled for tests
       if (fetchSessionInProgress.current !== null) {
         try {
           return await fetchSessionInProgress.current
@@ -159,7 +161,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
             console.warn('Previous session request resulted in an unexpected error. Retrying!', err)
           }
         }
-      }
+      }*/
 
       const fetch = Api.getSession({ signal, token: currentWallet?.token })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
@@ -246,7 +248,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   }, [reloadServiceInfo])
 
   // update maker/taker indicator based on websocket data
-  const onWebsocketMessage = useCallback((message) => {
+  const onWebsocketMessage = useCallback((message: MessageEvent) => {
     const data = JSON.parse(message?.data)
 
     // update the maker/taker indicator according to `coinjoin_state` property

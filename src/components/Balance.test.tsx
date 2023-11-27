@@ -1,6 +1,5 @@
-import { render } from '@testing-library/react'
+import { render, act } from '@testing-library/react'
 import user from '@testing-library/user-event'
-import { act } from 'react-dom/test-utils'
 import { screen } from '../testUtils'
 import { BTC, SATS } from '../utils'
 import Balance from './Balance'

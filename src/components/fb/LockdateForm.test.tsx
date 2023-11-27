@@ -1,7 +1,5 @@
-import React from 'react'
-import { act } from 'react-dom/test-utils'
+import { act, render, screen } from '../../testUtils'
 import user from '@testing-library/user-event'
-import { render, screen } from '../../testUtils'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
 
@@ -28,7 +26,7 @@ describe('<LockdateForm />', () => {
     expect(onChange).toHaveBeenCalledWith(fb.lockdate.initial(now))
   })
 
-  it('should be able to select 10 years by default', () => {
+  it('should be able to select 10 years by default', async () => {
     const expectedSelectableYears = 10
     const currentYear = now.getUTCFullYear()
 
@@ -41,18 +39,31 @@ describe('<LockdateForm />', () => {
 
     for (let i = 0; i < expectedSelectableYears; i++) {
       const yearValue = currentYear + i
-      expect(() => user.selectOptions(yearDropdown, [`${yearValue}`])).not.toThrow()
+      await act(async () => {
+        await user.selectOptions(yearDropdown, [`${yearValue}`])
+      })
       expect(new Date(fb.lockdate.toTimestamp(selectedLockdate!)).getUTCFullYear()).toBe(yearValue)
     }
 
-    const unavailableYearPast = `${currentYear - 1}`
-    expect(() => user.selectOptions(yearDropdown, [unavailableYearPast])).toThrow()
+    try {
+      const unavailableYearPast = `${currentYear - 1}`
+      await user.selectOptions(yearDropdown, [unavailableYearPast])
+      expect(false).toBe(true)
+    } catch (err: any) {
+      console.log(JSON.stringify(err))
+      expect(err.name).toBe('TestingLibraryElementError')
+    }
 
-    const unavailableYearFuture = `${currentYear + expectedSelectableYears + 1}`
-    expect(() => user.selectOptions(yearDropdown, [unavailableYearFuture])).toThrow()
+    try {
+      const unavailableYearFuture = `${currentYear + expectedSelectableYears + 1}`
+      await user.selectOptions(yearDropdown, [unavailableYearFuture])
+      expect(false).toBe(true)
+    } catch (err: any) {
+      expect(err.name).toBe('TestingLibraryElementError')
+    }
   })
 
-  it('should not be able to select current month', () => {
+  it('should not be able to select current month', async () => {
     const currentYear = now.getUTCFullYear()
     const currentMonth = now.getUTCMonth() + 1 // utc month ranges from [0, 11]
 
@@ -66,14 +77,14 @@ describe('<LockdateForm />', () => {
 
     const monthDropdown = screen.getByTestId('select-lockdate-month')
 
-    act(() => user.selectOptions(monthDropdown, [`${currentMonth}`]))
+    await act(async () => await user.selectOptions(monthDropdown, [`${currentMonth}`]))
     expect(selectedLockdate).toBe(initialLockdate) // select lockdate has not changed
 
     const expectedLockdate = fb.lockdate.fromTimestamp(Date.UTC(currentYear, currentMonth + 3 - 1))
-    act(() => user.selectOptions(monthDropdown, [`${currentMonth + 3}`]))
+    await act(async () => await user.selectOptions(monthDropdown, [`${currentMonth + 3}`]))
     expect(selectedLockdate).toBe(expectedLockdate)
 
-    act(() => user.selectOptions(monthDropdown, [`${currentMonth}`]))
+    await act(async () => await user.selectOptions(monthDropdown, [`${currentMonth}`]))
     expect(selectedLockdate).toBe(expectedLockdate) // select lockdate has not changed
   })
 

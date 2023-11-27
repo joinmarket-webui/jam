@@ -6,7 +6,7 @@ import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import WalletCreationConfirmation, { CreatedWalletInfo } from './WalletCreationConfirmation'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
-import WalletCreationForm from './WalletCreationForm'
+import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
 import MnemonicPhraseInput from './MnemonicPhraseInput'
 import { walletDisplayName, walletDisplayNameToFileName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
@@ -113,7 +113,7 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
   )
 
   const createWallet = useCallback(
-    async ({ walletName, password }) => {
+    async ({ walletName, password }: CreateWalletFormValues) => {
       setAlert(undefined)
 
       try {

@@ -1,7 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import user from '@testing-library/user-event'
-import { render, screen } from '../testUtils'
-import { act } from 'react-dom/test-utils'
+import { render, screen, act } from '../testUtils'
 import { __testSetDebugFeatureEnabled } from '../constants/debugFeatures'
 
 import * as apiMock from '../libs/JmWalletApi'
@@ -37,18 +36,20 @@ describe('<CreateWallet />', () => {
 
   beforeEach(() => {
     const neverResolvingPromise = new Promise(() => {})
-    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
-    ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
   })
 
   it('should display alert when rescanning is active', async () => {
-    ;(apiMock.getSession as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          rescanning: true,
-        }),
-    })
+    ;(apiMock.getSession as jest.Mock).mockReturnValue(
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            rescanning: true,
+          }),
+      }),
+    )
 
     await act(async () => setup({}))
 
@@ -130,15 +131,17 @@ describe('<CreateWallet />', () => {
   })
 
   it('should advance to WalletCreationConfirmation after wallet is created', async () => {
-    ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          walletname: `${testWalletName}.jmdat`,
-          token: 'ANY_TOKEN',
-          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
-        }),
-    })
+    ;(apiMock.postWalletCreate as jest.Mock).mockReturnValue(
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            walletname: `${testWalletName}.jmdat`,
+            token: 'ANY_TOKEN',
+            seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
+          }),
+      }),
+    )
 
     act(() => setup({}))
 
@@ -160,15 +163,17 @@ describe('<CreateWallet />', () => {
   })
 
   it('should verify that "skip" button is NOT visible by default (feature is disabled)', async () => {
-    ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          walletname: `${testWalletName}.jmdat`,
-          token: 'ANY_TOKEN',
-          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
-        }),
-    })
+    ;(apiMock.postWalletCreate as jest.Mock).mockReturnValue(
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            walletname: `${testWalletName}.jmdat`,
+            token: 'ANY_TOKEN',
+            seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
+          }),
+      }),
+    )
 
     act(() => setup({}))
 
@@ -181,7 +186,9 @@ describe('<CreateWallet />', () => {
     await act(async () => {
       const createWalletButton = screen.getByText('create_wallet.button_create')
       await user.click(createWalletButton)
+    })
 
+    await act(async () => {
       const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
       await user.click(revealToggle)
 
@@ -220,7 +227,9 @@ describe('<CreateWallet />', () => {
     await act(async () => {
       const createWalletButton = screen.getByText('create_wallet.button_create')
       await user.click(createWalletButton)
+    })
 
+    await act(async () => {
       const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
       await user.click(revealToggle)
 
