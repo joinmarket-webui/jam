@@ -1,5 +1,5 @@
 import { StrictMode } from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import App from './components/App'
 import { SettingsProvider } from './context/SettingsContext'
@@ -13,7 +13,9 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import './i18n/config'
 
-ReactDOM.render(
+const container = document.getElementById('root')
+const root = createRoot(container!)
+root.render(
   <StrictMode>
     <SettingsProvider>
       <WalletProvider>
@@ -27,5 +29,4 @@ ReactDOM.render(
       </WalletProvider>
     </SettingsProvider>
   </StrictMode>,
-  document.getElementById('root'),
 )
