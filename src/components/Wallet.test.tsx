@@ -1,8 +1,10 @@
 import { BrowserRouter } from 'react-router-dom'
-import { render, screen, waitFor, act } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import user from '@testing-library/user-event'
-import * as apiMock from '../libs/JmWalletApi'
+import { I18nextProvider } from 'react-i18next'
+import i18n from '../i18n/testConfig'
 import { walletDisplayName } from '../utils'
+import * as apiMock from '../libs/JmWalletApi'
 
 import Wallet, { WalletProps } from './Wallet'
 
@@ -28,16 +30,18 @@ describe('<Wallet />', () => {
     coinjoinInProgress = false,
   }: WalletProps) => {
     render(
-      <BrowserRouter>
-        <Wallet
-          walletFileName={walletFileName}
-          lockWallet={lockWallet}
-          unlockWallet={unlockWallet}
-          isActive={isActive}
-          coinjoinInProgress={coinjoinInProgress}
-          makerRunning={makerRunning}
-        />
-      </BrowserRouter>,
+      <I18nextProvider i18n={i18n}>
+        <BrowserRouter>
+          <Wallet
+            walletFileName={walletFileName}
+            lockWallet={lockWallet}
+            unlockWallet={unlockWallet}
+            isActive={isActive}
+            coinjoinInProgress={coinjoinInProgress}
+            makerRunning={makerRunning}
+          />
+        </BrowserRouter>
+      </I18nextProvider>,
     )
   }
 
@@ -67,15 +71,11 @@ describe('<Wallet />', () => {
     expect(screen.queryByText('wallets.wallet_preview.button_open')).not.toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_lock')).not.toBeInTheDocument()
 
-    await act(async () => {
-      await user.click(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'))
-      await user.paste(dummyPassword)
-    })
+    await user.click(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'))
+    await user.paste(dummyPassword)
 
-    await act(async () => {
-      const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
-      await user.click(unlockWalletButton)
-    })
+    const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
+    await user.click(unlockWalletButton)
 
     expect(mockUnlockWallet).toHaveBeenCalledWith(dummyWalletFileName, dummyPassword)
   })
@@ -126,10 +126,8 @@ describe('<Wallet />', () => {
     expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
-    await act(async () => {
-      const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-      await user.click(lockWalletButton)
-    })
+    const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
+    await user.click(lockWalletButton)
 
     expect(mockLockWallet).toHaveBeenCalledWith(dummyWalletFileName, { confirmed: false })
   })

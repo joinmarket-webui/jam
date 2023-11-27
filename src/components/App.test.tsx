@@ -18,9 +18,7 @@ describe('<App />', () => {
   })
 
   it('should display Onboarding screen initially', async () => {
-    act(() => {
-      render(<App />)
-    })
+    await act(async () => render(<App />))
 
     // Onboarding screen
     expect(screen.getByText('onboarding.splashscreen_button_get_started')).toBeInTheDocument()
@@ -29,20 +27,16 @@ describe('<App />', () => {
     // Wallets screen shown after Intro is skipped
     expect(screen.queryByText('wallets.title')).not.toBeInTheDocument()
 
-    await act(async () => {
-      const skipIntro = screen.getByText('onboarding.splashscreen_button_skip_intro')
-      await user.click(skipIntro)
-    })
+    const skipIntro = screen.getByText('onboarding.splashscreen_button_skip_intro')
+    await user.click(skipIntro)
 
     expect(screen.getByText('wallets.title')).toBeInTheDocument()
   })
 
-  it('should display Wallets screen directly when Onboarding screen has been shown', () => {
+  it('should display Wallets screen directly when Onboarding screen has been shown', async () => {
     global.__DEV__.addToAppSettings({ showOnboarding: false })
 
-    act(() => {
-      render(<App />)
-    })
+    await act(async () => render(<App />))
 
     // Wallets screen
     expect(screen.getByText('wallets.title')).toBeInTheDocument()
@@ -52,17 +46,13 @@ describe('<App />', () => {
   it('should display a modal with beta warning information', async () => {
     global.__DEV__.addToAppSettings({ showOnboarding: false })
 
-    act(() => {
-      render(<App />)
-    })
+    await act(async () => render(<App />))
 
     expect(screen.getByText('Read this before using.')).toBeInTheDocument()
     expect(screen.queryByText(/While JoinMarket is tried and tested, Jam is not./)).not.toBeInTheDocument()
 
-    await act(async () => {
-      const readThis = screen.getByText('Read this before using.')
-      await user.click(readThis)
-    })
+    const readThis = screen.getByText('Read this before using.')
+    await user.click(readThis)
 
     expect(screen.getByText('footer.warning_alert_text')).toBeInTheDocument()
     expect(screen.getByText('footer.warning_alert_button_ok')).toBeInTheDocument()
@@ -71,7 +61,7 @@ describe('<App />', () => {
   /*it('should display a websocket connection indicator', async () => {
     global.__DEV__.addToAppSettings({ showOnboarding: false })
 
-    act(() => {
+    await act(async () => {
       render(<App />)
     })
 

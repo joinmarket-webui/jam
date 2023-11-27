@@ -47,7 +47,7 @@ describe('<Wallets />', () => {
     ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
     ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
 
-    await act(async () => setup({}))
+    setup({})
 
     expect(screen.getByText('wallets.title')).toBeInTheDocument()
     expect(screen.getByText('wallets.text_loading')).toBeInTheDocument()
@@ -249,15 +249,11 @@ describe('<Wallets />', () => {
       expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
       expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
 
-      await act(async () => {
-        await user.click(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'))
-        await user.paste(dummyPassword)
-      })
+      await user.click(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'))
+      await user.paste(dummyPassword)
 
-      await act(async () => {
-        const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
-        await user.click(unlockWalletButton)
-      })
+      const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
+      await user.click(unlockWalletButton)
 
       expect(mockStartWallet).toHaveBeenCalledWith(dummyWalletFileName, {
         token: dummyToken,
@@ -300,15 +296,10 @@ describe('<Wallets />', () => {
       expect(screen.getByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
       expect(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
 
-      await act(async () => {
-        await user.click(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'))
-        await user.paste(dummyPassword)
-      })
-
-      await act(async () => {
-        const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
-        await user.click(unlockWalletButton)
-      })
+      await user.click(screen.getByPlaceholderText('wallets.wallet_preview.placeholder_password'))
+      await user.paste(dummyPassword)
+      const unlockWalletButton = screen.getByText('wallets.wallet_preview.button_unlock')
+      await user.click(unlockWalletButton)
 
       expect(mockStartWallet).not.toHaveBeenCalled()
       expect(mockedNavigate).not.toHaveBeenCalled()
@@ -355,10 +346,8 @@ describe('<Wallets />', () => {
       expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
       expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
-      await act(async () => {
-        const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-        await user.click(lockWalletButton)
-      })
+      const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
+      await user.click(lockWalletButton)
 
       expect(mockStopWallet).toHaveBeenCalled()
       expect(screen.getByText('wallets.wallet_preview.alert_wallet_locked_successfully')).toBeInTheDocument()
@@ -406,10 +395,8 @@ describe('<Wallets />', () => {
       expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
       expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
-      await act(async () => {
-        const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-        await user.click(lockWalletButton)
-      })
+      const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
+      await user.click(lockWalletButton)
 
       await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
 
@@ -464,11 +451,9 @@ describe('<Wallets />', () => {
         expect(screen.queryByText('wallets.wallet_preview.modal_lock_wallet_title')).not.toBeInTheDocument()
         expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
-        await act(async () => {
-          // click on the "lock" button
-          const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-          await user.click(lockWalletButton)
-        })
+        // click on the "lock" button
+        const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
+        await user.click(lockWalletButton)
 
         // modal appeared
         expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title')).toBeInTheDocument()
@@ -476,27 +461,21 @@ describe('<Wallets />', () => {
         expect(screen.getByText('modal.confirm_button_accept')).toBeInTheDocument()
         expect(screen.getByText('modal.confirm_button_reject')).toBeInTheDocument()
 
-        await act(async () => {
-          // click on the modal's "cancel" button
-          const lockWalletButton = screen.getByText('modal.confirm_button_reject')
-          await user.click(lockWalletButton)
-        })
+        // click on the modal's "cancel" button
+        const modalCancelButton = screen.getByText('modal.confirm_button_reject')
+        await user.click(modalCancelButton)
 
         expect(mockStopWallet).not.toHaveBeenCalled()
 
-        await act(async () => {
-          const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
-          await user.click(lockWalletButton)
-        })
+        const lockWalletButton2 = screen.getByText('wallets.wallet_preview.button_lock')
+        await user.click(lockWalletButton2)
 
         // modal appeared
         expect(screen.getByText('wallets.wallet_preview.modal_lock_wallet_title')).toBeInTheDocument()
 
-        await act(async () => {
-          // click on the modal's "confirm" button
-          const lockWalletButton = screen.getByText('modal.confirm_button_accept')
-          await user.click(lockWalletButton)
-        })
+        // click on the modal's "confirm" button
+        const modalConfirmButton = screen.getByText('modal.confirm_button_accept')
+        await user.click(modalConfirmButton)
 
         expect(mockStopWallet).toHaveBeenCalled()
       },

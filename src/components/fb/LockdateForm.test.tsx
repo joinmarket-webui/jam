@@ -1,18 +1,24 @@
-import { act, render, screen } from '../../testUtils'
+import { render, screen } from '@testing-library/react'
 import user from '@testing-library/user-event'
+import { I18nextProvider } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
+import i18n from '../../i18n/testConfig'
 
 import LockdateForm, { _minMonth, _selectableMonths, _selectableYears } from './LockdateForm'
 
 describe('<LockdateForm />', () => {
   const now = new Date(Date.UTC(2009, 0, 3))
   const setup = (onChange: (lockdate: Api.Lockdate | null) => void) => {
-    render(<LockdateForm onChange={onChange} now={now} />)
+    render(
+      <I18nextProvider i18n={i18n}>
+        <LockdateForm onChange={onChange} now={now} />
+      </I18nextProvider>,
+    )
   }
 
   it('should render without errors', () => {
-    act(() => setup(() => {}))
+    setup(() => {})
 
     expect(screen.getByTestId('select-lockdate-year')).toBeVisible()
     expect(screen.getByTestId('select-lockdate-month')).toBeVisible()
@@ -21,7 +27,7 @@ describe('<LockdateForm />', () => {
   it('should initialize 3 month ahead by default', () => {
     const onChange = jest.fn()
 
-    act(() => setup(onChange))
+    setup(onChange)
 
     expect(onChange).toHaveBeenCalledWith(fb.lockdate.initial(now))
   })
@@ -33,15 +39,15 @@ describe('<LockdateForm />', () => {
     let selectedLockdate: Api.Lockdate | null = null
     const onChange = (lockdate: Api.Lockdate | null) => (selectedLockdate = lockdate)
 
-    act(() => setup(onChange))
+    setup(onChange)
 
     const yearDropdown = screen.getByTestId('select-lockdate-year')
 
     for (let i = 0; i < expectedSelectableYears; i++) {
       const yearValue = currentYear + i
-      await act(async () => {
-        await user.selectOptions(yearDropdown, [`${yearValue}`])
-      })
+
+      await user.selectOptions(yearDropdown, [`${yearValue}`])
+
       expect(new Date(fb.lockdate.toTimestamp(selectedLockdate!)).getUTCFullYear()).toBe(yearValue)
     }
 
@@ -50,7 +56,6 @@ describe('<LockdateForm />', () => {
       await user.selectOptions(yearDropdown, [unavailableYearPast])
       expect(false).toBe(true)
     } catch (err: any) {
-      console.log(JSON.stringify(err))
       expect(err.name).toBe('TestingLibraryElementError')
     }
 
@@ -70,21 +75,21 @@ describe('<LockdateForm />', () => {
     let selectedLockdate: Api.Lockdate | null = null
     const onChange = (lockdate: Api.Lockdate | null) => (selectedLockdate = lockdate)
 
-    act(() => setup(onChange))
+    setup(onChange)
 
     const initialLockdate = selectedLockdate
     expect(initialLockdate).not.toBeNull()
 
     const monthDropdown = screen.getByTestId('select-lockdate-month')
 
-    await act(async () => await user.selectOptions(monthDropdown, [`${currentMonth}`]))
+    await user.selectOptions(monthDropdown, [`${currentMonth}`])
     expect(selectedLockdate).toBe(initialLockdate) // select lockdate has not changed
 
     const expectedLockdate = fb.lockdate.fromTimestamp(Date.UTC(currentYear, currentMonth + 3 - 1))
-    await act(async () => await user.selectOptions(monthDropdown, [`${currentMonth + 3}`]))
+    await user.selectOptions(monthDropdown, [`${currentMonth + 3}`])
     expect(selectedLockdate).toBe(expectedLockdate)
 
-    await act(async () => await user.selectOptions(monthDropdown, [`${currentMonth}`]))
+    await user.selectOptions(monthDropdown, [`${currentMonth}`])
     expect(selectedLockdate).toBe(expectedLockdate) // select lockdate has not changed
   })
 

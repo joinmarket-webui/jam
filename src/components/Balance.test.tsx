@@ -1,4 +1,4 @@
-import { render, act } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import user from '@testing-library/user-event'
 import { screen } from '../testUtils'
 import { BTC, SATS } from '../utils'
@@ -148,16 +148,12 @@ describe('<Balance />', () => {
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
 
-    await act(async () => {
-      await user.click(screen.getByText(`*****`))
-    })
+    await user.click(screen.getByText(`*****`))
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
 
-    await act(async () => {
-      await user.click(screen.getByTestId(`sats-amount`))
-    })
+    await user.click(screen.getByTestId(`sats-amount`))
 
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
@@ -168,9 +164,7 @@ describe('<Balance />', () => {
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
 
-    await act(async () => {
-      await user.click(screen.getByText(`*****`))
-    })
+    await user.click(screen.getByText(`*****`))
 
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
@@ -181,9 +175,7 @@ describe('<Balance />', () => {
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
 
-    await act(async () => {
-      await user.click(screen.getByTestId(`sats-amount`))
-    })
+    await user.click(screen.getByTestId(`sats-amount`))
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
@@ -194,16 +186,12 @@ describe('<Balance />', () => {
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()
 
-    await act(async () => {
-      await user.click(screen.getByTestId(`sats-amount`))
-    })
+    await user.click(screen.getByTestId(`sats-amount`))
 
     expect(screen.queryByTestId(`sats-amount`)).not.toBeInTheDocument()
     expect(screen.getByText(`*****`)).toBeInTheDocument()
 
-    await act(async () => {
-      await user.click(screen.getByText(`*****`))
-    })
+    await user.click(screen.getByText(`*****`))
 
     expect(screen.getByTestId(`sats-amount`)).toBeInTheDocument()
     expect(screen.queryByText(`*****`)).not.toBeInTheDocument()

@@ -59,7 +59,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should render without errors', () => {
-    act(() => setup({}))
+    setup({})
 
     expect(screen.getByText('create_wallet.title')).toBeVisible()
     expect(screen.getByLabelText('create_wallet.label_wallet_name')).toBeVisible()
@@ -72,17 +72,15 @@ describe('<CreateWallet />', () => {
   })
 
   it('should show validation messages to user if form is invalid', async () => {
-    act(() => setup({}))
+    setup({})
 
     expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
     expect(await screen.queryByText('create_wallet.feedback_invalid_password')).not.toBeInTheDocument()
     expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
 
-    await act(async () => {
-      // click on the "create" button without filling the form
-      await user.click(screen.getByText('create_wallet.button_create'))
-    })
+    // click on the "create" button without filling the form
+    await user.click(screen.getByText('create_wallet.button_create'))
 
     expect(await screen.findByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
     expect(await screen.findByText('create_wallet.feedback_invalid_password')).toBeVisible()
@@ -90,18 +88,16 @@ describe('<CreateWallet />', () => {
   })
 
   it('should not submit form if wallet name contains invalid characters', async () => {
-    act(() => setup({}))
+    setup({})
 
     expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
     expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
 
-    await act(async () => {
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), invalidTestWalletName)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
-    })
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), invalidTestWalletName)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
 
-    await act(async () => await user.click(screen.getByText('create_wallet.button_create')))
+    await user.click(screen.getByText('create_wallet.button_create'))
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
     expect(await screen.findByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
@@ -109,7 +105,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should not submit form if passwords do not match', async () => {
-    act(() => setup({}))
+    setup({})
 
     expect(await screen.findByPlaceholderText('create_wallet.placeholder_password')).toBeVisible()
     expect(await screen.findByPlaceholderText('create_wallet.placeholder_password_confirm')).toBeVisible()
@@ -117,13 +113,11 @@ describe('<CreateWallet />', () => {
     expect(await screen.queryByText('create_wallet.feedback_invalid_password_confirm')).not.toBeInTheDocument()
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
 
-    await act(async () => {
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), '.*')
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), 'a_mismatching_input')
-    })
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), '.*')
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), 'a_mismatching_input')
 
-    await act(async () => await user.click(screen.getByText('create_wallet.button_create')))
+    await user.click(screen.getByText('create_wallet.button_create'))
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
     expect(await screen.queryByText('create_wallet.feedback_invalid_wallet_name')).not.toBeInTheDocument()
@@ -143,20 +137,16 @@ describe('<CreateWallet />', () => {
       }),
     )
 
-    act(() => setup({}))
+    setup({})
 
     expect(await screen.findByText('create_wallet.button_create')).toBeVisible()
     expect(await screen.queryByText('create_wallet.title_wallet_created')).not.toBeInTheDocument()
 
-    await act(async () => {
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
-    })
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
 
-    await act(async () => {
-      await user.click(screen.getByText('create_wallet.button_create'))
-    })
+    await user.click(screen.getByText('create_wallet.button_create'))
 
     expect(screen.getByText('create_wallet.title_wallet_created')).toBeVisible()
     expect(screen.queryByText('create_wallet.button_create')).not.toBeInTheDocument()
@@ -175,29 +165,23 @@ describe('<CreateWallet />', () => {
       }),
     )
 
-    act(() => setup({}))
+    setup({})
 
-    await act(async () => {
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
-    })
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
 
-    await act(async () => {
-      const createWalletButton = screen.getByText('create_wallet.button_create')
-      await user.click(createWalletButton)
-    })
+    const createWalletButton = screen.getByText('create_wallet.button_create')
+    await user.click(createWalletButton)
 
-    await act(async () => {
-      const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
-      await user.click(revealToggle)
+    const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
+    await user.click(revealToggle)
 
-      const confirmToggle = screen.getByText('create_wallet.confirmation_toggle_info_written_down')
-      await user.click(confirmToggle)
+    const confirmToggle = screen.getByText('create_wallet.confirmation_toggle_info_written_down')
+    await user.click(confirmToggle)
 
-      const nextButton = screen.getByText('create_wallet.next_button')
-      await user.click(nextButton)
-    })
+    const nextButton = screen.getByText('create_wallet.next_button')
+    await user.click(nextButton)
 
     expect(screen.queryByText('create_wallet.skip_button')).not.toBeInTheDocument()
     expect(screen.getByText('create_wallet.back_button')).toBeVisible()
@@ -216,29 +200,23 @@ describe('<CreateWallet />', () => {
         }),
     })
 
-    act(() => setup({}))
+    setup({})
 
-    await act(async () => {
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
-      await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
-    })
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
 
-    await act(async () => {
-      const createWalletButton = screen.getByText('create_wallet.button_create')
-      await user.click(createWalletButton)
-    })
+    const createWalletButton = screen.getByText('create_wallet.button_create')
+    await user.click(createWalletButton)
 
-    await act(async () => {
-      const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
-      await user.click(revealToggle)
+    const revealToggle = await screen.findByText('create_wallet.confirmation_toggle_reveal_info')
+    await user.click(revealToggle)
 
-      const confirmToggle = screen.getByText('create_wallet.confirmation_toggle_info_written_down')
-      await user.click(confirmToggle)
+    const confirmToggle = screen.getByText('create_wallet.confirmation_toggle_info_written_down')
+    await user.click(confirmToggle)
 
-      const nextButton = screen.getByText('create_wallet.next_button')
-      await user.click(nextButton)
-    })
+    const nextButton = screen.getByText('create_wallet.next_button')
+    await user.click(nextButton)
 
     expect(screen.getByText('create_wallet.skip_button')).toBeVisible()
     expect(screen.getByText('create_wallet.back_button')).toBeVisible()
