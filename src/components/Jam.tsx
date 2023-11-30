@@ -464,7 +464,6 @@ export default function Jam({ wallet }: JamProps) {
                       setFieldValue,
                       validateForm,
                       isValid,
-                      dirty,
                       touched,
                       errors,
                     }) => (
@@ -474,7 +473,12 @@ export default function Jam({ wallet }: JamProps) {
                           {isDebugFeatureEnabled('insecureScheduleTesting') && (
                             <rb.Form.Group className="mb-4" controlId="offertype">
                               <ToggleSwitch
-                                label={'Use insecure testing settings'}
+                                label={
+                                  <>
+                                    Use insecure testing settings
+                                    <span className="ms-2 badge rounded-pill bg-warning">dev</span>
+                                  </>
+                                }
                                 subtitle={
                                   "This is completely insecure but makes testing the schedule much faster. This option won't be available in production."
                                 }
