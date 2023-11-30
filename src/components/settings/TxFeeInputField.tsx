@@ -61,7 +61,7 @@ export const validateTxFee = (val: TxFee | undefined, t: TFunction): FormikError
   return errors
 }
 
-type TxFeeInputFieldProps = FieldProps<TxFee> & {
+type TxFeeInputFieldProps = FieldProps<TxFee | undefined> & {
   label: string
 }
 
@@ -110,13 +110,13 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
               }
             }
           }}
-          initialValue={field.value.unit}
+          initialValue={field.value?.unit || 'blocks'}
           disabled={form.isSubmitting}
         />
       </rb.Form.Group>
       <rb.Form.Text className="d-block mb-2">
         {t(
-          field.value.unit === 'sats/kilo-vbyte'
+          field.value?.unit === 'sats/kilo-vbyte'
             ? 'settings.fees.description_tx_fees_satspervbyte'
             : 'settings.fees.description_tx_fees_blocks',
         )}
@@ -124,7 +124,7 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
       <rb.Form.Group controlId="tx_fees" className="mb-4">
         <rb.InputGroup hasValidation>
           <rb.InputGroup.Text id="txFees-addon1">
-            {field.value.unit === 'sats/kilo-vbyte' ? (
+            {field.value?.unit === 'sats/kilo-vbyte' ? (
               <>
                 <Sprite symbol="sats" width="24" height="24" />/ vB
               </>
@@ -133,7 +133,7 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
             )}
           </rb.InputGroup.Text>
 
-          {field.value.unit === 'sats/kilo-vbyte' ? (
+          {field.value?.unit === 'sats/kilo-vbyte' ? (
             <rb.Form.Control
               aria-label={label}
               className={`slashed-zeroes`}
@@ -167,7 +167,7 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
               name={field.name}
               type="number"
               placeholder="1"
-              value={isValidNumber(field.value.value) ? field.value.value : ''}
+              value={isValidNumber(field.value?.value) ? field.value?.value : ''}
               disabled={form.isSubmitting}
               onBlur={field.onBlur}
               onChange={(e) => {

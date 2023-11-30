@@ -45,8 +45,8 @@ type FeeFormValues = FeeValues & {
 
 interface FeeConfigFormProps {
   initialValues: FeeFormValues
-  validate: (values: FeeValues) => FormikErrors<FeeValues>
-  onSubmit: (values: FeeValues) => void
+  validate: (values: FeeFormValues) => FormikErrors<FeeFormValues>
+  onSubmit: (values: FeeFormValues) => void
   defaultActiveSectionKey?: FeeConfigSectionKey
 }
 
@@ -247,13 +247,13 @@ export default function FeeConfigModal({
   const loadFeeConfigValues = useLoadFeeConfigValues()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [loadError, setLoadError] = useState(false)
+  const [loadError, setLoadError] = useState<any>()
   const [saveErrorMessage, setSaveErrorMessage] = useState<string>()
-  const [feeFormValues, setFeeFormValues] = useState<FeeFormValues | null>(null)
+  const [feeFormValues, setFeeFormValues] = useState<FeeFormValues>()
   const formRef = useRef<FormikProps<FeeFormValues>>(null)
 
   useEffect(() => {
-    setLoadError(false)
+    setLoadError(undefined)
 
     const abortCtrl = new AbortController()
     if (show) {
@@ -265,10 +265,10 @@ export default function FeeConfigModal({
           setIsLoading(false)
           setFeeFormValues(val)
         })
-        .catch((e) => {
+        .catch((error) => {
           if (abortCtrl.signal.aborted) return
           setIsLoading(false)
-          setLoadError(true)
+          setLoadError(error)
         })
     } else {
       setSaveErrorMessage(undefined)
@@ -278,48 +278,6 @@ export default function FeeConfigModal({
       abortCtrl.abort()
     }
   }, [show, loadFeeConfigValues])
-
-  const submit = async (feeValues: FeeValues) => {
-    const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
-    if (!allValuesPresent) return
-    if (feeValues.tx_fees?.value === undefined) return
-
-    const updates = [
-      {
-        key: FEE_CONFIG_KEYS.tx_fees,
-        value: String(feeValues.tx_fees?.value!),
-      },
-      {
-        key: FEE_CONFIG_KEYS.tx_fees_factor,
-        value: String(feeValues.tx_fees_factor),
-      },
-      {
-        key: FEE_CONFIG_KEYS.max_cj_fee_abs,
-        value: String(feeValues.max_cj_fee_abs),
-      },
-      {
-        key: FEE_CONFIG_KEYS.max_cj_fee_rel,
-        value: String(feeValues.max_cj_fee_rel),
-      },
-    ]
-
-    setSaveErrorMessage(undefined)
-    setIsSubmitting(true)
-    try {
-      await updateConfigValues({ updates })
-
-      setIsSubmitting(false)
-      onSuccess && onSuccess()
-      onHide()
-    } catch (err: any) {
-      setIsSubmitting(false)
-      setSaveErrorMessage((_) =>
-        t('settings.fees.error_saving_fee_config_failed', {
-          reason: err.message || t('global.errors.reason_unknown'),
-        }),
-      )
-    }
-  }
 
   const validate = useCallback(
     (values: FeeFormValues) => {
@@ -372,6 +330,44 @@ export default function FeeConfigModal({
     },
     [t],
   )
+
+  const submit = async (values: FeeFormValues) => {
+    const updates = [
+      {
+        key: FEE_CONFIG_KEYS.tx_fees,
+        value: String(values.tx_fees?.value ?? ''),
+      },
+      {
+        key: FEE_CONFIG_KEYS.tx_fees_factor,
+        value: String(values.tx_fees_factor ?? ''),
+      },
+      {
+        key: FEE_CONFIG_KEYS.max_cj_fee_abs,
+        value: String(values.max_cj_fee_abs ?? ''),
+      },
+      {
+        key: FEE_CONFIG_KEYS.max_cj_fee_rel,
+        value: String(values.max_cj_fee_rel ?? ''),
+      },
+    ]
+
+    setSaveErrorMessage(undefined)
+    setIsSubmitting(true)
+    try {
+      await updateConfigValues({ updates })
+
+      setIsSubmitting(false)
+      onSuccess && onSuccess()
+      onHide()
+    } catch (err: any) {
+      setIsSubmitting(false)
+      setSaveErrorMessage((_) =>
+        t('settings.fees.error_saving_fee_config_failed', {
+          reason: err.message || t('global.errors.reason_unknown'),
+        }),
+      )
+    }
+  }
 
   const cancel = useCallback(() => {
     onCancel && onCancel()
@@ -455,10 +451,10 @@ export default function FeeConfigModal({
               variant="outline-dark"
               className="position-relative"
               onClick={() => {
-                formRef.current?.setFieldValue('max_cj_fee_abs', '', false)
-                formRef.current?.setFieldValue('max_cj_fee_rel', '', false)
-                formRef.current?.setFieldValue('tx_fees', '', false)
-                formRef.current?.setFieldValue('tx_fees_factor', '', false)
+                formRef.current?.setFieldValue('max_cj_fee_abs', undefined, false)
+                formRef.current?.setFieldValue('max_cj_fee_rel', undefined, false)
+                formRef.current?.setFieldValue('tx_fees', undefined, false)
+                formRef.current?.setFieldValue('tx_fees_factor', undefined, false)
                 setTimeout(() => formRef.current?.validateForm(), 4)
               }}
               disabled={isLoading || isSubmitting}
