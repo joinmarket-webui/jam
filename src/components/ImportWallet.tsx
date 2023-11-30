@@ -360,8 +360,10 @@ const ImportWalletConfirmation = ({
 
           <div className="d-flex mb-4 gap-4">
             <rb.Button variant="none" hidden={isSubmitting} disabled={isSubmitting} onClick={() => onCancel()}>
-              <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
-              {t('global.back')}
+              <div className="d-flex justify-content-center align-items-center">
+                <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
+                {t('global.back')}
+              </div>
             </rb.Button>
           </div>
         </rb.Form>
@@ -604,7 +606,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         </>
       ) : (
         <>
-          <PreventLeavingPageByMistake />
+          {step !== ImportWalletSteps.success && <PreventLeavingPageByMistake />}
           {step === ImportWalletSteps.wallet_details && (
             <WalletCreationForm
               initialValues={createWalletFormValues}
@@ -664,7 +666,17 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
               }}
             />
           )}
-          {step === ImportWalletSteps.success && <>{/*empty on purpuse - just a title is shown*/}</>}
+          {step === ImportWalletSteps.success && (
+            <div className="d-flex justify-content-center my-4 gap-4">
+              <Link
+                className="btn btn-lg btn-dark d-inline-flex justify-content-center align-items-center"
+                to={routes.wallet}
+              >
+                {t('import_wallet.success.text_button_submit')}
+                <Sprite symbol="arrow-right" width="20" height="20" className="ms-2" />
+              </Link>
+            </div>
+          )}
         </>
       )}
     </div>
