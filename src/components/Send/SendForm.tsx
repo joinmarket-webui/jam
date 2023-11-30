@@ -361,7 +361,7 @@ export const SendForm = ({
     const errors = {} as FormikErrors<SendFormValues>
     /** source jar */
     if (!isValidJarIndex(values.sourceJarIndex ?? -1)) {
-      errors.sourceJarIndex = t('send.feedback_invalid_destination_address')
+      errors.sourceJarIndex = t('send.feedback_invalid_source_jar')
     }
     /** source jar - end */
 

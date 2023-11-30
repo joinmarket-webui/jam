@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
+import { noop } from '../../utils'
 import { WalletInfo } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 
@@ -61,6 +62,18 @@ export const SourceJarSelector = ({
             ))}
           </div>
         )}
+
+        <rb.Form.Control
+          type="number"
+          name={field.name}
+          value={field.value || ''}
+          onChange={noop}
+          isInvalid={!!form.errors[field.name]}
+          readOnly={true}
+          required
+          hidden={true}
+        />
+        <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
       </rb.Form.Group>
     </>
   )
