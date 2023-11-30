@@ -135,6 +135,7 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarPr
               convertToUnit={settings.unit}
               showBalance={settings.showBalance}
               frozen={true}
+              showSymbol={false}
             />
           )}
         </div>
