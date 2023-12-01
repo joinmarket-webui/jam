@@ -95,7 +95,9 @@ const CollaboratorsSelector = ({
           }}
           disabled={disabled}
         />
-        <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
+        <rb.Form.Control.Feedback type="invalid">
+          <>{form.errors[field.name]}</>
+        </rb.Form.Control.Feedback>
       </div>
     </rb.Form.Group>
   )

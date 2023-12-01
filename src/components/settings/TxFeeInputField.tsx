@@ -188,7 +188,9 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
               step={1}
             />
           )}
-          <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
+          <rb.Form.Control.Feedback type="invalid">
+            <>{form.errors[field.name]}</>
+          </rb.Form.Control.Feedback>
         </rb.InputGroup>
       </rb.Form.Group>
     </>
