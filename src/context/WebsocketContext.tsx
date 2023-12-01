@@ -60,7 +60,7 @@ const WebsocketContext = createContext<WebsocketContextEntry | undefined>(undefi
  * See Websocket docs: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.5/docs/JSON-RPC-API-using-jmwalletd.md#websocket
  */
 const WebsocketProvider = ({ children }: PropsWithChildren<{}>) => {
-  const [websocket, setWebsocket] = useState(createWebSocket())
+  const [websocket, setWebsocket] = useState(() => createWebSocket())
   const [websocketState, setWebsocketState] = useState(websocket.readyState)
   const [isWebsocketHealthy, setIsWebsocketHealthy] = useState(false)
   const setConnectionErrorCount = useState(0)[1]
