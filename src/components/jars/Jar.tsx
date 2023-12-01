@@ -11,22 +11,23 @@ const classNames = classnamesBind.bind(styles)
 
 type JarFillLevel = 0 | 1 | 2 | 3
 
-interface JarProps {
+export type JarProps = {
   index: JarIndex
   balance: AmountSats
   frozenBalance: AmountSats
   fillLevel: JarFillLevel
   isOpen?: boolean
+  size?: 'sm' | 'lg'
 }
 
-interface SelectableJarProps {
+export type SelectableJarProps = JarProps & {
   isSelectable: boolean
   isSelected: boolean
   variant?: 'default' | 'warning'
   onClick: (index: JarIndex) => void
 }
 
-interface TooltipJarProps {
+export type OpenableJarProps = Omit<JarProps, 'isOpen'> & {
   tooltipText: string
   onClick: () => void
 }
@@ -85,7 +86,7 @@ const jarInitial = (index: JarIndex) => {
 /**
  * A jar with index and balance.
  */
-const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarProps) => {
+const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false, size }: JarProps) => {
   const settings = useSettings()
 
   const jarSymbol = useMemo(() => {
@@ -122,7 +123,12 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarPr
 
   return (
     <div className={`${styles.jarContainer} jar-container-hook`}>
-      <Sprite className={`${styles.jarSprite} ${flavorStyle}`} symbol={jarSymbol} width="32px" height="48px" />
+      <Sprite
+        className={`${styles.jarSprite} ${flavorStyle}`}
+        symbol={jarSymbol}
+        width={size === 'lg' ? '48px' : '32px'}
+        height={size === 'lg' ? '72px' : '48px'}
+      />
       <div className={`${styles.jarInfoContainer} jar-info-container-hook`}>
         <div className={styles.jarIndex}>{flavorName}</div>
         <div className={`${styles.jarBalance} jar-balance-container-hook`}>
@@ -148,15 +154,13 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false }: JarPr
  * A jar with index, balance, and a radio-style selection button.
  */
 const SelectableJar = ({
-  index,
-  balance,
-  frozenBalance,
-  fillLevel,
   isSelectable,
   isSelected,
   onClick,
+  index,
   variant = 'default',
-}: JarProps & SelectableJarProps) => {
+  ...jarProps
+}: SelectableJarProps) => {
   return (
     <div
       className={classNames('selectableJarContainer', {
@@ -165,7 +169,7 @@ const SelectableJar = ({
       })}
       onClick={() => isSelectable && onClick(index)}
     >
-      <Jar index={index} balance={balance} frozenBalance={frozenBalance} fillLevel={fillLevel} />
+      <Jar index={index} {...jarProps} />
       <div className="d-flex justify-content-center align-items-center gap-1 mt-2 position-relative">
         <div className={styles.selectionCircle} />
         {variant === 'warning' && (
@@ -182,14 +186,7 @@ const SelectableJar = ({
  * A jar with index, balance, and a tooltip.
  * The jar symbol opens on hover.
  */
-const OpenableJar = ({
-  index,
-  balance,
-  frozenBalance,
-  fillLevel,
-  tooltipText,
-  onClick,
-}: JarProps & TooltipJarProps) => {
+const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) => {
   const [jarIsOpen, setJarIsOpen] = useState(false)
   const onMouseOver = () => setJarIsOpen(true)
   const onMouseOut = () => setJarIsOpen(false)
@@ -210,7 +207,7 @@ const OpenableJar = ({
         overlay={(props) => <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip>}
       >
         <div className={styles.tooltipJarContainer} onClick={onClick}>
-          <Jar index={index} balance={balance} frozenBalance={frozenBalance} fillLevel={fillLevel} isOpen={jarIsOpen} />
+          <Jar {...jarProps} isOpen={jarIsOpen} />
         </div>
       </rb.OverlayTrigger>
     </div>

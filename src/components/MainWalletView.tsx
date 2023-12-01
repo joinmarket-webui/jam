@@ -205,6 +205,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
                   </rb.Placeholder>
                 ) : (
                   <Jars
+                    size="lg"
                     accountBalances={currentWalletInfo.balanceSummary.accountBalances}
                     totalBalance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
                     onClick={onJarClicked}

@@ -3,18 +3,18 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { AccountBalances } from '../context/BalanceSummary'
 import { AmountSats } from '../libs/JmWalletApi'
-import { OpenableJar, jarFillLevel } from './jars/Jar'
+import { JarProps, OpenableJar, jarFillLevel } from './jars/Jar'
 import Sprite from './Sprite'
 
 import styles from './Jars.module.css'
 
-interface JarsProps {
+type JarsProps = Pick<JarProps, 'size'> & {
   accountBalances: AccountBalances
   totalBalance: AmountSats
   onClick: (jarIndex: JarIndex) => void
 }
 
-const Jars = ({ accountBalances, totalBalance, onClick }: JarsProps) => {
+const Jars = ({ size, accountBalances, totalBalance, onClick }: JarsProps) => {
   const { t } = useTranslation()
   const sortedAccountBalances = useMemo(() => {
     if (!accountBalances) return []
@@ -43,6 +43,7 @@ const Jars = ({ accountBalances, totalBalance, onClick }: JarsProps) => {
           return (
             <OpenableJar
               key={account.accountIndex}
+              size={size}
               index={account.accountIndex}
               balance={account.calculatedAvailableBalanceInSats}
               frozenBalance={account.calculatedFrozenOrLockedBalanceInSats}
