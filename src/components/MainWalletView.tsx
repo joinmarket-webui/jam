@@ -171,24 +171,24 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
                 <ExtendedLink
                   to={routes.receive}
                   state={{ account: 0 }}
-                  className={`${styles.sendReceiveButton} btn btn-outline-dark w-100`}
+                  className={`${styles.sendReceiveButton} btn btn-lg btn-outline-dark w-100`}
                   disabled={isLoading || serviceInfo?.rescanning}
                 >
                   <div className="d-flex justify-content-center align-items-center">
-                    <Sprite symbol="receive" width="24" height="24" />
-                    <div className="ps-1">{t('current_wallet.button_deposit')}</div>
+                    <Sprite symbol="receive" width="24" height="24" className="me-1" />
+                    {t('current_wallet.button_deposit')}
                   </div>
                 </ExtendedLink>
               </rb.Col>
               <rb.Col>
                 <ExtendedLink
                   to={routes.send}
-                  className={`${styles.sendReceiveButton} btn btn-outline-dark w-100`}
+                  className={`${styles.sendReceiveButton} btn btn-lg btn-outline-dark w-100`}
                   disabled={isLoading || serviceInfo?.rescanning}
                 >
                   <div className="d-flex justify-content-center align-items-center">
-                    <Sprite symbol="send" width="24" height="24" />
-                    <div className="ps-1">{t('current_wallet.button_withdraw')}</div>
+                    <Sprite symbol="send" width="24" height="24" className="me-1" />
+                    {t('current_wallet.button_withdraw')}
                   </div>
                 </ExtendedLink>
               </rb.Col>

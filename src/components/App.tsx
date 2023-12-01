@@ -94,7 +94,7 @@ export default function App() {
         element={
           <>
             <Navbar />
-            <rb.Container as="main" className="py-4 py-sm-5">
+            <rb.Container as="main" className="py-4 py-sm-5" fluid>
               <Outlet />
             </rb.Container>
             <Footer />
