@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useField, useFormikContext } from 'formik'
 import { useSettings } from '../../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
@@ -7,45 +8,54 @@ import styles from './CollaboratorsSelector.module.css'
 import { isValidNumCollaborators } from './helpers'
 
 type CollaboratorsSelectorProps = {
-  numCollaborators: number | null
-  setNumCollaborators: (val: number | null) => void
+  name: string
   minNumCollaborators: number
+  maxNumCollaborators: number
   disabled?: boolean
 }
 const CollaboratorsSelector = ({
-  numCollaborators,
-  setNumCollaborators,
+  name,
   minNumCollaborators,
+  maxNumCollaborators,
   disabled = false,
 }: CollaboratorsSelectorProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const [usesCustomNumCollaborators, setUsesCustomNumCollaborators] = useState(false)
+  const [field] = useField<number>(name)
+  const form = useFormikContext<any>()
+
+  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>()
 
   const defaultCollaboratorsSelection = useMemo(() => {
     const start = Math.max(minNumCollaborators, 8)
     return [start, start + 1, start + 2]
   }, [minNumCollaborators])
 
+  const usesCustomNumCollaborators = useMemo(() => {
+    return field.value === undefined || String(field.value) === customNumCollaboratorsInput
+  }, [field.value, customNumCollaboratorsInput])
+
   const validateAndSetCustomNumCollaborators = (candidate: string) => {
     const parsed = parseInt(candidate, 10)
     if (isValidNumCollaborators(parsed, minNumCollaborators)) {
-      setNumCollaborators(parsed)
+      form.setFieldValue(field.name, parsed, true)
     } else {
-      setNumCollaborators(null)
+      form.setFieldValue(field.name, undefined, true)
     }
   }
 
   return (
     <rb.Form.Group className={styles.collaboratorsSelector}>
-      <rb.Form.Label className="mb-0">{t('send.label_num_collaborators', { numCollaborators })}</rb.Form.Label>
+      <rb.Form.Label className="mb-0">
+        {t('send.label_num_collaborators', { numCollaborators: field.value })}
+      </rb.Form.Label>
       <div className="mb-2">
         <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
       </div>
       <div className="d-flex flex-row flex-wrap gap-2">
         {defaultCollaboratorsSelection.map((number) => {
-          const isSelected = !usesCustomNumCollaborators && numCollaborators === number
+          const isSelected = !usesCustomNumCollaborators && field.value === number
           return (
             <rb.Button
               key={number}
@@ -54,8 +64,7 @@ const CollaboratorsSelector = ({
                 [styles.selected]: isSelected,
               })}
               onClick={() => {
-                setUsesCustomNumCollaborators(false)
-                setNumCollaborators(number)
+                validateAndSetCustomNumCollaborators(String(number))
               }}
               disabled={disabled}
             >
@@ -66,32 +75,27 @@ const CollaboratorsSelector = ({
         <rb.Form.Control
           type="number"
           min={minNumCollaborators}
-          max={99}
-          isInvalid={!isValidNumCollaborators(numCollaborators, minNumCollaborators)}
+          max={maxNumCollaborators}
+          isInvalid={usesCustomNumCollaborators && !isValidNumCollaborators(field.value, minNumCollaborators)}
           placeholder={t('send.input_num_collaborators_placeholder')}
-          defaultValue=""
+          value={customNumCollaboratorsInput || ''}
           className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
             [styles.selected]: usesCustomNumCollaborators,
           })}
           onChange={(e) => {
-            setUsesCustomNumCollaborators(true)
+            setCustomNumCollaboratorsInput(e.target.value)
             validateAndSetCustomNumCollaborators(e.target.value)
           }}
-          onClick={(e) => {
-            // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
-            if (e.target.value !== '') {
-              setUsesCustomNumCollaborators(true)
-              // @ts-ignore - FIXME: "Property 'value' does not exist on type 'EventTarget'"
-              validateAndSetCustomNumCollaborators(e.target.value)
+          onClick={(e: any) => {
+            const val = e.target?.value
+            if (val !== undefined && val !== '') {
+              setCustomNumCollaboratorsInput(val)
+              validateAndSetCustomNumCollaborators(val)
             }
           }}
           disabled={disabled}
         />
-        {usesCustomNumCollaborators && (
-          <rb.Form.Control.Feedback type="invalid">
-            {t('send.error_invalid_num_collaborators', { minNumCollaborators, maxNumCollaborators: 99 })}
-          </rb.Form.Control.Feedback>
-        )}
+        <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
       </div>
     </rb.Form.Group>
   )

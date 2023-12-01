@@ -4,17 +4,20 @@ import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
-import { FeeValues, useEstimatedMaxCollaboratorFee, toTxFeeValueUnit } from '../hooks/Fees'
+import { FeeValues, TxFee, useEstimatedMaxCollaboratorFee } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
 import styles from './PaymentConfirmModal.module.css'
 import { AmountSats } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
 
-const feeRange: (feeValues: FeeValues) => [number, number] = (feeValues) => {
-  const feeTargetInSatsPerVByte = feeValues.tx_fees! / 1_000
+const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee, txFeeFactor) => {
+  if (txFee.unit !== 'sats/kilo-vbyte') {
+    throw new Error('This function can only be used with unit `sats/kilo-vbyte`')
+  }
+  const feeTargetInSatsPerVByte = txFee.value! / 1_000
   const minFeeSatsPerVByte = Math.max(1, feeTargetInSatsPerVByte)
-  const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + feeValues.tx_fees_factor!)
+  const maxFeeSatsPerVByte = feeTargetInSatsPerVByte * (1 + txFeeFactor)
   return [minFeeSatsPerVByte, maxFeeSatsPerVByte]
 }
 
@@ -23,15 +26,17 @@ const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) 
 
   const miningFeeText = useMemo(() => {
     if (!feeConfigValues) return null
-    if (!isValidNumber(feeConfigValues.tx_fees) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
+    if (!isValidNumber(feeConfigValues.tx_fees?.value) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
 
-    const unit = toTxFeeValueUnit(feeConfigValues.tx_fees)
-    if (!unit) {
+    if (!feeConfigValues.tx_fees?.unit) {
       return null
-    } else if (unit === 'blocks') {
-      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees })
+    } else if (feeConfigValues.tx_fees.unit === 'blocks') {
+      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees.value })
     } else {
-      const [minFeeSatsPerVByte, maxFeeSatsPerVByte] = feeRange(feeConfigValues)
+      const [minFeeSatsPerVByte, maxFeeSatsPerVByte] = feeRange(
+        feeConfigValues.tx_fees,
+        feeConfigValues.tx_fees_factor!,
+      )
       const fractionDigits = 2
 
       if (minFeeSatsPerVByte.toFixed(fractionDigits) === maxFeeSatsPerVByte.toFixed(fractionDigits)) {

@@ -1,37 +1,19 @@
 import { forwardRef, useRef, useCallback, useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
-import { Formik, FormikErrors, FormikProps } from 'formik'
+import { Formik, FormikErrors, FormikProps, Field } from 'formik'
 import classNames from 'classnames'
-import { FEE_CONFIG_KEYS, TxFeeValueUnit, toTxFeeValueUnit, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
-import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
-import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
 import Sprite from '../Sprite'
-import SegmentedTabs from '../SegmentedTabs'
-import styles from './FeeConfigModal.module.css'
+import { TxFeeInputField, validateTxFee } from './TxFeeInputField'
+import { FEE_CONFIG_KEYS, FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
+import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import ToggleSwitch from '../ToggleSwitch'
+import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
+import styles from './FeeConfigModal.module.css'
 
 const __dev_allowFeeValuesReset = isDebugFeatureEnabled('allowFeeValuesReset')
 
-type SatsPerKiloVByte = number
-
-const TX_FEES_BLOCKS_MIN = 1
-const TX_FEES_BLOCKS_MAX = 1_000
-
-/**
- * When the fee target is low, JM sometimes constructs transactions, which are
- * declined from being relayed. In order to mitigate such situations, the
- * minimum fee target (when provided in sats/vbyte) must be higher than
- * 1 sats/vbyte, till the problem is addressed. Once resolved, this
- * can be lowered to 1 sats/vbyte again.
- * See https://github.com/JoinMarket-Org/joinmarket-clientserver/issues/1360#issuecomment-1262295463
- * Last checked on 2022-10-06.
- */
-const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_000 // 1 sat/vbyte
-// 350 sats/vbyte - no enforcement by JM - this should be a "sane" max value (taken default value of "absurd_fee_per_kb")
-const TX_FEES_SATSPERKILOVBYTE_MAX: SatsPerKiloVByte = 350_000
-const TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN = 1_001 // actual min of `tx_fees` if unit is sats/kilo-vbyte
 const TX_FEES_FACTOR_MIN = 0 // 0%
 /**
  * For the same reasons as stated above (comment for `TX_FEES_SATSPERKILOVBYTE_MIN`),
@@ -63,8 +45,8 @@ type FeeFormValues = FeeValues & {
 
 interface FeeConfigFormProps {
   initialValues: FeeFormValues
-  validate: (values: FeeFormValues, txFeesUnit: TxFeeValueUnit) => FormikErrors<FeeFormValues>
-  onSubmit: (values: FeeFormValues, txFeesUnit: TxFeeValueUnit) => void
+  validate: (values: FeeFormValues) => FormikErrors<FeeFormValues>
+  onSubmit: (values: FeeFormValues) => void
   defaultActiveSectionKey?: FeeConfigSectionKey
 }
 
@@ -75,14 +57,12 @@ const FeeConfigForm = forwardRef(
   ) => {
     const { t, i18n } = useTranslation()
 
-    const [txFeesUnit, setTxFeesUnit] = useState<TxFeeValueUnit>(toTxFeeValueUnit(initialValues.tx_fees) || 'blocks')
-
     return (
       <Formik
         innerRef={ref}
         initialValues={initialValues}
-        validate={(values) => validate(values, txFeesUnit)}
-        onSubmit={(values) => onSubmit(values, txFeesUnit)}
+        validate={(values) => validate(values)}
+        onSubmit={(values) => onSubmit(values)}
       >
         {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
           <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
@@ -203,102 +183,8 @@ const FeeConfigForm = forwardRef(
                 </rb.Accordion.Header>
                 <rb.Accordion.Body>
                   <div className="mb-4 text-secondary">{t('settings.fees.description_general_fee_settings')}</div>
-                  <rb.Form.Label>{t('settings.fees.label_tx_fees')}</rb.Form.Label>
-                  {txFeesUnit && (
-                    <rb.Form.Group className="my-2 d-flex justify-content-center" controlId="offertype">
-                      <SegmentedTabs
-                        name="txFeesUnit"
-                        tabs={[
-                          {
-                            label: t('settings.fees.radio_tx_fees_blocks'),
-                            value: 'blocks',
-                          },
-                          {
-                            label: t('settings.fees.radio_tx_fees_satspervbyte'),
-                            value: 'sats/kilo-vbyte',
-                          },
-                        ]}
-                        onChange={(tab) => {
-                          const value = tab.value as TxFeeValueUnit
-                          setTxFeesUnit(value)
 
-                          if (values.tx_fees) {
-                            if (value === 'sats/kilo-vbyte') {
-                              setFieldValue('tx_fees', values.tx_fees * 1_000, false)
-                            } else {
-                              setFieldValue('tx_fees', Math.round(values.tx_fees / 1_000), false)
-                            }
-                          }
-                          setTimeout(() => validateForm(), 4)
-                        }}
-                        initialValue={txFeesUnit}
-                        disabled={isSubmitting}
-                      />
-                    </rb.Form.Group>
-                  )}
-                  <rb.Form.Text>
-                    {t(
-                      txFeesUnit === 'sats/kilo-vbyte'
-                        ? 'settings.fees.description_tx_fees_satspervbyte'
-                        : 'settings.fees.description_tx_fees_blocks',
-                    )}
-                  </rb.Form.Text>
-                  <rb.Form.Group controlId="tx_fees" className="mb-4">
-                    <rb.InputGroup hasValidation>
-                      <rb.InputGroup.Text id="txFees-addon1">
-                        {txFeesUnit === 'sats/kilo-vbyte' ? (
-                          <>
-                            <Sprite symbol="sats" width="24" height="24" />/ vB
-                          </>
-                        ) : (
-                          <Sprite symbol="block" width="24" height="24" name="Block" />
-                        )}
-                      </rb.InputGroup.Text>
-
-                      {txFeesUnit === 'sats/kilo-vbyte' ? (
-                        <rb.Form.Control
-                          aria-label={t('settings.fees.label_tx_fees')}
-                          className="slashed-zeroes"
-                          name="tx_fees"
-                          type="number"
-                          placeholder="1"
-                          value={isValidNumber(values.tx_fees) ? values.tx_fees! / 1_000 : ''}
-                          disabled={isSubmitting}
-                          onBlur={handleBlur}
-                          onChange={(e) => {
-                            const value = parseFloat(e.target.value)
-                            setFieldValue('tx_fees', value * 1_000, true)
-                          }}
-                          isValid={touched.tx_fees && !errors.tx_fees}
-                          isInvalid={touched.tx_fees && !!errors.tx_fees}
-                          min={TX_FEES_SATSPERKILOVBYTE_MIN / 1_000}
-                          max={TX_FEES_SATSPERKILOVBYTE_MAX / 1_000}
-                          step={0.001}
-                        />
-                      ) : (
-                        <rb.Form.Control
-                          aria-label={t('settings.fees.label_tx_fees')}
-                          className="slashed-zeroes"
-                          name="tx_fees"
-                          type="number"
-                          placeholder="1"
-                          value={isValidNumber(values.tx_fees) ? values.tx_fees : ''}
-                          disabled={isSubmitting}
-                          onBlur={handleBlur}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value, 10)
-                            setFieldValue('tx_fees', value, true)
-                          }}
-                          isValid={touched.tx_fees && !errors.tx_fees}
-                          isInvalid={touched.tx_fees && !!errors.tx_fees}
-                          min={TX_FEES_BLOCKS_MIN}
-                          max={TX_FEES_BLOCKS_MAX}
-                          step={1}
-                        />
-                      )}
-                      <rb.Form.Control.Feedback type="invalid">{errors.tx_fees}</rb.Form.Control.Feedback>
-                    </rb.InputGroup>
-                  </rb.Form.Group>
+                  <Field name="tx_fees" label={t('settings.fees.label_tx_fees')} component={TxFeeInputField} />
 
                   <rb.Form.Group controlId="tx_fees_factor" className="mb-4">
                     <rb.Form.Label>
@@ -361,13 +247,13 @@ export default function FeeConfigModal({
   const loadFeeConfigValues = useLoadFeeConfigValues()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [loadError, setLoadError] = useState(false)
+  const [loadError, setLoadError] = useState<any>()
   const [saveErrorMessage, setSaveErrorMessage] = useState<string>()
-  const [feeFormValues, setFeeFormValues] = useState<FeeFormValues | null>(null)
+  const [feeFormValues, setFeeFormValues] = useState<FeeFormValues>()
   const formRef = useRef<FormikProps<FeeFormValues>>(null)
 
   useEffect(() => {
-    setLoadError(false)
+    setLoadError(undefined)
 
     const abortCtrl = new AbortController()
     if (show) {
@@ -379,10 +265,10 @@ export default function FeeConfigModal({
           setIsLoading(false)
           setFeeFormValues(val)
         })
-        .catch((e) => {
+        .catch((error) => {
           if (abortCtrl.signal.aborted) return
           setIsLoading(false)
-          setLoadError(true)
+          setLoadError(error)
         })
     } else {
       setSaveErrorMessage(undefined)
@@ -393,60 +279,9 @@ export default function FeeConfigModal({
     }
   }, [show, loadFeeConfigValues])
 
-  const submit = async (feeValues: FeeValues, txFeesUnit: TxFeeValueUnit) => {
-    const allValuesPresent = Object.values(feeValues).every((it) => it !== undefined)
-    if (!allValuesPresent) return
-
-    let adjustedTxFees = feeValues.tx_fees!
-    if (txFeesUnit === 'sats/kilo-vbyte') {
-      // There is one special case for value `tx_fees`:
-      // Users are allowed to specify the value in "sats/vbyte", but this might
-      // be interpreted by JM as "targeted blocks". This adaption makes sure
-      // that it is in fact closer to what the user actually expects, albeit it
-      // can be surprising that the value is slightly different as specified.
-      adjustedTxFees = Math.max(adjustedTxFees, TX_FEES_SATSPERKILOVBYTE_ADJUSTED_MIN)
-    }
-
-    const updates = [
-      {
-        key: FEE_CONFIG_KEYS.tx_fees,
-        value: String(adjustedTxFees),
-      },
-      {
-        key: FEE_CONFIG_KEYS.tx_fees_factor,
-        value: String(feeValues.tx_fees_factor),
-      },
-      {
-        key: FEE_CONFIG_KEYS.max_cj_fee_abs,
-        value: String(feeValues.max_cj_fee_abs),
-      },
-      {
-        key: FEE_CONFIG_KEYS.max_cj_fee_rel,
-        value: String(feeValues.max_cj_fee_rel),
-      },
-    ]
-
-    setSaveErrorMessage(undefined)
-    setIsSubmitting(true)
-    try {
-      await updateConfigValues({ updates })
-
-      setIsSubmitting(false)
-      onSuccess && onSuccess()
-      onHide()
-    } catch (err: any) {
-      setIsSubmitting(false)
-      setSaveErrorMessage((_) =>
-        t('settings.fees.error_saving_fee_config_failed', {
-          reason: err.message || t('global.errors.reason_unknown'),
-        }),
-      )
-    }
-  }
-
   const validate = useCallback(
-    (values: FeeFormValues, txFeesUnit: TxFeeValueUnit) => {
-      const errors = {} as FormikErrors<FeeFormValues>
+    (values: FeeFormValues) => {
+      const errors = {} as FormikErrors<FeeValues>
 
       if (values.enableValidation === false) {
         // do not validate form to enable resetting the values
@@ -465,32 +300,9 @@ export default function FeeConfigModal({
         })
       }
 
-      if (txFeesUnit === 'sats/kilo-vbyte') {
-        if (
-          !isValidNumber(values.tx_fees) ||
-          values.tx_fees! < TX_FEES_SATSPERKILOVBYTE_MIN ||
-          values.tx_fees! > TX_FEES_SATSPERKILOVBYTE_MAX
-        ) {
-          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_satspervbyte', {
-            min: (TX_FEES_SATSPERKILOVBYTE_MIN / 1_000).toLocaleString(undefined, {
-              maximumFractionDigits: Math.log10(1_000),
-            }),
-            max: (TX_FEES_SATSPERKILOVBYTE_MAX / 1_000).toLocaleString(undefined, {
-              maximumFractionDigits: Math.log10(1_000),
-            }),
-          })
-        }
-      } else {
-        if (
-          !isValidNumber(values.tx_fees) ||
-          values.tx_fees! < TX_FEES_BLOCKS_MIN ||
-          values.tx_fees! > TX_FEES_BLOCKS_MAX
-        ) {
-          errors.tx_fees = t('settings.fees.feedback_invalid_tx_fees_blocks', {
-            min: TX_FEES_BLOCKS_MIN.toLocaleString(),
-            max: TX_FEES_BLOCKS_MAX.toLocaleString(),
-          })
-        }
+      const txFeeErrors = validateTxFee(values.tx_fees, t)
+      if (txFeeErrors.value) {
+        errors.tx_fees = txFeeErrors.value
       }
 
       if (
@@ -518,6 +330,44 @@ export default function FeeConfigModal({
     },
     [t],
   )
+
+  const submit = async (values: FeeFormValues) => {
+    const updates = [
+      {
+        key: FEE_CONFIG_KEYS.tx_fees,
+        value: String(values.tx_fees?.value ?? ''),
+      },
+      {
+        key: FEE_CONFIG_KEYS.tx_fees_factor,
+        value: String(values.tx_fees_factor ?? ''),
+      },
+      {
+        key: FEE_CONFIG_KEYS.max_cj_fee_abs,
+        value: String(values.max_cj_fee_abs ?? ''),
+      },
+      {
+        key: FEE_CONFIG_KEYS.max_cj_fee_rel,
+        value: String(values.max_cj_fee_rel ?? ''),
+      },
+    ]
+
+    setSaveErrorMessage(undefined)
+    setIsSubmitting(true)
+    try {
+      await updateConfigValues({ updates })
+
+      setIsSubmitting(false)
+      onSuccess && onSuccess()
+      onHide()
+    } catch (err: any) {
+      setIsSubmitting(false)
+      setSaveErrorMessage((_) =>
+        t('settings.fees.error_saving_fee_config_failed', {
+          reason: err.message || t('global.errors.reason_unknown'),
+        }),
+      )
+    }
+  }
 
   const cancel = useCallback(() => {
     onCancel && onCancel()
@@ -601,10 +451,10 @@ export default function FeeConfigModal({
               variant="outline-dark"
               className="position-relative"
               onClick={() => {
-                formRef.current?.setFieldValue('max_cj_fee_abs', '', false)
-                formRef.current?.setFieldValue('max_cj_fee_rel', '', false)
-                formRef.current?.setFieldValue('tx_fees', '', false)
-                formRef.current?.setFieldValue('tx_fees_factor', '', false)
+                formRef.current?.setFieldValue('max_cj_fee_abs', undefined, false)
+                formRef.current?.setFieldValue('max_cj_fee_rel', undefined, false)
+                formRef.current?.setFieldValue('tx_fees', undefined, false)
+                formRef.current?.setFieldValue('tx_fees_factor', undefined, false)
                 setTimeout(() => formRef.current?.validateForm(), 4)
               }}
               disabled={isLoading || isSubmitting}

@@ -1,0 +1,55 @@
+.sweepBreakdown {
+  font-size: 0.8rem;
+}
+
+.sweepBreakdownTable {
+  color: var(--bs-dark);
+}
+
+:root[data-theme='dark'] .sweepBreakdownTable {
+  color: var(--bs-light);
+}
+
+.sweepBreakdownTable .balanceCol {
+  text-align: right;
+}
+
+.sweepBreakdownAnchor {
+  font-size: 0.8rem;
+  color: var(--bs-dark);
+}
+
+:root[data-theme='dark'] .sweepBreakdownAnchor {
+  color: var(--bs-light) !important;
+}
+
+:root[data-theme='dark'] .sweepBreakdownParagraph {
+  color: var(--bs-light) !important;
+}
+
+.accordionButton {
+  background-color: transparent;
+  color: var(--bs-dark);
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.8rem;
+  height: 1rem;
+  padding: 0;
+  box-shadow: none;
+  border: none;
+  width: 100%;
+}
+
+.accordionButton:hover {
+  text-decoration: underline;
+}
+
+.accordionButton::after {
+  width: 0rem;
+  height: 0rem;
+  background-image: none;
+}
+
+:root[data-theme='dark'] .accordionButton {
+  color: var(--bs-light);
+}

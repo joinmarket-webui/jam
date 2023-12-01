@@ -15,7 +15,7 @@ const MnemonicWordInput = ({ index, value, setValue, isValid, disabled }: Mnemon
   return (
     <rb.InputGroup>
       <rb.InputGroup.Text className={styles.seedwordIndexBackup}>{index + 1}.</rb.InputGroup.Text>
-      <rb.FormControl
+      <rb.Form.Control
         type="text"
         placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${index + 1}`}
         value={value}

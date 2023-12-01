@@ -1,5 +1,7 @@
 import { isValidNumber } from '../../utils'
 
+export const MAX_NUM_COLLABORATORS = 99
+
 export const initialNumCollaborators = (minValue: number) => {
   if (minValue > 8) {
     return minValue + pseudoRandomNumber(0, 2)
@@ -25,5 +27,10 @@ export const isValidAmount = (candidate: number | null, isSweep: boolean) => {
 }
 
 export const isValidNumCollaborators = (candidate: number | null, minNumCollaborators: number) => {
-  return candidate !== null && isValidNumber(candidate) && candidate >= minNumCollaborators && candidate <= 99
+  return (
+    candidate !== null &&
+    isValidNumber(candidate) &&
+    candidate >= minNumCollaborators &&
+    candidate <= MAX_NUM_COLLABORATORS
+  )
 }

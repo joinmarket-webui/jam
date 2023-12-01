@@ -112,6 +112,7 @@ interface DirectSendRequest {
   mixdepth: Mixdepth
   destination: BitcoinAddress
   amount_sats: AmountSats
+  txfee?: number
 }
 
 interface DoCoinjoinRequest {
@@ -390,7 +391,10 @@ const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestCo
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify(req),
+    body: JSON.stringify({
+      ...req,
+      txfee: req.txfee ? String(req.txfee) : undefined,
+    }),
     signal,
   })
 }

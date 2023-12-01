@@ -4,8 +4,13 @@ import { AmountSats } from '../libs/JmWalletApi'
 import { isValidNumber } from '../utils'
 
 export type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
+export type TxFeeValue = number
+export type TxFee = {
+  value: TxFeeValue
+  unit: TxFeeValueUnit
+}
 
-export const toTxFeeValueUnit = (val?: number): TxFeeValueUnit | undefined => {
+export const toTxFeeValueUnit = (val?: TxFeeValue): TxFeeValueUnit | undefined => {
   if (val === undefined || !Number.isInteger(val) || val < 1) return undefined
   return val <= 1_000 ? 'blocks' : 'sats/kilo-vbyte'
 }
@@ -18,7 +23,7 @@ export const FEE_CONFIG_KEYS = {
 }
 
 export interface FeeValues {
-  tx_fees?: number
+  tx_fees?: TxFee
   tx_fees_factor?: number
   max_cj_fee_abs?: number
   max_cj_fee_rel?: number
@@ -42,7 +47,12 @@ export const useLoadFeeConfigValues = () => {
       const parsedMaxFeeRel = parseFloat(policy.max_cj_fee_rel || '')
 
       const feeValues: FeeValues = {
-        tx_fees: isValidNumber(parsedTxFees) ? parsedTxFees : undefined,
+        tx_fees: isValidNumber(parsedTxFees)
+          ? {
+              value: parsedTxFees,
+              unit: toTxFeeValueUnit(parsedTxFees) || 'blocks',
+            }
+          : undefined,
         tx_fees_factor: isValidNumber(parsedTxFeesFactor) ? parsedTxFeesFactor : undefined,
         max_cj_fee_abs: isValidNumber(parsedMaxFeeAbs) ? parsedMaxFeeAbs : undefined,
         max_cj_fee_rel: isValidNumber(parsedMaxFeeRel) ? parsedMaxFeeRel : undefined,

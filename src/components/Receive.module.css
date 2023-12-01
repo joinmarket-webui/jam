@@ -1,16 +1,5 @@
-.receive hr {
-  border-color: rgba(222, 222, 222, 1);
-  opacity: 100%;
-}
-
-:root[data-theme='dark'] .receive hr {
-  border-color: var(--bs-gray-800);
-  opacity: 100%;
-}
-
 .receive button {
   font-weight: 500;
-  border-color: rgba(222, 222, 222, 1);
 }
 
 .receive form input {
