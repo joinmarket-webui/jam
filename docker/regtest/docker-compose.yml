@@ -167,7 +167,7 @@ services:
   explorer:
     container_name: jm_regtest_explorer
     restart: unless-stopped
-    image: getumbrel/btc-rpc-explorer:v3.3.0
+    image: getumbrel/btc-rpc-explorer:v3.4.0
     environment:
       BTCEXP_HOST: 0.0.0.0
       BTCEXP_PORT: 3002
