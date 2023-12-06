@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
-import { FieldAttributes, FieldProps, FormikErrors } from 'formik'
+import { FieldProps, FormikErrors } from 'formik'
 import { TxFeeValueUnit, TxFee } from '../../hooks/Fees'
 import { isValidNumber } from '../../utils'
 import Sprite from '../Sprite'
@@ -11,6 +12,7 @@ type SatsPerKiloVByte = number
 
 const TX_FEES_BLOCKS_MIN = 1
 const TX_FEES_BLOCKS_MAX = 1_000
+const TX_FEES_DEFAULT_UNIT: TxFeeValueUnit = 'blocks'
 
 const TX_FEES_SATSPERKILOVBYTE_MIN: SatsPerKiloVByte = 1_001 // actual min of `tx_fees` if unit is sats/kilo-vbyte
 // 350 sats/vbyte - no enforcement by JM - this should be a "sane" max value (taken default value of "absurd_fee_per_kb")
@@ -69,12 +71,18 @@ type TxFeeInputFieldProps = FieldProps<TxFee | undefined> & {
 export const TxFeeInputField = ({ field, form, label, className }: TxFeeInputFieldProps) => {
   const { t } = useTranslation()
 
+  const [unitDisplayValue, setUnitDisplayValue] = useState(field.value?.unit || TX_FEES_DEFAULT_UNIT)
+
+  useEffect(() => {
+    setUnitDisplayValue(field.value?.unit || TX_FEES_DEFAULT_UNIT)
+  }, [field.value])
+
   return (
     <>
       <rb.Form.Label>{label}</rb.Form.Label>
-      <rb.Form.Group className="mb-2 d-flex justify-content-center" controlId="txFeesUnit">
+      <rb.Form.Group className="mb-2 d-flex justify-content-center" controlId={`${field.name}-txFeesUnit`}>
         <SegmentedTabs
-          name="txFeesUnit"
+          name={`${field.name}-txFeesUnit`}
           tabs={[
             {
               label: t('settings.fees.radio_tx_fees_blocks'),
@@ -85,8 +93,11 @@ export const TxFeeInputField = ({ field, form, label, className }: TxFeeInputFie
               value: 'sats/kilo-vbyte',
             },
           ]}
+          value={unitDisplayValue}
+          disabled={form.isSubmitting}
           onChange={(tab) => {
             const unit = tab.value as TxFeeValueUnit
+            setUnitDisplayValue(unit)
 
             if (field.value) {
               if (unit === 'sats/kilo-vbyte') {
@@ -110,13 +121,11 @@ export const TxFeeInputField = ({ field, form, label, className }: TxFeeInputFie
               }
             }
           }}
-          initialValue={field.value?.unit || 'blocks'}
-          disabled={form.isSubmitting}
         />
       </rb.Form.Group>
       <rb.Form.Text className="d-block mb-2">
         {t(
-          field.value?.unit === 'sats/kilo-vbyte'
+          unitDisplayValue === 'sats/kilo-vbyte'
             ? 'settings.fees.description_tx_fees_satspervbyte'
             : 'settings.fees.description_tx_fees_blocks',
         )}
@@ -124,7 +133,7 @@ export const TxFeeInputField = ({ field, form, label, className }: TxFeeInputFie
       <rb.Form.Group controlId="tx_fees" className="mb-4">
         <rb.InputGroup hasValidation>
           <rb.InputGroup.Text id="txFees-addon1">
-            {field.value?.unit === 'sats/kilo-vbyte' ? (
+            {unitDisplayValue === 'sats/kilo-vbyte' ? (
               <>
                 <Sprite symbol="sats" width="24" height="24" />/ vB
               </>
@@ -133,14 +142,14 @@ export const TxFeeInputField = ({ field, form, label, className }: TxFeeInputFie
             )}
           </rb.InputGroup.Text>
 
-          {field.value?.unit === 'sats/kilo-vbyte' ? (
+          {unitDisplayValue === 'sats/kilo-vbyte' ? (
             <rb.Form.Control
               aria-label={label}
               className={`slashed-zeroes ${className || ''}`}
               name={field.name}
               type="number"
               placeholder="1"
-              value={isValidNumber(field.value.value) ? field.value.value! / 1_000 : ''}
+              value={isValidNumber(field.value?.value) ? field.value!.value / 1_000 : ''}
               disabled={form.isSubmitting}
               onBlur={field.onBlur}
               onChange={(e) => {

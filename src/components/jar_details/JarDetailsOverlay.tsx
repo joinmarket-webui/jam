@@ -325,7 +325,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                 name="jarDetailsTab"
                 tabs={tabs}
                 onChange={(tab, checked) => checked && setSelectedTab(tab.value)}
-                initialValue={selectedTab}
+                value={selectedTab}
               />
             </div>
           </div>
