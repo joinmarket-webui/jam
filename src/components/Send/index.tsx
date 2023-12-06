@@ -9,7 +9,7 @@ import Sprite from '../Sprite'
 import { ConfirmModal } from '../Modal'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
-import { useFeeConfigValues } from '../../hooks/Fees'
+import { FeeValues, TxFee, useFeeConfigValues } from '../../hooks/Fees'
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
@@ -60,7 +60,7 @@ function MaxFeeConfigMissingAlert({ onSuccess }: MaxFeeConfigMissingAlertProps) 
   )
 }
 
-const createInitialValues = (minNumCollaborators: number) => {
+const createInitialValues = (numCollaborators: number, feeConfigValues: FeeValues | undefined): SendFormValues => {
   return {
     sourceJarIndex: INITIAL_SOURCE_JAR_INDEX ?? undefined,
     destination: {
@@ -71,8 +71,9 @@ const createInitialValues = (minNumCollaborators: number) => {
       value: INITIAL_AMOUNT,
       isSweep: false,
     },
+    txFee: feeConfigValues?.tx_fees,
     isCoinJoin: INITIAL_IS_COINJOIN,
-    numCollaborators: initialNumCollaborators(minNumCollaborators),
+    numCollaborators,
   }
 }
 
@@ -95,6 +96,7 @@ export default function Send({ wallet }: SendProps) {
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
   const [minNumCollaborators, setMinNumCollaborators] = useState(JM_MINIMUM_MAKERS_DEFAULT)
+  const initNumCollaborators = useMemo(() => initialNumCollaborators(minNumCollaborators), [minNumCollaborators])
 
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
   const maxFeesConfigMissing = useMemo(
@@ -131,8 +133,10 @@ export default function Send({ wallet }: SendProps) {
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState<SendFormValues>()
 
-  const initialValues = useMemo(() => createInitialValues(minNumCollaborators), [minNumCollaborators])
-
+  const initialValues = useMemo(
+    () => createInitialValues(initNumCollaborators, feeConfigValues),
+    [initNumCollaborators, feeConfigValues],
+  )
   const formRef = useRef<FormikProps<SendFormValues>>(null)
 
   const loadNewWalletAddress = useCallback(
@@ -261,7 +265,12 @@ export default function Send({ wallet }: SendProps) {
     [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t],
   )
 
-  const sendPayment = async (sourceJarIndex: JarIndex, destination: Api.BitcoinAddress, amountSats: Api.AmountSats) => {
+  const sendPayment = async (
+    sourceJarIndex: JarIndex,
+    destination: Api.BitcoinAddress,
+    amountSats: Api.AmountSats,
+    txFee: TxFee,
+  ) => {
     setAlert(undefined)
     setPaymentSuccessfulInfoAlert(undefined)
     setIsSending(true)
@@ -270,7 +279,7 @@ export default function Send({ wallet }: SendProps) {
     try {
       const res = await Api.postDirectSend(
         { ...wallet },
-        { mixdepth: sourceJarIndex, amount_sats: amountSats, destination },
+        { mixdepth: sourceJarIndex, amount_sats: amountSats, destination, txfee: txFee.value },
       )
 
       if (res.ok) {
@@ -311,6 +320,7 @@ export default function Send({ wallet }: SendProps) {
     destination: Api.BitcoinAddress,
     amountSats: Api.AmountSats,
     counterparties: number,
+    txFee: TxFee,
   ) => {
     setAlert(undefined)
     setIsSending(true)
@@ -324,6 +334,7 @@ export default function Send({ wallet }: SendProps) {
           amount_sats: amountSats,
           destination,
           counterparties,
+          txfee: txFee.value,
         },
       )
 
@@ -380,7 +391,10 @@ export default function Send({ wallet }: SendProps) {
     setPaymentSuccessfulInfoAlert(undefined)
 
     const isValid =
-      values.amount !== undefined && values.sourceJarIndex !== undefined && values.destination !== undefined
+      values.amount !== undefined &&
+      values.sourceJarIndex !== undefined &&
+      values.destination !== undefined &&
+      values.txFee !== undefined
 
     if (isValid) {
       if (values.amount!.isSweep === true && values.amount!.value !== 0) {
@@ -409,8 +423,9 @@ export default function Send({ wallet }: SendProps) {
             values.destination!.value!,
             values.amount!.value,
             values.numCollaborators!,
+            values.txFee!,
           )
-        : await sendPayment(values.sourceJarIndex!, values.destination!.value!, values.amount!.value)
+        : await sendPayment(values.sourceJarIndex!, values.destination!.value!, values.amount!.value, values.txFee!)
 
       if (success) {
         formRef.current?.resetForm({ values: initialValues })
@@ -528,7 +543,7 @@ export default function Send({ wallet }: SendProps) {
             isSweep: showConfirmSendModal.amount!.isSweep,
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
-            feeConfigValues,
+            feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
           }}
         />
       )}

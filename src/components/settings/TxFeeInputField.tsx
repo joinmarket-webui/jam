@@ -1,7 +1,7 @@
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
-import { FieldProps, FormikErrors } from 'formik'
+import { FieldAttributes, FieldProps, FormikErrors } from 'formik'
 import { TxFeeValueUnit, TxFee } from '../../hooks/Fees'
 import { isValidNumber } from '../../utils'
 import Sprite from '../Sprite'
@@ -63,16 +63,16 @@ export const validateTxFee = (val: TxFee | undefined, t: TFunction): FormikError
 
 type TxFeeInputFieldProps = FieldProps<TxFee | undefined> & {
   label: string
+  className?: string
 }
 
-export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) => {
+export const TxFeeInputField = ({ field, form, label, className }: TxFeeInputFieldProps) => {
   const { t } = useTranslation()
 
   return (
     <>
       <rb.Form.Label>{label}</rb.Form.Label>
-
-      <rb.Form.Group className="my-2 d-flex justify-content-center" controlId="offertype">
+      <rb.Form.Group className="mb-2 d-flex justify-content-center" controlId="txFeesUnit">
         <SegmentedTabs
           name="txFeesUnit"
           tabs={[
@@ -136,7 +136,7 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
           {field.value?.unit === 'sats/kilo-vbyte' ? (
             <rb.Form.Control
               aria-label={label}
-              className={`slashed-zeroes`}
+              className={`slashed-zeroes ${className || ''}`}
               name={field.name}
               type="number"
               placeholder="1"
@@ -163,7 +163,7 @@ export const TxFeeInputField = ({ field, form, label }: TxFeeInputFieldProps) =>
           ) : (
             <rb.Form.Control
               aria-label={label}
-              className={`slashed-zeroes`}
+              className={`slashed-zeroes ${className || ''}`}
               name={field.name}
               type="number"
               placeholder="1"

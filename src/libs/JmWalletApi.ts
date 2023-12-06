@@ -120,6 +120,7 @@ interface DoCoinjoinRequest {
   destination: BitcoinAddress
   amount_sats: AmountSats
   counterparties: number
+  txfee?: number
 }
 
 interface FreezeRequest {
@@ -391,10 +392,7 @@ const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestCo
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/direct-send`, {
     method: 'POST',
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify({
-      ...req,
-      txfee: req.txfee ? String(req.txfee) : undefined,
-    }),
+    body: JSON.stringify(req),
     signal,
   })
 }

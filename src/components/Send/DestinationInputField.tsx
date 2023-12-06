@@ -7,10 +7,8 @@ import * as Api from '../../libs/JmWalletApi'
 import Sprite from '../Sprite'
 import { jarName } from '../jars/Jar'
 import JarSelectorModal from '../JarSelectorModal'
-
 import { WalletInfo } from '../../context/WalletContext'
 import { noop } from '../../utils'
-import styles from './DestinationInputField.module.css'
 
 export type DestinationValue = {
   value: Api.BitcoinAddress | null
@@ -88,14 +86,14 @@ export const DestinationInputField = ({
         <rb.Form.Label>{label}</rb.Form.Label>
         {isLoading ? (
           <rb.Placeholder as="div" animation="wave">
-            <rb.Placeholder xs={12} className={styles.inputLoader} />
+            <rb.Placeholder xs={12} className={className} />
           </rb.Placeholder>
         ) : (
           <>
             {field.value.fromJar !== null ? (
               <rb.InputGroup hasValidation={false}>
                 <rb.Form.Control
-                  className={classNames('slashed-zeroes', styles.input, className)}
+                  className={classNames('slashed-zeroes', className)}
                   value={`${jarName(field.value.fromJar)} (${field.value.value})`}
                   required
                   onChange={noop}
@@ -104,7 +102,6 @@ export const DestinationInputField = ({
                 />
                 <rb.Button
                   variant="dark"
-                  className={styles.button}
                   onClick={() => {
                     form.setFieldValue(field.name, form.initialValues[field.name], true)
                     setTimeout(() => ref.current?.focus(), 4)
@@ -124,7 +121,7 @@ export const DestinationInputField = ({
                     aria-label={label}
                     name={field.name}
                     placeholder={t('send.placeholder_recipient')}
-                    className={classNames('slashed-zeroes', styles.input, className)}
+                    className={classNames('slashed-zeroes', className)}
                     value={field.value.value || ''}
                     onBlur={field.onBlur}
                     required
@@ -144,7 +141,6 @@ export const DestinationInputField = ({
                   />
                   <rb.Button
                     variant="outline-dark"
-                    className={styles.button}
                     onClick={() => setDestinationJarPickerShown(true)}
                     disabled={disabled || !walletInfo}
                   >

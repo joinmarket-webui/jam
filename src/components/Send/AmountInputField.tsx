@@ -39,7 +39,7 @@ export const AmountInputField = ({
 
         {isLoading ? (
           <rb.Placeholder as="div" animation="wave">
-            <rb.Placeholder xs={12} className={styles.inputLoader} />
+            <rb.Placeholder xs={12} className={className} />
           </rb.Placeholder>
         ) : (
           <div className={form.touched[field.name] && !!form.errors[field.name] ? 'is-invalid' : ''}>
