@@ -295,9 +295,7 @@ const EarnForm = ({
                         value: OFFERTYPE_REL,
                       },
                     ]}
-                    onChange={(tab, checked) => {
-                      checked && setFieldValue('offertype', tab.value, true)
-                    }}
+                    onChange={(tab) => setFieldValue('offertype', tab.value, true)}
                     value={values.offertype}
                     disabled={isLoading || isSubmitting}
                   />

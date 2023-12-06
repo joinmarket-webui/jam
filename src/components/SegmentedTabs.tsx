@@ -1,4 +1,4 @@
-import React from 'react'
+import { ChangeEvent } from 'react'
 import * as rb from 'react-bootstrap'
 import styles from './SegmentedTabs.module.css'
 
@@ -9,54 +9,37 @@ interface SegmentedTab {
   disabled?: boolean
 }
 
-<<<<<<< HEAD
-function SegmentedTabFormCheck({ id, name, value, label, disabled, checked, onChange }: rb.FormCheckProps) {
-=======
-function SegmentedTabFormCheck(props: rb.FormCheckProps) {
->>>>>>> 6149e4a (chore: fix SegmentedTabs active state)
-  const _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.stopPropagation()
-    props.onChange && props.onChange(e)
-  }
-
-  return (
-    <>
-<<<<<<< HEAD
-      <div className={styles['segmented-tab']}>
-        <input
-          id={id}
-          name={name}
-          type="radio"
-          value={value}
-          checked={checked}
-          onChange={_onChange}
-          disabled={disabled}
-        />
-        <label htmlFor={id}>{label}</label>
-      </div>
-=======
-      <rb.Form.Check {...props} bsPrefix={styles['segmented-tab']} type="radio" onChange={_onChange} />
->>>>>>> 6149e4a (chore: fix SegmentedTabs active state)
-    </>
-  )
-}
+const SegmentedTabFormCheck = ({ id, name, value, label, disabled, checked, onChange }: rb.FormCheckProps) => (
+  <div className={styles.segmentedTab}>
+    <input
+      id={id}
+      name={name}
+      type="radio"
+      value={value}
+      checked={checked}
+      onChange={onChange}
+      disabled={disabled}
+    />
+    <label htmlFor={id}>{label}</label>
+  </div>
+)
 
 interface SegmentedTabsProps {
   name: string
   tabs: SegmentedTab[]
-  onChange: (tab: SegmentedTab, checked: boolean) => void
+  onChange: (tab: SegmentedTab) => void
   value?: SegmentedTabValue
   disabled?: boolean
 }
 
 export default function SegmentedTabs({ name, tabs, onChange, value, disabled = false }: SegmentedTabsProps) {
-  const _onChange = (e: React.ChangeEvent<HTMLInputElement>, tab: SegmentedTab) => {
+  const _onChange = (e: ChangeEvent<HTMLInputElement>, tab: SegmentedTab) => {
     e.stopPropagation()
-    onChange(tab, e.currentTarget.checked)
+    onChange(tab)
   }
 
   return (
-    <div className={['segmented-tabs-hook', styles['segmented-tabs']].join(' ')}>
+    <div className={`segmented-tabs-hook ${styles.segmentedTabs}`}>
       <div className="d-flex gap-1">
         {tabs.map((tab, index) => {
           return (
@@ -69,10 +52,6 @@ export default function SegmentedTabs({ name, tabs, onChange, value, disabled = 
               disabled={disabled || tab.disabled}
               checked={value === tab.value}
               inline={true}
-<<<<<<< HEAD
-              checked={initialValue === tab.value}
-=======
->>>>>>> 6149e4a (chore: fix SegmentedTabs active state)
               onChange={(e) => _onChange(e, tab)}
             />
           )
