@@ -101,7 +101,7 @@ const ImportWalletDetailsForm = ({
       const errors = {} as FormikErrors<ImportWalletDetailsFormValues>
       const isMnemonicPhraseValid = values.mnemonicPhrase.every((it) => it.length > 0)
       if (!isMnemonicPhraseValid) {
-        errors.mnemonicPhrase = t<string>('import_wallet.import_details.feedback_invalid_menmonic_phrase')
+        errors.mnemonicPhrase = t('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
       if (
@@ -360,8 +360,10 @@ const ImportWalletConfirmation = ({
 
           <div className="d-flex mb-4 gap-4">
             <rb.Button variant="none" hidden={isSubmitting} disabled={isSubmitting} onClick={() => onCancel()}>
-              <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
-              {t('global.back')}
+              <div className="d-flex justify-content-center align-items-center">
+                <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
+                {t('global.back')}
+              </div>
             </rb.Button>
           </div>
         </rb.Form>
@@ -374,6 +376,7 @@ enum ImportWalletSteps {
   wallet_details,
   import_details,
   confirm_and_submit,
+  success,
 }
 
 interface ImportWalletProps {
@@ -401,30 +404,37 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
   )
 
   const [step, setStep] = useState<ImportWalletSteps>(ImportWalletSteps.wallet_details)
-  const nextStep = () =>
-    setStep((old) => {
-      switch (step) {
-        case ImportWalletSteps.wallet_details:
-          return ImportWalletSteps.import_details
-        case ImportWalletSteps.import_details:
-          return ImportWalletSteps.confirm_and_submit
-        default:
-          return old
-      }
-    })
-  const previousStep = () => {
+  const nextStep = useCallback(
+    () =>
+      setStep((old) => {
+        switch (old) {
+          case ImportWalletSteps.wallet_details:
+            return ImportWalletSteps.import_details
+          case ImportWalletSteps.import_details:
+            return ImportWalletSteps.confirm_and_submit
+          case ImportWalletSteps.confirm_and_submit:
+            return ImportWalletSteps.success
+          default:
+            return old
+        }
+      }),
+    [],
+  )
+  const previousStep = useCallback(() => {
     setAlert(undefined)
     setStep((old) => {
-      switch (step) {
+      switch (old) {
         case ImportWalletSteps.import_details:
           return ImportWalletSteps.wallet_details
         case ImportWalletSteps.confirm_and_submit:
           return ImportWalletSteps.import_details
+        case ImportWalletSteps.success:
+          return ImportWalletSteps.success // cannot go back from success page
         default:
           return old
       }
     })
-  }
+  }, [])
 
   const recoverWallet = useCallback(
     async (
@@ -522,7 +532,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         }
 
         startWallet(walletFileName, auth)
-        navigate(routes.wallet)
+        nextStep()
       } catch (e: any) {
         if (signal.aborted) return
         const message = t('import_wallet.error_importing_failed', {
@@ -534,7 +544,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
     [
       setRecoveredWallet,
       startWallet,
-      navigate,
+      nextStep,
       setAlert,
       refreshConfigValues,
       updateConfigValues,
@@ -554,15 +564,26 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
           />
         )}
         {step === ImportWalletSteps.confirm_and_submit && <PageTitle title={t('import_wallet.confirmation.title')} />}
+        {step === ImportWalletSteps.success && (
+          <PageTitle
+            title={t('import_wallet.success.title')}
+            subtitle={t('import_wallet.success.subtitle')}
+            success={true}
+          />
+        )}
       </>
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {!canRecover && !isRecovered ? (
         <>
           {serviceInfo?.walletFileName && (
             <rb.Alert variant="warning">
-              <Trans i18nKey="import_wallet.alert_other_wallet_unlocked">
-                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active.
-                You need to lock it first.
+              <Trans
+                i18nKey="import_wallet.alert_other_wallet_unlocked"
+                values={{
+                  walletName: walletDisplayName(serviceInfo.walletFileName),
+                }}
+              >
+                Currently <strong>walletName</strong> is active. You need to lock it first.
                 <Link to={routes.walletList} className="alert-link">
                   Go back
                 </Link>
@@ -585,7 +606,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
         </>
       ) : (
         <>
-          <PreventLeavingPageByMistake />
+          {step !== ImportWalletSteps.success && <PreventLeavingPageByMistake />}
           {step === ImportWalletSteps.wallet_details && (
             <WalletCreationForm
               initialValues={createWalletFormValues}
@@ -644,6 +665,17 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 })
               }}
             />
+          )}
+          {step === ImportWalletSteps.success && (
+            <div className="d-flex justify-content-center my-4 gap-4">
+              <Link
+                className="btn btn-lg btn-dark d-inline-flex justify-content-center align-items-center"
+                to={routes.wallet}
+              >
+                {t('import_wallet.success.text_button_submit')}
+                <Sprite symbol="arrow-right" width="20" height="20" className="ms-2" />
+              </Link>
+            </div>
           )}
         </>
       )}

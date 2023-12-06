@@ -154,7 +154,9 @@ export const DestinationInputField = ({
                       />
                     </div>
                   </rb.Button>
-                  <rb.Form.Control.Feedback type="invalid">{form.errors[field.name]}</rb.Form.Control.Feedback>
+                  <rb.Form.Control.Feedback type="invalid">
+                    <>{form.errors[field.name]}</>
+                  </rb.Form.Control.Feedback>
                 </rb.InputGroup>
               </div>
             )}

@@ -78,9 +78,6 @@ const withTooltip = (node: ReactElement, tooltip: string, overlayProps?: Partial
   )
 }
 
-// `TableNode` is known to have same properties as `OrderTableEntry`, hence prefer casting over object destructuring
-const asOrderTableEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as OrderTableEntry
-
 const renderOrderType = (type: OrderTypeProps) => {
   const elem = <rb.Badge bg={type.badgeColor}>{type.displayValue}</rb.Badge>
   return type.tooltip ? withTooltip(elem, type.tooltip) : elem
@@ -110,6 +107,11 @@ interface OrderTableEntry {
     displayValue: string // example: "0" (no fb) or "114557102085.28133"
   }
 }
+
+interface OrderTableRow extends OrderTableEntry, TableTypes.TableNode {}
+
+// `TableNode` is known to have same properties as `OrderTableEntry`, hence prefer casting over object destructuring
+const asOrderTableEntry = (tableNode: TableTypes.TableNode) => tableNode as unknown as OrderTableRow
 
 const SORT_KEYS = {
   type: 'TYPE',
@@ -156,7 +158,7 @@ const renderOrderFee = (val: string, settings: any) => {
 }
 
 interface OrderbookTableProps {
-  data: TableTypes.Data
+  data: TableTypes.Data<OrderTableRow>
 }
 
 const OrderbookTable = ({ data }: OrderbookTableProps) => {
@@ -224,7 +226,7 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
         layout={{ custom: true, horizontalScroll: true }}
         className="table striped"
       >
-        {(tableList) => (
+        {(tableList: TableTypes.TableProps<OrderTableRow>) => (
           <>
             <Header>
               <HeaderRow>
@@ -247,28 +249,27 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
               </HeaderRow>
             </Header>
             <Body>
-              {tableList.map((item) => {
-                const order = asOrderTableEntry(item)
+              {tableList.map((item: OrderTableRow) => {
                 return (
                   <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
-                    <Cell className="font-monospace">{order.counterparty}</Cell>
-                    <Cell>{order.orderId}</Cell>
-                    <Cell>{renderOrderType(order.type)}</Cell>
-                    <Cell>{renderOrderFee(order.fee.displayValue, settings)}</Cell>
+                    <Cell className="font-monospace">{item.counterparty}</Cell>
+                    <Cell>{item.orderId}</Cell>
+                    <Cell>{renderOrderType(item.type)}</Cell>
+                    <Cell>{renderOrderFee(item.fee.displayValue, settings)}</Cell>
                     <Cell>
-                      <Balance valueString={order.minimumSize} convertToUnit={settings.unit} showBalance={true} />
+                      <Balance valueString={item.minimumSize} convertToUnit={settings.unit} showBalance={true} />
                     </Cell>
                     <Cell>
-                      <Balance valueString={order.maximumSize} convertToUnit={settings.unit} showBalance={true} />
+                      <Balance valueString={item.maximumSize} convertToUnit={settings.unit} showBalance={true} />
                     </Cell>
                     <Cell hide={true}>
                       <Balance
-                        valueString={order.minerFeeContribution}
+                        valueString={item.minerFeeContribution}
                         convertToUnit={settings.unit}
                         showBalance={true}
                       />
                     </Cell>
-                    <Cell className="font-monospace">{order.bondValue.displayValue}</Cell>
+                    <Cell className="font-monospace">{item.bondValue.displayValue}</Cell>
                   </Row>
                 )
               })}
@@ -325,7 +326,7 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
   const [isHighlightOwnOffers, setIsHighlightOwnOffers] = useState(false)
   const [highlightedOrders, setHighlightedOrders] = useState<OrderTableEntry[]>([])
 
-  const tableData: TableTypes.Data = useMemo(() => {
+  const tableData: TableTypes.Data<OrderTableRow> = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
     const filteredOrders =
       searchVal === ''

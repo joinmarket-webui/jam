@@ -527,7 +527,9 @@ export default function Jam({ wallet }: JamProps) {
                                   className={`${styles.input} slashed-zeroes`}
                                   disabled={isOperationDisabled || isSubmitting}
                                 />
-                                <rb.Form.Control.Feedback type="invalid">{errors[key]}</rb.Form.Control.Feedback>
+                                <rb.Form.Control.Feedback type="invalid">
+                                  <>{errors[key]}</>
+                                </rb.Form.Control.Feedback>
                               </rb.Form.Group>
                             )
                           })}

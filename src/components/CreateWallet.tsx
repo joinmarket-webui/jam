@@ -6,7 +6,7 @@ import PageTitle from './PageTitle'
 import Sprite from './Sprite'
 import WalletCreationConfirmation, { CreatedWalletInfo } from './WalletCreationConfirmation'
 import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
-import WalletCreationForm from './WalletCreationForm'
+import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
 import MnemonicPhraseInput from './MnemonicPhraseInput'
 import { walletDisplayName, walletDisplayNameToFileName } from '../utils'
 import { useServiceInfo } from '../context/ServiceInfoContext'
@@ -113,7 +113,7 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
   )
 
   const createWallet = useCallback(
-    async ({ walletName, password }) => {
+    async ({ walletName, password }: CreateWalletFormValues) => {
       setAlert(undefined)
 
       try {
@@ -162,9 +162,13 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
         <>
           {serviceInfo?.walletFileName && (
             <rb.Alert variant="warning">
-              <Trans i18nKey="create_wallet.alert_other_wallet_unlocked">
-                Currently <strong>{{ walletName: walletDisplayName(serviceInfo.walletFileName) }}</strong> is active.
-                You need to lock it first.
+              <Trans
+                i18nKey="create_wallet.alert_other_wallet_unlocked"
+                values={{
+                  walletName: walletDisplayName(serviceInfo.walletFileName),
+                }}
+              >
+                Currently <strong>walletName</strong> is active. You need to lock it first.
                 <Link to={routes.walletList} className="alert-link">
                   Go back
                 </Link>

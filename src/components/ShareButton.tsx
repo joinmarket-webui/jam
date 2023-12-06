@@ -1,4 +1,3 @@
-import React from 'react'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 
@@ -6,7 +5,12 @@ const checkIsWebShareAPISupported = () => {
   return !!navigator.share
 }
 
-const ShareButton = ({ value, className }) => {
+type ShareButtonProps = {
+  value: string
+  className?: string
+}
+
+const ShareButton = ({ value, className }: ShareButtonProps) => {
   const handleShare = async () => {
     if (!checkIsWebShareAPISupported()) {
       console.error('Sharing failed: Web Share API not supported.')

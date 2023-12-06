@@ -214,7 +214,7 @@ function FastThemeToggle() {
   const isLightTheme = useMemo(() => settings.theme === window.JM.THEMES[0], [settings])
 
   const setTheme = useCallback(
-    (theme) => {
+    (theme: string) => {
       if (window.JM.THEMES.includes(theme)) {
         document.documentElement.setAttribute(window.JM.THEME_ROOT_ATTR, theme)
         settingsDispatch({ theme })

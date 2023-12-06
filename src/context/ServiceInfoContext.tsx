@@ -7,10 +7,8 @@ import {
   useReducer,
   useState,
   useEffect,
-  useRef,
 } from 'react'
 import { useCurrentWallet, useClearCurrentWallet } from './WalletContext'
-// @ts-ignore
 import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
 import { CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../constants/config'
@@ -105,8 +103,6 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   const clearCurrentWallet = useClearCurrentWallet()
   const websocket = useWebsocket()
 
-  const fetchSessionInProgress = useRef<Promise<ServiceInfo> | null>(null)
-
   const [serviceInfo, dispatchServiceInfo] = useReducer(
     (state: ServiceInfo | null, obj: Partial<ServiceInfo>) => ({ ...state, ...obj }) as ServiceInfo | null,
     null,
@@ -149,18 +145,6 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
         clearSession()
       }
 
-      if (fetchSessionInProgress.current !== null) {
-        try {
-          return await fetchSessionInProgress.current
-        } catch (err: unknown) {
-          // If a request was in progress but failed, retry!
-          // This happens e.g. when the in-progress request was aborted.
-          if (!(err instanceof Error) || err.name !== 'AbortError') {
-            console.warn('Previous session request resulted in an unexpected error. Retrying!', err)
-          }
-        }
-      }
-
       const fetch = Api.getSession({ signal, token: currentWallet?.token })
         .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((data: JmSessionData): ServiceInfo => {
@@ -187,12 +171,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
           }
         })
 
-      fetchSessionInProgress.current = fetch
-
       return fetch
-        .finally(() => {
-          fetchSessionInProgress.current = null
-        })
         .then((info: ServiceInfo) => {
           if (!signal.aborted) {
             dispatchServiceInfo(info)
@@ -246,7 +225,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   }, [reloadServiceInfo])
 
   // update maker/taker indicator based on websocket data
-  const onWebsocketMessage = useCallback((message) => {
+  const onWebsocketMessage = useCallback((message: MessageEvent) => {
     const data = JSON.parse(message?.data)
 
     // update the maker/taker indicator according to `coinjoin_state` property

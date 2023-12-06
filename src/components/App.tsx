@@ -188,6 +188,10 @@ export default function App() {
     ),
     {
       basename: window.JM.PUBLIC_PATH,
+      future: {
+        v7_fetcherPersist: true,
+        v7_normalizeFormMethod: true,
+      },
     },
   )
 

@@ -43,7 +43,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
   const reloadServiceInfo = useReloadServiceInfo()
   const [walletList, setWalletList] = useState<Api.WalletFileName[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [unlockingWalletFileName, setUnlockWalletFileName] = useState(undefined)
+  const [unlockingWalletFileName, setUnlockWalletFileName] = useState<Api.WalletFileName>()
   const isUnlocking = useMemo(() => unlockingWalletFileName !== undefined, [unlockingWalletFileName])
   const [alert, setAlert] = useState<SimpleAlert>()
   const [showLockConfirmModal, setShowLockConfirmModal] = useState(false)
@@ -52,7 +52,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
   const makerRunning = useMemo(() => serviceInfo !== null && serviceInfo.makerRunning, [serviceInfo])
 
   const unlockWallet = useCallback(
-    async (walletFileName, password) => {
+    async (walletFileName: Api.WalletFileName, password: string) => {
       if (currentWallet) {
         setAlert({
           variant: 'warning',
@@ -88,7 +88,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
   )
 
   const lockWallet = useCallback(
-    async (lockableWalletFileName, { confirmed = false }) => {
+    async (lockableWalletFileName: Api.WalletFileName, { confirmed = false }) => {
       if (!currentWallet || currentWallet.walletFileName !== lockableWalletFileName) {
         setAlert({
           variant: 'warning',
