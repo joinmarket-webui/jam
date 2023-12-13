@@ -59,6 +59,7 @@ export default function JarSelectorModal({
       centered={true}
       animation={true}
       className={styles.modal}
+      size="lg"
     >
       <rb.Modal.Header className={styles.modalHeader}>
         <rb.Modal.Title className={styles.modalTitle}>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -7,11 +8,11 @@ import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import Sprite from './Sprite'
 import Cheatsheet from './Cheatsheet'
-import packageInfo from '../../package.json'
+import { InfoModal } from './Modal'
 import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
-import { toSemVer } from '../utils'
-import { Link } from 'react-router-dom'
 import { routes } from '../constants/routes'
+import { toSemVer } from '../utils'
+import packageInfo from '../../package.json'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -48,24 +49,21 @@ export default function Footer() {
   return (
     <>
       {showBetaWarning && (
-        <div className="warning-card-wrapper">
-          <rb.Card className="warning-card translate-middle shadow-lg">
-            <rb.Card.Body>
-              <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
-              <p>{t('footer.warning_alert_text')}</p>
-              <p className="text-secondary">
-                JoinMarket: v{serviceInfo?.server?.version?.raw || '_unknown'}
-                <br />
-                Jam: v{APP_DISPLAY_VERSION}
-              </p>
-              <div className="text-center mt-3">
-                <rb.Button variant="dark" onClick={() => setShowBetaWarning(false)}>
-                  {t('footer.warning_alert_button_ok')}
-                </rb.Button>
-              </div>
-            </rb.Card.Body>
-          </rb.Card>
-        </div>
+        <InfoModal
+          isShown={showBetaWarning}
+          size="sm"
+          title={t('footer.warning_alert_title')}
+          submitButtonText={t('footer.warning_alert_button_ok')}
+          onCancel={() => setShowBetaWarning(false)}
+          onSubmit={() => setShowBetaWarning(false)}
+        >
+          <p>{t('footer.warning_alert_text')}</p>
+          <p className="mb-0 text-secondary">
+            JoinMarket: v{serviceInfo?.server?.version?.raw || '_unknown'}
+            <br />
+            Jam: v{APP_DISPLAY_VERSION}
+          </p>
+        </InfoModal>
       )}
 
       <rb.Nav as="footer" className="border-top py-2">
