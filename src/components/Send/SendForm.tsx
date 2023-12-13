@@ -13,10 +13,10 @@ import CollaboratorsSelector from './CollaboratorsSelector'
 import { SweepBreakdown } from './SweepBreakdown'
 import FeeBreakdown from './FeeBreakdown'
 import Accordion from '../Accordion'
+import Balance from '../Balance'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
 import { useEstimatedMaxCollaboratorFee, FeeValues } from '../../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
-import { formatSats } from '../../utils'
 import {
   MAX_NUM_COLLABORATORS,
   isValidAddress,
@@ -26,6 +26,7 @@ import {
 } from './helpers'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
 import { WalletInfo } from '../../context/WalletContext'
+import { useSettings } from '../../context/SettingsContext'
 import styles from './SendForm.module.css'
 
 type CollaborativeTransactionOptionsProps = {
@@ -51,6 +52,7 @@ function CollaborativeTransactionOptions({
   feeConfigValues,
   reloadFeeConfigValues,
 }: CollaborativeTransactionOptionsProps) {
+  const settings = useSettings()
   const { t } = useTranslation()
 
   const [activeFeeConfigModalSection, setActiveFeeConfigModalSection] = useState<FeeConfigSectionKey>()
@@ -78,10 +80,15 @@ function CollaborativeTransactionOptions({
       <rb.Form.Group className="mt-4">
         <rb.Form.Label className="mb-0">
           {t('send.fee_breakdown.title', {
-            maxCollaboratorFee: estimatedMaxCollaboratorFee
-              ? `≤${formatSats(estimatedMaxCollaboratorFee)} sats`
-              : '...',
+            maxCollaboratorFee: estimatedMaxCollaboratorFee !== null ? '≤' : '...',
           })}
+          {estimatedMaxCollaboratorFee !== null && (
+            <Balance
+              valueString={String(estimatedMaxCollaboratorFee)}
+              convertToUnit={settings.unit}
+              showBalance={true}
+            />
+          )}
         </rb.Form.Label>
         <rb.Form.Text className="d-block text-secondary mb-2">
           <Trans
@@ -118,21 +125,19 @@ function CollaborativeTransactionOptions({
           />
         </rb.Form.Text>
 
-        {sourceJarBalance && (
-          <FeeBreakdown
-            feeConfigValues={feeConfigValues}
-            numCollaborators={selectedNumCollaborators ?? null}
-            amount={
-              selectedAmount?.isSweep
-                ? sourceJarBalance.calculatedAvailableBalanceInSats
-                : selectedAmount?.value ?? null
-            }
-            onClick={() => {
-              setActiveFeeConfigModalSection('cj_fee')
-              setShowFeeConfigModal(true)
-            }}
-          />
-        )}
+        <FeeBreakdown
+          feeConfigValues={feeConfigValues}
+          numCollaborators={selectedNumCollaborators ?? null}
+          amount={
+            selectedAmount?.isSweep
+              ? sourceJarBalance?.calculatedAvailableBalanceInSats ?? null
+              : selectedAmount?.value ?? null
+          }
+          onClick={() => {
+            setActiveFeeConfigModalSection('cj_fee')
+            setShowFeeConfigModal(true)
+          }}
+        />
 
         {showFeeConfigModal && (
           <FeeConfigModal
