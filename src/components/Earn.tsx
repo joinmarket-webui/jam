@@ -575,7 +575,7 @@ export default function Earn({ wallet }: EarnProps) {
   }, [stopMakerService, isLoading, isSending, isWaitingMakerStart, isWaitingMakerStop, t])
 
   return (
-    <div className={styles['earn']}>
+    <div className={styles.earn}>
       <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
       <rb.Row className="mb-2">

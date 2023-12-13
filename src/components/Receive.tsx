@@ -206,8 +206,10 @@ export default function Receive({ wallet }: ReceiveProps) {
                   min={0}
                   step={1}
                 />
+                <rb.Form.Control.Feedback type="invalid">
+                  {t('receive.feedback_invalid_amount')}
+                </rb.Form.Control.Feedback>
               </rb.InputGroup>
-              <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
             </rb.Form.Group>
           </div>
         </Accordion>
