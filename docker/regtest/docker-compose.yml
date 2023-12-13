@@ -93,7 +93,7 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: btcpayserver/bitcoin:25.0
+    image: btcpayserver/bitcoin:26.0
     environment:
       BITCOIN_NETWORK: regtest
       BITCOIN_WALLETDIR: "/walletdata"
@@ -125,6 +125,8 @@ services:
         rpcauth=joinmarket2:521bf9f4468529d49c0a41f9c9f8fdbf$$63ae94a73d2aa45e7ee756945d9b1e469f9873ce026b815d676a748f777e0b8d
         # rpcauth (user=joinmarket3; password=joinmarket3)
         rpcauth=joinmarket3:85d4beaa74540c3b08f4fef50d74a59e$$3033c779ea4bfd02a1f3403bc4d012f3e6d19b355f74c5e8de1d3439979d5e4b
+        # legacy wallet is being deprecated in v26: see https://github.com/bitcoin/bitcoin/blob/master/doc/release-notes/release-notes-26.0.md#wallet
+        deprecatedrpc=create_bdb
     expose:
       - 43782 # RPC
       - 39388 # P2P
