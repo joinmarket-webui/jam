@@ -11,9 +11,9 @@ import { CurrentWallet, useCurrentWallet, useCurrentWalletInfo } from '../contex
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { routes } from '../constants/routes'
 import { AmountSats } from '../libs/JmWalletApi'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 
 import styles from './Navbar.module.css'
-import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 
 const BalanceLoadingIndicator = () => {
   return (
@@ -174,21 +174,23 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
       {joiningRoute && (
-        <rb.Nav.Item className="d-flex align-items-center pe-2">
-          <div className="d-flex align-items-center px-0">
-            <NavLink to={joiningRoute} onClick={onClick} className="nav-link">
-              <rb.Navbar.Text className="d-md-none">{t('navbar.joining_in_progress')}</rb.Navbar.Text>
-              <JoiningIndicator
-                isOn={true}
-                className="navbar-text text-success"
-                title={t('navbar.joining_in_progress')}
-              />
-            </NavLink>
-          </div>
+        <rb.Nav.Item className="d-flex align-items-center">
+          <NavLink
+            to={joiningRoute}
+            onClick={onClick}
+            className="nav-link d-flex align-items-center justify-content-center"
+          >
+            <rb.Navbar.Text className="d-md-none">{t('navbar.joining_in_progress')}</rb.Navbar.Text>
+            <JoiningIndicator
+              isOn={true}
+              className="navbar-text text-success"
+              title={t('navbar.joining_in_progress')}
+            />
+          </NavLink>
         </rb.Nav.Item>
       )}
       {isDebugFeatureEnabled('fastThemeToggle') && (
-        <rb.Nav.Item className="d-none d-md-flex align-items-center pe-2">
+        <rb.Nav.Item className="d-none d-md-flex align-items-center justify-content-center">
           <FastThemeToggle />
         </rb.Nav.Item>
       )}
@@ -197,7 +199,7 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
           to={routes.settings}
           onClick={onClick}
           className={({ isActive }) =>
-            'nav-link d-flex align-items-center justify-content-center px-0' + (isActive ? ' active' : '')
+            'nav-link d-flex align-items-center justify-content-center' + (isActive ? ' active' : '')
           }
         >
           <Sprite symbol="gear" width="30" height="30" className="d-none d-md-inline-block" />
@@ -308,25 +310,25 @@ export default function Navbar() {
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
-                  <rb.Offcanvas.Body>
+                  <rb.Offcanvas.Body className={styles.offcanvasBody}>
                     <rb.Nav className="ms-auto">
                       <rb.Nav.Item>
-                        <Link
+                        <NavLink
                           to={routes.createWallet}
                           onClick={() => isExpanded && setIsExpanded(false)}
-                          className="nav-link"
+                          className="nav-link d-flex align-items-center justify-content-center"
                         >
                           {t('navbar.button_create_wallet')}
-                        </Link>
+                        </NavLink>
                       </rb.Nav.Item>
                       <rb.Nav.Item>
-                        <Link
+                        <NavLink
                           to={routes.importWallet}
                           onClick={() => isExpanded && setIsExpanded(false)}
-                          className="nav-link"
+                          className="nav-link d-flex align-items-center justify-content-center"
                         >
                           {t('navbar.button_import_wallet')}
-                        </Link>
+                        </NavLink>
                       </rb.Nav.Item>
                     </rb.Nav>
                   </rb.Offcanvas.Body>
@@ -362,7 +364,7 @@ export default function Navbar() {
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
                   </rb.Offcanvas.Header>
-                  <rb.Offcanvas.Body>
+                  <rb.Offcanvas.Body className={styles.offcanvasBody}>
                     <CenterNav
                       makerRunning={makerRunning}
                       schedulerRunning={schedulerRunning}

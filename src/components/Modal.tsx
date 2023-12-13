@@ -19,8 +19,6 @@ const BaseModal = ({
   size,
   backdrop = 'static',
 }: PropsWithChildren<BaseModalProps>) => {
-  const { t } = useTranslation()
-
   return (
     <rb.Modal
       show={isShown}
