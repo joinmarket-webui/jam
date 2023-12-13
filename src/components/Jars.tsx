@@ -24,7 +24,7 @@ const Jars = ({ accountBalances, totalBalance, onClick }: JarsProps) => {
   return (
     <div className="d-flex flex-column align-items-center gap-5">
       <rb.OverlayTrigger
-        placement="right"
+        placement="bottom"
         overlay={
           <rb.Popover>
             <rb.Popover.Body>{t('current_wallet.jars_title_popover')}</rb.Popover.Body>
