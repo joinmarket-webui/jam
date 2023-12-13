@@ -5,12 +5,11 @@ const checkIsWebShareAPISupported = () => {
   return !!navigator.share
 }
 
-type ShareButtonProps = {
+type ShareButtonProps = Omit<rb.ButtonProps, 'value' | 'onClick' | 'type'> & {
   value: string
-  className?: string
 }
 
-const ShareButton = ({ value, className }: ShareButtonProps) => {
+const ShareButton = ({ value, ...buttonProps }: ShareButtonProps) => {
   const handleShare = async () => {
     if (!checkIsWebShareAPISupported()) {
       console.error('Sharing failed: Web Share API not supported.')
@@ -27,7 +26,7 @@ const ShareButton = ({ value, className }: ShareButtonProps) => {
   }
 
   return (
-    <rb.Button variant="outline-dark" className={className} onClick={handleShare}>
+    <rb.Button type="button" variant="outline-dark" onClick={handleShare} {...buttonProps}>
       <div className="d-flex align-items-center justify-content-center">
         <Sprite symbol="share" className="me-1" width="20" height="20" />
         Share
