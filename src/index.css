@@ -567,35 +567,6 @@ h2 {
   text-decoration: underline;
 }
 
-/* Alpha Warning */
-.warning-card-wrapper {
-  position: fixed;
-  height: 100%;
-  width: 100%;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(1px);
-}
-
-.warning-card {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 75%;
-}
-
-@media only screen and (min-width: 576px) {
-  .warning-card {
-    width: 50%;
-  }
-}
-
-@media only screen and (min-width: 992px) {
-  .warning-card {
-    width: 25%;
-  }
-}
-
 .btn:disabled:hover {
   cursor: not-allowed;
 }

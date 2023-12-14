@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import { useSettings, useSettingsDispatch } from '../context/SettingsContext'
@@ -7,11 +8,11 @@ import { useWebsocketState } from '../context/WebsocketContext'
 import { useCurrentWallet } from '../context/WalletContext'
 import Sprite from './Sprite'
 import Cheatsheet from './Cheatsheet'
-import packageInfo from '../../package.json'
+import { InfoModal } from './Modal'
 import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
-import { toSemVer } from '../utils'
-import { Link } from 'react-router-dom'
 import { routes } from '../constants/routes'
+import { toSemVer } from '../utils'
+import packageInfo from '../../package.json'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -48,29 +49,26 @@ export default function Footer() {
   return (
     <>
       {showBetaWarning && (
-        <div className="warning-card-wrapper">
-          <rb.Card className="warning-card translate-middle shadow-lg">
-            <rb.Card.Body>
-              <rb.Card.Title className="text-center mb-3">{t('footer.warning_alert_title')}</rb.Card.Title>
-              <p>{t('footer.warning_alert_text')}</p>
-              <p className="text-secondary">
-                JoinMarket: v{serviceInfo?.server?.version?.raw || '_unknown'}
-                <br />
-                Jam: v{APP_DISPLAY_VERSION}
-              </p>
-              <div className="text-center mt-3">
-                <rb.Button variant="dark" onClick={() => setShowBetaWarning(false)}>
-                  {t('footer.warning_alert_button_ok')}
-                </rb.Button>
-              </div>
-            </rb.Card.Body>
-          </rb.Card>
-        </div>
+        <InfoModal
+          isShown={showBetaWarning}
+          size="sm"
+          title={t('footer.warning_alert_title')}
+          submitButtonText={t('footer.warning_alert_button_ok')}
+          onCancel={() => setShowBetaWarning(false)}
+          onSubmit={() => setShowBetaWarning(false)}
+        >
+          <p>{t('footer.warning_alert_text')}</p>
+          <p className="mb-0 text-secondary">
+            JoinMarket: v{serviceInfo?.server?.version?.raw || '_unknown'}
+            <br />
+            Jam: v{APP_DISPLAY_VERSION}
+          </p>
+        </InfoModal>
       )}
 
       <rb.Nav as="footer" className="border-top py-2">
         <rb.Container fluid="xl" className="d-flex justify-content-center py-2 px-4">
-          <div className="flex-1 order-0 justify-content-start align-items-center">
+          <div className="d-none d-md-flex flex-1 order-0 justify-content-start align-items-center">
             <div className="text-small text-start text-secondary">
               <Trans i18nKey="footer.warning">
                 This is pre-alpha software.
@@ -84,12 +82,13 @@ export default function Footer() {
               </Trans>
             </div>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center pt-0">
+          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center">
             {cheatsheetEnabled && (
-              <div className="order-1 order-sm-0">
+              <>
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
                 <rb.Nav.Item>
                   <rb.Button
+                    type="button"
                     variant="link"
                     className="cheatsheet-link nav-link text-start border-0 px-2"
                     onClick={() => setShowCheatsheet(true)}
@@ -100,7 +99,7 @@ export default function Footer() {
                     </div>
                   </rb.Button>
                 </rb.Nav.Item>
-              </div>
+              </>
             )}
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">

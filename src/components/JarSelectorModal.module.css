@@ -2,10 +2,6 @@
   background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
-:global .modal-dialog {
-  max-width: 45rem !important;
-}
-
 .modal :global .modal-content {
   background-color: var(--bs-body-bg) !important;
   border-radius: 1rem !important;

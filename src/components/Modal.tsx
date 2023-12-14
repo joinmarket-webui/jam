@@ -4,10 +4,68 @@ import { useTranslation } from 'react-i18next'
 import styles from './Modal.module.css'
 import Sprite from './Sprite'
 
-export interface ConfirmModalProps {
+type BaseModalProps = {
   isShown: boolean
   title: ReactNode | string
   onCancel: () => void
+  backdrop?: rb.ModalProps['backdrop']
+  size?: rb.ModalProps['size']
+}
+const BaseModal = ({
+  isShown,
+  title,
+  children,
+  onCancel,
+  size,
+  backdrop = 'static',
+}: PropsWithChildren<BaseModalProps>) => {
+  return (
+    <rb.Modal
+      show={isShown}
+      keyboard={true}
+      onEscapeKeyDown={() => onCancel()}
+      onHide={() => onCancel()}
+      centered={true}
+      animation={true}
+      backdrop={backdrop}
+      size={size}
+      className={styles.modal}
+    >
+      <rb.Modal.Header className={styles['modal-header']}>
+        <rb.Modal.Title className={styles['modal-title']}>{title}</rb.Modal.Title>
+      </rb.Modal.Header>
+      {children}
+    </rb.Modal>
+  )
+}
+
+export type InfoModalProps = Omit<BaseModalProps, 'backdrop'> & {
+  onSubmit: () => void
+  submitButtonText: React.ReactNode | string
+}
+
+const InfoModal = ({
+  isShown,
+  title,
+  children,
+  onCancel,
+  onSubmit,
+  submitButtonText,
+  size,
+}: PropsWithChildren<InfoModalProps>) => {
+  return (
+    <BaseModal isShown={isShown} title={title} onCancel={onCancel} backdrop={true} size={size}>
+      <rb.Modal.Body className={styles['modal-body']}>{children}</rb.Modal.Body>
+      <rb.Modal.Footer className={styles['modal-footer']}>
+        <rb.Button variant="outline-dark" onClick={() => onSubmit()}>
+          {submitButtonText}
+        </rb.Button>
+      </rb.Modal.Footer>
+    </BaseModal>
+  )
+}
+
+export type ConfirmModalProps = Omit<InfoModalProps, 'onSubmit' | 'submitButtonText'> & {
   onConfirm: () => void
 }
 
@@ -15,18 +73,7 @@ const ConfirmModal = ({ isShown, title, children, onCancel, onConfirm }: PropsWi
   const { t } = useTranslation()
 
   return (
-    <rb.Modal
-      show={isShown}
-      keyboard={true}
-      onEscapeKeyDown={() => onCancel()}
-      centered={true}
-      animation={true}
-      backdrop="static"
-      className={styles['modal']}
-    >
-      <rb.Modal.Header className={styles['modal-header']}>
-        <rb.Modal.Title className={styles['modal-title']}>{title}</rb.Modal.Title>
-      </rb.Modal.Header>
+    <BaseModal isShown={isShown} title={title} onCancel={onCancel}>
       <rb.Modal.Body className={styles['modal-body']}>{children}</rb.Modal.Body>
       <rb.Modal.Footer className={styles['modal-footer']}>
         <rb.Button
@@ -41,8 +88,8 @@ const ConfirmModal = ({ isShown, title, children, onCancel, onConfirm }: PropsWi
           {t('modal.confirm_button_accept')}
         </rb.Button>
       </rb.Modal.Footer>
-    </rb.Modal>
+    </BaseModal>
   )
 }
 
-export { ConfirmModal }
+export { InfoModal, ConfirmModal }

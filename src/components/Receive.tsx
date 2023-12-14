@@ -14,6 +14,7 @@ import { ShareButton, checkIsWebShareAPISupported } from './ShareButton'
 import { SelectableJar, jarFillLevel } from './jars/Jar'
 import styles from './Receive.module.css'
 import Accordion from './Accordion'
+import { isDevMode } from '../constants/debugFeatures'
 
 interface ReceiveProps {
   wallet: CurrentWallet
@@ -33,8 +34,8 @@ export default function Receive({ wallet }: ReceiveProps) {
   const [amount, setAmount] = useState('')
   const [selectedJarIndex, setSelectedJarIndex] = useState(parseInt(location.state?.account, 10) || 0)
 
-  const [addressCount, setAddressCount] = useState(0)
   const isFormEnabled = useMemo(() => serviceInfo?.rescanning !== true, [serviceInfo])
+  const [addressCount, setAddressCount] = useState(0)
   const [validated, setValidated] = useState(false)
 
   const sortedAccountBalances = useMemo(() => {
@@ -85,51 +86,83 @@ export default function Receive({ wallet }: ReceiveProps) {
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {serviceInfo?.rescanning === true && <rb.Alert variant="success">{t('app.alert_rescan_in_progress')}</rb.Alert>}
-      <div className={`mb-4 ${styles.cardContainer}`}>
-        <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
-          <div className={styles['qr-container']}>
-            {!isLoading && address && <BitcoinQR address={address} amount={parseInt(amount, 10) || 0} />}
-            {(isLoading || !address) && (
-              <rb.Placeholder as="div" animation="wave" className={styles['receive-placeholder-qr-container']}>
-                <rb.Placeholder className={styles['receive-placeholder-qr']} />
-              </rb.Placeholder>
-            )}
-          </div>
-          <rb.Card.Body
-            className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} pb-0 d-flex flex-column align-items-center`}
-          >
-            {!address ? (
-              <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
-                <rb.Placeholder xs={12} sm={10} md={8} className={styles['receive-placeholder']} />
-              </rb.Placeholder>
-            ) : (
-              <rb.Card.Text className={`${styles['address']} text-center slashed-zeroes`}>{address}</rb.Card.Text>
-            )}
 
-            <div className="d-flex justify-content-center gap-3 w-75">
-              <CopyButton
-                className="btn btn-outline-dark flex-1"
-                disabled={!address || isLoading}
-                value={address}
-                text={
-                  <>
-                    <Sprite symbol="copy" className="me-1" width="24" height="24" />
-                    {t('receive.button_copy_address')}
-                  </>
-                }
-                successText={
-                  <>
-                    <Sprite color="green" symbol="checkmark" className="me-1" width="24" height="24" />
-                    {t('receive.text_copy_address_confirmed')}
-                  </>
-                }
-              />
-              {checkIsWebShareAPISupported() && <ShareButton value={address} className="flex-1" />}
-            </div>
-          </rb.Card.Body>
-        </rb.Card>
-      </div>
       <rb.Form className={styles.receiveForm} onSubmit={onSubmit} validated={validated} noValidate>
+        <div className={`mb-4 ${styles.cardContainer}`}>
+          <rb.Card className={`${settings.theme === 'light' ? 'pt-2' : 'pt-4'} pb-4`}>
+            <div className={styles['qr-container']}>
+              {!isLoading && address && <BitcoinQR address={address} amount={parseInt(amount, 10) || 0} />}
+              {(isLoading || !address) && (
+                <rb.Placeholder as="div" animation="wave" className={styles['receive-placeholder-qr-container']}>
+                  <rb.Placeholder className={styles['receive-placeholder-qr']} />
+                </rb.Placeholder>
+              )}
+            </div>
+            <rb.Card.Body
+              className={`${settings.theme === 'light' ? 'pt-0' : 'pt-3'} p-0 d-flex flex-column align-items-center`}
+            >
+              {!address ? (
+                <rb.Placeholder as="p" animation="wave" className={styles['receive-placeholder-container']}>
+                  <rb.Placeholder xs={12} sm={10} md={8} className={styles['receive-placeholder']} />
+                </rb.Placeholder>
+              ) : (
+                <rb.Card.Text className={`${styles.address} text-center slashed-zeroes break-word`}>
+                  {address}
+                </rb.Card.Text>
+              )}
+
+              <div className="d-flex flex-column flex-sm-row justify-content-center gap-2 px-2">
+                <rb.Button
+                  variant="outline-dark"
+                  type="submit"
+                  disabled={!isFormEnabled || isLoading}
+                  className="d-flex justify-content-center align-items-center"
+                >
+                  {isLoading ? (
+                    <>
+                      <rb.Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                        className="me-2"
+                      />
+                      {t('receive.text_getting_address')}
+                    </>
+                  ) : (
+                    <>
+                      <Sprite symbol="refresh" className="me-2" width="24" height="24" />
+                      {t('receive.button_new_address')}
+                    </>
+                  )}
+                </rb.Button>
+                <CopyButton
+                  className="btn btn-outline-dark flex-1"
+                  disabled={!address || isLoading}
+                  value={address}
+                  text={
+                    <>
+                      <Sprite symbol="copy" className="me-1" width="24" height="24" />
+                      {t('receive.button_copy_address')}
+                    </>
+                  }
+                  successText={
+                    <>
+                      <Sprite color="green" symbol="checkmark" className="me-1" width="24" height="24" />
+                      {t('receive.text_copy_address_confirmed')}
+                    </>
+                  }
+                />
+                {!isDevMode() ? (
+                  checkIsWebShareAPISupported() && <ShareButton value={address} className="flex-1" />
+                ) : (
+                  <ShareButton value={address} className="flex-1" disabled={!checkIsWebShareAPISupported()} />
+                )}
+              </div>
+            </rb.Card.Body>
+          </rb.Card>
+        </div>
         <Accordion title={t('receive.button_settings')} disabled={!isFormEnabled}>
           <div className="mb-4">
             {!walletInfo || sortedAccountBalances.length === 0 ? (
@@ -157,7 +190,7 @@ export default function Receive({ wallet }: ReceiveProps) {
             )}
             <rb.Form.Group controlId="amountSats">
               <rb.Form.Label>{t('receive.label_amount')}</rb.Form.Label>
-              <rb.InputGroup>
+              <rb.InputGroup hasValidation={true}>
                 <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
                   <Sprite symbol="sats" width="24" height="24" />
                 </rb.InputGroup.Text>
@@ -173,32 +206,13 @@ export default function Receive({ wallet }: ReceiveProps) {
                   min={0}
                   step={1}
                 />
+                <rb.Form.Control.Feedback type="invalid">
+                  {t('receive.feedback_invalid_amount')}
+                </rb.Form.Control.Feedback>
               </rb.InputGroup>
-              <rb.Form.Control.Feedback type="invalid">{t('receive.feedback_invalid_amount')}</rb.Form.Control.Feedback>
             </rb.Form.Group>
           </div>
         </Accordion>
-
-        <div className="d-flex justify-content-center">
-          <rb.Button
-            variant="outline-dark"
-            type="submit"
-            disabled={!isFormEnabled || isLoading}
-            className="d-flex justify-content-center align-items-center"
-          >
-            {isLoading ? (
-              <>
-                <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                {t('receive.text_getting_address')}
-              </>
-            ) : (
-              <>
-                <Sprite symbol="refresh" className="me-2" width="24" height="24" />
-                {t('receive.button_new_address')}
-              </>
-            )}
-          </rb.Button>
-        </div>
       </rb.Form>
     </div>
   )

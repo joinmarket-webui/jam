@@ -18,3 +18,11 @@
 :global(.jam-reload-wallet-info-in-progress) .loadingIndicator {
   display: inline-block !important;
 }
+
+.offcanvasBody {
+  font-size: calc(var(--bs-body-font-size) * 1.5);
+}
+
+.offcanvasBody :global(.nav-link) {
+  width: 100%;
+}

@@ -61,7 +61,7 @@
 }
 
 .address {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   padding: 1rem 0 1rem;
 }
 
@@ -73,7 +73,7 @@
   align-items: center;
   gap: 2rem;
   color: var(--bs-body-color);
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .jarsPlaceholder {
