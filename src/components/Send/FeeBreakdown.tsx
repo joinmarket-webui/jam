@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import Balance from '../Balance'
 import * as rb from 'react-bootstrap'
 import { useSettings } from '../../context/SettingsContext'
-import { SATS, factorToPercentage, formatSats } from '../../utils'
+import { factorToPercentage, formatSats } from '../../utils'
 import { FeeValues } from '../../hooks/Fees'
 import { AmountSats } from '../../libs/JmWalletApi'
 
@@ -47,7 +47,7 @@ const FeeCard = ({ amount, feeConfigValue, highlight, subtitle, onClick }: FeeCa
               ) : (
                 <>
                   &le;
-                  <Balance convertToUnit={SATS} valueString={amount.toString()} showBalance={true} />
+                  <Balance convertToUnit={settings.unit} valueString={amount.toString()} showBalance={true} />
                 </>
               )}
             </>

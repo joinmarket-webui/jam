@@ -146,12 +146,7 @@ export const DestinationInputField = ({
                     disabled={disabled || !walletInfo}
                   >
                     <div className="d-flex justify-content-center align-items-center">
-                      <Sprite
-                        symbol="jar-closed-empty"
-                        width="28px"
-                        height="28px"
-                        style={{ paddingBottom: '0.2rem' }}
-                      />
+                      <Sprite symbol="jar-closed-empty" width="28px" height="28px" style={{ marginTop: '-3px' }} />
                     </div>
                   </rb.Button>
                   <rb.Form.Control.Feedback type="invalid">
