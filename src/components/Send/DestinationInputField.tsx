@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
@@ -42,6 +42,7 @@ export const DestinationInputField = ({
   const [field] = useField<DestinationValue>(name)
   const form = useFormikContext<any>()
 
+  const ref = useRef<HTMLInputElement>(null)
   const [destinationJarPickerShown, setDestinationJarPickerShown] = useState(false)
 
   return (
@@ -106,6 +107,7 @@ export const DestinationInputField = ({
                   className={styles.button}
                   onClick={() => {
                     form.setFieldValue(field.name, form.initialValues[field.name], true)
+                    setTimeout(() => ref.current?.focus(), 4)
                   }}
                   disabled={disabled}
                 >
@@ -118,6 +120,7 @@ export const DestinationInputField = ({
               <div className={form.touched[field.name] && !!form.errors[field.name] ? 'is-invalid' : ''}>
                 <rb.InputGroup hasValidation={true}>
                   <rb.Form.Control
+                    ref={ref}
                     aria-label={label}
                     name={field.name}
                     placeholder={t('send.placeholder_recipient')}
