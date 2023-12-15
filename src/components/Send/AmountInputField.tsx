@@ -36,9 +36,9 @@ const formatBtcDisplayValue = (sats: Api.AmountSats) => {
   return `${'\u20BF'} ${
     formattedBtc.substring(0, pointIndex + 3) +
     ' ' +
-    formattedBtc.substring(pointIndex + 3, pointIndex + 5) +
+    formattedBtc.substring(pointIndex + 3, pointIndex + 6) +
     ' ' +
-    formattedBtc.substring(pointIndex + 5)
+    formattedBtc.substring(pointIndex + 6)
   }`
 }
 
