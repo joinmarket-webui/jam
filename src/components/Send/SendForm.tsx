@@ -294,6 +294,7 @@ const InnerSendForm = ({
           label={t('send.label_amount')}
           isLoading={isLoading}
           disabled={disabled}
+          enableSweep={true}
           sourceJarBalance={sourceJarBalance}
         />
 
