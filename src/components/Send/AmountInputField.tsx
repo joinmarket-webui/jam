@@ -33,13 +33,13 @@ const unitFromValue = (value: string | undefined) => {
 const formatBtcDisplayValue = (sats: Api.AmountSats) => {
   const formattedBtc = formatBtc(satsToBtc(String(sats)))
   const pointIndex = formattedBtc.indexOf('.')
-  return (
+  return `${'\u20BF'} ${
     formattedBtc.substring(0, pointIndex + 3) +
     ' ' +
     formattedBtc.substring(pointIndex + 3, pointIndex + 5) +
     ' ' +
     formattedBtc.substring(pointIndex + 5)
-  )
+  }`
 }
 
 function UniversalBitcoinInput({
@@ -63,7 +63,6 @@ function UniversalBitcoinInput({
 
   return (
     <>
-      <pre>{JSON.stringify(field.value, null, 2)}</pre>
       <rb.InputGroup hasValidation={true}>
         {inputType.type === 'number' && (
           <>
@@ -130,9 +129,7 @@ function UniversalBitcoinInput({
             })
 
             const displayValueInBtc =
-              field.value.value === null
-                ? field.value.displayValue
-                : `${'\u20BF'} ${formatBtcDisplayValue(field.value.value)}`
+              field.value.value === null ? field.value.displayValue : formatBtcDisplayValue(field.value.value)
 
             form.setFieldValue(
               field.name,
@@ -224,15 +221,6 @@ export const AmountInputField = ({
   const [field] = useField<AmountValue>(name)
   const form = useFormikContext<any>()
 
-  const amountFieldValue = useMemo(() => {
-    if (field.value?.isSweep) {
-      if (!sourceJarBalance) return ''
-      return `${sourceJarBalance.calculatedAvailableBalanceInSats}`
-    }
-
-    return field.value?.value ?? ''
-  }, [sourceJarBalance, field])
-
   return (
     <>
       <rb.Form.Group className="mb-4" controlId="amount">
@@ -250,7 +238,7 @@ export const AmountInputField = ({
                   aria-label={label}
                   name={field.name}
                   className={classNames('slashed-zeroes', styles.input, className)}
-                  value={amountFieldValue}
+                  value={field.value?.displayValue || ''}
                   required
                   onChange={noop}
                   disabled={true}
@@ -293,6 +281,7 @@ export const AmountInputField = ({
                           {
                             value: 0,
                             isSweep: true,
+                            displayValue: formatBtcDisplayValue(sourceJarBalance.calculatedAvailableBalanceInSats),
                           },
                           true,
                         )
