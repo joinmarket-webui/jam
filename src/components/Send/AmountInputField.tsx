@@ -6,14 +6,15 @@ import { FieldInputProps, FormikContextType, useField, useFormikContext } from '
 import * as Api from '../../libs/JmWalletApi'
 import Sprite from '../Sprite'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
-import { formatBtc, noop, satsToBtc } from '../../utils'
+import { btcToSats, formatBtc, isValidNumber, noop, satsToBtc } from '../../utils'
 import styles from './AmountInputField.module.css'
 
 export type AmountValue = {
   value: Api.AmountSats | null
-  userRawInputValue?: string
-  displayValue?: string
   isSweep: boolean
+  userRawInputValue?: string
+  userSelectedInputUnit?: Unit
+  displayValue?: string
 }
 
 type UniversalBitcoinInputProps = {
@@ -29,6 +30,18 @@ const unitFromValue = (value: string | undefined) => {
   return value?.includes('.') ? 'BTC' : 'sats'
 }
 
+const formatBtcValue = (sats: Api.AmountSats) => {
+  const formattedBtc = formatBtc(satsToBtc(String(sats)))
+  const pointIndex = formattedBtc.indexOf('.')
+  return (
+    formattedBtc.substring(0, pointIndex + 3) +
+    ' ' +
+    formattedBtc.substring(pointIndex + 3, pointIndex + 5) +
+    ' ' +
+    formattedBtc.substring(pointIndex + 5)
+  )
+}
+
 function UniversalBitcoinInput({
   label,
   className,
@@ -42,20 +55,55 @@ function UniversalBitcoinInput({
     type: 'text',
     inputMode: 'decimal',
   })
-  const [inputUnit, setInputUnit] = useState<Unit>(unitFromValue(field.value?.userRawInputValue))
+
+  const displayInputUnit = useMemo(
+    () => field.value?.userSelectedInputUnit ?? unitFromValue(field.value?.userRawInputValue),
+    [field],
+  )
 
   return (
     <>
+      <pre>{JSON.stringify(field.value, null, 2)}</pre>
       <rb.InputGroup hasValidation={true}>
-        {inputUnit === 'sats' && (
-          <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
-            <Sprite symbol="sats" width="24" height="24" />
-          </rb.InputGroup.Text>
-        )}
-        {inputUnit === 'BTC' && (
-          <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
-            <Sprite symbol="BTC" width="24" height="24" />
-          </rb.InputGroup.Text>
+        {inputType.type === 'number' && (
+          <>
+            <rb.Button
+              variant="outline-dark"
+              className={classNames(styles.button, {
+                'cursor-not-allowed': disabled,
+              })}
+              onMouseDown={(e) => {
+                e.preventDefault() // prevent losing focus of the current element
+
+                const newUnit = displayInputUnit === 'sats' ? 'BTC' : 'sats'
+
+                const userRawInputValue =
+                  field.value?.value !== null
+                    ? (newUnit === 'sats'
+                        ? String(field.value.value)
+                        : satsToBtc(String(field.value.value))
+                      ).toLocaleString('en-US', {
+                        maximumFractionDigits: Math.log10(100_000_000),
+                        useGrouping: false,
+                      })
+                    : field.value?.userRawInputValue
+
+                form.setFieldValue(
+                  field.name,
+                  {
+                    ...field.value,
+                    userRawInputValue: userRawInputValue,
+                    userSelectedInputUnit: newUnit,
+                  },
+                  true,
+                )
+              }}
+              disabled={disabled}
+            >
+              {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
+              {displayInputUnit === 'BTC' && <Sprite symbol="BTC" width="24" height="24" />}
+            </rb.Button>
+          </>
         )}
 
         <rb.Form.Control
@@ -68,30 +116,21 @@ function UniversalBitcoinInput({
           value={
             inputType.type === 'text' ? field.value?.displayValue ?? '' : String(field.value?.userRawInputValue ?? '')
           }
-          onFocus={(e) => {
-            setInputUnit(unitFromValue(field.value?.userRawInputValue))
-            setInputType({
-              type: 'number',
-            })
+          placeholder={placeholder}
+          required
+          min={displayInputUnit === 'sats' ? '1' : '0.00000001'}
+          step={displayInputUnit === 'sats' ? '1' : '0.00000001'}
+          onFocus={() => {
+            setInputType({ type: 'number' })
           }}
-          step={inputUnit === 'sats' ? '1' : '0.00000001'}
           onBlur={(e) => {
-            const displayValueInBtc =
-              field.value.value === null
-                ? field.value.displayValue
-                : (() => {
-                    const formattedBtc = formatBtc(satsToBtc(String(field.value.value)))
-                    const pointIndex = formattedBtc.indexOf('.')
-                    const formatted =
-                      formattedBtc.substring(0, pointIndex + 3) +
-                      ' ' +
-                      formattedBtc.substring(pointIndex + 3, pointIndex + 5) +
-                      ' ' +
-                      formattedBtc.substring(pointIndex + 5)
-                    return formatted
-                  })()
+            setInputType({
+              type: 'text',
+              inputMode: 'decimal',
+            })
 
-            setInputUnit('BTC')
+            const displayValueInBtc =
+              field.value.value === null ? field.value.displayValue : `${'\u20BF'} ${formatBtcValue(field.value.value)}`
 
             form.setFieldValue(
               field.name,
@@ -101,32 +140,33 @@ function UniversalBitcoinInput({
               },
               false,
             )
-            setInputType({
-              type: 'text',
-              inputMode: 'decimal',
-            })
             field.onBlur(e)
           }}
-          min={1}
-          placeholder={placeholder}
-          required
           onChange={(e) => {
             const valWithoutSpace = (e.target.value ?? '').replace(/,/g, '').replace(/\s/g, '')
-            const unit = unitFromValue(valWithoutSpace)
-            setInputUnit(unit)
 
-            let numberValues
-            if (unit === 'BTC') {
-              const splitted = valWithoutSpace.split('.')
-              const [integerPart, fractionalPart] = splitted
-              if (splitted.length !== 2) {
-                numberValues = undefined
+            let numberValues: string | undefined
+            if (field.value.userSelectedInputUnit) {
+              if (field.value.userSelectedInputUnit === 'BTC') {
+                const satsOrNan = btcToSats(valWithoutSpace)
+                numberValues = isValidNumber(satsOrNan) ? String(satsOrNan) : undefined
               } else {
-                const paddedFractionalPart = fractionalPart.padEnd(8, '0')
-                numberValues = `${integerPart}${paddedFractionalPart}`?.match(/\d+/g)?.join('')
+                numberValues = valWithoutSpace?.match(/\d+/g)?.join('')
               }
             } else {
-              numberValues = valWithoutSpace?.match(/\d+/g)?.join('')
+              const unit = unitFromValue(valWithoutSpace)
+              if (unit === 'BTC') {
+                const splitted = valWithoutSpace.split('.')
+                const [integerPart, fractionalPart = ''] = splitted
+                if (splitted.length > 0) {
+                  numberValues = undefined
+                } else {
+                  const paddedFractionalPart = fractionalPart.padEnd(8, '0')
+                  numberValues = `${integerPart}${paddedFractionalPart}`?.match(/\d+/g)?.join('')
+                }
+              } else {
+                numberValues = valWithoutSpace?.match(/\d+/g)?.join('')
+              }
             }
             const satValue = numberValues ? parseInt(numberValues, 10) : null
 
@@ -135,7 +175,8 @@ function UniversalBitcoinInput({
               {
                 value: satValue,
                 userRawInputValue: e.target.value,
-                displayValue: e.target.value, //displayValue,
+                userSelectedInputUnit: field.value?.userSelectedInputUnit,
+                displayValue: e.target.value,
                 fromJar: null,
               },
               true,
@@ -152,103 +193,6 @@ function UniversalBitcoinInput({
     </>
   )
 }
-
-/*function UniversalBitcoinInputOLD({label, className, disabled, placeholder, field, form}: UniversalBitcoinInputProps) {
-
-  const [inputType, setInputType] = useState<{ type: 'text' | 'number', inputMode?: 'decimal' }>({
-    type: 'text',
-    inputMode: 'decimal'
-  })
-
-  return (<>
-                  <rb.Form.Control
-                    aria-label={label}
-                    name={field.name}
-                    autoComplete="off"
-                    type={inputType.type}
-                    inputMode={inputType.inputMode}
-                    className={classNames('slashed-zeroes', styles.input, className)}
-                    value={inputType.type === 'text' ? field.value?.displayValue ?? '' : String(field.value?.value ?? '') }
-                    onFocus={(e) => {
-                      setInputType({
-                        type: 'number'
-                      })
-                    }}
-                    onBlur={(e) => {
-                      const displayValue = field.value.value === null ? field.value.displayValue : (() => {
-                        const formattedBtc = formatBtc(satsToBtc(String(field.value.value)))
-                        const pointIndex = formattedBtc.indexOf('.')
-                        const formatted = formattedBtc.substring(0, pointIndex + 3) 
-                        + ' ' + formattedBtc.substring(pointIndex + 3, pointIndex + 5)
-                        + ' ' + formattedBtc.substring(pointIndex + 5)
-                        return formatted
-                      })()
-                      form.setFieldValue(
-                        field.name,
-                        {
-                          ...field.value,
-                          displayValue: displayValue
-                        },
-                        false,
-                      )
-                      setInputType({
-                        type: 'text',
-                        inputMode: 'decimal'
-                      })
-                      field.onBlur(e)
-                    }}
-                    min={1}
-                    placeholder={placeholder}
-                    required
-                    onChange={(e) => {
-                      const valWithoutSpace = (e.target.value ?? '').replace(/,/g, '').replace(/\s/g, '')
-                      
-                      const isValidInput = /[\d\.]+/g.test(valWithoutSpace)
-                          
-                        && isValidNumber(parseFloat(valWithoutSpace))
-                      if (!isValidInput && valWithoutSpace !== '') {
-                        form.setFieldValue(
-                          field.name,
-                          {
-                            value: null,
-                            displayValue: e.target.value,
-                            fromJar: null,
-                          },
-                          true,
-                        )
-                      } else {
-
-                      let numberValues: string | undefined
-                      if (valWithoutSpace.includes('.')) {
-                        const splitted = valWithoutSpace.split('.')
-                        const [integerPart, fractionalPart] = splitted
-                        if (splitted.length !== 2) {
-                          numberValues = undefined
-                        } else {
-                          const paddedFractionalPart = fractionalPart.padEnd(8, '0')
-                          numberValues = `${integerPart}${paddedFractionalPart}`?.match(/\d+/g)?.join('')
-                        }
-                      } else {
-                        numberValues = valWithoutSpace?.match(/\d+/g)?.join('')
-                      }
-                      const satValue = numberValues ? parseInt(numberValues, 10) : null
-
-                      form.setFieldValue(
-                        field.name,
-                        {
-                          value: satValue,
-                          displayValue: e.target.value, //displayValue,
-                          fromJar: null,
-                        },
-                        true,
-                      )
-                    }
-                    }}
-                    isInvalid={form.touched[field.name] && !!form.errors[field.name]}
-                    disabled={disabled}
-                  />
-  </>)
-}*/
 
 export type AmountInputFieldProps = {
   name: string
@@ -355,61 +299,6 @@ export const AmountInputField = ({
                     </rb.Button>
                   )}
                 </UniversalBitcoinInput>
-
-                <rb.InputGroup hasValidation={true}>
-                  <rb.Form.Control
-                    aria-label={label}
-                    name={field.name}
-                    type="number"
-                    className={classNames('slashed-zeroes', styles.input, className)}
-                    value={amountFieldValue}
-                    onBlur={field.onBlur}
-                    min={1}
-                    placeholder={t('send.placeholder_amount')}
-                    required
-                    onChange={(e) => {
-                      const value = e.target.value
-                      form.setFieldValue(
-                        field.name,
-                        {
-                          value: value === '' ? null : parseInt(value, 10),
-                          fromJar: null,
-                        },
-                        true,
-                      )
-                    }}
-                    isInvalid={form.touched[field.name] && !!form.errors[field.name]}
-                    disabled={disabled}
-                  />
-                  {enableSweep && (
-                    <rb.Button
-                      variant="outline-dark"
-                      className={classNames(styles.button, {
-                        'cursor-not-allowed': !sourceJarBalance,
-                      })}
-                      onClick={() => {
-                        if (!sourceJarBalance) return
-                        form.setFieldValue(
-                          field.name,
-                          {
-                            value: 0,
-                            isSweep: true,
-                          },
-                          true,
-                        )
-                      }}
-                      disabled={disabled || !sourceJarBalance}
-                    >
-                      <div className="d-flex justify-content-center align-items-center">
-                        <Sprite symbol="sweep" width="24px" height="24px" className="me-1" />
-                        {t('send.button_sweep')}
-                      </div>
-                    </rb.Button>
-                  )}
-                  <rb.Form.Control.Feedback type="invalid">
-                    <>{form.errors[field.name]}</>
-                  </rb.Form.Control.Feedback>
-                </rb.InputGroup>
               </div>
             )}
           </>
