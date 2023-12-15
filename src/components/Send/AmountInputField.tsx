@@ -1,4 +1,4 @@
-import { PropsWithChildren, useMemo, useState } from 'react'
+import { PropsWithChildren, RefObject, forwardRef, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
@@ -42,161 +42,162 @@ const formatBtcDisplayValue = (sats: Api.AmountSats) => {
   }`
 }
 
-function UniversalBitcoinInput({
-  label,
-  className,
-  disabled,
-  placeholder,
-  field,
-  form,
-  children,
-}: PropsWithChildren<UniversalBitcoinInputProps>) {
-  const [inputType, setInputType] = useState<{ type: 'text' | 'number'; inputMode?: 'decimal' }>({
-    type: 'text',
-    inputMode: 'decimal',
-  })
+const UniversalBitcoinInput = forwardRef(
+  (
+    { label, className, disabled, placeholder, field, form, children }: PropsWithChildren<UniversalBitcoinInputProps>,
+    ref: React.Ref<HTMLInputElement>,
+  ) => {
+    const [inputType, setInputType] = useState<{ type: 'text' | 'number'; inputMode?: 'decimal' }>({
+      type: 'text',
+      inputMode: 'decimal',
+    })
 
-  const displayInputUnit = useMemo(
-    () => field.value?.userSelectedInputUnit ?? unitFromValue(field.value?.userRawInputValue),
-    [field],
-  )
+    const displayInputUnit = useMemo(
+      () => field.value?.userSelectedInputUnit ?? unitFromValue(field.value?.userRawInputValue),
+      [field],
+    )
 
-  return (
-    <>
-      <rb.InputGroup hasValidation={true}>
-        {inputType.type === 'number' && (
-          <>
-            <rb.Button
-              variant="outline-dark"
-              className={classNames(styles.button, {
-                'cursor-not-allowed': disabled,
-              })}
-              onMouseDown={(e) => {
-                e.preventDefault() // prevent losing focus of the current element
+    return (
+      <>
+        <rb.InputGroup hasValidation={true}>
+          {inputType.type === 'number' && (
+            <>
+              <rb.Button
+                variant="outline-dark"
+                className={classNames(styles.button, {
+                  'cursor-not-allowed': disabled,
+                })}
+                tabIndex={-1}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                }}
+                onClick={(e) => {
+                  e.preventDefault() // prevent losing focus of the current element
 
-                const newUnit = displayInputUnit === 'sats' ? 'BTC' : 'sats'
+                  const newUnit = displayInputUnit === 'sats' ? 'BTC' : 'sats'
 
-                const userRawInputValue =
-                  field.value?.value !== null
-                    ? (newUnit === 'sats'
-                        ? String(field.value.value)
-                        : satsToBtc(String(field.value.value))
-                      ).toLocaleString('en-US', {
-                        maximumFractionDigits: Math.log10(100_000_000),
-                        useGrouping: false,
-                      })
-                    : field.value?.userRawInputValue
+                  const userRawInputValue =
+                    field.value?.value !== null
+                      ? (newUnit === 'sats'
+                          ? String(field.value.value)
+                          : satsToBtc(String(field.value.value))
+                        ).toLocaleString('en-US', {
+                          maximumFractionDigits: Math.log10(100_000_000),
+                          useGrouping: false,
+                        })
+                      : field.value?.userRawInputValue
 
-                form.setFieldValue(
-                  field.name,
-                  {
-                    ...field.value,
-                    userRawInputValue: userRawInputValue,
-                    userSelectedInputUnit: newUnit,
-                  },
-                  true,
-                )
-              }}
-              disabled={disabled}
-            >
-              {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
-              {displayInputUnit === 'BTC' && <Sprite symbol="BTC" width="24" height="24" />}
-            </rb.Button>
-          </>
-        )}
+                  form.setFieldValue(
+                    field.name,
+                    {
+                      ...field.value,
+                      userRawInputValue: userRawInputValue,
+                      userSelectedInputUnit: newUnit,
+                    },
+                    true,
+                  )
+                }}
+                disabled={disabled}
+              >
+                {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
+                {displayInputUnit === 'BTC' && <Sprite symbol="BTC" width="24" height="24" />}
+              </rb.Button>
+            </>
+          )}
+          <rb.Form.Control
+            ref={ref}
+            aria-label={label}
+            name={field.name}
+            autoComplete="off"
+            type={inputType.type}
+            inputMode={inputType.inputMode}
+            className={classNames('slashed-zeroes', styles.input, className)}
+            value={
+              inputType.type === 'text' ? field.value?.displayValue ?? '' : String(field.value?.userRawInputValue ?? '')
+            }
+            placeholder={placeholder}
+            required
+            min={displayInputUnit === 'sats' ? '1' : '0.00000001'}
+            step={displayInputUnit === 'sats' ? '1' : '0.00000001'}
+            onFocus={() => {
+              setInputType({ type: 'number' })
+            }}
+            onBlur={(e) => {
+              setInputType({
+                type: 'text',
+                inputMode: 'decimal',
+              })
 
-        <rb.Form.Control
-          aria-label={label}
-          name={field.name}
-          autoComplete="off"
-          type={inputType.type}
-          inputMode={inputType.inputMode}
-          className={classNames('slashed-zeroes', styles.input, className)}
-          value={
-            inputType.type === 'text' ? field.value?.displayValue ?? '' : String(field.value?.userRawInputValue ?? '')
-          }
-          placeholder={placeholder}
-          required
-          min={displayInputUnit === 'sats' ? '1' : '0.00000001'}
-          step={displayInputUnit === 'sats' ? '1' : '0.00000001'}
-          onFocus={() => {
-            setInputType({ type: 'number' })
-          }}
-          onBlur={(e) => {
-            setInputType({
-              type: 'text',
-              inputMode: 'decimal',
-            })
+              const displayValueInBtc =
+                field.value.value === null ? field.value.displayValue : formatBtcDisplayValue(field.value.value)
 
-            const displayValueInBtc =
-              field.value.value === null ? field.value.displayValue : formatBtcDisplayValue(field.value.value)
-
-            form.setFieldValue(
-              field.name,
-              {
-                ...field.value,
-                displayValue: displayValueInBtc,
-              },
-              false,
-            )
-            field.onBlur(e)
-          }}
-          onChange={(e) => {
-            const valueOrNan = parseFloat(e.target.value ?? '')
-
-            if (!isValidNumber(valueOrNan)) {
               form.setFieldValue(
                 field.name,
                 {
                   ...field.value,
-                  value: null,
-                  userRawInputValue: e.target.value,
-                  displayValue: e.target.value,
+                  displayValue: displayValueInBtc,
                 },
-                true,
+                false,
               )
-              return
-            } else {
-              const value: number = valueOrNan
+              field.onBlur(e)
+            }}
+            onChange={(e) => {
+              const valueOrNan = parseFloat(e.target.value ?? '')
 
-              let numberValues: string | undefined
-              const unit = field.value.userSelectedInputUnit ?? unitFromValue(String(value))
-              if (unit === 'BTC') {
-                const splitted = String(value).split('.')
-                const [integerPart, fractionalPart = ''] = splitted
-                const paddedFractionalPart = fractionalPart.padEnd(8, '0').substring(0, 8)
-                numberValues = `${integerPart}${paddedFractionalPart}`
+              if (!isValidNumber(valueOrNan)) {
+                form.setFieldValue(
+                  field.name,
+                  {
+                    ...field.value,
+                    value: null,
+                    userRawInputValue: e.target.value,
+                    displayValue: e.target.value,
+                  },
+                  true,
+                )
+                return
               } else {
-                numberValues = value.toLocaleString('en-US', {
-                  maximumFractionDigits: 0,
-                  useGrouping: false,
-                })
-              }
+                const value: number = valueOrNan
 
-              form.setFieldValue(
-                field.name,
-                {
-                  value: parseInt(numberValues, 10),
-                  userRawInputValue: e.target.value,
-                  userSelectedInputUnit: field.value?.userSelectedInputUnit,
-                  displayValue: e.target.value,
-                  fromJar: null,
-                },
-                true,
-              )
-            }
-          }}
-          isInvalid={form.touched[field.name] && !!form.errors[field.name]}
-          disabled={disabled}
-        />
-        {children}
-        <rb.Form.Control.Feedback type="invalid">
-          <>{form.errors[field.name]}</>
-        </rb.Form.Control.Feedback>
-      </rb.InputGroup>
-    </>
-  )
-}
+                let numberValues: string | undefined
+                const unit = field.value.userSelectedInputUnit ?? unitFromValue(String(value))
+                if (unit === 'BTC') {
+                  const splitted = String(value).split('.')
+                  const [integerPart, fractionalPart = ''] = splitted
+                  const paddedFractionalPart = fractionalPart.padEnd(8, '0').substring(0, 8)
+                  numberValues = `${integerPart}${paddedFractionalPart}`
+                } else {
+                  numberValues = value.toLocaleString('en-US', {
+                    maximumFractionDigits: 0,
+                    useGrouping: false,
+                  })
+                }
+
+                form.setFieldValue(
+                  field.name,
+                  {
+                    value: parseInt(numberValues, 10),
+                    userRawInputValue: e.target.value,
+                    userSelectedInputUnit: field.value?.userSelectedInputUnit,
+                    displayValue: e.target.value,
+                    fromJar: null,
+                  },
+                  true,
+                )
+              }
+            }}
+            isInvalid={form.touched[field.name] && !!form.errors[field.name]}
+            disabled={disabled}
+          />
+          {children}
+          <rb.Form.Control.Feedback type="invalid">
+            <>{form.errors[field.name]}</>
+          </rb.Form.Control.Feedback>
+        </rb.InputGroup>
+      </>
+    )
+  },
+)
 
 export type AmountInputFieldProps = {
   name: string
@@ -220,6 +221,7 @@ export const AmountInputField = ({
   const { t } = useTranslation()
   const [field] = useField<AmountValue>(name)
   const form = useFormikContext<any>()
+  const ref = useRef<HTMLInputElement>(null)
 
   return (
     <>
@@ -249,6 +251,7 @@ export const AmountInputField = ({
                   className={styles.button}
                   onClick={() => {
                     form.setFieldValue(field.name, form.initialValues[field.name], true)
+                    setTimeout(() => ref.current?.focus(), 4)
                   }}
                   disabled={disabled}
                 >
@@ -261,6 +264,7 @@ export const AmountInputField = ({
             ) : (
               <div className={form.touched[field.name] && !!form.errors[field.name] ? 'is-invalid' : ''}>
                 <UniversalBitcoinInput
+                  ref={ref}
                   className={className}
                   label={label}
                   placeholder={t('send.placeholder_amount')}
