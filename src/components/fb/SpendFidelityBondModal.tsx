@@ -391,6 +391,7 @@ const SpendFidelityBondModal = ({
       </rb.Modal>
       {showConfirmSendModal && fidelityBond && selectedDestinationJarIndex !== undefined && (
         <PaymentConfirmModal
+          size="lg"
           isShown={true}
           title={t(`earn.fidelity_bond.move.${enableDestinationJarSelection ? 'confirm_send_modal.title' : 'title'}`)}
           onCancel={() => {

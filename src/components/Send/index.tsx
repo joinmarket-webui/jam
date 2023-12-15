@@ -512,6 +512,7 @@ export default function Send({ wallet }: SendProps) {
 
       {showConfirmSendModal && (
         <PaymentConfirmModal
+          size="lg"
           isShown={true}
           title={t('send.confirm_send_modal.title')}
           onCancel={() => setShowConfirmSendModal(undefined)}

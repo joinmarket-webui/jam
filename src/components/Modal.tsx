@@ -45,16 +45,14 @@ export type InfoModalProps = Omit<BaseModalProps, 'backdrop'> & {
 }
 
 const InfoModal = ({
-  isShown,
-  title,
   children,
   onCancel,
   onSubmit,
   submitButtonText,
-  size,
+  ...baseModalProps
 }: PropsWithChildren<InfoModalProps>) => {
   return (
-    <BaseModal isShown={isShown} title={title} onCancel={onCancel} backdrop={true} size={size}>
+    <BaseModal {...baseModalProps} onCancel={onCancel} backdrop={true}>
       <rb.Modal.Body className={styles['modal-body']}>{children}</rb.Modal.Body>
       <rb.Modal.Footer className={styles['modal-footer']}>
         <rb.Button variant="outline-dark" onClick={() => onSubmit()}>
@@ -65,15 +63,15 @@ const InfoModal = ({
   )
 }
 
-export type ConfirmModalProps = Omit<InfoModalProps, 'onSubmit' | 'submitButtonText'> & {
+export type ConfirmModalProps = BaseModalProps & {
   onConfirm: () => void
 }
 
-const ConfirmModal = ({ isShown, title, children, onCancel, onConfirm }: PropsWithChildren<ConfirmModalProps>) => {
+const ConfirmModal = ({ children, onCancel, onConfirm, ...baseModalProps }: PropsWithChildren<ConfirmModalProps>) => {
   const { t } = useTranslation()
 
   return (
-    <BaseModal isShown={isShown} title={title} onCancel={onCancel}>
+    <BaseModal {...baseModalProps} onCancel={onCancel}>
       <rb.Modal.Body className={styles['modal-body']}>{children}</rb.Modal.Body>
       <rb.Modal.Footer className={styles['modal-footer']}>
         <rb.Button
