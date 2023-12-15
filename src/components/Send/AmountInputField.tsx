@@ -6,7 +6,7 @@ import { FieldInputProps, FormikContextType, useField, useFormikContext } from '
 import * as Api from '../../libs/JmWalletApi'
 import Sprite from '../Sprite'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
-import { btcToSats, formatBtc, isValidNumber, noop, satsToBtc } from '../../utils'
+import { formatBtc, isValidNumber, noop, satsToBtc } from '../../utils'
 import styles from './AmountInputField.module.css'
 
 export type AmountValue = {
@@ -30,7 +30,7 @@ const unitFromValue = (value: string | undefined) => {
   return value?.includes('.') ? 'BTC' : 'sats'
 }
 
-const formatBtcValue = (sats: Api.AmountSats) => {
+const formatBtcDisplayValue = (sats: Api.AmountSats) => {
   const formattedBtc = formatBtc(satsToBtc(String(sats)))
   const pointIndex = formattedBtc.indexOf('.')
   return (
@@ -130,7 +130,9 @@ function UniversalBitcoinInput({
             })
 
             const displayValueInBtc =
-              field.value.value === null ? field.value.displayValue : `${'\u20BF'} ${formatBtcValue(field.value.value)}`
+              field.value.value === null
+                ? field.value.displayValue
+                : `${'\u20BF'} ${formatBtcDisplayValue(field.value.value)}`
 
             form.setFieldValue(
               field.name,
@@ -143,44 +145,49 @@ function UniversalBitcoinInput({
             field.onBlur(e)
           }}
           onChange={(e) => {
-            const valWithoutSpace = (e.target.value ?? '').replace(/,/g, '').replace(/\s/g, '')
+            const valueOrNan = parseFloat(e.target.value ?? '')
 
-            let numberValues: string | undefined
-            if (field.value.userSelectedInputUnit) {
-              if (field.value.userSelectedInputUnit === 'BTC') {
-                const satsOrNan = btcToSats(valWithoutSpace)
-                numberValues = isValidNumber(satsOrNan) ? String(satsOrNan) : undefined
-              } else {
-                numberValues = valWithoutSpace?.match(/\d+/g)?.join('')
-              }
+            if (!isValidNumber(valueOrNan)) {
+              form.setFieldValue(
+                field.name,
+                {
+                  ...field.value,
+                  value: null,
+                  userRawInputValue: e.target.value,
+                  displayValue: e.target.value,
+                },
+                true,
+              )
+              return
             } else {
-              const unit = unitFromValue(valWithoutSpace)
-              if (unit === 'BTC') {
-                const splitted = valWithoutSpace.split('.')
-                const [integerPart, fractionalPart = ''] = splitted
-                if (splitted.length > 0) {
-                  numberValues = undefined
-                } else {
-                  const paddedFractionalPart = fractionalPart.padEnd(8, '0')
-                  numberValues = `${integerPart}${paddedFractionalPart}`?.match(/\d+/g)?.join('')
-                }
-              } else {
-                numberValues = valWithoutSpace?.match(/\d+/g)?.join('')
-              }
-            }
-            const satValue = numberValues ? parseInt(numberValues, 10) : null
+              const value: number = valueOrNan
 
-            form.setFieldValue(
-              field.name,
-              {
-                value: satValue,
-                userRawInputValue: e.target.value,
-                userSelectedInputUnit: field.value?.userSelectedInputUnit,
-                displayValue: e.target.value,
-                fromJar: null,
-              },
-              true,
-            )
+              let numberValues: string | undefined
+              const unit = field.value.userSelectedInputUnit ?? unitFromValue(String(value))
+              if (unit === 'BTC') {
+                const splitted = String(value).split('.')
+                const [integerPart, fractionalPart = ''] = splitted
+                const paddedFractionalPart = fractionalPart.padEnd(8, '0').substring(0, 8)
+                numberValues = `${integerPart}${paddedFractionalPart}`
+              } else {
+                numberValues = value.toLocaleString('en-US', {
+                  maximumFractionDigits: 0,
+                  useGrouping: false,
+                })
+              }
+
+              form.setFieldValue(
+                field.name,
+                {
+                  value: parseInt(numberValues, 10),
+                  userRawInputValue: e.target.value,
+                  userSelectedInputUnit: field.value?.userSelectedInputUnit,
+                  displayValue: e.target.value,
+                  fromJar: null,
+                },
+                true,
+              )
+            }
           }}
           isInvalid={form.touched[field.name] && !!form.errors[field.name]}
           disabled={disabled}
