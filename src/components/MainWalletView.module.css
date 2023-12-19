@@ -60,12 +60,3 @@
 .jarsDividerContainer .dividerButton:disabled {
   cursor: not-allowed;
 }
-
-.sendReceiveButton {
-  font-weight: 500;
-  border-color: var(--bs-border-color) !important;
-}
-
-.sendReceiveButton:hover {
-  border-color: transparent !important;
-}

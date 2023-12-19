@@ -16,8 +16,9 @@
 .jarsContainer {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
   gap: 2rem;
   color: var(--bs-body-color);
 }
@@ -25,7 +26,6 @@
 .jarsContainer :global .jar-container-hook {
   flex-direction: row;
   gap: 1rem;
-  min-width: 11rem;
 }
 
 .jarsContainer :global .jar-info-container-hook {
@@ -38,6 +38,7 @@
 @media only screen and (min-width: 768px) {
   .jarsContainer {
     flex-direction: row;
+    align-items: flex-start;
     gap: 1.5rem;
   }
 

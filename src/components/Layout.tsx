@@ -13,7 +13,7 @@ const Col = ({ variant, children }: PropsWithChildren<ColProps>) => {
   }
 
   return (
-    <rb.Col md={10} lg={8} xl={6}>
+    <rb.Col lg={10} xl={10} xxl={8}>
       {children}
     </rb.Col>
   )

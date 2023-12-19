@@ -51,9 +51,9 @@
   /* min width should approximately match width of value "(symbol) 0.00 000 000":
     - 1ch for the symbol
     - 9ch chars for all zeros
-    - 1.5ch for the dot and spaces
+    - 2ch for the dot and spaces
   */
-  min-width: 11.5ch;
+  min-width: 12ch;
   min-height: 1rem;
   font-size: 0.8rem;
 }

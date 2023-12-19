@@ -2,9 +2,9 @@
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 2rem;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 1rem;
   color: var(--bs-body-color);
   margin-bottom: 1.5rem;
 }
