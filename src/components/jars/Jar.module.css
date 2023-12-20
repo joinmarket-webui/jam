@@ -72,12 +72,15 @@
 }
 
 .selectableJarContainer .selectionCircle {
+  appearance: none;
   height: 1.5rem;
   width: 1.5rem;
 
   border-radius: 50%;
   display: inline-block;
   border: 1px solid var(--bs-body-color);
+
+  cursor: pointer;
 }
 
 .selectableJarContainer:not(.selectable) .selectionCircle {
