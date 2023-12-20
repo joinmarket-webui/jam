@@ -114,7 +114,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
       .catch((err) => {
         if (abortCtrl.signal.aborted) return
         const message = err.message || t('current_wallet.error_loading_failed')
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
+        setAlert({ variant: 'danger', message })
       })
       .finally(() => {
         if (abortCtrl.signal.aborted) return
