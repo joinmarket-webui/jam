@@ -1,4 +1,4 @@
-import { PropsWithChildren, RefObject, forwardRef, useMemo, useRef, useState } from 'react'
+import { PropsWithChildren, forwardRef, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
@@ -17,15 +17,6 @@ export type AmountValue = {
   displayValue?: string
 }
 
-type UniversalBitcoinInputProps = {
-  label: string
-  className?: string
-  disabled?: boolean
-  placeholder?: string
-  field: FieldInputProps<AmountValue>
-  form: FormikContextType<any>
-}
-
 const unitFromValue = (value: string | undefined) => {
   return value?.includes('.') ? 'BTC' : 'sats'
 }
@@ -42,9 +33,28 @@ const formatBtcDisplayValue = (sats: Api.AmountSats) => {
   }`
 }
 
+type UniversalBitcoinInputProps = {
+  label: string
+  className?: string
+  disabled?: boolean
+  placeholder?: string
+  field: FieldInputProps<AmountValue>
+  form: FormikContextType<any>
+  enableInputUnitToggle?: boolean
+}
+
 const UniversalBitcoinInput = forwardRef(
   (
-    { label, className, disabled, placeholder, field, form, children }: PropsWithChildren<UniversalBitcoinInputProps>,
+    {
+      label,
+      className,
+      disabled,
+      placeholder,
+      field,
+      form,
+      children,
+      enableInputUnitToggle,
+    }: PropsWithChildren<UniversalBitcoinInputProps>,
     ref: React.Ref<HTMLInputElement>,
   ) => {
     const [inputType, setInputType] = useState<{ type: 'text' | 'number'; inputMode?: 'decimal' }>({
@@ -73,6 +83,7 @@ const UniversalBitcoinInput = forwardRef(
                 }}
                 onClick={(e) => {
                   e.preventDefault() // prevent losing focus of the current element
+                  if (!enableInputUnitToggle) return
 
                   const newUnit = displayInputUnit === 'sats' ? 'BTC' : 'sats'
 
