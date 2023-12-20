@@ -212,7 +212,12 @@ const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) =>
         }}
         overlay={(props) => <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip>}
       >
-        <div className={styles.tooltipJarContainer} onClick={onClick}>
+        <div
+          tabIndex={0}
+          className={styles.tooltipJarContainer}
+          onClick={onClick}
+          onKeyDown={(e) => e.key === 'Enter' && onClick()}
+        >
           <Jar {...jarProps} isOpen={jarIsOpen} />
         </div>
       </rb.OverlayTrigger>
