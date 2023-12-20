@@ -11,3 +11,11 @@
 .button {
   font-size: 0.875rem !important;
 }
+
+.inputGroupText {
+  width: 5ch;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+}

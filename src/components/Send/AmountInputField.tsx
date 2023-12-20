@@ -24,13 +24,13 @@ const unitFromValue = (value: string | undefined) => {
 const formatBtcDisplayValue = (sats: Api.AmountSats) => {
   const formattedBtc = formatBtc(satsToBtc(String(sats)))
   const pointIndex = formattedBtc.indexOf('.')
-  return `${'\u20BF'} ${
+  return (
     formattedBtc.substring(0, pointIndex + 3) +
     ' ' +
     formattedBtc.substring(pointIndex + 3, pointIndex + 6) +
     ' ' +
     formattedBtc.substring(pointIndex + 6)
-  }`
+  )
 }
 
 type UniversalBitcoinInputProps = {
@@ -70,49 +70,66 @@ const UniversalBitcoinInput = forwardRef(
     return (
       <>
         <rb.InputGroup hasValidation={true}>
-          {inputType.type === 'number' && (
+          {!enableInputUnitToggle ? (
             <>
-              <rb.Button
-                variant="outline-dark"
-                className={classNames(styles.button, {
-                  'cursor-not-allowed': disabled,
-                })}
-                tabIndex={-1}
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                }}
-                onClick={(e) => {
-                  e.preventDefault() // prevent losing focus of the current element
-                  if (!enableInputUnitToggle) return
+              <rb.InputGroup.Text id="amountSats-addon1" className={styles.inputGroupText}>
+                {inputType.type === 'number' ? (
+                  <>
+                    {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
+                    {displayInputUnit === 'BTC' && <span className="fw-bold">{'\u20BF'}</span>}
+                  </>
+                ) : (
+                  <>{field.value?.displayValue && <span className="fw-bold">{'\u20BF'}</span>}</>
+                )}
+              </rb.InputGroup.Text>
+            </>
+          ) : (
+            <>
+              {inputType.type === 'number' && (
+                <>
+                  <rb.Button
+                    variant="outline-dark"
+                    className={classNames(styles.button, {
+                      'cursor-not-allowed': disabled,
+                    })}
+                    tabIndex={-1}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault() // prevent losing focus of the current element
+                      if (!enableInputUnitToggle) return
 
-                  const newUnit = displayInputUnit === 'sats' ? 'BTC' : 'sats'
+                      const newUnit = displayInputUnit === 'sats' ? 'BTC' : 'sats'
 
-                  const userRawInputValue =
-                    field.value?.value !== null
-                      ? (newUnit === 'sats'
-                          ? String(field.value.value)
-                          : satsToBtc(String(field.value.value))
-                        ).toLocaleString('en-US', {
-                          maximumFractionDigits: Math.log10(100_000_000),
-                          useGrouping: false,
-                        })
-                      : field.value?.userRawInputValue
+                      const userRawInputValue =
+                        field.value?.value !== null
+                          ? (newUnit === 'sats'
+                              ? String(field.value.value)
+                              : satsToBtc(String(field.value.value))
+                            ).toLocaleString('en-US', {
+                              maximumFractionDigits: Math.log10(100_000_000),
+                              useGrouping: false,
+                            })
+                          : field.value?.userRawInputValue
 
-                  form.setFieldValue(
-                    field.name,
-                    {
-                      ...field.value,
-                      userRawInputValue: userRawInputValue,
-                      userSelectedInputUnit: newUnit,
-                    },
-                    true,
-                  )
-                }}
-                disabled={disabled}
-              >
-                {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
-                {displayInputUnit === 'BTC' && <Sprite symbol="BTC" width="24" height="24" />}
-              </rb.Button>
+                      form.setFieldValue(
+                        field.name,
+                        {
+                          ...field.value,
+                          userRawInputValue: userRawInputValue,
+                          userSelectedInputUnit: newUnit,
+                        },
+                        true,
+                      )
+                    }}
+                    disabled={disabled}
+                  >
+                    {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
+                    {displayInputUnit === 'BTC' && <Sprite symbol="BTC" width="24" height="24" />}
+                  </rb.Button>
+                </>
+              )}
             </>
           )}
           <rb.Form.Control
