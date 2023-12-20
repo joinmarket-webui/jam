@@ -22,7 +22,12 @@
 }
 
 .segmented-tab input[type='radio'] {
-  display: none;
+  appearance: none;
+  margin: 0;
+  position: absolute;
+  opacity: 0;
+  height: 0;
+  width: 0;
 }
 
 .segmented-tab label {
@@ -52,7 +57,6 @@
 .segmented-tab input[type='radio']:not(:disabled) ~ label {
   cursor: pointer;
 }
-
 .segmented-tab input[type='radio']:checked:not(:disabled) ~ label {
   background-color: var(--bs-gray-100);
   box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.1);
@@ -60,4 +64,8 @@
 
 :root[data-theme='dark'] .segmented-tab input[type='radio']:checked:not(:disabled) ~ label {
   background-color: var(--bs-gray-600);
+}
+
+.segmented-tab input[type='radio']:focus ~ label {
+  box-shadow: 0 0 0 0.25rem var(--bs-focus-ring-color) !important;
 }
