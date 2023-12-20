@@ -134,7 +134,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
         </rb.Row>
       )}
 
-      {currentWalletInfo && jars && isAccountOverlayShown && (
+      {currentWalletInfo && jars && (
         <JarDetailsOverlay
           jars={jars}
           initialJarIndex={selectedJarIndex}

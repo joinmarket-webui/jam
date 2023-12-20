@@ -310,7 +310,6 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
       className={`offcanvas-fullscreen ${styles.overlayContainer}`}
       show={props.isShown}
       onHide={props.onHide}
-      keyboard={false}
       placement="bottom"
     >
       <rb.Offcanvas.Header>
