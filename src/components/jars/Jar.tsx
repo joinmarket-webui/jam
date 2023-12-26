@@ -171,7 +171,13 @@ const SelectableJar = ({
     >
       <Jar index={index} {...jarProps} />
       <div className="d-flex justify-content-center align-items-center gap-1 mt-2 position-relative">
-        <div className={styles.selectionCircle} />
+        <input
+          type="radio"
+          checked={isSelected}
+          onChange={() => isSelectable && onClick(index)}
+          className={styles.selectionCircle}
+          disabled={!isSelectable}
+        />
         {variant === 'warning' && (
           <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark p-0">
             <Sprite symbol="warn" width="20" height="20" />
@@ -206,7 +212,12 @@ const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) =>
         }}
         overlay={(props) => <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip>}
       >
-        <div className={styles.tooltipJarContainer} onClick={onClick}>
+        <div
+          tabIndex={0}
+          className={styles.tooltipJarContainer}
+          onClick={onClick}
+          onKeyDown={(e) => e.key === 'Enter' && onClick()}
+        >
           <Jar {...jarProps} isOpen={jarIsOpen} />
         </div>
       </rb.OverlayTrigger>

@@ -8,7 +8,7 @@ interface SegmentedTab {
   disabled?: boolean
 }
 
-function SegmentedTabFormCheck({ id, name, value, label, disabled, defaultChecked, onChange }: rb.FormCheckProps) {
+function SegmentedTabFormCheck({ id, name, value, label, disabled, checked, onChange }: rb.FormCheckProps) {
   const _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
     onChange && onChange(e)
@@ -16,17 +16,18 @@ function SegmentedTabFormCheck({ id, name, value, label, disabled, defaultChecke
 
   return (
     <>
-      <rb.Form.Check
-        bsPrefix={styles['segmented-tab']}
-        type="radio"
-        id={id}
-        value={value}
-        name={name}
-        label={label}
-        disabled={disabled}
-        defaultChecked={defaultChecked}
-        onChange={_onChange}
-      />
+      <div className={styles['segmented-tab']}>
+        <input
+          id={id}
+          name={name}
+          type="radio"
+          value={value}
+          checked={checked}
+          onChange={_onChange}
+          disabled={disabled}
+        />
+        <label htmlFor={id}>{label}</label>
+      </div>
     </>
   )
 }
@@ -57,7 +58,7 @@ export default function SegmentedTabs({ name, tabs, onChange, initialValue, disa
               label={tab.label}
               disabled={disabled || tab.disabled}
               inline={true}
-              defaultChecked={initialValue === tab.value}
+              checked={initialValue === tab.value}
               onChange={(e) => _onChange(e, tab)}
             />
           )

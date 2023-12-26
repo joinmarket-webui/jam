@@ -174,12 +174,8 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
   return (
     <rb.Nav className="justify-content-center align-items-stretch">
       {joiningRoute && (
-        <rb.Nav.Item className="d-flex align-items-center">
-          <NavLink
-            to={joiningRoute}
-            onClick={onClick}
-            className="nav-link d-flex align-items-center justify-content-center"
-          >
+        <rb.Nav.Item className="d-flex align-items-stretch">
+          <NavLink to={joiningRoute} onClick={onClick} className="nav-link d-flex align-items-center">
             <rb.Navbar.Text className="d-md-none">{t('navbar.joining_in_progress')}</rb.Navbar.Text>
             <JoiningIndicator
               isOn={true}
@@ -190,7 +186,7 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
         </rb.Nav.Item>
       )}
       {isDebugFeatureEnabled('fastThemeToggle') && (
-        <rb.Nav.Item className="d-none d-md-flex align-items-center justify-content-center">
+        <rb.Nav.Item className="d-none d-md-flex align-items-stretch">
           <FastThemeToggle />
         </rb.Nav.Item>
       )}
@@ -226,13 +222,13 @@ function FastThemeToggle() {
   )
 
   return (
-    <Sprite
-      className="cursor-pointer"
+    <rb.Button
+      variant="link"
+      className="unstyled"
       onClick={() => setTheme(isLightTheme ? window.JM.THEMES[1] : window.JM.THEMES[0])}
-      symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]}
-      width="30"
-      height="30"
-    />
+    >
+      <Sprite symbol={isLightTheme ? window.JM.THEMES[0] : window.JM.THEMES[1]} width="30" height="30" />
+    </rb.Button>
   )
 }
 
