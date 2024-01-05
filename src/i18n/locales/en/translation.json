@@ -360,7 +360,9 @@
     "button_copy_address": "Copy",
     "text_copy_address_confirmed": "Copied",
     "button_settings": "Receive options",
-    "label_amount": "Amount to request in sats",
+    "label_source_jar": "Receive to",
+    "label_amount_input": "Amount",
+    "placeholder_amount_input": "Enter amount in sats or BTC...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "button_new_address": "Get new address",
     "text_getting_address": "Getting new address"

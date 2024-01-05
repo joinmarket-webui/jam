@@ -23,7 +23,7 @@ type UniversalBitcoinInputProps = {
   inputGroupTextClassName?: string
   disabled?: boolean
   placeholder?: string
-  field: FieldInputProps<AmountValue>
+  field: FieldInputProps<AmountValue | undefined>
   form: FormikContextType<any>
 }
 
@@ -88,14 +88,16 @@ const UniversalBitcoinInput = forwardRef(
                 inputMode: 'decimal',
               })
 
-              const displayValueInBtc =
-                field.value.value === null ? field.value.displayValue : formatBtcDisplayValue(field.value.value)
+              let displayValue = field.value?.value || ''
+              if (field.value !== undefined && isValidNumber(field.value.value ?? undefined)) {
+                displayValue = formatBtcDisplayValue(field.value!.value!)
+              }
 
               form.setFieldValue(
                 field.name,
                 {
                   ...field.value,
-                  displayValue: displayValueInBtc,
+                  displayValue,
                 },
                 false,
               )
