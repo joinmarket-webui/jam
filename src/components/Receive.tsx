@@ -213,7 +213,7 @@ export default function Receive({ wallet }: ReceiveProps) {
 
                 <rb.Form.Group controlId={amountField.name} className="mb-4">
                   <rb.Form.Label>{t('receive.label_amount_input')}</rb.Form.Label>
-                  <div className={props.touched['amount'] && !!props.errors['amount'] ? 'is-invalid' : ''}>
+                  <div className={props.touched.amount && !!props.errors.amount ? 'is-invalid' : ''}>
                     <UniversalBitcoinInput
                       inputGroupTextClassName={styles.inputGroupText}
                       label={t('receive.label_amount')}

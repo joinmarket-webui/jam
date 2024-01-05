@@ -6,7 +6,14 @@ import { TFunction } from 'i18next'
 import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
-import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
+import {
+  factorToPercentage,
+  formatBtcDisplayValue,
+  isAbsoluteOffer,
+  isRelativeOffer,
+  isValidNumber,
+  percentageToFactor,
+} from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import * as fb from './fb/utils'
 import Sprite from './Sprite'
@@ -18,8 +25,10 @@ import { SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
-import styles from './Earn.module.css'
 import Accordion from './Accordion'
+import UniversalBitcoinInput, { AmountValue } from './UniversalBitcoinAmountInput'
+import { isValidAmount } from './Send/helpers'
+import styles from './Earn.module.css'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -45,19 +54,26 @@ export interface EarnFormValues {
   offertype: Api.OfferType
   feeRel: number
   feeAbs: number
-  minsize: number
+  minsize?: AmountValue
 }
 
-const FORM_INPUT_DEFAULT_VALUES: EarnFormValues = {
+const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
   offertype: OFFERTYPE_REL,
   feeRel: 0.000_3,
   feeAbs: 250,
-  minsize: 100_000,
+  minsize: ((value: number) => ({
+    value,
+    isSweep: false,
+    userRawInputValue: String(value),
+    displayValue: formatBtcDisplayValue(value),
+  }))(100_000),
 }
 
 const persistFormValues = (values: EarnFormValues) => {
   window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype, values.offertype)
-  window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize, String(values.minsize))
+  if (values.minsize) {
+    window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize, String(values.minsize.value))
+  }
 
   if (isRelativeOffer(values.offertype)) {
     window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeRel, String(values.feeRel))
@@ -76,16 +92,24 @@ const initialFormValues = (): EarnFormValues => {
     10,
   )
   const minsize = parseInt(
-    window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize) ?? String(FORM_INPUT_DEFAULT_VALUES.minsize),
+    window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize) ??
+      String(FORM_INPUT_DEFAULT_VALUES.minsize.value),
     10,
   )
   const offertype =
     window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype) ?? FORM_INPUT_DEFAULT_VALUES.offertype
+
+  const minsizeValueOrDefault = isValidNumber(minsize) ? minsize : FORM_INPUT_DEFAULT_VALUES.minsize.value!
   return {
     offertype,
     feeRel: isValidNumber(feeRel) ? feeRel : FORM_INPUT_DEFAULT_VALUES.feeRel,
     feeAbs: isValidNumber(feeAbs) ? feeAbs : FORM_INPUT_DEFAULT_VALUES.feeAbs,
-    minsize: isValidNumber(minsize) ? minsize : FORM_INPUT_DEFAULT_VALUES.minsize,
+    minsize: {
+      value: minsizeValueOrDefault,
+      isSweep: false,
+      userRawInputValue: String(minsizeValueOrDefault),
+      displayValue: formatBtcDisplayValue(minsizeValueOrDefault),
+    },
   }
 }
 
@@ -232,160 +256,158 @@ const EarnForm = ({
       }
     }
 
-    if (typeof values.minsize !== 'number' || values.minsize < 0) {
+    if (!isValidAmount(values.minsize?.value ?? null, false)) {
       errors.minsize = t('earn.feedback_invalid_min_amount')
     }
-
     return errors
   }
 
   return (
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
-      {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
-        <>
-          <rb.Form onSubmit={handleSubmit} noValidate>
-            <Accordion title={t('earn.button_settings')}>
-              <>
-                <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
-                  <SegmentedTabs
-                    name="offertype"
-                    tabs={[
-                      {
-                        label: t('earn.radio_abs_offer_label'),
-                        value: OFFERTYPE_ABS,
-                      },
-                      {
-                        label: t('earn.radio_rel_offer_label'),
-                        value: OFFERTYPE_REL,
-                      },
-                    ]}
-                    onChange={(tab, checked) => {
-                      checked && setFieldValue('offertype', tab.value, true)
-                    }}
-                    initialValue={values.offertype}
-                    disabled={isLoading || isSubmitting}
-                  />
-                </rb.Form.Group>
-                {values.offertype === OFFERTYPE_REL ? (
-                  <rb.Form.Group className="mb-3" controlId="feeRel">
-                    <rb.Form.Label className="mb-0">
-                      {t('earn.label_rel_fee', {
-                        fee: typeof values.feeRel === 'number' ? `(${factorToPercentage(values.feeRel)}%)` : '',
-                      })}
-                    </rb.Form.Label>
-                    <rb.Form.Text className="d-block text-secondary mb-2">{t('earn.description_rel_fee')}</rb.Form.Text>
-                    {isLoading ? (
-                      <rb.Placeholder as="div" animation="wave">
-                        <rb.Placeholder xs={12} className={styles['input-loader']} />
-                      </rb.Placeholder>
-                    ) : (
-                      <rb.InputGroup hasValidation>
-                        <rb.InputGroup.Text id="feeRel-addon1" className={styles.inputGroupText}>
-                          %
-                        </rb.InputGroup.Text>
-                        <rb.Form.Control
-                          aria-label={t('earn.label_rel_fee', { fee: '' })}
-                          className="slashed-zeroes"
-                          type="number"
-                          name="feeRel"
-                          disabled={isSubmitting}
-                          onChange={(e) => {
-                            const value = e.target.value || ''
-                            setFieldValue('feeRel', value !== '' ? percentageToFactor(parseFloat(value)) : '', true)
-                          }}
-                          onBlur={handleBlur}
-                          value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
-                          isValid={touched.feeRel && !errors.feeRel}
-                          isInvalid={touched.feeRel && !!errors.feeRel}
-                          min={0}
-                          step={feeRelPercentageStep}
-                        />
-                        <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
-                      </rb.InputGroup>
-                    )}
+      {(props) => {
+        const { handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting } = props
+        const minsizeField = props.getFieldProps<AmountValue>('minsize')
+        return (
+          <>
+            <rb.Form onSubmit={handleSubmit} noValidate>
+              <Accordion title={t('earn.button_settings')} variant={!props.isValid ? 'danger' : undefined}>
+                <>
+                  <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
+                    <SegmentedTabs
+                      name="offertype"
+                      tabs={[
+                        {
+                          label: t('earn.radio_abs_offer_label'),
+                          value: OFFERTYPE_ABS,
+                        },
+                        {
+                          label: t('earn.radio_rel_offer_label'),
+                          value: OFFERTYPE_REL,
+                        },
+                      ]}
+                      onChange={(tab, checked) => {
+                        checked && setFieldValue('offertype', tab.value, true)
+                      }}
+                      initialValue={values.offertype}
+                      disabled={isLoading || isSubmitting}
+                    />
                   </rb.Form.Group>
-                ) : (
-                  <rb.Form.Group className="mb-3" controlId="feeAbs">
-                    <rb.Form.Label className="mb-0">
-                      {t('earn.label_abs_fee', {
-                        fee:
-                          typeof values.feeAbs === 'number'
-                            ? `(${values.feeAbs} ${values.feeAbs === 1 ? 'sat' : 'sats'})`
-                            : '',
-                      })}
-                    </rb.Form.Label>
-                    <rb.Form.Text className="d-block text-secondary mb-2">{t('earn.description_abs_fee')}</rb.Form.Text>
-                    {isLoading ? (
-                      <rb.Placeholder as="div" animation="wave">
-                        <rb.Placeholder xs={12} className={styles['input-loader']} />
-                      </rb.Placeholder>
-                    ) : (
-                      <rb.InputGroup hasValidation>
-                        <rb.InputGroup.Text id="feeAbs-addon1" className={styles.inputGroupText}>
-                          <Sprite symbol="sats" width="24" height="24" />
-                        </rb.InputGroup.Text>
-                        <rb.Form.Control
-                          aria-label={t('earn.label_abs_fee', { fee: '' })}
-                          className="slashed-zeroes"
-                          type="number"
-                          name="feeAbs"
-                          value={values.feeAbs}
-                          disabled={isSubmitting}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          isValid={touched.feeAbs && !errors.feeAbs}
-                          isInvalid={touched.feeAbs && !!errors.feeAbs}
-                          min={0}
-                          step={1}
-                        />
-                        <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
-                      </rb.InputGroup>
-                    )}
-                  </rb.Form.Group>
-                )}
-
-                <rb.Form.Group className="mb-4" controlId="minsize">
-                  <rb.Form.Label>{t('earn.label_min_amount')}</rb.Form.Label>
-                  {isLoading ? (
-                    <rb.Placeholder as="div" animation="wave">
-                      <rb.Placeholder xs={12} className={styles['input-loader']} />
-                    </rb.Placeholder>
+                  {values.offertype === OFFERTYPE_REL ? (
+                    <rb.Form.Group className="mb-3" controlId="feeRel">
+                      <rb.Form.Label className="mb-0">
+                        {t('earn.label_rel_fee', {
+                          fee: typeof values.feeRel === 'number' ? `(${factorToPercentage(values.feeRel)}%)` : '',
+                        })}
+                      </rb.Form.Label>
+                      <rb.Form.Text className="d-block text-secondary mb-2">
+                        {t('earn.description_rel_fee')}
+                      </rb.Form.Text>
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.InputGroup hasValidation>
+                          <rb.InputGroup.Text id="feeRel-addon1" className={styles.inputGroupText}>
+                            %
+                          </rb.InputGroup.Text>
+                          <rb.Form.Control
+                            aria-label={t('earn.label_rel_fee', { fee: '' })}
+                            className="slashed-zeroes"
+                            type="number"
+                            name="feeRel"
+                            disabled={isSubmitting}
+                            onChange={(e) => {
+                              const value = e.target.value || ''
+                              setFieldValue('feeRel', value !== '' ? percentageToFactor(parseFloat(value)) : '', true)
+                            }}
+                            onBlur={handleBlur}
+                            value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
+                            isValid={touched.feeRel && !errors.feeRel}
+                            isInvalid={touched.feeRel && !!errors.feeRel}
+                            min={0}
+                            step={feeRelPercentageStep}
+                          />
+                          <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
+                        </rb.InputGroup>
+                      )}
+                    </rb.Form.Group>
                   ) : (
-                    <rb.InputGroup hasValidation>
-                      <rb.InputGroup.Text id="minsize-addon1" className={styles.inputGroupText}>
-                        <Sprite symbol="sats" width="24" height="24" />
-                      </rb.InputGroup.Text>
-                      <rb.Form.Control
-                        className="slashed-zeroes"
-                        type="number"
-                        name="minsize"
-                        value={values.minsize}
-                        disabled={isSubmitting}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        isValid={touched.minsize && !errors.minsize}
-                        isInvalid={touched.minsize && !!errors.minsize}
-                        min={0}
-                        step={1_000}
-                      />
-                      <rb.Form.Control.Feedback type="invalid">{errors.minsize}</rb.Form.Control.Feedback>
-                    </rb.InputGroup>
+                    <rb.Form.Group className="mb-3" controlId="feeAbs">
+                      <rb.Form.Label className="mb-0">
+                        {t('earn.label_abs_fee', {
+                          fee:
+                            typeof values.feeAbs === 'number'
+                              ? `(${values.feeAbs} ${values.feeAbs === 1 ? 'sat' : 'sats'})`
+                              : '',
+                        })}
+                      </rb.Form.Label>
+                      <rb.Form.Text className="d-block text-secondary mb-2">
+                        {t('earn.description_abs_fee')}
+                      </rb.Form.Text>
+                      {isLoading ? (
+                        <rb.Placeholder as="div" animation="wave">
+                          <rb.Placeholder xs={12} className={styles['input-loader']} />
+                        </rb.Placeholder>
+                      ) : (
+                        <rb.InputGroup hasValidation>
+                          <rb.InputGroup.Text id="feeAbs-addon1" className={styles.inputGroupText}>
+                            <Sprite symbol="sats" width="24" height="24" />
+                          </rb.InputGroup.Text>
+                          <rb.Form.Control
+                            aria-label={t('earn.label_abs_fee', { fee: '' })}
+                            className="slashed-zeroes"
+                            type="number"
+                            name="feeAbs"
+                            value={values.feeAbs}
+                            disabled={isSubmitting}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            isValid={touched.feeAbs && !errors.feeAbs}
+                            isInvalid={touched.feeAbs && !!errors.feeAbs}
+                            min={0}
+                            step={1}
+                          />
+                          <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
+                        </rb.InputGroup>
+                      )}
+                    </rb.Form.Group>
                   )}
-                </rb.Form.Group>
-              </>
-            </Accordion>
-            <rb.Button
-              className="w-100 mb-4"
-              variant="dark"
-              size="lg"
-              type="submit"
-              disabled={isLoading || isSubmitting || disabled}
-            >
-              <div className="d-flex justify-content-center align-items-center">{submitButtonText(isSubmitting)}</div>
-            </rb.Button>
-          </rb.Form>
-        </>
-      )}
+
+                  <rb.Form.Group className="mb-4" controlId="minsize">
+                    <rb.Form.Label>{t('earn.label_min_amount_input')}</rb.Form.Label>
+                    {isLoading ? (
+                      <rb.Placeholder as="div" animation="wave">
+                        <rb.Placeholder xs={12} className={styles['input-loader']} />
+                      </rb.Placeholder>
+                    ) : (
+                      <div className={touched.minsize && !!errors.minsize ? 'is-invalid' : ''}>
+                        <UniversalBitcoinInput
+                          inputGroupTextClassName={styles.inputGroupText}
+                          label={t('earn.label_min_amount_input')}
+                          placeholder={t('earn.placeholder_min_amount_input')}
+                          field={minsizeField}
+                          form={props}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    )}
+                  </rb.Form.Group>
+                </>
+              </Accordion>
+              <rb.Button
+                className="w-100 mb-4"
+                variant="dark"
+                size="lg"
+                type="submit"
+                disabled={isLoading || isSubmitting || disabled}
+              >
+                <div className="d-flex justify-content-center align-items-center">{submitButtonText(isSubmitting)}</div>
+              </rb.Button>
+            </rb.Form>
+          </>
+        )
+      }}
     </Formik>
   )
 }
@@ -397,7 +419,7 @@ const toStartMakerRequest = (values: EarnFormValues): Api.StartMakerRequest => {
   const cjfee_r = isRelativeOffer(values.offertype) ? values.feeRel : 0
   return {
     ordertype: values.offertype,
-    minsize: values.minsize,
+    minsize: values.minsize!.value!,
     cjfee_a,
     cjfee_r,
   }
@@ -545,11 +567,12 @@ export default function Earn({ wallet }: EarnProps) {
 
       try {
         persistFormValues(values)
-        setInitialValues(initialFormValues())
 
         setServiceInfoAlert({ variant: 'success', message: t('earn.alert_starting') })
 
         await startMakerService(values)
+
+        setInitialValues(initialFormValues())
       } catch (e: any) {
         setServiceInfoAlert(undefined)
         setAlert({ variant: 'danger', message: e.message || t('global.errors.reason_unknown') })

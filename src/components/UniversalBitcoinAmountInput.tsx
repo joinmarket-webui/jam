@@ -74,8 +74,8 @@ const UniversalBitcoinInput = forwardRef(
               inputType.type === 'text' ? field.value?.displayValue ?? '' : String(field.value?.userRawInputValue ?? '')
             }
             placeholder={placeholder}
-            min={displayInputUnit === 'sats' ? '1' : '0.00000001'}
-            step={displayInputUnit === 'sats' ? '1' : '0.00000001'}
+            min={displayInputUnit === 'BTC' ? '0.00000001' : '1'}
+            step={displayInputUnit === 'BTC' ? '0.00000001' : '1'}
             isInvalid={form.touched[field.name] && !!form.errors[field.name]}
             disabled={disabled}
             required
