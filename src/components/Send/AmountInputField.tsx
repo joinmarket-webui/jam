@@ -12,6 +12,7 @@ import styles from './AmountInputField.module.css'
 export type AmountInputFieldProps = {
   name: string
   label: string
+  placeholder?: string
   isLoading: boolean
   disabled?: boolean
   enableSweep?: boolean
@@ -21,6 +22,7 @@ export type AmountInputFieldProps = {
 export const AmountInputField = ({
   name,
   label,
+  placeholder,
   isLoading,
   disabled = false,
   enableSweep = false,
@@ -47,7 +49,7 @@ export const AmountInputField = ({
               className={styles.input}
               inputGroupTextClassName={styles.inputGroupText}
               label={label}
-              placeholder={t('send.placeholder_amount')}
+              placeholder={placeholder}
               field={field}
               form={form}
               disabled={disabled || field.value?.isSweep}

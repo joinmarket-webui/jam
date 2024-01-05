@@ -292,7 +292,8 @@ const InnerSendForm = ({
 
         <AmountInputField
           name="amount"
-          label={t('send.label_amount')}
+          label={t('send.label_amount_input')}
+          placeholder={t('send.placeholder_amount_input')}
           isLoading={isLoading}
           disabled={disabled}
           enableSweep={true}
