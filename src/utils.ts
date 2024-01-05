@@ -1,4 +1,4 @@
-import { OfferType, WalletFileName } from './libs/JmWalletApi'
+import { AmountSats, OfferType, WalletFileName } from './libs/JmWalletApi'
 
 const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
@@ -35,6 +35,18 @@ export const btcToSats = (value: string) => Math.round(parseFloat(value) * 10000
 export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
 
 export const formatBtc = (value: number) => BTC_FORMATTER.format(value)
+
+export const formatBtcDisplayValue = (sats: AmountSats) => {
+  const formattedBtc = formatBtc(satsToBtc(String(sats)))
+  const pointIndex = formattedBtc.indexOf('.')
+  return (
+    formattedBtc.substring(0, pointIndex + 3) +
+    ' ' +
+    formattedBtc.substring(pointIndex + 3, pointIndex + 6) +
+    ' ' +
+    formattedBtc.substring(pointIndex + 6)
+  )
+}
 
 export const formatSats = (value: number) => SATS_FORMATTER.format(value)
 

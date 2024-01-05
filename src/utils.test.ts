@@ -6,6 +6,7 @@ import {
   UNKNOWN_VERSION,
   formatSats,
   formatBtc,
+  formatBtcDisplayValue,
 } from './utils'
 
 describe('shortenStringMiddle', () => {
@@ -123,7 +124,7 @@ describe('toSemVer', () => {
 })
 
 describe('formatSats', () => {
-  it('should format given value as amount in sats', () => {
+  it('should format given value in sats as amount in sats', () => {
     expect(formatSats(-1_000)).toBe('-1,000')
     expect(formatSats(-21)).toBe('-21')
     expect(formatSats(-1)).toBe('-1')
@@ -137,7 +138,7 @@ describe('formatSats', () => {
 })
 
 describe('formatBtc', () => {
-  it('should format given value as amount in BTC', () => {
+  it('should format given value in BTC as amount in BTC', () => {
     expect(formatBtc(-1_000)).toBe('-1,000.00000000')
     expect(formatBtc(-21)).toBe('-21.00000000')
     expect(formatBtc(-1)).toBe('-1.00000000')
@@ -147,9 +148,29 @@ describe('formatBtc', () => {
     expect(formatBtc(123.456)).toBe('123.45600000')
     expect(formatBtc(1_000)).toBe('1,000.00000000')
     expect(formatBtc(20999999.9769)).toBe('20,999,999.97690000')
-    expect(formatBtc(20999999.9769)).toBe('20,999,999.97690000')
     expect(formatBtc(21000000)).toBe('21,000,000.00000000')
     expect(formatBtc(21000000.0)).toBe('21,000,000.00000000')
-    expect(formatBtc(21000000.0)).toBe('21,000,000.00000000')
+  })
+})
+
+describe('formatBtcDisplayValue', () => {
+  it('should format given value in sats as amount in BTC', () => {
+    expect(formatBtcDisplayValue(-1_000)).toBe('-0.00 001 000')
+    expect(formatBtcDisplayValue(-21)).toBe('-0.00 000 021')
+    expect(formatBtcDisplayValue(-1)).toBe('-0.00 000 001')
+    expect(formatBtcDisplayValue(-0.5)).toBe('-0.00 000 000')
+    expect(formatBtcDisplayValue(-0.9)).toBe('-0.00 000 000')
+    expect(formatBtcDisplayValue(0)).toBe('0.00 000 000')
+    expect(formatBtcDisplayValue(0.5)).toBe('0.00 000 000')
+    expect(formatBtcDisplayValue(0.9)).toBe('0.00 000 000')
+    expect(formatBtcDisplayValue(1)).toBe('0.00 000 001')
+    expect(formatBtcDisplayValue(123.03224961)).toBe('0.00 000 123')
+    expect(formatBtcDisplayValue(123.456)).toBe('0.00 000 123')
+    expect(formatBtcDisplayValue(1_000)).toBe('0.00 001 000')
+    expect(formatBtcDisplayValue(20999999.9769)).toBe('0.20 999 999')
+    expect(formatBtcDisplayValue(21000000)).toBe('0.21 000 000')
+    expect(formatBtcDisplayValue(21000000.0)).toBe('0.21 000 000')
+    expect(formatBtcDisplayValue(2099999997690000)).toBe('20,999,999.97 690 000')
+    expect(formatBtcDisplayValue(2100000000000000)).toBe('21,000,000.00 000 000')
   })
 })
