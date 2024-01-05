@@ -4,18 +4,17 @@ import classNames from 'classnames'
 import { FieldInputProps, FormikContextType } from 'formik'
 import Sprite from './Sprite'
 import * as Api from '../libs/JmWalletApi'
-import { formatBtcDisplayValue, isValidNumber, satsToBtc } from '../utils'
+import { formatBtcDisplayValue, isValidNumber } from '../utils'
 
 export type AmountValue = {
   value: Api.AmountSats | null
   isSweep: boolean
   userRawInputValue?: string
-  userSelectedInputUnit?: Unit
   displayValue?: string
 }
 
-const unitFromValue = (value: string | undefined): Unit => {
-  return value?.includes('.') ? 'BTC' : 'sats'
+const unitFromValue = (value: string | undefined): Unit | undefined => {
+  return value !== undefined ? (value?.includes('.') ? 'BTC' : 'sats') : undefined
 }
 
 type UniversalBitcoinInputProps = {
@@ -26,7 +25,6 @@ type UniversalBitcoinInputProps = {
   placeholder?: string
   field: FieldInputProps<AmountValue>
   form: FormikContextType<any>
-  enableInputUnitToggle?: boolean
 }
 
 const UniversalBitcoinInput = forwardRef(
@@ -40,7 +38,6 @@ const UniversalBitcoinInput = forwardRef(
       field,
       form,
       children,
-      enableInputUnitToggle,
     }: PropsWithChildren<UniversalBitcoinInputProps>,
     ref: React.Ref<HTMLInputElement>,
   ) => {
@@ -49,74 +46,22 @@ const UniversalBitcoinInput = forwardRef(
       inputMode: 'decimal',
     })
 
-    const displayInputUnit = useMemo(
-      () => field.value?.userSelectedInputUnit ?? unitFromValue(field.value?.userRawInputValue),
-      [field],
-    )
+    const displayInputUnit = useMemo(() => unitFromValue(field.value?.userRawInputValue), [field])
 
     return (
       <>
         <rb.InputGroup hasValidation={true}>
-          {!enableInputUnitToggle ? (
-            <rb.InputGroup.Text className={inputGroupTextClassName}>
-              {inputType.type === 'number' ? (
-                <>
-                  {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
-                  {displayInputUnit === 'BTC' && <span className="fw-bold">{'\u20BF'}</span>}
-                </>
-              ) : (
-                <>{field.value?.displayValue ? <span className="fw-bold">{'\u20BF'}</span> : '…'}</>
-              )}
-            </rb.InputGroup.Text>
-          ) : (
-            <>
-              {inputType.type === 'number' && (
-                <>
-                  <rb.Button
-                    variant="outline-dark"
-                    className={classNames({
-                      'cursor-not-allowed': disabled,
-                    })}
-                    tabIndex={-1}
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault() // prevent losing focus of the current element
-                      if (!enableInputUnitToggle) return
-
-                      const newUnit = displayInputUnit === 'sats' ? 'BTC' : 'sats'
-
-                      const userRawInputValue =
-                        field.value?.value !== null
-                          ? (newUnit === 'sats'
-                              ? String(field.value.value)
-                              : satsToBtc(String(field.value.value))
-                            ).toLocaleString('en-US', {
-                              maximumFractionDigits: Math.log10(100_000_000),
-                              useGrouping: false,
-                            })
-                          : field.value?.userRawInputValue
-
-                      form.setFieldValue(
-                        field.name,
-                        {
-                          ...field.value,
-                          userRawInputValue: userRawInputValue,
-                          userSelectedInputUnit: newUnit,
-                        },
-                        true,
-                      )
-                    }}
-                    disabled={disabled}
-                  >
-                    {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
-                    {displayInputUnit === 'BTC' && <Sprite symbol="BTC" width="24" height="24" />}
-                  </rb.Button>
-                </>
-              )}
-            </>
-          )}
+          <rb.InputGroup.Text className={inputGroupTextClassName}>
+            {inputType.type === 'number' ? (
+              <>
+                {displayInputUnit === undefined && <>…</>}
+                {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
+                {displayInputUnit === 'BTC' && <span className="fw-bold">{'\u20BF'}</span>}
+              </>
+            ) : (
+              <>{field.value?.displayValue ? <span className="fw-bold">{'\u20BF'}</span> : '…'}</>
+            )}
+          </rb.InputGroup.Text>
           <rb.Form.Control
             ref={ref}
             aria-label={label}
@@ -175,7 +120,7 @@ const UniversalBitcoinInput = forwardRef(
                 const value: number = valueOrNan
 
                 let numberValues: string | undefined
-                const unit = field.value.userSelectedInputUnit ?? unitFromValue(String(value))
+                const unit = unitFromValue(String(value))
                 if (unit === 'BTC') {
                   const splitted = String(value).split('.')
                   const [integerPart, fractionalPart = ''] = splitted
@@ -193,7 +138,6 @@ const UniversalBitcoinInput = forwardRef(
                   {
                     value: parseInt(numberValues, 10),
                     userRawInputValue: e.target.value,
-                    userSelectedInputUnit: field.value?.userSelectedInputUnit,
                     displayValue: e.target.value,
                   },
                   true,
