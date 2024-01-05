@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import { FieldInputProps, FormikContextType } from 'formik'
 import Sprite from './Sprite'
 import * as Api from '../libs/JmWalletApi'
-import { formatBtcDisplayValue, isValidNumber } from '../utils'
+import { BITCOIN_SYMBOL, formatBtcDisplayValue, isValidNumber } from '../utils'
 
 export type AmountValue = {
   value: Api.AmountSats | null
@@ -56,10 +56,10 @@ const UniversalBitcoinInput = forwardRef(
               <>
                 {displayInputUnit === undefined && <>…</>}
                 {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
-                {displayInputUnit === 'BTC' && <span className="fw-bold">{'\u20BF'}</span>}
+                {displayInputUnit === 'BTC' && <span className="fw-bold">{BITCOIN_SYMBOL}</span>}
               </>
             ) : (
-              <>{field.value?.displayValue ? <span className="fw-bold">{'\u20BF'}</span> : '…'}</>
+              <>{field.value?.displayValue ? <span className="fw-bold">{BITCOIN_SYMBOL}</span> : '…'}</>
             )}
           </rb.InputGroup.Text>
           <rb.Form.Control

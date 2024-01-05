@@ -50,27 +50,30 @@ const FORM_INPUT_LOCAL_STORAGE_KEYS = {
   minsize: 'jm-minsize',
 }
 
+const toAmountValue = (value: number): AmountValue => ({
+  value,
+  isSweep: false,
+  userRawInputValue: String(value),
+  displayValue: formatBtcDisplayValue(value),
+})
+
 export interface EarnFormValues {
   offertype: Api.OfferType
   feeRel: number
-  feeAbs: number
+  feeAbs?: AmountValue
   minsize?: AmountValue
 }
 
 const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
   offertype: OFFERTYPE_REL,
   feeRel: 0.000_3,
-  feeAbs: 250,
-  minsize: ((value: number) => ({
-    value,
-    isSweep: false,
-    userRawInputValue: String(value),
-    displayValue: formatBtcDisplayValue(value),
-  }))(100_000),
+  feeAbs: toAmountValue(250),
+  minsize: toAmountValue(100_000),
 }
 
 const persistFormValues = (values: EarnFormValues) => {
   window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype, values.offertype)
+
   if (values.minsize) {
     window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.minsize, String(values.minsize.value))
   }
@@ -78,8 +81,8 @@ const persistFormValues = (values: EarnFormValues) => {
   if (isRelativeOffer(values.offertype)) {
     window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeRel, String(values.feeRel))
   }
-  if (isAbsoluteOffer(values.offertype)) {
-    window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeAbs, String(values.feeAbs))
+  if (isAbsoluteOffer(values.offertype) && values.feeAbs) {
+    window.localStorage.setItem(FORM_INPUT_LOCAL_STORAGE_KEYS.feeAbs, String(values.feeAbs.value))
   }
 }
 
@@ -99,17 +102,11 @@ const initialFormValues = (): EarnFormValues => {
   const offertype =
     window.localStorage.getItem(FORM_INPUT_LOCAL_STORAGE_KEYS.offertype) ?? FORM_INPUT_DEFAULT_VALUES.offertype
 
-  const minsizeValueOrDefault = isValidNumber(minsize) ? minsize : FORM_INPUT_DEFAULT_VALUES.minsize.value!
   return {
     offertype,
     feeRel: isValidNumber(feeRel) ? feeRel : FORM_INPUT_DEFAULT_VALUES.feeRel,
-    feeAbs: isValidNumber(feeAbs) ? feeAbs : FORM_INPUT_DEFAULT_VALUES.feeAbs,
-    minsize: {
-      value: minsizeValueOrDefault,
-      isSweep: false,
-      userRawInputValue: String(minsizeValueOrDefault),
-      displayValue: formatBtcDisplayValue(minsizeValueOrDefault),
-    },
+    feeAbs: toAmountValue(isValidNumber(feeAbs) ? feeAbs : FORM_INPUT_DEFAULT_VALUES.feeAbs.value!),
+    minsize: toAmountValue(isValidNumber(minsize) ? minsize : FORM_INPUT_DEFAULT_VALUES.minsize.value!),
   }
 }
 
@@ -251,7 +248,7 @@ const EarnForm = ({
     }
 
     if (isAbsOffer) {
-      if (typeof values.feeAbs !== 'number' || values.feeAbs < 0) {
+      if (!isValidAmount(values.feeAbs?.value ?? null, false)) {
         errors.feeAbs = t('earn.feedback_invalid_abs_fee')
       }
     }
@@ -267,6 +264,7 @@ const EarnForm = ({
       {(props) => {
         const { handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting } = props
         const minsizeField = props.getFieldProps<AmountValue>('minsize')
+        const feeAbsField = props.getFieldProps<AmountValue>('feeAbs')
         return (
           <>
             <rb.Form onSubmit={handleSubmit} noValidate>
@@ -336,10 +334,7 @@ const EarnForm = ({
                     <rb.Form.Group className="mb-3" controlId="feeAbs">
                       <rb.Form.Label className="mb-0">
                         {t('earn.label_abs_fee', {
-                          fee:
-                            typeof values.feeAbs === 'number'
-                              ? `(${values.feeAbs} ${values.feeAbs === 1 ? 'sat' : 'sats'})`
-                              : '',
+                          fee: '', // empty on purpose
                         })}
                       </rb.Form.Label>
                       <rb.Form.Text className="d-block text-secondary mb-2">
@@ -350,26 +345,16 @@ const EarnForm = ({
                           <rb.Placeholder xs={12} className={styles['input-loader']} />
                         </rb.Placeholder>
                       ) : (
-                        <rb.InputGroup hasValidation>
-                          <rb.InputGroup.Text id="feeAbs-addon1" className={styles.inputGroupText}>
-                            <Sprite symbol="sats" width="24" height="24" />
-                          </rb.InputGroup.Text>
-                          <rb.Form.Control
-                            aria-label={t('earn.label_abs_fee', { fee: '' })}
-                            className="slashed-zeroes"
-                            type="number"
-                            name="feeAbs"
-                            value={values.feeAbs}
+                        <div className={touched.feeAbs && !!errors.feeAbs ? 'is-invalid' : ''}>
+                          <UniversalBitcoinInput
+                            inputGroupTextClassName={styles.inputGroupText}
+                            label={t('earn.label_abs_fee')}
+                            placeholder={''}
+                            field={feeAbsField}
+                            form={props}
                             disabled={isSubmitting}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            isValid={touched.feeAbs && !errors.feeAbs}
-                            isInvalid={touched.feeAbs && !!errors.feeAbs}
-                            min={0}
-                            step={1}
                           />
-                          <rb.Form.Control.Feedback type="invalid">{errors.feeAbs}</rb.Form.Control.Feedback>
-                        </rb.InputGroup>
+                        </div>
                       )}
                     </rb.Form.Group>
                   )}
@@ -415,7 +400,7 @@ const EarnForm = ({
 const toStartMakerRequest = (values: EarnFormValues): Api.StartMakerRequest => {
   // both fee properties need to be provided.
   // prevent providing an invalid value by setting the ignored prop to zero
-  const cjfee_a = isAbsoluteOffer(values.offertype) ? values.feeAbs : 0
+  const cjfee_a = isAbsoluteOffer(values.offertype) ? values.feeAbs!.value! : 0
   const cjfee_r = isRelativeOffer(values.offertype) ? values.feeRel : 0
   return {
     ordertype: values.offertype,
