@@ -306,7 +306,11 @@ const InnerSendForm = ({
           </div>
         )}
 
-        <Accordion title={t('send.sending_options')} disabled={disabled}>
+        <Accordion
+          title={t('send.sending_options')}
+          variant={!!props.errors.numCollaborators ? 'danger' : undefined}
+          disabled={disabled}
+        >
           <rb.Form.Group controlId="isCoinjoin" className="mb-3">
             <ToggleSwitch
               label={t('send.toggle_coinjoin')}
