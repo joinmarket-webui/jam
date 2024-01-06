@@ -13,6 +13,13 @@ export type AmountValue = {
   displayValue?: string
 }
 
+export const toAmountValue = (value: Api.AmountSats): AmountValue => ({
+  value,
+  isSweep: false,
+  userRawInputValue: String(value),
+  displayValue: formatBtcDisplayValue(value),
+})
+
 const unitFromValue = (value: string | undefined): Unit | undefined => {
   return value !== undefined ? (value?.includes('.') ? 'BTC' : 'sats') : undefined
 }
@@ -89,7 +96,7 @@ const UniversalBitcoinInput = forwardRef(
               })
 
               let displayValue = field.value?.value || ''
-              if (field.value !== undefined && isValidNumber(field.value.value ?? undefined)) {
+              if (isValidNumber(field.value?.value)) {
                 displayValue = formatBtcDisplayValue(field.value!.value!)
               }
 

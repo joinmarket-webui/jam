@@ -84,7 +84,7 @@ export const isRelativeOffer = (offertype: OfferType) => offertype.includes('rel
 // can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
 export const isAbsoluteOffer = (offertype: OfferType) => offertype.includes('absoffer')
 
-export const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
+export const isValidNumber = (val: number | undefined | null) => typeof val === 'number' && !isNaN(val)
 
 export const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
 

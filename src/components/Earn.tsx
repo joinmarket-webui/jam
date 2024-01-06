@@ -6,14 +6,7 @@ import { TFunction } from 'i18next'
 import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
-import {
-  factorToPercentage,
-  formatBtcDisplayValue,
-  isAbsoluteOffer,
-  isRelativeOffer,
-  isValidNumber,
-  percentageToFactor,
-} from '../utils'
+import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import * as fb from './fb/utils'
 import Sprite from './Sprite'
@@ -26,7 +19,7 @@ import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
 import Accordion from './Accordion'
-import UniversalBitcoinInput, { AmountValue } from './UniversalBitcoinAmountInput'
+import UniversalBitcoinInput, { AmountValue, toAmountValue } from './UniversalBitcoinAmountInput'
 import { isValidAmount } from './Send/helpers'
 import styles from './Earn.module.css'
 
@@ -49,13 +42,6 @@ const FORM_INPUT_LOCAL_STORAGE_KEYS = {
   feeAbs: 'jm-feeAbs',
   minsize: 'jm-minsize',
 }
-
-const toAmountValue = (value: number): AmountValue => ({
-  value,
-  isSweep: false,
-  userRawInputValue: String(value),
-  displayValue: formatBtcDisplayValue(value),
-})
 
 export interface EarnFormValues {
   offertype: Api.OfferType
@@ -262,7 +248,7 @@ const EarnForm = ({
   return (
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
       {(props) => {
-        const { handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting } = props
+        const { handleSubmit, setFieldValue, handleBlur, values, touched, errors, isSubmitting } = props
         const minsizeField = props.getFieldProps<AmountValue>('minsize')
         const feeAbsField = props.getFieldProps<AmountValue>('feeAbs')
         return (

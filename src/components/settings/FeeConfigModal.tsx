@@ -11,6 +11,7 @@ import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import ToggleSwitch from '../ToggleSwitch'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
 import styles from './FeeConfigModal.module.css'
+import UniversalBitcoinInput, { AmountValue, toAmountValue } from '../UniversalBitcoinAmountInput'
 
 const __dev_allowFeeValuesReset = isDebugFeatureEnabled('allowFeeValuesReset')
 
@@ -39,7 +40,8 @@ export type FeeConfigSectionKey = 'tx_fee' | 'cj_fee'
 const TX_FEE_SECTION_KEY: FeeConfigSectionKey = 'tx_fee'
 const CJ_FEE_SECTION_KEY: FeeConfigSectionKey = 'cj_fee'
 
-type FeeFormValues = FeeValues & {
+type FeeFormValues = Pick<FeeValues, 'tx_fees' | 'tx_fees_factor' | 'max_cj_fee_rel'> & {
+  max_cj_fee_abs?: AmountValue
   enableValidation?: boolean
 }
 
@@ -64,172 +66,163 @@ const FeeConfigForm = forwardRef(
         validate={(values) => validate(values)}
         onSubmit={(values) => onSubmit(values)}
       >
-        {({ handleSubmit, setFieldValue, handleBlur, validateForm, values, touched, errors, isSubmitting }) => (
-          <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
-            {__dev_allowFeeValuesReset && (
-              <div className="mb-4">
-                <ToggleSwitch
-                  label={
-                    <>
-                      Enable form validation
-                      <span className="ms-2 badge rounded-pill bg-warning">dev</span>
-                    </>
-                  }
-                  subtitle={
-                    'Ability to reset fee values to test what the UI looks like, when a user does not have these values configured.'
-                  }
-                  toggledOn={values.enableValidation ?? true}
-                  onToggle={(isToggled) => {
-                    setFieldValue('enableValidation', isToggled, true)
-                  }}
-                  disabled={isSubmitting}
-                />
-              </div>
-            )}
+        {(props) => {
+          const { handleSubmit, setFieldValue, handleBlur, values, touched, errors, isSubmitting } = props
 
-            <rb.Accordion flush defaultActiveKey={defaultActiveSectionKey}>
-              <rb.Accordion.Item eventKey={CJ_FEE_SECTION_KEY}>
-                <rb.Accordion.Header>
-                  <span
-                    className={classNames({
-                      'text-danger': !!errors.max_cj_fee_abs || !!errors.max_cj_fee_rel,
-                    })}
-                  >
-                    {t('settings.fees.title_max_cj_fee_settings')}
-                  </span>
-                </rb.Accordion.Header>
-                <rb.Accordion.Body>
-                  <div className="mb-4 text-secondary">{t('settings.fees.description_max_cj_fee_settings')}</div>
-                  <rb.Form.Text className="d-flex align-items-center mb-4 fw-bold">
-                    <Sprite className="rounded-circle border border-1 me-2" symbol="info" width="18" height="18" />
-                    <Trans parent="div" i18nKey="settings.fees.subtitle_max_cj_fee" />
-                  </rb.Form.Text>
-                  <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
-                    <rb.Form.Label>{t('settings.fees.label_max_cj_fee_abs')}</rb.Form.Label>
-                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_abs')}</rb.Form.Text>
-                    <rb.InputGroup hasValidation>
-                      <rb.InputGroup.Text id="maxCjFeeAbs-addon1" className={styles.inputGroupText}>
-                        <Sprite symbol="sats" width="24" height="24" />
-                      </rb.InputGroup.Text>
-                      <rb.Form.Control
-                        aria-label={t('settings.fees.label_max_cj_fee_abs')}
-                        className="slashed-zeroes"
-                        name="max_cj_fee_abs"
-                        type="number"
-                        placeholder="1"
-                        value={isValidNumber(values.max_cj_fee_abs) ? values.max_cj_fee_abs : ''}
-                        disabled={isSubmitting}
-                        onBlur={handleBlur}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value, 10)
-                          setFieldValue('max_cj_fee_abs', value, true)
-                        }}
-                        isValid={touched.max_cj_fee_abs && !errors.max_cj_fee_abs}
-                        isInvalid={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs}
-                        min={CJ_FEE_ABS_MIN}
-                        max={CJ_FEE_ABS_MAX}
-                        step={1}
-                      />
-                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_abs}</rb.Form.Control.Feedback>
-                    </rb.InputGroup>
-                  </rb.Form.Group>
+          const maxCjFeeAbsField = props.getFieldProps<AmountValue>('max_cj_fee_abs')
+          return (
+            <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
+              {__dev_allowFeeValuesReset && (
+                <div className="mb-4">
+                  <ToggleSwitch
+                    label={
+                      <>
+                        Enable form validation
+                        <span className="ms-2 badge rounded-pill bg-warning">dev</span>
+                      </>
+                    }
+                    subtitle={
+                      'Ability to reset fee values to test what the UI looks like, when a user does not have these values configured.'
+                    }
+                    toggledOn={values.enableValidation ?? true}
+                    onToggle={(isToggled) => {
+                      setFieldValue('enableValidation', isToggled, true)
+                    }}
+                    disabled={isSubmitting}
+                  />
+                </div>
+              )}
 
-                  <rb.Form.Group controlId="max_cj_fee_rel" className="mb-4">
-                    <rb.Form.Label>
-                      {t('settings.fees.label_max_cj_fee_rel', {
-                        fee: isValidNumber(values.max_cj_fee_rel)
-                          ? `(${factorToPercentage(values.max_cj_fee_rel!)}%)`
-                          : '',
+              <rb.Accordion flush defaultActiveKey={defaultActiveSectionKey}>
+                <rb.Accordion.Item eventKey={CJ_FEE_SECTION_KEY}>
+                  <rb.Accordion.Header>
+                    <span
+                      className={classNames({
+                        'text-danger': !!errors.max_cj_fee_abs || !!errors.max_cj_fee_rel,
                       })}
-                    </rb.Form.Label>
-                    <rb.Form.Text>{t('settings.fees.description_max_cj_fee_rel')}</rb.Form.Text>
-                    <rb.InputGroup hasValidation>
-                      <rb.InputGroup.Text id="maxCjFeeRel-addon1" className={styles.inputGroupText}>
-                        %
-                      </rb.InputGroup.Text>
-                      <rb.Form.Control
-                        aria-label={t('settings.fees.label_max_cj_fee_rel')}
-                        className="slashed-zeroes"
-                        name="max_cj_fee_rel"
-                        type="number"
-                        placeholder="0"
-                        value={isValidNumber(values.max_cj_fee_rel) ? factorToPercentage(values.max_cj_fee_rel!) : ''}
-                        disabled={isSubmitting}
-                        onBlur={handleBlur}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value)
-                          setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
-                        }}
-                        isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
-                        isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
-                        min={factorToPercentage(CJ_FEE_REL_MIN)}
-                        max={factorToPercentage(CJ_FEE_REL_MAX)}
-                        step={0.0001}
-                      />
-                      <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_rel}</rb.Form.Control.Feedback>
-                    </rb.InputGroup>
-                  </rb.Form.Group>
-                </rb.Accordion.Body>
-              </rb.Accordion.Item>
-              <rb.Accordion.Item eventKey={TX_FEE_SECTION_KEY}>
-                <rb.Accordion.Header>
-                  <span
-                    className={classNames({
-                      'text-danger': !!errors.tx_fees || !!errors.tx_fees_factor,
-                    })}
-                  >
-                    {t('settings.fees.title_general_fee_settings')}
-                  </span>
-                </rb.Accordion.Header>
-                <rb.Accordion.Body>
-                  <div className="mb-4 text-secondary">{t('settings.fees.description_general_fee_settings')}</div>
+                    >
+                      {t('settings.fees.title_max_cj_fee_settings')}
+                    </span>
+                  </rb.Accordion.Header>
+                  <rb.Accordion.Body>
+                    <div className="mb-4 text-secondary">{t('settings.fees.description_max_cj_fee_settings')}</div>
+                    <rb.Form.Text className="d-flex align-items-center mb-4 fw-bold">
+                      <Sprite className="rounded-circle border border-1 me-2" symbol="info" width="18" height="18" />
+                      <Trans parent="div" i18nKey="settings.fees.subtitle_max_cj_fee" />
+                    </rb.Form.Text>
+                    <rb.Form.Group controlId="max_cj_fee_abs" className="mb-4">
+                      <rb.Form.Label>{t('settings.fees.label_max_cj_fee_abs')}</rb.Form.Label>
+                      <rb.Form.Text>{t('settings.fees.description_max_cj_fee_abs')}</rb.Form.Text>
 
-                  <Field name="tx_fees" label={t('settings.fees.label_tx_fees')} component={TxFeeInputField} />
+                      <div className={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs ? 'is-invalid' : ''}>
+                        <UniversalBitcoinInput
+                          inputGroupTextClassName={styles.inputGroupText}
+                          label={t('settings.fees.label_max_cj_fee_abs')}
+                          placeholder={'1'}
+                          field={maxCjFeeAbsField}
+                          form={props}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </rb.Form.Group>
 
-                  <rb.Form.Group controlId="tx_fees_factor" className="mb-4">
-                    <rb.Form.Label>
-                      {t('settings.fees.label_tx_fees_factor', {
-                        fee: isValidNumber(values.tx_fees_factor)
-                          ? `(${factorToPercentage(values.tx_fees_factor!)}%)`
-                          : '',
+                    <rb.Form.Group controlId="max_cj_fee_rel" className="mb-4">
+                      <rb.Form.Label>
+                        {t('settings.fees.label_max_cj_fee_rel', {
+                          fee: isValidNumber(values.max_cj_fee_rel)
+                            ? `(${factorToPercentage(values.max_cj_fee_rel!)}%)`
+                            : '',
+                        })}
+                      </rb.Form.Label>
+                      <rb.Form.Text>{t('settings.fees.description_max_cj_fee_rel')}</rb.Form.Text>
+                      <rb.InputGroup hasValidation>
+                        <rb.InputGroup.Text id="maxCjFeeRel-addon1" className={styles.inputGroupText}>
+                          %
+                        </rb.InputGroup.Text>
+                        <rb.Form.Control
+                          aria-label={t('settings.fees.label_max_cj_fee_rel')}
+                          className="slashed-zeroes"
+                          name="max_cj_fee_rel"
+                          type="number"
+                          placeholder="0"
+                          value={isValidNumber(values.max_cj_fee_rel) ? factorToPercentage(values.max_cj_fee_rel!) : ''}
+                          disabled={isSubmitting}
+                          onBlur={handleBlur}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value)
+                            setFieldValue('max_cj_fee_rel', percentageToFactor(value), true)
+                          }}
+                          isValid={touched.max_cj_fee_rel && !errors.max_cj_fee_rel}
+                          isInvalid={touched.max_cj_fee_rel && !!errors.max_cj_fee_rel}
+                          min={factorToPercentage(CJ_FEE_REL_MIN)}
+                          max={factorToPercentage(CJ_FEE_REL_MAX)}
+                          step={0.0001}
+                        />
+                        <rb.Form.Control.Feedback type="invalid">{errors.max_cj_fee_rel}</rb.Form.Control.Feedback>
+                      </rb.InputGroup>
+                    </rb.Form.Group>
+                  </rb.Accordion.Body>
+                </rb.Accordion.Item>
+                <rb.Accordion.Item eventKey={TX_FEE_SECTION_KEY}>
+                  <rb.Accordion.Header>
+                    <span
+                      className={classNames({
+                        'text-danger': !!errors.tx_fees || !!errors.tx_fees_factor,
                       })}
-                    </rb.Form.Label>
-                    <rb.Form.Text>{t('settings.fees.description_tx_fees_factor_^0.9.10')}</rb.Form.Text>
-                    <rb.InputGroup hasValidation>
-                      <rb.InputGroup.Text id="txFeesFactor-addon1" className={styles.inputGroupText}>
-                        %
-                      </rb.InputGroup.Text>
-                      <rb.Form.Control
-                        aria-label={t('settings.fees.label_tx_fees_factor', {
+                    >
+                      {t('settings.fees.title_general_fee_settings')}
+                    </span>
+                  </rb.Accordion.Header>
+                  <rb.Accordion.Body>
+                    <div className="mb-4 text-secondary">{t('settings.fees.description_general_fee_settings')}</div>
+
+                    <Field name="tx_fees" label={t('settings.fees.label_tx_fees')} component={TxFeeInputField} />
+
+                    <rb.Form.Group controlId="tx_fees_factor" className="mb-4">
+                      <rb.Form.Label>
+                        {t('settings.fees.label_tx_fees_factor', {
                           fee: isValidNumber(values.tx_fees_factor)
                             ? `(${factorToPercentage(values.tx_fees_factor!)}%)`
                             : '',
                         })}
-                        className="slashed-zeroes"
-                        name="tx_fees_factor"
-                        type="number"
-                        placeholder="0"
-                        value={isValidNumber(values.tx_fees_factor) ? factorToPercentage(values.tx_fees_factor!) : ''}
-                        disabled={isSubmitting}
-                        onBlur={handleBlur}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value)
-                          setFieldValue('tx_fees_factor', percentageToFactor(value), true)
-                        }}
-                        isValid={touched.tx_fees_factor && !errors.tx_fees_factor}
-                        isInvalid={touched.tx_fees_factor && !!errors.tx_fees_factor}
-                        min={factorToPercentage(TX_FEES_FACTOR_MIN)}
-                        max={factorToPercentage(TX_FEES_FACTOR_MAX)}
-                        step={0.01}
-                      />
-                      <rb.Form.Control.Feedback type="invalid">{errors.tx_fees_factor}</rb.Form.Control.Feedback>
-                    </rb.InputGroup>
-                  </rb.Form.Group>
-                </rb.Accordion.Body>
-              </rb.Accordion.Item>
-            </rb.Accordion>
-          </rb.Form>
-        )}
+                      </rb.Form.Label>
+                      <rb.Form.Text>{t('settings.fees.description_tx_fees_factor_^0.9.10')}</rb.Form.Text>
+                      <rb.InputGroup hasValidation>
+                        <rb.InputGroup.Text id="txFeesFactor-addon1" className={styles.inputGroupText}>
+                          %
+                        </rb.InputGroup.Text>
+                        <rb.Form.Control
+                          aria-label={t('settings.fees.label_tx_fees_factor', {
+                            fee: isValidNumber(values.tx_fees_factor)
+                              ? `(${factorToPercentage(values.tx_fees_factor!)}%)`
+                              : '',
+                          })}
+                          className="slashed-zeroes"
+                          name="tx_fees_factor"
+                          type="number"
+                          placeholder="0"
+                          value={isValidNumber(values.tx_fees_factor) ? factorToPercentage(values.tx_fees_factor!) : ''}
+                          disabled={isSubmitting}
+                          onBlur={handleBlur}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value)
+                            setFieldValue('tx_fees_factor', percentageToFactor(value), true)
+                          }}
+                          isValid={touched.tx_fees_factor && !errors.tx_fees_factor}
+                          isInvalid={touched.tx_fees_factor && !!errors.tx_fees_factor}
+                          min={factorToPercentage(TX_FEES_FACTOR_MIN)}
+                          max={factorToPercentage(TX_FEES_FACTOR_MAX)}
+                          step={0.01}
+                        />
+                        <rb.Form.Control.Feedback type="invalid">{errors.tx_fees_factor}</rb.Form.Control.Feedback>
+                      </rb.InputGroup>
+                    </rb.Form.Group>
+                  </rb.Accordion.Body>
+                </rb.Accordion.Item>
+              </rb.Accordion>
+            </rb.Form>
+          )
+        }}
       </Formik>
     )
   },
@@ -263,7 +256,10 @@ export default function FeeConfigModal({
         .then((val) => {
           if (abortCtrl.signal.aborted) return
           setIsLoading(false)
-          setFeeFormValues(val)
+          setFeeFormValues({
+            ...val,
+            max_cj_fee_abs: val.max_cj_fee_abs !== undefined ? toAmountValue(val.max_cj_fee_abs) : undefined,
+          })
         })
         .catch((error) => {
           if (abortCtrl.signal.aborted) return
@@ -306,9 +302,10 @@ export default function FeeConfigModal({
       }
 
       if (
-        !isValidNumber(values.max_cj_fee_abs) ||
-        values.max_cj_fee_abs! < CJ_FEE_ABS_MIN ||
-        values.max_cj_fee_abs! > CJ_FEE_ABS_MAX
+        values.max_cj_fee_abs === undefined ||
+        !isValidNumber(values.max_cj_fee_abs.value) ||
+        values.max_cj_fee_abs.value! < CJ_FEE_ABS_MIN ||
+        values.max_cj_fee_abs.value! > CJ_FEE_ABS_MAX
       ) {
         errors.max_cj_fee_abs = t('settings.fees.feedback_invalid_max_cj_fee_abs', {
           min: CJ_FEE_ABS_MIN.toLocaleString(),
@@ -343,7 +340,7 @@ export default function FeeConfigModal({
       },
       {
         key: FEE_CONFIG_KEYS.max_cj_fee_abs,
-        value: String(values.max_cj_fee_abs ?? ''),
+        value: String(values.max_cj_fee_abs?.value ?? ''),
       },
       {
         key: FEE_CONFIG_KEYS.max_cj_fee_rel,
