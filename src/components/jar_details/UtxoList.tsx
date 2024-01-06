@@ -64,18 +64,14 @@ const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction): Tag[] => {
 
 const utxoIcon = (utxo: Utxo, t: TFunction) => {
   if (fb.utxo.isFidelityBond(utxo)) {
-    return (
-      <>
-        {withTooltip({
-          node: (
-            <div className={styles.utxoIcon}>
-              <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
-            </div>
-          ),
-          tooltip: <div>{t('jar_details.utxo_list.utxo_tooltip_locktime', { locktime: utxo.locktime })}</div>,
-        })}
-      </>
-    )
+    return withTooltip({
+      node: (
+        <div className={styles.utxoIcon}>
+          <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
+        </div>
+      ),
+      tooltip: <div>{t('jar_details.utxo_list.utxo_tooltip_locktime', { locktime: utxo.locktime })}</div>,
+    })
   } else if (utxo.frozen) {
     return (
       <div className={styles.utxoIcon}>
@@ -121,15 +117,13 @@ const TABLE_THEME = {
       text-align: center;
       padding: 0 !important;
     }
-    &:nth-of-type(4) button {
-      display: flex;
+    &:nth-of-type(4) div div {
       justify-content: end;
     }
     &:nth-of-type(6) {
       padding: 0 !important;
     }
-    &:nth-of-type(6) button {
-      display: flex;
+    &:nth-of-type(6) div div {
       justify-content: center;
     }
   `,
@@ -143,6 +137,9 @@ const TABLE_THEME = {
     &:nth-of-type(6) > div {
       display: flex;
       justify-content: center;
+    }
+    &:nth-of-type(8) {
+      text-align: right;
     }
   `,
   Row: `
@@ -336,13 +333,13 @@ const UtxoList = ({
                       <div className="d-block d-lg-none">
                         {withTooltip({
                           node: <code>{shortenStringMiddle(item.address, 16)}</code>,
-                          tooltip: <div className="break-word">{item.address}</div>,
+                          tooltip: <div className="slashed-zeroes">{item.address}</div>,
                         })}
                       </div>
                       <div className="d-none d-lg-block d-xl-none">
                         {withTooltip({
                           node: <code>{shortenStringMiddle(item.address, 32)}</code>,
-                          tooltip: <div className="break-word">{item.address}</div>,
+                          tooltip: <div className="slashed-zeroes">{item.address}</div>,
                         })}
                       </div>
                       <div className="d-none d-xl-block">
