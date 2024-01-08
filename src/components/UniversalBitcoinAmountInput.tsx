@@ -21,7 +21,7 @@ export const toAmountValue = (value: Api.AmountSats): AmountValue => ({
 })
 
 const unitFromValue = (value: string | undefined): Unit | undefined => {
-  return value !== undefined ? (value?.includes('.') ? 'BTC' : 'sats') : undefined
+  return value !== undefined && value !== '' ? (value?.includes('.') ? 'BTC' : 'sats') : undefined
 }
 
 type UniversalBitcoinInputProps = {
