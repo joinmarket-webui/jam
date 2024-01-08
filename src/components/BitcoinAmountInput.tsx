@@ -24,7 +24,7 @@ const unitFromValue = (value: string | undefined): Unit | undefined => {
   return value !== undefined && value !== '' ? (value?.includes('.') ? 'BTC' : 'sats') : undefined
 }
 
-type BitcoinAmountInputProps = {
+export type BitcoinAmountInputProps = {
   label: string
   className?: string
   inputGroupTextClassName?: string
@@ -53,25 +53,28 @@ const BitcoinAmountInput = forwardRef(
       inputMode: 'decimal',
     })
 
-    const displayInputUnit = useMemo(() => unitFromValue(field.value?.userRawInputValue), [field])
+    const displayInputUnit = useMemo(() => {
+      return inputType.type === 'number'
+        ? unitFromValue(field.value?.userRawInputValue)
+        : field.value?.displayValue
+          ? 'BTC'
+          : undefined
+    }, [field, inputType])
 
     return (
       <>
         <rb.InputGroup hasValidation={true}>
           <rb.InputGroup.Text className={inputGroupTextClassName}>
-            {inputType.type === 'number' ? (
-              <>
-                {displayInputUnit === undefined && <>…</>}
-                {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
-                {displayInputUnit === 'BTC' && <span className="fw-bold">{BITCOIN_SYMBOL}</span>}
-              </>
-            ) : (
-              <>{field.value?.displayValue ? <span className="fw-bold">{BITCOIN_SYMBOL}</span> : '…'}</>
-            )}
+            {displayInputUnit === undefined && <>…</>}
+            {displayInputUnit === 'sats' && <Sprite symbol="sats" width="24" height="24" />}
+            {displayInputUnit === 'BTC' && <span className="fw-bold">{BITCOIN_SYMBOL}</span>}
           </rb.InputGroup.Text>
           <rb.Form.Control
             ref={ref}
             aria-label={label}
+            data-value={field.value?.value}
+            data-display-unit={displayInputUnit}
+            data-display-value={field.value?.displayValue}
             name={field.name}
             autoComplete="off"
             type={inputType.type}
@@ -95,7 +98,7 @@ const BitcoinAmountInput = forwardRef(
                 inputMode: 'decimal',
               })
 
-              let displayValue = field.value?.value || ''
+              let displayValue = String(field.value?.value || '')
               if (isValidNumber(field.value?.value)) {
                 displayValue = formatBtcDisplayValue(field.value!.value!)
               }
