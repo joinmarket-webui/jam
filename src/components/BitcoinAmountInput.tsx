@@ -24,7 +24,7 @@ const unitFromValue = (value: string | undefined): Unit | undefined => {
   return value !== undefined && value !== '' ? (value?.includes('.') ? 'BTC' : 'sats') : undefined
 }
 
-type UniversalBitcoinInputProps = {
+type BitcoinAmountInputProps = {
   label: string
   className?: string
   inputGroupTextClassName?: string
@@ -34,7 +34,7 @@ type UniversalBitcoinInputProps = {
   form: FormikContextType<any>
 }
 
-const UniversalBitcoinInput = forwardRef(
+const BitcoinAmountInput = forwardRef(
   (
     {
       label,
@@ -45,7 +45,7 @@ const UniversalBitcoinInput = forwardRef(
       field,
       form,
       children,
-    }: PropsWithChildren<UniversalBitcoinInputProps>,
+    }: PropsWithChildren<BitcoinAmountInputProps>,
     ref: React.Ref<HTMLInputElement>,
   ) => {
     const [inputType, setInputType] = useState<{ type: 'text' | 'number'; inputMode?: 'decimal' }>({
@@ -164,4 +164,4 @@ const UniversalBitcoinInput = forwardRef(
   },
 )
 
-export default UniversalBitcoinInput
+export default BitcoinAmountInput

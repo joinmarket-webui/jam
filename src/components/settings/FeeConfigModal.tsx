@@ -11,7 +11,7 @@ import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import ToggleSwitch from '../ToggleSwitch'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
 import styles from './FeeConfigModal.module.css'
-import UniversalBitcoinInput, { AmountValue, toAmountValue } from '../UniversalBitcoinAmountInput'
+import BitcoinAmountInput, { AmountValue, toAmountValue } from '../BitcoinAmountInput'
 
 const __dev_allowFeeValuesReset = isDebugFeatureEnabled('allowFeeValuesReset')
 
@@ -115,7 +115,7 @@ const FeeConfigForm = forwardRef(
                       <rb.Form.Text>{t('settings.fees.description_max_cj_fee_abs')}</rb.Form.Text>
 
                       <div className={touched.max_cj_fee_abs && !!errors.max_cj_fee_abs ? 'is-invalid' : ''}>
-                        <UniversalBitcoinInput
+                        <BitcoinAmountInput
                           inputGroupTextClassName={styles.inputGroupText}
                           label={t('settings.fees.label_max_cj_fee_abs')}
                           placeholder={'1'}

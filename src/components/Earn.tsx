@@ -19,7 +19,7 @@ import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
 import Accordion from './Accordion'
-import UniversalBitcoinInput, { AmountValue, toAmountValue } from './UniversalBitcoinAmountInput'
+import BitcoinAmountInput, { AmountValue, toAmountValue } from './BitcoinAmountInput'
 import { isValidAmount } from './Send/helpers'
 import styles from './Earn.module.css'
 
@@ -332,7 +332,7 @@ const EarnForm = ({
                         </rb.Placeholder>
                       ) : (
                         <div className={touched.feeAbs && !!errors.feeAbs ? 'is-invalid' : ''}>
-                          <UniversalBitcoinInput
+                          <BitcoinAmountInput
                             inputGroupTextClassName={styles.inputGroupText}
                             label={t('earn.label_abs_fee')}
                             placeholder={''}
@@ -353,7 +353,7 @@ const EarnForm = ({
                       </rb.Placeholder>
                     ) : (
                       <div className={touched.minsize && !!errors.minsize ? 'is-invalid' : ''}>
-                        <UniversalBitcoinInput
+                        <BitcoinAmountInput
                           inputGroupTextClassName={styles.inputGroupText}
                           label={t('earn.label_min_amount_input')}
                           placeholder={t('earn.placeholder_min_amount_input')}

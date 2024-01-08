@@ -1,12 +1,11 @@
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
-import classNames from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import Sprite from '../Sprite'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
 import { formatBtcDisplayValue } from '../../utils'
-import UniversalBitcoinInput, { AmountValue } from '../UniversalBitcoinAmountInput'
+import BitcoinAmountInput, { AmountValue } from '../BitcoinAmountInput'
 import styles from './AmountInputField.module.css'
 
 export type AmountInputFieldProps = {
@@ -44,7 +43,7 @@ export const AmountInputField = ({
           </rb.Placeholder>
         ) : (
           <div className={form.touched[field.name] && !!form.errors[field.name] ? 'is-invalid' : ''}>
-            <UniversalBitcoinInput
+            <BitcoinAmountInput
               ref={ref}
               className={styles.input}
               inputGroupTextClassName={styles.inputGroupText}
@@ -73,9 +72,7 @@ export const AmountInputField = ({
               {enableSweep && field.value?.isSweep !== true && (
                 <rb.Button
                   variant="outline-dark"
-                  className={classNames(styles.button, {
-                    'cursor-not-allowed': !sourceJarBalance,
-                  })}
+                  className={styles.button}
                   onClick={() => {
                     if (!sourceJarBalance) return
                     form.setFieldValue(
@@ -96,7 +93,7 @@ export const AmountInputField = ({
                   </div>
                 </rb.Button>
               )}
-            </UniversalBitcoinInput>
+            </BitcoinAmountInput>
           </div>
         )}
       </rb.Form.Group>

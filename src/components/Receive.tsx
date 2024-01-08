@@ -16,7 +16,7 @@ import { SelectableJar, jarFillLevel } from './jars/Jar'
 import styles from './Receive.module.css'
 import Accordion from './Accordion'
 import { isDevMode } from '../constants/debugFeatures'
-import UniversalBitcoinInput, { AmountValue } from './UniversalBitcoinAmountInput'
+import BitcoinAmountInput, { AmountValue } from './BitcoinAmountInput'
 import { isValidAmount } from './Send/helpers'
 
 export interface ReceiveFormValues {
@@ -214,7 +214,7 @@ export default function Receive({ wallet }: ReceiveProps) {
                 <rb.Form.Group controlId={amountField.name} className="mb-4">
                   <rb.Form.Label>{t('receive.label_amount_input')}</rb.Form.Label>
                   <div className={props.touched.amount && !!props.errors.amount ? 'is-invalid' : ''}>
-                    <UniversalBitcoinInput
+                    <BitcoinAmountInput
                       inputGroupTextClassName={styles.inputGroupText}
                       label={t('receive.label_amount')}
                       placeholder={t('receive.placeholder_amount_input')}
