@@ -10,8 +10,8 @@ import * as Api from '../libs/JmWalletApi'
 import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
-import styles from './EarnReport.module.css'
 import TablePagination from './TablePagination'
+import styles from './EarnReport.module.css'
 
 const SORT_KEYS = {
   timestamp: 'TIMESTAMP',
@@ -27,20 +27,16 @@ const TABLE_THEME = {
     font-size: 0.9rem;
   `,
   BaseCell: `
-    &:nth-of-type(2) button {
-      display: flex;
+    &:nth-of-type(2) div div {
       justify-content: end;
     }
-    &:nth-of-type(3) button {
-      display: flex;
+    &:nth-of-type(3) div div {
       justify-content: end;
     }
-    &:nth-of-type(4) button {
-      display: flex;
+    &:nth-of-type(4) div div {
       justify-content: end;
     }
-    &:nth-of-type(5) button {
-      display: flex;
+    &:nth-of-type(5) div div {
       justify-content: end;
     }
   `,
