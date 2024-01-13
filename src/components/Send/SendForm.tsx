@@ -8,7 +8,8 @@ import Sprite from '../Sprite'
 import { SourceJarSelector } from './SourceJarSelector'
 import { CoinjoinPreconditionViolationAlert } from '../CoinjoinPreconditionViolationAlert'
 import { DestinationInputField, DestinationValue } from './DestinationInputField'
-import { AmountInputField, AmountValue } from './AmountInputField'
+import { AmountInputField } from './AmountInputField'
+import { AmountValue } from '../BitcoinAmountInput'
 import CollaboratorsSelector from './CollaboratorsSelector'
 import { SweepBreakdown } from './SweepBreakdown'
 import FeeBreakdown from './FeeBreakdown'
@@ -291,9 +292,11 @@ const InnerSendForm = ({
 
         <AmountInputField
           name="amount"
-          label={t('send.label_amount')}
+          label={t('send.label_amount_input')}
+          placeholder={t('send.placeholder_amount_input')}
           isLoading={isLoading}
           disabled={disabled}
+          enableSweep={true}
           sourceJarBalance={sourceJarBalance}
         />
 
@@ -303,7 +306,11 @@ const InnerSendForm = ({
           </div>
         )}
 
-        <Accordion title={t('send.sending_options')} disabled={disabled}>
+        <Accordion
+          title={t('send.sending_options')}
+          variant={!!props.errors.numCollaborators ? 'danger' : undefined}
+          disabled={disabled}
+        >
           <rb.Form.Group controlId="isCoinjoin" className="mb-3">
             <ToggleSwitch
               label={t('send.toggle_coinjoin')}

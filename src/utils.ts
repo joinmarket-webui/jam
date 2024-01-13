@@ -1,4 +1,4 @@
-import { OfferType, WalletFileName } from './libs/JmWalletApi'
+import { AmountSats, OfferType, WalletFileName } from './libs/JmWalletApi'
 
 const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
@@ -36,9 +36,27 @@ export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
 
 export const formatBtc = (value: number) => BTC_FORMATTER.format(value)
 
+export const BITCOIN_SYMBOL = '\u20BF' // Bitcoin Currency Symbol `₿`
+const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
+const NNBSP = '\u202F' // Narrow No-Break Space ` `
+const NBSP = '\u00A0' // No-Break Space ` `
+
+export const formatBtcDisplayValue = (sats: AmountSats, { withSymbol = false }: { withSymbol?: boolean } = {}) => {
+  const formattedBtc = formatBtc(satsToBtc(String(sats)))
+  const pointIndex = formattedBtc.indexOf('.')
+  return (
+    (withSymbol ? `${BITCOIN_SYMBOL}${NNBSP}` : '') +
+    (formattedBtc.substring(0, pointIndex + 3) +
+      NBSP +
+      formattedBtc.substring(pointIndex + 3, pointIndex + 6) +
+      NBSP +
+      formattedBtc.substring(pointIndex + 6))
+  )
+}
+
 export const formatSats = (value: number) => SATS_FORMATTER.format(value)
 
-export const shortenStringMiddle = (value: string, chars = 8, separator = '\u2026' /* \u2026 = … */) => {
+export const shortenStringMiddle = (value: string, chars = 8, separator = HORIZONTAL_ELLIPSIS) => {
   const prefixLength = Math.max(Math.floor(chars / 2), 1)
   if (value.length <= prefixLength * 2) {
     return `${value}`
@@ -66,7 +84,7 @@ export const isRelativeOffer = (offertype: OfferType) => offertype.includes('rel
 // can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
 export const isAbsoluteOffer = (offertype: OfferType) => offertype.includes('absoffer')
 
-export const isValidNumber = (val: number | undefined) => typeof val === 'number' && !isNaN(val)
+export const isValidNumber = (val: number | undefined | null) => typeof val === 'number' && !isNaN(val)
 
 export const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
 
