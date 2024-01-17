@@ -247,7 +247,6 @@ const EarnForm = ({
 
   return (
     <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
-<<<<<<< HEAD
       {(props) => {
         const { handleSubmit, setFieldValue, handleBlur, values, touched, errors, isSubmitting } = props
         const minsizeField = props.getFieldProps<AmountValue>('minsize')
@@ -270,74 +269,12 @@ const EarnForm = ({
                           value: OFFERTYPE_REL,
                         },
                       ]}
-                      onChange={(tab, checked) => {
-                        checked && setFieldValue('offertype', tab.value, true)
+                      value={values.offertype}
+                      onChange={(tab) => {
+                        setFieldValue('offertype', tab.value, true)
                       }}
-                      initialValue={values.offertype}
                       disabled={isLoading || isSubmitting}
                     />
-=======
-      {({ handleSubmit, setFieldValue, handleChange, handleBlur, values, touched, errors, isSubmitting }) => (
-        <>
-          <rb.Form onSubmit={handleSubmit} noValidate>
-            <Accordion title={t('earn.button_settings')}>
-              <>
-                <rb.Form.Group className="mb-4 d-flex justify-content-center" controlId="offertype">
-                  <SegmentedTabs
-                    name="offertype"
-                    tabs={[
-                      {
-                        label: t('earn.radio_abs_offer_label'),
-                        value: OFFERTYPE_ABS,
-                      },
-                      {
-                        label: t('earn.radio_rel_offer_label'),
-                        value: OFFERTYPE_REL,
-                      },
-                    ]}
-                    onChange={(tab) => setFieldValue('offertype', tab.value, true)}
-                    value={values.offertype}
-                    disabled={isLoading || isSubmitting}
-                  />
-                </rb.Form.Group>
-                {values.offertype === OFFERTYPE_REL ? (
-                  <rb.Form.Group className="mb-3" controlId="feeRel">
-                    <rb.Form.Label className="mb-0">
-                      {t('earn.label_rel_fee', {
-                        fee: typeof values.feeRel === 'number' ? `(${factorToPercentage(values.feeRel)}%)` : '',
-                      })}
-                    </rb.Form.Label>
-                    <rb.Form.Text className="d-block text-secondary mb-2">{t('earn.description_rel_fee')}</rb.Form.Text>
-                    {isLoading ? (
-                      <rb.Placeholder as="div" animation="wave">
-                        <rb.Placeholder xs={12} className={styles['input-loader']} />
-                      </rb.Placeholder>
-                    ) : (
-                      <rb.InputGroup hasValidation>
-                        <rb.InputGroup.Text id="feeRel-addon1" className={styles.inputGroupText}>
-                          %
-                        </rb.InputGroup.Text>
-                        <rb.Form.Control
-                          aria-label={t('earn.label_rel_fee', { fee: '' })}
-                          className="slashed-zeroes"
-                          type="number"
-                          name="feeRel"
-                          disabled={isSubmitting}
-                          onChange={(e) => {
-                            const value = e.target.value || ''
-                            setFieldValue('feeRel', value !== '' ? percentageToFactor(parseFloat(value)) : '', true)
-                          }}
-                          onBlur={handleBlur}
-                          value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
-                          isValid={touched.feeRel && !errors.feeRel}
-                          isInvalid={touched.feeRel && !!errors.feeRel}
-                          min={0}
-                          step={feeRelPercentageStep}
-                        />
-                        <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
-                      </rb.InputGroup>
-                    )}
->>>>>>> 6149e4a (chore: fix SegmentedTabs active state)
                   </rb.Form.Group>
                   {values.offertype === OFFERTYPE_REL ? (
                     <rb.Form.Group className="mb-3" controlId="feeRel">

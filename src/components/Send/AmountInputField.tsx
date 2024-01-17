@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import { useField, useFormikContext } from 'formik'
+import classNames from 'classnames'
 import Sprite from '../Sprite'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
 import { formatBtcDisplayValue } from '../../utils'
@@ -11,6 +12,7 @@ import styles from './AmountInputField.module.css'
 export type AmountInputFieldProps = {
   name: string
   label: string
+  className?: string
   placeholder?: string
   isLoading: boolean
   disabled?: boolean
@@ -21,6 +23,7 @@ export type AmountInputFieldProps = {
 export const AmountInputField = ({
   name,
   label,
+  className,
   placeholder,
   isLoading,
   disabled = false,
@@ -39,13 +42,13 @@ export const AmountInputField = ({
 
         {isLoading ? (
           <rb.Placeholder as="div" animation="wave">
-            <rb.Placeholder xs={12} className={className} />
+            <rb.Placeholder xs={12} className={styles.className} />
           </rb.Placeholder>
         ) : (
           <div className={form.touched[field.name] && !!form.errors[field.name] ? 'is-invalid' : ''}>
             <BitcoinAmountInput
               ref={ref}
-              className={styles.input}
+              className={classNames('slashed-zeroes', className)}
               inputGroupTextClassName={styles.inputGroupText}
               label={label}
               placeholder={placeholder}

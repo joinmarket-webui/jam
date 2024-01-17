@@ -11,15 +11,7 @@ interface SegmentedTab {
 
 const SegmentedTabFormCheck = ({ id, name, value, label, disabled, checked, onChange }: rb.FormCheckProps) => (
   <div className={styles.segmentedTab}>
-    <input
-      id={id}
-      name={name}
-      type="radio"
-      value={value}
-      checked={checked}
-      onChange={onChange}
-      disabled={disabled}
-    />
+    <input id={id} name={name} type="radio" value={value} checked={checked} onChange={onChange} disabled={disabled} />
     <label htmlFor={id}>{label}</label>
   </div>
 )
