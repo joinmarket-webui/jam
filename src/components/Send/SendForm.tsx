@@ -30,6 +30,8 @@ import { WalletInfo } from '../../context/WalletContext'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './SendForm.module.css'
 import { TxFeeInputField, validateTxFee } from '../settings/TxFeeInputField'
+import { useServiceInfo } from '../../context/ServiceInfoContext'
+import { isFeatureEnabled } from '../../constants/features'
 
 type CollaborativeTransactionOptionsProps = {
   selectedAmount?: AmountValue
@@ -54,8 +56,8 @@ function CollaborativeTransactionOptions({
   feeConfigValues,
   reloadFeeConfigValues,
 }: CollaborativeTransactionOptionsProps) {
-  const settings = useSettings()
   const { t } = useTranslation()
+  const settings = useSettings()
 
   const [activeFeeConfigModalSection, setActiveFeeConfigModalSection] = useState<FeeConfigSectionKey>()
   const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
@@ -238,6 +240,7 @@ const InnerSendForm = ({
   disabled = false,
 }: InnerSendFormProps) => {
   const { t } = useTranslation()
+  const serviceInfo = useServiceInfo()
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -343,9 +346,16 @@ const InnerSendForm = ({
             />
           </div>
 
-          <div className="mb-4">
-            <Field name="txFee" label={t('send.label_tx_fees')} className={styles.input} component={TxFeeInputField} />
-          </div>
+          {serviceInfo && isFeatureEnabled('txFeeOnSend', serviceInfo) && (
+            <div className="mb-4">
+              <Field
+                name="txFee"
+                label={t('send.label_tx_fees')}
+                className={styles.input}
+                component={TxFeeInputField}
+              />
+            </div>
+          )}
         </Accordion>
 
         <SubmitButton
