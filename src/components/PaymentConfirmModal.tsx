@@ -155,17 +155,6 @@ export function PaymentConfirmModal({
             )}
           </rb.Col>
         </rb.Row>
-
-        {miningFeeText && (
-          <rb.Row>
-            <rb.Col xs={4} md={3} className="text-end">
-              <strong>{t('send.confirm_send_modal.label_miner_fee')}</strong>
-            </rb.Col>
-            <rb.Col xs={8} md={9} className="text-start">
-              {miningFeeText}
-            </rb.Col>
-          </rb.Row>
-        )}
         {isCoinjoin && (
           <rb.Row>
             <rb.Col xs={4} md={3} className="text-end">
@@ -204,6 +193,16 @@ export function PaymentConfirmModal({
                   </div>
                 </rb.OverlayTrigger>
               </div>
+            </rb.Col>
+          </rb.Row>
+        )}
+        {miningFeeText && (
+          <rb.Row>
+            <rb.Col xs={4} md={3} className="text-end">
+              <strong>{t('send.confirm_send_modal.label_miner_fee')}</strong>
+            </rb.Col>
+            <rb.Col xs={8} md={9} className="text-start">
+              {miningFeeText}
             </rb.Col>
           </rb.Row>
         )}
