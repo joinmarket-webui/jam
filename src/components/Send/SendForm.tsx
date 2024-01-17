@@ -344,12 +344,7 @@ const InnerSendForm = ({
           </div>
 
           <div className="mb-4">
-            <Field
-              name="txFee"
-              label={t('settings.fees.label_tx_fees')}
-              className={styles.input}
-              component={TxFeeInputField}
-            />
+            <Field name="txFee" label={t('send.label_tx_fees')} className={styles.input} component={TxFeeInputField} />
           </div>
         </Accordion>
 
