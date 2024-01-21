@@ -597,6 +597,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       {lockDate && timelockedAddress && selectedJar !== undefined && (
         <PaymentConfirmModal
           isShown={showConfirmInputsModal}
+          size="lg"
           title={t('earn.fidelity_bond.confirm_modal.title')}
           onCancel={() => setShowConfirmInputsModal(false)}
           onConfirm={() => {

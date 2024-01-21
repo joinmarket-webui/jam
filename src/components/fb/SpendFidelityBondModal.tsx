@@ -484,14 +484,16 @@ const RenewFidelityBondModal = ({
         </rb.Modal.Body>
         <rb.Modal.Footer>
           <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
-            <rb.Button
-              variant="light"
-              disabled={isLoading}
-              onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
-              className="flex-1 d-flex justify-content-center align-items-center"
-            >
-              {t('global.cancel')}
-            </rb.Button>
+            {!txInfo && (
+              <rb.Button
+                variant="light"
+                disabled={isLoading}
+                onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
+                className="flex-1 d-flex justify-content-center align-items-center"
+              >
+                {t('global.cancel')}
+              </rb.Button>
+            )}
             <rb.Button
               ref={submitButtonRef}
               variant="dark"
@@ -506,6 +508,7 @@ const RenewFidelityBondModal = ({
       </rb.Modal>
       {lockDate && fidelityBond && timelockedAddress !== undefined && (
         <PaymentConfirmModal
+          size="lg"
           isShown={showConfirmSendModal}
           title={t('earn.fidelity_bond.renew.confirm_send_modal.title')}
           onCancel={() => {
