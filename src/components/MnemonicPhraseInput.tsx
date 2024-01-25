@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import MnemonicWordInput from './MnemonicWordInput'
 
 interface MnemonicPhraseInputProps {
@@ -15,6 +16,20 @@ export default function MnemonicPhraseInput({
   isValid,
   onChange,
 }: MnemonicPhraseInputProps) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const inputRefs = useRef<HTMLInputElement[]>([])
+
+  useEffect(() => {
+    if (activeIndex < mnemonicPhrase.length && isValid && isValid(activeIndex)) {
+      const nextIndex = activeIndex + 1
+      setActiveIndex(nextIndex)
+
+      if (inputRefs.current[nextIndex]) {
+        inputRefs.current[nextIndex].focus()
+      }
+    }
+  }, [mnemonicPhrase, activeIndex, isValid])
+
   return (
     <div className="container slashed-zeroes p-0">
       {mnemonicPhrase.map((_, outerIndex) => {
@@ -26,9 +41,11 @@ export default function MnemonicPhraseInput({
           <div className="row mb-4" key={outerIndex}>
             {wordGroup.map((givenWord, innerIndex) => {
               const wordIndex = outerIndex + innerIndex
+              const isCurrentActive = wordIndex === activeIndex
               return (
                 <div className="col" key={wordIndex}>
                   <MnemonicWordInput
+                    forwardRef={(el: HTMLInputElement) => (inputRefs.current[wordIndex] = el)}
                     index={wordIndex}
                     value={givenWord}
                     setValue={(value, i) => {
@@ -37,6 +54,8 @@ export default function MnemonicPhraseInput({
                     }}
                     isValid={isValid ? isValid(wordIndex) : undefined}
                     disabled={isDisabled ? isDisabled(wordIndex) : undefined}
+                    onFocus={() => setActiveIndex(wordIndex)}
+                    autoFocus={isCurrentActive}
                   />
                 </div>
               )
