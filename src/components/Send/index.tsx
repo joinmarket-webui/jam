@@ -379,10 +379,12 @@ export default function Send({ wallet }: SendProps) {
     setAlert(undefined)
 
     const abortCtrl = new AbortController()
-    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal }).catch((err) => {
-      if (abortCtrl.signal.aborted) return
-      setAlert({ variant: 'danger', message: err.message })
-    })
+    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal })
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+      .catch((err) => {
+        if (abortCtrl.signal.aborted) return
+        setAlert({ variant: 'danger', message: err.message })
+      })
   }
 
   const onSubmit = async (values: SendFormValues) => {
