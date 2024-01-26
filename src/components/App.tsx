@@ -123,6 +123,10 @@ export default function App() {
           <Route
             id="create-wallet"
             path={routes.createWallet}
+            loader={async () => {
+              const abortCtrl = new AbortController()
+              return Api.getWalletAll(abortCtrl)
+            }}
             element={<CreateWallet parentRoute={'home'} startWallet={startWallet} />}
           />
 
