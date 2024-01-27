@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Formik, FormikErrors, FormikProps } from 'formik'
+import { Field, Formik, FormikErrors, FormikProps } from 'formik'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import ToggleSwitch from '../ToggleSwitch'
@@ -16,7 +16,7 @@ import FeeBreakdown from './FeeBreakdown'
 import Accordion from '../Accordion'
 import Balance from '../Balance'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
-import { useEstimatedMaxCollaboratorFee, FeeValues } from '../../hooks/Fees'
+import { useEstimatedMaxCollaboratorFee, FeeValues, TxFee } from '../../hooks/Fees'
 import { buildCoinjoinRequirementSummary } from '../../hooks/CoinjoinRequirements'
 import {
   MAX_NUM_COLLABORATORS,
@@ -29,6 +29,9 @@ import { AccountBalanceSummary } from '../../context/BalanceSummary'
 import { WalletInfo } from '../../context/WalletContext'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './SendForm.module.css'
+import { TxFeeInputField, validateTxFee } from '../settings/TxFeeInputField'
+import { useServiceInfo } from '../../context/ServiceInfoContext'
+import { isFeatureEnabled } from '../../constants/features'
 
 type CollaborativeTransactionOptionsProps = {
   selectedAmount?: AmountValue
@@ -53,8 +56,8 @@ function CollaborativeTransactionOptions({
   feeConfigValues,
   reloadFeeConfigValues,
 }: CollaborativeTransactionOptionsProps) {
-  const settings = useSettings()
   const { t } = useTranslation()
+  const settings = useSettings()
 
   const [activeFeeConfigModalSection, setActiveFeeConfigModalSection] = useState<FeeConfigSectionKey>()
   const [showFeeConfigModal, setShowFeeConfigModal] = useState(false)
@@ -208,8 +211,9 @@ export interface SendFormValues {
   sourceJarIndex?: JarIndex
   destination?: DestinationValue
   amount?: AmountValue
-  numCollaborators?: number
+  txFee?: TxFee
   isCoinJoin: boolean
+  numCollaborators?: number
 }
 
 interface InnerSendFormProps {
@@ -236,6 +240,7 @@ const InnerSendForm = ({
   disabled = false,
 }: InnerSendFormProps) => {
   const { t } = useTranslation()
+  const serviceInfo = useServiceInfo()
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -283,6 +288,7 @@ const InnerSendForm = ({
         <DestinationInputField
           name="destination"
           label={t('send.label_recipient')}
+          className={styles.input}
           walletInfo={walletInfo}
           sourceJarIndex={props.values.sourceJarIndex}
           isLoading={isLoading}
@@ -293,6 +299,7 @@ const InnerSendForm = ({
         <AmountInputField
           name="amount"
           label={t('send.label_amount_input')}
+          className={styles.input}
           placeholder={t('send.placeholder_amount_input')}
           isLoading={isLoading}
           disabled={disabled}
@@ -320,8 +327,9 @@ const InnerSendForm = ({
               disabled={disabled || isLoading}
             />
           </rb.Form.Group>
+
           <div className={!props.values.isCoinJoin ? 'mb-4 d-block' : 'd-none'}>
-            {/* direct-send options: empty on purpose */}
+            {/* direct-send only options: empty on purpose */}
           </div>
           <div className={props.values.isCoinJoin ? 'mb-4 d-block' : 'd-none'}>
             <CollaborativeTransactionOptions
@@ -337,6 +345,17 @@ const InnerSendForm = ({
               reloadFeeConfigValues={reloadFeeConfigValues}
             />
           </div>
+
+          {serviceInfo && isFeatureEnabled('txFeeOnSend', serviceInfo) && (
+            <div className="mb-4">
+              <Field
+                name="txFee"
+                label={t('send.label_tx_fees')}
+                className={styles.input}
+                component={TxFeeInputField}
+              />
+            </div>
+          )}
         </Accordion>
 
         <SubmitButton
@@ -403,11 +422,24 @@ export const SendForm = ({
     }
     /** collaborators - end */
 
+    /** tx fees */
+    const txFeeErrors = validateTxFee(values.txFee, t)
+    if (txFeeErrors.value) {
+      errors.txFee = txFeeErrors.value
+    }
+    /** tx fees - end */
+
     return errors
   }
 
   return (
-    <Formik innerRef={formRef} initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+    <Formik
+      innerRef={formRef}
+      initialValues={initialValues}
+      validate={validate}
+      onSubmit={onSubmit}
+      enableReinitialize={true}
+    >
       {(props) => {
         return (
           <InnerSendForm
