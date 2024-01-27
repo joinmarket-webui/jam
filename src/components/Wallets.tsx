@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useCallback, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLoaderData, useNavigate, useNavigation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
@@ -7,17 +7,14 @@ import Sprite from './Sprite'
 import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
-import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 import { walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
 import { isFeatureEnabled } from '../constants/features'
 import { CurrentWallet } from '../context/WalletContext'
-
-function arrayEquals(a: any, b: any) {
-  return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index])
-}
+import { AllWalletsLoaderResponse } from './App'
 
 function sortWallets(
   wallets: Api.WalletFileName[],
@@ -39,10 +36,9 @@ interface WalletsProps {
 export default function Wallets({ currentWallet, startWallet, stopWallet }: WalletsProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const navigation = useNavigation()
   const serviceInfo = useServiceInfo()
-  const reloadServiceInfo = useReloadServiceInfo()
-  const [walletList, setWalletList] = useState<Api.WalletFileName[] | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { existingWallets, existingWalletsError } = useLoaderData() as AllWalletsLoaderResponse
   const [unlockingWalletFileName, setUnlockWalletFileName] = useState<Api.WalletFileName>()
   const isUnlocking = useMemo(() => unlockingWalletFileName !== undefined, [unlockingWalletFileName])
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -161,53 +157,26 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
   }, [currentWallet, lockWallet])
 
   useEffect(() => {
-    if (walletList && serviceInfo) {
-      const sortedWalletList = sortWallets(walletList, serviceInfo.walletFileName)
-      if (!arrayEquals(walletList, sortedWalletList)) {
-        setWalletList(sortedWalletList)
-      }
+    if (currentWallet && existingWallets?.wallets?.length > 1) {
+      setAlert({
+        variant: 'info',
+        message: t('wallets.alert_wallet_open', { currentWalletName: currentWallet.displayName }),
+        dismissible: false,
+      })
     }
-  }, [serviceInfo, walletList])
 
-  useEffect(() => {
-    const abortCtrl = new AbortController()
-
-    setIsLoading(true)
-    const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
-
-    const loadingWallets = Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
-      .then((data) => sortWallets(data.wallets || [], currentWallet?.walletFileName))
-      .then((sortedWalletList) => {
-        if (abortCtrl.signal.aborted) return
-
-        setWalletList(sortedWalletList)
-
-        if (currentWallet && sortedWalletList.length > 1) {
-          setAlert({
-            variant: 'info',
-            message: t('wallets.alert_wallet_open', { currentWalletName: currentWallet.displayName }),
-            dismissible: false,
-          })
-        }
-      })
-
-    Promise.all([loadingServiceInfo, loadingWallets])
-      .catch((err) => {
-        const message = err.message || t('wallets.error_loading_failed')
-        !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message })
-      })
-      .finally(() => !abortCtrl.signal.aborted && setIsLoading(false))
-
-    return () => abortCtrl.abort()
-  }, [currentWallet, reloadServiceInfo, t])
+    if (existingWalletsError) {
+      const message = existingWalletsError ?? t('wallets.error_loading_failed')
+      setAlert({ variant: 'danger', message })
+    }
+  }, [currentWallet, existingWallets?.wallets?.length, existingWalletsError, t])
 
   return (
     <>
       <div className="wallets">
         <PageTitle
           title={t('wallets.title')}
-          subtitle={walletList?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined}
+          subtitle={existingWallets?.wallets?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined}
           center={true}
         />
         {serviceInfo?.rescanning === true && (
@@ -216,51 +185,53 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
           </rb.Alert>
         )}
         {alert && <Alert {...alert} />}
-        {isLoading ? (
+        {navigation.state !== 'idle' ? (
           <div className="d-flex justify-content-center align-items-center">
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             <span>{t('wallets.text_loading')}</span>
           </div>
         ) : (
-          walletList?.map((walletFileName, index) => {
-            const noneActive = !serviceInfo?.walletFileName
-            const isActive = serviceInfo?.walletFileName === walletFileName
-            const hasToken =
-              currentWallet && currentWallet.token && currentWallet.walletFileName === serviceInfo?.walletFileName
+          sortWallets(existingWallets?.wallets ?? [], serviceInfo?.walletFileName).map(
+            (walletFileName: Api.WalletFileName, index: number) => {
+              const noneActive = !serviceInfo?.walletFileName
+              const isActive = serviceInfo?.walletFileName === walletFileName
+              const hasToken =
+                currentWallet && currentWallet.token && currentWallet.walletFileName === serviceInfo?.walletFileName
 
-            const showLockOptions = isActive && hasToken
-            const showUnlockOptions =
-              (!isUnlocking || unlockingWalletFileName === walletFileName) &&
-              (noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress))
-            return (
-              <Wallet
-                key={walletFileName}
-                walletFileName={walletFileName}
-                lockWallet={showLockOptions ? lockWallet : undefined}
-                unlockWallet={showUnlockOptions ? unlockWallet : undefined}
-                isActive={isActive}
-                makerRunning={makerRunning}
-                coinjoinInProgress={coinjoinInProgress}
-                className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
-                  index === 0 ? 'border-top-1' : 'border-top-0'
-                }`}
-              />
-            )
-          })
+              const showLockOptions = isActive && hasToken
+              const showUnlockOptions =
+                (!isUnlocking || unlockingWalletFileName === walletFileName) &&
+                (noneActive || (isActive && !hasToken) || (!hasToken && !makerRunning && !coinjoinInProgress))
+              return (
+                <Wallet
+                  key={walletFileName}
+                  walletFileName={walletFileName}
+                  lockWallet={showLockOptions ? lockWallet : undefined}
+                  unlockWallet={showUnlockOptions ? unlockWallet : undefined}
+                  isActive={isActive}
+                  makerRunning={makerRunning}
+                  coinjoinInProgress={coinjoinInProgress}
+                  className={`bg-transparent rounded-0 border-start-0 border-end-0 ${
+                    index === 0 ? 'border-top-1' : 'border-top-0'
+                  }`}
+                />
+              )
+            },
+          )
         )}
 
         <div
           className={classNames('d-flex', 'justify-content-center', 'gap-2', 'mt-4', {
-            'flex-column': walletList?.length === 0,
+            'flex-column': existingWallets?.wallets?.length === 0,
           })}
         >
           <Link
             to={routes.createWallet}
             className={classNames('btn', {
-              'btn-lg': walletList?.length === 0,
-              'btn-dark': walletList?.length === 0,
-              'btn-outline-dark': !walletList || walletList.length > 0,
-              disabled: isLoading || isUnlocking,
+              'btn-lg': existingWallets?.wallets?.length === 0,
+              'btn-dark': existingWallets?.wallets?.length === 0,
+              'btn-outline-dark': !existingWallets?.wallets || existingWallets?.wallets?.length > 0,
+              disabled: !existingWallets || isUnlocking,
             })}
             data-testid="new-wallet-btn"
           >
@@ -273,8 +244,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
             <Link
               to={routes.importWallet}
               className={classNames('btn', 'btn-outline-dark', {
-                'btn-lg': walletList?.length === 0,
-                disabled: isLoading || isUnlocking,
+                'btn-lg': existingWallets?.wallets?.length === 0,
+                disabled: !existingWallets || isUnlocking,
               })}
               data-testid="import-wallet-btn"
             >

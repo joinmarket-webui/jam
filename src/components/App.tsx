@@ -8,6 +8,7 @@ import {
   Route,
   RouterProvider,
   Outlet,
+  LoaderFunctionArgs,
 } from 'react-router-dom'
 import classNames from 'classnames'
 import * as Api from '../libs/JmWalletApi'
@@ -123,10 +124,7 @@ export default function App() {
           <Route
             id="create-wallet"
             path={routes.createWallet}
-            loader={async () => {
-              const abortCtrl = new AbortController()
-              return Api.getWalletAll(abortCtrl)
-            }}
+            loader={allWalletsLoader}
             element={<CreateWallet parentRoute={'home'} startWallet={startWallet} />}
           />
 
@@ -148,6 +146,7 @@ export default function App() {
               <Route
                 id="wallets"
                 path={routes.home}
+                loader={allWalletsLoader}
                 element={<Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />}
               />
               <Route
@@ -227,6 +226,18 @@ export default function App() {
     </>
   )
 }
+
+const allWalletsLoader = async ({ request }: LoaderFunctionArgs) => {
+  try {
+    const res = await Api.getWalletAll(request)
+    const existingWallets = await res.json()
+    return { existingWallets }
+  } catch (e: any) {
+    return { existingWalletsError: e.message }
+  }
+}
+
+export type AllWalletsLoaderResponse = Awaited<ReturnType<typeof allWalletsLoader>>
 
 const Loading = () => {
   const { t } = useTranslation()

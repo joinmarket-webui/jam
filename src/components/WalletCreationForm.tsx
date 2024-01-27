@@ -2,10 +2,11 @@ import { useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
-import { useLoaderData } from 'react-router-dom'
+import { useLoaderData, useNavigation } from 'react-router-dom'
 import Sprite from './Sprite'
 import { JM_WALLET_FILE_EXTENSION, sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
+import { AllWalletsLoaderResponse } from './App'
 
 export interface CreateWalletFormValues {
   walletName: string
@@ -38,7 +39,8 @@ const WalletCreationForm = ({
   onSubmit,
 }: WalletCreationFormProps) => {
   const { t, i18n } = useTranslation()
-  const existingWallets: any = useLoaderData()
+  const { existingWallets } = useLoaderData() as AllWalletsLoaderResponse
+  const navigation = useNavigation()
 
   const validate = useCallback(
     (values: CreateWalletFormValues) => {
@@ -46,7 +48,7 @@ const WalletCreationForm = ({
       if (!values.walletName || !validateWalletName(values.walletName)) {
         errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
       }
-      if (existingWallets.wallets.includes(`${values.walletName}.jmdat`)) {
+      if (navigation.state === 'idle' && existingWallets?.wallets?.includes(`${values.walletName}.jmdat`)) {
         errors.walletName = t('create_wallet.feedback_wallet_name_already_exists')
       }
       if (!values.password) {
@@ -57,7 +59,7 @@ const WalletCreationForm = ({
       }
       return errors
     },
-    [t],
+    [existingWallets?.wallets, navigation.state, t],
   )
 
   return (

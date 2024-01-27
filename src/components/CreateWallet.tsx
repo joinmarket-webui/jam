@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useNavigation } from 'react-router-dom'
 import { Trans, useTranslation } from 'react-i18next'
 import PageTitle from './PageTitle'
 import Sprite from './Sprite'
