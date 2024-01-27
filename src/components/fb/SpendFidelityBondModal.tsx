@@ -392,7 +392,7 @@ const RenewFidelityBondModal = ({
                   successText={<Sprite symbol="checkmark" width="18" height="18" />}
                   value={timelockedAddress || ''}
                 />
-                <div className="d-flex flex-column flex-grow-1">
+                <div className="d-flex flex-column flex-grow-1 overflow-scroll">
                   <div>{t('earn.fidelity_bond.review_inputs.label_address')}</div>
                   {!isLoading && !isLoadingTimelockedAddress ? (
                     <div className="font-monospace text-small pt-1">{timelockedAddress || '...'}</div>
