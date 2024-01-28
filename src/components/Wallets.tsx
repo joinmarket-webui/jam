@@ -14,7 +14,7 @@ import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
 import { isFeatureEnabled } from '../constants/features'
 import { CurrentWallet } from '../context/WalletContext'
-import { AllWalletsLoaderResponse } from './App'
+import { AllWalletsLoaderResponse } from './loaders/DataLoaders'
 
 function sortWallets(
   wallets: Api.WalletFileName[],
@@ -166,7 +166,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
     }
 
     if (existingWalletsError) {
-      const message = existingWalletsError ?? t('wallets.error_loading_failed')
+      const message = existingWalletsError || t('wallets.error_loading_failed')
       setAlert({ variant: 'danger', message })
     }
   }, [currentWallet, existingWallets?.wallets?.length, existingWalletsError, t])

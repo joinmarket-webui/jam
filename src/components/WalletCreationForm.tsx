@@ -6,7 +6,7 @@ import { useLoaderData, useNavigation } from 'react-router-dom'
 import Sprite from './Sprite'
 import { JM_WALLET_FILE_EXTENSION, sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
-import { AllWalletsLoaderResponse } from './App'
+import { AllWalletsLoaderResponse } from './loaders/DataLoaders'
 
 export interface CreateWalletFormValues {
   walletName: string

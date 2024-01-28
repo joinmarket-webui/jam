@@ -8,7 +8,6 @@ import {
   Route,
   RouterProvider,
   Outlet,
-  LoaderFunctionArgs,
 } from 'react-router-dom'
 import classNames from 'classnames'
 import * as Api from '../libs/JmWalletApi'
@@ -40,6 +39,7 @@ import Send from './Send'
 import RescanChain from './RescanChain'
 import Settings from './Settings'
 import Wallets from './Wallets'
+import { allWalletsLoader } from './loaders/DataLoaders'
 const DevSetupPage = lazy(() => import('./DevSetupPage'))
 
 export default function App() {
@@ -226,18 +226,6 @@ export default function App() {
     </>
   )
 }
-
-const allWalletsLoader = async ({ request }: LoaderFunctionArgs) => {
-  try {
-    const res = await Api.getWalletAll(request)
-    const existingWallets = await res.json()
-    return { existingWallets }
-  } catch (e: any) {
-    return { existingWalletsError: e.message }
-  }
-}
-
-export type AllWalletsLoaderResponse = Awaited<ReturnType<typeof allWalletsLoader>>
 
 const Loading = () => {
   const { t } = useTranslation()

@@ -1,8 +1,14 @@
 import { render, screen, act } from '../testUtils'
 import user from '@testing-library/user-event'
 import * as apiMock from '../libs/JmWalletApi'
+import * as loadersMock from './loaders/DataLoaders'
 
 import App from './App'
+
+jest.mock('./loaders/DataLoaders', () => ({
+  ...jest.requireActual('./loaders/DataLoaders'),
+  allWalletsLoader: jest.fn(),
+}))
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
@@ -15,6 +21,12 @@ describe('<App />', () => {
     const neverResolvingPromise = new Promise(() => {})
     ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
     ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(loadersMock.allWalletsLoader as jest.Mock).mockReturnValue(
+      Promise.resolve({
+        ok: true,
+        wallets: [],
+      }),
+    )
   })
 
   it('should display Onboarding screen initially', async () => {
