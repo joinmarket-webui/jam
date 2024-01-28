@@ -1,11 +1,19 @@
 import { BrowserRouter } from 'react-router-dom'
-import { act, render, screen, waitFor, waitForElementToBeRemoved } from '../testUtils'
+import { act, render, screen, waitFor } from '../testUtils'
 import user from '@testing-library/user-event'
 
 import * as apiMock from '../libs/JmWalletApi'
+import * as loadersMock from './loaders/DataLoaders'
+import * as reactRouterDomMock from 'react-router-dom'
 
 import Wallets from './Wallets'
 import { CurrentWallet } from '../context/WalletContext'
+import { t } from 'i18next'
+
+jest.mock('./loaders/DataLoaders', () => ({
+  ...jest.requireActual('./loaders/DataLoaders'),
+  allWalletsLoader: jest.fn(),
+}))
 
 jest.mock('../libs/JmWalletApi', () => ({
   ...jest.requireActual('../libs/JmWalletApi'),
@@ -16,11 +24,19 @@ jest.mock('../libs/JmWalletApi', () => ({
   getWalletLock: jest.fn(),
 }))
 
-const mockedNavigate = jest.fn()
+const mockedUseNavigate = jest.fn()
+const mockedUseNavigation = jest.fn()
+const mockUseLoaderData = {
+  existingWallets: ['test'],
+  existingWalletsError: null,
+}
+
 jest.mock('react-router-dom', () => {
   return {
     ...jest.requireActual('react-router-dom'),
-    useNavigate: () => mockedNavigate,
+    useNavigate: () => mockedUseNavigate,
+    useNavigation: () => mockedUseNavigation,
+    useLoaderData: () => mockUseLoaderData,
   }
 })
 
@@ -67,6 +83,13 @@ describe('<Wallets />', () => {
         ok: false,
       }),
     )
+    ;(loadersMock.allWalletsLoader as jest.Mock).mockReturnValue(
+      Promise.resolve({
+        ok: false,
+        message: 'error message',
+      }),
+    )
+    apiMock.Helper.throwError(jest.fn as unknown as Response, t('wallets.error_loading_failed'))
 
     await act(async () => setup({}))
 
@@ -122,6 +145,9 @@ describe('<Wallets />', () => {
         json: () => Promise.resolve({ version: '0.9.10dev' }),
       }),
     )
+    ;(reactRouterDomMock.useNavigation as jest.Mock).mockReturnValue({
+      state: 'idle',
+    })
 
     await act(async () => setup({}))
 
@@ -145,12 +171,6 @@ describe('<Wallets />', () => {
             coinjoin_in_process: false,
             wallet_name: 'None',
           }),
-      }),
-    )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ wallets: ['wallet0.jmdat', 'wallet1.jmdat'] }),
       }),
     )
     ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
@@ -243,6 +263,11 @@ describe('<Wallets />', () => {
             }),
         }),
       )
+      ;(loadersMock.allWalletsLoader as jest.Mock).mockReturnValue(
+        Promise.resolve({
+          existingWallets: [dummyWalletFileName],
+        }),
+      )
 
       await act(async () => setup({}))
 
@@ -260,7 +285,7 @@ describe('<Wallets />', () => {
         token: dummyToken,
         refresh_token: dummyToken,
       })
-      expect(mockedNavigate).toHaveBeenCalledWith('/wallet')
+      expect(mockedUseNavigate).toHaveBeenCalledWith('/wallet')
     })
 
     it('should add alert if unlocking of inactive wallet fails', async () => {
@@ -303,7 +328,7 @@ describe('<Wallets />', () => {
       await user.click(unlockWalletButton)
 
       expect(mockStartWallet).not.toHaveBeenCalled()
-      expect(mockedNavigate).not.toHaveBeenCalled()
+      expect(mockedUseNavigate).not.toHaveBeenCalled()
 
       expect(screen.getByText(apiErrorMessage.replace('Wallet', dummyWalletFileName))).toBeInTheDocument()
     })
