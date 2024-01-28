@@ -15,6 +15,18 @@ jest.mock('../libs/JmWalletApi', () => ({
   postWalletCreate: jest.fn(),
 }))
 
+const mockedUseNavigate = jest.fn()
+const mockedUseNavigation = jest.fn()
+const mockUseLoaderData = jest.fn()
+jest.mock('react-router-dom', () => {
+  return {
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockedUseNavigate,
+    useNavigation: () => mockedUseNavigation,
+    useLoaderData: () => mockUseLoaderData,
+  }
+})
+
 const NOOP = () => {}
 
 describe('<CreateWallet />', () => {
