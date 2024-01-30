@@ -28,7 +28,9 @@ let mockUseNavigation = {
   state: 'loading',
 }
 let mockUseLoaderData = {
-  existingWallets: [''],
+  existingWallets: {
+    wallets: [''],
+  },
   existingWalletsError: '',
 }
 jest.mock('react-router-dom', () => {
@@ -84,7 +86,9 @@ describe('<Wallets />', () => {
       }),
     )
     mockUseLoaderData = {
-      existingWallets: [],
+      existingWallets: {
+        wallets: [],
+      },
       existingWalletsError: t('wallets.error_loading_failed'),
     }
 
@@ -174,7 +178,9 @@ describe('<Wallets />', () => {
       }),
     )
     mockUseLoaderData = {
-      existingWallets: ['wallet0.jmdat', 'wallet1.jmdat'],
+      existingWallets: {
+        wallets: ['wallet0.jmdat', 'wallet1.jmdat'],
+      },
       existingWalletsError: '',
     }
     mockUseNavigation = {
@@ -265,7 +271,9 @@ describe('<Wallets />', () => {
         }),
       )
       mockUseLoaderData = {
-        existingWallets: [dummyWalletFileName],
+        existingWallets: {
+          wallets: [dummyWalletFileName],
+        },
         existingWalletsError: '',
       }
       mockUseNavigation = {
@@ -319,7 +327,9 @@ describe('<Wallets />', () => {
         }),
       )
       mockUseLoaderData = {
-        existingWallets: [dummyWalletFileName],
+        existingWallets: {
+          wallets: [dummyWalletFileName],
+        },
         existingWalletsError: '',
       }
       mockUseNavigation = {
@@ -369,7 +379,9 @@ describe('<Wallets />', () => {
         }),
       )
       mockUseLoaderData = {
-        existingWallets: [dummyWalletFileName],
+        existingWallets: {
+          wallets: [dummyWalletFileName],
+        },
         existingWalletsError: '',
       }
       mockUseNavigation = {
@@ -425,7 +437,9 @@ describe('<Wallets />', () => {
         }),
       )
       mockUseLoaderData = {
-        existingWallets: [dummyWalletFileName],
+        existingWallets: {
+          wallets: [dummyWalletFileName],
+        },
         existingWalletsError: '',
       }
       mockUseNavigation = {
@@ -487,7 +501,9 @@ describe('<Wallets />', () => {
           }),
         )
         mockUseLoaderData = {
-          existingWallets: [dummyWalletFileName],
+          existingWallets: {
+            wallets: [dummyWalletFileName],
+          },
           existingWalletsError: '',
         }
         mockUseNavigation = {
