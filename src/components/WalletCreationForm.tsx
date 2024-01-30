@@ -39,7 +39,7 @@ const WalletCreationForm = ({
   onSubmit,
 }: WalletCreationFormProps) => {
   const { t, i18n } = useTranslation()
-  const { existingWallets } = useLoaderData() as AllWalletsLoaderResponse
+  const getWalletAllResponse = useLoaderData() as AllWalletsLoaderResponse
   const navigation = useNavigation()
 
   const validate = useCallback(
@@ -48,7 +48,10 @@ const WalletCreationForm = ({
       if (!values.walletName || !validateWalletName(values.walletName)) {
         errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
       }
-      if (navigation.state === 'idle' && existingWallets?.wallets?.includes(`${values.walletName}.jmdat`)) {
+      if (
+        navigation.state === 'idle' &&
+        getWalletAllResponse?.existingWallets?.wallets?.includes(`${values.walletName}.jmdat`)
+      ) {
         errors.walletName = t('create_wallet.feedback_wallet_name_already_exists')
       }
       if (!values.password) {
@@ -59,7 +62,7 @@ const WalletCreationForm = ({
       }
       return errors
     },
-    [existingWallets?.wallets, navigation.state, t],
+    [getWalletAllResponse?.existingWallets?.wallets, navigation.state, t],
   )
 
   return (
