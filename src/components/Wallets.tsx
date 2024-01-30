@@ -157,7 +157,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
   }, [currentWallet, lockWallet])
 
   useEffect(() => {
-    if (currentWallet && getWalletAllResponse?.existingWallets?.length > 1) {
+    if (currentWallet && getWalletAllResponse?.existingWallets?.wallets?.length > 1) {
       setAlert({
         variant: 'info',
         message: t('wallets.alert_wallet_open', { currentWalletName: currentWallet.displayName }),
@@ -165,8 +165,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
       })
     }
 
-    if (getWalletAllResponse.existingWalletsError) {
-      const message = getWalletAllResponse.existingWalletsError || t('wallets.error_loading_failed')
+    if (getWalletAllResponse?.existingWalletsError) {
+      const message = getWalletAllResponse?.existingWalletsError || t('wallets.error_loading_failed')
       setAlert({ variant: 'danger', message })
     }
   }, [currentWallet, getWalletAllResponse, t])
@@ -176,7 +176,9 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
       <div className="wallets">
         <PageTitle
           title={t('wallets.title')}
-          subtitle={getWalletAllResponse?.existingWallets?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined}
+          subtitle={
+            getWalletAllResponse?.existingWallets?.wallets?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined
+          }
           center={true}
         />
         {serviceInfo?.rescanning === true && (
@@ -191,7 +193,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
             <span>{t('wallets.text_loading')}</span>
           </div>
         ) : (
-          sortWallets(getWalletAllResponse?.existingWallets ?? [], serviceInfo?.walletFileName).map(
+          sortWallets(getWalletAllResponse?.existingWallets?.wallets ?? [], serviceInfo?.walletFileName).map(
             (walletFileName: Api.WalletFileName, index: number) => {
               const noneActive = !serviceInfo?.walletFileName
               const isActive = serviceInfo?.walletFileName === walletFileName
@@ -222,16 +224,17 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
 
         <div
           className={classNames('d-flex', 'justify-content-center', 'gap-2', 'mt-4', {
-            'flex-column': getWalletAllResponse?.existingWallets?.length === 0,
+            'flex-column': getWalletAllResponse?.existingWallets?.wallets?.length === 0,
           })}
         >
           <Link
             to={routes.createWallet}
             className={classNames('btn', {
-              'btn-lg': getWalletAllResponse?.existingWallets?.length === 0,
-              'btn-dark': getWalletAllResponse?.existingWallets?.length === 0,
+              'btn-lg': getWalletAllResponse?.existingWallets?.wallets?.length === 0,
+              'btn-dark': getWalletAllResponse?.existingWallets?.wallets?.length === 0,
               'btn-outline-dark':
-                !getWalletAllResponse?.existingWallets || getWalletAllResponse?.existingWallets?.length > 0,
+                !getWalletAllResponse?.existingWallets?.wallets ||
+                getWalletAllResponse?.existingWallets?.wallets?.length > 0,
               disabled: !getWalletAllResponse || isUnlocking,
             })}
             data-testid="new-wallet-btn"
@@ -245,7 +248,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
             <Link
               to={routes.importWallet}
               className={classNames('btn', 'btn-outline-dark', {
-                'btn-lg': getWalletAllResponse?.existingWallets?.length === 0,
+                'btn-lg': getWalletAllResponse?.existingWallets?.wallets?.length === 0,
                 disabled: !getWalletAllResponse || isUnlocking,
               })}
               data-testid="import-wallet-btn"
