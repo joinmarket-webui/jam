@@ -38,7 +38,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
   const navigate = useNavigate()
   const navigation = useNavigation()
   const serviceInfo = useServiceInfo()
-  const { existingWallets, existingWalletsError } = useLoaderData() as AllWalletsLoaderResponse
+  const getWalletAllResponse = useLoaderData() as AllWalletsLoaderResponse
   const [unlockingWalletFileName, setUnlockWalletFileName] = useState<Api.WalletFileName>()
   const isUnlocking = useMemo(() => unlockingWalletFileName !== undefined, [unlockingWalletFileName])
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -157,7 +157,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
   }, [currentWallet, lockWallet])
 
   useEffect(() => {
-    if (currentWallet && existingWallets?.wallets?.length > 1) {
+    if (currentWallet && getWalletAllResponse?.existingWallets?.length > 1) {
       setAlert({
         variant: 'info',
         message: t('wallets.alert_wallet_open', { currentWalletName: currentWallet.displayName }),
@@ -165,18 +165,18 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
       })
     }
 
-    if (existingWalletsError) {
-      const message = existingWalletsError || t('wallets.error_loading_failed')
+    if (getWalletAllResponse.existingWalletsError) {
+      const message = getWalletAllResponse.existingWalletsError || t('wallets.error_loading_failed')
       setAlert({ variant: 'danger', message })
     }
-  }, [currentWallet, existingWallets?.wallets?.length, existingWalletsError, t])
+  }, [currentWallet, getWalletAllResponse, t])
 
   return (
     <>
       <div className="wallets">
         <PageTitle
           title={t('wallets.title')}
-          subtitle={existingWallets?.wallets?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined}
+          subtitle={getWalletAllResponse?.existingWallets?.length === 0 ? t('wallets.subtitle_no_wallets') : undefined}
           center={true}
         />
         {serviceInfo?.rescanning === true && (
@@ -185,13 +185,13 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
           </rb.Alert>
         )}
         {alert && <Alert {...alert} />}
-        {navigation.state !== 'idle' ? (
+        {navigation.state === 'loading' ? (
           <div className="d-flex justify-content-center align-items-center">
             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
             <span>{t('wallets.text_loading')}</span>
           </div>
         ) : (
-          sortWallets(existingWallets?.wallets ?? [], serviceInfo?.walletFileName).map(
+          sortWallets(getWalletAllResponse?.existingWallets ?? [], serviceInfo?.walletFileName).map(
             (walletFileName: Api.WalletFileName, index: number) => {
               const noneActive = !serviceInfo?.walletFileName
               const isActive = serviceInfo?.walletFileName === walletFileName
@@ -222,16 +222,17 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
 
         <div
           className={classNames('d-flex', 'justify-content-center', 'gap-2', 'mt-4', {
-            'flex-column': existingWallets?.wallets?.length === 0,
+            'flex-column': getWalletAllResponse?.existingWallets?.length === 0,
           })}
         >
           <Link
             to={routes.createWallet}
             className={classNames('btn', {
-              'btn-lg': existingWallets?.wallets?.length === 0,
-              'btn-dark': existingWallets?.wallets?.length === 0,
-              'btn-outline-dark': !existingWallets?.wallets || existingWallets?.wallets?.length > 0,
-              disabled: !existingWallets || isUnlocking,
+              'btn-lg': getWalletAllResponse?.existingWallets?.length === 0,
+              'btn-dark': getWalletAllResponse?.existingWallets?.length === 0,
+              'btn-outline-dark':
+                !getWalletAllResponse?.existingWallets || getWalletAllResponse?.existingWallets?.length > 0,
+              disabled: !getWalletAllResponse || isUnlocking,
             })}
             data-testid="new-wallet-btn"
           >
@@ -244,8 +245,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
             <Link
               to={routes.importWallet}
               className={classNames('btn', 'btn-outline-dark', {
-                'btn-lg': existingWallets?.wallets?.length === 0,
-                disabled: !existingWallets || isUnlocking,
+                'btn-lg': getWalletAllResponse?.existingWallets?.length === 0,
+                disabled: !getWalletAllResponse || isUnlocking,
               })}
               data-testid="import-wallet-btn"
             >

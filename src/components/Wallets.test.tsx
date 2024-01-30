@@ -4,7 +4,6 @@ import user from '@testing-library/user-event'
 
 import * as apiMock from '../libs/JmWalletApi'
 import * as loadersMock from './loaders/DataLoaders'
-import * as reactRouterDomMock from 'react-router-dom'
 
 import Wallets from './Wallets'
 import { CurrentWallet } from '../context/WalletContext'
@@ -24,18 +23,19 @@ jest.mock('../libs/JmWalletApi', () => ({
   getWalletLock: jest.fn(),
 }))
 
-const mockedUseNavigate = jest.fn()
-const mockedUseNavigation = jest.fn()
-const mockUseLoaderData = {
-  existingWallets: ['test'],
-  existingWalletsError: null,
+const mockUseNavigate = jest.fn()
+let mockUseNavigation = {
+  state: 'loading',
 }
-
+let mockUseLoaderData = {
+  existingWallets: [''],
+  existingWalletsError: '',
+}
 jest.mock('react-router-dom', () => {
   return {
     ...jest.requireActual('react-router-dom'),
-    useNavigate: () => mockedUseNavigate,
-    useNavigation: () => mockedUseNavigation,
+    useNavigate: () => mockUseNavigate,
+    useNavigation: () => mockUseNavigation,
     useLoaderData: () => mockUseLoaderData,
   }
 })
@@ -83,13 +83,10 @@ describe('<Wallets />', () => {
         ok: false,
       }),
     )
-    ;(loadersMock.allWalletsLoader as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: false,
-        message: 'error message',
-      }),
-    )
-    apiMock.Helper.throwError(jest.fn as unknown as Response, t('wallets.error_loading_failed'))
+    mockUseLoaderData = {
+      existingWallets: [],
+      existingWalletsError: t('wallets.error_loading_failed'),
+    }
 
     await act(async () => setup({}))
 
@@ -145,9 +142,6 @@ describe('<Wallets />', () => {
         json: () => Promise.resolve({ version: '0.9.10dev' }),
       }),
     )
-    ;(reactRouterDomMock.useNavigation as jest.Mock).mockReturnValue({
-      state: 'idle',
-    })
 
     await act(async () => setup({}))
 
@@ -179,6 +173,13 @@ describe('<Wallets />', () => {
         json: () => Promise.resolve({ version: '0.9.10dev' }),
       }),
     )
+    mockUseLoaderData = {
+      existingWallets: ['wallet0.jmdat', 'wallet1.jmdat'],
+      existingWalletsError: '',
+    }
+    mockUseNavigation = {
+      state: 'idle',
+    }
 
     await act(async () => setup({}))
 
@@ -263,11 +264,13 @@ describe('<Wallets />', () => {
             }),
         }),
       )
-      ;(loadersMock.allWalletsLoader as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          existingWallets: [dummyWalletFileName],
-        }),
-      )
+      mockUseLoaderData = {
+        existingWallets: [dummyWalletFileName],
+        existingWalletsError: '',
+      }
+      mockUseNavigation = {
+        state: 'idle',
+      }
 
       await act(async () => setup({}))
 
@@ -285,7 +288,7 @@ describe('<Wallets />', () => {
         token: dummyToken,
         refresh_token: dummyToken,
       })
-      expect(mockedUseNavigate).toHaveBeenCalledWith('/wallet')
+      expect(mockUseNavigate).toHaveBeenCalledWith('/wallet')
     })
 
     it('should add alert if unlocking of inactive wallet fails', async () => {
@@ -315,6 +318,13 @@ describe('<Wallets />', () => {
           json: () => Promise.resolve({ message: apiErrorMessage }),
         }),
       )
+      mockUseLoaderData = {
+        existingWallets: [dummyWalletFileName],
+        existingWalletsError: '',
+      }
+      mockUseNavigation = {
+        state: 'idle',
+      }
 
       await act(async () => setup({}))
 
@@ -328,7 +338,7 @@ describe('<Wallets />', () => {
       await user.click(unlockWalletButton)
 
       expect(mockStartWallet).not.toHaveBeenCalled()
-      expect(mockedUseNavigate).not.toHaveBeenCalled()
+      expect(mockUseNavigate).not.toHaveBeenCalled()
 
       expect(screen.getByText(apiErrorMessage.replace('Wallet', dummyWalletFileName))).toBeInTheDocument()
     })
@@ -358,6 +368,13 @@ describe('<Wallets />', () => {
           json: () => Promise.resolve({ walletname: dummyWalletFileName, already_locked: false }),
         }),
       )
+      mockUseLoaderData = {
+        existingWallets: [dummyWalletFileName],
+        existingWalletsError: '',
+      }
+      mockUseNavigation = {
+        state: 'idle',
+      }
 
       await act(async () =>
         setup({
@@ -407,6 +424,13 @@ describe('<Wallets />', () => {
           json: () => Promise.resolve({ message: apiErrorMessage }),
         }),
       )
+      mockUseLoaderData = {
+        existingWallets: [dummyWalletFileName],
+        existingWalletsError: '',
+      }
+      mockUseNavigation = {
+        state: 'idle',
+      }
 
       await act(async () =>
         setup({
@@ -462,6 +486,13 @@ describe('<Wallets />', () => {
             json: () => Promise.resolve({ walletname: dummyWalletFileName, already_locked: false }),
           }),
         )
+        mockUseLoaderData = {
+          existingWallets: [dummyWalletFileName],
+          existingWalletsError: '',
+        }
+        mockUseNavigation = {
+          state: 'idle',
+        }
 
         await act(async () =>
           setup({
