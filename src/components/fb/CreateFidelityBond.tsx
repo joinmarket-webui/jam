@@ -5,7 +5,6 @@ import { Trans, useTranslation } from 'react-i18next'
 import { CurrentWallet, Utxo, Utxos, WalletInfo, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
-import { ConfirmModal } from '../Modal'
 import {
   SelectJar,
   SelectUtxos,
@@ -18,8 +17,32 @@ import {
 import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
+import { PaymentConfirmModal } from '../PaymentConfirmModal'
+import { useFeeConfigValues } from '../../hooks/Fees'
 
 const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
+
+export const LockInfoAlert = ({ lockDate, className }: { lockDate: Api.Lockdate; className?: string }) => {
+  const { t, i18n } = useTranslation()
+
+  return (
+    <Alert
+      className={className}
+      variant="warning"
+      message={
+        <>
+          {t('earn.fidelity_bond.confirm_modal.body', {
+            date: new Date(fb.lockdate.toTimestamp(lockDate)).toUTCString(),
+            humanReadableDuration: fb.time.humanReadableDuration({
+              to: fb.lockdate.toTimestamp(lockDate),
+              locale: i18n.resolvedLanguage || i18n.language,
+            }),
+          })}
+        </>
+      }
+    />
+  )
+}
 
 const steps = {
   selectDate: 0,
@@ -41,8 +64,9 @@ interface CreateFidelityBondProps {
 }
 
 const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDone }: CreateFidelityBondProps) => {
+  const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  const { t, i18n } = useTranslation()
+  const feeConfigValues = useFeeConfigValues()[0]
 
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -53,17 +77,19 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
-  const [timelockedAddress, setTimelockedAddress] = useState(null)
+  const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
   const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Utxo>()
   const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
 
-  const allUtxosSelected = useMemo(() => {
-    return (
-      walletInfo.balanceSummary.calculatedTotalBalanceInSats ===
-      selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0)
-    )
-  }, [walletInfo, selectedUtxos])
+  const selectedUtxosTotalValue = useMemo(
+    () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
+    [selectedUtxos],
+  )
+  const allUtxosSelected = useMemo(
+    () => walletInfo.balanceSummary.calculatedTotalBalanceInSats === selectedUtxosTotalValue,
+    [walletInfo, selectedUtxosTotalValue],
+  )
 
   const yearsRange = useMemo(() => {
     if (isDebugFeatureEnabled('allowCreatingExpiredFidelityBond')) {
@@ -79,7 +105,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     setSelectedJar(undefined)
     setSelectedUtxos([])
     setLockDate(null)
-    setTimelockedAddress(null)
+    setTimelockedAddress(undefined)
     setAlert(undefined)
     setCreatedFidelityBondUtxo(undefined)
     setFrozenUtxos([])
@@ -254,8 +280,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         return (
           <SelectDate
             description={t('earn.fidelity_bond.select_date.description')}
-            selectableYearsRange={yearsRange}
-            onDateSelected={(date) => setLockDate(date)}
+            yearsRange={yearsRange}
+            onChange={(date) => setLockDate(date)}
           />
         )
       case steps.selectJar:
@@ -307,7 +333,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           )
         }
 
-        if (timelockedAddress === null) {
+        if (!timelockedAddress) {
           return <div>{t('earn.fidelity_bond.error_loading_address')}</div>
         }
 
@@ -386,7 +412,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
         return t('earn.fidelity_bond.freeze_utxos.text_primary_button')
       case steps.reviewInputs:
-        if (timelockedAddress === null) return t('earn.fidelity_bond.review_inputs.text_primary_button_error')
+        if (!timelockedAddress) return t('earn.fidelity_bond.review_inputs.text_primary_button_error')
 
         if (!onlyCjOutOrFbUtxosSelected()) {
           return t('earn.fidelity_bond.review_inputs.text_primary_button_unsafe')
@@ -522,7 +548,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       loadTimeLockedAddress(lockDate!)
     }
 
-    if (step === steps.reviewInputs && timelockedAddress === null) {
+    if (step === steps.reviewInputs && !timelockedAddress) {
       loadTimeLockedAddress(lockDate!)
       return
     }
@@ -568,26 +594,32 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   return (
     <div className={styles.container}>
       {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
-      {lockDate && (
-        <ConfirmModal
+      {lockDate && timelockedAddress && selectedJar !== undefined && (
+        <PaymentConfirmModal
           isShown={showConfirmInputsModal}
+          size="lg"
           title={t('earn.fidelity_bond.confirm_modal.title')}
           onCancel={() => setShowConfirmInputsModal(false)}
           onConfirm={() => {
             setStep(steps.createFidelityBond)
             setShowConfirmInputsModal(false)
-            directSweepToFidelityBond(selectedJar!, timelockedAddress!)
+            directSweepToFidelityBond(selectedJar, timelockedAddress)
+          }}
+          data={{
+            sourceJarIndex: undefined, // dont show a source jar - might be confusing in this context
+            destination: timelockedAddress,
+            amount: selectedUtxosTotalValue,
+            isSweep: true,
+            isCoinjoin: false, // not sent as collaborative transaction
+            numCollaborators: undefined,
+            feeConfigValues,
+            showPrivacyInfo: false,
           }}
         >
-          {t('earn.fidelity_bond.confirm_modal.body', {
-            date: new Date(fb.lockdate.toTimestamp(lockDate)).toUTCString(),
-            humanReadableDuration: fb.time.humanReadableDuration({
-              to: fb.lockdate.toTimestamp(lockDate),
-              locale: i18n.resolvedLanguage || i18n.language,
-            }),
-          })}
-        </ConfirmModal>
+          <LockInfoAlert className="text-start mt-4" lockDate={lockDate} />
+        </PaymentConfirmModal>
       )}
+
       <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
         <div className="d-flex justify-content-between align-items-center">
           <div className={styles.title}>

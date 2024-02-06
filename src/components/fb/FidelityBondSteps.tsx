@@ -10,17 +10,15 @@ import { SelectableJar, jarInitial, jarFillLevel } from '../jars/Jar'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import { CopyButton } from '../CopyButton'
-import LockdateForm from './LockdateForm'
+import LockdateForm, { LockdateFormProps } from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
 
 const cx = classnamesBind.bind(styles)
 
-interface SelectDateProps {
+type SelectDateProps = {
   description: string
-  selectableYearsRange: fb.YearsRange
-  onDateSelected: (lockdate: Api.Lockdate | null) => void
-}
+} & LockdateFormProps
 
 interface SelectJarProps {
   description: string
@@ -62,7 +60,7 @@ interface ReviewInputsProps {
   jar: JarIndex
   utxos: Array<Utxo>
   selectedUtxos: Array<Utxo>
-  timelockedAddress: string
+  timelockedAddress: Api.BitcoinAddress
 }
 
 interface CreatedFidelityBondProps {
@@ -70,11 +68,11 @@ interface CreatedFidelityBondProps {
   frozenUtxos: Array<Utxo>
 }
 
-const SelectDate = ({ description, selectableYearsRange, onDateSelected }: SelectDateProps) => {
+const SelectDate = ({ description, yearsRange, disabled, onChange }: SelectDateProps) => {
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>{description}</div>
-      <LockdateForm onChange={(date) => onDateSelected(date)} yearsRange={selectableYearsRange} />
+      <LockdateForm yearsRange={yearsRange} onChange={onChange} disabled={disabled} />
     </div>
   )
 }

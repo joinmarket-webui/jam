@@ -8,6 +8,7 @@
     "close": "Close",
     "abort": "Abort",
     "cancel": "Cancel",
+    "done": "Done",
     "table": {
       "pagination": {
         "items_per_page": {
@@ -515,7 +516,19 @@
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
         "label_address": "Timelocked address",
-        "button_spend": "Unlock Funds"
+        "button_spend": "Unlock Funds",
+        "button_renew": "Renew Bond"
+      },
+      "renew": {
+        "title": "Renew Bond",
+        "text_loading": "Loading...",
+        "text_sending": "Renewing...",
+        "text_button_submit": "Renew Bond",
+        "success_text": "Fidelity Bond renewed successfully!",
+        "error_renewing_fidelity_bond": "Error while renewing expired fidelity bond.",
+        "confirm_send_modal": {
+          "title": "Confirm renewing expired Fidelity Bond"
+        }
       },
       "move": {
         "title": "Unlock Funds",

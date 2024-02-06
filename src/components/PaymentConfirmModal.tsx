@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { PropsWithChildren, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
@@ -6,10 +6,10 @@ import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { FeeValues, TxFee, useEstimatedMaxCollaboratorFee } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
-import styles from './PaymentConfirmModal.module.css'
-import { AmountSats } from '../libs/JmWalletApi'
+import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
+import styles from './PaymentConfirmModal.module.css'
 
 const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee, txFeeFactor) => {
   if (txFee.unit !== 'sats/kilo-vbyte') {
@@ -57,7 +57,7 @@ const useMiningFeeText = ({ tx_fees, tx_fees_factor }: Pick<FeeValues, 'tx_fees'
 
 interface PaymentDisplayInfo {
   sourceJarIndex?: JarIndex
-  destination: String
+  destination: BitcoinAddress | string
   amount: AmountSats
   isSweep: boolean
   isCoinjoin: boolean
@@ -81,8 +81,9 @@ export function PaymentConfirmModal({
     feeConfigValues,
     showPrivacyInfo = true,
   },
+  children,
   ...confirmModalProps
-}: PaymentConfirmModalProps) {
+}: PropsWithChildren<PaymentConfirmModalProps>) {
   const { t } = useTranslation()
   const settings = useSettings()
 
@@ -204,6 +205,11 @@ export function PaymentConfirmModal({
             <rb.Col xs={8} md={9} className="text-start">
               {miningFeeText}
             </rb.Col>
+          </rb.Row>
+        )}
+        {children && (
+          <rb.Row>
+            <rb.Col xs={12}>{children}</rb.Col>
           </rb.Row>
         )}
       </rb.Container>
