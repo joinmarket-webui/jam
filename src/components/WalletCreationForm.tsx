@@ -6,7 +6,6 @@ import Sprite from './Sprite'
 import { JM_WALLET_FILE_EXTENSION, sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
 import * as Api from '../libs/JmWalletApi'
-import { useServiceInfo } from '../context/ServiceInfoContext'
 
 export interface CreateWalletFormValues {
   walletName: string
