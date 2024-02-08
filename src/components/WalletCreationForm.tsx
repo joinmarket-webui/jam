@@ -1,10 +1,12 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors } from 'formik'
 import Sprite from './Sprite'
 import { JM_WALLET_FILE_EXTENSION, sanitizeWalletName } from '../utils'
 import styles from './WalletCreationForm.module.css'
+import * as Api from '../libs/JmWalletApi'
+import { useServiceInfo } from '../context/ServiceInfoContext'
 
 export interface CreateWalletFormValues {
   walletName: string
@@ -36,13 +38,28 @@ const WalletCreationForm = ({
   onCancel,
   onSubmit,
 }: WalletCreationFormProps) => {
+  const [walletList, setWalletList] = useState<Api.WalletFileName[] | null>(null)
   const { t, i18n } = useTranslation()
+
+  useEffect(() => {
+    const abortCtrl = new AbortController()
+
+    Api.getWalletAll({ signal: abortCtrl.signal })
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
+      .then((data) => {
+        if (abortCtrl.signal.aborted) return
+        setWalletList(data.wallets)
+      })
+  }, [t])
 
   const validate = useCallback(
     (values: CreateWalletFormValues) => {
       const errors = {} as FormikErrors<CreateWalletFormValues>
       if (!values.walletName || !validateWalletName(values.walletName)) {
         errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
+      }
+      if (walletList && walletList.includes(`${values.walletName}.jmdat`)) {
+        errors.walletName = t('create_wallet.feedback_wallet_name_already_exists')
       }
       if (!values.password) {
         errors.password = t('create_wallet.feedback_invalid_password')
@@ -52,7 +69,7 @@ const WalletCreationForm = ({
       }
       return errors
     },
-    [t],
+    [t, walletList],
   )
 
   return (

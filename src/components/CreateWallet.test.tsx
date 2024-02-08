@@ -13,6 +13,7 @@ jest.mock('../libs/JmWalletApi', () => ({
   getGetinfo: jest.fn(),
   getSession: jest.fn(),
   postWalletCreate: jest.fn(),
+  getWalletAll: jest.fn(),
 }))
 
 const NOOP = () => {}
@@ -38,6 +39,7 @@ describe('<CreateWallet />', () => {
     const neverResolvingPromise = new Promise(() => {})
     ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
     ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
   })
 
   it('should display alert when rescanning is active', async () => {
