@@ -59,6 +59,16 @@ describe('<Wallets />', () => {
     ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
     ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
     ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
+    // ;jest.mock('react-router-dom', () => {
+    //   return {
+    //     ...jest.requireActual('react-router-dom'),
+    //     useNavigate: () => mockedUseNavigate,
+    //     useNavigation: () => ({
+    //       state: 'idle'
+    //     }),
+    //     useLoaderData: () => mockUseLoaderData,
+    //   }
+    // })
   })
 
   it('should display loading indicator while fetching data', async () => {

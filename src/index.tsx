@@ -1,5 +1,4 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
 
 import App from './components/App'
 import { SettingsProvider } from './context/SettingsContext'
@@ -11,10 +10,11 @@ import { ServiceConfigProvider } from './context/ServiceConfigContext'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import './i18n/config'
+import ReactDOM from 'react-dom/client'
 
-const container = document.getElementById('root')
-const root = createRoot(container!)
-root.render(
+// const container = document.getElementById('root')
+// const root = createRoot(container!)
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <SettingsProvider>
       <WalletProvider>

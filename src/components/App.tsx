@@ -42,53 +42,141 @@ import Wallets from './Wallets'
 import { allWalletsLoader } from './loaders/DataLoaders'
 const DevSetupPage = lazy(() => import('./DevSetupPage'))
 
-export default function App() {
-  const { t } = useTranslation()
-  const settings = useSettings()
-  const currentWallet = useCurrentWallet()
-  const setCurrentWallet = useSetCurrentWallet()
-  const clearCurrentWallet = useClearCurrentWallet()
-  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  const serviceInfo = useServiceInfo()
-  const sessionConnectionError = useSessionConnectionError()
-  const [reloadingWalletInfoCounter, setReloadingWalletInfoCounter] = useState(0)
-  const isReloadingWalletInfo = useMemo(() => reloadingWalletInfoCounter > 0, [reloadingWalletInfoCounter])
-
-  const startWallet = useCallback(
-    (walletFileName: Api.WalletFileName, auth: Api.ApiAuthContext) => {
-      setSession({ walletFileName, auth })
-      setCurrentWallet({ walletFileName, token: auth.token })
+const router3 = (startWallet: any, sessionConnectionError: any, currentWallet: any, stopWallet: any, t: any) =>
+  createBrowserRouter([
+    {
+      id: 'base',
+      element: (
+        <>
+          <Navbar />
+          <rb.Container as="main" className="py-4 py-lg-5" fluid="xl">
+            <Outlet />
+          </rb.Container>
+          <Footer />
+        </>
+      ),
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          id: 'error-boundary',
+          element: (
+            <Layout>
+              <Outlet />
+            </Layout>
+          ),
+          errorElement: (
+            <Layout variant="wide">
+              <ErrorPage />
+            </Layout>
+          ),
+          children: [
+            // Routes that are displayed even if the connection to the backend is down
+            {
+              id: 'create-wallet',
+              path: routes.createWallet,
+              loader: allWalletsLoader,
+              element: <CreateWallet parentRoute="home" startWallet={startWallet} />,
+            },
+            sessionConnectionError && {
+              id: '404',
+              path: '*',
+              element: (
+                <rb.Alert variant="danger">
+                  {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
+                </rb.Alert>
+              ),
+            },
+            // Routes that are displayed only if the backend is reachable
+            !sessionConnectionError && [
+              {
+                id: 'wallets',
+                path: routes.home,
+                loader: allWalletsLoader,
+                element: <Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />,
+              },
+              {
+                id: 'import-wallet',
+                path: routes.importWallet,
+                element: <ImportWallet parentRoute="home" startWallet={startWallet} />,
+              },
+              currentWallet && [
+                {
+                  id: 'wallet',
+                  path: routes.wallet,
+                  element: <MainWalletView wallet={currentWallet} />,
+                },
+                {
+                  id: 'jam',
+                  path: routes.jam,
+                  element: <Jam wallet={currentWallet} />,
+                },
+                {
+                  id: 'send',
+                  path: routes.send,
+                  element: <Send wallet={currentWallet} />,
+                },
+                {
+                  id: 'earn',
+                  path: routes.earn,
+                  element: <Earn wallet={currentWallet} />,
+                },
+                {
+                  id: 'receive',
+                  path: routes.receive,
+                  element: <Receive wallet={currentWallet} />,
+                },
+                {
+                  id: 'rescan',
+                  path: routes.rescanChain,
+                  element: <RescanChain wallet={currentWallet} />,
+                },
+                {
+                  id: 'settings',
+                  path: routes.settings,
+                  element: <Settings wallet={currentWallet} stopWallet={stopWallet} />,
+                },
+              ],
+              isDebugFeatureEnabled('errorExamplePage') && {
+                id: 'error-example',
+                path: routes.__errorExample,
+                element: <ErrorThrowingComponent />,
+              },
+              isDebugFeatureEnabled('devSetupPage') && {
+                id: 'dev-env',
+                path: routes.__devSetup,
+                element: (
+                  <Suspense fallback={<Loading />}>
+                    <DevSetupPage />
+                  </Suspense>
+                ),
+              },
+              {
+                id: '404',
+                path: '*',
+                element: <Navigate to={routes.home} replace />,
+              },
+            ],
+          ],
+        },
+      ],
     },
-    [setCurrentWallet],
-  )
+  ])
 
-  const stopWallet = useCallback(() => {
-    clearCurrentWallet()
-    clearSession()
-  }, [clearCurrentWallet])
+// passing in anything here causes multiple renders. Why?
+// actually it's not the passing in, it's the use of the function
+// this works fine in photo voice...
+const router2 = createBrowserRouter([
+  {
+    id: 'wallets',
+    path: routes.home,
+    loader: allWalletsLoader,
+    element: <h1>Wallets</h1>,
+    // element: <Wallets currentWallet={currentWallet} startWallet={startWallet} stopWallet={stopWallet} />
+  },
+])
 
-  const reloadWalletInfo = useCallback(
-    (delay: Milliseconds) => {
-      setReloadingWalletInfoCounter((current) => current + 1)
-      console.info('Reloading wallet info...')
-      return new Promise<WalletInfo>((resolve, reject) =>
-        setTimeout(() => {
-          const abortCtrl = new AbortController()
-          reloadCurrentWalletInfo
-            .reloadAll({ signal: abortCtrl.signal })
-            .then((result) => resolve(result))
-            .catch((error) => reject(error))
-            .finally(() => {
-              console.info('Finished reloading wallet info.')
-              setReloadingWalletInfoCounter((current) => current - 1)
-            })
-        }, delay),
-      )
-    },
-    [reloadCurrentWalletInfo],
-  )
-
-  const router = createBrowserRouter(
+const router = (startWallet: any, sessionConnectionError: any, currentWallet: any, stopWallet: any, t: any) =>
+  createBrowserRouter(
     createRoutesFromElements(
       <Route
         id="base"
@@ -198,6 +286,52 @@ export default function App() {
     },
   )
 
+export default function App() {
+  const { t } = useTranslation()
+  const settings = useSettings()
+  const currentWallet = useCurrentWallet()
+  const setCurrentWallet = useSetCurrentWallet()
+  const clearCurrentWallet = useClearCurrentWallet()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+  const serviceInfo = useServiceInfo()
+  const sessionConnectionError = useSessionConnectionError()
+  const [reloadingWalletInfoCounter, setReloadingWalletInfoCounter] = useState(0)
+  const isReloadingWalletInfo = useMemo(() => reloadingWalletInfoCounter > 0, [reloadingWalletInfoCounter])
+
+  const startWallet = useCallback(
+    (walletFileName: Api.WalletFileName, auth: Api.ApiAuthContext) => {
+      setSession({ walletFileName, auth })
+      setCurrentWallet({ walletFileName, token: auth.token })
+    },
+    [setCurrentWallet],
+  )
+
+  const stopWallet = useCallback(() => {
+    clearCurrentWallet()
+    clearSession()
+  }, [clearCurrentWallet])
+
+  const reloadWalletInfo = useCallback(
+    (delay: Milliseconds) => {
+      setReloadingWalletInfoCounter((current) => current + 1)
+      console.info('Reloading wallet info...')
+      return new Promise<WalletInfo>((resolve, reject) =>
+        setTimeout(() => {
+          const abortCtrl = new AbortController()
+          reloadCurrentWalletInfo
+            .reloadAll({ signal: abortCtrl.signal })
+            .then((result) => resolve(result))
+            .catch((error) => reject(error))
+            .finally(() => {
+              console.info('Finished reloading wallet info.')
+              setReloadingWalletInfoCounter((current) => current - 1)
+            })
+        }, delay),
+      )
+    },
+    [reloadCurrentWalletInfo],
+  )
+
   if (settings.showOnboarding === true) {
     return (
       <rb.Container className="onboarding pt-3 pt-md-5">
@@ -220,7 +354,9 @@ export default function App() {
           'jm-maker-running': serviceInfo?.makerRunning === true,
         })}
       >
-        <RouterProvider router={router} />
+        {/* <RouterProvider router={router(startWallet, sessionConnectionError, currentWallet, stopWallet, t)} /> */}
+        {/* <RouterProvider router={router3(startWallet, sessionConnectionError, currentWallet, stopWallet, t)} /> */}
+        <RouterProvider router={router2} />
       </div>
       <WalletInfoAutoReload currentWallet={currentWallet} reloadWalletInfo={reloadWalletInfo} />
     </>
