@@ -1,27 +1,27 @@
-.segmented-tabs {
+.segmentedTabs {
   background-color: var(--bs-gray-300);
   border-radius: 0.25rem;
   padding: 0.25rem;
   width: 100%;
 }
 
-.segmented-tab > label {
+.segmentedTab > label {
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-:root[data-theme='dark'] .segmented-tabs {
+:root[data-theme='dark'] .segmentedTabs {
   color: var(--bs-gray-100);
   background-color: var(--bs-gray-800);
 }
 
-.segmented-tab {
+.segmentedTab {
   flex: 1 1 0;
 }
 
-.segmented-tab input[type='radio'] {
+.segmentedTab input[type='radio'] {
   appearance: none;
   margin: 0;
   position: absolute;
@@ -30,7 +30,7 @@
   width: 0;
 }
 
-.segmented-tab label {
+.segmentedTab label {
   background-color: white;
   padding: 0.25rem 1rem;
   border-radius: 0.1rem;
@@ -39,33 +39,33 @@
   text-align: center;
 }
 
-.segmented-tab input[type='radio']:disabled ~ label {
+.segmentedTab input[type='radio']:disabled ~ label {
   background-color: transparent;
   color: var(--bs-gray-600);
   opacity: 0.5;
 }
 
-:root[data-theme='dark'] .segmented-tab input[type='radio']:disabled ~ label {
+:root[data-theme='dark'] .segmentedTab input[type='radio']:disabled ~ label {
   color: var(--bs-gray-600);
   opacity: 0.5;
 }
 
-.segmented-tab input[type='radio']:not(:checked):not(:disabled) ~ label {
+.segmentedTab input[type='radio']:not(:checked):not(:disabled) ~ label {
   background-color: transparent;
 }
 
-.segmented-tab input[type='radio']:not(:disabled) ~ label {
+.segmentedTab input[type='radio']:not(:disabled) ~ label {
   cursor: pointer;
 }
-.segmented-tab input[type='radio']:checked:not(:disabled) ~ label {
+.segmentedTab input[type='radio']:checked:not(:disabled) ~ label {
   background-color: var(--bs-gray-100);
   box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.1);
 }
 
-:root[data-theme='dark'] .segmented-tab input[type='radio']:checked:not(:disabled) ~ label {
+:root[data-theme='dark'] .segmentedTab input[type='radio']:checked:not(:disabled) ~ label {
   background-color: var(--bs-gray-600);
 }
 
-.segmented-tab input[type='radio']:focus ~ label {
+.segmentedTab input[type='radio']:focus ~ label {
   box-shadow: 0 0 0 0.25rem var(--bs-focus-ring-color) !important;
 }

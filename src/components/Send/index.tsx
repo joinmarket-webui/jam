@@ -6,18 +6,20 @@ import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import PageTitle from '../PageTitle'
 import Sprite from '../Sprite'
+import { SendForm, SendFormValues } from './SendForm'
 import { ConfirmModal } from '../Modal'
+import { scrollToTop } from '../../utils'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
-import { useFeeConfigValues } from '../../hooks/Fees'
+import { FeeValues, TxFee, useFeeConfigValues } from '../../hooks/Fees'
 import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
+import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-import { scrollToTop } from '../../utils'
+
 import { initialNumCollaborators } from './helpers'
-import { SendForm, SendFormValues } from './SendForm'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
@@ -60,7 +62,7 @@ function MaxFeeConfigMissingAlert({ onSuccess }: MaxFeeConfigMissingAlertProps) 
   )
 }
 
-const createInitialValues = (minNumCollaborators: number) => {
+const createInitialValues = (numCollaborators: number, feeConfigValues: FeeValues | undefined): SendFormValues => {
   return {
     sourceJarIndex: INITIAL_SOURCE_JAR_INDEX ?? undefined,
     destination: {
@@ -71,8 +73,9 @@ const createInitialValues = (minNumCollaborators: number) => {
       value: INITIAL_AMOUNT,
       isSweep: false,
     },
+    txFee: feeConfigValues?.tx_fees,
     isCoinJoin: INITIAL_IS_COINJOIN,
-    numCollaborators: initialNumCollaborators(minNumCollaborators),
+    numCollaborators,
   }
 }
 
@@ -95,6 +98,7 @@ export default function Send({ wallet }: SendProps) {
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
   const [minNumCollaborators, setMinNumCollaborators] = useState(JM_MINIMUM_MAKERS_DEFAULT)
+  const initNumCollaborators = useMemo(() => initialNumCollaborators(minNumCollaborators), [minNumCollaborators])
 
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
   const maxFeesConfigMissing = useMemo(
@@ -103,7 +107,7 @@ export default function Send({ wallet }: SendProps) {
     [feeConfigValues],
   )
 
-  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState([])
+  const [waitForUtxosToBeSpent, setWaitForUtxosToBeSpent] = useState<Api.UtxoId[]>([])
   const [paymentSuccessfulInfoAlert, setPaymentSuccessfulInfoAlert] = useState<SimpleAlert>()
 
   const isOperationDisabled = useMemo(
@@ -131,8 +135,10 @@ export default function Send({ wallet }: SendProps) {
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState<SendFormValues>()
 
-  const initialValues = useMemo(() => createInitialValues(minNumCollaborators), [minNumCollaborators])
-
+  const initialValues = useMemo(
+    () => createInitialValues(initNumCollaborators, feeConfigValues),
+    [initNumCollaborators, feeConfigValues],
+  )
   const formRef = useRef<FormikProps<SendFormValues>>(null)
 
   const loadNewWalletAddress = useCallback(
@@ -156,53 +162,21 @@ export default function Send({ wallet }: SendProps) {
     [wallet, setAlert, t],
   )
 
-  // This callback is responsible for updating `waitForUtxosToBeSpent` while
-  // the wallet is synchronizing. The wallet needs some time after a tx is sent
-  // to reflect the changes internally. In order to show the actual balance,
-  // all outputs in `waitForUtxosToBeSpent` must have been removed from the
-  // wallet's utxo set.
-  useEffect(
-    function updateWaitForUtxosToBeSpentHook() {
-      if (waitForUtxosToBeSpent.length === 0) return
-
-      const abortCtrl = new AbortController()
-
-      // Delaying the poll requests gives the wallet some time to synchronize
-      // the utxo set and reduces amount of http requests
-      const initialDelayInMs = 250
-      const timer = setTimeout(() => {
-        if (abortCtrl.signal.aborted) return
-
-        reloadCurrentWalletInfo
-          .reloadUtxos({ signal: abortCtrl.signal })
-          .then((res) => {
-            if (abortCtrl.signal.aborted) return
-            const outputs = res.utxos.map((it) => it.utxo)
-            const utxosStillPresent = waitForUtxosToBeSpent.filter((it) => outputs.includes(it))
-            setWaitForUtxosToBeSpent([...utxosStillPresent])
-          })
-
-          .catch((err) => {
-            if (abortCtrl.signal.aborted) return
-
-            // Stop waiting for wallet synchronization on errors, but inform
-            // the user that loading the wallet info failed
-            setWaitForUtxosToBeSpent([])
-
-            const message = t('global.errors.error_reloading_wallet_failed', {
-              reason: err.message || t('global.errors.reason_unknown'),
-            })
-            setAlert({ variant: 'danger', message })
-          })
-      }, initialDelayInMs)
-
-      return () => {
-        abortCtrl.abort()
-        clearTimeout(timer)
-      }
-    },
-    [waitForUtxosToBeSpent, reloadCurrentWalletInfo, t],
+  const waitForUtxosToBeSpentContext = useMemo(
+    () => ({
+      waitForUtxosToBeSpent,
+      setWaitForUtxosToBeSpent,
+      onError: (error: any) => {
+        const message = t('global.errors.error_reloading_wallet_failed', {
+          reason: error.message || t('global.errors.reason_unknown'),
+        })
+        setAlert({ variant: 'danger', message })
+      },
+    }),
+    [waitForUtxosToBeSpent, t],
   )
+
+  useWaitForUtxosToBeSpent(waitForUtxosToBeSpentContext)
 
   useEffect(
     function initialize() {
@@ -261,7 +235,12 @@ export default function Send({ wallet }: SendProps) {
     [isOperationDisabled, wallet, reloadCurrentWalletInfo, reloadServiceInfo, loadConfigValue, t],
   )
 
-  const sendPayment = async (sourceJarIndex: JarIndex, destination: Api.BitcoinAddress, amountSats: Api.AmountSats) => {
+  const sendPayment = async (
+    sourceJarIndex: JarIndex,
+    destination: Api.BitcoinAddress,
+    amountSats: Api.AmountSats,
+    txFee: TxFee,
+  ) => {
     setAlert(undefined)
     setPaymentSuccessfulInfoAlert(undefined)
     setIsSending(true)
@@ -270,7 +249,7 @@ export default function Send({ wallet }: SendProps) {
     try {
       const res = await Api.postDirectSend(
         { ...wallet },
-        { mixdepth: sourceJarIndex, amount_sats: amountSats, destination },
+        { mixdepth: sourceJarIndex, amount_sats: amountSats, destination, txfee: txFee.value },
       )
 
       if (res.ok) {
@@ -311,6 +290,7 @@ export default function Send({ wallet }: SendProps) {
     destination: Api.BitcoinAddress,
     amountSats: Api.AmountSats,
     counterparties: number,
+    txFee: TxFee,
   ) => {
     setAlert(undefined)
     setIsSending(true)
@@ -324,6 +304,7 @@ export default function Send({ wallet }: SendProps) {
           amount_sats: amountSats,
           destination,
           counterparties,
+          txfee: txFee.value,
         },
       )
 
@@ -368,10 +349,12 @@ export default function Send({ wallet }: SendProps) {
     setAlert(undefined)
 
     const abortCtrl = new AbortController()
-    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal }).catch((err) => {
-      if (abortCtrl.signal.aborted) return
-      setAlert({ variant: 'danger', message: err.message })
-    })
+    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal })
+      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
+      .catch((err) => {
+        if (abortCtrl.signal.aborted) return
+        setAlert({ variant: 'danger', message: err.message })
+      })
   }
 
   const onSubmit = async (values: SendFormValues) => {
@@ -380,7 +363,10 @@ export default function Send({ wallet }: SendProps) {
     setPaymentSuccessfulInfoAlert(undefined)
 
     const isValid =
-      values.amount !== undefined && values.sourceJarIndex !== undefined && values.destination !== undefined
+      values.amount !== undefined &&
+      values.sourceJarIndex !== undefined &&
+      values.destination !== undefined &&
+      values.txFee !== undefined
 
     if (isValid) {
       if (values.amount!.isSweep === true && values.amount!.value !== 0) {
@@ -409,8 +395,9 @@ export default function Send({ wallet }: SendProps) {
             values.destination!.value!,
             values.amount!.value,
             values.numCollaborators!,
+            values.txFee!,
           )
-        : await sendPayment(values.sourceJarIndex!, values.destination!.value!, values.amount!.value)
+        : await sendPayment(values.sourceJarIndex!, values.destination!.value!, values.amount!.value, values.txFee!)
 
       if (success) {
         formRef.current?.resetForm({ values: initialValues })
@@ -528,7 +515,7 @@ export default function Send({ wallet }: SendProps) {
             isSweep: showConfirmSendModal.amount!.isSweep,
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
-            feeConfigValues,
+            feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
           }}
         />
       )}

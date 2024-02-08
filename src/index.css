@@ -532,6 +532,10 @@ h2 {
   color: inherit;
 }
 
+.modal {
+  --bs-modal-width: 800px;
+}
+
 .modal-header {
   background-color: var(--bs-gray-800);
   color: var(--bs-white);

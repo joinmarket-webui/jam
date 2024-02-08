@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { PropsWithChildren, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
@@ -6,10 +6,10 @@ import Balance from './Balance'
 import { useSettings } from '../context/SettingsContext'
 import { FeeValues, TxFee, useEstimatedMaxCollaboratorFee } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
-import styles from './PaymentConfirmModal.module.css'
-import { AmountSats } from '../libs/JmWalletApi'
+import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
+import styles from './PaymentConfirmModal.module.css'
 
 const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee, txFeeFactor) => {
   if (txFee.unit !== 'sats/kilo-vbyte') {
@@ -21,22 +21,18 @@ const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee
   return [minFeeSatsPerVByte, maxFeeSatsPerVByte]
 }
 
-const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) => {
+const useMiningFeeText = ({ tx_fees, tx_fees_factor }: Pick<FeeValues, 'tx_fees' | 'tx_fees_factor'>) => {
   const { t } = useTranslation()
 
-  const miningFeeText = useMemo(() => {
-    if (!feeConfigValues) return null
-    if (!isValidNumber(feeConfigValues.tx_fees?.value) || !isValidNumber(feeConfigValues.tx_fees_factor)) return null
+  return useMemo(() => {
+    if (!isValidNumber(tx_fees?.value) || !isValidNumber(tx_fees_factor)) return null
 
-    if (!feeConfigValues.tx_fees?.unit) {
+    if (!tx_fees?.unit) {
       return null
-    } else if (feeConfigValues.tx_fees.unit === 'blocks') {
-      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: feeConfigValues.tx_fees.value })
+    } else if (tx_fees.unit === 'blocks') {
+      return t('send.confirm_send_modal.text_miner_fee_in_targeted_blocks', { count: tx_fees.value })
     } else {
-      const [minFeeSatsPerVByte, maxFeeSatsPerVByte] = feeRange(
-        feeConfigValues.tx_fees,
-        feeConfigValues.tx_fees_factor!,
-      )
+      const [minFeeSatsPerVByte, maxFeeSatsPerVByte] = feeRange(tx_fees, tx_fees_factor!)
       const fractionDigits = 2
 
       if (minFeeSatsPerVByte.toFixed(fractionDigits) === maxFeeSatsPerVByte.toFixed(fractionDigits)) {
@@ -56,14 +52,12 @@ const useMiningFeeText = ({ feeConfigValues }: { feeConfigValues?: FeeValues }) 
         }),
       })
     }
-  }, [t, feeConfigValues])
-
-  return miningFeeText
+  }, [t, tx_fees, tx_fees_factor])
 }
 
 interface PaymentDisplayInfo {
   sourceJarIndex?: JarIndex
-  destination: String
+  destination: BitcoinAddress | string
   amount: AmountSats
   isSweep: boolean
   isCoinjoin: boolean
@@ -87,12 +81,13 @@ export function PaymentConfirmModal({
     feeConfigValues,
     showPrivacyInfo = true,
   },
+  children,
   ...confirmModalProps
-}: PaymentConfirmModalProps) {
+}: PropsWithChildren<PaymentConfirmModalProps>) {
   const { t } = useTranslation()
   const settings = useSettings()
 
-  const miningFeeText = useMiningFeeText({ feeConfigValues })
+  const miningFeeText = useMiningFeeText({ ...feeConfigValues })
   const estimatedMaxCollaboratorFee = useEstimatedMaxCollaboratorFee({
     isCoinjoin,
     feeConfigValues,
@@ -161,17 +156,6 @@ export function PaymentConfirmModal({
             )}
           </rb.Col>
         </rb.Row>
-
-        {miningFeeText && (
-          <rb.Row>
-            <rb.Col xs={4} md={3} className="text-end">
-              <strong>{t('send.confirm_send_modal.label_miner_fee')}</strong>
-            </rb.Col>
-            <rb.Col xs={8} md={9} className="text-start">
-              {miningFeeText}
-            </rb.Col>
-          </rb.Row>
-        )}
         {isCoinjoin && (
           <rb.Row>
             <rb.Col xs={4} md={3} className="text-end">
@@ -211,6 +195,21 @@ export function PaymentConfirmModal({
                 </rb.OverlayTrigger>
               </div>
             </rb.Col>
+          </rb.Row>
+        )}
+        {miningFeeText && (
+          <rb.Row>
+            <rb.Col xs={4} md={3} className="text-end">
+              <strong>{t('send.confirm_send_modal.label_miner_fee')}</strong>
+            </rb.Col>
+            <rb.Col xs={8} md={9} className="text-start">
+              {miningFeeText}
+            </rb.Col>
+          </rb.Row>
+        )}
+        {children && (
+          <rb.Row>
+            <rb.Col xs={12}>{children}</rb.Col>
           </rb.Row>
         )}
       </rb.Container>

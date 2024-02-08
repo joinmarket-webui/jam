@@ -14,7 +14,7 @@ import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
-import { SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
+import { RenewFidelityBondModal, SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -269,10 +269,10 @@ const EarnForm = ({
                           value: OFFERTYPE_REL,
                         },
                       ]}
-                      onChange={(tab, checked) => {
-                        checked && setFieldValue('offertype', tab.value, true)
+                      value={values.offertype}
+                      onChange={(tab) => {
+                        setFieldValue('offertype', tab.value, true)
                       }}
-                      initialValue={values.offertype}
                       disabled={isLoading || isSubmitting}
                     />
                   </rb.Form.Group>
@@ -424,6 +424,7 @@ export default function Earn({ wallet }: EarnProps) {
   }, [currentWalletInfo])
 
   const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<Api.UtxoId>()
+  const [renewFidelityBondId, setRenewFidelityBondId] = useState<Api.UtxoId>()
 
   const startMakerService = useCallback(
     (values: EarnFormValues) => {
@@ -619,6 +620,20 @@ export default function Earn({ wallet }: EarnProps) {
                     }}
                   />
                 )}
+                {currentWalletInfo && renewFidelityBondId && (
+                  <RenewFidelityBondModal
+                    show={true}
+                    fidelityBondId={renewFidelityBondId}
+                    wallet={wallet}
+                    walletInfo={currentWalletInfo}
+                    onClose={({ mustReload }) => {
+                      setRenewFidelityBondId(undefined)
+                      if (mustReload) {
+                        reloadFidelityBonds({ delay: 0 })
+                      }
+                    }}
+                  />
+                )}
                 {fidelityBonds.map((fidelityBond, index) => {
                   const isExpired = !fb.utxo.isLocked(fidelityBond)
                   const actionsEnabled =
@@ -633,18 +648,25 @@ export default function Earn({ wallet }: EarnProps) {
                   return (
                     <ExistingFidelityBond key={index} fidelityBond={fidelityBond}>
                       {actionsEnabled && (
-                        <div className="mt-4">
-                          <div className="">
-                            <rb.Button
-                              variant={settings.theme === 'dark' ? 'light' : 'dark'}
-                              className="w-50 d-flex justify-content-center align-items-center"
-                              disabled={moveToJarFidelityBondId !== undefined}
-                              onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
-                            >
-                              <Sprite className="me-1 mb-1" symbol="unlock" width="24" height="24" />
-                              {t('earn.fidelity_bond.existing.button_spend')}
-                            </rb.Button>
-                          </div>
+                        <div className="mt-4 d-flex gap-2">
+                          <rb.Button
+                            variant={settings.theme === 'dark' ? 'light' : 'dark'}
+                            className="w-100 d-flex justify-content-center align-items-center"
+                            disabled={moveToJarFidelityBondId !== undefined}
+                            onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
+                          >
+                            <Sprite className="me-1 mb-1" symbol="unlock" width="24" height="24" />
+                            {t('earn.fidelity_bond.existing.button_spend')}
+                          </rb.Button>
+                          <rb.Button
+                            variant={settings.theme === 'dark' ? 'light' : 'dark'}
+                            className="w-100 d-flex justify-content-center align-items-center"
+                            disabled={renewFidelityBondId !== undefined}
+                            onClick={() => setRenewFidelityBondId(fidelityBond.utxo)}
+                          >
+                            <Sprite className="me-1" symbol="refresh" width="24" height="24" />
+                            {t('earn.fidelity_bond.existing.button_renew')}
+                          </rb.Button>
                         </div>
                       )}
                     </ExistingFidelityBond>
