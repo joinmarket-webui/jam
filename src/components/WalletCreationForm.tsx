@@ -49,6 +49,11 @@ const WalletCreationForm = ({
         if (abortCtrl.signal.aborted) return
         setWalletList(data.wallets)
       })
+      .catch(() => {
+        // do nothing on purpose
+      })
+
+    return () => abortCtrl.abort()
   }, [t])
 
   const validate = useCallback(
