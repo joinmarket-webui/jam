@@ -13,6 +13,7 @@ jest.mock('../libs/JmWalletApi', () => ({
   getGetinfo: jest.fn(),
   getSession: jest.fn(),
   postWalletCreate: jest.fn(),
+  getWalletAll: jest.fn(),
 }))
 
 const NOOP = () => {}
@@ -38,6 +39,7 @@ describe('<CreateWallet />', () => {
     const neverResolvingPromise = new Promise(() => {})
     ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
     ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
   })
 
   it('should display alert when rescanning is active', async () => {
@@ -85,6 +87,26 @@ describe('<CreateWallet />', () => {
     expect(await screen.findByText('create_wallet.feedback_invalid_wallet_name')).toBeVisible()
     expect(await screen.findByText('create_wallet.feedback_invalid_password')).toBeVisible()
     expect(await screen.findByText('create_wallet.feedback_invalid_password_confirm')).toBeVisible()
+  })
+
+  it('should show validation message to user if duplicate wallet name', async () => {
+    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ wallets: [`${testWalletName}.jmdat`] }),
+      }),
+    )
+    setup({})
+
+    expect(await screen.queryByText('create_wallet.feedback_wallet_name_already_exists')).not.toBeInTheDocument()
+
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_wallet_name'), testWalletName)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password'), testWalletPassword)
+    await user.type(screen.getByPlaceholderText('create_wallet.placeholder_password_confirm'), testWalletPassword)
+
+    await user.click(screen.getByText('create_wallet.button_create'))
+
+    expect(await screen.findByText('create_wallet.feedback_wallet_name_already_exists')).toBeVisible()
   })
 
   it('should not submit form if wallet name contains invalid characters', async () => {
