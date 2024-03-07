@@ -105,6 +105,12 @@ npm run dev:start
 
 Enjoy the test drive!
 
+## Dev Setup
+
+When running Jam in dev mode, Additional Jam instances are provided by default. These instances can be used to set up different wallets and simulate collaborative transactions between themselves as though between different identities. A block explorer and RPC terminal are also available for directly interacting with the regtest node that Jam uses.
+
+Information on how to access these development features can be found on the _/dev-setup_ route at port 3000
+
 ## Reporting Issues
 
 Reporting an issue is as easy as [opening one on GitHub](https://github.com/joinmarket-webui/jam/issues/new).
