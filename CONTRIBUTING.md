@@ -107,7 +107,7 @@ Enjoy the test drive!
 
 ## Dev Setup
 
-When running Jam in dev mode, Additional Jam instances are provided by default. These instances can be used to set up different wallets and simulate collaborative transactions between themselves as though between different identities. A block explorer and RPC terminal are also available for directly interacting with the regtest node that Jam uses.
+When running Jam in dev mode, additional Jam instances are provided by default. These instances can be used to set up different wallets and simulate collaborative transactions. A block explorer and RPC terminal are also available for directly interacting with the regtest node.
 
 Information on how to access these development features can be found on the _/dev-setup_ route at port 3000
 
