@@ -225,7 +225,7 @@ const EarnForm = ({
     }
 
     if (isRelOffer) {
-      if (typeof values.feeRel !== 'number' || values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
+      if (!isValidNumber(values.feeRel) || values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
         errors.feeRel = t('earn.feedback_invalid_rel_fee', {
           feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
           feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
@@ -234,7 +234,7 @@ const EarnForm = ({
     }
 
     if (isAbsOffer) {
-      if (!isValidAmount(values.feeAbs?.value ?? null, false)) {
+      if (!isValidNumber(values.feeAbs?.value) || values.feeAbs!.value! < 0) {
         errors.feeAbs = t('earn.feedback_invalid_abs_fee')
       }
     }
