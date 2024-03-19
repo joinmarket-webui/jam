@@ -12,6 +12,8 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
 import styles from './EarnReport.module.css'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
+import { pseudoRandomNumber } from './Send/helpers'
 
 const SORT_KEYS = {
   timestamp: 'TIMESTAMP',
@@ -330,6 +332,41 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [entries, setEntries] = useState<EarnReportEntry[] | null>(null)
+  const [__dev_showGenerateDemoReportButton] = useState(isDebugFeatureEnabled('enableDemoEarnReport'))
+
+  const __dev_generateDemoReportEntryButton = () => {
+    setEntries((it) => {
+      const connectedNote = {
+        timestamp: new Date(Date.now() - Date.now() * Math.random() * 0.01),
+        cjTotalAmount: null,
+        inputCount: null,
+        inputAmount: null,
+        fee: null,
+        earnedAmount: null,
+        confirmationDuration: null,
+        notes: 'Connected ',
+      }
+      if (!it || it.length === 0) {
+        connectedNote.timestamp = new Date(Date.now() - Date.now() * 0.1)
+        return [connectedNote]
+      }
+      if (it.length > 2 && Math.random() > 0.8) {
+        return [...it, connectedNote]
+      }
+      const randomEntry = {
+        timestamp: new Date(Date.now() - Date.now() * Math.random() * 0.01),
+        cjTotalAmount: Math.round(Math.random() * Math.pow(10, pseudoRandomNumber(7, 9))),
+        inputCount: Math.max(1, pseudoRandomNumber(-1, 4)),
+        inputAmount: Math.round(Math.random() * Math.pow(10, pseudoRandomNumber(3, 6))),
+        fee: Math.round(Math.random() * 100 + 1),
+        earnedAmount: Math.round(Math.random() * Math.pow(10, pseudoRandomNumber(1, 3)) + 1),
+        confirmationDuration: Math.round(Math.random() * 100),
+        notes: null,
+      }
+
+      return [...it, randomEntry]
+    })
+  }
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
@@ -410,6 +447,27 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
               })
           ) : (
             <>
+              {__dev_showGenerateDemoReportButton && (
+                <rb.Row>
+                  <rb.Col className="px-0 mb-2">
+                    <rb.Button
+                      className="position-relative"
+                      variant="outline-dark"
+                      disabled={false}
+                      onClick={() => __dev_generateDemoReportEntryButton()}
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        {t('earn.report.text_button_generate_demo_report')}
+                        <Sprite symbol="plus" width="20" height="20" className="ms-2" />
+                      </div>
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                        dev
+                      </span>
+                    </rb.Button>
+                  </rb.Col>
+                </rb.Row>
+              )}
+
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {entries && (
                 <rb.Row>
