@@ -10,7 +10,7 @@ export const initialNumCollaborators = (minValue: number) => {
 }
 
 // not cryptographically random. returned number is in range [min, max] (both inclusive).
-const pseudoRandomNumber = (min: number, max: number) => {
+export const pseudoRandomNumber = (min: number, max: number) => {
   return Math.round(Math.random() * (max - min)) + min
 }
 
