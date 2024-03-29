@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
@@ -12,6 +12,8 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
 import styles from './EarnReport.module.css'
+import { isDebugFeatureEnabled } from '../constants/debugFeatures'
+import { pseudoRandomNumber } from './Send/helpers'
 
 const SORT_KEYS = {
   timestamp: 'TIMESTAMP',
@@ -224,6 +226,22 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
   )
 }
 
+interface StatsBoxProps {
+  title: string
+  value: React.ReactNode
+  description?: string
+}
+
+function StatsBox({ title, value, description }: StatsBoxProps) {
+  return (
+    <div className="d-flex flex-1 flex-column border rounded p-3 p-md-4">
+      <div className="fs-6 text-center">{title}</div>
+      <div className="fs-4 text-center">{value}</div>
+      {description ? <div>{description}</div> : null}
+    </div>
+  )
+}
+
 interface EarnReportProps {
   entries: EarnReportEntry[]
   refresh: (signal: AbortSignal) => Promise<void>
@@ -258,6 +276,31 @@ export function EarnReport({ entries, refresh }: EarnReportProps) {
 
     return { nodes }
   }, [entries, search])
+
+  const earnedTotal: Api.AmountSats = useMemo(() => {
+    return entries.map((entry) => entry.earnedAmount ?? 0).reduce((previous, current) => previous + current, 0)
+  }, [entries])
+
+  const earned90Days: Api.AmountSats = useMemo(() => {
+    return entries
+      .filter((it) => it.timestamp.getTime() > Date.now() - 90 * 24 * 60 * 60 * 1_000)
+      .map((it) => it.earnedAmount ?? 0)
+      .reduce((previous, current) => previous + current, 0)
+  }, [entries])
+
+  const earned30Days: Api.AmountSats = useMemo(() => {
+    return entries
+      .filter((it) => it.timestamp.getTime() > Date.now() - 30 * 24 * 60 * 60 * 1_000)
+      .map((it) => it.earnedAmount ?? 0)
+      .reduce((previous, current) => previous + current, 0)
+  }, [entries])
+
+  const earned24Hours: Api.AmountSats = useMemo(() => {
+    return entries
+      .filter((it) => it.timestamp.getTime() > Date.now() - 1 * 24 * 60 * 60 * 1_000)
+      .map((it) => it.earnedAmount ?? 0)
+      .reduce((previous, current) => previous + current, 0)
+  }, [entries])
 
   return (
     <div className={styles.earnReportContainer}>
@@ -313,13 +356,43 @@ export function EarnReport({ entries, refresh }: EarnReportProps) {
           </rb.Form.Group>
         </div>
       </div>
-      <div className="px-md-3 pb-2">
-        {entries.length === 0 ? (
-          <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>
-        ) : (
-          <EarnReportTable data={tableData} />
-        )}
+      <div className="px-3 py-3 pt-lg-0">
+        <div className="d-flex flex-wrap justify-content-around align-items-center gap-2">
+          <StatsBox
+            title={t('earn.report.stats.earned_total')}
+            value={
+              <Balance valueString={earnedTotal.toString() || ''} convertToUnit={settings.unit} showBalance={true} />
+            }
+          />
+          <StatsBox
+            title={t('earn.report.stats.earned_90days')}
+            value={
+              <Balance valueString={earned90Days.toString() || ''} convertToUnit={settings.unit} showBalance={true} />
+            }
+          />
+          <StatsBox
+            title={t('earn.report.stats.earned_30days')}
+            value={
+              <Balance valueString={earned30Days.toString() || ''} convertToUnit={settings.unit} showBalance={true} />
+            }
+          />
+          <StatsBox
+            title={t('earn.report.stats.earned_24hours')}
+            value={
+              <Balance valueString={earned24Hours.toString() || ''} convertToUnit={settings.unit} showBalance={true} />
+            }
+          />
+        </div>
       </div>
+      {entries.length === 0 ? (
+        <div className="px-2">
+          <rb.Alert variant="info">{t('earn.alert_empty_report')}</rb.Alert>
+        </div>
+      ) : (
+        <div className="px-md-2">
+          <EarnReportTable data={tableData} />
+        </div>
+      )}
     </div>
   )
 }
@@ -330,6 +403,42 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [entries, setEntries] = useState<EarnReportEntry[] | null>(null)
+  const [__dev_showGenerateDemoReportButton] = useState(isDebugFeatureEnabled('enableDemoEarnReport'))
+
+  const __dev_generateDemoReportEntryButton = () => {
+    const randomTimestamp = new Date(Date.now() - Date.now() * Math.random() * Math.pow(10, pseudoRandomNumber(-5, -1)))
+    setEntries((it) => {
+      const connectedNote = {
+        timestamp: randomTimestamp,
+        cjTotalAmount: null,
+        inputCount: null,
+        inputAmount: null,
+        fee: null,
+        earnedAmount: null,
+        confirmationDuration: null,
+        notes: 'Connected ',
+      }
+      if (!it || it.length === 0) {
+        connectedNote.timestamp = new Date(Date.now() - Date.now() * 0.1)
+        return [connectedNote]
+      }
+      if (it.length > 2 && Math.random() > 0.8) {
+        return [...it, connectedNote]
+      }
+      const randomEntry = {
+        timestamp: randomTimestamp,
+        cjTotalAmount: Math.round(Math.random() * Math.pow(10, pseudoRandomNumber(7, 9))),
+        inputCount: Math.max(1, pseudoRandomNumber(-1, 4)),
+        inputAmount: Math.round(Math.random() * Math.pow(10, pseudoRandomNumber(3, 6))),
+        fee: Math.round(Math.random() * 100 + 1),
+        earnedAmount: Math.round(Math.random() * Math.pow(10, pseudoRandomNumber(1, 3)) + 1),
+        confirmationDuration: Math.round(Math.random() * 100),
+        notes: null,
+      }
+
+      return [...it, randomEntry]
+    })
+  }
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
@@ -410,6 +519,27 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
               })
           ) : (
             <>
+              {__dev_showGenerateDemoReportButton && (
+                <rb.Row>
+                  <rb.Col className="px-0 mb-2">
+                    <rb.Button
+                      className="position-relative"
+                      variant="outline-dark"
+                      disabled={false}
+                      onClick={() => __dev_generateDemoReportEntryButton()}
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        {t('earn.report.text_button_generate_demo_report')}
+                        <Sprite symbol="plus" width="20" height="20" className="ms-2" />
+                      </div>
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                        dev
+                      </span>
+                    </rb.Button>
+                  </rb.Col>
+                </rb.Row>
+              )}
+
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {entries && (
                 <rb.Row>
