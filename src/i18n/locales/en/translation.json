@@ -606,6 +606,7 @@
     "placeholder_search": "Search",
     "text_orderbook_filter_count": "{{ filterCount }} entries match given search criteria",
     "label_highlight_own_orders": "Highlight my offers",
+    "text_highlight_own_orders_subtitle": "It might take some time for your offer and your bond to appear in your local orderbook.",
     "table": {
       "heading_type": "Type",
       "heading_counterparty": "Counterparty",

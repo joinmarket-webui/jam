@@ -1,4 +1,4 @@
-import { ReactElement, ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
@@ -16,6 +16,7 @@ import TablePagination from './TablePagination'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
 import { isDevMode } from '../constants/debugFeatures'
 import styles from './Orderbook.module.css'
+import ToggleSwitch from './ToggleSwitch'
 
 const TABLE_THEME = {
   Table: `
@@ -352,13 +353,13 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
     [tableData],
   )
 
+  const ownOffers = useMemo(() => {
+    return nickname ? entries.filter((it) => it.counterparty === nickname) : []
+  }, [nickname, entries])
+
   useEffect(() => {
-    if (!nickname || !isHighlightOwnOffers) {
-      setHighlightedOrders([])
-    } else {
-      setHighlightedOrders(entries.filter((it) => it.counterparty === nickname))
-    }
-  }, [entries, nickname, isHighlightOwnOffers])
+    setHighlightedOrders(isHighlightOwnOffers ? ownOffers : [])
+  }, [ownOffers, isHighlightOwnOffers])
 
   return (
     <div className={styles.orderbookContainer}>
@@ -424,13 +425,12 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
           <>
             {nickname && (
               <div className="mb-3 ps-3 ps-md-0 pt-3 pt-lg-0">
-                <rb.Form.Check
-                  type="checkbox"
-                  id="highlight-own-offers"
+                <ToggleSwitch
                   label={t('orderbook.label_highlight_own_orders')}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setIsHighlightOwnOffers(e.target.checked)
-                  }}
+                  subtitle={ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
+                  toggledOn={isHighlightOwnOffers}
+                  onToggle={(isToggled) => setIsHighlightOwnOffers(isToggled)}
+                  disabled={isLoadingRefresh}
                 />
               </div>
             )}
