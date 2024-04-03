@@ -132,7 +132,7 @@ export default function App() {
               path="*"
               element={
                 <rb.Alert variant="danger">
-                  {t('app.alert_no_connection', { connectionError: sessionConnectionError })}.{' '}
+                  {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.{' '}
                   {!sessionConnectionError.response?.ok && sessionConnectionError.response?.url && (
                     <Trans
                       i18nKey="app.alert_no_connection_details"
