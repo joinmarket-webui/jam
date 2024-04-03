@@ -132,7 +132,11 @@ export default function App() {
               path="*"
               element={
                 <rb.Alert variant="danger">
-                  {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}.
+                  {t('app.alert_no_connection', { connectionError: sessionConnectionError })}.
+                  {!sessionConnectionError.response?.ok &&
+                    sessionConnectionError.response?.url &&
+                    ` Unable to access ${sessionConnectionError.response.url}.
+                    Please confirm that the backend is running.`}
                 </rb.Alert>
               }
             />

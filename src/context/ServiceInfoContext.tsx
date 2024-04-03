@@ -89,11 +89,16 @@ type ServiceInfo = SessionFlag &
   SessionInfo &
   ServerInfo
 
+interface ErrorAndResponse {
+  error?: Error
+  response?: Response
+}
+
 interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
   reloadServiceInfo: ({ signal }: { signal: AbortSignal }) => Promise<ServiceInfo>
   dispatchServiceInfo: Dispatch<Partial<ServiceInfo>>
-  connectionError?: Error
+  connectionError?: ErrorAndResponse
 }
 
 const ServiceInfoContext = createContext<ServiceInfoContextEntry | undefined>(undefined)
@@ -107,7 +112,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     (state: ServiceInfo | null, obj: Partial<ServiceInfo>) => ({ ...state, ...obj }) as ServiceInfo | null,
     null,
   )
-  const [connectionError, setConnectionError] = useState<Error>()
+  const [connectionError, setConnectionError] = useState<ErrorAndResponse>()
 
   useEffect(() => {
     const abortCtrl = new AbortController()
