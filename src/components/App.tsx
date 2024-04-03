@@ -148,7 +148,7 @@ export default function App() {
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            this link
+                            the docs
                           </a>
                         ),
                       }}
