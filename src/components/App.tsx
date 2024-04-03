@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -132,11 +132,28 @@ export default function App() {
               path="*"
               element={
                 <rb.Alert variant="danger">
-                  {t('app.alert_no_connection', { connectionError: sessionConnectionError })}.
-                  {!sessionConnectionError.response?.ok &&
-                    sessionConnectionError.response?.url &&
-                    ` Unable to access ${sessionConnectionError.response.url}.
-                    Please confirm that the backend is running.`}
+                  {t('app.alert_no_connection', { connectionError: sessionConnectionError })}.{' '}
+                  {!sessionConnectionError.response?.ok && sessionConnectionError.response?.url && (
+                    <Trans
+                      i18nKey="app.alert_no_connection_details"
+                      components={{
+                        1: (
+                          <a href={sessionConnectionError.response.url} target="_blank" rel="noopener noreferrer">
+                            {sessionConnectionError.response.url}
+                          </a>
+                        ),
+                        2: (
+                          <a
+                            href="https://jamdocs.org/FAQ/#how-to-resolve-no-connection-to-gateway"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            this link
+                          </a>
+                        ),
+                      }}
+                    />
+                  )}
                 </rb.Alert>
               }
             />
