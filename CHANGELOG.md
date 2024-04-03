@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/joinmarket-webui/jam/compare/v0.1.6...v0.2.0) (2024-02-24)
+
+#### Fixed
+
+* **fee-randomization:** fix fee range in PaymentConfirmModal ([#655](https://github.com/joinmarket-webui/jam/issues/655)) ([31f54c8](https://github.com/joinmarket-webui/jam/commit/31f54c8cb8bf1474406328be7c5a26b5b5263a44))
+* selectable ui elements ([#714](https://github.com/joinmarket-webui/jam/issues/714)) ([378daf5](https://github.com/joinmarket-webui/jam/commit/378daf5c936b56a401deeefb9d847bf2ed14f7c7))
+* show warning on missing fee config values ([#674](https://github.com/joinmarket-webui/jam/issues/674)) ([5900a8c](https://github.com/joinmarket-webui/jam/commit/5900a8c6209aac9d1113186616f72efe023fa3c4))
+* **ui:** adapt payment confirm size ([#712](https://github.com/joinmarket-webui/jam/issues/712)) ([11e2c2a](https://github.com/joinmarket-webui/jam/commit/11e2c2a88c8dc95bd47e64b0f315213ddd355ca6))
+* use orderbook.json instead of parsing html table ([#687](https://github.com/joinmarket-webui/jam/issues/687)) ([df81804](https://github.com/joinmarket-webui/jam/commit/df8180432be414840b71ea970eef42316c085941))
+
+#### Added
+
+* align amount input fields ([#711](https://github.com/joinmarket-webui/jam/issues/711)) ([7006e57](https://github.com/joinmarket-webui/jam/commit/7006e575f48c62d761dafe08e0fc2317e2e6c1b4))
+* check for existing wallet ([#720](https://github.com/joinmarket-webui/jam/issues/720)) ([ac383dc](https://github.com/joinmarket-webui/jam/commit/ac383dcdd8f3bee4e63e3236537c5e945c2edd69))
+* custom tx fee on direct and collaborative send ([#706](https://github.com/joinmarket-webui/jam/issues/706)) ([dc95e64](https://github.com/joinmarket-webui/jam/commit/dc95e646e7095d0ae8e0a312830455fc81e1a6bc))
+* display ui/backend version ([#668](https://github.com/joinmarket-webui/jam/issues/668)) ([69e61e0](https://github.com/joinmarket-webui/jam/commit/69e61e06c135549c1812f20456c9cbbd46853e2b))
+* renew fidelity bond ([#678](https://github.com/joinmarket-webui/jam/issues/678)) ([b4948ef](https://github.com/joinmarket-webui/jam/commit/b4948ef9f013c6e127251d85def0096e9d4f21f2))
+* **ui:** autofocus next input when confirming seed phrase backup ([#718](https://github.com/joinmarket-webui/jam/issues/718)) ([27e687c](https://github.com/joinmarket-webui/jam/commit/27e687c9cf34fdd1f92b8c675c6579b4759f9389))
+
 ### [0.1.6](https://github.com/joinmarket-webui/jam/compare/v0.1.5...v0.1.6) (2023-09-22)
 
 #### Fixed

@@ -421,7 +421,14 @@
       "heading_input_count": "My Inputs",
       "heading_input_value": "My Input Amount",
       "heading_earned": "Earned",
-      "heading_notes": "Notes"
+      "heading_notes": "Notes",
+      "text_button_generate_demo_report": "Generate demo entry",
+      "stats": {
+        "earned_total": "Earned (total)",
+        "earned_90days": "Earned (90 days)",
+        "earned_30days": "Earned (30 days)",
+        "earned_24hours": "Earned (24 hours)"
+      }
     },
     "title_fidelity_bonds_zero": "Create a Fidelity Bond",
     "title_fidelity_bonds_one": "Your Fidelity Bond",
