@@ -143,7 +143,6 @@ const ImportWalletDetailsForm = ({
       }) => {
         const hasImportDetailsSectionErrors = !!errors.blockheight || !!errors.gaplimit
         const showGaplimitWarning = !errors.gaplimit && values.gaplimit > GAPLIMIT_WARN_THRESHOLD
-
         return (
           <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
             <MnemonicPhraseInput
