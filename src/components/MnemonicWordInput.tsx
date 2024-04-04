@@ -1,4 +1,5 @@
 import * as rb from 'react-bootstrap'
+import * as bip39 from 'bip39'
 import { useTranslation } from 'react-i18next'
 import styles from './MnemonicWordInput.module.css'
 
@@ -35,7 +36,7 @@ const MnemonicWordInput = ({
         onChange={(e) => setValue(e.target.value.trim(), index)}
         className={styles.input}
         disabled={disabled}
-        isInvalid={isValid === false && value.length > 0}
+        isInvalid={(isValid === false && value.length > 0) || (value !== '' && !bip39.wordlists.EN.includes(value))}
         isValid={isValid === true}
         onFocus={onFocus}
         autoFocus={autoFocus}
