@@ -1,7 +1,7 @@
 import * as rb from 'react-bootstrap'
-import { wordlists } from 'bip39'
 import { useTranslation } from 'react-i18next'
 import styles from './MnemonicWordInput.module.css'
+import { MNEMONIC_WORDS } from '../constants/bip39words'
 
 interface MnemonicWordInputProps {
   forwardRef: (el: HTMLInputElement) => void
@@ -36,8 +36,8 @@ const MnemonicWordInput = ({
         onChange={(e) => setValue(e.target.value.trim(), index)}
         className={styles.input}
         disabled={disabled}
-        isInvalid={(isValid === false && value.length > 0) || (value !== '' && !wordlists.EN.includes(value))}
-        isValid={isValid === true || wordlists.EN.includes(value)}
+        isInvalid={(isValid === false && value.length > 0) || (value !== '' && !MNEMONIC_WORDS.includes(value))}
+        isValid={isValid === true || MNEMONIC_WORDS.includes(value)}
         onFocus={onFocus}
         autoFocus={autoFocus}
         required
