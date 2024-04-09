@@ -1,7 +1,6 @@
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import styles from './MnemonicWordInput.module.css'
-import { MNEMONIC_WORDS } from '../constants/bip39words'
 
 export interface MnemonicWordInputProps {
   forwardRef: (el: HTMLInputElement) => void
