@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import styles from './MnemonicWordInput.module.css'
 import { MNEMONIC_WORDS } from '../constants/bip39words'
 
-interface MnemonicWordInputProps {
+export interface MnemonicWordInputProps {
   forwardRef: (el: HTMLInputElement) => void
   index: number
   value: string
@@ -36,8 +36,8 @@ const MnemonicWordInput = ({
         onChange={(e) => setValue(e.target.value.trim(), index)}
         className={styles.input}
         disabled={disabled}
-        isInvalid={(isValid === false && value.length > 0) || (value !== '' && !MNEMONIC_WORDS.includes(value))}
-        isValid={isValid === true || MNEMONIC_WORDS.includes(value)}
+        isInvalid={isValid === false && value.length > 0}
+        isValid={isValid === true}
         onFocus={onFocus}
         autoFocus={autoFocus}
         required

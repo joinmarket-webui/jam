@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import MnemonicWordInput from './MnemonicWordInput'
+import Bip39MnemonicWordInput from './Bip39MnemonicWordInput'
 
 interface MnemonicPhraseInputProps {
   columns?: number
@@ -44,7 +44,7 @@ export default function MnemonicPhraseInput({
               const isCurrentActive = wordIndex === activeIndex
               return (
                 <div className="col" key={wordIndex}>
-                  <MnemonicWordInput
+                  <Bip39MnemonicWordInput
                     forwardRef={(el: HTMLInputElement) => (inputRefs.current[wordIndex] = el)}
                     index={wordIndex}
                     value={givenWord}
