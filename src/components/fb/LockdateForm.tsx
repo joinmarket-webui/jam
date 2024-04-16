@@ -4,6 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
+import Alert from '../Alert'
 
 const monthFormatter = (locales: string) => new Intl.DateTimeFormat(locales, { month: 'long' })
 
@@ -166,7 +167,13 @@ const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps
             </rb.Form.Select>
           </rb.Form.Group>
         </rb.Col>
-        {lockdateExists && <rb.Button>hello</rb.Button>}
+        {lockdateExists && (
+          <Alert
+            className="text-start mt-4"
+            variant="warning"
+            message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
+          />
+        )}
       </rb.Row>
     </rb.Container>
   )
