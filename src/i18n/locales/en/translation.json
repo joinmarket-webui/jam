@@ -449,7 +449,7 @@
         "form_label_year": "Year",
         "form_label_month": "Month",
         "description": "Fidelity bond expiration date:",
-        "warning_fb_with_same_expiry": "<strong>Warning</strong>: You already have a fidelity bond with same expiry date. We advice you to create a bond with different expiry date as this can create same address as previous one for better privacy. (You can still choose to go with this.)"
+        "warning_fb_with_same_expiry": "<strong>Warning</strong>: You already have a fidelity bond with same expiry date. We advice you to create a bond with different expiry date for better privacy as this can create same address as previous one. (You can still choose to go with this.)"
       },
       "select_jar": {
         "text_primary_button": "Next",
