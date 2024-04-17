@@ -2,7 +2,14 @@ import { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import { Trans, useTranslation } from 'react-i18next'
-import { CurrentWallet, Utxo, Utxos, WalletInfo, useReloadCurrentWalletInfo } from '../../context/WalletContext'
+import {
+  CurrentWallet,
+  Utxo,
+  Utxos,
+  WalletInfo,
+  useCurrentWalletInfo,
+  useReloadCurrentWalletInfo,
+} from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
 import {
@@ -81,6 +88,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
   const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Utxo>()
   const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
+  const [lockDateExists, setLockDateExists] = useState(false)
 
   const selectedUtxosTotalValue = useMemo(
     () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
@@ -111,6 +119,27 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     setFrozenUtxos([])
     setUtxoIdsToBeSpent([])
   }
+
+  const currentWalletInfo = useCurrentWalletInfo()
+  const fidelityBonds = useMemo(() => {
+    return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
+  }, [currentWalletInfo])
+
+  const ifLockTimeExists = (fidelityBonds: Utxos, lockDate: Api.Lockdate): void => {
+    setLockDateExists(false)
+    if (lockDate)
+      // eslint-disable-next-line array-callback-return
+      fidelityBonds.map((fidelityBond) => {
+        const locktime = fb.utxo.getLocktime(fidelityBond)
+        if (locktime === fb.lockdate.toTimestamp(lockDate)) {
+          setLockDateExists(true)
+        }
+      })
+  }
+
+  useEffect(() => {
+    if (lockDate) ifLockTimeExists(fidelityBonds, lockDate)
+  }, [fidelityBonds, lockDate])
 
   useEffect(() => {
     if (!isExpanded) {
@@ -281,6 +310,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <SelectDate
             description={t('earn.fidelity_bond.select_date.description')}
             yearsRange={yearsRange}
+            lockDateExists={lockDateExists}
             onChange={(date) => setLockDate(date)}
           />
         )

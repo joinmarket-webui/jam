@@ -68,11 +68,11 @@ interface CreatedFidelityBondProps {
   frozenUtxos: Array<Utxo>
 }
 
-const SelectDate = ({ description, yearsRange, disabled, onChange }: SelectDateProps) => {
+const SelectDate = ({ description, yearsRange, disabled, lockDateExists, onChange }: SelectDateProps) => {
   return (
     <div className="d-flex flex-column gap-4">
       <div className={styles.stepDescription}>{description}</div>
-      <LockdateForm yearsRange={yearsRange} onChange={onChange} disabled={disabled} />
+      <LockdateForm yearsRange={yearsRange} lockDateExists={lockDateExists} onChange={onChange} disabled={disabled} />
     </div>
   )
 }

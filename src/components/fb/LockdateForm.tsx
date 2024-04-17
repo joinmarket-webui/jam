@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
-import { useCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
 import Alert from '../Alert'
@@ -62,11 +61,12 @@ export const _selectableYears = (yearsRange: fb.YearsRange, now = new Date()): n
 export interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
   yearsRange?: fb.YearsRange
+  lockDateExists?: boolean
   now?: Date
   disabled?: boolean
 }
 
-const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps) => {
+const LockdateForm = ({ onChange, now, yearsRange, lockDateExists, disabled }: LockdateFormProps) => {
   const { i18n } = useTranslation()
   const _now = useMemo<Date>(() => now || new Date(), [now])
   const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
@@ -79,28 +79,12 @@ const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps
   const [lockdateYear, setLockdateYear] = useState(initialYear)
   const [lockdateMonth, setLockdateMonth] = useState(initialMonth)
   const [timestamp, setTimestamp] = useState(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
-  const [lockdateExists, setLockdateExists] = useState(false)
 
   const selectableYears = useMemo(() => _selectableYears(_yearsRange, _now), [_yearsRange, _now])
   const selectableMonths = useMemo(
     () => _selectableMonths(lockdateYear, _yearsRange, _now, i18n.resolvedLanguage || i18n.language),
     [lockdateYear, _yearsRange, _now, i18n],
   )
-  const currentWalletInfo = useCurrentWalletInfo()
-  const fidelityBonds = useMemo(() => {
-    return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
-  }, [currentWalletInfo])
-
-  const ifLockTimeExists = (fidelityBonds: Utxos, timestamp: Milliseconds): void => {
-    setLockdateExists(false)
-    // eslint-disable-next-line array-callback-return
-    fidelityBonds.map((fidelityBond) => {
-      const locktime = fb.utxo.getLocktime(fidelityBond)
-      if (locktime === timestamp) {
-        setLockdateExists(true)
-      }
-    })
-  }
 
   const isLockdateYearValid = useMemo(() => selectableYears.includes(lockdateYear), [lockdateYear, selectableYears])
   const isLockdateMonthValid = useMemo(
@@ -115,12 +99,11 @@ const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps
   useEffect(() => {
     if (isLockdateYearValid && isLockdateMonthValid) {
       setTimestamp(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
-      ifLockTimeExists(fidelityBonds, timestamp)
       onChange(fb.lockdate.fromTimestamp(timestamp))
     } else {
       onChange(null)
     }
-  }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, timestamp, fidelityBonds, onChange])
+  }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, timestamp, onChange])
 
   return (
     <rb.Container>
@@ -167,7 +150,7 @@ const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps
             </rb.Form.Select>
           </rb.Form.Group>
         </rb.Col>
-        {lockdateExists && (
+        {lockDateExists && (
           <Alert
             className="text-start mt-4"
             variant="warning"
