@@ -3,7 +3,6 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
-import Alert from '../Alert'
 
 const monthFormatter = (locales: string) => new Intl.DateTimeFormat(locales, { month: 'long' })
 
@@ -61,12 +60,11 @@ export const _selectableYears = (yearsRange: fb.YearsRange, now = new Date()): n
 export interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
   yearsRange?: fb.YearsRange
-  lockDateExists?: boolean
   now?: Date
   disabled?: boolean
 }
 
-const LockdateForm = ({ onChange, now, yearsRange, lockDateExists, disabled }: LockdateFormProps) => {
+const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps) => {
   const { i18n } = useTranslation()
   const _now = useMemo<Date>(() => now || new Date(), [now])
   const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
@@ -78,7 +76,6 @@ const LockdateForm = ({ onChange, now, yearsRange, lockDateExists, disabled }: L
 
   const [lockdateYear, setLockdateYear] = useState(initialYear)
   const [lockdateMonth, setLockdateMonth] = useState(initialMonth)
-  const [timestamp, setTimestamp] = useState(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
 
   const selectableYears = useMemo(() => _selectableYears(_yearsRange, _now), [_yearsRange, _now])
   const selectableMonths = useMemo(
@@ -98,12 +95,12 @@ const LockdateForm = ({ onChange, now, yearsRange, lockDateExists, disabled }: L
 
   useEffect(() => {
     if (isLockdateYearValid && isLockdateMonthValid) {
-      setTimestamp(Date.UTC(lockdateYear, lockdateMonth - 1, 1))
+      const timestamp = Date.UTC(lockdateYear, lockdateMonth - 1, 1)
       onChange(fb.lockdate.fromTimestamp(timestamp))
     } else {
       onChange(null)
     }
-  }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, timestamp, onChange])
+  }, [lockdateYear, lockdateMonth, isLockdateYearValid, isLockdateMonthValid, onChange])
 
   return (
     <rb.Container>
@@ -150,13 +147,6 @@ const LockdateForm = ({ onChange, now, yearsRange, lockDateExists, disabled }: L
             </rb.Form.Select>
           </rb.Form.Group>
         </rb.Col>
-        {lockDateExists && (
-          <Alert
-            className="text-start mt-4"
-            variant="warning"
-            message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
-          />
-        )}
       </rb.Row>
     </rb.Container>
   )

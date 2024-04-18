@@ -88,7 +88,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
   const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Utxo>()
   const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
-  const [lockDateExists, setLockDateExists] = useState(false)
 
   const selectedUtxosTotalValue = useMemo(
     () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
@@ -125,20 +124,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
   }, [currentWalletInfo])
 
-  const ifLockTimeExists = (fidelityBonds: Utxos, lockDate: Api.Lockdate): void => {
-    setLockDateExists(false)
-    if (lockDate)
-      // eslint-disable-next-line array-callback-return
-      fidelityBonds.map((fidelityBond) => {
-        const locktime = fb.utxo.getLocktime(fidelityBond)
-        if (locktime === fb.lockdate.toTimestamp(lockDate)) {
-          setLockDateExists(true)
-        }
-      })
-  }
-
-  useEffect(() => {
-    if (lockDate) ifLockTimeExists(fidelityBonds, lockDate)
+  const bondWithSelectedLockDateAlreadyExists = useMemo(() => {
+    return lockDate && fidelityBonds.some((it) => fb.utxo.getLocktime(it) === fb.lockdate.toTimestamp(lockDate))
   }, [fidelityBonds, lockDate])
 
   useEffect(() => {
@@ -307,12 +294,20 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         }
 
         return (
-          <SelectDate
-            description={t('earn.fidelity_bond.select_date.description')}
-            yearsRange={yearsRange}
-            lockDateExists={lockDateExists}
-            onChange={(date) => setLockDate(date)}
-          />
+          <>
+            <SelectDate
+              description={t('earn.fidelity_bond.select_date.description')}
+              yearsRange={yearsRange}
+              onChange={(date) => setLockDate(date)}
+            />
+            {bondWithSelectedLockDateAlreadyExists && (
+              <Alert
+                className="text-start mt-4"
+                variant="warning"
+                message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
+              />
+            )}
+          </>
         )
       case steps.selectJar:
         return (
