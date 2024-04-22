@@ -32,6 +32,7 @@
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}",
+    "alert_no_connection_details": "Please confirm that the backend is running and <1>see the docs for more information</1>.",
     "alert_rescan_in_progress": "Rescanning in progress..."
   },
   "navbar": {
