@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import Bip39MnemonicWordInput from './Bip39MnemonicWordInput'
+import { Bip39MnemonicWordInput } from './MnemonicWordInput'
 
 interface MnemonicPhraseInputProps {
   columns?: number

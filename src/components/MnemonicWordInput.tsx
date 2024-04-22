@@ -1,8 +1,10 @@
+import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import { MNEMONIC_WORDS } from '../constants/bip39words'
 import styles from './MnemonicWordInput.module.css'
 
-export interface MnemonicWordInputProps {
+interface MnemonicWordInputProps {
   forwardRef: (el: HTMLInputElement) => void
   index: number
   value: string
@@ -45,4 +47,8 @@ const MnemonicWordInput = ({
   )
 }
 
-export default MnemonicWordInput
+export const Bip39MnemonicWordInput = ({ value, ...props }: MnemonicWordInputProps) => {
+  const isBip39Value = useMemo(() => MNEMONIC_WORDS.includes(value), [value])
+
+  return <MnemonicWordInput {...props} value={value} isValid={isBip39Value && (props.isValid ?? true)} />
+}
