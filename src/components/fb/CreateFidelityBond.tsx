@@ -2,7 +2,14 @@ import { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import { Trans, useTranslation } from 'react-i18next'
-import { CurrentWallet, Utxo, Utxos, WalletInfo, useReloadCurrentWalletInfo } from '../../context/WalletContext'
+import {
+  CurrentWallet,
+  Utxo,
+  Utxos,
+  WalletInfo,
+  useCurrentWalletInfo,
+  useReloadCurrentWalletInfo,
+} from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
 import {
@@ -111,6 +118,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     setFrozenUtxos([])
     setUtxoIdsToBeSpent([])
   }
+
+  const currentWalletInfo = useCurrentWalletInfo()
+  const fidelityBonds = useMemo(() => {
+    return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
+  }, [currentWalletInfo])
+
+  const bondWithSelectedLockDateAlreadyExists = useMemo(() => {
+    return lockDate && fidelityBonds.some((it) => fb.utxo.getLocktime(it) === fb.lockdate.toTimestamp(lockDate))
+  }, [fidelityBonds, lockDate])
 
   useEffect(() => {
     if (!isExpanded) {
@@ -278,11 +294,20 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         }
 
         return (
-          <SelectDate
-            description={t('earn.fidelity_bond.select_date.description')}
-            yearsRange={yearsRange}
-            onChange={(date) => setLockDate(date)}
-          />
+          <>
+            <SelectDate
+              description={t('earn.fidelity_bond.select_date.description')}
+              yearsRange={yearsRange}
+              onChange={(date) => setLockDate(date)}
+            />
+            {bondWithSelectedLockDateAlreadyExists && (
+              <Alert
+                className="text-start mt-4"
+                variant="warning"
+                message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
+              />
+            )}
+          </>
         )
       case steps.selectJar:
         return (

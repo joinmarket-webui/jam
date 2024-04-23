@@ -449,7 +449,8 @@
         "text_secondary_button": "Cancel",
         "form_label_year": "Year",
         "form_label_month": "Month",
-        "description": "Fidelity bond expiration date:"
+        "description": "Fidelity bond expiration date:",
+        "warning_fb_with_same_expiry": "<strong>Warning</strong>: A fidelity bond with the same expiry date already exists."
       },
       "select_jar": {
         "text_primary_button": "Next",

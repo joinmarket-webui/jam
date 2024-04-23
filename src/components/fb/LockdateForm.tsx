@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
-
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
 
