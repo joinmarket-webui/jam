@@ -4,7 +4,7 @@ import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { useSettings } from '../context/SettingsContext'
-import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo } from '../context/WalletContext'
+import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo, WalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
 import * as Api from '../libs/JmWalletApi'
@@ -22,6 +22,7 @@ import Accordion from './Accordion'
 import BitcoinAmountInput, { AmountValue, toAmountValue } from './BitcoinAmountInput'
 import { isValidAmount } from './Send/helpers'
 import styles from './Earn.module.css'
+import { JM_DUST_THRESHOLD } from '../constants/config'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -203,6 +204,7 @@ interface EarnFormProps {
   onSubmit: (values: EarnFormValues) => Promise<void>
   isLoading: boolean
   disabled?: boolean
+  walletInfo?: WalletInfo
 }
 
 const EarnForm = ({
@@ -211,8 +213,26 @@ const EarnForm = ({
   onSubmit,
   isLoading,
   disabled = false,
+  walletInfo,
 }: EarnFormProps) => {
   const { t } = useTranslation()
+
+  const maxAvailableBalanceInJar = useMemo(() => {
+    return Math.max(
+      0,
+      Math.max(
+        ...Object.values(walletInfo?.balanceSummary.accountBalances || []).map(
+          (it) => it.calculatedAvailableBalanceInSats,
+        ),
+      ),
+    )
+  }, [walletInfo])
+
+  const offerMinsizeMin = JM_DUST_THRESHOLD
+
+  const offerMinsizeMax = useMemo(() => {
+    return Math.max(0, maxAvailableBalanceInJar - JM_DUST_THRESHOLD)
+  }, [maxAvailableBalanceInJar])
 
   const validate = (values: EarnFormValues) => {
     const errors = {} as FormikErrors<EarnFormValues>
@@ -241,6 +261,16 @@ const EarnForm = ({
 
     if (!isValidAmount(values.minsize?.value ?? null, false)) {
       errors.minsize = t('earn.feedback_invalid_min_amount')
+    } else {
+      const minsize = values.minsize?.value || 0
+      if (offerMinsizeMin > offerMinsizeMax) {
+        errors.minsize = t('earn.feedback_invalid_min_amount_insufficient_funds')
+      } else if (minsize < offerMinsizeMin || minsize > offerMinsizeMax) {
+        errors.minsize = t('earn.feedback_invalid_min_amount_range', {
+          minAmountMin: offerMinsizeMin.toLocaleString(),
+          minAmountMax: offerMinsizeMax.toLocaleString(),
+        })
+      }
     }
     return errors
   }
@@ -425,6 +455,15 @@ export default function Earn({ wallet }: EarnProps) {
 
   const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<Api.UtxoId>()
   const [renewFidelityBondId, setRenewFidelityBondId] = useState<Api.UtxoId>()
+
+  const isSufficientFundsAvailable = useMemo(
+    () => (currentWalletInfo?.balanceSummary.calculatedAvailableBalanceInSats ?? 0) > 0,
+    [currentWalletInfo],
+  )
+
+  const isOperationDisabled = useMemo(() => {
+    return !isSufficientFundsAvailable || serviceInfo?.rescanning === true || isWaitingMakerStart || isWaitingMakerStop
+  }, [isSufficientFundsAvailable, serviceInfo, isWaitingMakerStart, isWaitingMakerStop])
 
   const startMakerService = useCallback(
     (values: EarnFormValues) => {
@@ -701,8 +740,9 @@ export default function Earn({ wallet }: EarnProps) {
                 <EarnForm
                   initialValues={initialValues}
                   onSubmit={onSubmitStart}
+                  walletInfo={currentWalletInfo}
                   isLoading={isLoading}
-                  disabled={serviceInfo?.rescanning === true || isWaitingMakerStart || isWaitingMakerStop}
+                  disabled={isOperationDisabled}
                   submitButtonText={(_) => {
                     return (
                       <>
