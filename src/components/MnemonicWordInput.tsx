@@ -1,9 +1,11 @@
+import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
+import { MNEMONIC_WORDS } from '../constants/bip39words'
 import styles from './MnemonicWordInput.module.css'
 
-interface MnemonicWordInputProps {
-  forwardRef: (el: HTMLInputElement) => void
+export interface MnemonicWordInputProps {
+  forwardRef?: (el: HTMLInputElement) => void
   index: number
   value: string
   setValue: (value: string, index: number) => void
@@ -28,6 +30,7 @@ const MnemonicWordInput = ({
     <rb.InputGroup>
       <rb.InputGroup.Text className={styles.seedwordIndexBackup}>{index + 1}.</rb.InputGroup.Text>
       <rb.Form.Control
+        data-testid="mnemonic-word-input"
         ref={forwardRef}
         type="text"
         placeholder={`${t('create_wallet.placeholder_seed_word_input')} ${index + 1}`}
@@ -45,4 +48,8 @@ const MnemonicWordInput = ({
   )
 }
 
-export default MnemonicWordInput
+export const Bip39MnemonicWordInput = ({ value, ...props }: MnemonicWordInputProps) => {
+  const isBip39Value = useMemo(() => MNEMONIC_WORDS.includes(value), [value])
+
+  return <MnemonicWordInput {...props} value={value} isValid={isBip39Value && (props.isValid ?? true)} />
+}

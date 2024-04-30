@@ -93,7 +93,7 @@ interface ServiceInfoContextEntry {
   serviceInfo: ServiceInfo | null
   reloadServiceInfo: ({ signal }: { signal: AbortSignal }) => Promise<ServiceInfo>
   dispatchServiceInfo: Dispatch<Partial<ServiceInfo>>
-  connectionError?: Error
+  connectionError?: Api.JmApiError
 }
 
 const ServiceInfoContext = createContext<ServiceInfoContextEntry | undefined>(undefined)
@@ -107,7 +107,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     (state: ServiceInfo | null, obj: Partial<ServiceInfo>) => ({ ...state, ...obj }) as ServiceInfo | null,
     null,
   )
-  const [connectionError, setConnectionError] = useState<Error>()
+  const [connectionError, setConnectionError] = useState<Api.JmApiError>()
 
   useEffect(() => {
     const abortCtrl = new AbortController()

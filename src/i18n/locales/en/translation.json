@@ -32,6 +32,7 @@
   },
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}",
+    "alert_no_connection_details": "Please confirm that the backend is running and <1>see the docs for more information</1>.",
     "alert_rescan_in_progress": "Rescanning in progress..."
   },
   "navbar": {
@@ -421,7 +422,14 @@
       "heading_input_count": "My Inputs",
       "heading_input_value": "My Input Amount",
       "heading_earned": "Earned",
-      "heading_notes": "Notes"
+      "heading_notes": "Notes",
+      "text_button_generate_demo_report": "Generate demo entry",
+      "stats": {
+        "earned_total": "Earned (total)",
+        "earned_90days": "Earned (90 days)",
+        "earned_30days": "Earned (30 days)",
+        "earned_24hours": "Earned (24 hours)"
+      }
     },
     "title_fidelity_bonds_zero": "Create a Fidelity Bond",
     "title_fidelity_bonds_one": "Your Fidelity Bond",
@@ -441,7 +449,8 @@
         "text_secondary_button": "Cancel",
         "form_label_year": "Year",
         "form_label_month": "Month",
-        "description": "Fidelity bond expiration date:"
+        "description": "Fidelity bond expiration date:",
+        "warning_fb_with_same_expiry": "<strong>Warning</strong>: A fidelity bond with the same expiry date already exists."
       },
       "select_jar": {
         "text_primary_button": "Next",
