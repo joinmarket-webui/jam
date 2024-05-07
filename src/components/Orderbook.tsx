@@ -14,9 +14,11 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
-import { isDevMode } from '../constants/debugFeatures'
-import styles from './Orderbook.module.css'
+import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import ToggleSwitch from './ToggleSwitch'
+import { pseudoRandomNumber } from './Send/helpers'
+import { JM_DUST_THRESHOLD } from '../constants/config'
+import styles from './Orderbook.module.css'
 
 const TABLE_THEME = {
   Table: `
@@ -453,6 +455,26 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
   const [isLoading, setIsLoading] = useState(true)
   const [offers, setOffers] = useState<ObwatchApi.Offer[]>()
   const tableEntries = useMemo(() => offers && offers.map((offer) => offerToTableEntry(offer, t)), [offers, t])
+  const [__dev_showGenerateDemoOfferButton] = useState(isDebugFeatureEnabled('enableDemoOrderbook'))
+
+  const __dev_generateDemoReportEntryButton = () => {
+    const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
+    const randomOrdertype = Math.random() > 0.5 ? 'sw0absoffer' : 'sw0reloffer'
+    const randomCounterparty = `demo_` + pseudoRandomNumber(0, 10)
+    setOffers((it) => {
+      const randomOffer = {
+        counterparty: randomCounterparty,
+        oid: (it || []).filter((e) => e.counterparty === randomCounterparty).length,
+        ordertype: randomOrdertype,
+        minsize: randomMinsize,
+        maxsize: randomMinsize + pseudoRandomNumber(21_000, 21_000_000),
+        txfee: 0,
+        cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomNumber(0, 10_000) : Math.random().toFixed(5),
+        fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomNumber(1_000, 21_000_000),
+      }
+      return [...(it || []), randomOffer]
+    })
+  }
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
@@ -538,6 +560,26 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
               })
           ) : (
             <>
+              {__dev_showGenerateDemoOfferButton && (
+                <rb.Row>
+                  <rb.Col className="px-0 mb-2">
+                    <rb.Button
+                      className="position-relative"
+                      variant="outline-dark"
+                      disabled={false}
+                      onClick={() => __dev_generateDemoReportEntryButton()}
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        Generate demo entry
+                        <Sprite symbol="plus" width="20" height="20" className="ms-2" />
+                      </div>
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                        dev
+                      </span>
+                    </rb.Button>
+                  </rb.Col>
+                </rb.Row>
+              )}
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {tableEntries && (
                 <rb.Row>
