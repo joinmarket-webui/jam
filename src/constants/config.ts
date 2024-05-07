@@ -19,3 +19,7 @@ export const CJ_STATE_MAKER_RUNNING = 1
 export const CJ_STATE_NONE_RUNNING = 2
 
 export const JM_API_AUTH_TOKEN_EXPIRY: Milliseconds = Math.round(0.5 * 60 * 60 * 1_000)
+
+// cap of dusty offer minsizes ("has dusty minsize, capping at 27300")
+// See: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.11/src/jmclient/configure.py#L70 (last check on 2024-04-22 of v0.9.11)
+export const JM_DUST_THRESHOLD = 27_300
