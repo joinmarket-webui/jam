@@ -137,6 +137,14 @@ export default function Footer() {
               >
                 <Sprite symbol="telegram" width="18px" height="18px" />
               </a>
+              <a
+                href="https://x.com/joinmarket"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="d-flex align-items-center text-secondary"
+              >
+                <Sprite symbol="x" width="20px" height="20px" />
+              </a>
             </div>
             <div className="text-secondary">|</div>
             <div className="d-flex">
