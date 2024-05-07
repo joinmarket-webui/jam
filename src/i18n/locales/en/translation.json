@@ -394,6 +394,8 @@
     "label_min_amount_input": "Minimum amount",
     "placeholder_min_amount_input": "Enter a minimum amount in sats or BTC...",
     "feedback_invalid_min_amount": "Please provide a minimum amount.",
+    "feedback_invalid_min_amount_range": "Please provide a minimum amount in sats between {{ minAmountMin }} and {{ minAmountMax }}.",
+    "feedback_invalid_min_amount_insufficient_funds": "Invalid minimum amount: Insufficient funds available.",
     "button_start": "Start Earning!",
     "button_stop": "Stop",
     "text_starting": "Starting",
