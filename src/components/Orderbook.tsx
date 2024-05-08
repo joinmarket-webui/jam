@@ -154,6 +154,27 @@ const renderOrderFee = (val: string, settings: any) => {
   )
 }
 
+const renderOrderAsRow = (item: OrderTableRow, settings: any) => {
+  return (
+    <Row key={item.id} item={item} className={item.__highlighted ? styles.highlighted : ''}>
+      <Cell className="font-monospace">{item.counterparty}</Cell>
+      <Cell>{item.orderId}</Cell>
+      <Cell>{renderOrderType(item.type)}</Cell>
+      <Cell>{renderOrderFee(item.fee.displayValue, settings)}</Cell>
+      <Cell>
+        <Balance valueString={item.minimumSize} convertToUnit={settings.unit} showBalance={true} />
+      </Cell>
+      <Cell>
+        <Balance valueString={item.maximumSize} convertToUnit={settings.unit} showBalance={true} />
+      </Cell>
+      <Cell hide={true}>
+        <Balance valueString={item.minerFeeContribution} convertToUnit={settings.unit} showBalance={true} />
+      </Cell>
+      <Cell className="font-monospace">{item.bondValue.displayValue}</Cell>
+    </Row>
+  )
+}
+
 interface OrderbookTableProps {
   data: TableTypes.Data<OrderTableRow>
 }
@@ -213,6 +234,14 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
     },
   )
 
+  const pinnedOfferRows = useMemo(
+    () =>
+      data.nodes
+        .filter((item: OrderTableRow) => item.__pinned === true)
+        .map((item: OrderTableRow) => renderOrderAsRow(item, settings)),
+    [data, settings],
+  )
+
   return (
     <>
       <Table
@@ -246,30 +275,10 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
               </HeaderRow>
             </Header>
             <Body>
-              {tableList.map((item: OrderTableRow) => {
-                return (
-                  <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
-                    <Cell className="font-monospace">{item.counterparty}</Cell>
-                    <Cell>{item.orderId}</Cell>
-                    <Cell>{renderOrderType(item.type)}</Cell>
-                    <Cell>{renderOrderFee(item.fee.displayValue, settings)}</Cell>
-                    <Cell>
-                      <Balance valueString={item.minimumSize} convertToUnit={settings.unit} showBalance={true} />
-                    </Cell>
-                    <Cell>
-                      <Balance valueString={item.maximumSize} convertToUnit={settings.unit} showBalance={true} />
-                    </Cell>
-                    <Cell hide={true}>
-                      <Balance
-                        valueString={item.minerFeeContribution}
-                        convertToUnit={settings.unit}
-                        showBalance={true}
-                      />
-                    </Cell>
-                    <Cell className="font-monospace">{item.bondValue.displayValue}</Cell>
-                  </Row>
-                )
-              })}
+              {pinnedOfferRows}
+              {tableList
+                .filter((item: OrderTableRow) => item.__pinned !== true)
+                .map((item: OrderTableRow) => renderOrderAsRow(item, settings))}
             </Body>
           </>
         )}
@@ -321,7 +330,9 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
   const [search, setSearch] = useState('')
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isHighlightOwnOffers, setIsHighlightOwnOffers] = useState(false)
+  const [isPinToTopOwnOffers, setIsPinToTopOwnOffers] = useState(false)
   const [highlightedOrders, setHighlightedOrders] = useState<OrderTableEntry[]>([])
+  const [pinToTopOrders, setPinToTopOrders] = useState<OrderTableEntry[]>([])
 
   const tableData: TableTypes.Data<OrderTableRow> = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
@@ -343,11 +354,12 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
     const nodes = filteredOrders.map((order) => ({
       ...order,
       id: `${order.counterparty}_${order.orderId}`,
-      _highlighted: highlightedOrders.includes(order),
+      __highlighted: highlightedOrders.includes(order),
+      __pinned: pinToTopOrders.includes(order),
     }))
 
     return { nodes }
-  }, [entries, search, highlightedOrders])
+  }, [entries, search, highlightedOrders, pinToTopOrders])
 
   const counterpartyCount = useMemo(() => new Set(entries.map((it) => it.counterparty)).size, [entries])
   const counterpartyCountFiltered = useMemo(
@@ -362,6 +374,10 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
   useEffect(() => {
     setHighlightedOrders(isHighlightOwnOffers ? ownOffers : [])
   }, [ownOffers, isHighlightOwnOffers])
+
+  useEffect(() => {
+    setPinToTopOrders(isPinToTopOwnOffers ? ownOffers : [])
+  }, [ownOffers, isPinToTopOwnOffers])
 
   return (
     <div className={styles.orderbookContainer}>
@@ -426,15 +442,32 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
         ) : (
           <>
             {nickname && (
-              <div className="mb-3 ps-3 ps-md-0 pt-3 pt-lg-0">
-                <ToggleSwitch
-                  label={t('orderbook.label_highlight_own_orders')}
-                  subtitle={ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
-                  toggledOn={isHighlightOwnOffers}
-                  onToggle={(isToggled) => setIsHighlightOwnOffers(isToggled)}
-                  disabled={isLoadingRefresh}
-                />
-              </div>
+              <>
+                <div className="d-flex flex-column gap-2 mb-3 ps-3 ps-md-0 pt-3 pt-lg-0">
+                  <ToggleSwitch
+                    label={t('orderbook.label_highlight_own_orders')}
+                    subtitle={ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
+                    toggledOn={isHighlightOwnOffers}
+                    onToggle={(isToggled) => setIsHighlightOwnOffers(isToggled)}
+                    disabled={isLoadingRefresh}
+                  />
+                  {ownOffers.length > 0 && (
+                    <ToggleSwitch
+                      label={t('orderbook.label_pin_to_top_own_orders')}
+                      subtitle={t('orderbook.text_pin_to_top_own_orders_subtitle')}
+                      toggledOn={isPinToTopOwnOffers}
+                      onToggle={(isToggled) => {
+                        setIsPinToTopOwnOffers(isToggled)
+                        if (isToggled) {
+                          setIsHighlightOwnOffers(true)
+                        }
+                      }}
+                      disabled={isLoadingRefresh}
+                    />
+                  )}
+                </div>
+                <div className="mb-3 ps-3 ps-md-0 pt-3 pt-lg-0"></div>
+              </>
             )}
             <OrderbookTable data={tableData} />
           </>
