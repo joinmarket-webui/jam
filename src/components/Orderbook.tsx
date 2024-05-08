@@ -449,7 +449,7 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
                     subtitle={ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
                     toggledOn={isHighlightOwnOffers}
                     onToggle={(isToggled) => setIsHighlightOwnOffers(isToggled)}
-                    disabled={isLoadingRefresh}
+                    disabled={isLoadingRefresh || ownOffers.length === 0}
                   />
                   {ownOffers.length > 0 && (
                     <ToggleSwitch
