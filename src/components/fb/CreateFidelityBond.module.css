@@ -4,6 +4,13 @@
   padding: 1.25rem;
 }
 
+.containerWhenBondAlreadyExists {
+  border: 1px solid var(--bs-gray-200);
+  border-radius: 0.3rem;
+  display: block;
+  margin-left: 41rem;
+}
+
 :root[data-theme='dark'] .container {
   border-color: var(--bs-gray-700);
 }
@@ -41,6 +48,19 @@
 
 .header :global .accordion-button:after {
   display: none;
+}
+
+.headerWhenBondAlreadyExists {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.headerWhenBondAlreadyExists .title {
+  width: 100%;
+  font-size: 0.8rem;
+  color: var(--bs-body-color);
 }
 
 .successCheckmark {
