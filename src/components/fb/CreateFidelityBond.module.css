@@ -53,12 +53,11 @@
 .headerWhenBondAlreadyExists {
   display: flex;
   flex-direction: column;
-  padding: 0.5rem;
+  padding: 0.4rem;
   cursor: pointer;
 }
 
 .headerWhenBondAlreadyExists .title {
-  width: 100%;
   font-size: 0.8rem;
   color: var(--bs-body-color);
 }

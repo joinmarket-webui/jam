@@ -648,14 +648,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       {otherFidelityBondExists ? (
         <div className={styles.containerWhenBondAlreadyExists}>
           <div className={styles.headerWhenBondAlreadyExists} onClick={() => setIsExpanded(!isExpanded)}>
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex justify-content-around align-items-center">
               <div className={styles.title}>{t('earn.fidelity_bond.title_fidelity_bond_exists')}</div>
-              <Sprite symbol={isExpanded ? 'caret-up' : 'plus'} width="20" height="20" />
+              <Sprite symbol={isExpanded ? 'caret-up' : 'plus'} width="15" height="15" />
             </div>
             {/* <div className={styles.subtitle}>
               <Trans i18nKey="earn.fidelity_bond.subtitle_fidelity_bond_exists">
                 <a
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()} 
                 rel="noopener noreferrer"
                 href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long"
                 >
