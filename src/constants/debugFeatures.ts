@@ -9,6 +9,7 @@ interface DebugFeatures {
   allowFeeValuesReset: boolean
   fastThemeToggle: boolean
   enableDemoEarnReport: boolean
+  enableDemoOrderbook: boolean
 }
 
 const devMode = process.env.NODE_ENV === 'development' && process.env.REACT_APP_JAM_DEV_MODE === 'true'
@@ -24,6 +25,7 @@ const debugFeatures: DebugFeatures = {
   allowFeeValuesReset: devMode,
   fastThemeToggle: devMode,
   enableDemoEarnReport: devMode,
+  enableDemoOrderbook: devMode,
 }
 
 type DebugFeature = keyof DebugFeatures

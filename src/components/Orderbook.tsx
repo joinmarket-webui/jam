@@ -1,4 +1,4 @@
-import { ReactElement, ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-table-library/sort'
@@ -14,7 +14,10 @@ import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
-import { isDevMode } from '../constants/debugFeatures'
+import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
+import ToggleSwitch from './ToggleSwitch'
+import { pseudoRandomNumber } from './Send/helpers'
+import { JM_DUST_THRESHOLD } from '../constants/config'
 import styles from './Orderbook.module.css'
 
 const TABLE_THEME = {
@@ -151,6 +154,27 @@ const renderOrderFee = (val: string, settings: any) => {
   )
 }
 
+const renderOrderAsRow = (item: OrderTableRow, settings: any) => {
+  return (
+    <Row key={item.id} item={item} className={item.__highlighted ? styles.highlighted : ''}>
+      <Cell className="font-monospace">{item.counterparty}</Cell>
+      <Cell>{item.orderId}</Cell>
+      <Cell>{renderOrderType(item.type)}</Cell>
+      <Cell>{renderOrderFee(item.fee.displayValue, settings)}</Cell>
+      <Cell>
+        <Balance valueString={item.minimumSize} convertToUnit={settings.unit} showBalance={true} />
+      </Cell>
+      <Cell>
+        <Balance valueString={item.maximumSize} convertToUnit={settings.unit} showBalance={true} />
+      </Cell>
+      <Cell hide={true}>
+        <Balance valueString={item.minerFeeContribution} convertToUnit={settings.unit} showBalance={true} />
+      </Cell>
+      <Cell className="font-monospace">{item.bondValue.displayValue}</Cell>
+    </Row>
+  )
+}
+
 interface OrderbookTableProps {
   data: TableTypes.Data<OrderTableRow>
 }
@@ -210,6 +234,14 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
     },
   )
 
+  const pinnedOfferRows = useMemo(
+    () =>
+      data.nodes
+        .filter((item: OrderTableRow) => item.__pinned === true)
+        .map((item: OrderTableRow) => renderOrderAsRow(item, settings)),
+    [data, settings],
+  )
+
   return (
     <>
       <Table
@@ -243,30 +275,10 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
               </HeaderRow>
             </Header>
             <Body>
-              {tableList.map((item: OrderTableRow) => {
-                return (
-                  <Row key={item.id} item={item} className={item._highlighted ? styles.highlighted : ''}>
-                    <Cell className="font-monospace">{item.counterparty}</Cell>
-                    <Cell>{item.orderId}</Cell>
-                    <Cell>{renderOrderType(item.type)}</Cell>
-                    <Cell>{renderOrderFee(item.fee.displayValue, settings)}</Cell>
-                    <Cell>
-                      <Balance valueString={item.minimumSize} convertToUnit={settings.unit} showBalance={true} />
-                    </Cell>
-                    <Cell>
-                      <Balance valueString={item.maximumSize} convertToUnit={settings.unit} showBalance={true} />
-                    </Cell>
-                    <Cell hide={true}>
-                      <Balance
-                        valueString={item.minerFeeContribution}
-                        convertToUnit={settings.unit}
-                        showBalance={true}
-                      />
-                    </Cell>
-                    <Cell className="font-monospace">{item.bondValue.displayValue}</Cell>
-                  </Row>
-                )
-              })}
+              {pinnedOfferRows}
+              {tableList
+                .filter((item: OrderTableRow) => item.__pinned !== true)
+                .map((item: OrderTableRow) => renderOrderAsRow(item, settings))}
             </Body>
           </>
         )}
@@ -318,7 +330,9 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
   const [search, setSearch] = useState('')
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isHighlightOwnOffers, setIsHighlightOwnOffers] = useState(false)
+  const [isPinToTopOwnOffers, setIsPinToTopOwnOffers] = useState(false)
   const [highlightedOrders, setHighlightedOrders] = useState<OrderTableEntry[]>([])
+  const [pinToTopOrders, setPinToTopOrders] = useState<OrderTableEntry[]>([])
 
   const tableData: TableTypes.Data<OrderTableRow> = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
@@ -340,11 +354,12 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
     const nodes = filteredOrders.map((order) => ({
       ...order,
       id: `${order.counterparty}_${order.orderId}`,
-      _highlighted: highlightedOrders.includes(order),
+      __highlighted: highlightedOrders.includes(order),
+      __pinned: pinToTopOrders.includes(order),
     }))
 
     return { nodes }
-  }, [entries, search, highlightedOrders])
+  }, [entries, search, highlightedOrders, pinToTopOrders])
 
   const counterpartyCount = useMemo(() => new Set(entries.map((it) => it.counterparty)).size, [entries])
   const counterpartyCountFiltered = useMemo(
@@ -352,13 +367,17 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
     [tableData],
   )
 
+  const ownOffers = useMemo(() => {
+    return nickname ? entries.filter((it) => it.counterparty === nickname) : []
+  }, [nickname, entries])
+
   useEffect(() => {
-    if (!nickname || !isHighlightOwnOffers) {
-      setHighlightedOrders([])
-    } else {
-      setHighlightedOrders(entries.filter((it) => it.counterparty === nickname))
-    }
-  }, [entries, nickname, isHighlightOwnOffers])
+    setHighlightedOrders(isHighlightOwnOffers ? ownOffers : [])
+  }, [ownOffers, isHighlightOwnOffers])
+
+  useEffect(() => {
+    setPinToTopOrders(isPinToTopOwnOffers ? ownOffers : [])
+  }, [ownOffers, isPinToTopOwnOffers])
 
   return (
     <div className={styles.orderbookContainer}>
@@ -423,16 +442,32 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
         ) : (
           <>
             {nickname && (
-              <div className="mb-3 ps-3 ps-md-0 pt-3 pt-lg-0">
-                <rb.Form.Check
-                  type="checkbox"
-                  id="highlight-own-offers"
-                  label={t('orderbook.label_highlight_own_orders')}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setIsHighlightOwnOffers(e.target.checked)
-                  }}
-                />
-              </div>
+              <>
+                <div className="d-flex flex-column gap-2 mb-3 ps-3 ps-md-0 pt-3 pt-lg-0">
+                  <ToggleSwitch
+                    label={t('orderbook.label_highlight_own_orders')}
+                    subtitle={ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
+                    toggledOn={isHighlightOwnOffers}
+                    onToggle={(isToggled) => setIsHighlightOwnOffers(isToggled)}
+                    disabled={isLoadingRefresh || ownOffers.length === 0}
+                  />
+                  {ownOffers.length > 0 && (
+                    <ToggleSwitch
+                      label={t('orderbook.label_pin_to_top_own_orders')}
+                      subtitle={t('orderbook.text_pin_to_top_own_orders_subtitle')}
+                      toggledOn={isPinToTopOwnOffers}
+                      onToggle={(isToggled) => {
+                        setIsPinToTopOwnOffers(isToggled)
+                        if (isToggled) {
+                          setIsHighlightOwnOffers(true)
+                        }
+                      }}
+                      disabled={isLoadingRefresh}
+                    />
+                  )}
+                </div>
+                <div className="mb-3 ps-3 ps-md-0 pt-3 pt-lg-0"></div>
+              </>
             )}
             <OrderbookTable data={tableData} />
           </>
@@ -453,6 +488,26 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
   const [isLoading, setIsLoading] = useState(true)
   const [offers, setOffers] = useState<ObwatchApi.Offer[]>()
   const tableEntries = useMemo(() => offers && offers.map((offer) => offerToTableEntry(offer, t)), [offers, t])
+  const [__dev_showGenerateDemoOfferButton] = useState(isDebugFeatureEnabled('enableDemoOrderbook'))
+
+  const __dev_generateDemoReportEntryButton = () => {
+    const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
+    const randomOrdertype = Math.random() > 0.5 ? 'sw0absoffer' : 'sw0reloffer'
+    const randomCounterparty = `demo_` + pseudoRandomNumber(0, 10)
+    setOffers((it) => {
+      const randomOffer = {
+        counterparty: randomCounterparty,
+        oid: (it || []).filter((e) => e.counterparty === randomCounterparty).length,
+        ordertype: randomOrdertype,
+        minsize: randomMinsize,
+        maxsize: randomMinsize + pseudoRandomNumber(21_000, 21_000_000),
+        txfee: 0,
+        cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomNumber(0, 10_000) : Math.random().toFixed(5),
+        fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomNumber(1_000, 21_000_000),
+      }
+      return [...(it || []), randomOffer]
+    })
+  }
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
@@ -538,6 +593,26 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
               })
           ) : (
             <>
+              {__dev_showGenerateDemoOfferButton && (
+                <rb.Row>
+                  <rb.Col className="px-0 mb-2">
+                    <rb.Button
+                      className="position-relative"
+                      variant="outline-dark"
+                      disabled={false}
+                      onClick={() => __dev_generateDemoReportEntryButton()}
+                    >
+                      <div className="d-flex justify-content-center align-items-center">
+                        Generate demo entry
+                        <Sprite symbol="plus" width="20" height="20" className="ms-2" />
+                      </div>
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                        dev
+                      </span>
+                    </rb.Button>
+                  </rb.Col>
+                </rb.Row>
+              )}
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
               {tableEntries && (
                 <rb.Row>
