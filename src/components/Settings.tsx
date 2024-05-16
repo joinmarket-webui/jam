@@ -194,6 +194,7 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
             variant="outline-dark"
             className={styles['settings-btn']}
             onClick={() => lockWallet({ force: false, navigateTo: routes.walletList })}
+            disabled={lockingWallet}
           >
             {lockingWallet ? (
               <>
