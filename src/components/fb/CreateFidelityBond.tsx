@@ -75,7 +75,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const feeConfigValues = useFeeConfigValues()[0]
 
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [showCreateFidelityBondModal, setShowCreateFidelityBondModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<SimpleAlert>()
   const [step, setStep] = useState(steps.selectDate)
@@ -107,7 +107,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const reset = () => {
     setIsLoading(false)
-    setIsExpanded(false)
+    setShowCreateFidelityBondModal(false)
     setStep(steps.selectDate)
     setSelectedJar(undefined)
     setSelectedUtxos([])
@@ -129,7 +129,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   }, [fidelityBonds, lockDate])
 
   useEffect(() => {
-    if (!isExpanded) {
+    if (!showCreateFidelityBondModal) {
       reset()
     } else {
       setIsLoading(true)
@@ -146,7 +146,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         })
       return () => abortCtrl.abort()
     }
-  }, [isExpanded, reloadCurrentWalletInfo, t])
+  }, [showCreateFidelityBondModal, reloadCurrentWalletInfo, t])
 
   const freezeUtxos = (utxos: Utxos) => {
     changeUtxoFreeze(utxos, true)
@@ -645,14 +645,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         </PaymentConfirmModal>
       )}
 
-      <div className={styles.header} onClick={() => setIsExpanded(!isExpanded)}>
+      <div className={styles.header} onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}>
         <div className="d-flex justify-content-between align-items-center">
           <div className={styles.title}>
             {otherFidelityBondExists
               ? t('earn.fidelity_bond.title_fidelity_bond_exists')
               : t('earn.fidelity_bond.title')}
           </div>
-          <Sprite symbol={isExpanded ? 'caret-up' : 'plus'} width="20" height="20" />
+          <Sprite symbol={'plus'} width="20" height="20" />
         </div>
         <div className={styles.subtitle}>
           {otherFidelityBondExists ? (
@@ -673,13 +673,18 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           )}
         </div>
       </div>
-      <rb.Modal show={isExpanded} animation={true} backdrop="static" centered={true}>
-        <div className={styles.form}>
-          <rb.Modal.Header bsPrefix={styles.formHeader}>
-            <div className={styles.title}>{t('earn.fidelity_bond.create_fidelity_bond.title')}</div>
-            <Sprite symbol="cross" width="25" height="25" onClick={onSecondaryButtonClicked} />
-          </rb.Modal.Header>
-          <hr />
+      <rb.Modal
+        show={showCreateFidelityBondModal}
+        animation={true}
+        backdrop="static"
+        centered={true}
+        keyboard={false}
+        onHide={() => setShowCreateFidelityBondModal(false)}
+      >
+        <rb.Modal.Header closeButton>
+          <rb.Modal.Title>{t('earn.fidelity_bond.create_fidelity_bond.title')}</rb.Modal.Title>
+        </rb.Modal.Header>
+        <rb.Modal.Body>
           <div className="mb-5">{stepComponent(step)}</div>
           <div className="d-flex flex-column gap-2">
             {!isLoading && primaryButtonText(step) !== null && (
@@ -701,7 +706,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               </rb.Button>
             )}
           </div>
-        </div>
+        </rb.Modal.Body>
       </rb.Modal>
     </div>
   )
