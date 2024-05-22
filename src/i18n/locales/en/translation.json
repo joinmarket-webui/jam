@@ -494,6 +494,7 @@
         "label_selected_utxos": "UTXOs that will be time-locked:"
       },
       "create_fidelity_bond": {
+        "title": "Create Fidelity Bond",
         "success_text": "Fidelity bond created!",
         "text_primary_button": "Done",
         "text_primary_button_unfreeze": "Unfreeze UTXOs",

@@ -673,8 +673,12 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           )}
         </div>
       </div>
-      <rb.Collapse in={isExpanded}>
-        <div>
+      <rb.Modal show={isExpanded} animation={true} backdrop="static" centered={true}>
+        <div className={styles.form}>
+          <rb.Modal.Header bsPrefix={styles.formHeader}>
+            <div className={styles.title}>{t('earn.fidelity_bond.create_fidelity_bond.title')}</div>
+            <Sprite symbol="cross" width="25" height="25" onClick={onSecondaryButtonClicked} />
+          </rb.Modal.Header>
           <hr />
           <div className="mb-5">{stepComponent(step)}</div>
           <div className="d-flex flex-column gap-2">
@@ -698,7 +702,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             )}
           </div>
         </div>
-      </rb.Collapse>
+      </rb.Modal>
     </div>
   )
 }
