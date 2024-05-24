@@ -4,7 +4,17 @@
   padding: 1.25rem;
 }
 
+.containerWhenBondAlreadyExists {
+  border: 1px solid var(--bs-gray-200);
+  border-radius: 0.3rem;
+  padding: 0.5rem;
+}
+
 :root[data-theme='dark'] .container {
+  border-color: var(--bs-gray-700);
+}
+
+:root[data-theme='dark'] .containerWhenBondAlreadyExists {
   border-color: var(--bs-gray-700);
 }
 
@@ -25,13 +35,25 @@
   color: var(--bs-gray-600);
 }
 
-.header .subtitle a {
+.formMessageWhenBondAlreadyExists {
+  flex-shrink: 1;
+  font-size: 0.8rem;
+  color: var(--bs-gray-600);
+}
+
+.formMessageWhenBondAlreadyExists a {
   color: inherit;
 }
 
 .header .title {
   width: 100%;
   font-size: 1.2rem;
+  color: var(--bs-body-color);
+}
+
+.header .titleWhenBondAlreadyExists {
+  width: 100%;
+  font-size: 0.4rem;
   color: var(--bs-body-color);
 }
 
