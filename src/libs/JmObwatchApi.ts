@@ -27,9 +27,10 @@ const fetchOrderbook = async (options: { signal: AbortSignal }): Promise<Orderbo
   return orderbookJson(options).then((res) => (res.ok ? res.json() : ApiHelper.throwError(res)))
 }
 
-const refreshOrderbook = async ({ signal }: { signal: AbortSignal }) => {
+const refreshOrderbook = async ({ signal, redirect }: { signal: AbortSignal; redirect: RequestRedirect }) => {
   return await fetch(`${basePath()}/refreshorderbook`, {
     method: 'POST',
+    redirect,
     signal,
   })
 }

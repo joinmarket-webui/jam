@@ -511,9 +511,9 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
-      return ObwatchApi.refreshOrderbook({ signal })
+      return ObwatchApi.refreshOrderbook({ signal, redirect: 'manual' })
         .then((res) => {
-          if (!res.ok) {
+          if (!res.ok && res.type !== 'opaqueredirect') {
             // e.g. error is raised if ob-watcher is not running
             return ApiHelper.throwError(res)
           }
