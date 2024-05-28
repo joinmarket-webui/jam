@@ -5,19 +5,20 @@ import { useSort, HeaderCellSort, SortToggleType } from '@table-library/react-ta
 import * as TableTypes from '@table-library/react-table-library/types/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as rb from 'react-bootstrap'
-import { TFunction } from 'i18next'
+import { TFunction, i18n } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import { Helper as ApiHelper } from '../libs/JmWalletApi'
+import { AmountSats, Helper as ApiHelper } from '../libs/JmWalletApi'
 import * as ObwatchApi from '../libs/JmObwatchApi'
 import { useSettings } from '../context/SettingsContext'
 import Balance from './Balance'
 import Sprite from './Sprite'
 import TablePagination from './TablePagination'
-import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
+import { BTC, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../utils'
 import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import ToggleSwitch from './ToggleSwitch'
 import { pseudoRandomNumber } from './Send/helpers'
 import { JM_DUST_THRESHOLD } from '../constants/config'
+import * as fb from './fb/utils'
 import styles from './Orderbook.module.css'
 
 const TABLE_THEME = {
@@ -102,6 +103,10 @@ interface OrderTableEntry {
   bondValue: {
     value: number
     displayValue: string // example: "0" (no fb) or "114557102085.28133"
+    locktime?: number
+    displayLocktime?: string
+    displayExpiresIn?: string
+    amount?: AmountSats
   }
 }
 
@@ -170,7 +175,34 @@ const renderOrderAsRow = (item: OrderTableRow, settings: any) => {
       <Cell hide={true}>
         <Balance valueString={item.minerFeeContribution} convertToUnit={settings.unit} showBalance={true} />
       </Cell>
-      <Cell className="font-monospace">{item.bondValue.displayValue}</Cell>
+      <Cell className="font-monospace">
+        {item.bondValue.value > 0 ? (
+          <rb.OverlayTrigger
+            popperConfig={{
+              modifiers: [
+                {
+                  name: 'offset',
+                  options: {
+                    offset: [0, 10],
+                  },
+                },
+              ],
+            }}
+            overlay={(props) => (
+              <rb.Tooltip {...props}>
+                <Balance valueString={String(item.bondValue.amount)} convertToUnit={BTC} showBalance={true} />
+                <div className="small">
+                  {item.bondValue.displayLocktime} ({item.bondValue.displayExpiresIn})
+                </div>
+              </rb.Tooltip>
+            )}
+          >
+            <span>{item.bondValue.displayValue}</span>
+          </rb.OverlayTrigger>
+        ) : (
+          <>{item.bondValue.displayValue}</>
+        )}
+      </Cell>
     </Row>
   )
 }
@@ -290,9 +322,13 @@ const OrderbookTable = ({ data }: OrderbookTableProps) => {
   )
 }
 
-const offerToTableEntry = (offer: ObwatchApi.Offer, t: TFunction): OrderTableEntry => {
+const offerToTableEntry = (
+  offer: ObwatchApi.Offer,
+  fidelityBond: ObwatchApi.FidelityBond | undefined,
+  i18n: i18n,
+): OrderTableEntry => {
   return {
-    type: orderTypeProps(offer, t),
+    type: orderTypeProps(offer, i18n.t),
     counterparty: offer.counterparty,
     orderId: String(offer.oid),
     fee:
@@ -314,6 +350,17 @@ const offerToTableEntry = (offer: ObwatchApi.Offer, t: TFunction): OrderTableEnt
     bondValue: {
       value: offer.fidelity_bond_value,
       displayValue: String(offer.fidelity_bond_value.toFixed(0)),
+      locktime: fidelityBond?.locktime,
+      displayLocktime:
+        fidelityBond?.locktime !== undefined ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
+      displayExpiresIn:
+        fidelityBond?.locktime !== undefined
+          ? fb.time.humanReadableDuration({
+              to: fidelityBond.locktime * 1_000,
+              locale: i18n.resolvedLanguage || i18n.language,
+            })
+          : undefined,
+      amount: fidelityBond?.amount,
     },
   }
 }
@@ -479,13 +526,19 @@ type OrderbookOverlayProps = rb.OffcanvasProps & {
 }
 
 export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [offers, setOffers] = useState<ObwatchApi.Offer[]>()
-  const tableEntries = useMemo(() => offers && offers.map((offer) => offerToTableEntry(offer, t)), [offers, t])
+  const [fidelityBonds, setFidelityBonds] = useState<Map<string, ObwatchApi.FidelityBond>>()
   const [__dev_showGenerateDemoOfferButton] = useState(isDebugFeatureEnabled('enableDemoOrderbook'))
+  const tableEntries = useMemo(() => {
+    return (
+      offers &&
+      offers.map((offer) => offerToTableEntry(offer, fidelityBonds && fidelityBonds.get(offer.counterparty), i18n))
+    )
+  }, [offers, fidelityBonds, i18n])
 
   const __dev_generateDemoReportEntryButton = () => {
     const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
@@ -524,6 +577,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
           setIsLoading(false)
           setAlert(undefined)
           setOffers(orderbook.offers || [])
+          setFidelityBonds(new Map((orderbook.fidelitybonds || []).map((it) => [it.counterparty, it])))
 
           if (isDevMode()) {
             console.table(orderbook.offers)
