@@ -321,14 +321,14 @@ const offerToTableEntry = (offer: ObwatchApi.Offer, t: TFunction): OrderTableEnt
 interface OrderbookProps {
   entries: OrderTableEntry[]
   refresh: (signal: AbortSignal) => Promise<void>
+  isLoading: boolean
   nickname?: string
 }
 
-export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
+export function Orderbook({ entries, refresh, isLoading: isLoadingRefresh, nickname }: OrderbookProps) {
   const { t } = useTranslation()
   const settings = useSettings()
   const [search, setSearch] = useState('')
-  const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
   const [isHighlightOwnOffers, setIsHighlightOwnOffers] = useState(false)
   const [isPinToTopOwnOffers, setIsPinToTopOwnOffers] = useState(false)
   const [highlightedOrders, setHighlightedOrders] = useState<OrderTableEntry[]>([])
@@ -389,12 +389,9 @@ export function Orderbook({ entries, refresh, nickname }: OrderbookProps) {
             onClick={() => {
               if (isLoadingRefresh) return
 
-              setIsLoadingRefresh(true)
-
               const abortCtrl = new AbortController()
               refresh(abortCtrl.signal).finally(() => {
-                // as refreshing is fast most of the time, add a short delay to avoid flickering
-                setTimeout(() => setIsLoadingRefresh(false), 250)
+                console.log('Finished reloading orderbook.')
               })
             }}
           >
@@ -511,6 +508,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
 
   const refresh = useCallback(
     (signal: AbortSignal) => {
+      setIsLoading(true)
       return ObwatchApi.refreshOrderbook({ signal, redirect: 'manual' })
         .then((res) => {
           if (!res.ok && res.type !== 'opaqueredirect') {
@@ -523,6 +521,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
         .then((orderbook) => {
           if (signal.aborted) return
 
+          setIsLoading(false)
           setAlert(undefined)
           setOffers(orderbook.offers || [])
 
@@ -532,6 +531,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
         })
         .catch((e) => {
           if (signal.aborted) return
+          setIsLoading(false)
           const message = t('orderbook.error_loading_orderbook_failed', {
             reason: e.message || t('global.errors.reason_unknown'),
           })
@@ -546,10 +546,8 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
 
     const abortCtrl = new AbortController()
 
-    setIsLoading(true)
     refresh(abortCtrl.signal).finally(() => {
       if (abortCtrl.signal.aborted) return
-      setIsLoading(false)
       setIsInitialized(true)
     })
 
@@ -617,7 +615,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
               {tableEntries && (
                 <rb.Row>
                   <rb.Col className="px-0">
-                    <Orderbook nickname={nickname} entries={tableEntries} refresh={refresh} />
+                    <Orderbook nickname={nickname} entries={tableEntries} refresh={refresh} isLoading={isLoading} />
                   </rb.Col>
                 </rb.Row>
               )}
