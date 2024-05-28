@@ -13,8 +13,21 @@ export interface Offer {
   fidelity_bond_value: number // example: 0 (no fb) or 114557102085.28133
 }
 
+export interface FidelityBond {
+  counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
+  bond_value: number // example: 82681607.26848702,
+  locktime: number // example: 1725148800
+  amount: AmountSats // example: 312497098
+  script: string // example: 002059e6f4a2afbb87c9967530955d091d7954f9364cd829b6012bdbcb38fab5e383
+  utxo_confirmations: number // example: 10
+  utxo_confirmation_timestamp: number // example: 1716876653
+  utxo_pub: string // example: 02d46a9001a5430c0aa1e3ad0c004b409a932d3ae99b19617f0ab013b12076c082
+  cert_expiry: number // example: 1
+}
+
 export interface OrderbookJson {
   offers?: Offer[]
+  fidelitybonds?: FidelityBond[]
 }
 
 const orderbookJson = async ({ signal }: { signal: AbortSignal }) => {
