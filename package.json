@@ -21,7 +21,7 @@
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "conventional-changelog": "^5.1.0",
-    "http-proxy-middleware": "^2.0.6",
+    "http-proxy-middleware": "^3.0.0",
     "husky": "^8.0.3",
     "jest-watch-typeahead": "^2.2.2",
     "jest-websocket-mock": "^2.5.0",
