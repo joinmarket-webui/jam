@@ -480,6 +480,7 @@ export default function Send({ wallet }: SendProps) {
         disabled={isOperationDisabled}
         isLoading={isLoading}
         walletInfo={walletInfo}
+        wallet={wallet}
         minNumCollaborators={minNumCollaborators}
         loadNewWalletAddress={loadNewWalletAddress}
         feeConfigValues={feeConfigValues}

@@ -361,4 +361,7 @@
         <path stroke-linecap="round" d="M12 17V7" />
         <path stroke-linecap="round" stroke-linejoin="round" d="M8.934 12H4M6.585 15.061L9.538 12 6.585 8.939M19.395 12h-4.933M17.047 15.061L20 12l-2.953-3.061" />
     </symbol>
+    <symbol id="mixed" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16.8c6.708.082 6.496-10.932 15.96-9.4M16.57 4L20 7.44l-3.432 3.44M16.57 13.2l3.39 3.6-3.39 3.2M4 7.2c6.887-.124 6.381 11.044 15.56 9.6"/>
+    </symbol>
 </svg>
