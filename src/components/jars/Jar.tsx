@@ -39,6 +39,14 @@ export type SelectableSendJarProps = JarProps & {
   onClick: (index: JarIndex) => void
 }
 
+export type SelectableSendJarProps = JarProps & {
+  tooltipText: string
+  isSelectable: boolean
+  isSelected: boolean
+  variant?: 'default' | 'warning'
+  onClick: (index: JarIndex) => void
+}
+
 export type OpenableJarProps = Omit<JarProps, 'isOpen'> & {
   tooltipText: string
   onClick: () => void
@@ -250,4 +258,61 @@ const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) =>
   )
 }
 
-export { SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }
+const SelectableSendJar = ({
+  tooltipText,
+  isSelectable,
+  isSelected,
+  onClick,
+  index,
+  variant = 'default',
+  ...jarProps
+}: SelectableSendJarProps) => {
+  const [jarIsOpen, setJarIsOpen] = useState(false)
+  const onMouseOver = () => setJarIsOpen(true)
+  const onMouseOut = () => setJarIsOpen(false)
+
+  return (
+    <div onClick={() => isSelectable && onClick(index)} onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
+      <rb.OverlayTrigger
+        popperConfig={{
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 10],
+              },
+            },
+          ],
+        }}
+        overlay={(props) => {
+          return isSelectable ? <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip> : <></>
+        }}
+      >
+        <div
+          className={classNames('selectableJarContainer', {
+            selectable: isSelectable,
+            selected: isSelected,
+          })}
+        >
+          <Jar index={index} {...jarProps} isOpen={jarIsOpen && isSelectable} />
+          <div className={'d-flex justify-content-center align-items-center gap-1 mt-2 position-relative'}>
+            <input
+              type="radio"
+              checked={isSelected}
+              //onChange={() => isSelectable && onClick(index)}
+              className={styles.selectionCircle}
+              disabled={!isSelectable}
+            />
+            {variant === 'warning' && (
+              <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark p-0 ">
+                <Sprite symbol="warn" width="20" height="20" />
+              </div>
+            )}
+          </div>
+        </div>
+      </rb.OverlayTrigger>
+    </div>
+  )
+}
+
+export { SelectableSendJar, SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }
