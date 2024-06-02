@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
-import { jarFillLevel, SelectableJar } from '../jars/Jar'
+import { jarFillLevel, SelectableSendJar } from '../jars/Jar'
 import { noop } from '../../utils'
 import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
@@ -36,10 +36,6 @@ export const SourceJarSelector = ({
   disabled = false,
 }: SourceJarSelectorProps) => {
   const { t } = useTranslation()
-<<<<<<< HEAD
-=======
-
->>>>>>> a5e21fb (Fixed Undefined tag issue , Refactor Jar Selection logic & some minor css)
   const [field] = useField<JarIndex>(name)
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
