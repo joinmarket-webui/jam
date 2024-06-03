@@ -82,40 +82,49 @@ const UtxoRow = ({ utxo, index, onToggle, walletInfo, t, isFrozen }: UtxoRowProp
 
   return (
     <rb.Row key={index} onClick={() => onToggle(index, isFrozen ? 'frozen' : 'unfrozen')} className={rowClass}>
-      <rb.Col xs={1}>
-        <rb.ToggleButton
-          id={`check-box-${isFrozen ? 'frozen' : 'unfrozen'}-${index}`}
-          checked={utxo.checked}
-          type="checkbox"
-          value=""
-          variant="outline-dark"
-          onChange={() => onToggle(index, isFrozen ? 'frozen' : 'unfrozen')}
-          className={isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton}
-        />
-      </rb.Col>
-      <rb.Col xs={1}>
-        <Sprite symbol={icon} width="23px" height="23px" className={isFrozen ? styles.iconFrozen : styles.iconMixed} />
-      </rb.Col>
-      <rb.Col xs={4}>{address}</rb.Col>
-      <rb.Col xs={2}>
-        <Sprite
-          symbol={conf.symbol}
-          width="28px"
-          height="28px"
-          className={isFrozen ? styles.iconConfirmationsFreeze : styles.iconConfirmations}
-        />
-        {conf.confirmations}
-      </rb.Col>
-      <rb.Col xs={2} className={styles.valueColumn}>{`₿${value}`}</rb.Col>
-      <rb.Col xs={1}>
-        <div className={tagClass}>{tags[0].tag}</div>
-      </rb.Col>
+      <div className={styles.utxoListDisplay}>
+        <rb.Row>
+          <rb.Col xs={1}>
+            <rb.ToggleButton
+              id={`check-box-${isFrozen ? 'frozen' : 'unfrozen'}-${index}`}
+              checked={utxo.checked}
+              type="checkbox"
+              value=""
+              variant="outline-dark"
+              onChange={() => onToggle(index, isFrozen ? 'frozen' : 'unfrozen')}
+              className={isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton}
+            />
+          </rb.Col>
+          <rb.Col xs={1}>
+            <Sprite
+              symbol={icon}
+              width="23px"
+              height="23px"
+              className={isFrozen ? styles.iconFrozen : styles.iconMixed}
+            />
+          </rb.Col>
+          <rb.Col xs={4}>{address}</rb.Col>
+          <rb.Col xs={2}>
+            <Sprite
+              symbol={conf.symbol}
+              width="28px"
+              height="28px"
+              className={isFrozen ? styles.iconConfirmationsFreeze : styles.iconConfirmations}
+            />
+            {conf.confirmations}
+          </rb.Col>
+          <rb.Col xs={2} className={styles.valueColumn}>{`₿${value}`}</rb.Col>
+          <rb.Col xs={1}>
+            <div className={tagClass}>{tags[0].tag}</div>
+          </rb.Col>
+        </rb.Row>
+      </div>
     </rb.Row>
   )
 }
 
 const UtxoListDisplay = ({ utxos, onToggle, walletInfo, t, isFrozen }: UtxoListDisplayProps) => (
-  <div className={styles.utxoListDisplay}>
+  <div>
     {utxos.map((utxo, index) => (
       <UtxoRow
         key={index}
