@@ -115,7 +115,7 @@ const UtxoRow = ({ utxo, index, onToggle, walletInfo, t, isFrozen }: UtxoRowProp
 }
 
 const UtxoListDisplay = ({ utxos, onToggle, walletInfo, t, isFrozen }: UtxoListDisplayProps) => (
-  <div>
+  <div className={styles.utxoListDisplay}>
     {utxos.map((utxo, index) => (
       <UtxoRow
         key={index}
@@ -152,16 +152,28 @@ const ShowUtxos = ({ walletInfo, wallet, show, onHide, index }: SignModalProps) 
 
       setFrozenUtxos(frozen)
       setUnFrozenUtxos(unfrozen)
-
-      if (utxos && unfrozen.length === 0) {
-        setAlert({ variant: 'danger', message: t('showUtxos.alert_for_empty_utxos'), dismissible: true })
-      } else {
-        setAlert(undefined)
-      }
     }
 
     loadData()
   }, [index, walletInfo.utxosByJar, t])
+
+  //Effect to set Warnings & Alert
+  useEffect(() => {
+    const frozenUtxosToUpdate = frozenUtxos.filter((utxo) => utxo.checked && !utxo.locktime)
+    const timeLockedUtxo = frozenUtxos.find((utxo) => utxo.checked && utxo.locktime)
+    const noUnfrozenUtxos = unFrozenUtxos.length === 0
+    const allUnfrozenUnchecked = unFrozenUtxos.every((utxo) => !utxo.checked)
+
+    if (timeLockedUtxo) {
+      setAlert({ variant: 'danger', message: `${t('showUtxos.alert_for_time_locked')} ${timeLockedUtxo.locktime}` })
+    } else if (noUnfrozenUtxos) {
+      setAlert({ variant: 'danger', message: t('showUtxos.alert_for_empty_utxos') })
+    } else if (allUnfrozenUnchecked && frozenUtxosToUpdate.length === 0) {
+      setAlert({ variant: 'warning', message: t('showUtxos.alert_for_unfreeze_utxos'), dismissible: true })
+    } else {
+      setAlert(undefined)
+    }
+  }, [unFrozenUtxos, frozenUtxos, t])
 
   // Handler to toggle UTXO selection
   const handleToggle = useCallback((utxoIndex: number, type: 'frozen' | 'unfrozen') => {
@@ -185,64 +197,18 @@ const ShowUtxos = ({ walletInfo, wallet, show, onHide, index }: SignModalProps) 
       .filter((utxo) => !utxo.checked)
       .map((utxo) => ({ utxo: utxo.utxo, freeze: true }))
 
-    for (const utxo of frozenUtxos) {
-      if (utxo.checked && utxo.locktime) {
-        setAlert({
-          variant: 'danger',
-          message: `${t('showUtxos.alert_for_time_locked')} ${utxo.locktime}`,
-          dismissible: true,
-        })
-        return
-      }
-    }
-
-    if (frozenUtxosToUpdate.length >= 1) {
-      try {
-        const freezeCalls = frozenUtxosToUpdate.map((utxo) =>
-          Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: utxo.freeze }).then(
-            (res) => {
-              if (!res.ok) {
-                return Api.Helper.throwError(res)
-              }
-            },
-          ),
-        )
-
-        await Promise.all(freezeCalls)
-      } catch (err: any) {
-        if (!abortCtrl.signal.aborted) {
-          setAlert({ variant: 'danger', message: err.message, dismissible: true })
-        }
-        return
-      }
-    }
-
-    const uncheckedUnfrozen = unFrozenUtxos.filter((utxo) => !utxo.checked)
-    if (uncheckedUnfrozen.length === unFrozenUtxos.length && frozenUtxosToUpdate.length === 0) {
-      setAlert({ variant: 'danger', message: t('showUtxos.alert_for_unfreeze_utxos'), dismissible: true })
-      return
-    }
-
     try {
-      const unfreezeCalls = unFrozenUtxosToUpdate.map((utxo) =>
-        Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: utxo.freeze }).then(
-          (res) => {
-            if (!res.ok) {
-              return Api.Helper.throwError(res)
-            }
-          },
-        ),
-      )
-
-      await Promise.all(unfreezeCalls)
+      await Promise.all([
+        ...frozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
+        ...unFrozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
+      ])
+      await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+      onHide()
     } catch (err: any) {
       if (!abortCtrl.signal.aborted) {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       }
     }
-
-    await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
-    onHide()
   }
 
   return (
@@ -282,7 +248,7 @@ const ShowUtxos = ({ walletInfo, wallet, show, onHide, index }: SignModalProps) 
         <rb.Button variant="white" onClick={onHide} className={styles.BackButton}>
           {t('showUtxos.back_button')}
         </rb.Button>
-        <rb.Button variant="dark" onClick={handleNext} className={styles.NextButton}>
+        <rb.Button variant="dark" onClick={handleNext} disabled={alert?.dismissible} className={styles.NextButton}>
           {t('showUtxos.next_button')}
         </rb.Button>
       </rb.Modal.Footer>
