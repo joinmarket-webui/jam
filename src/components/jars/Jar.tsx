@@ -306,13 +306,7 @@ const SelectableSendJar = ({
         >
           <Jar index={index} {...jarProps} isOpen={jarIsOpen && isSelectable} />
           <div className={'d-flex justify-content-center align-items-center gap-1 mt-2 position-relative'}>
-            <input
-              type="radio"
-              checked={isSelected}
-              //onChange={() => isSelectable && onClick(index)}
-              className={styles.selectionCircle}
-              disabled={!isSelectable}
-            />
+            <input type="radio" checked={isSelected} className={styles.selectionCircle} disabled={!isSelectable} />
             {variant === 'warning' && (
               <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark p-0 ">
                 <Sprite symbol="warn" width="20" height="20" />
