@@ -34,8 +34,3 @@
 .checkbox:checked {
   accent-color: var(--bs-black);
 }
-
-.utxoListDisplay {
-  margin-left: -20px;
-  margin-right: 20px;
-}
