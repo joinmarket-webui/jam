@@ -48,20 +48,17 @@
 
 .NextButton {
   width: 47%;
-  height: 48px;
+  height: 3.15rem;
   padding: 14px 20px 14px 20px;
-  margin-right: 19px;
   border-radius: 5px;
-  opacity: 0px;
 }
 
 .BackButton {
   width: 47%;
-  height: 48px;
+  height: 3.15rem;
   padding: 14px 20px 14px 20px;
   margin-right: 19px;
   border-radius: 5px;
-  opacity: 0px;
 }
 
 .utxoTagUnFreeze {
