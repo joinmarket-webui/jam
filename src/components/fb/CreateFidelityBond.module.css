@@ -41,12 +41,6 @@
   color: var(--bs-body-color);
 }
 
-.header .titleWhenBondAlreadyExists {
-  width: 100%;
-  font-size: 0.4rem;
-  color: var(--bs-body-color);
-}
-
 .header svg {
   color: var(--bs-body-color);
 }
