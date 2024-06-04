@@ -8,10 +8,6 @@
   border-color: var(--bs-gray-700);
 }
 
-:root[data-theme='dark'] .containerWhenBondAlreadyExists {
-  border-color: var(--bs-gray-700);
-}
-
 .header {
   display: flex;
   flex-direction: column;

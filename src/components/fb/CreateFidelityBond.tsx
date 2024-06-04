@@ -618,7 +618,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   return (
     <div>
-      {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
       {lockDate && timelockedAddress && selectedJar !== undefined && (
         <PaymentConfirmModal
           isShown={showConfirmInputsModal}
@@ -652,7 +651,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             className="border-0 d-inline-flex align-items-center"
             onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}
           >
-            <Sprite symbol="plus" width="24" height="24" className="me-2" />
+            <Sprite symbol="plus" width="20" height="20" className="me-2" />
             {t('earn.fidelity_bond.title_fidelity_bond_exists')}
           </rb.Button>
         </div>
@@ -684,19 +683,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <rb.Modal.Title>{t('earn.fidelity_bond.create_fidelity_bond.title')}</rb.Modal.Title>
         </rb.Modal.Header>
         <rb.Modal.Body>
-          {otherFidelityBondExists && (
-            <div className={styles.formMessageWhenBondAlreadyExists}>
-              <Trans i18nKey="earn.fidelity_bond.subtitle_fidelity_bond_exists">
-                <a
-                  onClick={(e) => e.stopPropagation()}
-                  rel="noopener noreferrer"
-                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long"
-                >
-                  {/* i18n placeholder */}
-                </a>
-              </Trans>
-            </div>
-          )}
+          {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
           <div className="mb-5">{stepComponent(step)}</div>
           <div className="d-flex flex-column gap-2">
             {!isLoading && primaryButtonText(step) !== null && (
