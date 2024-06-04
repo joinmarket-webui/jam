@@ -618,7 +618,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   return (
     <div className={styles.container}>
-      {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
       {lockDate && timelockedAddress && selectedJar !== undefined && (
         <PaymentConfirmModal
           isShown={showConfirmInputsModal}
@@ -685,6 +684,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <rb.Modal.Title>{t('earn.fidelity_bond.create_fidelity_bond.title')}</rb.Modal.Title>
         </rb.Modal.Header>
         <rb.Modal.Body>
+          {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
           <div className="mb-5">{stepComponent(step)}</div>
           <div className="d-flex flex-column gap-2">
             {!isLoading && primaryButtonText(step) !== null && (
