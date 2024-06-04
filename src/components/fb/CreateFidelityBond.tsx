@@ -647,6 +647,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       {otherFidelityBondExists ? (
         <div className="d-flex justify-content-center">
           <rb.Button
+            size="sm"
             variant="outline-dark"
             className="border-0 d-inline-flex align-items-center"
             onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}
