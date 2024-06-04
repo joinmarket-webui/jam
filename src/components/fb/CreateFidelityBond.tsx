@@ -646,17 +646,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       )}
 
       {otherFidelityBondExists ? (
-        <div className="d-flex justify-content-end">
-          <div className={styles.containerWhenBondAlreadyExists}>
-            <div className={styles.header} onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}>
-              <div className="d-flex justify-content-around align-items-center">
-                <div className={styles.titleWhenBondAlredayExists}>
-                  {t('earn.fidelity_bond.title_fidelity_bond_exists')}
-                </div>
-                <Sprite symbol={'plus'} width="15" height="15" />
-              </div>
-            </div>
-          </div>
+        <div className="d-flex justify-content-center">
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 d-inline-flex align-items-center"
+            onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}
+          >
+            <Sprite symbol="plus" width="24" height="24" className="me-2" />
+            {t('earn.fidelity_bond.title_fidelity_bond_exists')}
+          </rb.Button>
         </div>
       ) : (
         <div className={styles.container}>
