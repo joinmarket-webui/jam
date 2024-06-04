@@ -344,7 +344,7 @@ describe('<Wallets />', () => {
         }),
       )
 
-      expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
+      expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
       expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
       const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
@@ -393,7 +393,7 @@ describe('<Wallets />', () => {
         }),
       )
 
-      expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
+      expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
       expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
       const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')
