@@ -25,7 +25,13 @@
   color: var(--bs-gray-600);
 }
 
-.header .subtitle a {
+.formMessageWhenBondAlreadyExists {
+  flex-shrink: 1;
+  font-size: 0.8rem;
+  color: var(--bs-gray-600);
+}
+
+.formMessageWhenBondAlreadyExists a {
   color: inherit;
 }
 

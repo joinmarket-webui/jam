@@ -617,7 +617,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   }
 
   return (
-    <div className={styles.container}>
+    <div>
       {lockDate && timelockedAddress && selectedJar !== undefined && (
         <PaymentConfirmModal
           isShown={showConfirmInputsModal}
@@ -644,34 +644,34 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         </PaymentConfirmModal>
       )}
 
-      <div className={styles.header} onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}>
-        <div className="d-flex justify-content-between align-items-center">
-          <div className={styles.title}>
-            {otherFidelityBondExists
-              ? t('earn.fidelity_bond.title_fidelity_bond_exists')
-              : t('earn.fidelity_bond.title')}
-          </div>
-          <Sprite symbol={'plus'} width="20" height="20" />
+      {otherFidelityBondExists ? (
+        <div className="d-flex justify-content-center">
+          <rb.Button
+            size="sm"
+            variant="outline-dark"
+            className="border-0 d-inline-flex align-items-center"
+            onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}
+          >
+            <Sprite symbol="plus" width="20" height="20" className="me-2" />
+            {t('earn.fidelity_bond.title_fidelity_bond_exists')}
+          </rb.Button>
         </div>
-        <div className={styles.subtitle}>
-          {otherFidelityBondExists ? (
-            <Trans i18nKey="earn.fidelity_bond.subtitle_fidelity_bond_exists">
-              <a
-                onClick={(e) => e.stopPropagation()}
-                rel="noopener noreferrer"
-                href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long"
-              >
-                {/* i18n placeholder */}
-              </a>
-            </Trans>
-          ) : (
-            <div className="d-flex align-items-center justify-content-center gap-4 px-3 mt-3">
-              <Sprite className={styles.subtitleJar} symbol="fb-clock" width="46px" height="74px" />
-              {t('earn.fidelity_bond.subtitle')}
+      ) : (
+        <div className={styles.container}>
+          <div className={styles.header} onClick={() => setShowCreateFidelityBondModal(!showCreateFidelityBondModal)}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div className={styles.title}>{t('earn.fidelity_bond.title')}</div>
+              <Sprite symbol={'plus'} width="20" height="20" />
             </div>
-          )}
+            <div className={styles.subtitle}>
+              <div className="d-flex align-items-center justify-content-center gap-4 px-3 mt-3">
+                <Sprite className={styles.subtitleJar} symbol="fb-clock" width="46px" height="74px" />
+                {t('earn.fidelity_bond.subtitle')}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
       <rb.Modal
         show={showCreateFidelityBondModal}
         animation={true}
@@ -685,6 +685,19 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         </rb.Modal.Header>
         <rb.Modal.Body>
           {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
+          {otherFidelityBondExists && (
+            <div className={styles.formMessageWhenBondAlreadyExists}>
+              <Trans i18nKey="earn.fidelity_bond.subtitle_fidelity_bond_exists">
+                <a
+                  onClick={(e) => e.stopPropagation()}
+                  rel="noopener noreferrer"
+                  href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/fidelity-bonds.md#what-amount-of-bitcoins-to-lock-up-and-for-how-long"
+                >
+                  {/* i18n placeholder */}
+                </a>
+              </Trans>
+            </div>
+          )}
           <div className="mb-5">{stepComponent(step)}</div>
           <div className="d-flex flex-column gap-2">
             {!isLoading && primaryButtonText(step) !== null && (
