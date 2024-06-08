@@ -19,6 +19,8 @@ import UtxoIcon from '../utxo/UtxoIcon'
 import UtxoTags from '../utxo/UtxoTags'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
+import Balance from '../Balance'
+import classNames from 'classnames'
 
 interface ShowUtxosProps {
   isOpen: boolean
@@ -106,7 +108,7 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
       </Cell>
     </Row>
   )
-}
+})
 
 type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'id'>
 

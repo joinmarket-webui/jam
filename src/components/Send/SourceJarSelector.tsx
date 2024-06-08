@@ -36,6 +36,10 @@ export const SourceJarSelector = ({
   disabled = false,
 }: SourceJarSelectorProps) => {
   const { t } = useTranslation()
+<<<<<<< HEAD
+=======
+
+>>>>>>> a5e21fb (Fixed Undefined tag issue , Refactor Jar Selection logic & some minor css)
   const [field] = useField<JarIndex>(name)
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
@@ -144,6 +148,8 @@ export const SourceJarSelector = ({
                       it.calculatedTotalBalanceInSats,
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
+                    showingUTXOS={showingUTXOS}
+                    setshowingUTXOS={setshowingUTXOS}
                     variant={it.accountIndex === field.value ? variant : undefined}
                     onClick={(jarIndex: number) => {
                       form.setFieldValue(field.name, jarIndex, true)
