@@ -1,10 +1,8 @@
-/* ShowUtxos.module.css */
-
 .utxoRowUnfrozen {
   background-color: #27ae600d;
   padding: 8px 30px;
   height: 46px;
-  color: #27ae60;
+  color: #27ae60 !important;
   margin-bottom: 4px;
   cursor: pointer;
 }
@@ -13,7 +11,7 @@
   background-color: #2d9cdb0d;
   padding: 8px 30px;
   height: 46px;
-  color: #2d9cdb;
+  color: #2d9cdb !important;
   margin-bottom: 4px;
   cursor: pointer;
 }
@@ -47,18 +45,18 @@
 }
 
 .NextButton {
-  width: 47%;
+  width: 47% !important;
   height: 3.15rem;
-  padding: 14px 20px 14px 20px;
-  border-radius: 5px;
+  padding: 14px 20px 14px 20px !important;
+  border-radius: 5px !important;
 }
 
 .BackButton {
-  width: 47%;
+  width: 47% !important;
   height: 3.15rem;
-  padding: 14px 20px 14px 20px;
-  margin-right: 19px;
-  border-radius: 5px;
+  padding: 14px 20px 14px 20px !important;
+  margin-right: 33px !important;
+  border-radius: 5px !important;
 }
 
 .utxoTagUnFreeze {
@@ -68,6 +66,7 @@
   border-radius: 0.35rem;
   padding: 0rem 0.25rem;
   display: inline-block;
+  margin-left: 4px;
 }
 
 .utxoTagFreeze {
@@ -77,6 +76,7 @@
   border-radius: 0.35rem;
   padding: 0rem 0.25rem;
   display: inline-block;
+  margin-left: 4px;
 }
 
 .parent-class .utxoTag {
@@ -84,18 +84,33 @@
   border-radius: 0.2rem !important;
 }
 
+.utxoListDisplay {
+  margin-left: -27px !important;
+}
+
+.modalBody {
+  padding: 40px !important;
+}
+
 .squareToggleButton {
-  height: 22px !important;
-  border-radius: 3px !important;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  border: 1px solid var(--bs-body-color);
+  margin-top: 3.5px;
+}
+
+.selected {
+  visibility: visible !important;
+  background-color: var(--bs-body-color);
 }
 
 .squareFrozenToggleButton {
-  height: 22px !important;
-  border-radius: 3px !important;
-  border: 1px solid #2d9cdb !important;
-}
-
-.utxoListDisplay {
-  margin-left: -20px;
-  margin-right: 20px;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  border: 1px solid #2d9cdb;
+  margin-top: 3.5px;
 }

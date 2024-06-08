@@ -6,6 +6,7 @@ import { noop } from '../../utils'
 import { WalletInfo, CurrentWallet } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 import ShowUtxos from './ShowUtxos'
+import { useTranslation } from 'react-i18next'
 
 export type SourceJarSelectorProps = {
   name: string
@@ -32,6 +33,8 @@ export const SourceJarSelector = ({
   isLoading,
   disabled = false,
 }: SourceJarSelectorProps) => {
+  const { t } = useTranslation()
+
   const [field] = useField<JarIndex>(name)
   const form = useFormikContext<any>()
   const [showingUTXOS, setshowingUTXOS] = useState<showingUtxosProps>({
@@ -58,7 +61,6 @@ export const SourceJarSelector = ({
           <div className={styles.sourceJarsContainer}>
             {showingUTXOS.show && (
               <ShowUtxos
-                walletInfo={walletInfo}
                 wallet={wallet}
                 show={showingUTXOS.show}
                 onHide={() => {
@@ -74,7 +76,7 @@ export const SourceJarSelector = ({
               return (
                 <div key={it.accountIndex}>
                   <SelectableSendJar
-                    tooltipText={'Select UTXOs'}
+                    tooltipText={t('showUtxos.Select_UTXOs')}
                     index={it.accountIndex}
                     balance={it.calculatedAvailableBalanceInSats}
                     frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
@@ -84,13 +86,11 @@ export const SourceJarSelector = ({
                       it.calculatedTotalBalanceInSats,
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
+                    showingUTXOS={showingUTXOS}
+                    setshowingUTXOS={setshowingUTXOS}
                     variant={it.accountIndex === field.value ? variant : undefined}
                     onClick={(jarIndex) => {
                       form.setFieldValue(field.name, jarIndex, true)
-                      setshowingUTXOS({
-                        index: jarIndex.toString(),
-                        show: true,
-                      })
                     }}
                   />
                 </div>
