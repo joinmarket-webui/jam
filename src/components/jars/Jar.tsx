@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import { useSettings } from '../../context/SettingsContext'
@@ -26,12 +26,14 @@ export type SelectableJarProps = JarProps & {
   variant?: 'default' | 'warning'
   onClick: (index: JarIndex) => void
 }
-
+type showingUTXOS = { index: String; show: boolean }
 export type SelectableSendJarProps = JarProps & {
   tooltipText: string
   isSelectable: boolean
   isSelected: boolean
   variant?: 'default' | 'warning'
+  showingUTXOS: showingUTXOS
+  setshowingUTXOS: (val: showingUTXOS) => void
   onClick: (index: JarIndex) => void
 }
 
@@ -233,6 +235,10 @@ const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) =>
   )
 }
 
+/*
+ * A jar with index, balance, and a radio-style selection button.
+ * The jar symbol opens on onClick of radio button.
+ */
 const SelectableSendJar = ({
   tooltipText,
   isSelectable,
@@ -240,46 +246,56 @@ const SelectableSendJar = ({
   onClick,
   index,
   variant = 'default',
+  showingUTXOS,
+  setshowingUTXOS,
   ...jarProps
 }: SelectableSendJarProps) => {
-  const [jarIsOpen, setJarIsOpen] = useState(false)
-  const onMouseOver = () => setJarIsOpen(true)
-  const onMouseOut = () => setJarIsOpen(false)
+  const target = useRef(null)
+
+  const handleClick = () => {
+    if (isSelected && isSelectable) {
+      setshowingUTXOS({
+        index: index.toString(),
+        show: true,
+      })
+    }
+  }
 
   return (
-    <div onClick={() => isSelectable && onClick(index)} onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
-      <rb.OverlayTrigger
-        popperConfig={{
-          modifiers: [
-            {
-              name: 'offset',
-              options: {
-                offset: [0, 10],
-              },
-            },
-          ],
-        }}
-        overlay={(props) => {
-          return isSelectable ? <rb.Tooltip {...props}>{tooltipText}</rb.Tooltip> : <></>
-        }}
+    <div ref={target}>
+      <div
+        className={classNames('selectableJarContainer', {
+          selectable: isSelectable,
+          selected: isSelected,
+        })}
       >
-        <div
-          className={classNames('selectableJarContainer', {
-            selectable: isSelectable,
-            selected: isSelected,
-          })}
-        >
-          <Jar index={index} {...jarProps} isOpen={jarIsOpen && isSelectable} />
-          <div className={'d-flex justify-content-center align-items-center gap-1 mt-2 position-relative'}>
-            <input type="radio" checked={isSelected} className={styles.selectionCircle} disabled={!isSelectable} />
-            {variant === 'warning' && (
-              <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark p-0 ">
-                <Sprite symbol="warn" width="20" height="20" />
-              </div>
-            )}
-          </div>
+        <span onClick={handleClick}>
+          <Jar index={index} {...jarProps} isOpen={isSelected && isSelectable} />
+        </span>
+        <div className={'d-flex justify-content-center align-items-center gap-1 mt-2 position-relative'}>
+          <input
+            type="radio"
+            checked={isSelected}
+            onChange={() => isSelectable && onClick(index)}
+            className={styles.selectionCircle}
+            disabled={!isSelectable}
+          />
+          {variant === 'warning' && (
+            <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark p-0">
+              <Sprite symbol="warn" width="20" height="20" />
+            </div>
+          )}
         </div>
-      </rb.OverlayTrigger>
+      </div>
+      {isSelected && (
+        <rb.Overlay target={target.current} show={isSelected} placement={'top-start'}>
+          {(props) => (
+            <rb.Tooltip {...props} className={styles.custom_tooltip}>
+              {tooltipText}
+            </rb.Tooltip>
+          )}
+        </rb.Overlay>
+      )}
     </div>
   )
 }
