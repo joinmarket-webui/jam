@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
+import classNames from 'classnames'
 import { Table, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as TableTypes from '@table-library/react-table-library/types/table'
@@ -18,7 +19,6 @@ import UtxoIcon from '../utxo/UtxoIcon'
 import UtxoTags from '../utxo/UtxoTags'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
-import classNames from 'classnames'
 
 interface ShowUtxosProps {
   isOpen: boolean
