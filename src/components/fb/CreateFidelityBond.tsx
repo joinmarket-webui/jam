@@ -698,8 +698,27 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               </Trans>
             </div>
           )}
-          <div className="mb-5">{stepComponent(step)}</div>
-          <div className="d-flex flex-column gap-2">
+
+          <div className={styles.tabs}>
+            {['Expiration date', 'Funding Source', 'UTXO Overview', 'Confirmation'].map((tab, index) => (
+              <div>
+                <div key={index} className={styles.tab}>
+                  {tab}
+                </div>
+                <rb.Collapse in={step === index ? true : false}>
+                  <div className="mb-5">{stepComponent(step)}</div>
+                </rb.Collapse>
+              </div>
+            ))}
+          </div>
+        </rb.Modal.Body>
+        <rb.Modal.Footer>
+          <div className="d-flex flex-row gap-2 w-100">
+            {!isLoading && secondaryButtonText(step) !== null && (
+              <rb.Button className="w-100" variant="none" onClick={onSecondaryButtonClicked}>
+                {secondaryButtonText(step)}
+              </rb.Button>
+            )}
             {!isLoading && primaryButtonText(step) !== null && (
               <rb.Button
                 className="w-100"
@@ -713,13 +732,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                 {primaryButtonText(step)}
               </rb.Button>
             )}
-            {!isLoading && secondaryButtonText(step) !== null && (
-              <rb.Button className="w-100" variant="none" onClick={onSecondaryButtonClicked}>
-                {secondaryButtonText(step)}
-              </rb.Button>
-            )}
           </div>
-        </rb.Modal.Body>
+        </rb.Modal.Footer>
       </rb.Modal>
     </div>
   )
