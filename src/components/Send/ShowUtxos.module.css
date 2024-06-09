@@ -16,8 +16,21 @@
   cursor: pointer;
 }
 
+.utxoRowUnMixed {
+  background-color: none;
+  padding: 8px 30px;
+  height: 46px;
+  color: var(--bs-modal-color) !important;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
 .iconMixed {
   color: #27ae60;
+}
+
+.iconUnMixed {
+  color: var(--bs-modal-color);
 }
 
 .iconFrozen {
@@ -26,6 +39,11 @@
 
 .iconConfirmations {
   color: #27ae60;
+  margin-bottom: 4px;
+}
+
+.iconConfirmationsUnmixed {
+  color: var(--bs-modal-color);
   margin-bottom: 4px;
 }
 
@@ -57,6 +75,17 @@
   padding: 14px 20px 14px 20px !important;
   margin-right: 33px !important;
   border-radius: 5px !important;
+}
+
+.utxoTagUnMixed {
+  white-space: nowrap;
+  color: #999999;
+  border: 1px solid #bbbbbb;
+  background-color: #dedede;
+  border-radius: 0.35rem;
+  padding: 0rem 0.25rem;
+  display: inline-block;
+  margin-left: 4px;
 }
 
 .utxoTagUnFreeze {
