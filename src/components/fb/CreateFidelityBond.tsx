@@ -703,7 +703,13 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             {['Expiration date', 'Funding Source', 'UTXO Overview', 'Confirmation'].map((tab, index) => (
               <div>
                 <div key={index} className={styles.tab}>
-                  {tab}
+                  <div className="d-flex align-items-center gap-3">
+                    <div className={styles.circle}>
+                      <div className={styles.step}>{index + 1}</div>
+                    </div>
+                    {tab}
+                  </div>
+                  <Sprite symbol={step === index ? 'caret-up' : 'caret-down'} width="20" height="20" />
                 </div>
                 <rb.Collapse in={step === index ? true : false}>
                   <div className="mb-5">{stepComponent(step)}</div>
