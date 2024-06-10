@@ -64,8 +64,31 @@
 }
 .tab {
   cursor: pointer;
-  padding: 10px;
-  color: var(--bs-body-color);
-  background-color: var(--bs-gray-700);
+  padding: 10px 20px;
+  color: var(--bs-white);
+  background-color: var(--bs-gray-800);
   margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:root[data-theme='dark'] .tab {
+  color: var(--bs-body-color);
+  border-color: var(--bs-gray-700);
+}
+
+.circle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.8rem 0.8rem;
+  border-radius: 100%;
+  background-color: var(--bs-gray-100);
+  color: var(--bs-body-color);
+}
+
+.step {
+  position: absolute;
+  color: var(--bs-gray-900);
 }
