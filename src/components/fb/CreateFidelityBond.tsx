@@ -699,6 +699,22 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             </div>
           )}
 
+          <div className="d-flex align-items-center gap-5 mx-4 my-3 justify-content-start">
+            <div>
+              <Sprite symbol="timelock" width="25" height="25" className={styles.utxoSummaryIconLock} />
+            </div>
+            <div className="d-flex flex-column">
+              <div className={styles.addressLabel}>{t('earn.fidelity_bond.review_inputs.label_address')}</div>
+              <div className={styles.addressContent}>
+                {timelockedAddress ? (
+                  <code className={styles.timelockedAddress}>{timelockedAddress}</code>
+                ) : (
+                  <div>{t('earn.fidelity_bond.error_loading_address')}</div>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className={styles.tabs}>
             {['Expiration date', 'Funding Source', 'UTXO Overview', 'Confirmation'].map((tab, index) => (
               <div>
