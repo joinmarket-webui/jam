@@ -1,34 +1,39 @@
 import { useState, useEffect, useCallback, memo, useRef } from 'react'
 import * as rb from 'react-bootstrap'
+import { useTranslation } from 'react-i18next'
+import classNames from 'classnames'
+import { Table, Body, Row, Cell } from '@table-library/react-table-library/table'
+import { useTheme } from '@table-library/react-table-library/theme'
+import * as TableTypes from '@table-library/react-table-library/types/table'
+import * as Api from '../../libs/JmWalletApi'
 import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import { useSettings, Settings } from '../../context/SettingsContext'
-import Sprite from '../Sprite'
 import Alert from '../Alert'
-import { useTranslation } from 'react-i18next'
-import * as Api from '../../libs/JmWalletApi'
+import Balance from '../Balance'
+import { ConfirmModal } from '../Modal'
+import Sprite from '../Sprite'
 import { utxoTags } from '../jar_details/UtxoList'
 import mainStyles from '../MainWalletView.module.css'
 import styles from './ShowUtxos.module.css'
-import Balance from '../Balance'
-import classNames from 'classnames'
 
-type tags = 'deposit' | 'non-cj-change' | 'bond'
+type Tags = 'deposit' | 'non-cj-change' | 'bond' | 'reused' | 'joined' | 'cj-out'
 
 type UtxoType = {
   address: Api.BitcoinAddress
   path: string
   label: string
+  id: string
   checked: boolean
   value: Api.AmountSats
   tries: number
-  tries_remaining: number
+  triesRemaining: number
   external: boolean
   mixdepth: number
   confirmations: number
   frozen: boolean
   utxo: Api.UtxoId
   locktime?: string
-  _tags: { tag: tags; color: string }[]
+  tags: { tag: Tags; color: string }[]
 }
 
 type UtxoList = UtxoType[]
@@ -43,14 +48,14 @@ interface ShowUtxosProps {
 interface UtxoRowProps {
   utxo: UtxoType
   index: number
-  onToggle: (index: number, type: 'frozen' | 'unfrozen') => void
+  onToggle: (index: number, type: 'frozen' | 'unFrozen') => void
   isFrozen: boolean
   settings: Settings
 }
 
 interface UtxoListDisplayProps {
   utxos: UtxoList
-  onToggle: (index: number, type: 'frozen' | 'unfrozen') => void
+  onToggle: (index: number, type: 'frozen' | 'unFrozen') => void
   isFrozen: boolean
   settings: Settings
 }
@@ -74,81 +79,104 @@ const formatConfirmations = (conf: number) => {
 const satsToBtc = (sats: number) => (sats / 100000000).toFixed(8)
 
 // Utility function to Identifies Icons
-const utxoIcon = (tag: tags, isFrozen: boolean) => {
+const utxoIcon = (tag: Tags, isFrozen: boolean) => {
   if (isFrozen && tag === 'bond') return 'timelock'
-  else if (isFrozen) return 'snowflake'
-  else if (tag === 'deposit') return 'Unmixed'
-  else if (tag === 'bond') return 'timelock'
-  else return 'mixed'
+  if (isFrozen) return 'snowflake'
+  if (tag === 'deposit' || tag === 'non-cj-change' || tag === 'reused') return 'Unmixed'
+  if (tag === 'bond') return 'timelock'
+  return 'mixed'
 }
 
-// UTXO row component
+// Utility function to allot classes
+const allotClasses = (tag: Tags, isFrozen: boolean) => {
+  if (isFrozen) return { row: styles.frozenUtxo, tag: styles.utxoTagFreeze }
+  if (tag === 'deposit') return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
+  if (tag === 'joined' || tag === 'cj-out') return { row: styles.joinedUtxoAndCjout, tag: styles.utxoTagJoinedAndCjout }
+  if (tag === 'non-cj-change' || tag === 'reused')
+    return { row: styles.changeAndReuseUtxo, tag: styles.utxoTagChangeAndReuse }
+  return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
+}
+
+// Utxos row component
 const UtxoRow = memo(({ utxo, index, onToggle, isFrozen, settings }: UtxoRowProps) => {
   const address = formatAddress(utxo.address)
   const conf = formatConfirmations(utxo.confirmations)
   const value = satsToBtc(utxo.value)
-
-  const tag = utxo._tags[0].tag
+  const tag = utxo.tags[0].tag
   const icon = utxoIcon(tag, isFrozen)
-
-  const rowClass = isFrozen ? styles.utxoRowFrozen : icon === 'mixed' ? styles.utxoRowUnfrozen : styles.utxoRowUnMixed
-  const iconClass = isFrozen ? styles.iconFrozen : icon === 'mixed' ? styles.iconMixed : styles.iconUnMixed
-  const confirmationClass = isFrozen
-    ? styles.iconConfirmationsFreeze
-    : icon === 'mixed'
-      ? styles.iconConfirmations
-      : styles.iconConfirmationsUnmixed
-  const tagClass = isFrozen ? styles.utxoTagFreeze : icon === 'mixed' ? styles.utxoTagUnFreeze : styles.utxoTagUnMixed
+  const rowAndTagClass = allotClasses(tag, isFrozen)
 
   return (
-    <rb.Row key={index} onClick={() => onToggle(index, isFrozen ? 'frozen' : 'unfrozen')} className={rowClass}>
-      <div className={styles.utxoListDisplay}>
-        <rb.Row>
-          <rb.Col xs={1}>
-            <input
-              id={`check-box-${isFrozen ? 'frozen' : 'unfrozen'}-${index}`}
-              type="checkbox"
-              defaultChecked={utxo.checked}
-              className={classNames(isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
-                [styles.selected]: utxo.checked,
-              })}
-            />
-          </rb.Col>
-          <rb.Col xs={1}>
-            <Sprite symbol={icon} width="23px" height="23px" className={iconClass} />
-          </rb.Col>
-          <rb.Col xs={4}>{address}</rb.Col>
-          <rb.Col xs={2}>
-            <Sprite symbol={conf.symbol} width="28px" height="28px" className={confirmationClass} />
-            {conf.confirmations}
-          </rb.Col>
-          <rb.Col xs={2} className={styles.valueColumn}>
-            <Balance
-              valueString={value.toString()}
-              convertToUnit={settings.unit}
-              showBalance={true}
-              isColorChange={true}
-              frozen={isFrozen}
-              frozenSymbol={false}
-            />
-          </rb.Col>
-          <rb.Col xs={1}>
-            <div className={tagClass}>{tag}</div>
-          </rb.Col>
-        </rb.Row>
-      </div>
-    </rb.Row>
+    <Row item={utxo} className={classNames(rowAndTagClass.row, 'cursor-pointer')}>
+      <Cell>
+        <input
+          id={`check-box-${isFrozen ? 'frozen' : 'unFrozen'}-${index}`}
+          type="checkbox"
+          checked={utxo.checked}
+          onChange={() => onToggle(index, isFrozen ? 'frozen' : 'unFrozen')}
+          className={classNames(isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
+            [styles.selected]: utxo.checked,
+          })}
+        />
+      </Cell>
+      <Cell>
+        <Sprite symbol={icon} width="23px" height="23px" />
+      </Cell>
+      <Cell>{address}</Cell>
+      <Cell>
+        <Sprite symbol={conf.symbol} width="28px" height="28px" className="mb-1" />
+        {conf.confirmations}
+      </Cell>
+      <Cell>
+        <Balance
+          valueString={value.toString()}
+          convertToUnit={settings.unit}
+          showBalance={true}
+          isColorChange={true}
+          frozen={isFrozen}
+          frozenSymbol={false}
+        />
+      </Cell>
+      <Cell>
+        <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag}</div>
+      </Cell>
+    </Row>
   )
 })
 
-// UTXO list display component
-const UtxoListDisplay = memo(({ utxos, onToggle, isFrozen, settings }: UtxoListDisplayProps) => (
-  <div>
-    {utxos.map((utxo, index) => (
-      <UtxoRow key={index} utxo={utxo} index={index} onToggle={onToggle} isFrozen={isFrozen} settings={settings} />
-    ))}
-  </div>
-))
+//Table theme to manage view
+const TABLE_THEME = {
+  Table: `
+    font-size: 1rem;
+    --data-table-library_grid-template-columns: 3.5rem 2.5rem 12rem 2fr 3fr 10rem ;
+    @media only screen and (min-width: 768px) {
+      --data-table-library_grid-template-columns: 3.5rem 2.5rem 14rem 5fr 3fr 10rem ;
+    }
+  `,
+  BaseCell: `
+    padding: 0.55rem 0.35rem !important;
+    margin: 0.15rem 0px !important;
+  `,
+}
+
+//Utxo list display component
+const UtxoListDisplay = ({ utxos, onToggle, isFrozen, settings }: UtxoListDisplayProps) => {
+  const tableTheme = useTheme(TABLE_THEME)
+
+  return (
+    <Table data={{ nodes: utxos }} theme={tableTheme} layout={{ custom: true, horizontalScroll: true }}>
+      {(utxosList: TableTypes.TableProps<UtxoType>) => (
+        <Body>
+          {utxosList.map((utxo: UtxoType, index: number) => (
+            <Row key={index} item={utxo} onClick={() => onToggle(index, isFrozen ? 'frozen' : 'unFrozen')}>
+              <UtxoRow utxo={utxo} index={index} onToggle={onToggle} isFrozen={isFrozen} settings={settings} />
+            </Row>
+          ))}
+        </Body>
+      )}
+    </Table>
+  )
+}
 
 // Main component to show UTXOs
 const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
@@ -157,7 +185,6 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
   const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
   const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
   const [isLoading, setisLoading] = useState<boolean>(true)
-
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const settings = useSettings()
@@ -173,9 +200,8 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
       const newUtxos = utxos.map((utxo: any) => ({
         ...utxo,
         id: utxo.utxo,
-        _tags: utxoTags(utxo, walletInfo, t),
+        tags: utxoTags(utxo, walletInfo, t),
       }))
-
       const frozen = newUtxos.filter((utxo: any) => utxo.frozen).map((utxo: any) => ({ ...utxo, checked: false }))
       const unfrozen = newUtxos.filter((utxo: any) => !utxo.frozen).map((utxo: any) => ({ ...utxo, checked: true }))
 
@@ -183,7 +209,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
       setUnFrozenUtxos(unfrozen)
 
       if (unfrozen.length === 0) {
-        setAlert({ variant: 'danger', message: t('showUtxos.alert_for_empty_utxos') })
+        setAlert({ variant: 'danger', message: t('showUtxos.alertForEmptyUtxos') })
       } else {
         setAlert(undefined)
       }
@@ -195,6 +221,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
 
   // Reload wallet info
   const handleReload = useCallback(async () => {
+    setisLoading(true)
     const abortCtrl = new AbortController()
     try {
       const walletInfo = await reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal })
@@ -221,17 +248,17 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
     const allUnfrozenUnchecked = unFrozenUtxos.every((utxo: UtxoType) => !utxo.checked)
 
     if (timeLockedUtxo) {
-      setAlert({ variant: 'danger', message: `${t('showUtxos.alert_for_time_locked')} ${timeLockedUtxo.locktime}` })
+      setAlert({ variant: 'danger', message: `${t('showUtxos.alertForTimeLocked')} ${timeLockedUtxo.locktime}` })
     } else if (allUnfrozenUnchecked && frozenUtxosToUpdate.length === 0 && unFrozenUtxos.length > 0) {
-      setAlert({ variant: 'warning', message: t('showUtxos.alert_for_unfreeze_utxos'), dismissible: true })
+      setAlert({ variant: 'warning', message: t('showUtxos.alertForUnfreezeUtxos'), dismissible: true })
     } else if (unFrozenUtxos.length !== 0) {
       setAlert(undefined)
     }
   }, [frozenUtxos, unFrozenUtxos, t])
 
   // Handler to toggle UTXO selection
-  const handleToggle = useCallback((utxoIndex: number, type: 'frozen' | 'unfrozen') => {
-    if (type === 'unfrozen') {
+  const handleToggle = useCallback((utxoIndex: number, type: 'frozen' | 'unFrozen') => {
+    if (type === 'unFrozen') {
       setUnFrozenUtxos((prevUtxos) =>
         prevUtxos.map((utxo, i) => (i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo)),
       )
@@ -242,8 +269,8 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
     }
   }, [])
 
-  // Handler for the "Next" button click
-  const handleNext = async () => {
+  // Handler for the "confirm" button click
+  const handleConfirm = async () => {
     const abortCtrl = new AbortController()
 
     const frozenUtxosToUpdate = frozenUtxos
@@ -258,7 +285,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
         ...frozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
         ...unFrozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
       ])
-      await reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal })
+      await handleReload()
       onHide()
     } catch (err: any) {
       if (!abortCtrl.signal.aborted) {
@@ -268,26 +295,32 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
   }
 
   return (
-    <rb.Modal size="lg" show={show} onHide={onHide} keyboard={false} centered animation>
-      <rb.Modal.Header closeButton>
-        <rb.Modal.Title>{t('showUtxos.show_utxo_title')}</rb.Modal.Title>
-      </rb.Modal.Header>
+    <ConfirmModal
+      onCancel={onHide}
+      onConfirm={handleConfirm}
+      disabled={alert?.dismissible || isLoading}
+      isShown={show}
+      title={t('showUtxos.showUtxoTitle')}
+      size="lg"
+      showCloseButtonAndRemoveClassName={true}
+      confirmVariant={'dark'}
+    >
       {!isLoading ? (
-        <rb.Modal.Body className={styles.modalBody}>
-          <div className={styles.subTitle}>{t('showUtxos.show_utxo_subtitle')}</div>
+        <>
+          <div className={classNames(styles.subTitle, 'm-3 mb-4 text-start')}>{t('showUtxos.showUtxoSubtitle')}</div>
           {alert && (
             <rb.Row>
               <Alert
                 variant={alert.variant}
                 message={alert.message}
-                dismissible={true}
+                dismissible={!alert.dismissible}
                 onClose={() => setAlert(undefined)}
               />
             </rb.Row>
           )}
           <UtxoListDisplay utxos={unFrozenUtxos} onToggle={handleToggle} isFrozen={false} settings={settings} />
           {frozenUtxos.length > 0 && (
-            <rb.Row className="d-flex justify-content-center">
+            <rb.Row className={classNames('d-flex justify-content-center mt-4', { 'mb-4': showFrozenUtxos })}>
               <rb.Col xs={12}>
                 <div className={mainStyles.jarsDividerContainer}>
                   <hr className={mainStyles.dividerLine} />
@@ -305,22 +338,14 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
           {showFrozenUtxos && (
             <UtxoListDisplay utxos={frozenUtxos} onToggle={handleToggle} isFrozen={true} settings={settings} />
           )}
-        </rb.Modal.Body>
+        </>
       ) : (
         <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
           <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
           <div>{t('earn.fidelity_bond.text_loading')}</div>
         </div>
       )}
-      <rb.Modal.Footer>
-        <rb.Button variant="white" onClick={onHide} className={styles.BackButton}>
-          {t('showUtxos.back_button')}
-        </rb.Button>
-        <rb.Button variant="dark" onClick={handleNext} disabled={alert?.dismissible} className={styles.NextButton}>
-          {t('showUtxos.next_button')}
-        </rb.Button>
-      </rb.Modal.Footer>
-    </rb.Modal>
+    </ConfirmModal>
   )
 }
 
