@@ -21,6 +21,8 @@ export type JarProps = {
 }
 
 export type SelectableJarProps = JarProps & {
+  tooltipText?: string
+  isOpen?: boolean
   isSelectable: boolean
   isSelected: boolean
   variant?: 'default' | 'warning'
@@ -164,6 +166,8 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false, size }:
  * A jar with index, balance, and a radio-style selection button.
  */
 const SelectableJar = ({
+  tooltipText,
+  isOpen = false,
   isSelectable,
   isSelected,
   onClick,
@@ -171,6 +175,7 @@ const SelectableJar = ({
   variant = 'default',
   ...jarProps
 }: SelectableJarProps) => {
+  const target = useRef(null)
   return (
     <div
       className={classNames('selectableJarContainer', {
@@ -178,8 +183,9 @@ const SelectableJar = ({
         selected: isSelected,
       })}
       onClick={() => isSelectable && onClick(index)}
+      ref={target}
     >
-      <Jar index={index} {...jarProps} />
+      <Jar index={index} {...jarProps} isOpen={isOpen && isSelected && isSelectable} />
       <div className="d-flex justify-content-center align-items-center gap-1 mt-2 position-relative">
         <input
           type="radio"
@@ -194,6 +200,15 @@ const SelectableJar = ({
           </div>
         )}
       </div>
+      {isOpen && isSelectable && (
+        <rb.Overlay target={target.current} show={isSelected} placement={'top-start'}>
+          {(props) => (
+            <rb.Tooltip {...props} className={styles.custom_tooltip}>
+              {tooltipText}
+            </rb.Tooltip>
+          )}
+        </rb.Overlay>
+      )}
     </div>
   )
 }
@@ -235,69 +250,4 @@ const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) =>
   )
 }
 
-/*
- * A jar with index, balance, and a radio-style selection button.
- * The jar symbol opens on onClick of radio button.
- */
-const SelectableSendJar = ({
-  tooltipText,
-  isSelectable,
-  isSelected,
-  onClick,
-  index,
-  variant = 'default',
-  showingUTXOS,
-  setshowingUTXOS,
-  ...jarProps
-}: SelectableSendJarProps) => {
-  const target = useRef(null)
-
-  const handleClick = () => {
-    if (isSelected && isSelectable) {
-      setshowingUTXOS({
-        index: index.toString(),
-        show: true,
-      })
-    }
-  }
-
-  return (
-    <div ref={target}>
-      <div
-        className={classNames('selectableJarContainer', {
-          selectable: isSelectable,
-          selected: isSelected,
-        })}
-      >
-        <span onClick={handleClick}>
-          <Jar index={index} {...jarProps} isOpen={isSelected && isSelectable} />
-        </span>
-        <div className={'d-flex justify-content-center align-items-center gap-1 mt-2 position-relative'}>
-          <input
-            type="radio"
-            checked={isSelected}
-            onChange={() => isSelectable && onClick(index)}
-            className={styles.selectionCircle}
-            disabled={!isSelectable}
-          />
-          {variant === 'warning' && (
-            <div className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark p-0">
-              <Sprite symbol="warn" width="20" height="20" />
-            </div>
-          )}
-        </div>
-      </div>
-      {isSelected && (
-        <rb.Overlay target={target.current} show={isSelected} placement={'top-start'}>
-          {(props) => (
-            <rb.Tooltip {...props} className={styles.custom_tooltip}>
-              {tooltipText}
-            </rb.Tooltip>
-          )}
-        </rb.Overlay>
-      )}
-    </div>
-  )
-}
-
-export { SelectableSendJar, SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }
+export { SelectableJar, OpenableJar, jarName, jarInitial, jarFillLevel }
