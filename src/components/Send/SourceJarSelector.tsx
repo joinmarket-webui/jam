@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
-import { jarFillLevel, SelectableSendJar } from '../jars/Jar'
+import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
 import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
@@ -148,8 +148,6 @@ export const SourceJarSelector = ({
                       it.calculatedTotalBalanceInSats,
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
-                    showingUTXOS={showingUTXOS}
-                    setshowingUTXOS={setshowingUTXOS}
                     variant={it.accountIndex === field.value ? variant : undefined}
                     onClick={(jarIndex: number) => {
                       form.setFieldValue(field.name, jarIndex, true)
