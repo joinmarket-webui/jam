@@ -611,8 +611,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     if (step === steps.createFidelityBond) {
       reset()
       onDone()
-    } else {
-      reset()
+    } else if (step !== steps.selectDate) {
+      setStep(step - 1)
     }
   }
 
