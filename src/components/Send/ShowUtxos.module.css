@@ -1,124 +1,54 @@
-.utxoRowUnfrozen {
-  background-color: #27ae600d;
-  padding: 8px 30px;
-  height: 46px;
+.joinedUtxoAndCjout {
+  background-color: #27ae600d !important;
   color: #27ae60 !important;
-  margin-bottom: 4px;
-  cursor: pointer;
 }
 
-.utxoRowFrozen {
-  background-color: #2d9cdb0d;
-  padding: 8px 30px;
-  height: 46px;
+.frozenUtxo {
+  background-color: #2d9cdb0d !important;
   color: #2d9cdb !important;
-  margin-bottom: 4px;
-  cursor: pointer;
 }
 
-.utxoRowUnMixed {
-  background-color: none;
-  padding: 8px 30px;
-  height: 46px;
+.depositUtxo {
+  background-color: none !important;
   color: var(--bs-modal-color) !important;
-  margin-bottom: 4px;
-  cursor: pointer;
 }
 
-.iconMixed {
-  color: #27ae60;
-}
-
-.iconUnMixed {
-  color: var(--bs-modal-color);
-}
-
-.iconFrozen {
-  color: #2d9cdb;
-}
-
-.iconConfirmations {
-  color: #27ae60;
-  margin-bottom: 4px;
-}
-
-.iconConfirmationsUnmixed {
-  color: var(--bs-modal-color);
-  margin-bottom: 4px;
-}
-
-.iconConfirmationsFreeze {
-  color: #2d9cdb;
-  margin-bottom: 4px;
-}
-
-.valueColumn {
-  margin-right: 20px;
+.changeAndReuseUtxo {
+  background-color: #eb57570d !important;
+  color: #eb5757 !important;
 }
 
 .subTitle {
-  color: #777777;
-  border: none;
-  margin-bottom: 1.5rem;
+  color: #777777 !important;
 }
 
-.NextButton {
-  width: 47% !important;
-  height: 3.15rem;
-  padding: 14px 20px 14px 20px !important;
-  border-radius: 5px !important;
-}
-
-.BackButton {
-  width: 47% !important;
-  height: 3.15rem;
-  padding: 14px 20px 14px 20px !important;
-  margin-right: 33px !important;
-  border-radius: 5px !important;
-}
-
-.utxoTagUnMixed {
-  white-space: nowrap;
+.utxoTagDeposit {
   color: #999999;
   border: 1px solid #bbbbbb;
-  background-color: #dedede;
+  background-color: #dedede !important;
   border-radius: 0.35rem;
   padding: 0rem 0.25rem;
-  display: inline-block;
-  margin-left: 4px;
 }
 
-.utxoTagUnFreeze {
-  white-space: nowrap;
+.utxoTagJoinedAndCjout {
   border: 1px solid #27ae60;
-  background-color: #c6eed7;
+  background-color: #c6eed7 !important;
   border-radius: 0.35rem;
   padding: 0rem 0.25rem;
-  display: inline-block;
-  margin-left: 4px;
 }
 
 .utxoTagFreeze {
-  white-space: nowrap;
   border: 1px solid #2d9cdb;
-  background-color: #bce7ff;
+  background-color: #bce7ff !important;
   border-radius: 0.35rem;
   padding: 0rem 0.25rem;
-  display: inline-block;
-  margin-left: 4px;
 }
 
-.parent-class .utxoTag {
-  border: 1px solid #27ae60 !important;
-  border-radius: 0.2rem !important;
-}
-
-.utxoListDisplay {
-  margin-left: -27px !important;
-}
-
-.modalBody {
-  padding: 40px !important;
+.utxoTagChangeAndReuse {
+  border: 1px solid #eb5757;
+  background-color: #fac7c7 !important;
+  border-radius: 0.35rem;
+  padding: 0rem 0.25rem;
 }
 
 .squareToggleButton {
@@ -127,7 +57,7 @@
   height: 22px;
   border-radius: 3px;
   border: 1px solid var(--bs-body-color);
-  margin-top: 3.5px;
+  margin-top: 0.45rem;
 }
 
 .selected {
@@ -141,5 +71,5 @@
   height: 22px;
   border-radius: 3px;
   border: 1px solid #2d9cdb;
-  margin-top: 3.5px;
+  margin-top: 0.45rem;
 }

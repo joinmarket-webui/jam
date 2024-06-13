@@ -699,13 +699,11 @@
     }
   },
   "showUtxos": {
-    "Select_UTXOs": "Select UTXOs",
-    "show_utxo_title": "Select UTXOs to be considered",
-    "show_utxo_subtitle": "The following UTXOs are considered in the transaction. Every unselected UTXO will be frozen and can be unfrozen later on.",
-    "alert_for_unfreeze_utxos": "At least one UTXO is required to perform a transaction",
-    "alert_for_time_locked": "Selected UTXO is Time Locked till",
-    "alert_for_empty_utxos": "Please Unfreeze UTXOs to send",
-    "back_button": "Cancel",
-    "next_button": "Confirm"
+    "selectUTXOs": "Select UTXOs",
+    "showUtxoTitle": "Select UTXOs to be considered",
+    "showUtxoSubtitle": "The following UTXOs are considered in the transaction. Every unselected UTXO will be frozen and can be unfrozen later on.",
+    "alertForUnfreezeUtxos": "At least one UTXO is required to perform a transaction",
+    "alertForTimeLocked": "Selected UTXO is Time Locked till",
+    "alertForEmptyUtxos": "Please Unfreeze UTXOs to send"
   }
 }

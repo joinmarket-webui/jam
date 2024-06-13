@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
-import { jarFillLevel, SelectableSendJar } from '../jars/Jar'
+import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
 import { WalletInfo, CurrentWallet } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
@@ -75,8 +75,9 @@ export const SourceJarSelector = ({
             {jarBalances.map((it) => {
               return (
                 <div key={it.accountIndex}>
-                  <SelectableSendJar
-                    tooltipText={t('showUtxos.Select_UTXOs')}
+                  <SelectableJar
+                    tooltipText={t('showUtxos.selectUTXOs')}
+                    isOpen={true}
                     index={it.accountIndex}
                     balance={it.calculatedAvailableBalanceInSats}
                     frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
@@ -86,11 +87,20 @@ export const SourceJarSelector = ({
                       it.calculatedTotalBalanceInSats,
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
-                    showingUTXOS={showingUTXOS}
-                    setshowingUTXOS={setshowingUTXOS}
                     variant={it.accountIndex === field.value ? variant : undefined}
-                    onClick={(jarIndex) => {
+                    onClick={(jarIndex: number) => {
                       form.setFieldValue(field.name, jarIndex, true)
+                      if (
+                        it.accountIndex === field.value &&
+                        !disabled &&
+                        !isLoading &&
+                        it.calculatedTotalBalanceInSats > 0
+                      ) {
+                        setshowingUTXOS({
+                          index: it.accountIndex.toString(),
+                          show: true,
+                        })
+                      }
                     }}
                   />
                 </div>
