@@ -26,6 +26,7 @@ import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { useFeeConfigValues } from '../../hooks/Fees'
+import { jarName } from '../jars/Jar'
 
 const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
 
@@ -616,6 +617,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     }
   }
 
+  const stepTitle = (currentStep: Number) => {
+    if (currentStep === steps.selectDate && lockDate !== null) {
+      return <>{` - ${new Date(fb.lockdate.toTimestamp(lockDate)).toUTCString()}`}</>
+    }
+    if (currentStep === steps.selectJar && selectedJar !== undefined) {
+      return <>{` - Jar ${jarName(selectedJar)}`}</>
+    }
+  }
+
   return (
     <div>
       {lockDate && timelockedAddress && selectedJar !== undefined && (
@@ -724,6 +734,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                       <div className={styles.step}>{index + 1}</div>
                     </div>
                     {tab}
+                    {stepTitle(index)}
                   </div>
                   <Sprite symbol={step === index ? 'caret-up' : 'caret-down'} width="20" height="20" />
                 </div>
