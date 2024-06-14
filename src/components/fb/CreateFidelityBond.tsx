@@ -619,10 +619,12 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const stepTitle = (currentStep: Number) => {
     if (currentStep === steps.selectDate && lockDate !== null) {
-      return <>{` - ${new Date(fb.lockdate.toTimestamp(lockDate)).toUTCString()}`}</>
+      return (
+        <span className={styles.subTitle}>{`- ${new Date(fb.lockdate.toTimestamp(lockDate)).toDateString()}`}</span>
+      )
     }
     if (currentStep === steps.selectJar && selectedJar !== undefined) {
-      return <>{` - Jar ${jarName(selectedJar)}`}</>
+      return <span className={styles.subTitle}>{`- Jar ${jarName(selectedJar)}`}</span>
     }
   }
 
