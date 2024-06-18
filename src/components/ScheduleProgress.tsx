@@ -3,7 +3,17 @@ import { Trans, useTranslation } from 'react-i18next'
 import styles from './ScheduleProgress.module.css'
 import { Schedule } from '../context/ServiceInfoContext'
 
-const scheduleToSteps = (schedule: Schedule) => {
+interface Txstep {
+  width: number
+}
+
+interface Steps {
+  totalWaitTime: number
+  completedTxs: number
+  txs: Txstep[]
+}
+
+const scheduleToSteps = (schedule: Schedule): Steps => {
   // Example Schedule:
   //
   // schedule = [

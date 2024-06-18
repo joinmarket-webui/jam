@@ -318,6 +318,44 @@ export default function Jam({ wallet }: JamProps) {
       })
   }
 
+  // const startSchedule = async (values: FormikValues) => {
+  //   if (isLoading || collaborativeOperationRunning || isOperationDisabled) {
+  //     return
+  //   }
+
+  //   setAlert({ variant: 'info', message: 'Starting scheduler' })
+  //   setIsWaitingSchedulerStart((prev) => !prev)
+
+  //   const destinations = addressValueKeys(addressCount).map((key) => values[key])
+  //   setUseInsecureTestingSettings((prev) => !prev)
+
+  //   const body: Api.StartSchedulerRequest = {
+  //     destination_addresses: destinations,
+  //     tumbler_options: {
+  //       addrcount: addressCount,
+  //       minmakercount: 1,
+  //       makercountrange: [1, 0],
+  //       mixdepthcount: addressCount,
+  //       mintxcount: 1,
+  //       txcountparams: [1, 0],
+  //       timelambda: 0.025, // 0.025 minutes := 1.5 seconds
+  //       stage1_timelambda_increase: 1.0,
+  //       liquiditywait: 13,
+  //       waittime: 0.0,
+  //     },
+  //   }
+
+  //   const abortCtrl = new AbortController()
+  //   return Api.postSchedulerStart({ ...wallet, signal: abortCtrl.signal }, body)
+  //     .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
+  //     .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
+  //     .catch((err) => {
+  //       if (abortCtrl.signal.aborted) return
+  //       setAlert({ variant: 'danger', message: err.message })
+  //       setIsWaitingSchedulerStart(false)
+  //     })
+  // }
+
   const stopSchedule = async () => {
     if (isLoading || !collaborativeOperationRunning) {
       return
@@ -545,6 +583,7 @@ export default function Jam({ wallet }: JamProps) {
                           >
                             <div className="d-flex justify-content-center align-items-center">
                               {t('scheduler.button_start')}
+                              <Sprite symbol="caret-right" width="24" height="24" className="ms-1" />
                             </div>
                           </rb.Button>
                         </rb.Form>
