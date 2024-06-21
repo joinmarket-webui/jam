@@ -5,10 +5,10 @@
 # This script prepares the regtest environment.
 #
 # The output of this script is a ".env.generated" file
-# to be used in when running docker-compose.
+# to be used in when running `docker compose`.
 # e.g. 
 # ```
-# docker-compose --env-file .env.generated --file docker-compose.yml up
+# docker compose --env-file .env.generated --file docker-compose.yml up
 # ```
 #
 ###
