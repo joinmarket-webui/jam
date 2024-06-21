@@ -711,7 +711,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             </div>
           )}
 
-          <div className="d-flex align-items-center gap-5 mx-4 my-3 justify-content-start">
+          <div className="d-flex align-items-center gap-4 mx-4 my-3 justify-content-start">
             <div>
               <Sprite symbol="timelock" width="25" height="25" className={styles.utxoSummaryIconLock} />
             </div>
@@ -731,7 +731,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             {['Expiration date', 'Funding Source', 'UTXO Overview', 'Confirmation'].map((tab, index) => (
               <div>
                 <div key={index} className={styles.tab}>
-                  <div className="d-flex align-items-center gap-3">
+                  <div className="d-flex align-items-center gap-4">
                     <div className={styles.circle}>
                       <div className={styles.step}>{index + 1}</div>
                     </div>
@@ -741,7 +741,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                   <Sprite symbol={step === index ? 'caret-up' : 'caret-down'} width="20" height="20" />
                 </div>
                 <rb.Collapse in={step === index ? true : false}>
-                  <div className="mb-5">{stepComponent(step)}</div>
+                  <div className="m-4">{stepComponent(step)}</div>
                 </rb.Collapse>
               </div>
             ))}
