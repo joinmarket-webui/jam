@@ -47,7 +47,7 @@ interface ShowUtxosProps {
 
 interface UtxoRowProps {
   utxo: UtxoType
-  index: number
+  utxoIndex: number
   onToggle: (index: number, type: 'frozen' | 'unFrozen') => void
   isFrozen: boolean
   settings: Settings
@@ -98,22 +98,21 @@ const allotClasses = (tag: Tags, isFrozen: boolean) => {
 }
 
 // Utxos row component
-const UtxoRow = memo(({ utxo, index, onToggle, isFrozen, settings }: UtxoRowProps) => {
+const UtxoRow = memo(({ utxo, utxoIndex, onToggle, isFrozen, settings }: UtxoRowProps) => {
   const address = formatAddress(utxo.address)
   const conf = formatConfirmations(utxo.confirmations)
   const value = satsToBtc(utxo.value)
   const tag = utxo.tags[0].tag
   const icon = utxoIcon(tag, isFrozen)
   const rowAndTagClass = allotClasses(tag, isFrozen)
-
   return (
     <Row item={utxo} className={classNames(rowAndTagClass.row, 'cursor-pointer')}>
       <Cell>
         <input
-          id={`check-box-${isFrozen ? 'frozen' : 'unFrozen'}-${index}`}
+          id={`check-box-${isFrozen ? 'frozen' : 'unFrozen'}-${utxoIndex}`}
           type="checkbox"
           checked={utxo.checked}
-          onChange={() => onToggle(index, isFrozen ? 'frozen' : 'unFrozen')}
+          onChange={() => onToggle(utxoIndex, isFrozen ? 'frozen' : 'unFrozen')}
           className={classNames(isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
             [styles.selected]: utxo.checked,
           })}
@@ -164,17 +163,21 @@ const UtxoListDisplay = ({ utxos, onToggle, isFrozen, settings }: UtxoListDispla
   const tableTheme = useTheme(TABLE_THEME)
 
   return (
-    <Table data={{ nodes: utxos }} theme={tableTheme} layout={{ custom: true, horizontalScroll: true }}>
-      {(utxosList: TableTypes.TableProps<UtxoType>) => (
-        <Body>
-          {utxosList.map((utxo: UtxoType, index: number) => (
-            <Row key={index} item={utxo} onClick={() => onToggle(index, isFrozen ? 'frozen' : 'unFrozen')}>
-              <UtxoRow utxo={utxo} index={index} onToggle={onToggle} isFrozen={isFrozen} settings={settings} />
-            </Row>
-          ))}
-        </Body>
-      )}
-    </Table>
+    <div className={classNames(styles.utxoListDisplayHeight, styles.customscrollbar, 'overflow-y-auto')}>
+      <Table data={{ nodes: utxos }} theme={tableTheme} layout={{ custom: true, horizontalScroll: true }}>
+        {(utxosList: TableTypes.TableProps<UtxoType>) => (
+          <Body>
+            {utxosList.map((utxo: UtxoType, index: number) => {
+              return (
+                <Row key={index} item={utxo} onClick={() => onToggle(index, isFrozen ? 'frozen' : 'unFrozen')}>
+                  <UtxoRow utxo={utxo} utxoIndex={index} onToggle={onToggle} isFrozen={isFrozen} settings={settings} />
+                </Row>
+              )
+            })}
+          </Body>
+        )}
+      </Table>
+    </div>
   )
 }
 
