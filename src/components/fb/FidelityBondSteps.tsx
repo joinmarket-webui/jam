@@ -13,6 +13,7 @@ import { CopyButton } from '../CopyButton'
 import LockdateForm, { LockdateFormProps } from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
+import ShowUtxos from './ShowUtxos'
 
 const cx = classnamesBind.bind(styles)
 
@@ -176,27 +177,7 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
 
   return (
     <div className="d-flex flex-column gap-4">
-      <div className={styles.stepDescription}>
-        {t('earn.fidelity_bond.select_utxos.description', { jar: jarInitial(jar) })}
-      </div>
-      {utxos.map((utxo, index) => {
-        return (
-          <UtxoCard
-            key={index}
-            utxo={utxo}
-            status={walletInfo.addressSummary[utxo.address]?.status}
-            isSelectable={!utxo.frozen}
-            isSelected={fb.utxo.isInList(utxo, selectedUtxos)}
-            onClick={() => {
-              if (fb.utxo.isInList(utxo, selectedUtxos)) {
-                onUtxoDeselected(utxo)
-              } else {
-                onUtxoSelected(utxo)
-              }
-            }}
-          />
-        )
-      })}
+      <ShowUtxos utxos={utxos} index={jar} />
     </div>
   )
 }
