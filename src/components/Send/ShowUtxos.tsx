@@ -100,8 +100,14 @@ const UtxoRow = memo(
     const conf = formatConfirmations(utxo.confirmations)
     const value = satsToBtc(utxo.value)
     const tag = utxoTags(utxo, walletInfo, t)
-    const icon = utxoIcon(tag[0].tag, isFrozen)
-    const rowAndTagClass = allotClasses(tag[0].tag, isFrozen)
+    let icon, rowAndTagClass
+    if (tag.length === 0) {
+      icon = 'Unmixed'
+      rowAndTagClass = { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
+    } else {
+      icon = utxoIcon(tag[0].tag, isFrozen)
+      rowAndTagClass = allotClasses(tag[0].tag, isFrozen)
+    }
     return (
       <Row
         item={utxo}
@@ -144,7 +150,7 @@ const UtxoRow = memo(
           />
         </Cell>
         <Cell>
-          <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag[0].tag}</div>
+          <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag.length ? tag[0].tag : ''}</div>
         </Cell>
       </Row>
     )
