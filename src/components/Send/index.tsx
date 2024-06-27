@@ -18,8 +18,6 @@ import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-import { useSettings } from '../../context/SettingsContext'
-import { UtxoListDisplay, Divider } from './ShowUtxos'
 
 import { initialNumCollaborators } from './helpers'
 
@@ -139,7 +137,6 @@ export default function Send({ wallet }: SendProps) {
 
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState<SendFormValues>()
-  const [showSelectedUtxos, setShowSelectedUtxos] = useState<boolean>(false)
 
   const initialValues = useMemo(
     () => createInitialValues(initNumCollaborators, feeConfigValues),
