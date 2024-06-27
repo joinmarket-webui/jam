@@ -5,7 +5,7 @@ import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
 import { WalletInfo, CurrentWallet } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
-import ShowUtxos from './ShowUtxos'
+import { ShowUtxos } from './ShowUtxos'
 import { useTranslation } from 'react-i18next'
 
 export type SourceJarSelectorProps = {
@@ -76,7 +76,7 @@ export const SourceJarSelector = ({
               return (
                 <div key={it.accountIndex}>
                   <SelectableJar
-                    tooltipText={t('showUtxos.selectUTXOs')}
+                    tooltipText={t('show_utxos.select_utxos')}
                     isOpen={true}
                     index={it.accountIndex}
                     balance={it.calculatedAvailableBalanceInSats}
