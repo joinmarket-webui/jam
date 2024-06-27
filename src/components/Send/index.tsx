@@ -526,14 +526,8 @@ export default function Send({ wallet }: SendProps) {
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
-            showSelectedUtxos: true,
           }}
-        >
-          <Divider isState={showSelectedUtxos} setIsState={setShowSelectedUtxos} className="mb-3" />
-          {showSelectedUtxos && showConfirmSendModal.selectedUtxos && (
-            <UtxoListDisplay utxos={showConfirmSendModal.selectedUtxos} settings={settings} showRadioAndBg={false} />
-          )}
-        </PaymentConfirmModal>
+        />
       )}
     </div>
   )
