@@ -133,7 +133,7 @@ export const SourceJarSelector = ({
               return (
                 <div key={it.accountIndex}>
                   <SelectableJar
-                    tooltipText={t('showUtxos.selectUTXOs')}
+                    tooltipText={t('show_utxos.select_utxos')}
                     isOpen={true}
                     index={it.accountIndex}
                     balance={it.calculatedAvailableBalanceInSats}

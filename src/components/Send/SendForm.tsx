@@ -26,7 +26,7 @@ import {
   isValidNumCollaborators,
 } from './helpers'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
-import { WalletInfo, CurrentWallet } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, Utxo } from '../../context/WalletContext'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './SendForm.module.css'
 import { TxFeeInputField, validateTxFee } from '../settings/TxFeeInputField'
@@ -214,6 +214,7 @@ export interface SendFormValues {
   txFee?: TxFee
   isCoinJoin: boolean
   numCollaborators?: number
+  selectedUtxos?: Array<Utxo>
 }
 
 interface InnerSendFormProps {
