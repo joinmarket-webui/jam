@@ -95,3 +95,7 @@
 .tooltipJarContainer {
   cursor: zoom-in;
 }
+
+.custom_tooltip {
+  z-index: auto !important;
+}

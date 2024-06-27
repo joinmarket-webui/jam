@@ -39,23 +39,28 @@ interface BalanceComponentProps {
   symbol?: JSX.Element
   showSymbol?: boolean
   frozen?: boolean
+  isColorChange?: boolean
+  frozenSymbol?: boolean
 }
 
 const BalanceComponent = ({
   symbol,
   showSymbol = true,
   frozen = false,
+  isColorChange = false,
+  frozenSymbol = true,
   children,
 }: PropsWithChildren<BalanceComponentProps>) => {
   return (
     <span
-      className={classNames(styles.balance, 'balance-hook', 'd-inline-flex align-items-center', {
+      className={classNames('balance-hook', 'd-inline-flex align-items-center', {
         [styles.frozen]: frozen,
+        [styles.balance]: !isColorChange,
       })}
     >
       {children}
       {showSymbol && symbol}
-      {frozen && FROZEN_SYMBOL}
+      {frozen && frozenSymbol && FROZEN_SYMBOL}
     </span>
   )
 }
@@ -75,7 +80,9 @@ const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
   return (
     <BalanceComponent symbol={BTC_SYMBOL} {...props}>
       <span
-        className={`${styles.bitcoinAmount} slashed-zeroes`}
+        className={classNames(`slashed-zeroes`, {
+          [styles.bitcoinAmount]: !props.isColorChange,
+        })}
         data-testid="bitcoin-amount"
         data-integer-part-is-zero={integerPartIsZero}
         data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
@@ -101,7 +108,11 @@ type SatsBalanceProps = Omit<BalanceComponentProps, 'symbol'> & { value: number 
 const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
   return (
     <BalanceComponent symbol={SAT_SYMBOL} {...props}>
-      <span className={`${styles.satsAmount} slashed-zeroes`} data-testid="sats-amount" data-raw-value={value}>
+      <span
+        className={classNames(`slashed-zeroes`, { [styles.satsAmount]: !props.isColorChange })}
+        data-testid="sats-amount"
+        data-raw-value={value}
+      >
         {formatSats(value)}
       </span>
     </BalanceComponent>

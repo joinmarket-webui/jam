@@ -18,6 +18,8 @@ import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
+import { useSettings } from '../../context/SettingsContext'
+import { UtxoListDisplay, Divider } from './ShowUtxos'
 
 import { initialNumCollaborators } from './helpers'
 
@@ -85,6 +87,7 @@ type SendProps = {
 export default function Send({ wallet }: SendProps) {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
+  const settings = useSettings()
 
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
@@ -134,6 +137,7 @@ export default function Send({ wallet }: SendProps) {
 
   const [showConfirmAbortModal, setShowConfirmAbortModal] = useState(false)
   const [showConfirmSendModal, setShowConfirmSendModal] = useState<SendFormValues>()
+  const [showSelectedUtxos, setShowSelectedUtxos] = useState<boolean>(false)
 
   const initialValues = useMemo(
     () => createInitialValues(initNumCollaborators, feeConfigValues),
@@ -383,8 +387,13 @@ export default function Send({ wallet }: SendProps) {
       }
 
       if (showConfirmSendModal === undefined) {
-        setShowConfirmSendModal(values)
-        return
+        if (walletInfo?.utxosByJar && values.sourceJarIndex !== undefined) {
+          values.selectedUtxos = walletInfo.utxosByJar[values.sourceJarIndex].filter((utxo) => {
+            return utxo.frozen === false
+          })
+          setShowConfirmSendModal(values)
+          return
+        }
       }
 
       setShowConfirmSendModal(undefined)
@@ -480,6 +489,7 @@ export default function Send({ wallet }: SendProps) {
         disabled={isOperationDisabled}
         isLoading={isLoading}
         walletInfo={walletInfo}
+        wallet={wallet}
         minNumCollaborators={minNumCollaborators}
         loadNewWalletAddress={loadNewWalletAddress}
         feeConfigValues={feeConfigValues}
@@ -516,8 +526,14 @@ export default function Send({ wallet }: SendProps) {
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
+            showSelectedUtxos: true,
           }}
-        />
+        >
+          <Divider isState={showSelectedUtxos} setIsState={setShowSelectedUtxos} className="mb-3" />
+          {showSelectedUtxos && showConfirmSendModal.selectedUtxos && (
+            <UtxoListDisplay utxos={showConfirmSendModal.selectedUtxos} settings={settings} showRadioAndBg={false} />
+          )}
+        </PaymentConfirmModal>
       )}
     </div>
   )

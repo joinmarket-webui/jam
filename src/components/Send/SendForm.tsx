@@ -26,7 +26,7 @@ import {
   isValidNumCollaborators,
 } from './helpers'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
-import { WalletInfo } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, Utxo } from '../../context/WalletContext'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './SendForm.module.css'
 import { TxFeeInputField, validateTxFee } from '../settings/TxFeeInputField'
@@ -214,6 +214,7 @@ export interface SendFormValues {
   txFee?: TxFee
   isCoinJoin: boolean
   numCollaborators?: number
+  selectedUtxos?: Array<Utxo>
 }
 
 interface InnerSendFormProps {
@@ -221,6 +222,7 @@ interface InnerSendFormProps {
   className?: string
   isLoading: boolean
   walletInfo?: WalletInfo
+  wallet: CurrentWallet
   loadNewWalletAddress: (props: { signal: AbortSignal; jarIndex: JarIndex }) => Promise<Api.BitcoinAddress>
   minNumCollaborators: number
   feeConfigValues?: FeeValues
@@ -233,6 +235,7 @@ const InnerSendForm = ({
   className,
   isLoading,
   walletInfo,
+  wallet,
   loadNewWalletAddress,
   minNumCollaborators,
   feeConfigValues,
@@ -272,6 +275,7 @@ const InnerSendForm = ({
           name="sourceJarIndex"
           label={t('send.label_source_jar')}
           walletInfo={walletInfo}
+          wallet={wallet}
           isLoading={isLoading}
           disabled={disabled}
           variant={showCoinjoinPreconditionViolationAlert ? 'warning' : 'default'}
@@ -375,6 +379,7 @@ type SendFormProps = Omit<InnerSendFormProps, 'props' | 'className'> & {
   onSubmit: (values: SendFormValues) => Promise<void>
   formRef?: React.Ref<FormikProps<SendFormValues>>
   blurred?: boolean
+  wallet: CurrentWallet
 }
 
 export const SendForm = ({
@@ -383,6 +388,7 @@ export const SendForm = ({
   formRef,
   blurred = false,
   walletInfo,
+  wallet,
   minNumCollaborators,
   ...innerProps
 }: SendFormProps) => {
@@ -446,6 +452,7 @@ export const SendForm = ({
             props={props}
             className={blurred ? styles.blurred : undefined}
             walletInfo={walletInfo}
+            wallet={wallet}
             minNumCollaborators={minNumCollaborators}
             {...innerProps}
           />

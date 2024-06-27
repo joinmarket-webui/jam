@@ -7,6 +7,7 @@
   gap: 1rem;
   color: var(--bs-body-color);
   margin-bottom: 1.5rem;
+  margin-top: 2rem;
 }
 
 .sourceJarsPlaceholder {
