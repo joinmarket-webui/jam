@@ -100,10 +100,9 @@ const UtxoRow = memo(
     const conf = formatConfirmations(utxo.confirmations)
     const value = satsToBtc(utxo.value)
     const tag = utxoTags(utxo, walletInfo, t)
-    console.log(tag)
     let icon, rowAndTagClass
     if (tag.length === 0) {
-      icon = 'empty'
+      icon = 'Unmixed'
       rowAndTagClass = { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
     } else {
       icon = utxoIcon(tag[0].tag, isFrozen)

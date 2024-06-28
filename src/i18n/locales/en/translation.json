@@ -698,5 +698,14 @@
       "utxo_detail_label_locktime": "Locktime",
       "utxo_detail_label_status": "Address status"
     }
+  },
+  "show_utxos": {
+    "select_utxos": "Select UTXOs",
+    "selected_utxos": "Selected UTXOs",
+    "show_utxo_title": "Select UTXOs to be considered",
+    "show_utxo_subtitle": "The following UTXOs are considered in the transaction. Every unselected UTXO will be frozen and can be unfrozen later on.",
+    "alert_for_unfreeze_utxos": "At least one UTXO is required to perform a transaction",
+    "alert_for_time_locked": "Selected UTXO is Time Locked till",
+    "alert_for_empty_utxos": "Please Unfreeze UTXOs to send"
   }
 }
