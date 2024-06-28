@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
@@ -13,7 +13,7 @@ import { CopyButton } from '../CopyButton'
 import LockdateForm, { LockdateFormProps } from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
-import ShowUtxos from './ShowUtxos'
+import { UtxoListDisplay, Divider } from '../Send/ShowUtxos'
 
 const cx = classnamesBind.bind(styles)
 
@@ -174,10 +174,13 @@ const UtxoCard = ({
 
 const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
   const { t } = useTranslation()
+  const settings = useSettings()
+
+  const handleToggle = useCallback((utxoIndex: number, isFrozen: boolean) => {}, [])
 
   return (
     <div className="d-flex flex-column gap-4">
-      <ShowUtxos utxos={utxos} index={jar} />
+      <UtxoListDisplay utxos={utxos} onToggle={handleToggle} settings={settings} />
     </div>
   )
 }
