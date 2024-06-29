@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
@@ -14,6 +14,8 @@ import LockdateForm, { LockdateFormProps } from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
 import { UtxoListDisplay, Divider } from '../Send/ShowUtxos'
+
+type UtxoList = Array<Utxo>
 
 const cx = classnamesBind.bind(styles)
 
@@ -175,13 +177,88 @@ const UtxoCard = ({
 const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
+  const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
+  const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
+  const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
+  const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
+  const [isLoading, setisLoading] = useState<boolean>(true)
 
-  const handleToggle = useCallback((utxoIndex: number, isFrozen: boolean) => {}, [])
+  const isHandleReloadExecuted = useRef(false)
+
+  const loadData = useCallback(() => {
+    const frozen = utxos
+      .filter((utxo: any) => utxo.frozen)
+      .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: false }))
+    const unfrozen = utxos
+      .filter((utxo: any) => !utxo.frozen)
+      .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: true }))
+
+    setFrozenUtxos(frozen)
+    setUnFrozenUtxos(unfrozen)
+
+    if (unfrozen.length === 0) {
+      setAlert({ variant: 'danger', message: t('show_utxos.alert_for_empty_utxos') })
+    } else {
+      setAlert(undefined)
+    }
+
+    setisLoading(false)
+  }, [utxos, t])
+
+  const handleReload = useCallback(async () => {
+    setisLoading(true)
+    const abortCtrl = new AbortController()
+    try {
+      loadData()
+    } catch (err: any) {
+      if (!abortCtrl.signal.aborted) {
+        setAlert({ variant: 'danger', message: err.message, dismissible: true })
+      }
+    }
+  }, [loadData])
+
+  useEffect(() => {
+    if (!isHandleReloadExecuted.current) {
+      handleReload()
+      isHandleReloadExecuted.current = true
+    }
+  }, [handleReload])
+
+  const handleToggle = useCallback((utxoIndex: number, isFrozen: boolean) => {
+    if (!isFrozen) {
+      setUnFrozenUtxos((prevUtxos) =>
+        prevUtxos.map((utxo, i) => (i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo)),
+      )
+    } else {
+      setFrozenUtxos((prevUtxos) =>
+        prevUtxos.map((utxo, i) => (i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo)),
+      )
+    }
+  }, [])
 
   return (
-    <div className="d-flex flex-column gap-4">
-      <UtxoListDisplay utxos={utxos} onToggle={handleToggle} settings={settings} />
-    </div>
+    <>
+      {!isLoading ? (
+        <div className="d-flex flex-column gap-4">
+          <UtxoListDisplay utxos={unFrozenUtxos} onToggle={handleToggle} settings={settings} />
+          {frozenUtxos.length > 0 && (
+            <Divider
+              isState={showFrozenUtxos}
+              setIsState={setShowFrozenUtxos}
+              className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
+            />
+          )}
+          {showFrozenUtxos && (
+            <UtxoListDisplay utxos={frozenUtxos} onToggle={handleToggle} settings={settings} showRadioAndBg={true} />
+          )}
+        </div>
+      ) : (
+        <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
+          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+          <div>{t('earn.fidelity_bond.text_loading')}</div>
+        </div>
+      )}
+    </>
   )
 }
 
