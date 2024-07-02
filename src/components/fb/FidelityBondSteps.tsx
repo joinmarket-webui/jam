@@ -183,15 +183,9 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
   const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
   const [isLoading, setisLoading] = useState<boolean>(true)
 
-  const isHandleReloadExecuted = useRef(false)
-
   const loadData = useCallback(() => {
-    const frozen = utxos
-      .filter((utxo: any) => utxo.frozen)
-      .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: false }))
-    const unfrozen = utxos
-      .filter((utxo: any) => !utxo.frozen)
-      .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: true }))
+    const frozen = utxos.filter((utxo: any) => utxo.frozen).map((utxo: any) => ({ ...utxo, id: utxo.utxo }))
+    const unfrozen = utxos.filter((utxo: any) => !utxo.frozen).map((utxo: any) => ({ ...utxo, id: utxo.utxo }))
 
     setFrozenUtxos(frozen)
     setUnFrozenUtxos(unfrozen)
@@ -201,63 +195,38 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
     } else {
       setAlert(undefined)
     }
-
     setisLoading(false)
-  }, [utxos, t])
-
-  const handleReload = useCallback(async () => {
-    setisLoading(true)
-    const abortCtrl = new AbortController()
-    try {
-      loadData()
-    } catch (err: any) {
-      if (!abortCtrl.signal.aborted) {
-        setAlert({ variant: 'danger', message: err.message, dismissible: true })
-      }
-    }
-  }, [loadData])
+  }, [t, utxos])
 
   useEffect(() => {
-    if (!isHandleReloadExecuted.current) {
-      handleReload()
-      isHandleReloadExecuted.current = true
-    }
-  }, [handleReload])
+    loadData()
+  }, [loadData])
 
-  const handleToggle = useCallback((utxoIndex: number, isFrozen: boolean) => {
-    if (!isFrozen) {
-      setUnFrozenUtxos((prevUtxos) =>
-        prevUtxos.map((utxo, i) => (i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo)),
-      )
+  const handleToggle = (utxo: Utxo) => {
+    utxos.filter((it) => it !== utxo)
+    utxo.checked = !utxo.checked
+    if (utxo.checked) {
+      onUtxoSelected(utxo)
     } else {
-      setFrozenUtxos((prevUtxos) =>
-        prevUtxos.map((utxo, i) => (i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo)),
-      )
+      onUtxoDeselected(utxo)
     }
-  }, [])
+  }
 
   return (
     <>
-      {!isLoading ? (
-        <div className="d-flex flex-column gap-4">
-          <UtxoListDisplay utxos={unFrozenUtxos} onToggle={handleToggle} settings={settings} />
-          {frozenUtxos.length > 0 && (
-            <Divider
-              isState={showFrozenUtxos}
-              setIsState={setShowFrozenUtxos}
-              className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
-            />
-          )}
-          {showFrozenUtxos && (
-            <UtxoListDisplay utxos={frozenUtxos} onToggle={handleToggle} settings={settings} showRadioAndBg={true} />
-          )}
-        </div>
-      ) : (
-        <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          <div>{t('earn.fidelity_bond.text_loading')}</div>
-        </div>
-      )}
+      <div className="d-flex flex-column gap-4">
+        <UtxoListDisplay utxos={unFrozenUtxos} onToggle={handleToggle} settings={settings} />
+        {frozenUtxos.length > 0 && (
+          <Divider
+            isState={showFrozenUtxos}
+            setIsState={setShowFrozenUtxos}
+            className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
+          />
+        )}
+        {showFrozenUtxos && (
+          <UtxoListDisplay utxos={frozenUtxos} onToggle={handleToggle} settings={settings} showRadioAndBg={true} />
+        )}
+      </div>
     </>
   )
 }

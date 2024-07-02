@@ -84,6 +84,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
+  const [utxosOfSelectedJar, setUtxosOfSelectedJar] = useState<Utxos>([])
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
@@ -320,7 +321,11 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
             }
             selectedJar={selectedJar}
-            onJarSelected={(accountIndex) => setSelectedJar(accountIndex)}
+            onJarSelected={(accountIndex) => {
+              setSelectedJar(accountIndex)
+              setUtxosOfSelectedJar(walletInfo.utxosByJar[selectedJar!])
+              utxosOfSelectedJar.map((utxo) => ({ ...utxo, checked: false }))
+            }}
           />
         )
       case steps.selectUtxos:
@@ -331,8 +336,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               jar={selectedJar!}
               utxos={walletInfo.utxosByJar[selectedJar!]}
               selectedUtxos={selectedUtxos}
-              onUtxoSelected={(utxo) => setSelectedUtxos([...selectedUtxos, utxo])}
-              onUtxoDeselected={(utxo) => setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))}
+              onUtxoSelected={(utxo) => {
+                setSelectedUtxos([...selectedUtxos, utxo])
+                setUtxosOfSelectedJar([...selectedUtxos, utxo])
+              }}
+              onUtxoDeselected={(utxo) => {
+                setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))
+                setUtxosOfSelectedJar([...selectedUtxos, utxo])
+              }}
             />
             {allUtxosSelected && (
               <Alert variant="warning" message={<Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use" />} />
@@ -344,7 +355,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <FreezeUtxos
             walletInfo={walletInfo}
             jar={selectedJar!}
-            utxos={walletInfo.utxosByJar[selectedJar!]}
+            utxos={utxosOfSelectedJar}
             selectedUtxos={selectedUtxos}
             isLoading={isLoading}
           />
@@ -627,6 +638,11 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       return <span className={styles.subTitle}>{`- Jar ${jarName(selectedJar)}`}</span>
     }
   }
+
+  useEffect(() => {
+    console.log('all utxos:', utxosOfSelectedJar)
+    console.log('selected', selectedUtxos)
+  }, [selectedUtxos, utxosOfSelectedJar])
 
   return (
     <div>
