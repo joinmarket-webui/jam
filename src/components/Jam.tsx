@@ -284,23 +284,10 @@ export default function Jam({ wallet }: JamProps) {
     setAlert(undefined)
     setIsWaitingSchedulerStart(true)
 
-    //    const destinations = addressValueKeys(addressCount).map((key) => values[key])
     const destinations = addressValueKeys(addressCount).map((key) => values[key])
 
     const body: Api.StartSchedulerRequest = {
       destination_addresses: destinations,
-      tumbler_options: {
-        addrcount: addressCount,
-        minmakercount: 1,
-        makercountrange: [1, 0],
-        mixdepthcount: addressCount,
-        mintxcount: 1,
-        txcountparams: [1, 0],
-        timelambda: 0.025, // 0.025 minutes := 1.5 seconds
-        stage1_timelambda_increase: 1.0,
-        liquiditywait: 13,
-        waittime: 0.0,
-      },
     }
 
     // Make sure schedule testing is really only used in dev mode.
@@ -353,10 +340,6 @@ export default function Jam({ wallet }: JamProps) {
 
   return (
     <>
-      {' '}
-      {
-        // MARK: Scheduler Page
-      }
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       {isLoading || !serviceInfo || !walletInfo || isWaitingSchedulerStart || isWaitingSchedulerStop ? (
