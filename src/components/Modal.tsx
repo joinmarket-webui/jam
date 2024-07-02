@@ -10,6 +10,7 @@ type BaseModalProps = {
   onCancel: () => void
   backdrop?: rb.ModalProps['backdrop']
   size?: rb.ModalProps['size']
+  showCloseButtonAndRemoveClassName?: boolean
 }
 const BaseModal = ({
   isShown,
@@ -18,6 +19,7 @@ const BaseModal = ({
   onCancel,
   size,
   backdrop = 'static',
+  showCloseButtonAndRemoveClassName = false,
 }: PropsWithChildren<BaseModalProps>) => {
   return (
     <rb.Modal
@@ -31,8 +33,11 @@ const BaseModal = ({
       size={size}
       className={styles.modal}
     >
-      <rb.Modal.Header className={styles['modal-header']}>
-        <rb.Modal.Title className={styles['modal-title']}>{title}</rb.Modal.Title>
+      <rb.Modal.Header
+        className={!showCloseButtonAndRemoveClassName && styles['modal-header']}
+        closeButton={showCloseButtonAndRemoveClassName}
+      >
+        <rb.Modal.Title className={!showCloseButtonAndRemoveClassName && styles['modal-title']}>{title}</rb.Modal.Title>
       </rb.Modal.Header>
       {children}
     </rb.Modal>
@@ -65,9 +70,18 @@ const InfoModal = ({
 
 export type ConfirmModalProps = BaseModalProps & {
   onConfirm: () => void
+  disabled?: boolean
+  confirmVariant?: string
 }
 
-const ConfirmModal = ({ children, onCancel, onConfirm, ...baseModalProps }: PropsWithChildren<ConfirmModalProps>) => {
+const ConfirmModal = ({
+  children,
+  onCancel,
+  onConfirm,
+  disabled = false,
+  confirmVariant = 'outline-dark',
+  ...baseModalProps
+}: PropsWithChildren<ConfirmModalProps>) => {
   const { t } = useTranslation()
 
   return (
@@ -82,7 +96,7 @@ const ConfirmModal = ({ children, onCancel, onConfirm, ...baseModalProps }: Prop
           <Sprite symbol="cancel" width="26" height="26" />
           <div>{t('modal.confirm_button_reject')}</div>
         </rb.Button>
-        <rb.Button variant="outline-dark" onClick={() => onConfirm()}>
+        <rb.Button variant={confirmVariant} onClick={() => onConfirm()} disabled={disabled}>
           {t('modal.confirm_button_accept')}
         </rb.Button>
       </rb.Modal.Footer>

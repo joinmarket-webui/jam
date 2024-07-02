@@ -383,8 +383,13 @@ export default function Send({ wallet }: SendProps) {
       }
 
       if (showConfirmSendModal === undefined) {
-        setShowConfirmSendModal(values)
-        return
+        if (walletInfo?.utxosByJar && values.sourceJarIndex !== undefined) {
+          values.selectedUtxos = walletInfo.utxosByJar[values.sourceJarIndex].filter((utxo) => {
+            return utxo.frozen === false
+          })
+          setShowConfirmSendModal(values)
+          return
+        }
       }
 
       setShowConfirmSendModal(undefined)
@@ -480,6 +485,7 @@ export default function Send({ wallet }: SendProps) {
         disabled={isOperationDisabled}
         isLoading={isLoading}
         walletInfo={walletInfo}
+        wallet={wallet}
         minNumCollaborators={minNumCollaborators}
         loadNewWalletAddress={loadNewWalletAddress}
         feeConfigValues={feeConfigValues}
