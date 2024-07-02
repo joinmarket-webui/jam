@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react'
+import React, { useMemo, useCallback, useState, useEffect } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
@@ -103,11 +103,11 @@ const SelectJar = ({
 const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
   // const { t } = useTranslation()
   const settings = useSettings()
-  const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
+  // const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
   const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
   const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
   const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
-  const [isLoading, setisLoading] = useState<boolean>(true)
+  // const [isLoading, setisLoading] = useState<boolean>(true)
 
   const loadData = useCallback(() => {
     const frozen = utxos.filter((utxo: any) => utxo.frozen).map((utxo: any) => ({ ...utxo, id: utxo.utxo }))
@@ -116,13 +116,12 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
     setFrozenUtxos(frozen)
     setUnFrozenUtxos(unfrozen)
 
-    if (unfrozen.length === 0) {
-      setAlert({ variant: 'danger', message: t('show_utxos.alert_for_empty_utxos') })
-    } else {
-      setAlert(undefined)
-    }
-    setisLoading(false)
-  }, [t, utxos])
+    // if (unfrozen.length === 0) {
+    //   setAlert({ variant: 'danger', message: t('show_utxos.alert_for_empty_utxos') })
+    // } else {
+    //   setAlert(undefined)
+    // }
+  }, [utxos])
 
   useEffect(() => {
     loadData()
