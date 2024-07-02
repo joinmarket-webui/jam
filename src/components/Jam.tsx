@@ -65,6 +65,7 @@ const addressValueKeys = (addressCount: number) =>
 const isValidAddress = (candidate: any) => {
   return typeof candidate === 'string' && candidate !== ''
 }
+
 const isAddressReused = (
   walletInfo: WalletInfo,
   destination: Api.BitcoinAddress,
@@ -283,10 +284,23 @@ export default function Jam({ wallet }: JamProps) {
     setAlert(undefined)
     setIsWaitingSchedulerStart(true)
 
+    //    const destinations = addressValueKeys(addressCount).map((key) => values[key])
     const destinations = addressValueKeys(addressCount).map((key) => values[key])
 
     const body: Api.StartSchedulerRequest = {
       destination_addresses: destinations,
+      tumbler_options: {
+        addrcount: addressCount,
+        minmakercount: 1,
+        makercountrange: [1, 0],
+        mixdepthcount: addressCount,
+        mintxcount: 1,
+        txcountparams: [1, 0],
+        timelambda: 0.025, // 0.025 minutes := 1.5 seconds
+        stage1_timelambda_increase: 1.0,
+        liquiditywait: 13,
+        waittime: 0.0,
+      },
     }
 
     // Make sure schedule testing is really only used in dev mode.
@@ -318,44 +332,6 @@ export default function Jam({ wallet }: JamProps) {
       })
   }
 
-  // const startSchedule = async (values: FormikValues) => {
-  //   if (isLoading || collaborativeOperationRunning || isOperationDisabled) {
-  //     return
-  //   }
-
-  //   setAlert({ variant: 'info', message: 'Starting scheduler' })
-  //   setIsWaitingSchedulerStart((prev) => !prev)
-
-  //   const destinations = addressValueKeys(addressCount).map((key) => values[key])
-  //   setUseInsecureTestingSettings((prev) => !prev)
-
-  //   const body: Api.StartSchedulerRequest = {
-  //     destination_addresses: destinations,
-  //     tumbler_options: {
-  //       addrcount: addressCount,
-  //       minmakercount: 1,
-  //       makercountrange: [1, 0],
-  //       mixdepthcount: addressCount,
-  //       mintxcount: 1,
-  //       txcountparams: [1, 0],
-  //       timelambda: 0.025, // 0.025 minutes := 1.5 seconds
-  //       stage1_timelambda_increase: 1.0,
-  //       liquiditywait: 13,
-  //       waittime: 0.0,
-  //     },
-  //   }
-
-  //   const abortCtrl = new AbortController()
-  //   return Api.postSchedulerStart({ ...wallet, signal: abortCtrl.signal }, body)
-  //     .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
-  //     .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
-  //     .catch((err) => {
-  //       if (abortCtrl.signal.aborted) return
-  //       setAlert({ variant: 'danger', message: err.message })
-  //       setIsWaitingSchedulerStart(false)
-  //     })
-  // }
-
   const stopSchedule = async () => {
     if (isLoading || !collaborativeOperationRunning) {
       return
@@ -377,9 +353,12 @@ export default function Jam({ wallet }: JamProps) {
 
   return (
     <>
+      {' '}
+      {
+        // MARK: Scheduler Page
+      }
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-
       {isLoading || !serviceInfo || !walletInfo || isWaitingSchedulerStart || isWaitingSchedulerStop ? (
         <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder xs={12} className={styles['input-loader']} />
