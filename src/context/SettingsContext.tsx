@@ -64,4 +64,4 @@ const useSettingsDispatch = () => {
   return context.dispatch
 }
 
-export { SettingsProvider, useSettings, useSettingsDispatch }
+export { SettingsProvider, useSettings, useSettingsDispatch, Settings }

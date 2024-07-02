@@ -26,6 +26,7 @@ import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { useFeeConfigValues } from '../../hooks/Fees'
+import { jarName } from '../jars/Jar'
 
 const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
 
@@ -83,6 +84,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
+  const [utxosOfSelectedJar, setUtxosOfSelectedJar] = useState<Utxos>([])
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
@@ -319,7 +321,11 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
             }
             selectedJar={selectedJar}
-            onJarSelected={(accountIndex) => setSelectedJar(accountIndex)}
+            onJarSelected={(accountIndex) => {
+              setSelectedJar(accountIndex)
+              setUtxosOfSelectedJar(walletInfo.utxosByJar[selectedJar!])
+              utxosOfSelectedJar.map((utxo) => ({ ...utxo, checked: false }))
+            }}
           />
         )
       case steps.selectUtxos:
@@ -330,8 +336,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               jar={selectedJar!}
               utxos={walletInfo.utxosByJar[selectedJar!]}
               selectedUtxos={selectedUtxos}
-              onUtxoSelected={(utxo) => setSelectedUtxos([...selectedUtxos, utxo])}
-              onUtxoDeselected={(utxo) => setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))}
+              onUtxoSelected={(utxo) => {
+                setSelectedUtxos([...selectedUtxos, utxo])
+                setUtxosOfSelectedJar([...selectedUtxos, utxo])
+              }}
+              onUtxoDeselected={(utxo) => {
+                setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))
+                setUtxosOfSelectedJar([...selectedUtxos, utxo])
+              }}
             />
             {allUtxosSelected && (
               <Alert variant="warning" message={<Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use" />} />
@@ -343,7 +355,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <FreezeUtxos
             walletInfo={walletInfo}
             jar={selectedJar!}
-            utxos={walletInfo.utxosByJar[selectedJar!]}
+            utxos={utxosOfSelectedJar}
             selectedUtxos={selectedUtxos}
             isLoading={isLoading}
           />
@@ -611,10 +623,26 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     if (step === steps.createFidelityBond) {
       reset()
       onDone()
-    } else {
-      reset()
+    } else if (step !== steps.selectDate) {
+      setStep(step - 1)
     }
   }
+
+  const stepTitle = (currentStep: Number) => {
+    if (currentStep === steps.selectDate && lockDate !== null) {
+      return (
+        <span className={styles.subTitle}>{`- ${new Date(fb.lockdate.toTimestamp(lockDate)).toDateString()}`}</span>
+      )
+    }
+    if (currentStep === steps.selectJar && selectedJar !== undefined) {
+      return <span className={styles.subTitle}>{`- Jar ${jarName(selectedJar)}`}</span>
+    }
+  }
+
+  useEffect(() => {
+    console.log('all utxos:', utxosOfSelectedJar)
+    console.log('selected', selectedUtxos)
+  }, [selectedUtxos, utxosOfSelectedJar])
 
   return (
     <div>
@@ -698,8 +726,50 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
               </Trans>
             </div>
           )}
-          <div className="mb-5">{stepComponent(step)}</div>
-          <div className="d-flex flex-column gap-2">
+
+          <div className="d-flex align-items-center gap-4 mx-4 my-3 justify-content-start">
+            <div>
+              <Sprite symbol="timelock" width="25" height="25" className={styles.utxoSummaryIconLock} />
+            </div>
+            <div className="d-flex flex-column">
+              <div className={styles.addressLabel}>{t('earn.fidelity_bond.review_inputs.label_address')}</div>
+              <div className={styles.addressContent}>
+                {timelockedAddress ? (
+                  <code className={styles.timelockedAddress}>{timelockedAddress}</code>
+                ) : (
+                  <div>{t('earn.fidelity_bond.error_loading_address')}</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.tabs}>
+            {['Expiration date', 'Funding Source', 'UTXO Overview', 'Confirmation'].map((tab, index) => (
+              <div>
+                <div key={index} className={styles.tab}>
+                  <div className="d-flex align-items-center gap-4">
+                    <div className={styles.circle}>
+                      <div className={styles.step}>{index + 1}</div>
+                    </div>
+                    {tab}
+                    {stepTitle(index)}
+                  </div>
+                  <Sprite symbol={step === index ? 'caret-up' : 'caret-down'} width="20" height="20" />
+                </div>
+                <rb.Collapse in={step === index ? true : false}>
+                  <div className="m-4">{stepComponent(step)}</div>
+                </rb.Collapse>
+              </div>
+            ))}
+          </div>
+        </rb.Modal.Body>
+        <rb.Modal.Footer>
+          <div className="d-flex flex-row gap-2 w-100">
+            {!isLoading && secondaryButtonText(step) !== null && (
+              <rb.Button className="w-100" variant="none" onClick={onSecondaryButtonClicked}>
+                {secondaryButtonText(step)}
+              </rb.Button>
+            )}
             {!isLoading && primaryButtonText(step) !== null && (
               <rb.Button
                 className="w-100"
@@ -713,13 +783,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                 {primaryButtonText(step)}
               </rb.Button>
             )}
-            {!isLoading && secondaryButtonText(step) !== null && (
-              <rb.Button className="w-100" variant="none" onClick={onSecondaryButtonClicked}>
-                {secondaryButtonText(step)}
-              </rb.Button>
-            )}
           </div>
-        </rb.Modal.Body>
+        </rb.Modal.Footer>
       </rb.Modal>
     </div>
   )
