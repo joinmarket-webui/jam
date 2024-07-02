@@ -562,6 +562,7 @@ export default function Jam({ wallet }: JamProps) {
                           >
                             <div className="d-flex justify-content-center align-items-center">
                               {t('scheduler.button_start')}
+                              <Sprite symbol="caret-right" width="24" height="24" className="ms-1" />
                             </div>
                           </rb.Button>
                         </rb.Form>
