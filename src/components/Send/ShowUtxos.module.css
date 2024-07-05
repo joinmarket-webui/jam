@@ -9,7 +9,7 @@
 }
 
 .depositUtxo {
-  background-color: none !important;
+  background-color: var(--bs-body-bg) !important;
   color: var(--bs-modal-color) !important;
 }
 

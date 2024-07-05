@@ -64,7 +64,6 @@ interface PaymentDisplayInfo {
   numCollaborators?: number
   feeConfigValues?: FeeValues
   showPrivacyInfo?: boolean
-  showSelectedUtxos?: boolean
 }
 
 interface PaymentConfirmModalProps extends ConfirmModalProps {
@@ -81,7 +80,6 @@ export function PaymentConfirmModal({
     numCollaborators,
     feeConfigValues,
     showPrivacyInfo = true,
-    showSelectedUtxos = false,
   },
   children,
   ...confirmModalProps
@@ -209,17 +207,7 @@ export function PaymentConfirmModal({
             </rb.Col>
           </rb.Row>
         )}
-        {showSelectedUtxos && (
-          <rb.Row className="mt-3">
-            <rb.Col xs={4} md={3} className="text-end">
-              <strong>{t('show_utxos.selected_utxos')}</strong>
-            </rb.Col>
-            <rb.Col xs={8} md={9}>
-              {children}
-            </rb.Col>
-          </rb.Row>
-        )}
-        {!showSelectedUtxos && children && (
+        {children && (
           <rb.Row>
             <rb.Col xs={12}>{children}</rb.Col>
           </rb.Row>

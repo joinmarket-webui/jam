@@ -19,7 +19,7 @@ export type SourceJarSelectorProps = {
   disabled?: boolean
 }
 
-interface showingUtxosProps {
+interface ShowUtxosProps {
   index: String
   show: boolean
 }
@@ -37,7 +37,7 @@ export const SourceJarSelector = ({
 
   const [field] = useField<JarIndex>(name)
   const form = useFormikContext<any>()
-  const [showingUTXOS, setshowingUTXOS] = useState<showingUtxosProps>({
+  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>({
     index: '',
     show: false,
   })
@@ -59,17 +59,17 @@ export const SourceJarSelector = ({
           </rb.Placeholder>
         ) : (
           <div className={styles.sourceJarsContainer}>
-            {showingUTXOS.show && (
+            {showUtxos.show && (
               <ShowUtxos
                 wallet={wallet}
-                show={showingUTXOS.show}
+                show={showUtxos.show}
                 onHide={() => {
-                  setshowingUTXOS({
+                  setShowUtxos({
                     index: '',
                     show: false,
                   })
                 }}
-                index={showingUTXOS.index}
+                index={showUtxos.index}
               />
             )}
             {jarBalances.map((it) => {
@@ -96,7 +96,7 @@ export const SourceJarSelector = ({
                         !isLoading &&
                         it.calculatedTotalBalanceInSats > 0
                       ) {
-                        setshowingUTXOS({
+                        setShowUtxos({
                           index: it.accountIndex.toString(),
                           show: true,
                         })
