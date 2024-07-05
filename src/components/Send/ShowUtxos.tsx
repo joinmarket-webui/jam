@@ -184,6 +184,9 @@ const UtxoListDisplay = ({
   }
   const tableTheme = useTheme(TABLE_THEME)
 
+  //Default sort is by date the older ones at the bottom, newer ones at the top.
+  utxos.sort((a, b) => a.confirmations - b.confirmations)
+
   return (
     <div className={classNames(styles.utxoListDisplayHeight, 'overflow-y-auto')}>
       <Table
