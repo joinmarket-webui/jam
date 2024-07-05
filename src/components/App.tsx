@@ -87,6 +87,8 @@ export default function App() {
     [reloadCurrentWalletInfo],
   )
 
+  debugger
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route

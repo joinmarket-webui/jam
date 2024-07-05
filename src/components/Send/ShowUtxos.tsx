@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo, useRef } from 'react'
+import { useState, useEffect, useCallback, memo, useRef, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -97,37 +97,66 @@ const allotClasses = (tag: string, isFrozen: boolean) => {
 
 const UtxoRow = memo(
   ({ utxo, utxoIndex, onToggle, isFrozen, showRadioButton, showBackground, settings, walletInfo, t }: UtxoRowProps) => {
-    const address = formatAddress(utxo.address)
-    const conf = formatConfirmations(utxo.confirmations)
-    const value = satsToBtc(utxo.value)
-    const tag = utxoTags(utxo, walletInfo, t)
-    let icon, rowAndTagClass
-    if (tag.length === 0) {
-      icon = 'Unmixed'
-      rowAndTagClass = { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
-    } else {
-      icon = utxoIcon(tag[0].tag, isFrozen)
-      rowAndTagClass = allotClasses(tag[0].tag, isFrozen)
-    }
+    const { address: utxoAddress, confirmations, value, checked, frozen } = utxo
+
+    const address = useMemo(() => formatAddress(utxoAddress), [utxoAddress])
+    const conf = useMemo(() => formatConfirmations(confirmations), [confirmations])
+    const valueString = useMemo(() => satsToBtc(value).toString(), [value])
+    const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
+
+    const { icon, rowAndTagClass } = useMemo(() => {
+      if (tag.length === 0) {
+        return { icon: 'Unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
+      }
+      return { icon: utxoIcon(tag[0].tag, isFrozen), rowAndTagClass: allotClasses(tag[0].tag, isFrozen) }
+    }, [tag, isFrozen])
+
+    const ConfirmationCell = () =>
+      confirmations > 9999 ? (
+        <rb.OverlayTrigger
+          popperConfig={{
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, 1],
+                },
+              },
+            ],
+          }}
+          overlay={(props) => <rb.Tooltip {...props}>{confirmations}</rb.Tooltip>}
+        >
+          <div>
+            <Sprite symbol={conf.symbol} width="28px" height="28px" className="mb-1" />
+            {conf.confirmations}
+          </div>
+        </rb.OverlayTrigger>
+      ) : (
+        <div>
+          <Sprite symbol={conf.symbol} width="28px" height="28px" className="mb-1" />
+          {conf.confirmations}
+        </div>
+      )
+
     return (
       <Row
         item={utxo}
         className={classNames(rowAndTagClass.row, 'cursor-pointer', {
           'bg-transparent': !showBackground,
         })}
-        onClick={() => onToggle && onToggle(utxoIndex, utxo.frozen)}
+        onClick={() => onToggle && onToggle(utxoIndex, frozen)}
       >
         {showRadioButton && (
           <Cell>
             <input
               id={`check-box-${isFrozen ? 'frozen' : 'unFrozen'}-${utxoIndex}`}
               type="checkbox"
-              checked={utxo.checked}
+              checked={checked}
               onChange={() => {
                 onToggle && onToggle(utxoIndex, isFrozen)
               }}
               className={classNames(isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
-                [styles.selected]: utxo.checked,
+                [styles.selected]: checked,
               })}
             />
           </Cell>
@@ -137,12 +166,11 @@ const UtxoRow = memo(
         </Cell>
         <Cell>{address}</Cell>
         <Cell>
-          <Sprite symbol={conf.symbol} width="28px" height="28px" className="mb-1" />
-          {conf.confirmations}
+          <ConfirmationCell />
         </Cell>
         <Cell>
           <Balance
-            valueString={value.toString()}
+            valueString={valueString}
             convertToUnit={settings.unit}
             showBalance={true}
             isColorChange={true}
