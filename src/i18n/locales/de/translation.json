@@ -222,7 +222,6 @@
     "matrix": "Matrix",
     "telegram": "Telegram",
     "jm_twitter": "JoinMarket Twitter",
-    "jam_twitter": "Jam Twitter",
     "confirm_locking_modal_title": "Wallet sperren",
     "confirm_locking_modal_body_earn": "Earn Modus aktiv. Das Sperren der Wallet wird diesen Modus beenden. Du kannst das Browserfenster schließen und Jam im Hintergrund weiterlaufen lassen. ",
     "confirm_locking_modal_body_jam": "Eine gemeinschaftliche Transaktion ist derzeit im Gange. Das Sperren der Wallet wird diese beenden. Du kannst das Browserfenster schließen und Jam im Hintergrund weiterlaufen lassen. ",

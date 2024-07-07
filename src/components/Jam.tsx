@@ -65,6 +65,7 @@ const addressValueKeys = (addressCount: number) =>
 const isValidAddress = (candidate: any) => {
   return typeof candidate === 'string' && candidate !== ''
 }
+
 const isAddressReused = (
   walletInfo: WalletInfo,
   destination: Api.BitcoinAddress,
@@ -341,7 +342,6 @@ export default function Jam({ wallet }: JamProps) {
     <>
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-
       {isLoading || !serviceInfo || !walletInfo || isWaitingSchedulerStart || isWaitingSchedulerStop ? (
         <rb.Placeholder as="div" animation="wave">
           <rb.Placeholder xs={12} className={styles['input-loader']} />
@@ -545,6 +545,7 @@ export default function Jam({ wallet }: JamProps) {
                           >
                             <div className="d-flex justify-content-center align-items-center">
                               {t('scheduler.button_start')}
+                              <Sprite symbol="caret-right" width="24" height="24" className="ms-1" />
                             </div>
                           </rb.Button>
                         </rb.Form>

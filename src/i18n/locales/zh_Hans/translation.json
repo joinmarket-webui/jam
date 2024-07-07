@@ -222,7 +222,6 @@
     "matrix": "Matrix",
     "telegram": "Telegram",
     "jm_twitter": "JoinMarket 推特",
-    "jam_twitter": "Jam 推特",
     "confirm_locking_modal_title": "锁上钱包",
     "confirm_locking_modal_body_earn": "收益处于活跃状态。钱包上锁将停止服务。你可以关闭浏览器窗口并让它在背景中运行。",
     "confirm_locking_modal_body_jam": "协作式交易正在进行中。钱包上锁将停止服务。你可以关闭浏览器窗口并让它在背景中运行。",
