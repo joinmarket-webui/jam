@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import { Trans, useTranslation } from 'react-i18next'
 import {
   CurrentWallet,
-  Utxo,
   Utxos,
   WalletInfo,
   useCurrentWalletInfo,
@@ -77,8 +76,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
-  const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Utxo>()
-  const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
+  // const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Utxo>()
+  // const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
 
   const selectedUtxosTotalValue = useMemo(
     () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
@@ -105,8 +104,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     setLockDate(null)
     setTimelockedAddress(undefined)
     setAlert(undefined)
-    setCreatedFidelityBondUtxo(undefined)
-    setFrozenUtxos([])
+    // setCreatedFidelityBondUtxo(undefined)
+    // setFrozenUtxos([])
     setUtxoIdsToBeSpent([])
   }
 
@@ -139,68 +138,71 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     }
   }, [showCreateFidelityBondModal, reloadCurrentWalletInfo, t])
 
-  const freezeUtxos = (utxos: Utxos) => {
-    changeUtxoFreeze(utxos, true)
-  }
+  // const freezeUtxos = (utxos: Utxos) => {
+  //   changeUtxoFreeze(utxos, true)
+  // }
 
-  const unfreezeUtxos = (utxos: Utxos) => {
-    changeUtxoFreeze(utxos, false)
-  }
+  // const unfreezeUtxos = (utxos: Utxos) => {
+  //   changeUtxoFreeze(utxos, false)
+  // }
 
-  const changeUtxoFreeze = (utxos: Utxos, freeze: boolean) => {
-    setIsLoading(true)
+  // const changeUtxoFreeze = (utxos: Utxos, freeze: boolean) => {
+  //   setIsLoading(true)
 
-    const abortCtrl = new AbortController()
+  //   const abortCtrl = new AbortController()
 
-    let utxosThatWereFrozen: Utxos = []
+  //   let utxosThatWereFrozen: Utxos = []
 
-    const freezeCalls = utxos.map((utxo) =>
-      Api.postFreeze({ ...wallet }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
-        if (res.ok) {
-          if (!utxo.frozen && freeze) {
-            utxosThatWereFrozen.push(utxo)
-          }
-        } else {
-          return Api.Helper.throwError(
-            res,
-            freeze ? t('earn.fidelity_bond.error_freezing_utxos') : t('earn.fidelity_bond.error_unfreezing_utxos'),
-          )
-        }
-      }),
-    )
+  //   const freezeCalls = utxos.map((utxo) =>
+  //     Api.postFreeze({ ...wallet }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
+  //       if (res.ok) {
+  //         if (!utxo.frozen && freeze) {
+  //           utxosThatWereFrozen.push(utxo)
+  //         }
+  //       } else {
+  //         return Api.Helper.throwError(
+  //           res,
+  //           freeze ? t('earn.fidelity_bond.error_freezing_utxos') : t('earn.fidelity_bond.error_unfreezing_utxos'),
+  //         )
+  //       }
+  //     }),
+  //   )
 
-    Promise.all(freezeCalls)
-      .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
-      .then(() => setAlert(undefined))
-      .then(() => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
-      .catch((err) => {
-        setAlert({ variant: 'danger', message: err.message, dismissible: true })
+  //   Promise.all(freezeCalls)
+  //     .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
+  //     .then(() => setAlert(undefined))
+  //     .then(() => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
+  //     .catch((err) => {
+  //       setAlert({ variant: 'danger', message: err.message, dismissible: true })
+  //     })
+  //     .finally(() => {
+  //       setIsLoading(false)
+  //     })
+  // }
+
+  const loadTimeLockedAddress = useCallback(
+    (lockDate: Api.Lockdate) => {
+      setIsLoading(true)
+
+      const abortCtrl = new AbortController()
+
+      Api.getAddressTimelockNew({
+        ...wallet,
+        signal: abortCtrl.signal,
+        lockdate: lockDate,
       })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }
-
-  const loadTimeLockedAddress = (lockDate: Api.Lockdate) => {
-    setIsLoading(true)
-
-    const abortCtrl = new AbortController()
-
-    Api.getAddressTimelockNew({
-      ...wallet,
-      signal: abortCtrl.signal,
-      lockdate: lockDate,
-    })
-      .then((res) => {
-        return res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_loading_address'))
-      })
-      .then((data) => setTimelockedAddress(data.address))
-      .then((_) => setAlert(undefined))
-      .catch((err) => {
-        setAlert({ variant: 'danger', message: err.message })
-      })
-      .finally(() => setIsLoading(false))
-  }
+        .then((res) => {
+          return res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_loading_address'))
+        })
+        .then((data) => setTimelockedAddress(data.address))
+        .then((_) => setAlert(undefined))
+        .catch((err) => {
+          setAlert({ variant: 'danger', message: err.message })
+        })
+        .finally(() => setIsLoading(false))
+    },
+    [t, wallet],
+  )
 
   const directSweepToFidelityBond = (jarIndex: JarIndex, address: Api.BitcoinAddress) => {
     setIsLoading(true)
@@ -222,6 +224,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   }
 
   useEffect(() => {
+    if (lockDate) loadTimeLockedAddress(lockDate!)
+
     if (utxoIdsToBeSpent.length === 0) return
 
     const abortCtrl = new AbortController()
@@ -245,7 +249,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             const fbUtxo = fbOutputs.find((utxo) => utxo.address === timelockedAddress)
 
             if (fbUtxo !== undefined) {
-              setCreatedFidelityBondUtxo(fbUtxo)
+              // setCreatedFidelityBondUtxo(fbUtxo)
             }
 
             setIsLoading(false)
@@ -270,80 +274,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       abortCtrl.abort()
       clearTimeout(timer)
     }
-  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t])
-
-  // const stepComponent = (currentStep: number) => {
-  //   switch (currentStep) {
-  //     case steps.selectDate:
-  //       if (isLoading) {
-  //         return (
-  //           <div className="d-flex justify-content-center align-items-center mt-5">
-  //             <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-  //             <div>{t('earn.fidelity_bond.text_loading')}</div>
-  //           </div>
-  //         )
-  //       }
-
-  //       return (
-  //         <>
-  //           <SelectDate
-  //             description={t('earn.fidelity_bond.select_date.description')}
-  //             yearsRange={yearsRange}
-  //             onChange={(date) => setLockDate(date)}
-  //           />
-  //           {bondWithSelectedLockDateAlreadyExists && (
-  //             <Alert
-  //               className="text-start mt-4"
-  //               variant="warning"
-  //               message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
-  //             />
-  //           )}
-  //         </>
-  //       )
-  //     case steps.selectJar:
-  //       return (
-  //         <SelectJar
-  //           description={t('earn.fidelity_bond.select_jar.description')}
-  //           accountBalances={walletInfo.balanceSummary.accountBalances}
-  //           totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
-  //           isJarSelectable={(jarIndex) =>
-  //             walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
-  //           }
-  //           selectedJar={selectedJar}
-  //           onJarSelected={(accountIndex) => {
-  //             setSelectedJar(accountIndex)
-  //             setUtxosOfSelectedJar(walletInfo.utxosByJar[selectedJar!])
-  //             utxosOfSelectedJar.map((utxo) => ({ ...utxo, checked: false }))
-  //           }}
-  //         />
-  //       )
-  //     case steps.selectUtxos:
-  //       return (
-  //         <>
-  //           <SelectUtxos
-  //             walletInfo={walletInfo}
-  //             jar={selectedJar!}
-  //             utxos={walletInfo.utxosByJar[selectedJar!]}
-  //             selectedUtxos={selectedUtxos}
-  //             onUtxoSelected={(utxo) => {
-  //               setSelectedUtxos([...selectedUtxos, utxo])
-  //               setUtxosOfSelectedJar([...selectedUtxos, utxo])
-  //             }}
-  //             onUtxoDeselected={(utxo) => {
-  //               setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))
-  //               setUtxosOfSelectedJar([...selectedUtxos, utxo])
-  //             }}
-  //           />
-  //           {allUtxosSelected && (
-  //             <Alert variant="warning" message={<Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use" />} />
-  //           )}
-  //         </>
-  //       )
-
-  //     default:
-  //       return null
-  //   }
-  // }
+  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t, lockDate, loadTimeLockedAddress])
 
   const primaryButtonText = (currentStep: number) => {
     switch (currentStep) {
@@ -566,8 +497,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                   <Sprite symbol={step === index ? 'caret-up' : 'caret-down'} width="20" height="20" />
                 </div>
 
-                {isLoading && (
-                  <div className="d-flex justify-content-center align-items-center mt-5">
+                {index === 0 && isLoading && (
+                  <div className="d-flex justify-content-center align-items-center m-5">
                     <rb.Spinner
                       as="span"
                       animation="border"
@@ -580,8 +511,8 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                   </div>
                 )}
 
-                {step === index && step === 0 && (
-                  <>
+                {!isLoading && step === index && step === 0 && (
+                  <div className="m-4">
                     <SelectDate
                       description={t('earn.fidelity_bond.select_date.description')}
                       yearsRange={yearsRange}
@@ -594,27 +525,29 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                         message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
                       />
                     )}
-                  </>
+                  </div>
                 )}
 
                 {step === index && step === 1 && (
-                  <SelectJar
-                    description={t('earn.fidelity_bond.select_jar.description')}
-                    accountBalances={walletInfo.balanceSummary.accountBalances}
-                    totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
-                    isJarSelectable={(jarIndex) =>
-                      walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
-                    }
-                    selectedJar={selectedJar}
-                    onJarSelected={(accountIndex) => {
-                      setSelectedJar(accountIndex)
-                      setUtxosOfSelectedJar(walletInfo.utxosByJar[selectedJar!])
-                      utxosOfSelectedJar.map((utxo) => ({ ...utxo, checked: false }))
-                    }}
-                  />
+                  <div className="m-4">
+                    <SelectJar
+                      description={t('earn.fidelity_bond.select_jar.description')}
+                      accountBalances={walletInfo.balanceSummary.accountBalances}
+                      totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
+                      isJarSelectable={(jarIndex) =>
+                        walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
+                      }
+                      selectedJar={selectedJar}
+                      onJarSelected={(accountIndex) => {
+                        setSelectedJar(accountIndex)
+                        setUtxosOfSelectedJar(walletInfo.utxosByJar[selectedJar!])
+                        utxosOfSelectedJar.map((utxo) => ({ ...utxo, checked: false }))
+                      }}
+                    />
+                  </div>
                 )}
                 {step === index && step === 2 && (
-                  <>
+                  <div className="m-4">
                     <SelectUtxos
                       walletInfo={walletInfo}
                       jar={selectedJar!}
@@ -635,11 +568,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
                         message={<Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use" />}
                       />
                     )}
-                  </>
+                  </div>
                 )}
-                <rb.Collapse in={step === index ? true : false}>
-                  <div></div>
-                </rb.Collapse>
+                {step === index && step === 3 && <div className="m-4"></div>}
               </div>
             ))}
           </div>
