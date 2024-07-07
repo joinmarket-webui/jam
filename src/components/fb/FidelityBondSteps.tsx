@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState, useEffect } from 'react'
-import * as rb from 'react-bootstrap'
+// import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
 import { useTranslation } from 'react-i18next'
@@ -153,30 +153,6 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
         )}
       </div>
     </>
-  )
-}
-
-const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false }: FreezeUtxosProps) => {
-  const { t } = useTranslation()
-
-  const utxosToFreeze = useMemo(() => fb.utxo.utxosToFreeze(utxos, selectedUtxos), [utxos, selectedUtxos])
-
-  return (
-    <div className="d-flex flex-column gap-2">
-      <div className={styles.stepDescription}>{t('earn.fidelity_bond.freeze_utxos.description_selected_utxos')}</div>
-      {selectedUtxos.map((utxo, index) => (
-        <UtxoCard
-          key={index}
-          utxo={utxo}
-          status={walletInfo.addressSummary[utxo.address]?.status}
-          isSelectable={false}
-          isSelected={true}
-        />
-      )}
-      {showFrozenUtxos && (
-        <UtxoListDisplay utxos={frozenUtxos} onToggle={handleToggle} settings={settings} showRadioAndBg={true} />
-      )}
-    </div>
   )
 }
 
