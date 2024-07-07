@@ -43,3 +43,8 @@
 .utxoListDisplayHeight {
   max-height: 17.6rem;
 }
+
+.utxoListDisplay {
+  margin-left: -20px;
+  margin-right: 20px;
+}
