@@ -145,7 +145,7 @@ export const SourceJarSelector = ({
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
                     variant={it.accountIndex === field.value ? variant : undefined}
-                    onClick={(jarIndex) => {
+                    onClick={(jarIndex: number) => {
                       form.setFieldValue(field.name, jarIndex, true)
                       if (
                         it.accountIndex === field.value &&

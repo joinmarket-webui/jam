@@ -1,5 +1,5 @@
-import React, { useMemo, useCallback } from 'react'
-import * as rb from 'react-bootstrap'
+import React, { useMemo, useCallback, useState, useEffect } from 'react'
+// import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +14,8 @@ import LockdateForm, { LockdateFormProps } from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
 import { UtxoListDisplay, Divider } from '../Send/ShowUtxos'
+
+type UtxoList = Array<Utxo>
 
 const cx = classnamesBind.bind(styles)
 
@@ -30,15 +32,6 @@ interface SelectJarProps {
   onJarSelected: (jarIndex: JarIndex) => void
 }
 
-interface UtxoCardProps {
-  utxo: Utxo
-  status?: AddressStatus
-  isSelectable?: boolean
-  isSelected?: boolean
-  isLoading?: boolean
-  onClick?: () => void
-}
-
 interface SelectUtxosProps {
   walletInfo: WalletInfo
   jar: JarIndex
@@ -46,14 +39,6 @@ interface SelectUtxosProps {
   selectedUtxos: Array<Utxo>
   onUtxoSelected: (utxo: Utxo) => void
   onUtxoDeselected: (utxo: Utxo) => void
-}
-
-interface FreezeUtxosProps {
-  walletInfo: WalletInfo
-  jar: JarIndex
-  utxos: Array<Utxo>
-  selectedUtxos: Array<Utxo>
-  isLoading?: boolean
 }
 
 interface ReviewInputsProps {
@@ -115,116 +100,55 @@ const SelectJar = ({
   )
 }
 
-const UtxoCard = ({
-  utxo,
-  status,
-  isSelectable = true,
-  isSelected = false,
-  isLoading = false,
-  onClick = () => {},
-}: UtxoCardProps) => {
-  const settings = useSettings()
-  const { t } = useTranslation()
-
-  const utxoIsLocked = useMemo(() => fb.utxo.isLocked(utxo), [utxo])
-
-  return (
-    <div
-      className={cx('utxoCard', { selected: isSelected, selectable: isSelectable })}
-      onClick={() => isSelectable && onClick()}
-    >
-      <div className={styles.utxoSelectionMarker}>
-        {isSelected && <Sprite symbol="checkmark" width="18" height="18" />}
-      </div>
-      <div className={styles.utxoBody}>
-        <Balance valueString={utxo.value.toString()} convertToUnit={settings.unit} showBalance={true} />
-        <code className={styles.utxoAddress}>{utxo.address}</code>
-        <div className={styles.utxoDetails}>
-          <div>{utxo.path}</div>
-          <div>&#183;</div>
-          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.confirmations', { confs: utxo.confirmations })}</div>
-        </div>
-      </div>
-      {isLoading && (
-        <div className={styles.utxoLoadingSpinner}>
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-        </div>
-      )}
-      {!isLoading && utxo.frozen && !utxoIsLocked && (
-        <div className={cx('utxoLabel', 'utxoFrozen')}>
-          <Sprite symbol="snowflake" width="18" height="18" />
-          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.label_frozen')}</div>
-        </div>
-      )}
-      {!isLoading && utxoIsLocked && (
-        <div className={cx('utxoLabel', 'utxoFidelityBond')}>
-          <Sprite symbol="timelock" width="18" height="18" />
-          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.label_locked')}</div>
-        </div>
-      )}
-      {!isLoading && !utxo.frozen && status === 'cj-out' && (
-        <div className={cx('utxoLabel', 'utxoCjOut')}>
-          <Sprite symbol="cj" width="18" height="18" />
-          <div>{t('earn.fidelity_bond.select_utxos.utxo_card.label_cj_out')}</div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
-  const { t } = useTranslation()
+  // const { t } = useTranslation()
   const settings = useSettings()
+  // const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
+  const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
+  const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
+  const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
+  // const [isLoading, setisLoading] = useState<boolean>(true)
 
-  const handleToggle = useCallback((utxoIndex: number, isFrozen: boolean) => {}, [])
+  const loadData = useCallback(() => {
+    const frozen = utxos.filter((utxo: any) => utxo.frozen).map((utxo: any) => ({ ...utxo, id: utxo.utxo }))
+    const unfrozen = utxos.filter((utxo: any) => !utxo.frozen).map((utxo: any) => ({ ...utxo, id: utxo.utxo }))
+
+    setFrozenUtxos(frozen)
+    setUnFrozenUtxos(unfrozen)
+
+    // if (unfrozen.length === 0) {
+    //   setAlert({ variant: 'danger', message: t('show_utxos.alert_for_empty_utxos') })
+    // } else {
+    //   setAlert(undefined)
+    // }
+  }, [utxos])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const handleToggle = (utxo: Utxo) => {
+    utxos.filter((it) => it !== utxo)
+    utxo.checked = !utxo.checked
+    if (utxo.checked) {
+      onUtxoSelected(utxo)
+    } else {
+      onUtxoDeselected(utxo)
+    }
+  }
 
   return (
     <div className="d-flex flex-column gap-4">
-      <UtxoListDisplay utxos={utxos} onToggle={handleToggle} settings={settings} />
-    </div>
-  )
-}
-
-const FreezeUtxos = ({ walletInfo, jar, utxos, selectedUtxos, isLoading = false }: FreezeUtxosProps) => {
-  const { t } = useTranslation()
-
-  const utxosToFreeze = useMemo(() => fb.utxo.utxosToFreeze(utxos, selectedUtxos), [utxos, selectedUtxos])
-
-  return (
-    <div className="d-flex flex-column gap-2">
-      <div className={styles.stepDescription}>{t('earn.fidelity_bond.freeze_utxos.description_selected_utxos')}</div>
-      {selectedUtxos.map((utxo, index) => (
-        <UtxoCard
-          key={index}
-          utxo={utxo}
-          status={walletInfo.addressSummary[utxo.address]?.status}
-          isSelectable={false}
-          isSelected={true}
+      <UtxoListDisplay utxos={unFrozenUtxos} onToggle={handleToggle} settings={settings} />
+      {frozenUtxos.length > 0 && (
+        <Divider
+          isState={showFrozenUtxos}
+          setIsState={setShowFrozenUtxos}
+          className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
         />
-      ))}
-      {utxosToFreeze.length > 0 && (
-        <>
-          {fb.utxo.allAreFrozen(utxosToFreeze) ? (
-            <div className={`mt-2 ${styles.stepDescription}`}>
-              {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}
-            </div>
-          ) : (
-            <div className={`mt-2 ${styles.stepDescription}`}>
-              {t('earn.fidelity_bond.freeze_utxos.description_unselected_utxos')}{' '}
-              {t('earn.fidelity_bond.freeze_utxos.description_selected_utxos_to_freeze', { jar: jarInitial(jar) })}
-            </div>
-          )}
-          {utxosToFreeze.map((utxo, index) => (
-            <UtxoCard
-              key={index}
-              utxo={utxo}
-              status={walletInfo.addressSummary[utxo.address]?.status}
-              isSelectable={false}
-              isSelected={false}
-              isLoading={isLoading}
-            />
-          ))}
-        </>
+      )}
+      {showFrozenUtxos && (
+        <UtxoListDisplay utxos={frozenUtxos} onToggle={handleToggle} settings={settings} showRadioAndBg={true} />
       )}
     </div>
   )
@@ -417,4 +341,4 @@ const Done = ({ text }: { text: string }) => {
   )
 }
 
-export { SelectJar, SelectUtxos, SelectDate, FreezeUtxos, ReviewInputs, CreatedFidelityBond, Done }
+export { SelectJar, SelectUtxos, SelectDate, ReviewInputs, CreatedFidelityBond, Done }
