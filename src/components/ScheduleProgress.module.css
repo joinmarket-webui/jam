@@ -28,8 +28,7 @@
   width: 100%;
   height: var(--progress-bar-height);
   background-color: var(--progress-track-color);
-  /* border-radius: var(--progress-bar-corner-radius); */
-  border-radius: 25%;
+  border-radius: var(--progress-bar-corner-radius);
   z-index: -1;
   top: 0rem;
 }
