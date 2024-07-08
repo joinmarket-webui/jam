@@ -1,0 +1,31 @@
+.jamPot {
+  margin: 1rem;
+  width: 9.688rem;
+  /*155px */
+  height: 7.813rem;
+  /*125px */
+}
+
+.cooking-time-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.clock-svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.cooking-time {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #4a4a4a;
+}
+
+.paragraph {
+  margin-bottom: 0;
+  text-align: center;
+}
