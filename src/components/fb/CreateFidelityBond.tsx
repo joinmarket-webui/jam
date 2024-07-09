@@ -182,8 +182,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const loadTimeLockedAddress = useCallback(
     (lockDate: Api.Lockdate) => {
-      setIsLoading(true)
-
       const abortCtrl = new AbortController()
 
       Api.getAddressTimelockNew({
@@ -199,7 +197,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         .catch((err) => {
           setAlert({ variant: 'danger', message: err.message })
         })
-        .finally(() => setIsLoading(false))
     },
     [t, wallet],
   )
