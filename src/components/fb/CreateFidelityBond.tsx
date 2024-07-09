@@ -15,8 +15,8 @@ import { SelectJar, SelectUtxos, SelectDate } from './FidelityBondSteps'
 import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
-import { PaymentConfirmModal } from '../PaymentConfirmModal'
-import { useFeeConfigValues } from '../../hooks/Fees'
+// import { PaymentConfirmModal } from '../PaymentConfirmModal'
+// import { useFeeConfigValues } from '../../hooks/Fees'
 import { jarName } from '../jars/Jar'
 
 const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
@@ -62,13 +62,13 @@ interface CreateFidelityBondProps {
 const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDone }: CreateFidelityBondProps) => {
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  const feeConfigValues = useFeeConfigValues()[0]
+  // const feeConfigValues = useFeeConfigValues()[0]
 
   const [showCreateFidelityBondModal, setShowCreateFidelityBondModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<SimpleAlert>()
   const [step, setStep] = useState(steps.selectDate)
-  const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
+  // const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
 
   const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
@@ -204,28 +204,30 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     [t, wallet],
   )
 
-  const directSweepToFidelityBond = (jarIndex: JarIndex, address: Api.BitcoinAddress) => {
-    setIsLoading(true)
+  // const directSweepToFidelityBond = (jarIndex: JarIndex, address: Api.BitcoinAddress) => {
+  //   setIsLoading(true)
 
-    Api.postDirectSend(wallet, {
-      mixdepth: jarIndex,
-      destination: address,
-      amount_sats: 0, // sweep
-    })
-      .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_creating_fidelity_bond')),
-      )
-      .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input: any) => input.outpoint)))
-      .then((_) => setAlert(undefined))
-      .catch((err) => {
-        setIsLoading(false)
-        setAlert({ variant: 'danger', message: err.message })
-      })
-  }
+  //   Api.postDirectSend(wallet, {
+  //     mixdepth: jarIndex,
+  //     destination: address,
+  //     amount_sats: 0, // sweep
+  //   })
+  //     .then((res) =>
+  //       res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_creating_fidelity_bond')),
+  //     )
+  //     .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input: any) => input.outpoint)))
+  //     .then((_) => setAlert(undefined))
+  //     .catch((err) => {
+  //       setIsLoading(false)
+  //       setAlert({ variant: 'danger', message: err.message })
+  //     })
+  // }
 
   useEffect(() => {
     if (lockDate) loadTimeLockedAddress(lockDate!)
+  }, [lockDate, loadTimeLockedAddress])
 
+  useEffect(() => {
     if (utxoIdsToBeSpent.length === 0) return
 
     const abortCtrl = new AbortController()
@@ -274,7 +276,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       abortCtrl.abort()
       clearTimeout(timer)
     }
-  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t, lockDate, loadTimeLockedAddress])
+  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t])
 
   const primaryButtonText = (currentStep: number) => {
     switch (currentStep) {
@@ -387,31 +389,6 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   return (
     <div>
-      {lockDate && timelockedAddress && selectedJar !== undefined && (
-        <PaymentConfirmModal
-          isShown={showConfirmInputsModal}
-          size="lg"
-          title={t('earn.fidelity_bond.confirm_modal.title')}
-          onCancel={() => setShowConfirmInputsModal(false)}
-          onConfirm={() => {
-            setShowConfirmInputsModal(false)
-            directSweepToFidelityBond(selectedJar, timelockedAddress)
-          }}
-          data={{
-            sourceJarIndex: undefined, // dont show a source jar - might be confusing in this context
-            destination: timelockedAddress,
-            amount: selectedUtxosTotalValue,
-            isSweep: true,
-            isCoinjoin: false, // not sent as collaborative transaction
-            numCollaborators: undefined,
-            feeConfigValues,
-            showPrivacyInfo: false,
-          }}
-        >
-          <LockInfoAlert className="text-start mt-4" lockDate={lockDate} />
-        </PaymentConfirmModal>
-      )}
-
       {otherFidelityBondExists ? (
         <div className="d-flex justify-content-center">
           <rb.Button
