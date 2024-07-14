@@ -26,10 +26,11 @@ import styles from './ShowUtxos.module.css'
 type UtxoList = Array<Utxo>
 
 interface ShowUtxosProps {
+  walletInfo: WalletInfo
   wallet: CurrentWallet
-  show: boolean
-  onHide: () => void
-  index: String
+  isOpen: boolean
+  onCancel: () => void
+  jarIndex: String
 }
 
 interface UtxoRowProps {
@@ -39,7 +40,7 @@ interface UtxoRowProps {
   isFrozen: boolean
   settings: Settings
   showRadioButton: boolean
-  showBackground: boolean
+  showBackgroundColor: boolean
   walletInfo: WalletInfo
   t: TFunction
 }
@@ -49,7 +50,7 @@ interface UtxoListDisplayProps {
   onToggle?: (index: number, isFrozen: boolean) => void
   settings: Settings
   showRadioButton: boolean
-  showBackground: boolean
+  showBackgroundColor: boolean
 }
 
 interface DividerProps {
@@ -96,7 +97,17 @@ const allotClasses = (tag: string, isFrozen: boolean) => {
 }
 
 const UtxoRow = memo(
-  ({ utxo, utxoIndex, onToggle, isFrozen, showRadioButton, showBackground, settings, walletInfo, t }: UtxoRowProps) => {
+  ({
+    utxo,
+    utxoIndex,
+    onToggle,
+    isFrozen,
+    showRadioButton,
+    showBackgroundColor,
+    settings,
+    walletInfo,
+    t,
+  }: UtxoRowProps) => {
     const { address: utxoAddress, confirmations, value, checked, frozen } = utxo
 
     const address = useMemo(() => formatAddress(utxoAddress), [utxoAddress])
@@ -142,7 +153,7 @@ const UtxoRow = memo(
       <Row
         item={utxo}
         className={classNames(rowAndTagClass.row, 'cursor-pointer', {
-          'bg-transparent': !showBackground,
+          'bg-transparent': !showBackgroundColor,
         })}
         onClick={() => onToggle && onToggle(utxoIndex, frozen)}
       >
@@ -191,7 +202,7 @@ const UtxoListDisplay = ({
   onToggle,
   settings,
   showRadioButton = true,
-  showBackground = true,
+  showBackgroundColor = true,
 }: UtxoListDisplayProps) => {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
@@ -235,7 +246,7 @@ const UtxoListDisplay = ({
                     onToggle={onToggle}
                     isFrozen={utxo.frozen}
                     showRadioButton={showRadioButton}
-                    showBackground={showBackground}
+                    showBackgroundColor={showBackgroundColor}
                     settings={settings}
                     walletInfo={walletInfo}
                     t={t}
@@ -272,7 +283,7 @@ const Divider = ({ isState, setIsState, className }: DividerProps) => {
   )
 }
 
-const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
+const ShowUtxos = ({ walletInfo, wallet, isOpen, onCancel, jarIndex }: ShowUtxosProps) => {
   const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
   const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
   const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
@@ -287,27 +298,27 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
   // Load data from wallet info
   const loadData = useCallback(
     (walletInfo: WalletInfo) => {
-      const data = Object.entries(walletInfo.utxosByJar).find(([key]) => key === index)
+      const data = Object.entries(walletInfo.utxosByJar).find(([key]) => key === jarIndex)
       const utxos: any = data ? data[1] : []
 
-      const frozen = utxos
+      const frozenUtxoList = utxos
         .filter((utxo: any) => utxo.frozen)
         .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: false }))
-      const unfrozen = utxos
+      const unFrozenUtxosList = utxos
         .filter((utxo: any) => !utxo.frozen)
         .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: true }))
 
-      setFrozenUtxos(frozen)
-      setUnFrozenUtxos(unfrozen)
+      setFrozenUtxos(frozenUtxoList)
+      setUnFrozenUtxos(unFrozenUtxosList)
 
-      if (unfrozen.length === 0) {
+      if (unFrozenUtxosList.length === 0) {
         setShowFrozenUtxos(true)
         setAlert({ variant: 'warning', message: t('show_utxos.alert_for_unfreeze_utxos'), dismissible: true })
       } else {
         setAlert(undefined)
       }
     },
-    [index, t],
+    [jarIndex, t],
   )
 
   // Reload wallet info
@@ -315,7 +326,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
     const abortCtrl = new AbortController()
     try {
       setIsLoading(true)
-      const walletInfo = await reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal })
+      await reloadCurrentWalletInfo.reloadDisplay({ signal: abortCtrl.signal })
       loadData(walletInfo)
       setIsLoading(false)
     } catch (err: any) {
@@ -323,7 +334,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       }
     }
-  }, [reloadCurrentWalletInfo, loadData])
+  }, [reloadCurrentWalletInfo, loadData, walletInfo])
 
   //Effect to Reload walletInfo only once
   useEffect(() => {
@@ -337,11 +348,11 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
   useEffect(() => {
     const frozenUtxosToUpdate = frozenUtxos.filter((utxo: Utxo) => utxo.checked && !utxo.locktime)
     const timeLockedUtxo = frozenUtxos.find((utxo: Utxo) => utxo.checked && utxo.locktime)
-    const allUnfrozenUnchecked = unFrozenUtxos.every((utxo: Utxo) => !utxo.checked)
+    const allUnFrozenUnchecked = unFrozenUtxos.every((utxo: Utxo) => !utxo.checked)
 
     if (timeLockedUtxo) {
       setAlert({ variant: 'danger', message: `${t('show_utxos.alert_for_time_locked')} ${timeLockedUtxo.locktime}` })
-    } else if (allUnfrozenUnchecked && frozenUtxosToUpdate.length === 0) {
+    } else if (allUnFrozenUnchecked && frozenUtxosToUpdate.length === 0) {
       setAlert({ variant: 'warning', message: t('show_utxos.alert_for_unfreeze_utxos'), dismissible: true })
     } else if (unFrozenUtxos.length !== 0 || frozenUtxosToUpdate.length !== 0) {
       setAlert(undefined)
@@ -378,7 +389,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
         ...unFrozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
       ])
       await handleReload()
-      onHide()
+      onCancel()
     } catch (err: any) {
       if (!abortCtrl.signal.aborted) {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
@@ -388,15 +399,16 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
 
   return (
     <ConfirmModal
-      onCancel={onHide}
+      onCancel={onCancel}
       onConfirm={handleConfirm}
       disabled={alert?.dismissible || isLoading}
-      isShown={show}
+      isShown={isOpen}
       title={t('show_utxos.show_utxo_title')}
       size="lg"
       showCloseButton={true}
-      removeClassName={true}
       confirmVariant={'dark'}
+      headerClassName={styles.customHeaderClass}
+      titleClassName={styles.customTitleClass}
     >
       {!isLoading ? (
         <>
@@ -420,7 +432,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
             onToggle={handleToggle}
             settings={settings}
             showRadioButton={true}
-            showBackground={true}
+            showBackgroundColor={true}
           />
           {frozenUtxos.length > 0 && unFrozenUtxos.length > 0 && (
             <Divider
@@ -435,7 +447,7 @@ const ShowUtxos = ({ wallet, show, onHide, index }: ShowUtxosProps) => {
               onToggle={handleToggle}
               settings={settings}
               showRadioButton={true}
-              showBackground={true}
+              showBackgroundColor={true}
             />
           )}
         </>

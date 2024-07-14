@@ -11,7 +11,8 @@ type BaseModalProps = {
   backdrop?: rb.ModalProps['backdrop']
   size?: rb.ModalProps['size']
   showCloseButton?: boolean
-  removeClassName?: boolean
+  headerClassName?: string
+  titleClassName?: string
 }
 const BaseModal = ({
   isShown,
@@ -21,7 +22,8 @@ const BaseModal = ({
   size,
   backdrop = 'static',
   showCloseButton = false,
-  removeClassName = false,
+  headerClassName,
+  titleClassName,
 }: PropsWithChildren<BaseModalProps>) => {
   return (
     <rb.Modal
@@ -35,8 +37,8 @@ const BaseModal = ({
       size={size}
       className={styles.modal}
     >
-      <rb.Modal.Header className={!removeClassName && styles['modal-header']} closeButton={showCloseButton}>
-        <rb.Modal.Title className={!removeClassName && styles['modal-title']}>{title}</rb.Modal.Title>
+      <rb.Modal.Header className={`${styles['modal-header']} ${headerClassName}`} closeButton={showCloseButton}>
+        <rb.Modal.Title className={`${styles['modal-title']} ${titleClassName}`}>{title}</rb.Modal.Title>
       </rb.Modal.Header>
       {children}
     </rb.Modal>

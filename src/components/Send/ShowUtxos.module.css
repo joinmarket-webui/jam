@@ -77,3 +77,12 @@
 .utxoListDisplayHeight {
   max-height: 17.6rem;
 }
+
+.customHeaderClass {
+  background-color: var(--bs-gray-800) !important;
+  padding: var(--bs-modal-header-padding) !important;
+}
+
+.customTitleClass {
+  color: var(--bs-heading-color) !important;
+}
