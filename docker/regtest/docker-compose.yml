@@ -92,51 +92,50 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: btcpayserver/bitcoin:26.0
-    environment:
-      BITCOIN_NETWORK: regtest
-      BITCOIN_WALLETDIR: "/walletdata"
-      BITCOIN_EXTRA_ARGS: |
-        rpcport=43782
-        rpcbind=0.0.0.0
-        rpcallowip=0.0.0.0/0
-        port=39388
-        whitelist=0.0.0.0/0
-        maxmempool=500
-        debug=rpc
-        logips=0
-        networkactive=1
-        dnsseed=0
-        uacomment=jmdevbitcoindregtest
-        printpriority=1
-        logtimemicros=1
-        zmqpubrawblock=tcp://0.0.0.0:28332
-        zmqpubrawtx=tcp://0.0.0.0:28333
-        zmqpubhashblock=tcp://0.0.0.0:28334
-        dns=0
-        # do not automatically create tor hidden service
-        listenonion=0
-        # rpcauth (user=regtest; password=regtest)
-        rpcauth=regtest:20b58677979ad9d3cf4b78b1d6e85e44$$2ec3e1e1c00c7c58d7aff1d4bf96e4a984ea1af5d676d862fd0faa857a1d4d7c
-        # rpcauth (user=joinmarket; password=joinmarket)
-        rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
-        # rpcauth (user=joinmarket2; password=joinmarket2)
-        rpcauth=joinmarket2:521bf9f4468529d49c0a41f9c9f8fdbf$$63ae94a73d2aa45e7ee756945d9b1e469f9873ce026b815d676a748f777e0b8d
-        # rpcauth (user=joinmarket3; password=joinmarket3)
-        rpcauth=joinmarket3:85d4beaa74540c3b08f4fef50d74a59e$$3033c779ea4bfd02a1f3403bc4d012f3e6d19b355f74c5e8de1d3439979d5e4b
-        # legacy wallet is being deprecated in v26: see https://github.com/bitcoin/bitcoin/blob/master/doc/release-notes/release-notes-26.0.md#wallet
-        deprecatedrpc=create_bdb
+    image: polarlightning/bitcoind:26.0
+    command:
+      # rpcauth (user=regtest; password=regtest)
+      # rpcauth (user=joinmarket; password=joinmarket)
+      # rpcauth (user=joinmarket2; password=joinmarket2)
+      # rpcauth (user=joinmarket3; password=joinmarket3)
+      -rpcauth=regtest:20b58677979ad9d3cf4b78b1d6e85e44$$2ec3e1e1c00c7c58d7aff1d4bf96e4a984ea1af5d676d862fd0faa857a1d4d7c
+      -rpcauth=joinmarket:260b4c5b1fbd09d75a4aabf90226282f$$76e170af088d43a588992cdd5e7bae2242b03c33aa672cccfd1fb75f9281299e
+      -rpcauth=joinmarket2:521bf9f4468529d49c0a41f9c9f8fdbf$$63ae94a73d2aa45e7ee756945d9b1e469f9873ce026b815d676a748f777e0b8d
+      -rpcauth=joinmarket3:85d4beaa74540c3b08f4fef50d74a59e$$3033c779ea4bfd02a1f3403bc4d012f3e6d19b355f74c5e8de1d3439979d5e4b
+      -datadir=/home/bitcoin/data
+      -walletdir=/home/bitcoin/walletdata
+      -regtest=1
+      -server=1
+      -port=39388
+      -rpcport=43782
+      -rpcbind=0.0.0.0
+      -rpcallowip=0.0.0.0/0
+      -whitelist=0.0.0.0/0
+      -maxmempool=500
+      -debug=rpc
+      -logips=0
+      -networkactive=1
+      -dnsseed=0
+      -uacomment=jmdevbitcoindregtest
+      -printpriority=1
+      -logtimemicros=1
+      -zmqpubrawblock=tcp://0.0.0.0:28332
+      -zmqpubrawtx=tcp://0.0.0.0:28333
+      -zmqpubhashblock=tcp://0.0.0.0:28334
+      -dns=0
+      -listenonion=0
+      -deprecatedrpc=create_bdb
     expose:
-      - 43782 # RPC
       - 39388 # P2P
+      - 43782 # RPC
       - 28332 # ZMQ
       - 28333 # ZMQ
       - 28334 # ZMQ
     ports:
       - "17782:43782"
     volumes:
-      - "bitcoin_datadir:/data"
-      - "bitcoin_wallet_datadir:/walletdata"
+      - "bitcoin_datadir:/home/bitcoin/data"
+      - "bitcoin_wallet_datadir:/home/bitcoin/walletdata"
 
   bitcoind_regtest_initializer:
       container_name: jm_regtest_bitcoind_initializer
