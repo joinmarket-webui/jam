@@ -209,7 +209,7 @@ export function PaymentConfirmModal({
             </rb.Col>
           </rb.Row>
         )}
-        {showSelectedUtxos && (
+        {showSelectedUtxos && isSweep && (
           <rb.Row className="mt-3">
             <rb.Col xs={4} md={3} className="text-end">
               <strong>{t('show_utxos.selected_utxos')}</strong>
