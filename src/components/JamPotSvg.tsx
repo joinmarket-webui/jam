@@ -1,6 +1,5 @@
 import { SVGProps } from 'react'
 import style from './JamPotSvg.module.css'
-import Sprite from './Sprite'
 
 export const JamPotSvg = (props: SVGProps<SVGSVGElement>) => (
   <>
@@ -163,13 +162,5 @@ export const JamPotSvg = (props: SVGProps<SVGSVGElement>) => (
         clipRule="evenodd"
       />
     </svg>
-
-    <div className={style['cooking-time-div']}>
-      <Sprite symbol="clock" className={style['clock-svg']} />
-      <div className={style['cooking-time']}>
-        <p className={style['paragraph']}>Cooking Time</p>
-        <p className={style['paragraph']}></p>
-      </div>
-    </div>
   </>
 )
