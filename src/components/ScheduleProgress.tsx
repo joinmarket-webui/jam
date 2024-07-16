@@ -123,12 +123,6 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
       <div className={styles['jamPot']}>
         <JamPotSvg />
       </div>
-      <div className={styles['schedule-progress']}>
-        <div className={styles['progress-container']}>
-          <div className={styles['progress-track']}></div>
-          {stepsJsx}
-        </div>
-      </div>
       <div className={[styles.text, 'text-secondary'].join(' ')}>
         <div>
           {steps.completedTxs < steps.txs.length ? (
@@ -167,6 +161,12 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
               {t('scheduler.progress_done')}
             </div>
           )}
+        </div>
+      </div>
+      <div className={styles['schedule-progress']}>
+        <div className={styles['progress-container']}>
+          <div className={styles['progress-track']}></div>
+          {stepsJsx}
         </div>
       </div>
     </div>

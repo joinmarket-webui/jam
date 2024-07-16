@@ -119,6 +119,13 @@
   flex-direction: column;
 }
 
+.text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 @keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4);
