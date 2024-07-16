@@ -31,6 +31,8 @@ interface ShowUtxosProps {
   isOpen: boolean
   onCancel: () => void
   jarIndex: String
+  isDisplayReloadInShowUtxos: boolean
+  setIsDisplayReloadInShowUtxos: (arg: boolean) => void
 }
 
 interface UtxoRowProps {
@@ -283,7 +285,15 @@ const Divider = ({ isState, setIsState, className }: DividerProps) => {
   )
 }
 
-const ShowUtxos = ({ walletInfo, wallet, isOpen, onCancel, jarIndex }: ShowUtxosProps) => {
+const ShowUtxos = ({
+  walletInfo,
+  wallet,
+  isOpen,
+  onCancel,
+  jarIndex,
+  isDisplayReloadInShowUtxos,
+  setIsDisplayReloadInShowUtxos,
+}: ShowUtxosProps) => {
   const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
   const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
   const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
@@ -326,7 +336,11 @@ const ShowUtxos = ({ walletInfo, wallet, isOpen, onCancel, jarIndex }: ShowUtxos
     const abortCtrl = new AbortController()
     try {
       setIsLoading(true)
-      await reloadCurrentWalletInfo.reloadDisplay({ signal: abortCtrl.signal })
+      await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+      if (isDisplayReloadInShowUtxos) {
+        await reloadCurrentWalletInfo.reloadDisplay({ signal: abortCtrl.signal })
+        setIsDisplayReloadInShowUtxos(false)
+      }
       loadData(walletInfo)
       setIsLoading(false)
     } catch (err: any) {
@@ -334,7 +348,7 @@ const ShowUtxos = ({ walletInfo, wallet, isOpen, onCancel, jarIndex }: ShowUtxos
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       }
     }
-  }, [reloadCurrentWalletInfo, loadData, walletInfo])
+  }, [isDisplayReloadInShowUtxos, setIsDisplayReloadInShowUtxos, reloadCurrentWalletInfo, loadData, walletInfo])
 
   //Effect to Reload walletInfo only once
   useEffect(() => {

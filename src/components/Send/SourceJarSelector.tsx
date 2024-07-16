@@ -17,6 +17,8 @@ export type SourceJarSelectorProps = {
   wallet: CurrentWallet
   isLoading: boolean
   disabled?: boolean
+  isDisplayReloadInShowUtxos: boolean
+  setIsDisplayReloadInShowUtxos: (arg: boolean) => void
 }
 
 interface ShowUtxosProps {
@@ -32,6 +34,8 @@ export const SourceJarSelector = ({
   variant,
   isLoading,
   disabled = false,
+  isDisplayReloadInShowUtxos,
+  setIsDisplayReloadInShowUtxos,
 }: SourceJarSelectorProps) => {
   const { t } = useTranslation()
 
@@ -71,6 +75,8 @@ export const SourceJarSelector = ({
                   })
                 }}
                 jarIndex={showUtxos.jarIndex}
+                isDisplayReloadInShowUtxos={isDisplayReloadInShowUtxos}
+                setIsDisplayReloadInShowUtxos={setIsDisplayReloadInShowUtxos}
               />
             )}
             {jarBalances.map((it) => {
