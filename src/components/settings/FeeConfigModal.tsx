@@ -12,6 +12,7 @@ import ToggleSwitch from '../ToggleSwitch'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
 import styles from './FeeConfigModal.module.css'
 import BitcoinAmountInput, { AmountValue, toAmountValue } from '../BitcoinAmountInput'
+import { JM_MAX_SWEEP_FEE_CHANGE_DEFAULT } from '../../constants/config'
 
 const __dev_allowFeeValuesReset = isDebugFeatureEnabled('allowFeeValuesReset')
 
@@ -27,6 +28,8 @@ const CJ_FEE_ABS_MIN = 1
 const CJ_FEE_ABS_MAX = 1_000_000 // 0.01 BTC - no enforcement by JM - this should be a "sane" max value
 const CJ_FEE_REL_MIN = 0.000001 // 0.0001%
 const CJ_FEE_REL_MAX = 0.05 // 5% - no enforcement by JM - this should be a "sane" max value
+const MAX_SWEEP_FEE_CHANGE_MIN = 0.5 // 50%
+const MAX_SWEEP_FEE_CHANGE_MAX = 1 // 100%
 
 interface FeeConfigModalProps {
   show: boolean
@@ -40,7 +43,7 @@ export type FeeConfigSectionKey = 'tx_fee' | 'cj_fee'
 const TX_FEE_SECTION_KEY: FeeConfigSectionKey = 'tx_fee'
 const CJ_FEE_SECTION_KEY: FeeConfigSectionKey = 'cj_fee'
 
-type FeeFormValues = Pick<FeeValues, 'tx_fees' | 'tx_fees_factor' | 'max_cj_fee_rel'> & {
+type FeeFormValues = Pick<FeeValues, 'tx_fees' | 'tx_fees_factor' | 'max_cj_fee_rel' | 'max_sweep_fee_change'> & {
   max_cj_fee_abs?: AmountValue
   enableValidation?: boolean
 }
@@ -167,7 +170,7 @@ const FeeConfigForm = forwardRef(
                   <rb.Accordion.Header>
                     <span
                       className={classNames({
-                        'text-danger': !!errors.tx_fees || !!errors.tx_fees_factor,
+                        'text-danger': !!errors.tx_fees || !!errors.tx_fees_factor || !!errors.max_sweep_fee_change,
                       })}
                     >
                       {t('settings.fees.title_general_fee_settings')}
@@ -215,6 +218,55 @@ const FeeConfigForm = forwardRef(
                           step={0.01}
                         />
                         <rb.Form.Control.Feedback type="invalid">{errors.tx_fees_factor}</rb.Form.Control.Feedback>
+                      </rb.InputGroup>
+                    </rb.Form.Group>
+                    <rb.Form.Group controlId="max_sweep_fee_change" className="mb-4">
+                      <rb.Form.Label>
+                        {t('settings.fees.label_max_sweep_fee_change', {
+                          fee: isValidNumber(values.max_sweep_fee_change)
+                            ? `(${factorToPercentage(values.max_sweep_fee_change!)}%)`
+                            : '',
+                        })}
+                      </rb.Form.Label>
+                      <rb.Form.Text>
+                        {t('settings.fees.description_max_sweep_fee_change', {
+                          defaultValue: `${factorToPercentage(JM_MAX_SWEEP_FEE_CHANGE_DEFAULT)}%`,
+                        })}
+                      </rb.Form.Text>
+                      <rb.InputGroup hasValidation>
+                        <rb.InputGroup.Text id="maxSweepFeeChange-addon1" className={styles.inputGroupText}>
+                          %
+                        </rb.InputGroup.Text>
+                        <rb.Form.Control
+                          aria-label={t('settings.fees.label_max_sweep_fee_change', {
+                            fee: isValidNumber(values.max_sweep_fee_change)
+                              ? `(${factorToPercentage(values.max_sweep_fee_change!)}%)`
+                              : '',
+                          })}
+                          className="slashed-zeroes"
+                          name="max_sweep_fee_change"
+                          type="number"
+                          placeholder="0"
+                          value={
+                            isValidNumber(values.max_sweep_fee_change)
+                              ? factorToPercentage(values.max_sweep_fee_change!)
+                              : ''
+                          }
+                          disabled={isSubmitting}
+                          onBlur={handleBlur}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value)
+                            setFieldValue('max_sweep_fee_change', percentageToFactor(value), true)
+                          }}
+                          isValid={touched.max_sweep_fee_change && !errors.max_sweep_fee_change}
+                          isInvalid={touched.max_sweep_fee_change && !!errors.max_sweep_fee_change}
+                          min={factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN)}
+                          max={factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX)}
+                          step={1}
+                        />
+                        <rb.Form.Control.Feedback type="invalid">
+                          {errors.max_sweep_fee_change}
+                        </rb.Form.Control.Feedback>
                       </rb.InputGroup>
                     </rb.Form.Group>
                   </rb.Accordion.Body>
@@ -323,6 +375,17 @@ export default function FeeConfigModal({
           max: `${factorToPercentage(CJ_FEE_REL_MAX)}%`,
         })
       }
+
+      if (
+        !isValidNumber(values.max_sweep_fee_change) ||
+        values.max_sweep_fee_change! < MAX_SWEEP_FEE_CHANGE_MIN ||
+        values.max_sweep_fee_change! > MAX_SWEEP_FEE_CHANGE_MAX
+      ) {
+        errors.max_sweep_fee_change = t('settings.fees.feedback_invalid_max_sweep_fee_change', {
+          min: `${factorToPercentage(MAX_SWEEP_FEE_CHANGE_MIN)}%`,
+          max: `${factorToPercentage(MAX_SWEEP_FEE_CHANGE_MAX)}%`,
+        })
+      }
       return errors
     },
     [t],
@@ -345,6 +408,10 @@ export default function FeeConfigModal({
       {
         key: FEE_CONFIG_KEYS.max_cj_fee_rel,
         value: String(values.max_cj_fee_rel ?? ''),
+      },
+      {
+        key: FEE_CONFIG_KEYS.max_sweep_fee_change,
+        value: String(values.max_sweep_fee_change ?? ''),
       },
     ]
 
@@ -452,6 +519,7 @@ export default function FeeConfigModal({
                 formRef.current?.setFieldValue('max_cj_fee_rel', undefined, false)
                 formRef.current?.setFieldValue('tx_fees', undefined, false)
                 formRef.current?.setFieldValue('tx_fees_factor', undefined, false)
+                formRef.current?.setFieldValue('max_sweep_fee_change', undefined, false)
                 setTimeout(() => formRef.current?.validateForm(), 4)
               }}
               disabled={isLoading || isSubmitting}
