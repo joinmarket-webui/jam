@@ -100,7 +100,7 @@ const SelectJar = ({
   )
 }
 
-const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
+const SelectUtxos = ({ walletInfo, jar, selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
   // const { t } = useTranslation()
   const settings = useSettings()
   // const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
@@ -110,8 +110,36 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
   // const [isLoading, setisLoading] = useState<boolean>(true)
 
   const loadData = useCallback(() => {
-    const frozen = utxos.filter((utxo: any) => utxo.frozen).map((utxo: any) => ({ ...utxo, id: utxo.utxo }))
-    const unfrozen = utxos.filter((utxo: any) => !utxo.frozen).map((utxo: any) => ({ ...utxo, id: utxo.utxo }))
+    const frozen = utxos
+      .filter((utxo: any) => utxo.frozen)
+      .map((utxo: any) =>
+        fb.utxo.isInList(utxo, selectedUtxos)
+          ? {
+              ...utxo,
+              id: utxo.utxo,
+              checked: true,
+            }
+          : {
+              ...utxo,
+              id: utxo.utxo,
+              checked: false,
+            },
+      )
+    const unfrozen = utxos
+      .filter((utxo: any) => !utxo.frozen)
+      .map((utxo: any) =>
+        fb.utxo.isInList(utxo, selectedUtxos)
+          ? {
+              ...utxo,
+              id: utxo.utxo,
+              checked: true,
+            }
+          : {
+              ...utxo,
+              id: utxo.utxo,
+              checked: false,
+            },
+      )
 
     setFrozenUtxos(frozen)
     setUnFrozenUtxos(unfrozen)
@@ -121,14 +149,13 @@ const SelectUtxos = ({ walletInfo, jar, utxos, selectedUtxos, onUtxoSelected, on
     // } else {
     //   setAlert(undefined)
     // }
-  }, [utxos])
+  }, [selectedUtxos, utxos])
 
   useEffect(() => {
     loadData()
   }, [loadData])
 
   const handleToggle = (utxo: Utxo) => {
-    utxos.filter((it) => it !== utxo)
     utxo.checked = !utxo.checked
     if (utxo.checked) {
       onUtxoSelected(utxo)

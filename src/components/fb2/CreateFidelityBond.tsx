@@ -72,7 +72,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
 
   const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
-  const [utxosOfSelectedJar, setUtxosOfSelectedJar] = useState<Utxos>([])
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
@@ -379,10 +378,14 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     }
   }
 
-  useEffect(() => {
-    console.log('all utxos:', utxosOfSelectedJar)
-    console.log('selected', selectedUtxos)
-  }, [selectedUtxos, utxosOfSelectedJar])
+  // const utxosOfSelectedJar = useMemo(() => {
+  //   return walletInfo.utxosByJar[selectedJar!]
+  // }, [selectedJar, walletInfo.utxosByJar])
+
+  // useEffect(() => {
+  //   console.log('all utxos:', utxosOfSelectedJar)
+  //   console.log('selected:', selectedUtxos)
+  // }, [selectedUtxos, utxosOfSelectedJar])
 
   return (
     <div>
@@ -514,8 +517,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                       selectedJar={selectedJar}
                       onJarSelected={(accountIndex) => {
                         setSelectedJar(accountIndex)
-                        setUtxosOfSelectedJar(walletInfo.utxosByJar[selectedJar!])
-                        utxosOfSelectedJar.map((utxo) => ({ ...utxo, checked: false }))
+                        setSelectedUtxos([])
                       }}
                     />
                   </div>
@@ -529,11 +531,9 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                       selectedUtxos={selectedUtxos}
                       onUtxoSelected={(utxo) => {
                         setSelectedUtxos([...selectedUtxos, utxo])
-                        setUtxosOfSelectedJar([...selectedUtxos, utxo])
                       }}
                       onUtxoDeselected={(utxo) => {
-                        setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))
-                        setUtxosOfSelectedJar([...selectedUtxos, utxo])
+                        setSelectedUtxos(selectedUtxos.filter((it) => it.utxo !== utxo.utxo))
                       }}
                     />
                     {allUtxosSelected && (
