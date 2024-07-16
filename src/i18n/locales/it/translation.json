@@ -186,7 +186,6 @@
     "matrix": "Matrix",
     "telegram": "Telegram",
     "jm_twitter": "JoinMarket Twitter",
-    "jam_twitter": "Jam Twitter",
     "confirm_locking_modal_title": "Blocca portafoglio",
     "confirm_locking_modal_body_earn": "La funzione Guadagna è attiva. Il blocco del portafoglio interromperà il servizio. È possibile chiudere la finestra del browser per lasciarlo funzionare in background.",
     "confirm_locking_modal_body_jam": "È in corso l'esecuzione di una transazione collaborativa. Bloccando il portafoglio si interromperà il servizio. È possibile chiudere la finestra del browser per lasciarlo funzionare in background.",

@@ -17,11 +17,13 @@ export type SourceJarSelectorProps = {
   wallet: CurrentWallet
   isLoading: boolean
   disabled?: boolean
+  isDisplayReloadInShowUtxos: boolean
+  setIsDisplayReloadInShowUtxos: (arg: boolean) => void
 }
 
-interface showingUtxosProps {
-  index: String
-  show: boolean
+interface ShowUtxosProps {
+  jarIndex: String
+  isOpen: boolean
 }
 
 export const SourceJarSelector = ({
@@ -32,14 +34,16 @@ export const SourceJarSelector = ({
   variant,
   isLoading,
   disabled = false,
+  isDisplayReloadInShowUtxos,
+  setIsDisplayReloadInShowUtxos,
 }: SourceJarSelectorProps) => {
   const { t } = useTranslation()
 
   const [field] = useField<JarIndex>(name)
   const form = useFormikContext<any>()
-  const [showingUTXOS, setshowingUTXOS] = useState<showingUtxosProps>({
-    index: '',
-    show: false,
+  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>({
+    jarIndex: '',
+    isOpen: false,
   })
 
   const jarBalances = useMemo(() => {
@@ -59,17 +63,20 @@ export const SourceJarSelector = ({
           </rb.Placeholder>
         ) : (
           <div className={styles.sourceJarsContainer}>
-            {showingUTXOS.show && (
+            {showUtxos.isOpen && (
               <ShowUtxos
+                walletInfo={walletInfo}
                 wallet={wallet}
-                show={showingUTXOS.show}
-                onHide={() => {
-                  setshowingUTXOS({
-                    index: '',
-                    show: false,
+                isOpen={showUtxos.isOpen}
+                onCancel={() => {
+                  setShowUtxos({
+                    jarIndex: '',
+                    isOpen: false,
                   })
                 }}
-                index={showingUTXOS.index}
+                jarIndex={showUtxos.jarIndex}
+                isDisplayReloadInShowUtxos={isDisplayReloadInShowUtxos}
+                setIsDisplayReloadInShowUtxos={setIsDisplayReloadInShowUtxos}
               />
             )}
             {jarBalances.map((it) => {
@@ -96,9 +103,9 @@ export const SourceJarSelector = ({
                         !isLoading &&
                         it.calculatedTotalBalanceInSats > 0
                       ) {
-                        setshowingUTXOS({
-                          index: it.accountIndex.toString(),
-                          show: true,
+                        setShowUtxos({
+                          jarIndex: it.accountIndex.toString(),
+                          isOpen: true,
                         })
                       }
                     }}

@@ -228,6 +228,8 @@ interface InnerSendFormProps {
   feeConfigValues?: FeeValues
   reloadFeeConfigValues: () => void
   disabled?: boolean
+  isDisplayReloadInShowUtxos: boolean
+  setIsDisplayReloadInShowUtxos: (arg: boolean) => void
 }
 
 const InnerSendForm = ({
@@ -241,6 +243,8 @@ const InnerSendForm = ({
   feeConfigValues,
   reloadFeeConfigValues,
   disabled = false,
+  isDisplayReloadInShowUtxos,
+  setIsDisplayReloadInShowUtxos,
 }: InnerSendFormProps) => {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
@@ -279,6 +283,8 @@ const InnerSendForm = ({
           isLoading={isLoading}
           disabled={disabled}
           variant={showCoinjoinPreconditionViolationAlert ? 'warning' : 'default'}
+          isDisplayReloadInShowUtxos={isDisplayReloadInShowUtxos}
+          setIsDisplayReloadInShowUtxos={setIsDisplayReloadInShowUtxos}
         />
         {showCoinjoinPreconditionViolationAlert && (
           <div className="mb-4">
@@ -380,6 +386,8 @@ type SendFormProps = Omit<InnerSendFormProps, 'props' | 'className'> & {
   formRef?: React.Ref<FormikProps<SendFormValues>>
   blurred?: boolean
   wallet: CurrentWallet
+  isDisplayReloadInShowUtxos: boolean
+  setIsDisplayReloadInShowUtxos: (arg: boolean) => void
 }
 
 export const SendForm = ({

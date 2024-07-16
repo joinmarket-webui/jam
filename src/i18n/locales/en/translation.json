@@ -233,7 +233,6 @@
     "matrix": "Matrix",
     "telegram": "Telegram",
     "jm_twitter": "JoinMarket Twitter",
-    "jam_twitter": "Jam Twitter",
     "confirm_locking_modal_title": "Lock Wallet",
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
@@ -704,6 +703,7 @@
     "selected_utxos": "Selected UTXOs",
     "show_utxo_title": "Select UTXOs to be considered",
     "show_utxo_subtitle": "The following UTXOs are considered in the transaction. Every unselected UTXO will be frozen and can be unfrozen later on.",
+    "show_utxo_subtitle_when_allutxos_are_frozen": "The following UTXOs are frozen. Please select them to be considered in the transaction.",
     "alert_for_unfreeze_utxos": "At least one UTXO is required to perform a transaction",
     "alert_for_time_locked": "Selected UTXO is Time Locked till",
     "alert_for_empty_utxos": "Please Unfreeze UTXOs to send"
