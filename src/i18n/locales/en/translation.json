@@ -514,6 +514,10 @@
         "title": "Create fidelity bond and time-lock funds?",
         "body": "It will be impossible to spend time-locked funds until the fidelity bond expires. Date of expiration is {{ humanReadableDuration }} on {{date}}."
       },
+      "confirmation": {
+        "text_primary_button": "Done",
+        "text_secondary_button": "Back"
+      },
       "title": "Configure Fidelity Bond",
       "title_fidelity_bond_exists": "Configure Additional Bond",
       "subtitle": "Your sats will be time-locked by the Bitcoin protocol. It is impossible to move them before the bond is expired.",

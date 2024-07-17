@@ -11,7 +11,7 @@ import {
 } from '../../context/WalletContext'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
-import { SelectJar, SelectUtxos, SelectDate } from './FidelityBondSteps'
+import { SelectJar, SelectUtxos, SelectDate, Confirmation } from './FidelityBondSteps'
 import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
@@ -286,6 +286,8 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
         }
 
         return t('earn.fidelity_bond.select_utxos.text_primary_button')
+      case steps.confirmation:
+        return t('earn.fidelity_bond.confirmation.text_primary_button')
       default:
         return null
     }
@@ -298,7 +300,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
   }
 
   const secondaryButtonText = (currentStep: number) => {
-    if (nextStep(step) === steps.done || nextStep(step) === steps.failed) {
+    if (nextStep(step) === steps.failed) {
       return null
     }
 
@@ -309,6 +311,8 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
         return t('earn.fidelity_bond.select_jar.text_secondary_button')
       case steps.selectUtxos:
         return t('earn.fidelity_bond.select_utxos.text_secondary_button')
+      case steps.confirmation:
+        return t('earn.fidelity_bond.confirmation.text_secondary_button')
       default:
         return null
     }
@@ -544,7 +548,16 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                     )}
                   </div>
                 )}
-                {step === index && step === 3 && <div className="m-4"></div>}
+                {step === index && step === 3 && (
+                  <div className="m-4">
+                    <Confirmation
+                      lockDate={lockDate!}
+                      jar={selectedJar!}
+                      selectedUtxos={selectedUtxos}
+                      timelockedAddress={timelockedAddress!}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
