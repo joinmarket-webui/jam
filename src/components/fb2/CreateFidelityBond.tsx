@@ -15,8 +15,6 @@ import { SelectJar, SelectUtxos, SelectDate, Confirmation } from './FidelityBond
 import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
-// import { PaymentConfirmModal } from '../PaymentConfirmModal'
-// import { useFeeConfigValues } from '../../hooks/Fees'
 import { jarName } from '../jars/Jar'
 
 const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
@@ -62,21 +60,15 @@ interface CreateFidelityBondProps {
 const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDone }: CreateFidelityBondProps) => {
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
-  // const feeConfigValues = useFeeConfigValues()[0]
-
   const [showCreateFidelityBondModal, setShowCreateFidelityBondModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<SimpleAlert>()
   const [step, setStep] = useState(steps.selectDate)
-  // const [showConfirmInputsModal, setShowConfirmInputsModal] = useState(false)
-
   const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
   const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
-  // const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Utxo>()
-  // const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
 
   const selectedUtxosTotalValue = useMemo(
     () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
@@ -103,8 +95,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     setLockDate(null)
     setTimelockedAddress(undefined)
     setAlert(undefined)
-    // setCreatedFidelityBondUtxo(undefined)
-    // setFrozenUtxos([])
     setUtxoIdsToBeSpent([])
   }
 
@@ -137,48 +127,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     }
   }, [showCreateFidelityBondModal, reloadCurrentWalletInfo, t])
 
-  // const freezeUtxos = (utxos: Utxos) => {
-  //   changeUtxoFreeze(utxos, true)
-  // }
-
-  // const unfreezeUtxos = (utxos: Utxos) => {
-  //   changeUtxoFreeze(utxos, false)
-  // }
-
-  // const changeUtxoFreeze = (utxos: Utxos, freeze: boolean) => {
-  //   setIsLoading(true)
-
-  //   const abortCtrl = new AbortController()
-
-  //   let utxosThatWereFrozen: Utxos = []
-
-  //   const freezeCalls = utxos.map((utxo) =>
-  //     Api.postFreeze({ ...wallet }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
-  //       if (res.ok) {
-  //         if (!utxo.frozen && freeze) {
-  //           utxosThatWereFrozen.push(utxo)
-  //         }
-  //       } else {
-  //         return Api.Helper.throwError(
-  //           res,
-  //           freeze ? t('earn.fidelity_bond.error_freezing_utxos') : t('earn.fidelity_bond.error_unfreezing_utxos'),
-  //         )
-  //       }
-  //     }),
-  //   )
-
-  //   Promise.all(freezeCalls)
-  //     .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
-  //     .then(() => setAlert(undefined))
-  //     .then(() => freeze && setFrozenUtxos([...frozenUtxos, ...utxosThatWereFrozen]))
-  //     .catch((err) => {
-  //       setAlert({ variant: 'danger', message: err.message, dismissible: true })
-  //     })
-  //     .finally(() => {
-  //       setIsLoading(false)
-  //     })
-  // }
-
   const loadTimeLockedAddress = useCallback(
     (lockDate: Api.Lockdate) => {
       const abortCtrl = new AbortController()
@@ -199,25 +147,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     },
     [t, wallet],
   )
-
-  // const directSweepToFidelityBond = (jarIndex: JarIndex, address: Api.BitcoinAddress) => {
-  //   setIsLoading(true)
-
-  //   Api.postDirectSend(wallet, {
-  //     mixdepth: jarIndex,
-  //     destination: address,
-  //     amount_sats: 0, // sweep
-  //   })
-  //     .then((res) =>
-  //       res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_creating_fidelity_bond')),
-  //     )
-  //     .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input: any) => input.outpoint)))
-  //     .then((_) => setAlert(undefined))
-  //     .catch((err) => {
-  //       setIsLoading(false)
-  //       setAlert({ variant: 'danger', message: err.message })
-  //     })
-  // }
 
   useEffect(() => {
     if (lockDate) loadTimeLockedAddress(lockDate!)
@@ -381,15 +310,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
       return <span className={styles.subTitle}>{`- Jar ${jarName(selectedJar)}`}</span>
     }
   }
-
-  // const utxosOfSelectedJar = useMemo(() => {
-  //   return walletInfo.utxosByJar[selectedJar!]
-  // }, [selectedJar, walletInfo.utxosByJar])
-
-  // useEffect(() => {
-  //   console.log('all utxos:', utxosOfSelectedJar)
-  //   console.log('selected:', selectedUtxos)
-  // }, [selectedUtxos, utxosOfSelectedJar])
 
   return (
     <div>
