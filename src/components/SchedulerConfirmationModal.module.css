@@ -1,0 +1,67 @@
+:global .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal :global .modal-content {
+  background-color: var(--bs-body-bg) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0px 0px 24px rgba(0, 0, 0, 0.25) !important;
+}
+
+.modalHeader {
+  display: flex !important;
+  justify-content: flex-start !important;
+  background-color: transparent !important;
+  padding: 1.25rem !important;
+}
+
+.modalTitle {
+  width: 100%;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: var(--bs-body-color) !important;
+}
+
+.modalTitle > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle .cancelButton {
+  padding: 0 0 0 1rem;
+  color: var(--bs-body-color);
+  background-color: transparent !important;
+  border: none;
+}
+
+.modalFooter {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 1rem;
+  background-color: transparent !important;
+  padding: 1rem 1.25rem 1.25rem 1.25rem !important;
+}
+
+.modalFooter :global .btn {
+  flex-grow: 1;
+  min-height: 2.8rem;
+  font-weight: 500;
+  border-color: none !important;
+}
+
+.jarsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  color: var(--bs-body-color);
+}
+
+@media only screen and (min-width: 768px) {
+  .jarsContainer {
+    gap: 1.5rem;
+  }
+}
