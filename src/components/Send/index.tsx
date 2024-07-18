@@ -91,8 +91,6 @@ export default function Send({ wallet }: SendProps) {
   const reloadServiceInfo = useReloadServiceInfo()
   const loadConfigValue = useLoadConfigValue()
 
-  const [isDisplayReloadInShowUtxos, setIsDisplayReloadInShowUtxos] = useState<boolean>(true)
-
   const isCoinjoinInProgress = useMemo(() => serviceInfo?.coinjoinInProgress === true, [serviceInfo])
   const isMakerRunning = useMemo(() => serviceInfo?.makerRunning === true, [serviceInfo])
   const isRescanningInProgress = useMemo(() => serviceInfo?.rescanning === true, [serviceInfo])
@@ -204,7 +202,7 @@ export default function Send({ wallet }: SendProps) {
       })
 
       const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo
-        .reloadUtxos({ signal: abortCtrl.signal })
+        .reloadDisplay({ signal: abortCtrl.signal })
         .catch((err) => {
           if (abortCtrl.signal.aborted) return
           const message = t('global.errors.error_loading_wallet_failed', {
@@ -268,7 +266,6 @@ export default function Send({ wallet }: SendProps) {
             txid,
           }),
         })
-        setIsDisplayReloadInShowUtxos(true)
         setWaitForUtxosToBeSpent(inputs.map((it: any) => it.outpoint))
         success = true
       } else {
@@ -493,8 +490,6 @@ export default function Send({ wallet }: SendProps) {
         loadNewWalletAddress={loadNewWalletAddress}
         feeConfigValues={feeConfigValues}
         reloadFeeConfigValues={reloadFeeConfigValues}
-        isDisplayReloadInShowUtxos={isDisplayReloadInShowUtxos}
-        setIsDisplayReloadInShowUtxos={setIsDisplayReloadInShowUtxos}
       />
 
       {showConfirmAbortModal && (
