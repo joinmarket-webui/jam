@@ -201,15 +201,13 @@ export default function Send({ wallet }: SendProps) {
         setAlert({ variant: 'danger', message })
       })
 
-      const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo
-        .reloadUtxos({ signal: abortCtrl.signal })
-        .catch((err) => {
-          if (abortCtrl.signal.aborted) return
-          const message = t('global.errors.error_loading_wallet_failed', {
-            reason: err.message || t('global.errors.reason_unknown'),
-          })
-          setAlert({ variant: 'danger', message })
+      const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }).catch((err) => {
+        if (abortCtrl.signal.aborted) return
+        const message = t('global.errors.error_loading_wallet_failed', {
+          reason: err.message || t('global.errors.reason_unknown'),
         })
+        setAlert({ variant: 'danger', message })
+      })
 
       const loadingMinimumMakerConfig = loadConfigValue({
         signal: abortCtrl.signal,
@@ -480,6 +478,7 @@ export default function Send({ wallet }: SendProps) {
         disabled={isOperationDisabled}
         isLoading={isLoading}
         walletInfo={walletInfo}
+        wallet={wallet}
         minNumCollaborators={minNumCollaborators}
         loadNewWalletAddress={loadNewWalletAddress}
         feeConfigValues={feeConfigValues}

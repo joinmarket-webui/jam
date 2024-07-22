@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import * as rb from 'react-bootstrap'
 import classnamesBind from 'classnames/bind'
 import { useSettings } from '../../context/SettingsContext'
@@ -21,6 +21,8 @@ export type JarProps = {
 }
 
 export type SelectableJarProps = JarProps & {
+  tooltipText?: string
+  isOpen?: boolean
   isSelectable: boolean
   isSelected: boolean
   variant?: 'default' | 'warning'
@@ -154,6 +156,8 @@ const Jar = ({ index, balance, frozenBalance, fillLevel, isOpen = false, size }:
  * A jar with index, balance, and a radio-style selection button.
  */
 const SelectableJar = ({
+  tooltipText,
+  isOpen = false,
   isSelectable,
   isSelected,
   onClick,
@@ -161,6 +165,7 @@ const SelectableJar = ({
   variant = 'default',
   ...jarProps
 }: SelectableJarProps) => {
+  const target = useRef(null)
   return (
     <div
       className={classNames('selectableJarContainer', {
@@ -168,8 +173,9 @@ const SelectableJar = ({
         selected: isSelected,
       })}
       onClick={() => isSelectable && onClick(index)}
+      ref={target}
     >
-      <Jar index={index} {...jarProps} />
+      <Jar index={index} {...jarProps} isOpen={isOpen && isSelected && isSelectable} />
       <div className="d-flex justify-content-center align-items-center gap-1 mt-2 position-relative">
         <input
           type="radio"
@@ -184,6 +190,15 @@ const SelectableJar = ({
           </div>
         )}
       </div>
+      {isOpen && isSelectable && (
+        <rb.Overlay target={target.current} show={isSelected} placement={'top-start'}>
+          {(props) => (
+            <rb.Tooltip {...props} className={styles.customTooltip}>
+              {tooltipText}
+            </rb.Tooltip>
+          )}
+        </rb.Overlay>
+      )}
     </div>
   )
 }

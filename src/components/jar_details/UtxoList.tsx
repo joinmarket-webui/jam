@@ -37,7 +37,7 @@ const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
 
 type Tag = { tag: string; color: string }
 
-const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction): Tag[] => {
+export const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction): Tag[] => {
   const rawStatus = walletInfo.addressSummary[utxo.address]?.status
 
   let status: string | null = null
@@ -156,7 +156,7 @@ const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
   return utxo as Utxo
 }
 
-interface UtxoTableRow extends Utxo, TableTypes.TableNode {
+interface UtxoTableRow extends Utxo {
   _icon: JSX.Element
   _tags: Tag[]
   _confs: JSX.Element
