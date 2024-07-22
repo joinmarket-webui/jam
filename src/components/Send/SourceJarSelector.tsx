@@ -21,8 +21,8 @@ export type SourceJarSelectorProps = {
 }
 
 interface ShowUtxosProps {
-  jarIndex?: string
-  isOpen?: boolean
+  jarIndex: JarIndex
+  isOpen: boolean
 }
 
 export type UtxoList = Utxo[]
@@ -41,8 +41,8 @@ export const SourceJarSelector = ({
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
-  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps | undefined>(undefined)
-  const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
+  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>()
+  const [alert, setAlert] = useState<SimpleAlert>()
   const [isUtxosLoading, setIsUtxosLoading] = useState<boolean>(false)
   const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
   const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
@@ -55,16 +55,15 @@ export const SourceJarSelector = ({
   }, [walletInfo])
 
   useEffect(() => {
-    if (showUtxos?.jarIndex && walletInfo?.utxosByJar) {
-      const data = Object.entries(walletInfo.utxosByJar).find(([key]) => key === showUtxos.jarIndex)
-      const utxos: any = data ? data[1] : []
+    if (walletInfo?.utxosByJar && showUtxos && showUtxos.jarIndex >= 0) {
+      const utxos = walletInfo.utxosByJar[showUtxos.jarIndex]
 
       const frozenUtxoList = utxos
-        .filter((utxo: any) => utxo.frozen)
-        .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: false }))
+        .filter((utxo) => utxo.frozen)
+        .map((utxo) => ({ ...utxo, id: utxo.utxo, checked: false }))
       const unFrozenUtxosList = utxos
-        .filter((utxo: any) => !utxo.frozen)
-        .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: true }))
+        .filter((utxo) => !utxo.frozen)
+        .map((utxo) => ({ ...utxo, id: utxo.utxo, checked: true }))
 
       setFrozenUtxos(frozenUtxoList)
       setUnFrozenUtxos(unFrozenUtxosList)
@@ -133,7 +132,7 @@ export const SourceJarSelector = ({
           <div className={styles.sourceJarsContainer}>
             {showUtxos?.isOpen && (
               <ShowUtxos
-                isOpen={showUtxos.isOpen}
+                isOpen={true}
                 onConfirm={handleUtxosFrozenState}
                 onCancel={() => {
                   setShowUtxos(undefined)
@@ -171,7 +170,7 @@ export const SourceJarSelector = ({
                         it.calculatedTotalBalanceInSats > 0
                       ) {
                         setShowUtxos({
-                          jarIndex: it.accountIndex.toString(),
+                          jarIndex: it.accountIndex,
                           isOpen: true,
                         })
                       }
