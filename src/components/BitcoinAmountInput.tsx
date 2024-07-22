@@ -114,8 +114,8 @@ const BitcoinAmountInput = forwardRef(
               field.onBlur(e)
             }}
             onChange={(e) => {
-              const valueOrNan = e.target.value ?? ''
-              const floatValueOrNan = parseFloat(valueOrNan)
+              const rawUserInputOrEmpty = e.target.value ?? ''
+              const floatValueOrNan = parseFloat(rawUserInputOrEmpty)
               if (!isValidNumber(floatValueOrNan)) {
                 form.setFieldValue(
                   field.name,
@@ -132,8 +132,8 @@ const BitcoinAmountInput = forwardRef(
                 const value: number = floatValueOrNan
                 let numberValues: string | undefined
                 const unit =
-                  valueOrNan.includes('.') && parseFloat(valueOrNan)
-                    ? unitFromValue(String(valueOrNan))
+                  rawUserInputOrEmpty.includes('.') && parseFloat(rawUserInputOrEmpty)
+                    ? unitFromValue(String(rawUserInputOrEmpty))
                     : unitFromValue(String(value))
                 if (unit === 'BTC') {
                   const splitted = String(value).split('.')
