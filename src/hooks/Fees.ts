@@ -20,6 +20,7 @@ export const FEE_CONFIG_KEYS = {
   tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
   max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },
   max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
+  max_sweep_fee_change: { section: 'POLICY', field: 'max_sweep_fee_change' },
 }
 
 export interface FeeValues {
@@ -27,6 +28,7 @@ export interface FeeValues {
   tx_fees_factor?: number
   max_cj_fee_abs?: number
   max_cj_fee_rel?: number
+  max_sweep_fee_change?: number
 }
 
 export const useLoadFeeConfigValues = () => {
@@ -45,6 +47,7 @@ export const useLoadFeeConfigValues = () => {
       const parsedTxFeesFactor = parseFloat(policy.tx_fees_factor || '')
       const parsedMaxFeeAbs = parseInt(policy.max_cj_fee_abs || '', 10)
       const parsedMaxFeeRel = parseFloat(policy.max_cj_fee_rel || '')
+      const parsedMaxSweepFeeChange = parseFloat(policy.max_sweep_fee_change || '')
 
       const feeValues: FeeValues = {
         tx_fees: isValidNumber(parsedTxFees)
@@ -56,6 +59,7 @@ export const useLoadFeeConfigValues = () => {
         tx_fees_factor: isValidNumber(parsedTxFeesFactor) ? parsedTxFeesFactor : undefined,
         max_cj_fee_abs: isValidNumber(parsedMaxFeeAbs) ? parsedMaxFeeAbs : undefined,
         max_cj_fee_rel: isValidNumber(parsedMaxFeeRel) ? parsedMaxFeeRel : undefined,
+        max_sweep_fee_change: isValidNumber(parsedMaxSweepFeeChange) ? parsedMaxSweepFeeChange : undefined,
       }
       return feeValues
     },
