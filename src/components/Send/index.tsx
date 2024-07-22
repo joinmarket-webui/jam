@@ -201,15 +201,13 @@ export default function Send({ wallet }: SendProps) {
         setAlert({ variant: 'danger', message })
       })
 
-      const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo
-        .reloadDisplay({ signal: abortCtrl.signal })
-        .catch((err) => {
-          if (abortCtrl.signal.aborted) return
-          const message = t('global.errors.error_loading_wallet_failed', {
-            reason: err.message || t('global.errors.reason_unknown'),
-          })
-          setAlert({ variant: 'danger', message })
+      const loadingWalletInfoAndUtxos = reloadCurrentWalletInfo.reloadAll({ signal: abortCtrl.signal }).catch((err) => {
+        if (abortCtrl.signal.aborted) return
+        const message = t('global.errors.error_loading_wallet_failed', {
+          reason: err.message || t('global.errors.reason_unknown'),
         })
+        setAlert({ variant: 'danger', message })
+      })
 
       const loadingMinimumMakerConfig = loadConfigValue({
         signal: abortCtrl.signal,
@@ -383,13 +381,8 @@ export default function Send({ wallet }: SendProps) {
       }
 
       if (showConfirmSendModal === undefined) {
-        if (walletInfo?.utxosByJar && values.sourceJarIndex !== undefined) {
-          values.selectedUtxos = walletInfo.utxosByJar[values.sourceJarIndex].filter((utxo) => {
-            return utxo.frozen === false
-          })
-          setShowConfirmSendModal(values)
-          return
-        }
+        setShowConfirmSendModal(values)
+        return
       }
 
       setShowConfirmSendModal(undefined)

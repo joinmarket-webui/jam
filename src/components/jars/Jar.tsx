@@ -28,16 +28,6 @@ export type SelectableJarProps = JarProps & {
   variant?: 'default' | 'warning'
   onClick: (index: JarIndex) => void
 }
-type showingUTXOS = { index: String; show: boolean }
-export type SelectableSendJarProps = JarProps & {
-  tooltipText: string
-  isSelectable: boolean
-  isSelected: boolean
-  variant?: 'default' | 'warning'
-  showingUTXOS: showingUTXOS
-  setshowingUTXOS: (val: showingUTXOS) => void
-  onClick: (index: JarIndex) => void
-}
 
 export type OpenableJarProps = Omit<JarProps, 'isOpen'> & {
   tooltipText: string
@@ -203,7 +193,7 @@ const SelectableJar = ({
       {isOpen && isSelectable && (
         <rb.Overlay target={target.current} show={isSelected} placement={'top-start'}>
           {(props) => (
-            <rb.Tooltip {...props} className={styles.custom_tooltip}>
+            <rb.Tooltip {...props} className={styles.customTooltip}>
               {tooltipText}
             </rb.Tooltip>
           )}

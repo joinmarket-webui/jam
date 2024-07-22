@@ -21,8 +21,8 @@ export type SourceJarSelectorProps = {
 }
 
 interface ShowUtxosProps {
-  jarIndex: String
-  isOpen: boolean
+  jarIndex?: string
+  isOpen?: boolean
 }
 
 export type UtxoList = Utxo[]
@@ -41,10 +41,7 @@ export const SourceJarSelector = ({
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
-  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>({
-    jarIndex: '',
-    isOpen: false,
-  })
+  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps | undefined>(undefined)
   const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
   const [isUtxosLoading, setIsUtxosLoading] = useState<boolean>(false)
   const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
@@ -58,7 +55,7 @@ export const SourceJarSelector = ({
   }, [walletInfo])
 
   useEffect(() => {
-    if (showUtxos.jarIndex && walletInfo?.utxosByJar) {
+    if (showUtxos?.jarIndex && walletInfo?.utxosByJar) {
       const data = Object.entries(walletInfo.utxosByJar).find(([key]) => key === showUtxos.jarIndex)
       const utxos: any = data ? data[1] : []
 
@@ -72,7 +69,7 @@ export const SourceJarSelector = ({
       setFrozenUtxos(frozenUtxoList)
       setUnFrozenUtxos(unFrozenUtxosList)
     }
-  }, [walletInfo, showUtxos.jarIndex, t])
+  }, [walletInfo, showUtxos?.jarIndex, t])
 
   useEffect(() => {
     if (frozenUtxos.length === 0 && unFrozenUtxos.length === 0) {
@@ -113,17 +110,15 @@ export const SourceJarSelector = ({
       if (res.length !== 0) {
         setIsUtxosLoading(true)
         await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
-        setIsUtxosLoading(false)
       }
 
-      setShowUtxos({
-        jarIndex: '',
-        isOpen: false,
-      })
+      setShowUtxos(undefined)
     } catch (err: any) {
       if (!abortCtrl.signal.aborted) {
         setAlert({ variant: 'danger', message: err.message, dismissible: true })
       }
+    } finally {
+      setIsUtxosLoading(false)
     }
   }, [frozenUtxos, unFrozenUtxos, wallet, reloadCurrentWalletInfo])
 
@@ -137,15 +132,12 @@ export const SourceJarSelector = ({
           </rb.Placeholder>
         ) : (
           <div className={styles.sourceJarsContainer}>
-            {showUtxos.isOpen && (
+            {showUtxos?.isOpen && (
               <ShowUtxos
                 isOpen={showUtxos.isOpen}
                 onConfirm={handleUtxosFrozenState}
                 onCancel={() => {
-                  setShowUtxos({
-                    jarIndex: '',
-                    isOpen: false,
-                  })
+                  setShowUtxos(undefined)
                 }}
                 alert={alert}
                 isLoading={isUtxosLoading}

@@ -147,7 +147,6 @@ interface WalletContextEntry<T extends CurrentWallet> {
   reloadCurrentWalletInfo: {
     reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
     reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<UtxosResponse>
-    reloadDisplay: ({ signal }: { signal: AbortSignal }) => Promise<WalletDisplayResponse>
   }
 }
 
@@ -307,9 +306,8 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
     () => ({
       reloadAll,
       reloadUtxos,
-      reloadDisplay,
     }),
-    [reloadAll, reloadUtxos, reloadDisplay],
+    [reloadAll, reloadUtxos],
   )
 
   useEffect(() => {
