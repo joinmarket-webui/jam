@@ -179,7 +179,7 @@ const UtxoRow = memo(
             valueString={valueString}
             convertToUnit={settings.unit}
             showBalance={true}
-            isColorChange={true}
+            colored={false}
             frozen={isFrozen}
             frozenSymbol={false}
           />
