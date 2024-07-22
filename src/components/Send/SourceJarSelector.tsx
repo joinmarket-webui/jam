@@ -102,22 +102,21 @@ export const SourceJarSelector = ({
       .map((utxo) => ({ utxo: utxo.utxo, freeze: true }))
 
     try {
+      setIsUtxosLoading(true)
       const res = await Promise.all([
         ...frozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
         ...unFrozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
       ])
 
       if (res.length !== 0) {
-        setIsUtxosLoading(true)
         await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
       }
 
       setShowUtxos(undefined)
+      setIsUtxosLoading(false)
     } catch (err: any) {
-      if (!abortCtrl.signal.aborted) {
-        setAlert({ variant: 'danger', message: err.message, dismissible: true })
-      }
-    } finally {
+      if (abortCtrl.signal.aborted) return
+      setAlert({ variant: 'danger', message: err.message, dismissible: true })
       setIsUtxosLoading(false)
     }
   }, [frozenUtxos, unFrozenUtxos, wallet, reloadCurrentWalletInfo])
