@@ -3,7 +3,7 @@ import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
-import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxo } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 import { ShowUtxos } from './ShowUtxos'
 import { useTranslation } from 'react-i18next'
@@ -25,8 +25,6 @@ interface ShowUtxosProps {
   isOpen: boolean
 }
 
-export type UtxoList = Utxo[]
-
 export const SourceJarSelector = ({
   name,
   label,
@@ -44,8 +42,8 @@ export const SourceJarSelector = ({
   const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isUtxosLoading, setIsUtxosLoading] = useState<boolean>(false)
-  const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
-  const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
+  const [unFrozenUtxos, setUnFrozenUtxos] = useState<Utxos>([])
+  const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
