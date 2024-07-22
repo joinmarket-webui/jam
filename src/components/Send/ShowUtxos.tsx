@@ -68,9 +68,6 @@ const formatConfirmations = (conf: number) => {
   return { symbol: 'confs-full', confirmations: conf }
 }
 
-// Utility function to convert Satoshi to Bitcoin
-const satsToBtc = (sats: number) => (sats / 100000000).toFixed(8)
-
 // Utility function to Identifies Icons
 const utxoIcon = (tag: string, isFrozen: boolean) => {
   if (isFrozen && tag === 'bond') return 'timelock'
@@ -107,7 +104,6 @@ const UtxoRow = memo(
 
     const address = useMemo(() => shortenStringMiddle(utxoAddress, 16), [utxoAddress])
     const conf = useMemo(() => formatConfirmations(confirmations), [confirmations])
-    const valueString = useMemo(() => satsToBtc(value).toString(), [value])
     const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
     const { icon, rowAndTagClass } = useMemo(() => {
@@ -176,7 +172,7 @@ const UtxoRow = memo(
         </Cell>
         <Cell>
           <Balance
-            valueString={valueString}
+            valueString={String(value)}
             convertToUnit={settings.unit}
             showBalance={true}
             colored={false}
