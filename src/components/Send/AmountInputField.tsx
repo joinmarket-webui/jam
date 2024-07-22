@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import { useField, useFormikContext } from 'formik'
@@ -34,25 +34,6 @@ export const AmountInputField = ({
   const [field] = useField<AmountValue>(name)
   const form = useFormikContext<any>()
   const ref = useRef<HTMLInputElement>(null)
-
-  //Effect to change the field value whenever the sourceJarBalance changes (sourceJarBalance will change when quick freeze/unfreeze is performed or different source jar is selected)
-  useEffect(() => {
-    if (!sourceJarBalance) return
-
-    const currentValue = formatBtcDisplayValue(sourceJarBalance.calculatedAvailableBalanceInSats)
-
-    if (field.value?.isSweep && field.value.displayValue !== currentValue) {
-      form.setFieldValue(
-        field.name,
-        {
-          value: 0,
-          isSweep: true,
-          displayValue: formatBtcDisplayValue(sourceJarBalance.calculatedAvailableBalanceInSats),
-        },
-        true,
-      )
-    }
-  }, [sourceJarBalance, field, form])
 
   return (
     <>
