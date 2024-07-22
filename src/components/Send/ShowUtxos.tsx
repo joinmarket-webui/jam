@@ -170,7 +170,7 @@ const UtxoRow = memo(
         <Cell>
           <Sprite symbol={icon} width="23px" height="23px" />
         </Cell>
-        <Cell>{address}</Cell>
+        <Cell className="slashed-zeroes">{address}</Cell>
         <Cell>
           <ConfirmationCell />
         </Cell>
@@ -224,7 +224,7 @@ const UtxoListDisplay = ({
   return (
     <div className={classNames(styles.utxoListDisplayHeight, 'overflow-y-auto')}>
       <Table
-        className={'bg'}
+        className="bg"
         data={{ nodes: utxos }}
         theme={tableTheme}
         layout={{ custom: true, horizontalScroll: true }}
@@ -327,7 +327,7 @@ const ShowUtxos = ({
       title={t('show_utxos.show_utxo_title')}
       size="lg"
       showCloseButton={true}
-      confirmVariant={'dark'}
+      confirmVariant="dark"
       headerClassName={styles.customHeaderClass}
       titleClassName={styles.customTitleClass}
     >
