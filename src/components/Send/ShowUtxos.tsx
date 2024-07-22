@@ -13,9 +13,10 @@ import Balance from '../Balance'
 import { ConfirmModal } from '../Modal'
 import Sprite from '../Sprite'
 import { utxoTags } from '../jar_details/UtxoList'
+import { UtxoList } from './SourceJarSelector'
+import { shortenStringMiddle } from '../../utils'
 import mainStyles from '../MainWalletView.module.css'
 import styles from './ShowUtxos.module.css'
-import { UtxoList } from './SourceJarSelector'
 
 interface ShowUtxosProps {
   isOpen: boolean
@@ -54,9 +55,6 @@ interface DividerProps {
   setIsState: (arg: boolean) => void
   className?: string
 }
-
-// Utility function to format Bitcoin address
-const formatAddress = (address: string) => `${address.slice(0, 10)}...${address.slice(-8)}`
 
 // Utility function to format the confirmations
 const formatConfirmations = (conf: number) => {
@@ -106,7 +104,7 @@ const UtxoRow = memo(
   }: UtxoRowProps) => {
     const { address: utxoAddress, confirmations, value, checked, frozen } = utxo
 
-    const address = useMemo(() => formatAddress(utxoAddress), [utxoAddress])
+    const address = useMemo(() => shortenStringMiddle(utxoAddress, 16), [utxoAddress])
     const conf = useMemo(() => formatConfirmations(confirmations), [confirmations])
     const valueString = useMemo(() => satsToBtc(value).toString(), [value])
     const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
