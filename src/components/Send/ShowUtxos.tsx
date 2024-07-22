@@ -75,9 +75,10 @@ const satsToBtc = (sats: number) => (sats / 100000000).toFixed(8)
 const utxoIcon = (tag: string, isFrozen: boolean) => {
   if (isFrozen && tag === 'bond') return 'timelock'
   if (isFrozen) return 'snowflake'
-  if (tag === 'deposit' || tag === 'non-cj-change' || tag === 'reused') return 'Unmixed'
   if (tag === 'bond') return 'timelock'
-  return 'mixed'
+  if (tag === 'cj-out') return 'mixed'
+  if (tag === 'deposit' || tag === 'non-cj-change' || tag === 'reused') return 'unmixed'
+  return 'unmixed' // fallback
 }
 
 // Utility function to allot classes
@@ -111,7 +112,7 @@ const UtxoRow = memo(
 
     const { icon, rowAndTagClass } = useMemo(() => {
       if (tag.length === 0) {
-        return { icon: 'Unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
+        return { icon: 'unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
       }
       return { icon: utxoIcon(tag[0].tag, isFrozen), rowAndTagClass: allotClasses(tag[0].tag, isFrozen) }
     }, [tag, isFrozen])
