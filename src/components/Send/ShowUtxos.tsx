@@ -6,14 +6,13 @@ import classNames from 'classnames'
 import { Table, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as TableTypes from '@table-library/react-table-library/types/table'
-import { WalletInfo, Utxo, useCurrentWalletInfo } from '../../context/WalletContext'
+import { WalletInfo, Utxo, useCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import { useSettings, Settings } from '../../context/SettingsContext'
 import Alert from '../Alert'
 import Balance from '../Balance'
 import { ConfirmModal } from '../Modal'
 import Sprite from '../Sprite'
 import { utxoTags } from '../jar_details/UtxoList'
-import { UtxoList } from './SourceJarSelector'
 import { shortenStringMiddle } from '../../utils'
 import mainStyles from '../MainWalletView.module.css'
 import styles from './ShowUtxos.module.css'
@@ -24,10 +23,10 @@ interface ShowUtxosProps {
   onConfirm: () => void
   alert: SimpleAlert | undefined
   isLoading: boolean
-  frozenUtxos: UtxoList
-  unFrozenUtxos: UtxoList
-  setFrozenUtxos: (arg: UtxoList) => void
-  setUnFrozenUtxos: (arg: UtxoList) => void
+  frozenUtxos: Utxos
+  unFrozenUtxos: Utxos
+  setFrozenUtxos: (arg: Utxos) => void
+  setUnFrozenUtxos: (arg: Utxos) => void
 }
 
 interface UtxoRowProps {
