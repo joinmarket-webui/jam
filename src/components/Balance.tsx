@@ -107,7 +107,7 @@ type SatsBalanceProps = Omit<BalanceComponentProps, 'symbol'> & { value: number 
 
 const SatsBalance = ({ value, colored = true, ...props }: SatsBalanceProps) => {
   return (
-    <BalanceComponent symbol={SAT_SYMBOL} {...props}>
+    <BalanceComponent symbol={SAT_SYMBOL} colored={colored} {...props}>
       <span
         className={classNames(`slashed-zeroes`, { [styles.satsAmountColor]: colored })}
         data-testid="sats-amount"
