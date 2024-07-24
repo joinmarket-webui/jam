@@ -1,5 +1,5 @@
 import user from '@testing-library/user-event'
-import { render, screen } from '../testUtils'
+import { act, fireEvent, render, screen } from '../testUtils'
 
 import { noop } from '../utils'
 
@@ -94,5 +94,29 @@ describe('<BitcoinAmountInput />', () => {
     expect(inputElement.dataset.value).toBe(undefined)
     expect(inputElement.dataset.displayUnit).toBe(undefined)
     expect(inputElement.dataset.displayValue).toBe('')
+  })
+
+  it('amount 1.0 should be interpreted as 1 BTC', async () => {
+    setup({
+      label: 'test-label',
+    })
+    const inputElement = screen.getByLabelText('test-label')
+
+    await act(async () => {
+      fireEvent.change(inputElement, { target: { value: '1.0' } })
+      fireEvent.focus(inputElement)
+    })
+
+    expect(inputElement.dataset.value).toBe('100000000')
+    expect(inputElement.dataset.displayUnit).toBe('BTC')
+    expect(inputElement.dataset.displayValue).toBe(`1.0`)
+
+    await act(async () => {
+      fireEvent.blur(inputElement)
+    })
+
+    expect(inputElement.dataset.value).toBe('100000000')
+    expect(inputElement.dataset.displayUnit).toBe('BTC')
+    expect(inputElement.dataset.displayValue).toBe(`1.00 000 000`)
   })
 })
