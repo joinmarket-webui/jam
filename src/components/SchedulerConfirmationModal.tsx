@@ -25,18 +25,29 @@ export default function SchedulerConfirmationModal({ onConfirm, disabled }: Sche
         </div>
       </rb.Button>
 
-      <rb.Modal show={show} onHide={handleClose} dialogClassName={styles['modal']}>
-        <rb.Modal.Header closeButton>
-          <rb.Modal.Title>
+      <rb.Modal
+        show={show}
+        keyboard={true}
+        onEscapeKeyDown={handleClose}
+        onHide={handleClose}
+        centered={true}
+        className={styles['modal']}
+        size="lg"
+      >
+        <rb.Modal.Header className={styles['modalHeader']}>
+          <rb.Modal.Title className={styles['modalTitle']}>
             <div>{t('scheduler.confirm_modal.title')}</div>
+            <rb.Button onClick={handleClose} className={styles['cancelButton']}>
+              <Sprite symbol="cancel" width="26" height="26" />
+            </rb.Button>
           </rb.Modal.Title>
         </rb.Modal.Header>
-        <rb.Modal.Body>{t('scheduler.confirm_modal.body')}</rb.Modal.Body>
+        <rb.Modal.Body className={styles['modalBody']}>{t('scheduler.confirm_modal.body')}</rb.Modal.Body>
         <rb.Modal.Footer className={styles['modalFooter']}>
           <rb.Button variant="light" onClick={handleClose} className="d-flex justify-content-center align-items-center">
             {t('modal.confirm_button_reject')}
           </rb.Button>
-          <rb.Button variant="dark" onClick={onConfirm}>
+          <rb.Button variant="dark" onClick={onConfirm} disabled={disabled}>
             {t('modal.confirm_button_accept')}
           </rb.Button>
         </rb.Modal.Footer>
