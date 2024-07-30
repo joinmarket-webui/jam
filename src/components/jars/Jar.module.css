@@ -96,6 +96,6 @@
   cursor: zoom-in;
 }
 
-.custom_tooltip {
+.customTooltip {
   z-index: auto !important;
 }

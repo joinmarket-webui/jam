@@ -203,7 +203,7 @@ const SelectableJar = ({
       {isOpen && isSelectable && (
         <rb.Overlay target={target.current} show={isSelected} placement={'top-start'}>
           {(props) => (
-            <rb.Tooltip {...props} className={styles.custom_tooltip}>
+            <rb.Tooltip {...props} className={styles.customTooltip}>
               {tooltipText}
             </rb.Tooltip>
           )}
