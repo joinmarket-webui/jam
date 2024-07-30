@@ -26,7 +26,7 @@ import {
   isValidNumCollaborators,
 } from './helpers'
 import { AccountBalanceSummary } from '../../context/BalanceSummary'
-import { WalletInfo, CurrentWallet } from '../../context/WalletContext'
+import { WalletInfo, Utxo, CurrentWallet } from '../../context/WalletContext'
 import { useSettings } from '../../context/SettingsContext'
 import styles from './SendForm.module.css'
 import { TxFeeInputField, validateTxFee } from '../settings/TxFeeInputField'
