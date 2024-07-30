@@ -104,7 +104,7 @@ const UtxoRow = memo(
     walletInfo,
     t,
   }: UtxoRowProps) => {
-    const { address: utxoAddress, confirmations, value, checked, frozen } = utxo
+    const { address: utxoAddress, confirmations, value, checked } = utxo
 
     const address = useMemo(() => formatAddress(utxoAddress), [utxoAddress])
     const conf = useMemo(() => formatConfirmations(confirmations), [confirmations])
