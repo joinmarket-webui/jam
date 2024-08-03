@@ -1,5 +1,5 @@
 import user from '@testing-library/user-event'
-import { act, fireEvent, render, screen } from '../testUtils'
+import { render, screen } from '../testUtils'
 
 import { noop } from '../utils'
 

@@ -61,6 +61,78 @@ const BitcoinAmountInput = forwardRef(
           : undefined
     }, [field, inputType])
 
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      setInputType({
+        type: 'text',
+        inputMode: 'decimal',
+      })
+
+      let displayValue = String(field.value?.value || '')
+      if (isValidNumber(field.value?.value)) {
+        displayValue = formatBtcDisplayValue(field.value!.value!)
+      }
+
+      form.setFieldValue(
+        field.name,
+        {
+          ...field.value,
+          displayValue,
+        },
+        false,
+      )
+      field.onBlur(e)
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const rawUserInputOrEmpty = e.target.value ?? ''
+      const validNumberRegex = /^-?\d*\.?\d*$/
+      if (!validNumberRegex.test(rawUserInputOrEmpty)) {
+        return
+      }
+      const floatValueOrNan = parseFloat(rawUserInputOrEmpty)
+      if (!isValidNumber(floatValueOrNan)) {
+        form.setFieldValue(
+          field.name,
+          {
+            ...field.value,
+            value: null,
+            userRawInputValue: e.target.value,
+            displayValue: e.target.value,
+          },
+          true,
+        )
+        return
+      } else {
+        const value: number = floatValueOrNan
+        let numberValues: string | undefined
+        const unit =
+          rawUserInputOrEmpty.includes('.') && parseFloat(rawUserInputOrEmpty)
+            ? unitFromValue(String(rawUserInputOrEmpty))
+            : unitFromValue(String(value))
+        if (unit === 'BTC') {
+          const splitted = String(value).split('.')
+          const [integerPart, fractionalPart = ''] = splitted
+          const paddedFractionalPart = fractionalPart.padEnd(8, '0').substring(0, 8)
+          numberValues = `${integerPart}${paddedFractionalPart}`
+        } else {
+          numberValues = value.toLocaleString('en-US', {
+            maximumFractionDigits: 0,
+            useGrouping: false,
+          })
+        }
+
+        form.setFieldValue(
+          field.name,
+          {
+            value: parseInt(numberValues, 10),
+            userRawInputValue: e.target.value,
+            displayValue: e.target.value,
+          },
+          true,
+        )
+      }
+    }
+
     return (
       <>
         <rb.InputGroup hasValidation={true}>
@@ -91,76 +163,8 @@ const BitcoinAmountInput = forwardRef(
             onFocus={() => {
               setInputType({ type: 'number' })
             }}
-            onBlur={(e) => {
-              setInputType({
-                type: 'text',
-                inputMode: 'decimal',
-              })
-
-              let displayValue = String(field.value?.value || '')
-              if (isValidNumber(field.value?.value)) {
-                displayValue = formatBtcDisplayValue(field.value!.value!)
-              }
-
-              form.setFieldValue(
-                field.name,
-                {
-                  ...field.value,
-                  displayValue,
-                },
-                false,
-              )
-              field.onBlur(e)
-            }}
-            onChange={(e) => {
-              const rawUserInputOrEmpty = e.target.value ?? ''
-              const validNumberRegex = /^-?\d*\.?\d*$/
-              if (!validNumberRegex.test(rawUserInputOrEmpty)) {
-                return
-              }
-              const floatValueOrNan = parseFloat(rawUserInputOrEmpty)
-              if (!isValidNumber(floatValueOrNan)) {
-                form.setFieldValue(
-                  field.name,
-                  {
-                    ...field.value,
-                    value: null,
-                    userRawInputValue: e.target.value,
-                    displayValue: e.target.value,
-                  },
-                  true,
-                )
-                return
-              } else {
-                const value: number = floatValueOrNan
-                let numberValues: string | undefined
-                const unit =
-                  rawUserInputOrEmpty.includes('.') && parseFloat(rawUserInputOrEmpty)
-                    ? unitFromValue(String(rawUserInputOrEmpty))
-                    : unitFromValue(String(value))
-                if (unit === 'BTC') {
-                  const splitted = String(value).split('.')
-                  const [integerPart, fractionalPart = ''] = splitted
-                  const paddedFractionalPart = fractionalPart.padEnd(8, '0').substring(0, 8)
-                  numberValues = `${integerPart}${paddedFractionalPart}`
-                } else {
-                  numberValues = value.toLocaleString('en-US', {
-                    maximumFractionDigits: 0,
-                    useGrouping: false,
-                  })
-                }
-
-                form.setFieldValue(
-                  field.name,
-                  {
-                    value: parseInt(numberValues, 10),
-                    userRawInputValue: e.target.value,
-                    displayValue: e.target.value,
-                  },
-                  true,
-                )
-              }
-            }}
+            onBlur={handleBlur}
+            onChange={handleChange}
           />
           {children}
           <rb.Form.Control.Feedback type="invalid">
