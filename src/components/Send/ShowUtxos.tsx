@@ -32,7 +32,7 @@ interface ShowUtxosProps {
 interface UtxoRowProps {
   utxo: Utxo
   utxoIndex: number
-  onToggle?: (utxo: Utxo) => void
+  onToggle?: (utxoIndex: number, utxo: Utxo) => void
   isFrozen: boolean
   settings: Settings
   showRadioButton: boolean
@@ -43,7 +43,7 @@ interface UtxoRowProps {
 
 interface UtxoListDisplayProps {
   utxos: Array<Utxo>
-  onToggle?: (utxo: Utxo) => void
+  onToggle?: (utxoIndex: number, utxo: Utxo) => void
   settings: Settings
   showRadioButton: boolean
   showBackgroundColor: boolean
@@ -151,7 +151,7 @@ const UtxoRow = memo(
         className={classNames(rowAndTagClass.row, 'cursor-pointer', {
           'bg-transparent': !showBackgroundColor,
         })}
-        onClick={() => onToggle && onToggle(utxo)}
+        onClick={() => onToggle && onToggle(utxoIndex, utxo)}
       >
         {showRadioButton && (
           <Cell>
@@ -160,7 +160,7 @@ const UtxoRow = memo(
               type="checkbox"
               checked={checked}
               onChange={() => {
-                onToggle && onToggle(utxo)
+                onToggle && onToggle(utxoIndex, utxo)
               }}
               className={classNames(isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
                 [styles.selected]: checked,
@@ -295,9 +295,22 @@ const ShowUtxos = ({
   const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
 
   // Handler to toggle UTXO selection
-  const handleUtxoCheckedState = useCallback((utxo: Utxo) => {
-    utxo.checked = !utxo.checked
-  }, [])
+  const handleUtxoCheckedState = useCallback(
+    (utxoIndex: number, utxo: Utxo) => {
+      if (!utxo.frozen) {
+        const utxos = unFrozenUtxos.map((utxo: Utxo, i: number) =>
+          i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo,
+        )
+        setUnFrozenUtxos(utxos)
+      } else {
+        const utxos = frozenUtxos.map((utxo: Utxo, i: number) =>
+          i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo,
+        )
+        setFrozenUtxos(utxos)
+      }
+    },
+    [frozenUtxos, unFrozenUtxos, setUnFrozenUtxos, setFrozenUtxos],
+  )
 
   //Effect to hide the Divider line when there is no unFrozen-UTXOs present
   useEffect(() => {
