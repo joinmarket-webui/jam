@@ -102,19 +102,16 @@ describe('<BitcoinAmountInput />', () => {
     })
     const inputElement = screen.getByLabelText('test-label')
 
-    await act(async () => {
-      fireEvent.change(inputElement, { target: { value: '1.0' } })
-      fireEvent.focus(inputElement)
-    })
+    await user.type(inputElement, '1.0')
 
+    expect(inputElement).toHaveFocus()
     expect(inputElement.dataset.value).toBe('100000000')
     expect(inputElement.dataset.displayUnit).toBe('BTC')
     expect(inputElement.dataset.displayValue).toBe(`1.0`)
 
-    await act(async () => {
-      fireEvent.blur(inputElement)
-    })
+    await user.tab()
 
+    expect(inputElement).not.toHaveFocus()
     expect(inputElement.dataset.value).toBe('100000000')
     expect(inputElement.dataset.displayUnit).toBe('BTC')
     expect(inputElement.dataset.displayValue).toBe(`1.00 000 000`)

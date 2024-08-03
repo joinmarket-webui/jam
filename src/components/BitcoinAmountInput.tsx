@@ -77,7 +77,6 @@ const BitcoinAmountInput = forwardRef(
             data-display-value={field.value?.displayValue}
             name={field.name}
             autoComplete="off"
-            type={inputType.type}
             inputMode={inputType.inputMode}
             className={classNames('slashed-zeroes', className)}
             value={
@@ -115,6 +114,10 @@ const BitcoinAmountInput = forwardRef(
             }}
             onChange={(e) => {
               const rawUserInputOrEmpty = e.target.value ?? ''
+              const validNumberRegex = /^-?\d*\.?\d*$/
+              if (!validNumberRegex.test(rawUserInputOrEmpty)) {
+                return
+              }
               const floatValueOrNan = parseFloat(rawUserInputOrEmpty)
               if (!isValidNumber(floatValueOrNan)) {
                 form.setFieldValue(
