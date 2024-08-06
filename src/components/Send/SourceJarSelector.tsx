@@ -53,7 +53,7 @@ export const SourceJarSelector = ({
   }, [walletInfo])
 
   useEffect(() => {
-    if (walletInfo?.utxosByJar && showUtxos && showUtxos.jarIndex >= 0) {
+    if (walletInfo?.utxosByJar && showUtxos?.jarIndex !== undefined) {
       const utxos = walletInfo.utxosByJar[showUtxos.jarIndex]
 
       const frozenUtxoList = utxos

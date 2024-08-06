@@ -55,18 +55,6 @@ interface DividerProps {
   className?: string
 }
 
-// Utility function to format the confirmations
-const formatConfirmations = (conf: number) => {
-  if (conf === 0) return { symbol: 'confs-0', confirmations: conf }
-  if (conf === 1) return { symbol: 'confs-1', confirmations: conf }
-  if (conf === 2) return { symbol: 'confs-2', confirmations: conf }
-  if (conf === 3) return { symbol: 'confs-3', confirmations: conf }
-  if (conf === 4) return { symbol: 'confs-4', confirmations: conf }
-  if (conf === 5) return { symbol: 'confs-5', confirmations: conf }
-  if (conf > 9999) return { symbol: 'confs-full', confirmations: '9999+' }
-  return { symbol: 'confs-full', confirmations: conf }
-}
-
 // Utility function to Identifies Icons
 const utxoIcon = (tag: string, isFrozen: boolean) => {
   if (isFrozen && tag === 'bond') return 'timelock'
@@ -87,6 +75,45 @@ const allotClasses = (tag: string, isFrozen: boolean) => {
   return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
 }
 
+interface ConfirmationFormat {
+  symbol: string
+  display: string
+  confirmations: number
+}
+
+const formatConfirmations = (confirmations: number): ConfirmationFormat => ({
+  symbol: `confs-${confirmations >= 6 ? 'full' : confirmations}`,
+  display: confirmations > 9999 ? `${Number(9999).toLocaleString()}+` : confirmations.toLocaleString(),
+  confirmations,
+})
+
+const Confirmations = ({ value }: { value: ConfirmationFormat }) =>
+  value.confirmations > 9999 ? (
+    <rb.OverlayTrigger
+      popperConfig={{
+        modifiers: [
+          {
+            name: 'offset',
+            options: {
+              offset: [0, 1],
+            },
+          },
+        ],
+      }}
+      overlay={(props) => <rb.Tooltip {...props}>{value.confirmations.toLocaleString()}</rb.Tooltip>}
+    >
+      <div>
+        <Sprite symbol={value.symbol} width="28px" height="28px" className="mb-1" />
+        {value.display}
+      </div>
+    </rb.OverlayTrigger>
+  ) : (
+    <div>
+      <Sprite symbol={value.symbol} width="28px" height="28px" className="mb-1" />
+      {value.display}
+    </div>
+  )
+
 const UtxoRow = memo(
   ({
     utxo,
@@ -102,7 +129,7 @@ const UtxoRow = memo(
     const { address: utxoAddress, confirmations, value, checked, frozen } = utxo
 
     const address = useMemo(() => shortenStringMiddle(utxoAddress, 16), [utxoAddress])
-    const conf = useMemo(() => formatConfirmations(confirmations), [confirmations])
+    const confFormat = useMemo(() => formatConfirmations(confirmations), [confirmations])
     const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
     const { icon, rowAndTagClass } = useMemo(() => {
@@ -111,33 +138,6 @@ const UtxoRow = memo(
       }
       return { icon: utxoIcon(tag[0].tag, isFrozen), rowAndTagClass: allotClasses(tag[0].tag, isFrozen) }
     }, [tag, isFrozen])
-
-    const ConfirmationCell = () =>
-      confirmations > 9999 ? (
-        <rb.OverlayTrigger
-          popperConfig={{
-            modifiers: [
-              {
-                name: 'offset',
-                options: {
-                  offset: [0, 1],
-                },
-              },
-            ],
-          }}
-          overlay={(props) => <rb.Tooltip {...props}>{confirmations}</rb.Tooltip>}
-        >
-          <div>
-            <Sprite symbol={conf.symbol} width="28px" height="28px" className="mb-1" />
-            {conf.confirmations}
-          </div>
-        </rb.OverlayTrigger>
-      ) : (
-        <div>
-          <Sprite symbol={conf.symbol} width="28px" height="28px" className="mb-1" />
-          {conf.confirmations}
-        </div>
-      )
 
     return (
       <Row
@@ -167,7 +167,7 @@ const UtxoRow = memo(
         </Cell>
         <Cell className="slashed-zeroes">{address}</Cell>
         <Cell>
-          <ConfirmationCell />
+          <Confirmations value={confFormat} />
         </Cell>
         <Cell>
           <Balance
