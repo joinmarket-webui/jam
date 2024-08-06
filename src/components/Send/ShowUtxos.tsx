@@ -6,16 +6,16 @@ import classNames from 'classnames'
 import { Table, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useTheme } from '@table-library/react-table-library/theme'
 import * as TableTypes from '@table-library/react-table-library/types/table'
-import { WalletInfo, Utxo, useCurrentWalletInfo } from '../../context/WalletContext'
+import { WalletInfo, Utxo, useCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import { useSettings, Settings } from '../../context/SettingsContext'
 import Alert from '../Alert'
 import Balance from '../Balance'
 import { ConfirmModal } from '../Modal'
 import Sprite from '../Sprite'
 import { utxoTags } from '../jar_details/UtxoList'
+import { shortenStringMiddle } from '../../utils'
 import mainStyles from '../MainWalletView.module.css'
 import styles from './ShowUtxos.module.css'
-import { UtxoList } from './SourceJarSelector'
 
 interface ShowUtxosProps {
   isOpen: boolean
@@ -23,10 +23,10 @@ interface ShowUtxosProps {
   onConfirm: () => void
   alert: SimpleAlert | undefined
   isLoading: boolean
-  frozenUtxos: UtxoList
-  unFrozenUtxos: UtxoList
-  setFrozenUtxos: (arg: UtxoList) => void
-  setUnFrozenUtxos: (arg: UtxoList) => void
+  frozenUtxos: Utxos
+  unFrozenUtxos: Utxos
+  setFrozenUtxos: (arg: Utxos) => void
+  setUnFrozenUtxos: (arg: Utxos) => void
 }
 
 interface UtxoRowProps {
@@ -55,9 +55,6 @@ interface DividerProps {
   className?: string
 }
 
-// Utility function to format Bitcoin address
-const formatAddress = (address: string) => `${address.slice(0, 10)}...${address.slice(-8)}`
-
 // Utility function to format the confirmations
 const formatConfirmations = (conf: number) => {
   if (conf === 0) return { symbol: 'confs-0', confirmations: conf }
@@ -70,16 +67,14 @@ const formatConfirmations = (conf: number) => {
   return { symbol: 'confs-full', confirmations: conf }
 }
 
-// Utility function to convert Satoshi to Bitcoin
-const satsToBtc = (sats: number) => (sats / 100000000).toFixed(8)
-
 // Utility function to Identifies Icons
 const utxoIcon = (tag: string, isFrozen: boolean) => {
   if (isFrozen && tag === 'bond') return 'timelock'
   if (isFrozen) return 'snowflake'
-  if (tag === 'deposit' || tag === 'non-cj-change' || tag === 'reused') return 'Unmixed'
   if (tag === 'bond') return 'timelock'
-  return 'mixed'
+  if (tag === 'cj-out') return 'mixed'
+  if (tag === 'deposit' || tag === 'non-cj-change' || tag === 'reused') return 'unmixed'
+  return 'unmixed' // fallback
 }
 
 // Utility function to allot classes
@@ -106,14 +101,13 @@ const UtxoRow = memo(
   }: UtxoRowProps) => {
     const { address: utxoAddress, confirmations, value, checked, frozen } = utxo
 
-    const address = useMemo(() => formatAddress(utxoAddress), [utxoAddress])
+    const address = useMemo(() => shortenStringMiddle(utxoAddress, 16), [utxoAddress])
     const conf = useMemo(() => formatConfirmations(confirmations), [confirmations])
-    const valueString = useMemo(() => satsToBtc(value).toString(), [value])
     const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
     const { icon, rowAndTagClass } = useMemo(() => {
       if (tag.length === 0) {
-        return { icon: 'Unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
+        return { icon: 'unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
       }
       return { icon: utxoIcon(tag[0].tag, isFrozen), rowAndTagClass: allotClasses(tag[0].tag, isFrozen) }
     }, [tag, isFrozen])
@@ -171,16 +165,16 @@ const UtxoRow = memo(
         <Cell>
           <Sprite symbol={icon} width="23px" height="23px" />
         </Cell>
-        <Cell>{address}</Cell>
+        <Cell className="slashed-zeroes">{address}</Cell>
         <Cell>
           <ConfirmationCell />
         </Cell>
         <Cell>
           <Balance
-            valueString={valueString}
+            valueString={String(value)}
             convertToUnit={settings.unit}
             showBalance={true}
-            isColorChange={true}
+            colored={false}
             frozen={isFrozen}
             frozenSymbol={false}
           />
@@ -225,7 +219,7 @@ const UtxoListDisplay = ({
   return (
     <div className={classNames(styles.utxoListDisplayHeight, 'overflow-y-auto')}>
       <Table
-        className={'bg'}
+        className="bg"
         data={{ nodes: utxos }}
         theme={tableTheme}
         layout={{ custom: true, horizontalScroll: true }}
@@ -328,7 +322,7 @@ const ShowUtxos = ({
       title={t('show_utxos.show_utxo_title')}
       size="lg"
       showCloseButton={true}
-      confirmVariant={'dark'}
+      confirmVariant="dark"
       headerClassName={styles.customHeaderClass}
       titleClassName={styles.customTitleClass}
     >
