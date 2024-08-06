@@ -148,18 +148,29 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
         <rb.Row>
           <WalletHeaderRescanning walletName={wallet.displayName} isLoading={isLoading} />
         </rb.Row>
+      ) : !currentWalletInfo || isLoading ? (
+        <rb.Row>
+          <WalletHeaderPlaceholder />
+        </rb.Row>
       ) : (
-        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} className="cursor-pointer">
-          {!currentWalletInfo || isLoading ? (
-            <WalletHeaderPlaceholder />
-          ) : (
-            <WalletHeader
-              walletName={wallet.displayName}
-              balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
-              unit={settings.unit}
-              showBalance={settings.showBalance}
-            />
-          )}
+        <rb.Row
+          className="cursor-pointer"
+          onClick={() => {
+            if (!settings.showBalance) {
+              settingsDispatch({ unit: 'BTC', showBalance: true })
+            } else if (settings.unit === 'BTC') {
+              settingsDispatch({ unit: 'sats', showBalance: true })
+            } else {
+              settingsDispatch({ unit: 'BTC', showBalance: false })
+            }
+          }}
+        >
+          <WalletHeader
+            walletName={wallet.displayName}
+            balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
+            unit={settings.unit}
+            showBalance={settings.showBalance}
+          />
         </rb.Row>
       )}
       <div className={styles.walletBody}>
