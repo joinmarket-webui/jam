@@ -92,7 +92,7 @@ const SelectJar = ({
   )
 }
 
-const SelectUtxos = ({ walletInfo, jar, selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
+const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
   // const { t } = useTranslation()
   const settings = useSettings()
   // const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
@@ -135,7 +135,6 @@ const SelectUtxos = ({ walletInfo, jar, selectedUtxos, utxos, onUtxoSelected, on
 
     setFrozenUtxos(frozen)
     setUnFrozenUtxos(unfrozen)
-
     // if (unfrozen.length === 0) {
     //   setAlert({ variant: 'danger', message: t('show_utxos.alert_for_empty_utxos') })
     // } else {
@@ -147,7 +146,7 @@ const SelectUtxos = ({ walletInfo, jar, selectedUtxos, utxos, onUtxoSelected, on
     loadData()
   }, [loadData])
 
-  const handleToggle = (utxo: Utxo) => {
+  const handleToggle = (utxoIndex: number, utxo: Utxo) => {
     utxo.checked = !utxo.checked
     if (utxo.checked) {
       onUtxoSelected(utxo)
@@ -159,7 +158,13 @@ const SelectUtxos = ({ walletInfo, jar, selectedUtxos, utxos, onUtxoSelected, on
   return (
     <>
       <div className="d-flex flex-column gap-4">
-        <UtxoListDisplay utxos={unFrozenUtxos} onToggle={handleToggle} settings={settings} />
+        <UtxoListDisplay
+          utxos={unFrozenUtxos}
+          onToggle={handleToggle}
+          settings={settings}
+          showRadioButton={true}
+          showBackgroundColor={true}
+        />
         {frozenUtxos.length > 0 && (
           <Divider
             isState={showFrozenUtxos}
@@ -168,7 +173,13 @@ const SelectUtxos = ({ walletInfo, jar, selectedUtxos, utxos, onUtxoSelected, on
           />
         )}
         {showFrozenUtxos && (
-          <UtxoListDisplay utxos={frozenUtxos} onToggle={handleToggle} settings={settings} showRadioAndBg={true} />
+          <UtxoListDisplay
+            utxos={frozenUtxos}
+            onToggle={handleToggle}
+            settings={settings}
+            showRadioButton={true}
+            showBackgroundColor={true}
+          />
         )}
       </div>
     </>

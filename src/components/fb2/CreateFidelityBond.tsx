@@ -16,6 +16,7 @@ import * as fb from './utils'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
 import { jarName } from '../jars/Jar'
+import { spendUtxosWithDirectSend, errorResolver } from './SpendFidelityBondModal'
 
 const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
 
@@ -266,10 +267,17 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
       }
     }
 
+    if (currentStep === steps.confirmation) {
+      if (alert) {
+        return steps.failed
+      }
+      return steps.done
+    }
+
     return null
   }
 
-  const onPrimaryButtonClicked = () => {
+  const onPrimaryButtonClicked = async () => {
     if (nextStep(step) === null) {
       return
     }
@@ -280,8 +288,31 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     }
 
     if (nextStep(step) === steps.done) {
+      const abortCtrl = new AbortController()
+      const requestContext = { ...wallet, signal: abortCtrl.signal }
+
+      await spendUtxosWithDirectSend(
+        requestContext,
+        {
+          destination: timelockedAddress!,
+          sourceJarIndex: selectedJar!,
+          utxos: selectedUtxos,
+        },
+        {
+          onReloadWalletError: (res) =>
+            Api.Helper.throwResolved(res, errorResolver(t, 'global.errors.error_reloading_wallet_failed')),
+          onFreezeUtxosError: (res) =>
+            Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_freezing_utxos')),
+          onUnfreezeUtxosError: (res) =>
+            Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_unfreezing_fidelity_bond')),
+          onSendError: (res) =>
+            Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond')),
+        },
+      )
+
       reset()
       onDone()
+
       return
     }
 

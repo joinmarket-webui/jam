@@ -748,4 +748,4 @@ const SpendFidelityBondModal = ({
   )
 }
 
-export { RenewFidelityBondModal, SpendFidelityBondModal }
+export { RenewFidelityBondModal, SpendFidelityBondModal, spendUtxosWithDirectSend, errorResolver }
