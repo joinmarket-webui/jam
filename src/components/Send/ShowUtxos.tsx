@@ -32,7 +32,7 @@ interface ShowUtxosProps {
 interface UtxoRowProps {
   utxo: Utxo
   utxoIndex: number
-  onToggle?: (index: number, isFrozen: boolean) => void
+  onToggle: (index: number, isFrozen: boolean) => void
   isFrozen: boolean
   settings: Settings
   showRadioButton: boolean
@@ -43,7 +43,7 @@ interface UtxoRowProps {
 
 interface UtxoListDisplayProps {
   utxos: Array<Utxo>
-  onToggle?: (index: number, isFrozen: boolean) => void
+  onToggle: (index: number, isFrozen: boolean) => void
   settings: Settings
   showRadioButton: boolean
   showBackgroundColor: boolean
@@ -145,7 +145,7 @@ const UtxoRow = memo(
         className={classNames(rowAndTagClass.row, 'cursor-pointer', {
           'bg-transparent': !showBackgroundColor,
         })}
-        onClick={() => onToggle && onToggle(utxoIndex, frozen)}
+        onClick={() => onToggle(utxoIndex, frozen)}
       >
         {showRadioButton && (
           <Cell>
@@ -154,7 +154,7 @@ const UtxoRow = memo(
               type="checkbox"
               checked={checked}
               onChange={() => {
-                onToggle && onToggle(utxoIndex, isFrozen)
+                onToggle(utxoIndex, isFrozen)
               }}
               className={classNames(isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
                 [styles.selected]: checked,
