@@ -11,9 +11,8 @@ import { CopyButton } from '../CopyButton'
 import LockdateForm, { LockdateFormProps } from './LockdateForm'
 import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
-import { UtxoListDisplay, Divider } from '../Send/ShowUtxos'
-
-type UtxoList = Array<Utxo>
+import { UtxoListDisplay } from '../Send/ShowUtxos'
+import Divider from '../Divider'
 
 type SelectDateProps = {
   description: string
@@ -90,13 +89,27 @@ const SelectJar = ({
   )
 }
 
+type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
+
 const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
   const settings = useSettings()
-  // const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
-  const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
-  const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
-  const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
-  // const [isLoading, setisLoading] = useState<boolean>(true)
+  const upperUtxos = utxos
+    .filter((it) => !it.frozen)
+    .filter((it) => !it.locktime)
+    .map((it) =>
+      fb.utxo.isInList(it, selectedUtxos)
+        ? {
+          ...it,
+          checked: true,
+          selectable: true,
+        }
+        : {
+          ...it,
+          checked: false,
+          selectable: true,
+        },
+    )
+    .sort((a, b) => a.confirmations - b.confirmations)
 
   const frozenNonTimelockedUtxos = utxos
     .filter((it) => it.frozen)
@@ -104,15 +117,15 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
     .map((it) =>
       fb.utxo.isInList(it, selectedUtxos)
         ? {
-            ...it,
-            checked: true,
-            selectable: true,
-          }
+          ...it,
+          checked: true,
+          selectable: true,
+        }
         : {
-            ...it,
-            checked: false,
-            selectable: true,
-          },
+          ...it,
+          checked: false,
+          selectable: true,
+        },
     )
     .sort((a, b) => a.confirmations - b.confirmations)
 
@@ -125,7 +138,7 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
 
   const [showFrozenUtxos, setShowFrozenUtxos] = useState(upperUtxos.length === 0 && lowerUtxos.length > 0)
 
-  const handleToggle = (utxoIndex: number, utxo: Utxo) => {
+  const handleToggle = (utxo: SelectableUtxo) => {
     utxo.checked = !utxo.checked
     if (utxo.checked) {
       onUtxoSelected(utxo)
@@ -137,28 +150,16 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
   return (
     <>
       <div className="d-flex flex-column gap-4">
-        <UtxoListDisplay
-          utxos={unFrozenUtxos}
-          onToggle={handleToggle}
-          settings={settings}
-          showRadioButton={true}
-          showBackgroundColor={true}
-        />
-        {frozenUtxos.length > 0 && (
+        <UtxoListDisplay utxos={upperUtxos} onToggle={handleToggle} settings={settings} showBackgroundColor={true} />
+        {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
           <Divider
-            isState={showFrozenUtxos}
-            setIsState={setShowFrozenUtxos}
+            toggled={showFrozenUtxos}
+            onToggle={() => setShowFrozenUtxos((current) => !current)}
             className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
           />
         )}
         {showFrozenUtxos && (
-          <UtxoListDisplay
-            utxos={frozenUtxos}
-            onToggle={handleToggle}
-            settings={settings}
-            showRadioButton={true}
-            showBackgroundColor={true}
-          />
+          <UtxoListDisplay utxos={lowerUtxos} onToggle={handleToggle} settings={settings} showBackgroundColor={true} />
         )}
       </div>
     </>

@@ -286,6 +286,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
       )
       setCreatingFidelityBond(false)
       onDone()
+
       return
     }
 
