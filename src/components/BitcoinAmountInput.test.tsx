@@ -95,4 +95,25 @@ describe('<BitcoinAmountInput />', () => {
     expect(inputElement.dataset.displayUnit).toBe(undefined)
     expect(inputElement.dataset.displayValue).toBe('')
   })
+
+  it('amount 1.0 should be interpreted as 1 BTC', async () => {
+    setup({
+      label: 'test-label',
+    })
+    const inputElement = screen.getByLabelText('test-label')
+
+    await user.type(inputElement, '1.0')
+
+    expect(inputElement).toHaveFocus()
+    expect(inputElement.dataset.value).toBe('100000000')
+    expect(inputElement.dataset.displayUnit).toBe('BTC')
+    expect(inputElement.dataset.displayValue).toBe(`1.0`)
+
+    await user.tab()
+
+    expect(inputElement).not.toHaveFocus()
+    expect(inputElement.dataset.value).toBe('100000000')
+    expect(inputElement.dataset.displayUnit).toBe('BTC')
+    expect(inputElement.dataset.displayValue).toBe(`1.00 000 000`)
+  })
 })
