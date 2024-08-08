@@ -1,0 +1,21 @@
+.modalHeader {
+  display: flex !important;
+  justify-content: flex-start !important;
+  background-color: transparent !important;
+  padding: 1.25rem !important;
+}
+
+.modalTitle {
+  width: 100%;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  color: var(--bs-body-color) !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalBody {
+  color: var(--bs-body-color) !important;
+  text-align: left !important;
+}
