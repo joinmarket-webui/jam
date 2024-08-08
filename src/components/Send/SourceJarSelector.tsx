@@ -3,7 +3,7 @@ import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
-import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 import { ShowUtxos } from './ShowUtxos'
 import { useTranslation } from 'react-i18next'
@@ -37,6 +37,7 @@ export const SourceJarSelector = ({
 }: SourceJarSelectorProps) => {
   const { t } = useTranslation()
   const [field] = useField<JarIndex>(name)
+  const [consideredUtxos] = useField<Utxos | undefined>('consideredUtxos')
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
@@ -147,6 +148,7 @@ export const SourceJarSelector = ({
                     variant={it.accountIndex === field.value ? variant : undefined}
                     onClick={(jarIndex) => {
                       form.setFieldValue(field.name, jarIndex, true)
+                      form.setFieldValue(consideredUtxos.name, undefined, false)
                       if (
                         it.accountIndex === field.value &&
                         !disabled &&
