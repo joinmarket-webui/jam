@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo, useMemo } from 'react'
+import { useState, useEffect, memo, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -19,21 +19,16 @@ import styles from './ShowUtxos.module.css'
 
 interface ShowUtxosProps {
   isOpen: boolean
-  onCancel: () => void
-  onConfirm: () => void
-  alert: SimpleAlert | undefined
   isLoading: boolean
-  frozenUtxos: Utxos
-  unFrozenUtxos: Utxos
-  setFrozenUtxos: (arg: Utxos) => void
-  setUnFrozenUtxos: (arg: Utxos) => void
+  utxos: Utxos
+  alert?: SimpleAlert
+  onCancel: () => void
+  onConfirm: (selectedUtxos: Utxos) => void
 }
 
 interface UtxoRowProps {
-  utxo: Utxo
-  utxoIndex: number
-  onToggle: (index: number, isFrozen: boolean) => void
-  isFrozen: boolean
+  utxo: SelectableUtxo
+  onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
   showRadioButton: boolean
   showBackgroundColor: boolean
@@ -42,8 +37,8 @@ interface UtxoRowProps {
 }
 
 interface UtxoListDisplayProps {
-  utxos: Array<Utxo>
-  onToggle: (index: number, isFrozen: boolean) => void
+  utxos: SelectableUtxo[]
+  onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
   showRadioButton: boolean
   showBackgroundColor: boolean
@@ -115,29 +110,17 @@ const Confirmations = ({ value }: { value: ConfirmationFormat }) =>
   )
 
 const UtxoRow = memo(
-  ({
-    utxo,
-    utxoIndex,
-    onToggle,
-    isFrozen,
-    showRadioButton,
-    showBackgroundColor,
-    settings,
-    walletInfo,
-    t,
-  }: UtxoRowProps) => {
-    const { address: utxoAddress, confirmations, value, checked, frozen } = utxo
-
-    const address = useMemo(() => shortenStringMiddle(utxoAddress, 16), [utxoAddress])
-    const confFormat = useMemo(() => formatConfirmations(confirmations), [confirmations])
+  ({ utxo, onToggle, showRadioButton, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
+    const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
+    const confFormat = useMemo(() => formatConfirmations(utxo.confirmations), [utxo.confirmations])
     const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
     const { icon, rowAndTagClass } = useMemo(() => {
       if (tag.length === 0) {
         return { icon: 'unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
       }
-      return { icon: utxoIcon(tag[0].tag, isFrozen), rowAndTagClass: allotClasses(tag[0].tag, isFrozen) }
-    }, [tag, isFrozen])
+      return { icon: utxoIcon(tag[0].tag, utxo.frozen), rowAndTagClass: allotClasses(tag[0].tag, utxo.frozen) }
+    }, [tag, utxo.frozen])
 
     return (
       <Row
@@ -145,19 +128,19 @@ const UtxoRow = memo(
         className={classNames(rowAndTagClass.row, 'cursor-pointer', {
           'bg-transparent': !showBackgroundColor,
         })}
-        onClick={() => onToggle(utxoIndex, frozen)}
+        onClick={() => onToggle(utxo)}
       >
         {showRadioButton && (
           <Cell>
             <input
-              id={`check-box-${isFrozen ? 'frozen' : 'unFrozen'}-${utxoIndex}`}
+              id={`utxo-checkbox-${utxo.utxo}`}
               type="checkbox"
-              checked={checked}
+              checked={utxo.checked}
               onChange={() => {
-                onToggle(utxoIndex, isFrozen)
+                onToggle(utxo)
               }}
-              className={classNames(isFrozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
-                [styles.selected]: checked,
+              className={classNames(utxo.frozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
+                [styles.selected]: utxo.checked,
               })}
             />
           </Cell>
@@ -171,11 +154,11 @@ const UtxoRow = memo(
         </Cell>
         <Cell>
           <Balance
-            valueString={String(value)}
+            valueString={String(utxo.value)}
             convertToUnit={settings.unit}
             showBalance={true}
             colored={false}
-            frozen={isFrozen}
+            frozen={utxo.frozen}
             frozenSymbol={false}
           />
         </Cell>
@@ -213,9 +196,6 @@ const UtxoListDisplay = ({
   }
   const tableTheme = useTheme(TABLE_THEME)
 
-  //Default sort is by date the older ones at the bottom, newer ones at the top.
-  utxos.sort((a, b) => a.confirmations - b.confirmations)
-
   return (
     <div className={classNames(styles.utxoListDisplayHeight, 'overflow-y-auto')}>
       <Table
@@ -224,17 +204,15 @@ const UtxoListDisplay = ({
         theme={tableTheme}
         layout={{ custom: true, horizontalScroll: true }}
       >
-        {(utxosList: TableTypes.TableProps<Utxo>) => (
+        {(utxosList: TableTypes.TableProps<SelectableUtxo>) => (
           <Body>
             {walletInfo &&
-              utxosList.map((utxo: Utxo, index: number) => {
+              utxosList.map((utxo: SelectableUtxo, index: number) => {
                 return (
                   <UtxoRow
                     key={index}
                     utxo={utxo}
-                    utxoIndex={index}
                     onToggle={onToggle}
-                    isFrozen={utxo.frozen}
                     showRadioButton={showRadioButton}
                     showBackgroundColor={showBackgroundColor}
                     settings={settings}
@@ -273,51 +251,43 @@ const Divider = ({ isState, setIsState, className }: DividerProps) => {
   )
 }
 
-const ShowUtxos = ({
-  isOpen,
-  onCancel,
-  onConfirm,
-  alert,
-  isLoading,
-  frozenUtxos,
-  unFrozenUtxos,
-  setFrozenUtxos,
-  setUnFrozenUtxos,
-}: ShowUtxosProps) => {
+type SelectableUtxo = Utxo & { checked: boolean }
+
+const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: ShowUtxosProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
-  const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
+  const [showFrozenUtxos, setShowFrozenUtxos] = useState(false)
 
-  // Handler to toggle UTXO selection
-  const handleUtxoCheckedState = useCallback(
-    (utxoIndex: number, isFrozen: boolean) => {
-      if (!isFrozen) {
-        const utxos = unFrozenUtxos.map((utxo: Utxo, i: number) =>
-          i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo,
-        )
-        setUnFrozenUtxos(utxos)
-      } else {
-        const utxos = frozenUtxos.map((utxo: Utxo, i: number) =>
-          i === utxoIndex ? { ...utxo, checked: !utxo.checked } : utxo,
-        )
-        setFrozenUtxos(utxos)
-      }
-    },
-    [frozenUtxos, unFrozenUtxos, setUnFrozenUtxos, setFrozenUtxos],
+  const [upperUtxos, setUpperUtxos] = useState<SelectableUtxo[]>(
+    utxos
+      .filter((it) => !it.frozen)
+      .map((it) => ({ ...it, checked: true }))
+      .sort((a, b) => a.confirmations - b.confirmations),
+  )
+  const [lowerUtxos, setLowerUtxos] = useState<SelectableUtxo[]>(
+    utxos
+      .filter((it) => it.frozen)
+      .map((it) => ({ ...it, checked: false }))
+      .sort((a, b) => a.confirmations - b.confirmations),
+  )
+
+  const selectedUtxos = useMemo(
+    () => [...upperUtxos, ...lowerUtxos].filter((it) => it.checked),
+    [upperUtxos, lowerUtxos],
   )
 
   //Effect to hide the Divider line when there is no unFrozen-UTXOs present
   useEffect(() => {
-    if (unFrozenUtxos.length === 0 && frozenUtxos.length > 0) {
+    if (upperUtxos.length === 0 && lowerUtxos.length > 0) {
       setShowFrozenUtxos(true)
     }
-  }, [unFrozenUtxos.length, frozenUtxos.length])
+  }, [upperUtxos.length, lowerUtxos.length])
 
   return (
     <ConfirmModal
       onCancel={onCancel}
-      onConfirm={onConfirm}
-      disabled={alert?.dismissible || isLoading}
+      onConfirm={() => onConfirm(selectedUtxos)}
+      disabled={isLoading}
       isShown={isOpen}
       title={t('show_utxos.show_utxo_title')}
       size="lg"
@@ -329,23 +299,27 @@ const ShowUtxos = ({
       {!isLoading ? (
         <>
           <div className={classNames(styles.subTitle, 'm-3 mb-4 text-start')}>
-            {unFrozenUtxos.length !== 0
+            {upperUtxos.length !== 0
               ? t('show_utxos.show_utxo_subtitle')
               : t('show_utxos.show_utxo_subtitle_when_allutxos_are_frozen')}
           </div>
           {alert && (
             <rb.Row>
-              <Alert variant={alert.variant} message={alert.message} dismissible={!alert.dismissible} />
+              <Alert variant={alert.variant} message={alert.message} />
             </rb.Row>
           )}
           <UtxoListDisplay
-            utxos={unFrozenUtxos}
-            onToggle={handleUtxoCheckedState}
+            utxos={upperUtxos}
+            onToggle={(utxo) => {
+              setUpperUtxos((current) =>
+                current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
+              )
+            }}
             settings={settings}
             showRadioButton={true}
             showBackgroundColor={true}
           />
-          {frozenUtxos.length > 0 && unFrozenUtxos.length > 0 && (
+          {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
             <Divider
               isState={showFrozenUtxos}
               setIsState={setShowFrozenUtxos}
@@ -354,8 +328,12 @@ const ShowUtxos = ({
           )}
           {showFrozenUtxos && (
             <UtxoListDisplay
-              utxos={frozenUtxos}
-              onToggle={handleUtxoCheckedState}
+              utxos={lowerUtxos}
+              onToggle={(utxo) => {
+                setLowerUtxos((current) =>
+                  current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
+                )
+              }}
               settings={settings}
               showRadioButton={true}
               showBackgroundColor={true}
