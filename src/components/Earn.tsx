@@ -13,6 +13,7 @@ import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
+import { CreateFidelityBond2 } from './fb2/CreateFidelityBond'
 import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
 import { RenewFidelityBondModal, SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
@@ -718,12 +719,20 @@ export default function Earn({ wallet }: EarnProps) {
                     !isWaitingMakerStart &&
                     !isWaitingMakerStop &&
                     (!isLoading && currentWalletInfo ? (
-                      <CreateFidelityBond
-                        otherFidelityBondExists={fidelityBonds.length > 0}
-                        wallet={wallet}
-                        walletInfo={currentWalletInfo}
-                        onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
-                      />
+                      <>
+                        <CreateFidelityBond
+                          otherFidelityBondExists={fidelityBonds.length > 0}
+                          wallet={wallet}
+                          walletInfo={currentWalletInfo}
+                          onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                        />
+                        <CreateFidelityBond2
+                          otherFidelityBondExists={fidelityBonds.length > 0}
+                          wallet={wallet}
+                          walletInfo={currentWalletInfo}
+                          onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                        />
+                      </>
                     ) : (
                       <rb.Placeholder as="div" animation="wave">
                         <rb.Placeholder xs={12} className={styles.fidelityBondsLoader} />
