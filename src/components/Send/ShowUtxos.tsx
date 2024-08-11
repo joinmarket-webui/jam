@@ -224,7 +224,6 @@ type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
 const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: ShowUtxosProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
-  const [showFrozenUtxos, setShowFrozenUtxos] = useState(false)
 
   const [upperUtxos, setUpperUtxos] = useState<SelectableUtxo[]>(
     utxos
@@ -252,13 +251,7 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
     () => [...upperUtxos, ...lowerUtxos].filter((it) => it.checked),
     [upperUtxos, lowerUtxos],
   )
-
-  //Effect to hide the Divider line when there is no unFrozen-UTXOs present
-  useEffect(() => {
-    if (upperUtxos.length === 0 && lowerUtxos.length > 0) {
-      setShowFrozenUtxos(true)
-    }
-  }, [upperUtxos.length, lowerUtxos.length])
+  const [showFrozenUtxos, setShowFrozenUtxos] = useState(upperUtxos.length === 0 && lowerUtxos.length > 0)
 
   return (
     <ConfirmModal
@@ -276,7 +269,7 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
       {!isLoading ? (
         <>
           <div className={classNames(styles.subTitle, 'm-3 mb-4 text-start')}>
-            {upperUtxos.length !== 0
+            {upperUtxos.length > 0
               ? t('show_utxos.show_utxo_subtitle')
               : t('show_utxos.show_utxo_subtitle_when_allutxos_are_frozen')}
           </div>
