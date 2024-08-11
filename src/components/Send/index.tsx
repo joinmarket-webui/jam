@@ -542,9 +542,17 @@ export default function Send({ wallet }: SendProps) {
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
           }}
         >
-          {showConfirmSendModal.amount!.isSweep && showConfirmSendModal.consideredUtxos && (
-            <ReviewConsideredUtxos utxos={showConfirmSendModal.consideredUtxos} />
-          )}
+          {showConfirmSendModal.amount?.isSweep &&
+            showConfirmSendModal.consideredUtxos &&
+            walletInfo &&
+            showConfirmSendModal.sourceJarIndex !== undefined &&
+            (() => {
+              const selectedUtxosList = showConfirmSendModal.consideredUtxos
+              const utxoList = walletInfo.utxosByJar[showConfirmSendModal.sourceJarIndex].filter((utxo) =>
+                selectedUtxosList.some((selectedUtxos) => selectedUtxos === utxo.utxo),
+              )
+              return <ReviewConsideredUtxos utxos={utxoList} />
+            })()}
         </PaymentConfirmModal>
       )}
     </div>
