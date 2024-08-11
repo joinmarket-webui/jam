@@ -3,7 +3,7 @@ import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
-import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxo } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 import { ShowUtxos } from './ShowUtxos'
 import { useTranslation } from 'react-i18next'
@@ -38,6 +38,7 @@ export const SourceJarSelector = ({
 }: SourceJarSelectorProps) => {
   const { t } = useTranslation()
   const [field] = useField<JarIndex>(name)
+  const [consideredUtxos] = useField<Utxos | undefined>('consideredUtxos')
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
@@ -109,9 +110,21 @@ export const SourceJarSelector = ({
 
       if (res.length !== 0) {
         setIsUtxosLoading(true)
-        await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+        const allUtxosData = await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+        if (allUtxosData) {
+          const selectedUtxos = allUtxosData.utxos
+            .filter((utxo) => utxo.mixdepth === field.value && !utxo.frozen)
+            .map((utxo) => utxo.utxo)
+          form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
+        }
+      } else {
+        if (walletInfo) {
+          const selectedUtxos = walletInfo.utxosByJar[field.value]
+            .filter((utxo) => !utxo.frozen)
+            .map((utxo) => utxo.utxo)
+          form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
+        }
       }
-
       setShowUtxos(undefined)
     } catch (err: any) {
       if (!abortCtrl.signal.aborted) {
@@ -120,7 +133,7 @@ export const SourceJarSelector = ({
     } finally {
       setIsUtxosLoading(false)
     }
-  }, [frozenUtxos, unFrozenUtxos, wallet, reloadCurrentWalletInfo])
+  }, [frozenUtxos, unFrozenUtxos, wallet, reloadCurrentWalletInfo, consideredUtxos, form, field, walletInfo])
 
   return (
     <>
@@ -165,6 +178,7 @@ export const SourceJarSelector = ({
                     variant={it.accountIndex === field.value ? variant : undefined}
                     onClick={(jarIndex: number) => {
                       form.setFieldValue(field.name, jarIndex, true)
+                      form.setFieldValue(consideredUtxos.name, undefined, false)
                       if (
                         it.accountIndex === field.value &&
                         !disabled &&

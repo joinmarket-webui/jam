@@ -12,7 +12,7 @@ import { scrollToTop } from '../../utils'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
 import { FeeValues, TxFee, useFeeConfigValues } from '../../hooks/Fees'
-import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
+import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet, Utxos } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
@@ -20,6 +20,8 @@ import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
 
 import { initialNumCollaborators } from './helpers'
+import { Divider, UtxoListDisplay } from './ShowUtxos'
+import { useSettings } from '../../context/SettingsContext'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
@@ -77,6 +79,29 @@ const createInitialValues = (numCollaborators: number, feeConfigValues: FeeValue
     isCoinJoin: INITIAL_IS_COINJOIN,
     numCollaborators,
   }
+}
+
+type ReviewConsideredUtxosProps = {
+  utxos: Utxos
+}
+const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
+  const { t } = useTranslation()
+  const settings = useSettings()
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+
+  return (
+    <rb.Row className="mt-3">
+      <rb.Col xs={4} md={3} className="text-end">
+        <strong>{t('show_utxos.considered_utxos')}</strong>
+      </rb.Col>
+      <rb.Col xs={8} md={9}>
+        <Divider isState={isOpen} setIsState={setIsOpen} className="mb-3" />
+        {isOpen && (
+          <UtxoListDisplay utxos={utxos} settings={settings} showRadioButton={false} showBackgroundColor={false} />
+        )}
+      </rb.Col>
+    </rb.Row>
+  )
 }
 
 type SendProps = {
@@ -238,6 +263,7 @@ export default function Send({ wallet }: SendProps) {
     destination: Api.BitcoinAddress,
     amountSats: Api.AmountSats,
     txFee: TxFee,
+    consideredUtxos?: string[],
   ) => {
     setAlert(undefined)
     setPaymentSuccessfulInfoAlert(undefined)
@@ -247,7 +273,13 @@ export default function Send({ wallet }: SendProps) {
     try {
       const res = await Api.postDirectSend(
         { ...wallet },
-        { mixdepth: sourceJarIndex, amount_sats: amountSats, destination, txfee: txFee.value },
+        {
+          mixdepth: sourceJarIndex,
+          amount_sats: amountSats,
+          destination,
+          txfee: txFee.value,
+          selected_utxos: consideredUtxos,
+        },
       )
 
       if (res.ok) {
@@ -395,7 +427,13 @@ export default function Send({ wallet }: SendProps) {
             values.numCollaborators!,
             values.txFee!,
           )
-        : await sendPayment(values.sourceJarIndex!, values.destination!.value!, values.amount!.value, values.txFee!)
+        : await sendPayment(
+            values.sourceJarIndex!,
+            values.destination!.value!,
+            values.amount!.value,
+            values.txFee!,
+            values.consideredUtxos,
+          )
 
       if (success) {
         formRef.current?.resetForm({ values: initialValues })
@@ -516,7 +554,18 @@ export default function Send({ wallet }: SendProps) {
             numCollaborators: showConfirmSendModal.numCollaborators!,
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
           }}
-        />
+        >
+          {showConfirmSendModal.consideredUtxos &&
+            walletInfo &&
+            showConfirmSendModal.sourceJarIndex !== undefined &&
+            (() => {
+              const selectedUtxosList = showConfirmSendModal.consideredUtxos
+              const utxoList = walletInfo.utxosByJar[showConfirmSendModal.sourceJarIndex].filter((utxo) =>
+                selectedUtxosList.some((selectedUtxos) => selectedUtxos === utxo.utxo),
+              )
+              return <ReviewConsideredUtxos utxos={utxoList} />
+            })()}
+        </PaymentConfirmModal>
       )}
     </div>
   )

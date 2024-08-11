@@ -214,6 +214,7 @@ export interface SendFormValues {
   txFee?: TxFee
   isCoinJoin: boolean
   numCollaborators?: number
+  consideredUtxos?: string[]
 }
 
 interface InnerSendFormProps {

@@ -7,9 +7,9 @@ RUN apt-get update \
        tor \
        && rm -rf /var/lib/apt/lists/*
 
-ENV REPO https://github.com/JoinMarket-Org/joinmarket-clientserver
-ENV REPO_BRANCH master
-ENV REPO_REF master
+ENV REPO https://github.com/amitx13/joinmarket-clientserver
+ENV REPO_BRANCH Updating_Direct-Send_RPC-API_to_accept_UTXOs
+ENV REPO_REF Updating_Direct-Send_RPC-API_to_accept_UTXOs
 
 WORKDIR /src
 RUN git clone "$REPO" . --depth=10 --branch "$REPO_BRANCH" && git checkout "$REPO_REF"
