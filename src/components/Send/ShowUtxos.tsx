@@ -27,8 +27,8 @@ interface ShowUtxosProps {
 }
 
 interface UtxoRowProps {
-  utxo: SelectableUtxo
-  onToggle: (utxo: SelectableUtxo) => void
+  utxo: SelectableUtxoTableRowData
+  onToggle: (utxo: SelectableUtxoTableRowData) => void
   settings: Settings
   showBackgroundColor: boolean
   walletInfo: WalletInfo
@@ -161,6 +161,11 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
   )
 }
 
+type SelectableUtxoTableRowData = SelectableUtxo & {
+  // TODO: add "tags" here and remove from "Utxo" type
+  // tags?: { tag: string; color: string }[]
+} & Pick<TableTypes.TableNode, 'id'>
+
 const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true }: UtxoListDisplayProps) => {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
@@ -179,18 +184,26 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
   }
   const tableTheme = useTheme(TABLE_THEME)
 
+  const tableData: TableTypes.Data<SelectableUtxoTableRowData> = useMemo(
+    () => ({
+      nodes: utxos.map(
+        (utxo: Utxo) =>
+          ({
+            ...utxo,
+            id: utxo.utxo,
+          }) as SelectableUtxoTableRowData,
+      ),
+    }),
+    [utxos],
+  )
+
   return (
     <div className={classNames(styles.utxoListDisplayHeight, 'overflow-y-auto')}>
-      <Table
-        className="bg"
-        data={{ nodes: utxos }}
-        theme={tableTheme}
-        layout={{ custom: true, horizontalScroll: true }}
-      >
-        {(utxosList: TableTypes.TableProps<SelectableUtxo>) => (
+      <Table className="bg" data={tableData} theme={tableTheme} layout={{ custom: true, horizontalScroll: true }}>
+        {(utxosList: TableTypes.TableProps<SelectableUtxoTableRowData>) => (
           <Body>
             {walletInfo &&
-              utxosList.map((utxo: SelectableUtxo, index: number) => {
+              utxosList.map((utxo: SelectableUtxoTableRowData, index: number) => {
                 return (
                   <UtxoRow
                     key={index}

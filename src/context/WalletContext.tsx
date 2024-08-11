@@ -53,8 +53,7 @@ export type Utxo = {
   // `locktime` in format "yyyy-MM-dd 00:00:00"
   // NOTE: it is unparsable with safari Date constructor
   locktime?: string
-  id: string
-  checked?: boolean
+  // TODO: remove 'tags' prop
   tags?: { tag: string; color: string }[]
 }
 
@@ -195,7 +194,6 @@ export const groupByJar = (utxos: Utxos): UtxosByJar => {
   return utxos.reduce((res, utxo) => {
     const { mixdepth } = utxo
     res[mixdepth] = res[mixdepth] || []
-    utxo.id = utxo.utxo
     res[mixdepth].push(utxo)
     return res
   }, {} as UtxosByJar)
