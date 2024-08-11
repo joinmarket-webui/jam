@@ -39,7 +39,6 @@ interface UtxoListDisplayProps {
   utxos: SelectableUtxo[]
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
-  showRadioButton: boolean
   showBackgroundColor: boolean
 }
 
@@ -162,27 +161,19 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
   )
 }
 
-const UtxoListDisplay = ({
-  utxos,
-  onToggle,
-  settings,
-  showRadioButton = true,
-  showBackgroundColor = true,
-}: UtxoListDisplayProps) => {
+const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true }: UtxoListDisplayProps) => {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
 
-  //Table theme to manage view
   const TABLE_THEME = {
     Table: `
-    font-size: ${showRadioButton ? '1rem' : '0.87rem'};
-    --data-table-library_grid-template-columns: ${showRadioButton ? '3.5rem 2.5rem 12rem 2fr 3fr 10rem ' : '2.5rem 10rem 5fr 3fr 7.5rem'};
+    --data-table-library_grid-template-columns: 3.5rem 2.5rem 12rem 2fr 3fr 10rem;
     @media only screen and (min-width: 768px) {
-      --data-table-library_grid-template-columns: ${showRadioButton ? '3.5rem 2.5rem 14rem 5fr 3fr 10rem' : '2.5rem 11rem 5fr 3fr 7.5rem'};
+      --data-table-library_grid-template-columns: 3.5rem 2.5rem 14rem 5fr 3fr 10rem};
     }
   `,
     BaseCell: `
-    padding:${showRadioButton ? '0.5rem' : '0.55rem'} 0.35rem !important;
+    padding: 0.35rem 0.25rem !important;
     margin: 0.15rem 0px !important;
   `,
   }
@@ -291,7 +282,6 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
                   )
                 }}
                 settings={settings}
-                showRadioButton={true}
                 showBackgroundColor={true}
               />
             </rb.Row>
@@ -312,7 +302,6 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
                     )
                   }}
                   settings={settings}
-                  showRadioButton={true}
                   showBackgroundColor={true}
                 />
               </rb.Row>
