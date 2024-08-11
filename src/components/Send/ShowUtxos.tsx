@@ -1,4 +1,4 @@
-import { useState, useEffect, memo, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -44,8 +44,8 @@ interface UtxoListDisplayProps {
 }
 
 interface DividerProps {
-  isState: boolean
-  setIsState: (arg: boolean) => void
+  toggled: boolean
+  onToggle: (current: boolean) => void
   className?: string
 }
 
@@ -108,7 +108,7 @@ const Confirmations = ({ value }: { value: ConfirmationFormat }) =>
     </div>
   )
 
-const UtxoRow = memo(({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
+const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
   const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
   const confFormat = useMemo(() => formatConfirmations(utxo.confirmations), [utxo.confirmations])
   const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
@@ -166,7 +166,7 @@ const UtxoRow = memo(({ utxo, onToggle, showBackgroundColor, settings, walletInf
       </Cell>
     </Row>
   )
-})
+}
 
 const UtxoListDisplay = ({
   utxos,
@@ -225,21 +225,14 @@ const UtxoListDisplay = ({
   )
 }
 
-const Divider = ({ isState, setIsState, className }: DividerProps) => {
-  //Effect for getting back to it's original state when components unMounts
-  useEffect(() => {
-    return () => {
-      setIsState(false)
-    }
-  }, [setIsState])
-
+const Divider = ({ toggled, onToggle, className }: DividerProps) => {
   return (
     <rb.Row className={classNames('d-flex justify-content-center', className)}>
       <rb.Col xs={12}>
         <div className={mainStyles.jarsDividerContainer}>
           <hr className={mainStyles.dividerLine} />
-          <button className={mainStyles.dividerButton} onClick={() => setIsState(!isState)}>
-            <Sprite symbol={isState ? 'caret-up' : 'caret-down'} width="20" height="20" />
+          <button className={mainStyles.dividerButton} onClick={() => onToggle(toggled)}>
+            <Sprite symbol={toggled ? 'caret-up' : 'caret-down'} width="20" height="20" />
           </button>
           <hr className={mainStyles.dividerLine} />
         </div>
@@ -314,29 +307,11 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
               <Alert variant={alert.variant} message={alert.message} />
             </rb.Row>
           )}
-          <UtxoListDisplay
-            utxos={upperUtxos}
-            onToggle={(utxo) => {
-              setUpperUtxos((current) =>
-                current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
-              )
-            }}
-            settings={settings}
-            showRadioButton={true}
-            showBackgroundColor={true}
-          />
-          {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
-            <Divider
-              isState={showFrozenUtxos}
-              setIsState={setShowFrozenUtxos}
-              className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
-            />
-          )}
-          {showFrozenUtxos && (
+          <rb.Row>
             <UtxoListDisplay
-              utxos={lowerUtxos}
+              utxos={upperUtxos}
               onToggle={(utxo) => {
-                setLowerUtxos((current) =>
+                setUpperUtxos((current) =>
                   current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
                 )
               }}
@@ -344,7 +319,29 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
               showRadioButton={true}
               showBackgroundColor={true}
             />
+          </rb.Row>
+          {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
+            <Divider
+              toggled={showFrozenUtxos}
+              onToggle={() => setShowFrozenUtxos((current) => !current)}
+              className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
+            />
           )}
+          <rb.Collapse in={showFrozenUtxos}>
+            <rb.Row className="">
+              <UtxoListDisplay
+                utxos={lowerUtxos}
+                onToggle={(utxo) => {
+                  setLowerUtxos((current) =>
+                    current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
+                  )
+                }}
+                settings={settings}
+                showRadioButton={true}
+                showBackgroundColor={true}
+              />
+            </rb.Row>
+          </rb.Collapse>
         </>
       ) : (
         <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
