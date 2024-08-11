@@ -113,6 +113,7 @@ interface DirectSendRequest {
   destination: BitcoinAddress
   amount_sats: AmountSats
   txfee?: number
+  selected_utxos?: string[]
 }
 
 interface DoCoinjoinRequest {

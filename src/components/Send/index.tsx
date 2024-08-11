@@ -263,6 +263,7 @@ export default function Send({ wallet }: SendProps) {
     destination: Api.BitcoinAddress,
     amountSats: Api.AmountSats,
     txFee: TxFee,
+    consideredUtxos?: string[],
   ) => {
     setAlert(undefined)
     setPaymentSuccessfulInfoAlert(undefined)
@@ -272,7 +273,13 @@ export default function Send({ wallet }: SendProps) {
     try {
       const res = await Api.postDirectSend(
         { ...wallet },
-        { mixdepth: sourceJarIndex, amount_sats: amountSats, destination, txfee: txFee.value },
+        {
+          mixdepth: sourceJarIndex,
+          amount_sats: amountSats,
+          destination,
+          txfee: txFee.value,
+          selected_utxos: consideredUtxos,
+        },
       )
 
       if (res.ok) {
@@ -420,7 +427,13 @@ export default function Send({ wallet }: SendProps) {
             values.numCollaborators!,
             values.txFee!,
           )
-        : await sendPayment(values.sourceJarIndex!, values.destination!.value!, values.amount!.value, values.txFee!)
+        : await sendPayment(
+            values.sourceJarIndex!,
+            values.destination!.value!,
+            values.amount!.value,
+            values.txFee!,
+            values.consideredUtxos,
+          )
 
       if (success) {
         formRef.current?.resetForm({ values: initialValues })
@@ -542,8 +555,7 @@ export default function Send({ wallet }: SendProps) {
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
           }}
         >
-          {showConfirmSendModal.amount?.isSweep &&
-            showConfirmSendModal.consideredUtxos &&
+          {showConfirmSendModal.consideredUtxos &&
             walletInfo &&
             showConfirmSendModal.sourceJarIndex !== undefined &&
             (() => {
