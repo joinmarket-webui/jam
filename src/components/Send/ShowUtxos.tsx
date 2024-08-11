@@ -30,7 +30,6 @@ interface UtxoRowProps {
   utxo: SelectableUtxo
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
-  showRadioButton: boolean
   showBackgroundColor: boolean
   walletInfo: WalletInfo
   t: TFunction
@@ -109,66 +108,65 @@ const Confirmations = ({ value }: { value: ConfirmationFormat }) =>
     </div>
   )
 
-const UtxoRow = memo(
-  ({ utxo, onToggle, showRadioButton, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
-    const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
-    const confFormat = useMemo(() => formatConfirmations(utxo.confirmations), [utxo.confirmations])
-    const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
+const UtxoRow = memo(({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
+  const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
+  const confFormat = useMemo(() => formatConfirmations(utxo.confirmations), [utxo.confirmations])
+  const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
-    const { icon, rowAndTagClass } = useMemo(() => {
-      if (tag.length === 0) {
-        return { icon: 'unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
-      }
-      return { icon: utxoIcon(tag[0].tag, utxo.frozen), rowAndTagClass: allotClasses(tag[0].tag, utxo.frozen) }
-    }, [tag, utxo.frozen])
+  const { icon, rowAndTagClass } = useMemo(() => {
+    if (tag.length === 0) {
+      return { icon: 'unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
+    }
+    return { icon: utxoIcon(tag[0].tag, utxo.frozen), rowAndTagClass: allotClasses(tag[0].tag, utxo.frozen) }
+  }, [tag, utxo.frozen])
 
-    return (
-      <Row
-        item={utxo}
-        className={classNames(rowAndTagClass.row, 'cursor-pointer', {
-          'bg-transparent': !showBackgroundColor,
-        })}
-        onClick={() => onToggle(utxo)}
-      >
-        {showRadioButton && (
-          <Cell>
-            <input
-              id={`utxo-checkbox-${utxo.utxo}`}
-              type="checkbox"
-              checked={utxo.checked}
-              onChange={() => {
-                onToggle(utxo)
-              }}
-              className={classNames(utxo.frozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
-                [styles.selected]: utxo.checked,
-              })}
-            />
-          </Cell>
-        )}
-        <Cell>
-          <Sprite symbol={icon} width="23px" height="23px" />
-        </Cell>
-        <Cell className="slashed-zeroes">{address}</Cell>
-        <Cell>
-          <Confirmations value={confFormat} />
-        </Cell>
-        <Cell>
-          <Balance
-            valueString={String(utxo.value)}
-            convertToUnit={settings.unit}
-            showBalance={true}
-            colored={false}
-            frozen={utxo.frozen}
-            frozenSymbol={false}
+  return (
+    <Row
+      item={utxo}
+      className={classNames(rowAndTagClass.row, {
+        'bg-transparent': !showBackgroundColor,
+        'cursor-pointer': utxo.selectable,
+        'cursor-not-allowed': !utxo.selectable,
+      })}
+      onClick={() => utxo.selectable && onToggle(utxo)}
+    >
+      <Cell>
+        {utxo.selectable && (
+          <input
+            id={`utxo-checkbox-${utxo.utxo}`}
+            type="checkbox"
+            checked={utxo.checked}
+            disabled={!utxo.selectable}
+            onChange={() => utxo.selectable && onToggle(utxo)}
+            className={classNames(utxo.frozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
+              [styles.selected]: utxo.checked,
+            })}
           />
-        </Cell>
-        <Cell>
-          <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag.length ? tag[0].tag : ''}</div>
-        </Cell>
-      </Row>
-    )
-  },
-)
+        )}
+      </Cell>
+      <Cell>
+        <Sprite symbol={icon} width="23px" height="23px" />
+      </Cell>
+      <Cell className="slashed-zeroes">{address}</Cell>
+      <Cell>
+        <Confirmations value={confFormat} />
+      </Cell>
+      <Cell>
+        <Balance
+          valueString={String(utxo.value)}
+          convertToUnit={settings.unit}
+          showBalance={true}
+          colored={false}
+          frozen={utxo.frozen}
+          frozenSymbol={false}
+        />
+      </Cell>
+      <Cell>
+        <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag.length ? tag[0].tag : ''}</div>
+      </Cell>
+    </Row>
+  )
+})
 
 const UtxoListDisplay = ({
   utxos,
@@ -213,7 +211,6 @@ const UtxoListDisplay = ({
                     key={index}
                     utxo={utxo}
                     onToggle={onToggle}
-                    showRadioButton={showRadioButton}
                     showBackgroundColor={showBackgroundColor}
                     settings={settings}
                     walletInfo={walletInfo}
@@ -251,7 +248,7 @@ const Divider = ({ isState, setIsState, className }: DividerProps) => {
   )
 }
 
-type SelectableUtxo = Utxo & { checked: boolean }
+type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
 
 const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: ShowUtxosProps) => {
   const { t } = useTranslation()
@@ -261,15 +258,24 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
   const [upperUtxos, setUpperUtxos] = useState<SelectableUtxo[]>(
     utxos
       .filter((it) => !it.frozen)
-      .map((it) => ({ ...it, checked: true }))
+      .filter((it) => !it.locktime)
+      .map((it) => ({ ...it, checked: true, selectable: true }))
       .sort((a, b) => a.confirmations - b.confirmations),
   )
-  const [lowerUtxos, setLowerUtxos] = useState<SelectableUtxo[]>(
-    utxos
+  const [lowerUtxos, setLowerUtxos] = useState<SelectableUtxo[]>(() => {
+    const frozenNonTimelockedUtxos = utxos
       .filter((it) => it.frozen)
-      .map((it) => ({ ...it, checked: false }))
-      .sort((a, b) => a.confirmations - b.confirmations),
-  )
+      .filter((it) => !it.locktime)
+      .map((it) => ({ ...it, checked: false, selectable: true }))
+      .sort((a, b) => a.confirmations - b.confirmations)
+
+    const timelockedUtxos = utxos
+      .filter((it) => it.locktime !== undefined)
+      .map((it) => ({ ...it, checked: false, selectable: false }))
+      .sort((a, b) => a.confirmations - b.confirmations)
+
+    return [...frozenNonTimelockedUtxos, ...timelockedUtxos]
+  })
 
   const selectedUtxos = useMemo(
     () => [...upperUtxos, ...lowerUtxos].filter((it) => it.checked),
