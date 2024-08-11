@@ -110,9 +110,21 @@ export const SourceJarSelector = ({
 
       if (res.length !== 0) {
         setIsUtxosLoading(true)
-        await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+        const allUtxosData = await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+        if (allUtxosData) {
+          const selectedUtxos = allUtxosData.utxos
+            .filter((utxo) => utxo.mixdepth === field.value && !utxo.frozen)
+            .map((utxo) => utxo.utxo)
+          form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
+        }
+      } else {
+        if (walletInfo) {
+          const selectedUtxos = walletInfo.utxosByJar[field.value]
+            .filter((utxo) => !utxo.frozen)
+            .map((utxo) => utxo.utxo)
+          form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
+        }
       }
-
       setShowUtxos(undefined)
     } catch (err: any) {
       if (!abortCtrl.signal.aborted) {
@@ -120,12 +132,6 @@ export const SourceJarSelector = ({
       }
     } finally {
       setIsUtxosLoading(false)
-      if (walletInfo) {
-        const selectedUtxos = walletInfo.utxosByJar[field.value].filter((utxo) => {
-          return !utxo.frozen
-        })
-        form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
-      }
     }
   }, [frozenUtxos, unFrozenUtxos, wallet, reloadCurrentWalletInfo, consideredUtxos, form, field, walletInfo])
 
