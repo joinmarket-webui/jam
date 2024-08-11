@@ -10,11 +10,11 @@ import { WalletInfo, Utxo, useCurrentWalletInfo, Utxos } from '../../context/Wal
 import { useSettings, Settings } from '../../context/SettingsContext'
 import Alert from '../Alert'
 import Balance from '../Balance'
+import Divider from '../Divider'
 import { ConfirmModal } from '../Modal'
 import Sprite from '../Sprite'
 import { utxoTags } from '../jar_details/UtxoList'
 import { shortenStringMiddle } from '../../utils'
-import mainStyles from '../MainWalletView.module.css'
 import styles from './ShowUtxos.module.css'
 
 interface ShowUtxosProps {
@@ -41,12 +41,6 @@ interface UtxoListDisplayProps {
   settings: Settings
   showRadioButton: boolean
   showBackgroundColor: boolean
-}
-
-interface DividerProps {
-  toggled: boolean
-  onToggle: (current: boolean) => void
-  className?: string
 }
 
 // Utility function to Identifies Icons
@@ -222,22 +216,6 @@ const UtxoListDisplay = ({
         )}
       </Table>
     </div>
-  )
-}
-
-const Divider = ({ toggled, onToggle, className }: DividerProps) => {
-  return (
-    <rb.Row className={classNames('d-flex justify-content-center', className)}>
-      <rb.Col xs={12}>
-        <div className={mainStyles.jarsDividerContainer}>
-          <hr className={mainStyles.dividerLine} />
-          <button className={mainStyles.dividerButton} onClick={() => onToggle(toggled)}>
-            <Sprite symbol={toggled ? 'caret-up' : 'caret-down'} width="20" height="20" />
-          </button>
-          <hr className={mainStyles.dividerLine} />
-        </div>
-      </rb.Col>
-    </rb.Row>
   )
 }
 
