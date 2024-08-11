@@ -18,8 +18,6 @@ import styles from './CreateFidelityBond.module.css'
 import { jarName } from '../jars/Jar'
 import { spendUtxosWithDirectSend, errorResolver } from './SpendFidelityBondModal'
 
-const TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS = 2_500
-
 export const LockInfoAlert = ({ lockDate, className }: { lockDate: Api.Lockdate; className?: string }) => {
   const { t, i18n } = useTranslation()
 
@@ -69,8 +67,8 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
-  const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
 
+  // Check if all utxos are selected
   const selectedUtxosTotalValue = useMemo(
     () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
     [selectedUtxos],
@@ -96,17 +94,24 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     setLockDate(null)
     setTimelockedAddress(undefined)
     setAlert(undefined)
-    setUtxoIdsToBeSpent([])
   }
 
+  // fidelity Bonds data
   const currentWalletInfo = useCurrentWalletInfo()
   const fidelityBonds = useMemo(() => {
     return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
   }, [currentWalletInfo])
 
+  // Check if bond with selected lockDate already exists
   const bondWithSelectedLockDateAlreadyExists = useMemo(() => {
     return lockDate && fidelityBonds.some((it) => fb.utxo.getLocktime(it) === fb.lockdate.toTimestamp(lockDate))
   }, [fidelityBonds, lockDate])
+
+  const onlyCjOutOrFbUtxosSelected = () => {
+    return selectedUtxos.every(
+      (utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out' || utxo.locktime !== undefined,
+    )
+  }
 
   useEffect(() => {
     if (!showCreateFidelityBondModal) {
@@ -150,59 +155,8 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
   )
 
   useEffect(() => {
-    if (lockDate) loadTimeLockedAddress(lockDate!)
+    if (lockDate) loadTimeLockedAddress(lockDate)
   }, [lockDate, loadTimeLockedAddress])
-
-  useEffect(() => {
-    if (utxoIdsToBeSpent.length === 0) return
-
-    const abortCtrl = new AbortController()
-
-    const timer = setTimeout(() => {
-      if (abortCtrl.signal.aborted) return
-
-      reloadCurrentWalletInfo
-        .reloadUtxos({ signal: abortCtrl.signal })
-        .then((res) => {
-          if (abortCtrl.signal.aborted) return
-
-          const allUtxoIds = res.utxos.map((utxo) => utxo.utxo)
-          const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
-
-          if (utxoIdsStillPresent.length === 0) {
-            // Note that two fidelity bonds with the same locktime will end up on the same address.
-            // Therefore, this might not actually be the UTXO we just created.
-            // Since we're using it only for displaying locktime and address, this should be fine though.
-            const fbOutputs = res.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
-            const fbUtxo = fbOutputs.find((utxo) => utxo.address === timelockedAddress)
-
-            if (fbUtxo !== undefined) {
-              // setCreatedFidelityBondUtxo(fbUtxo)
-            }
-
-            setIsLoading(false)
-          }
-
-          setUtxoIdsToBeSpent([...utxoIdsStillPresent])
-        })
-        .catch((err) => {
-          if (abortCtrl.signal.aborted) return
-
-          setUtxoIdsToBeSpent([])
-          setIsLoading(false)
-
-          const message = t('global.errors.error_reloading_wallet_failed', {
-            reason: err.message || t('global.errors.reason_unknown'),
-          })
-          setAlert({ variant: 'danger', message })
-        })
-    }, TIMEOUT_RELOAD_UTXOS_AFTER_FB_CREATE_MS)
-
-    return () => {
-      abortCtrl.abort()
-      clearTimeout(timer)
-    }
-  }, [utxoIdsToBeSpent, reloadCurrentWalletInfo, timelockedAddress, t])
 
   const primaryButtonText = (currentStep: number) => {
     switch (currentStep) {
@@ -221,12 +175,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
       default:
         return null
     }
-  }
-
-  const onlyCjOutOrFbUtxosSelected = () => {
-    return selectedUtxos.every(
-      (utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out' || utxo.locktime !== undefined,
-    )
   }
 
   const secondaryButtonText = (currentStep: number) => {
