@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -11,7 +11,7 @@ import { useSettings, Settings } from '../../context/SettingsContext'
 import Alert from '../Alert'
 import Balance from '../Balance'
 import Divider from '../Divider'
-import { ConfirmModal } from '../Modal'
+import { BaseModal } from '../Modal'
 import Sprite from '../Sprite'
 import { utxoTags } from '../jar_details/UtxoList'
 import { shortenStringMiddle } from '../../utils'
@@ -221,6 +221,7 @@ const UtxoListDisplay = ({
 
 type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
 
+// TODO: rename to QuickFreezeUtxosModal?
 const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: ShowUtxosProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
@@ -254,56 +255,38 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
   const [showFrozenUtxos, setShowFrozenUtxos] = useState(upperUtxos.length === 0 && lowerUtxos.length > 0)
 
   return (
-    <ConfirmModal
-      onCancel={onCancel}
-      onConfirm={() => onConfirm(selectedUtxos)}
-      disabled={isLoading}
+    <BaseModal
       isShown={isOpen}
+      onCancel={onCancel}
+      backdrop={true}
       title={t('show_utxos.show_utxo_title')}
-      size="lg"
-      showCloseButton={true}
-      confirmVariant="dark"
+      closeButton
       headerClassName={styles.customHeaderClass}
       titleClassName={styles.customTitleClass}
     >
-      {!isLoading ? (
-        <>
-          <div className={classNames(styles.subTitle, 'm-3 mb-4 text-start')}>
-            {upperUtxos.length > 0
-              ? t('show_utxos.show_utxo_subtitle')
-              : t('show_utxos.show_utxo_subtitle_when_allutxos_are_frozen')}
+      <rb.Modal.Body>
+        {isLoading ? (
+          <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
+            <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+            <div>{t('earn.fidelity_bond.text_loading')}</div>
           </div>
-          {alert && (
+        ) : (
+          <>
+            <div className={classNames(styles.subTitle, 'm-3 mb-4')}>
+              {upperUtxos.length > 0
+                ? t('show_utxos.show_utxo_subtitle')
+                : t('show_utxos.show_utxo_subtitle_when_allutxos_are_frozen')}
+            </div>
+            {alert && (
+              <rb.Row>
+                <Alert variant={alert.variant} message={alert.message} />
+              </rb.Row>
+            )}
             <rb.Row>
-              <Alert variant={alert.variant} message={alert.message} />
-            </rb.Row>
-          )}
-          <rb.Row>
-            <UtxoListDisplay
-              utxos={upperUtxos}
-              onToggle={(utxo) => {
-                setUpperUtxos((current) =>
-                  current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
-                )
-              }}
-              settings={settings}
-              showRadioButton={true}
-              showBackgroundColor={true}
-            />
-          </rb.Row>
-          {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
-            <Divider
-              toggled={showFrozenUtxos}
-              onToggle={() => setShowFrozenUtxos((current) => !current)}
-              className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
-            />
-          )}
-          <rb.Collapse in={showFrozenUtxos}>
-            <rb.Row className="">
               <UtxoListDisplay
-                utxos={lowerUtxos}
+                utxos={upperUtxos}
                 onToggle={(utxo) => {
-                  setLowerUtxos((current) =>
+                  setUpperUtxos((current) =>
                     current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
                   )
                 }}
@@ -312,16 +295,46 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
                 showBackgroundColor={true}
               />
             </rb.Row>
-          </rb.Collapse>
-        </>
-      ) : (
-        <div className="d-flex justify-content-center align-items-center mt-5 mb-5">
-          <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-          <div>{t('earn.fidelity_bond.text_loading')}</div>
-        </div>
-      )}
-    </ConfirmModal>
+            {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
+              <Divider
+                toggled={showFrozenUtxos}
+                onToggle={() => setShowFrozenUtxos((current) => !current)}
+                className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
+              />
+            )}
+            <rb.Collapse in={showFrozenUtxos}>
+              <rb.Row className="">
+                <UtxoListDisplay
+                  utxos={lowerUtxos}
+                  onToggle={(utxo) => {
+                    setLowerUtxos((current) =>
+                      current.map((it) => (it.utxo !== utxo.utxo ? it : { ...it, checked: !utxo.checked })),
+                    )
+                  }}
+                  settings={settings}
+                  showRadioButton={true}
+                  showBackgroundColor={true}
+                />
+              </rb.Row>
+            </rb.Collapse>
+          </>
+        )}
+      </rb.Modal.Body>
+      <rb.Modal.Footer className="d-flex justify-content-center align-items-center gap-1">
+        <rb.Button
+          variant="light"
+          onClick={() => onCancel()}
+          className="d-flex justify-content-center align-items-center flex-grow-1"
+        >
+          <Sprite symbol="cancel" width="26" height="26" />
+          <div>{t('modal.confirm_button_reject')}</div>
+        </rb.Button>
+        <rb.Button className="flex-grow-1" variant="dark" onClick={() => onConfirm(selectedUtxos)} disabled={isLoading}>
+          {t('modal.confirm_button_accept')}
+        </rb.Button>
+      </rb.Modal.Footer>
+    </BaseModal>
   )
 }
 
-export { ShowUtxos, Divider, UtxoListDisplay, UtxoRow }
+export { ShowUtxos }
