@@ -95,7 +95,7 @@ const ConfirmModal = ({
           <Sprite symbol="cancel" width="26" height="26" />
           <div>{t('modal.confirm_button_reject')}</div>
         </rb.Button>
-        <rb.Button variant={'outline-dark'} onClick={() => onConfirm()} disabled={disabled}>
+        <rb.Button variant="outline-dark" onClick={() => onConfirm()} disabled={disabled}>
           {t('modal.confirm_button_accept')}
         </rb.Button>
       </rb.Modal.Footer>

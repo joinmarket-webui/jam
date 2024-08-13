@@ -276,11 +276,11 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
           </div>
         ) : (
           <>
-            <div className={classNames(styles.subTitle, 'm-3 mb-4')}>
+            <rb.Row className="text-secondary px-3 mb-2">
               {upperUtxos.length > 0
                 ? t('show_utxos.show_utxo_subtitle')
                 : t('show_utxos.show_utxo_subtitle_when_allutxos_are_frozen')}
-            </div>
+            </rb.Row>
             {alert && (
               <rb.Row>
                 <Alert variant={alert.variant} message={alert.message} />
@@ -326,12 +326,17 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
         <rb.Button
           variant="light"
           onClick={() => onCancel()}
-          className="d-flex justify-content-center align-items-center flex-grow-1"
+          className="d-flex flex-1 justify-content-center align-items-center"
         >
           <Sprite symbol="cancel" width="26" height="26" />
           <div>{t('modal.confirm_button_reject')}</div>
         </rb.Button>
-        <rb.Button className="flex-grow-1" variant="dark" onClick={() => onConfirm(selectedUtxos)} disabled={isLoading}>
+        <rb.Button
+          variant="dark"
+          onClick={() => onConfirm(selectedUtxos)}
+          disabled={isLoading}
+          className="d-flex flex-1 justify-content-center align-items-center"
+        >
           {t('modal.confirm_button_accept')}
         </rb.Button>
       </rb.Modal.Footer>
