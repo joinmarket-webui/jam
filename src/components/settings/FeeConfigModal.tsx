@@ -10,9 +10,9 @@ import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import ToggleSwitch from '../ToggleSwitch'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '../../utils'
-import styles from './FeeConfigModal.module.css'
 import BitcoinAmountInput, { AmountValue, toAmountValue } from '../BitcoinAmountInput'
 import { JM_MAX_SWEEP_FEE_CHANGE_DEFAULT } from '../../constants/config'
+import styles from './FeeConfigModal.module.css'
 
 const __dev_allowFeeValuesReset = isDebugFeatureEnabled('allowFeeValuesReset')
 

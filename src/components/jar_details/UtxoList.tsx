@@ -156,7 +156,7 @@ const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
   return utxo as Utxo
 }
 
-interface UtxoTableRow extends Utxo {
+interface UtxoTableRow extends Utxo, TableTypes.TableNode {
   _icon: JSX.Element
   _tags: Tag[]
   _confs: JSX.Element

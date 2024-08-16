@@ -13,6 +13,7 @@ import { ExtendedLink } from './ExtendedLink'
 import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
 import { Jars } from './Jars'
 import styles from './MainWalletView.module.css'
+import Divider from './Divider'
 
 interface WalletHeaderProps {
   walletName: string
@@ -226,21 +227,13 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
             </div>
           </rb.Row>
         </rb.Collapse>
-        <rb.Row className="d-flex justify-content-center">
-          <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
-            <div className={styles.jarsDividerContainer}>
-              <hr className={styles.dividerLine} />
-              <button
-                className={styles.dividerButton}
-                disabled={serviceInfo?.rescanning}
-                onClick={() => setShowJars((current) => !current)}
-              >
-                <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
-              </button>
-              <hr className={styles.dividerLine} />
-            </div>
-          </rb.Col>
-        </rb.Row>
+        <Divider
+          toggled={showJars}
+          onToggle={() => setShowJars((current) => !current)}
+          disabled={serviceInfo?.rescanning}
+          xs={showJars ? 12 : 10}
+          md={showJars ? 12 : 8}
+        />
       </div>
     </div>
   )
