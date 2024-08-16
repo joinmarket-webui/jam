@@ -643,6 +643,7 @@
     "progress_description": "This estimate is the minimum waiting time. Additional delays due to network communication or transaction confirmation are not considered.",
     "progress_current_state": "Waiting for transaction <1>{{ current }}</1> of <3>{{ total }}</3> to process...",
     "progress_done": "All transactions completed successfully. The scheduler will stop soon.",
+    "details": "Schedule Details",
     "precondition": {
       "hint_missing_utxos": "To run the scheduler you need UTXOs with {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_fund_wallet, {\"count\": {{ minConfirmations }} })",
       "hint_missing_confirmations": "The scheduler requires your UTXOs to have {{ minConfirmations }} or more confirmations. $t(scheduler.precondition.nested_hint_wait_for_block, {\"count\": {{ amountOfMissingConfirmations }} })",

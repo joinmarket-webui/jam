@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors, FormikValues, useFormikContext } from 'formik'
@@ -15,7 +15,7 @@ import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
 import FeeConfigModal from './settings/FeeConfigModal'
-
+import Accordion from './Accordion'
 import styles from './Jam.module.css'
 import { useFeeConfigValues } from '../hooks/Fees'
 
@@ -338,6 +338,22 @@ export default function Jam({ wallet }: JamProps) {
       })
   }
 
+  function getScheduleDetails(currentSchedule: Schedule) {
+    const idIndices = currentSchedule.length === 2 ? [1] : [4, 6, 7]
+    const typeIndices = currentSchedule.length === 2 ? [0] : [1, 3, 5]
+
+    return idIndices.map((idIndex, index) => (
+      <React.Fragment key={index}>
+        <p>
+          Id - {index + 1}: {currentSchedule[idIndex]?.[3]}
+        </p>
+        <p>
+          Type - {index + 1}: {currentSchedule[typeIndices[index]]?.[3]}
+        </p>
+      </React.Fragment>
+    ))
+  }
+
   return (
     <>
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
@@ -369,6 +385,9 @@ export default function Jam({ wallet }: JamProps) {
                   >
                     <div className="d-flex justify-content-center align-items-center">{t('scheduler.button_stop')}</div>
                   </rb.Button>
+                  {currentSchedule.length === 2 || currentSchedule.length === 8 ? (
+                    <Accordion title={t('scheduler.details')}>{getScheduleDetails(currentSchedule)}</Accordion>
+                  ) : null}
                 </>
               )}
             </>
