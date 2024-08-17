@@ -3,7 +3,7 @@ import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
-import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxo, Utxos } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 import { ShowUtxos } from './ShowUtxos'
 import { useTranslation } from 'react-i18next'
@@ -98,7 +98,20 @@ export const SourceJarSelector = ({
         ])
 
         if (res.length !== 0) {
-          await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+          const allUtxosData = await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+          if (allUtxosData) {
+            const selectedUtxos = allUtxosData.utxos
+              .filter((utxo) => utxo.mixdepth === field.value && !utxo.frozen)
+              .map((utxo) => utxo.utxo)
+            form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
+          }
+        } else {
+          if (walletInfo) {
+            const selectedUtxos = walletInfo.utxosByJar[field.value]
+              .filter((utxo) => !utxo.frozen)
+              .map((utxo) => utxo.utxo)
+            form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
+          }
         }
 
         setShowUtxos(undefined)
@@ -107,7 +120,7 @@ export const SourceJarSelector = ({
         setShowUtxos({ ...showUtxos, isLoading: false, alert: { variant: 'danger', message: err.message } })
       }
     },
-    [showUtxos, wallet, reloadCurrentWalletInfo],
+    [showUtxos, wallet, reloadCurrentWalletInfo, field, form, walletInfo, consideredUtxos],
   )
 
   return (

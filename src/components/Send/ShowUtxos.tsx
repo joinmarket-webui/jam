@@ -36,6 +36,7 @@ interface UtxoRowProps {
   showBackgroundColor: boolean
   walletInfo: WalletInfo
   t: TFunction
+  disableCheckboxCell?: boolean
 }
 
 interface UtxoListDisplayProps {
@@ -43,6 +44,11 @@ interface UtxoListDisplayProps {
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
   showBackgroundColor: boolean
+  customTheme?: {
+    Table: string
+    BaseCell: string
+  }
+  disableCheckboxCell?: boolean
 }
 
 const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
@@ -110,11 +116,18 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
 
 type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'id'>
 
-const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true }: UtxoListDisplayProps) => {
+const UtxoListDisplay = ({
+  utxos,
+  onToggle,
+  settings,
+  showBackgroundColor = true,
+  customTheme,
+  disableCheckboxCell = false,
+}: UtxoListDisplayProps) => {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
 
-  const TABLE_THEME = {
+  const defaultTheme = {
     Table: `
     --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
   `,
@@ -128,7 +141,7 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
     }
   `,
   }
-  const tableTheme = useTheme(TABLE_THEME)
+  const tableTheme = useTheme(customTheme ?? defaultTheme)
 
   const tableData: TableTypes.Data<SelectableUtxoTableRowData> = useMemo(
     () => ({
@@ -159,6 +172,7 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
                     settings={settings}
                     walletInfo={walletInfo}
                     t={t}
+                    disableCheckboxCell={disableCheckboxCell}
                   />
                 )
               })}
@@ -169,7 +183,7 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
   )
 }
 
-type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
+export type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
 
 // TODO: rename to QuickFreezeUtxosModal?
 const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: ShowUtxosProps) => {
@@ -290,4 +304,4 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
   )
 }
 
-export { ShowUtxos }
+export { ShowUtxos, UtxoListDisplay }

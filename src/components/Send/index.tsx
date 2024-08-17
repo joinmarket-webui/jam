@@ -12,7 +12,7 @@ import { scrollToTop } from '../../utils'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import FeeConfigModal, { FeeConfigSectionKey } from '../settings/FeeConfigModal'
 import { FeeValues, TxFee, useFeeConfigValues } from '../../hooks/Fees'
-import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet, Utxos } from '../../context/WalletContext'
+import { useReloadCurrentWalletInfo, useCurrentWalletInfo, CurrentWallet } from '../../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoContext'
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
@@ -20,7 +20,8 @@ import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
 
 import { initialNumCollaborators } from './helpers'
-import { Divider, UtxoListDisplay } from './ShowUtxos'
+import { SelectableUtxo, UtxoListDisplay } from './ShowUtxos'
+import Divider from '../Divider'
 import { useSettings } from '../../context/SettingsContext'
 
 const INITIAL_DESTINATION = null
@@ -82,12 +83,25 @@ const createInitialValues = (numCollaborators: number, feeConfigValues: FeeValue
 }
 
 type ReviewConsideredUtxosProps = {
-  utxos: Utxos
+  utxos: SelectableUtxo[]
 }
 const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
   const { t } = useTranslation()
   const settings = useSettings()
   const [isOpen, setIsOpen] = useState<boolean>(false)
+
+  const customTheme = {
+    Table: `
+    --data-table-library_grid-template-columns: 2.5rem 10rem 5fr 3fr 8.7rem;
+    @media only screen and (min-width: 768px) {
+      --data-table-library_grid-template-columns: 2.5rem 10rem 5fr 3fr 8.7rem;
+    }
+  `,
+    BaseCell: `
+    padding: 0.35rem  0.25rem !important;
+    margin: 0.15rem 0px !important;
+  `,
+  }
 
   return (
     <rb.Row className="mt-3">
@@ -95,10 +109,19 @@ const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
         <strong>{t('show_utxos.considered_utxos')}</strong>
       </rb.Col>
       <rb.Col xs={8} md={9}>
-        <Divider isState={isOpen} setIsState={setIsOpen} className="mb-3" />
-        {isOpen && (
-          <UtxoListDisplay utxos={utxos} settings={settings} showRadioButton={false} showBackgroundColor={false} />
-        )}
+        <Divider toggled={isOpen} onToggle={() => setIsOpen((current) => !current)} className="mb-3" />
+        <rb.Collapse in={isOpen}>
+          <div className="text-start">
+            <UtxoListDisplay
+              utxos={utxos}
+              settings={settings}
+              onToggle={() => {}}
+              showBackgroundColor={false}
+              customTheme={customTheme}
+              disableCheckboxCell={true}
+            />
+          </div>
+        </rb.Collapse>
       </rb.Col>
     </rb.Row>
   )
@@ -548,9 +571,10 @@ export default function Send({ wallet }: SendProps) {
             showConfirmSendModal.sourceJarIndex !== undefined &&
             (() => {
               const selectedUtxosList = showConfirmSendModal.consideredUtxos
-              const utxoList = walletInfo.utxosByJar[showConfirmSendModal.sourceJarIndex].filter((utxo) =>
-                selectedUtxosList.some((selectedUtxos) => selectedUtxos === utxo.utxo),
-              )
+              const utxoList = walletInfo.utxosByJar[showConfirmSendModal.sourceJarIndex]
+                .filter((utxo) => selectedUtxosList.some((selectedUtxos) => selectedUtxos === utxo.utxo))
+                .map((it) => ({ ...it, checked: false, selectable: false }))
+                .sort((a, b) => a.confirmations - b.confirmations)
               return <ReviewConsideredUtxos utxos={utxoList} />
             })()}
         </PaymentConfirmModal>
