@@ -115,7 +115,9 @@ const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
             <UtxoListDisplay
               utxos={utxos}
               settings={settings}
-              onToggle={() => {}}
+              onToggle={() => {
+                // No-op since these UTXOs are only for review and are not selectable
+              }}
               showBackgroundColor={false}
               customTheme={customTheme}
               disableCheckboxCell={true}
