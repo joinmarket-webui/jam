@@ -12,6 +12,7 @@ import { InfoModal } from './Modal'
 import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
 import { toSemVer } from '../utils'
+import { OrderbookOverlay } from './Orderbook'
 import packageInfo from '../../package.json'
 
 const APP_DISPLAY_VERSION = (() => {
@@ -29,6 +30,7 @@ export default function Footer() {
 
   const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
+  const [isShowOrderbook, setIsShowOrderbook] = useState(false)
 
   const cheatsheetEnabled = useMemo(() => !!currentWallet, [currentWallet])
   const websocketConnected = useMemo(() => websocketState === WebSocket.OPEN, [websocketState])
@@ -102,6 +104,21 @@ export default function Footer() {
               </>
             )}
           </div>
+          <rb.Col className="d-flex justify-content-center">
+          <OrderbookOverlay
+            show={isShowOrderbook}
+            onHide={() => setIsShowOrderbook(false)}
+            nickname={serviceInfo?.nickname ?? undefined}
+          />
+          <rb.Button
+            variant="outline-dark"
+            className="border-0 d-inline-flex align-items-center"
+            onClick={() => setIsShowOrderbook(true)}
+          >
+            <Sprite symbol="globe" width="24" height="24" className="me-2" />
+            {t('earn.button_show_orderbook')}
+          </rb.Button>
+        </rb.Col>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
             {isDebugFeatureEnabled('devSetupPage') && (
               <div className="d-none d-md-block text-small text-start mx-1">
