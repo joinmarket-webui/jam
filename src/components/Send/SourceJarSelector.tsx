@@ -173,6 +173,12 @@ export const SourceJarSelector = ({
                           isLoading: false,
                         })
                       }
+                      if (walletInfo) {
+                        const selectedUtxos = walletInfo.utxosByJar[jarIndex]
+                          .filter((utxo) => !utxo.frozen)
+                          .map((utxo) => utxo.utxo)
+                        form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
+                      }
                     }}
                   />
                 </div>
