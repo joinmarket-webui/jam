@@ -16,6 +16,7 @@ import Sprite from '../Sprite'
 import { utxoTags } from '../utxo/utils'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
+import { UtxoConfirmations } from '../utxo/Confirmations'
 
 interface ShowUtxosProps {
   isOpen: boolean
@@ -62,48 +63,8 @@ const allotClasses = (tag: string, isFrozen: boolean) => {
   return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
 }
 
-interface ConfirmationFormat {
-  symbol: string
-  display: string
-  confirmations: number
-}
-
-const formatConfirmations = (confirmations: number): ConfirmationFormat => ({
-  symbol: `confs-${confirmations >= 6 ? 'full' : confirmations}`,
-  display: confirmations > 9999 ? `${Number(9999).toLocaleString()}+` : confirmations.toLocaleString(),
-  confirmations,
-})
-
-const Confirmations = ({ value }: { value: ConfirmationFormat }) =>
-  value.confirmations > 9999 ? (
-    <rb.OverlayTrigger
-      popperConfig={{
-        modifiers: [
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 1],
-            },
-          },
-        ],
-      }}
-      overlay={(props) => <rb.Tooltip {...props}>{value.confirmations.toLocaleString()}</rb.Tooltip>}
-    >
-      <div>
-        <Sprite symbol={value.symbol} width="28px" height="28px" className="mb-1" />
-        {value.display}
-      </div>
-    </rb.OverlayTrigger>
-  ) : (
-    <div>
-      <Sprite symbol={value.symbol} width="28px" height="28px" className="mb-1" />
-      {value.display}
-    </div>
-  )
-
 const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
   const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
-  const confFormat = useMemo(() => formatConfirmations(utxo.confirmations), [utxo.confirmations])
   const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
   const { icon, rowAndTagClass } = useMemo(() => {
@@ -142,7 +103,7 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
       </Cell>
       <Cell className="slashed-zeroes">{address}</Cell>
       <Cell>
-        <Confirmations value={confFormat} />
+        <UtxoConfirmations value={utxo} />
       </Cell>
       <Cell>
         <Balance

@@ -123,7 +123,7 @@ const UtxoList = ({
         id: utxo.utxo,
         _icon: <UtxoIcon value={utxo} />,
         _tags: utxoTags(utxo, walletInfo, t),
-        _confs: <UtxoConfirmations value={utxo} />,
+        _confs: <UtxoConfirmations className={utxo.confirmations === 0 ? 'text-info' : 'text-success'} value={utxo} />,
       })),
     }),
     [utxos, walletInfo, t],
