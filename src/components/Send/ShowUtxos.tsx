@@ -106,7 +106,7 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
       </Cell>
     </Row>
   )
-})
+}
 
 type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'id'>
 
@@ -167,7 +167,7 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
       </Table>
     </div>
   )
-})
+}
 
 type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
 
@@ -290,4 +290,4 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
   )
 }
 
-export { ShowUtxos }
+export { ShowUtxos, UtxoListDisplay }
