@@ -60,6 +60,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const [showCreateFidelityBondModal, setShowCreateFidelityBondModal] = useState(false)
+  const [creatingFidelityBond, setCreatingFidelityBond] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<SimpleAlert>()
   const [step, setStep] = useState(steps.selectDate)
@@ -238,7 +239,8 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     if (nextStep(step) === steps.done) {
       const abortCtrl = new AbortController()
       const requestContext = { ...wallet, signal: abortCtrl.signal }
-
+      reset()
+      setCreatingFidelityBond(true)
       await spendUtxosWithDirectSend(
         requestContext,
         {
@@ -257,8 +259,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
             Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond')),
         },
       )
-
-      reset()
+      setCreatingFidelityBond(false)
       onDone()
 
       return
@@ -320,6 +321,26 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
           </div>
         </div>
       )}
+      {
+        <rb.Modal
+          show={creatingFidelityBond}
+          animation={true}
+          backdrop="static"
+          centered={true}
+          keyboard={false}
+          onHide={() => setCreatingFidelityBond(false)}
+        >
+          <rb.Modal.Header closeButton>
+            <rb.Modal.Title>{t('earn.fidelity_bond.create_fidelity_bond.title')}</rb.Modal.Title>
+          </rb.Modal.Header>
+          <rb.Modal.Body>
+            <div className="d-flex justify-content-center align-items-center mt-5">
+              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+              <div>{t('earn.fidelity_bond.text_creating')}</div>
+            </div>
+          </rb.Modal.Body>
+        </rb.Modal>
+      }
       <rb.Modal
         show={showCreateFidelityBondModal}
         animation={true}
