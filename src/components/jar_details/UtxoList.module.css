@@ -38,23 +38,6 @@
   color: var(--bs-body-color);
 }
 
-.utxoList .utxoConfirmations {
-  width: 2rem;
-  display: flex;
-  gap: 0.1rem;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 0.1rem 0.2rem;
-  border-radius: 0.2rem;
-  color: var(--bs-success);
-  font-size: 0.6rem;
-}
-
-.utxoList .utxoConfirmations-0 {
-  color: var(--bs-info);
-}
-
 .utxoList .utxoTagList > .utxoTag {
   display: flex;
   justify-content: center;

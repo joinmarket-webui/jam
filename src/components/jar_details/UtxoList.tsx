@@ -19,21 +19,11 @@ import Balance from '../Balance'
 import TablePagination from '../TablePagination'
 import styles from './UtxoList.module.css'
 import UtxoIcon from '../utxo/UtxoIcon'
+import { UtxoConfirmations } from '../utxo/Confirmations'
 
 const withTooltip = ({ node, tooltip }: { node: React.ReactElement; tooltip: React.ReactElement }) => {
   return (
     <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
-  )
-}
-
-const utxoConfirmations = (utxo: Utxo) => {
-  const symbol = `confs-${utxo.confirmations >= 6 ? 'full' : utxo.confirmations}`
-
-  return (
-    <div className={classNames(styles.utxoConfirmations, styles[`utxoConfirmations-${utxo.confirmations}`])}>
-      <Sprite symbol={symbol} width="20" height="20" />
-      <div>{utxo.confirmations}</div>
-    </div>
   )
 }
 
@@ -133,7 +123,7 @@ const UtxoList = ({
         id: utxo.utxo,
         _icon: <UtxoIcon value={utxo} />,
         _tags: utxoTags(utxo, walletInfo, t),
-        _confs: utxoConfirmations(utxo),
+        _confs: <UtxoConfirmations value={utxo} />,
       })),
     }),
     [utxos, walletInfo, t],
