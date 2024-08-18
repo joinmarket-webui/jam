@@ -169,7 +169,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
         if (!onlyCjOutOrFbUtxosSelected()) {
           return t('earn.fidelity_bond.select_utxos.text_primary_button_unsafe')
         }
-
         return t('earn.fidelity_bond.select_utxos.text_primary_button')
       case steps.confirmation:
         return t('earn.fidelity_bond.confirmation.text_primary_button')
@@ -261,7 +260,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
       )
       setCreatingFidelityBond(false)
       onDone()
-
       return
     }
 

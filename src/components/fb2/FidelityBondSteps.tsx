@@ -1,6 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
-// import * as rb from 'react-bootstrap'
-// import classnamesBind from 'classnames/bind'
+import { useMemo, useState, useEffect } from 'react'
 import * as Api from '../../libs/JmWalletApi'
 import { useTranslation } from 'react-i18next'
 import { useSettings } from '../../context/SettingsContext'
@@ -42,7 +40,7 @@ interface SelectUtxosProps {
 interface ConfirmationProps {
   lockDate: Api.Lockdate
   jar: JarIndex
-  selectedUtxos: Array<Utxo>
+  selectedUtxos: Utxo[]
   timelockedAddress: Api.BitcoinAddress
 }
 
@@ -93,7 +91,6 @@ const SelectJar = ({
 }
 
 const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }: SelectUtxosProps) => {
-  // const { t } = useTranslation()
   const settings = useSettings()
   // const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
   const [showFrozenUtxos, setShowFrozenUtxos] = useState<boolean>(false)
