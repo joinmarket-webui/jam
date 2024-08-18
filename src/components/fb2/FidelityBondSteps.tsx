@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 // import * as rb from 'react-bootstrap'
 // import classnamesBind from 'classnames/bind'
 import * as Api from '../../libs/JmWalletApi'
@@ -33,8 +33,8 @@ interface SelectJarProps {
 interface SelectUtxosProps {
   walletInfo: WalletInfo
   jar: JarIndex
-  utxos: Array<Utxo>
-  selectedUtxos: Array<Utxo>
+  utxos: Utxo[]
+  selectedUtxos: Utxo[]
   onUtxoSelected: (utxo: Utxo) => void
   onUtxoDeselected: (utxo: Utxo) => void
 }
@@ -101,50 +101,32 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
   const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
   // const [isLoading, setisLoading] = useState<boolean>(true)
 
-  const loadData = useCallback(() => {
-    const frozen = utxos
-      .filter((utxo: any) => utxo.frozen)
-      .map((utxo: any) =>
-        fb.utxo.isInList(utxo, selectedUtxos)
-          ? {
-              ...utxo,
-              id: utxo.utxo,
-              checked: true,
-            }
-          : {
-              ...utxo,
-              id: utxo.utxo,
-              checked: false,
-            },
-      )
-    const unfrozen = utxos
-      .filter((utxo: any) => !utxo.frozen)
-      .map((utxo: any) =>
-        fb.utxo.isInList(utxo, selectedUtxos)
-          ? {
-              ...utxo,
-              id: utxo.utxo,
-              checked: true,
-            }
-          : {
-              ...utxo,
-              id: utxo.utxo,
-              checked: false,
-            },
-      )
+  const frozenNonTimelockedUtxos = utxos
+    .filter((it) => it.frozen)
+    .filter((it) => !it.locktime)
+    .map((it) =>
+      fb.utxo.isInList(it, selectedUtxos)
+        ? {
+            ...it,
+            checked: true,
+            selectable: true,
+          }
+        : {
+            ...it,
+            checked: false,
+            selectable: true,
+          },
+    )
+    .sort((a, b) => a.confirmations - b.confirmations)
 
-    setFrozenUtxos(frozen)
-    setUnFrozenUtxos(unfrozen)
-    // if (unfrozen.length === 0) {
-    //   setAlert({ variant: 'danger', message: t('show_utxos.alert_for_empty_utxos') })
-    // } else {
-    //   setAlert(undefined)
-    // }
-  }, [selectedUtxos, utxos])
+  const timelockedUtxos = utxos
+    .filter((it) => it.locktime !== undefined)
+    .map((it) => ({ ...it, checked: false, selectable: false }))
+    .sort((a, b) => a.confirmations - b.confirmations)
 
-  useEffect(() => {
-    loadData()
-  }, [loadData])
+  const lowerUtxos = [...frozenNonTimelockedUtxos, ...timelockedUtxos]
+
+  const [showFrozenUtxos, setShowFrozenUtxos] = useState(upperUtxos.length === 0 && lowerUtxos.length > 0)
 
   const handleToggle = (utxoIndex: number, utxo: Utxo) => {
     utxo.checked = !utxo.checked

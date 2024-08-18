@@ -210,7 +210,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     }
 
     if (currentStep === steps.selectUtxos) {
-      if (selectedUtxos.length > 0 && selectedUtxos.every((utxo) => !utxo.frozen)) {
+      if (selectedUtxos.length > 0) {
         return steps.confirmation
       }
     }
