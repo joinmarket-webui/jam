@@ -1,0 +1,7 @@
+.utxoIcon > .iconFrozen {
+  margin-bottom: 1px;
+}
+
+.utxoIcon > .iconLocked {
+  margin-bottom: 3px;
+}

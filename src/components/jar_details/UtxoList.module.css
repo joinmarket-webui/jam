@@ -7,10 +7,6 @@
   margin-bottom: 1px;
 }
 
-.utxoList .utxoIcon > .iconFrozen {
-  margin-bottom: 1px;
-}
-
 .utxoList tr.frozen td {
   --bs-code-color: var(--bs-blue);
   color: var(--bs-blue);
@@ -34,10 +30,6 @@
 }
 .utxoList tr.frozen :global .balance-hook .frozen-symbol-hook {
   display: none !important;
-}
-
-.utxoList .utxoIcon > .iconLocked {
-  margin-bottom: 3px;
 }
 
 .utxoList .utxoTagList {

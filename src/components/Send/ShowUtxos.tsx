@@ -13,7 +13,7 @@ import Balance from '../Balance'
 import Divider from '../Divider'
 import { BaseModal } from '../Modal'
 import Sprite from '../Sprite'
-import { utxoTags } from '../jar_details/UtxoList'
+import { utxoTags } from '../utxo/utils'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
 
