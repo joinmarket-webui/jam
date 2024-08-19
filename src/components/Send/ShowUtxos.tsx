@@ -55,7 +55,7 @@ const allotClasses = (tag: string, isFrozen: boolean) => {
 }
 
 const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
-  const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
+  const address = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
   const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
   const rowAndTagClass = useMemo(() => {
@@ -126,14 +126,17 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
 
   const TABLE_THEME = {
     Table: `
-    --data-table-library_grid-template-columns: 3.5rem 2.5rem 12rem 2fr 3fr 10rem;
-    @media only screen and (min-width: 768px) {
-      --data-table-library_grid-template-columns: 3.5rem 2.5rem 14rem 5fr 3fr 10rem};
-    }
+    --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
+
   `,
     BaseCell: `
     padding: 0.35rem 0.25rem !important;
     margin: 0.15rem 0px !important;
+  `,
+    Cell: `
+    &:nth-of-type(5) {
+      text-align: right;
+    }
   `,
   }
   const tableTheme = useTheme(TABLE_THEME)
