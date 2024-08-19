@@ -92,13 +92,13 @@ const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
 
   const customTheme = {
     Table: `
-    --data-table-library_grid-template-columns: 2.5rem 10rem 5fr 3fr 8.7rem;
+    --data-table-library_grid-template-columns: 2.5rem 12rem 2fr 1fr 8.7rem;
     @media only screen and (min-width: 768px) {
-      --data-table-library_grid-template-columns: 2.5rem 10rem 5fr 3fr 8.7rem;
+      --data-table-library_grid-template-columns: 1.7rem 11.3rem 2fr 1fr 8.7rem;
     }
   `,
     BaseCell: `
-    padding: 0.35rem  0.25rem !important;
+    padding: 0.35rem  0.15rem !important;
     margin: 0.15rem 0px !important;
   `,
   }
