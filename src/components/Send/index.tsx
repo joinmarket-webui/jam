@@ -567,8 +567,7 @@ export default function Send({ wallet }: SendProps) {
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
           }}
         >
-          {showConfirmSendModal.amount?.isSweep &&
-            showConfirmSendModal.consideredUtxos &&
+          {showConfirmSendModal.consideredUtxos &&
             walletInfo &&
             showConfirmSendModal.sourceJarIndex !== undefined &&
             (() => {
