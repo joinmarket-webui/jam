@@ -125,10 +125,7 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
   )
 }
 
-type SelectableUtxoTableRowData = SelectableUtxo & {
-  // TODO: add "tags" here and remove from "Utxo" type
-  // tags?: { tag: string; color: string }[]
-} & Pick<TableTypes.TableNode, 'id'>
+type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'id'>
 
 const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true }: UtxoListDisplayProps) => {
   const { t } = useTranslation()
@@ -137,7 +134,6 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
   const TABLE_THEME = {
     Table: `
     --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
-
   `,
     BaseCell: `
     padding: 0.35rem 0.25rem !important;
