@@ -77,16 +77,16 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
     >
       <Cell>
         {utxo.selectable && (
-          <input
-            id={`utxo-checkbox-${utxo.utxo}`}
-            type="checkbox"
-            checked={utxo.checked}
-            disabled={!utxo.selectable}
-            onChange={() => utxo.selectable && onToggle(utxo)}
-            className={classNames(utxo.frozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
-              [styles.selected]: utxo.checked,
-            })}
-          />
+          <div className="d-flex justify-content-center align-items-center">
+            <input
+              id={`utxo-checkbox-${utxo.utxo}`}
+              type="checkbox"
+              checked={utxo.checked}
+              disabled={!utxo.selectable}
+              onChange={() => utxo.selectable && onToggle(utxo)}
+              className={styles.checkbox}
+            />
+          </div>
         )}
       </Cell>
       <Cell>
@@ -219,8 +219,8 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
       backdrop={true}
       title={t('show_utxos.show_utxo_title')}
       closeButton
-      headerClassName={styles.customHeaderClass}
-      titleClassName={styles.customTitleClass}
+      headerClassName=""
+      titleClassName=""
     >
       <rb.Modal.Body>
         {isLoading ? (

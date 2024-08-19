@@ -47,38 +47,15 @@
   padding: 0rem 0.25rem;
 }
 
-.squareToggleButton {
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 3px;
-  border: 1px solid var(--bs-body-color);
-  margin-top: 0.45rem;
+.checkbox {
+  width: 24px;
+  height: 24px;
 }
 
-.selected {
-  visibility: visible !important;
-  background-color: var(--bs-body-color);
-}
-
-.squareFrozenToggleButton {
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 3px;
-  border: 1px solid #2d9cdb;
-  margin-top: 0.45rem;
+.checkbox:checked {
+  accent-color: var(--bs-black);
 }
 
 .utxoListDisplayHeight {
   max-height: 17.6rem;
-}
-
-.customHeaderClass {
-  background-color: var(--bs-gray-800) !important;
-  padding: var(--bs-modal-header-padding) !important;
-}
-
-.customTitleClass {
-  color: var(--bs-heading-color) !important;
 }
