@@ -55,7 +55,7 @@ const allotClasses = (tag: string, isFrozen: boolean) => {
 }
 
 const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
-  const address = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
+  const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
   const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
   const rowAndTagClass = useMemo(() => {
@@ -92,7 +92,17 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
       <Cell>
         <UtxoIcon value={utxo} tags={tag} />
       </Cell>
-      <Cell className="slashed-zeroes">{address}</Cell>
+      <Cell className="slashed-zeroes">
+        <rb.OverlayTrigger
+          overlay={(props) => (
+            <rb.Tooltip className="slashed-zeroes" {...props}>
+              {utxo.address}
+            </rb.Tooltip>
+          )}
+        >
+          <span>{displayAddress}</span>
+        </rb.OverlayTrigger>
+      </Cell>
       <Cell>
         <UtxoConfirmations value={utxo} />
       </Cell>
