@@ -14,9 +14,10 @@ import Divider from '../Divider'
 import { BaseModal } from '../Modal'
 import Sprite from '../Sprite'
 import { utxoTags } from '../utxo/utils'
+import { UtxoConfirmations } from '../utxo/Confirmations'
+import UtxoIcon from '../utxo/UtxoIcon'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
-import { UtxoConfirmations } from '../utxo/Confirmations'
 
 interface ShowUtxosProps {
   isOpen: boolean
@@ -43,16 +44,6 @@ interface UtxoListDisplayProps {
   showBackgroundColor: boolean
 }
 
-// Utility function to Identifies Icons
-const utxoIcon = (tag: string, isFrozen: boolean) => {
-  if (isFrozen && tag === 'bond') return 'timelock'
-  if (isFrozen) return 'snowflake'
-  if (tag === 'bond') return 'timelock'
-  if (tag === 'cj-out') return 'mixed'
-  if (tag === 'deposit' || tag === 'non-cj-change' || tag === 'reused') return 'unmixed'
-  return 'unmixed' // fallback
-}
-
 // Utility function to allot classes
 const allotClasses = (tag: string, isFrozen: boolean) => {
   if (isFrozen) return { row: styles.frozenUtxo, tag: styles.utxoTagFreeze }
@@ -67,11 +58,11 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
   const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
   const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
-  const { icon, rowAndTagClass } = useMemo(() => {
+  const rowAndTagClass = useMemo(() => {
     if (tag.length === 0) {
-      return { icon: 'unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
+      return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
     }
-    return { icon: utxoIcon(tag[0].tag, utxo.frozen), rowAndTagClass: allotClasses(tag[0].tag, utxo.frozen) }
+    return allotClasses(tag[0].value, utxo.frozen)
   }, [tag, utxo.frozen])
 
   return (
@@ -99,7 +90,7 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
         )}
       </Cell>
       <Cell>
-        <Sprite symbol={icon} width="23px" height="23px" />
+        <UtxoIcon value={utxo} tags={tag} />
       </Cell>
       <Cell className="slashed-zeroes">{address}</Cell>
       <Cell>
@@ -116,7 +107,9 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
         />
       </Cell>
       <Cell>
-        <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag.length ? tag[0].tag : ''}</div>
+        {tag.length > 0 && (
+          <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag[0].displayValue}</div>
+        )}
       </Cell>
     </Row>
   )

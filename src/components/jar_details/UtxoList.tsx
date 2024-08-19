@@ -12,7 +12,7 @@ import { useTheme } from '@table-library/react-table-library/theme'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo, WalletInfo } from '../../context/WalletContext'
 import * as fb from '../fb/utils'
-import { utxoTags, Tag } from '../utxo/utils'
+import { utxoTags, UtxoTag } from '../utxo/utils'
 import { shortenStringMiddle } from '../../utils'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
@@ -92,7 +92,7 @@ const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
 
 interface UtxoTableRow extends Utxo, TableTypes.TableNode {
   _icon: JSX.Element
-  _tags: Tag[]
+  _tags: UtxoTag[]
   _confs: JSX.Element
 }
 
@@ -121,7 +121,7 @@ const UtxoList = ({
       nodes: utxos.map((utxo: Utxo) => ({
         ...utxo,
         id: utxo.utxo,
-        _icon: <UtxoIcon value={utxo} />,
+        _icon: <UtxoIcon value={utxo} size={20} />,
         _tags: utxoTags(utxo, walletInfo, t),
         _confs: <UtxoConfirmations className={utxo.confirmations === 0 ? 'text-info' : 'text-success'} value={utxo} />,
       })),
@@ -188,7 +188,9 @@ const UtxoList = ({
         [SORT_KEYS.value]: (array) => array.sort((a, b) => a.value - b.value),
         [SORT_KEYS.confirmations]: (array) => array.sort((a, b) => a.confirmations - b.confirmations),
         [SORT_KEYS.tags]: (array) =>
-          array.sort((a, b) => (String(a._tags[0]?.tag) || 'z').localeCompare(String(b._tags[0]?.tag) || 'z')),
+          array.sort((a, b) =>
+            (String(a._tags[0]?.displayValue) || 'z').localeCompare(String(b._tags[0]?.displayValue) || 'z'),
+          ),
       },
     },
   )
@@ -261,6 +263,7 @@ const UtxoList = ({
                         convertToUnit={settings.unit}
                         showBalance={settings.showBalance}
                         frozen={item.frozen}
+                        colored={!item.locktime}
                       />
                     </Cell>
                     <Cell>
@@ -283,9 +286,9 @@ const UtxoList = ({
                     <Cell>{item._confs}</Cell>
                     <Cell>
                       <div className={styles.utxoTagList}>
-                        {item._tags.map((tag: Tag, index: number) => (
+                        {item._tags.map((tag: UtxoTag, index: number) => (
                           <div key={index} className={classNames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
-                            {tag.tag}
+                            {tag.displayValue}
                           </div>
                         ))}
                       </div>
