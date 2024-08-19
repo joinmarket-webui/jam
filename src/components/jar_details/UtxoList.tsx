@@ -20,6 +20,7 @@ import TablePagination from '../TablePagination'
 import styles from './UtxoList.module.css'
 import UtxoIcon from '../utxo/UtxoIcon'
 import { UtxoConfirmations } from '../utxo/Confirmations'
+import UtxoTags from '../utxo/UtxoTags'
 
 const withTooltip = ({ node, tooltip }: { node: React.ReactElement; tooltip: React.ReactElement }) => {
   return (
@@ -285,13 +286,7 @@ const UtxoList = ({
                     </Cell>
                     <Cell>{item._confs}</Cell>
                     <Cell>
-                      <div className={styles.utxoTagList}>
-                        {item._tags.map((tag: UtxoTag, index: number) => (
-                          <div key={index} className={classNames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
-                            {tag.displayValue}
-                          </div>
-                        ))}
-                      </div>
+                      <UtxoTags value={item._tags} />
                     </Cell>
                     <Cell>
                       <rb.Button

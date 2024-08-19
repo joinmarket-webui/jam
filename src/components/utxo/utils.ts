@@ -10,7 +10,7 @@ const UTXO_STATUS_COLORS: { [key in UtxoStatus]: string } = {
   reused: 'danger',
   'cj-out': 'success',
   'change-out': 'warning',
-  'non-cj-change': 'normal',
+  'non-cj-change': 'warning',
   deposit: 'normal',
 }
 

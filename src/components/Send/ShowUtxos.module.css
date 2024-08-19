@@ -1,50 +1,29 @@
-.joinedUtxoAndCjout {
+.utxoListDisplayHeight {
+  max-height: 17.6rem;
+}
+
+.row {
+  background-color: transparent;
+}
+
+.row-success {
   background-color: #27ae600d !important;
   color: #27ae60 !important;
 }
 
-.frozenUtxo {
-  background-color: #2d9cdb0d !important;
-  color: #2d9cdb !important;
+.row-warning {
+  background-color: #bb97200d !important;
+  color: #ebc957 !important;
 }
 
-.depositUtxo {
-  background-color: var(--bs-body-bg) !important;
-  color: var(--bs-modal-color) !important;
-}
-
-.changeAndReuseUtxo {
+.row-danger {
   background-color: #eb57570d !important;
   color: #eb5757 !important;
 }
 
-.utxoTagDeposit {
-  color: #999999;
-  border: 1px solid #bbbbbb;
-  background-color: #dedede !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
-}
-
-.utxoTagJoinedAndCjout {
-  border: 1px solid #27ae60;
-  background-color: #c6eed7 !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
-}
-
-.utxoTagFreeze {
-  border: 1px solid #2d9cdb;
-  background-color: #bce7ff !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
-}
-
-.utxoTagChangeAndReuse {
-  border: 1px solid #eb5757;
-  background-color: #fac7c7 !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
+.row-frozen {
+  background-color: #2d9cdb0d !important;
+  color: #2d9cdb !important;
 }
 
 .checkbox {
@@ -54,8 +33,4 @@
 
 .checkbox:checked {
   accent-color: var(--bs-black);
-}
-
-.utxoListDisplayHeight {
-  max-height: 17.6rem;
 }

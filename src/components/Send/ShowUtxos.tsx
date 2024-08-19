@@ -16,6 +16,7 @@ import Sprite from '../Sprite'
 import { utxoTags } from '../utxo/utils'
 import { UtxoConfirmations } from '../utxo/Confirmations'
 import UtxoIcon from '../utxo/UtxoIcon'
+import UtxoTags from '../utxo/UtxoTags'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
 
@@ -44,31 +45,15 @@ interface UtxoListDisplayProps {
   showBackgroundColor: boolean
 }
 
-// Utility function to allot classes
-const allotClasses = (tag: string, isFrozen: boolean) => {
-  if (isFrozen) return { row: styles.frozenUtxo, tag: styles.utxoTagFreeze }
-  if (tag === 'deposit') return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
-  if (tag === 'joined' || tag === 'cj-out') return { row: styles.joinedUtxoAndCjout, tag: styles.utxoTagJoinedAndCjout }
-  if (tag === 'non-cj-change' || tag === 'reused')
-    return { row: styles.changeAndReuseUtxo, tag: styles.utxoTagChangeAndReuse }
-  return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
-}
-
 const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
   const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
-  const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
-
-  const rowAndTagClass = useMemo(() => {
-    if (tag.length === 0) {
-      return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
-    }
-    return allotClasses(tag[0].value, utxo.frozen)
-  }, [tag, utxo.frozen])
+  const tags = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
   return (
     <Row
       item={utxo}
-      className={classNames(rowAndTagClass.row, {
+      className={classNames(styles.row, styles[`row-${tags[0].color || 'normal'}`], {
+        [styles['row-frozen']]: utxo.frozen,
         'bg-transparent': !showBackgroundColor,
         'cursor-pointer': utxo.selectable,
         'cursor-not-allowed': !utxo.selectable,
@@ -90,7 +75,7 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
         )}
       </Cell>
       <Cell>
-        <UtxoIcon value={utxo} tags={tag} />
+        <UtxoIcon value={utxo} tags={tags} />
       </Cell>
       <Cell className="slashed-zeroes">
         <rb.OverlayTrigger
@@ -117,9 +102,7 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
         />
       </Cell>
       <Cell>
-        {tag.length > 0 && (
-          <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag[0].displayValue}</div>
-        )}
+        <UtxoTags value={tags} />
       </Cell>
     </Row>
   )
