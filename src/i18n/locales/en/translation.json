@@ -467,7 +467,7 @@
       "text_unfreezing": "Unfreezing...",
       "select_date": {
         "text_primary_button": "Next",
-        "text_secondary_button": "Cancel",
+        "text_secondary_button": "Back",
         "form_label_year": "Year",
         "form_label_month": "Month",
         "description": "Fidelity bond expiration date:",
@@ -475,13 +475,13 @@
       },
       "select_jar": {
         "text_primary_button": "Next",
-        "text_secondary_button": "Cancel",
+        "text_secondary_button": "Back",
         "description": "Select a jar to fund the fidelity bond from."
       },
       "select_utxos": {
         "text_primary_button": "Next",
         "text_primary_button_unsafe": "Select potentially less private UTXOs",
-        "text_secondary_button": "Cancel",
+        "text_secondary_button": "Back",
         "description": "Select one or more UTXOs from Jar {{ jar }} to use for the fidelity bond.",
         "utxo_card": {
           "confirmations": "{{ confs }} Confirmations",
@@ -494,7 +494,7 @@
         "text_primary_button": "Freeze UTXOs",
         "text_primary_button_all_frozen": "Review bond configuration",
         "text_primary_button_error": "Try again",
-        "text_secondary_button": "Cancel",
+        "text_secondary_button": "Back",
         "description_selected_utxos": "Selected UTXOs:",
         "description_unselected_utxos": "The following UTXOs will not be used for the fidelity bond:",
         "description_selected_utxos_to_freeze": "They will be frozen to remain in Jar {{ jar }}. You can unfreeze them anytime after creating the bond."
@@ -503,7 +503,7 @@
         "text_primary_button": "Create fidelity bond",
         "text_primary_button_unsafe": "Create fidelity bond with potentially less private UTXOs",
         "text_primary_button_error": "Try again",
-        "text_secondary_button": "Cancel",
+        "text_secondary_button": "Back",
         "description": "You configured the fidelity bond as follows:",
         "label_lock_date": "Locked until",
         "label_jar": "Funded from",
@@ -530,6 +530,10 @@
       "confirm_modal": {
         "title": "Create fidelity bond and time-lock funds?",
         "body": "It will be impossible to spend time-locked funds until the fidelity bond expires. Date of expiration is {{ humanReadableDuration }} on {{date}}."
+      },
+      "confirmation": {
+        "text_primary_button": "Create fidelity bond",
+        "text_secondary_button": "Back"
       },
       "title": "Configure Fidelity Bond",
       "title_fidelity_bond_exists": "Configure Additional Bond",
