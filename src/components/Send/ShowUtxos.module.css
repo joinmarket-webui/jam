@@ -2,26 +2,26 @@
   max-height: 17.6rem;
 }
 
-.row {
-  background-color: transparent;
+.row.row-normal {
+  background-color: transparent !important;
 }
 
-.row-success {
+.row.row-success {
   background-color: #27ae600d !important;
   color: #27ae60 !important;
 }
 
-.row-warning {
+.row.row-warning {
   background-color: #bb97200d !important;
   color: #ebc957 !important;
 }
 
-.row-danger {
+.row.row-danger {
   background-color: #eb57570d !important;
   color: #eb5757 !important;
 }
 
-.row-frozen {
+.row.row-frozen {
   background-color: #2d9cdb0d !important;
   color: #2d9cdb !important;
 }
