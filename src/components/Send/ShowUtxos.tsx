@@ -33,28 +33,29 @@ interface UtxoRowProps {
   utxo: SelectableUtxoTableRowData
   onToggle: (utxo: SelectableUtxoTableRowData) => void
   settings: Settings
-  showBackgroundColor: boolean
   walletInfo: WalletInfo
   t: TFunction
+  // TODO: remove
+  showBackgroundColor?: boolean
 }
 
 interface UtxoListDisplayProps {
   utxos: SelectableUtxo[]
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
-  showBackgroundColor: boolean
+  // TODO: remove
+  showBackgroundColor?: boolean
 }
 
-const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
+const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
   const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
   const tags = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
   return (
     <Row
       item={utxo}
-      className={classNames(styles.row, styles[`row-${tags[0].color || 'normal'}`], {
+      className={classNames(styles.row, styles[`row-${tags[0]?.color || 'normal'}`], {
         [styles['row-frozen']]: utxo.frozen,
-        'bg-transparent': !showBackgroundColor,
         'cursor-pointer': utxo.selectable,
         'cursor-not-allowed': !utxo.selectable,
       })}
@@ -110,25 +111,29 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
 
 type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'id'>
 
-const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true }: UtxoListDisplayProps) => {
+const DEFAULT_UTXO_LIST_THEME = {
+  Table: `
+  --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
+`,
+  BaseCell: `
+  padding: 0.35rem 0.25rem !important;
+  margin: 0.15rem 0px !important;
+`,
+  Cell: `
+  &:nth-of-type(3) {
+    text-align: left;
+  }
+  &:nth-of-type(5) {
+    text-align: right;
+  }
+`,
+}
+
+const UtxoListDisplay = ({ utxos, onToggle, settings }: UtxoListDisplayProps) => {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
 
-  const TABLE_THEME = {
-    Table: `
-    --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
-  `,
-    BaseCell: `
-    padding: 0.35rem 0.25rem !important;
-    margin: 0.15rem 0px !important;
-  `,
-    Cell: `
-    &:nth-of-type(5) {
-      text-align: right;
-    }
-  `,
-  }
-  const tableTheme = useTheme(TABLE_THEME)
+  const tableTheme = useTheme(DEFAULT_UTXO_LIST_THEME)
 
   const tableData: TableTypes.Data<SelectableUtxoTableRowData> = useMemo(
     () => ({
@@ -155,7 +160,6 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
                     key={index}
                     utxo={utxo}
                     onToggle={onToggle}
-                    showBackgroundColor={showBackgroundColor}
                     settings={settings}
                     walletInfo={walletInfo}
                     t={t}
@@ -169,7 +173,7 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
   )
 }
 
-type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
+export type SelectableUtxo = Utxo & { checked: boolean; selectable: boolean }
 
 // TODO: rename to QuickFreezeUtxosModal?
 const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: ShowUtxosProps) => {
@@ -241,7 +245,6 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
                   )
                 }}
                 settings={settings}
-                showBackgroundColor={true}
               />
             </rb.Row>
             {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
@@ -261,7 +264,6 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
                     )
                   }}
                   settings={settings}
-                  showBackgroundColor={true}
                 />
               </rb.Row>
             </rb.Collapse>
@@ -290,4 +292,4 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
   )
 }
 
-export { ShowUtxos }
+export { ShowUtxos, UtxoListDisplay }

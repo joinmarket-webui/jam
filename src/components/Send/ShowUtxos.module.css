@@ -1,5 +1,5 @@
 .utxoListDisplayHeight {
-  max-height: 17.6rem;
+  max-height: 15.7rem;
 }
 
 .row.row-normal {
@@ -31,6 +31,7 @@
   height: 24px;
 }
 
-.checkbox:checked {
+.checkbox:checked,
+.checkbox:indeterminate {
   accent-color: var(--bs-black);
 }

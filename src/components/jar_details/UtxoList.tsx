@@ -45,6 +45,14 @@ const TABLE_THEME = {
   `,
   BaseCell: `
     padding: 0.25rem 0.25rem !important;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+    input:checked, input:indeterminate {
+      accent-color: var(--bs-black);
+    }
     &:nth-of-type(1) {
       text-align: center;
     }

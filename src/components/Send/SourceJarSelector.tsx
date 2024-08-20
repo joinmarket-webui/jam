@@ -41,8 +41,6 @@ export const SourceJarSelector = ({
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>()
-  //const [unFrozenUtxos, setUnFrozenUtxos] = useState<Utxos>([])
-  //const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -50,27 +48,6 @@ export const SourceJarSelector = ({
       (lhs, rhs) => lhs.accountIndex - rhs.accountIndex,
     )
   }, [walletInfo])
-
-  /*useEffect(() => {
-    if (frozenUtxos.length === 0 && unFrozenUtxos.length === 0) {
-      return
-    }
-    const frozenUtxosToUpdate = frozenUtxos.filter((utxo: Utxo) => utxo.checked && !utxo.locktime)
-    const timeLockedUtxo = frozenUtxos.find((utxo: Utxo) => utxo.checked && utxo.locktime)
-    const allUnFrozenUnchecked = unFrozenUtxos.every((utxo: Utxo) => !utxo.checked)
-
-    if (frozenUtxos.length > 0 && timeLockedUtxo) {
-      setAlert({ variant: 'danger', message: `${t('show_utxos.alert_for_time_locked')} ${timeLockedUtxo.locktime}` })
-    } else if (
-      (frozenUtxos.length > 0 || unFrozenUtxos.length > 0) &&
-      allUnFrozenUnchecked &&
-      frozenUtxosToUpdate.length === 0
-    ) {
-      setAlert({ variant: 'warning', message: t('show_utxos.alert_for_unfreeze_utxos'), dismissible: true })
-    } else {
-      setAlert(undefined)
-    }
-  }, [frozenUtxos, unFrozenUtxos, t, setAlert])*/
 
   const handleUtxosFrozenState = useCallback(
     async (selectedUtxos: Utxos) => {

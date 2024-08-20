@@ -1,4 +1,4 @@
-import { PropsWithChildren, useMemo } from 'react'
+import { PropsWithChildren, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
@@ -10,6 +10,9 @@ import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
 import styles from './PaymentConfirmModal.module.css'
+import { Utxos } from '../context/WalletContext'
+import { SelectableUtxo, UtxoListDisplay } from './Send/ShowUtxos'
+import Divider from './Divider'
 
 const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee, txFeeFactor) => {
   if (txFee.unit !== 'sats/kilo-vbyte') {
@@ -55,6 +58,37 @@ const useMiningFeeText = ({ tx_fees, tx_fees_factor }: Pick<FeeValues, 'tx_fees'
   }, [t, tx_fees, tx_fees_factor])
 }
 
+type ReviewConsideredUtxosProps = {
+  utxos: SelectableUtxo[]
+}
+const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
+  const { t } = useTranslation()
+  const settings = useSettings()
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+
+  return (
+    <rb.Row className="mt-2">
+      <rb.Col xs={4} md={3} className="text-end">
+        <strong>{t('show_utxos.considered_utxos')}</strong>
+      </rb.Col>
+      <rb.Col xs={8} md={9}>
+        <Divider toggled={isOpen} onToggle={() => setIsOpen((current) => !current)} />
+      </rb.Col>
+      <rb.Collapse in={isOpen}>
+        <rb.Col xs={12} className="mt-2">
+          <UtxoListDisplay
+            utxos={utxos}
+            settings={settings}
+            onToggle={() => {
+              // No-op since these UTXOs are only for review and are not selectable
+            }}
+          />
+        </rb.Col>
+      </rb.Collapse>
+    </rb.Row>
+  )
+}
+
 interface PaymentDisplayInfo {
   sourceJarIndex?: JarIndex
   destination: BitcoinAddress | string
@@ -64,6 +98,7 @@ interface PaymentDisplayInfo {
   numCollaborators?: number
   feeConfigValues?: FeeValues
   showPrivacyInfo?: boolean
+  consideredUtxos?: Utxos
 }
 
 interface PaymentConfirmModalProps extends ConfirmModalProps {
@@ -80,6 +115,7 @@ export function PaymentConfirmModal({
     numCollaborators,
     feeConfigValues,
     showPrivacyInfo = true,
+    consideredUtxos = [],
   },
   children,
   ...confirmModalProps
@@ -97,7 +133,7 @@ export function PaymentConfirmModal({
 
   return (
     <ConfirmModal {...confirmModalProps}>
-      <rb.Container className="mt-2">
+      <rb.Container className="mt-2" fluid>
         {showPrivacyInfo && (
           <rb.Row className="mt-2 mb-3">
             <rb.Col xs={12} className="text-center">
@@ -206,6 +242,9 @@ export function PaymentConfirmModal({
               {miningFeeText}
             </rb.Col>
           </rb.Row>
+        )}
+        {consideredUtxos.length !== 0 && (
+          <ReviewConsideredUtxos utxos={consideredUtxos.map((it) => ({ ...it, checked: false, selectable: false }))} />
         )}
         {children && (
           <rb.Row>
