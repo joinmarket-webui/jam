@@ -82,7 +82,6 @@ const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
             onToggle={() => {
               // No-op since these UTXOs are only for review and are not selectable
             }}
-            showBackgroundColor={false}
           />
         </rb.Col>
       </rb.Collapse>
