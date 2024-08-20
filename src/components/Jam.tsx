@@ -18,6 +18,7 @@ import FeeConfigModal from './settings/FeeConfigModal'
 
 import styles from './Jam.module.css'
 import { useFeeConfigValues } from '../hooks/Fees'
+import SchedulerConfirmationModal from './SchedulerConfirmationModal'
 
 const DEST_ADDRESS_COUNT_PROD = 3
 const DEST_ADDRESS_COUNT_TEST = 1
@@ -535,19 +536,10 @@ export default function Jam({ wallet }: JamProps) {
                           })}
 
                           <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
-
-                          <rb.Button
-                            className="w-100 mb-4"
-                            variant="dark"
-                            size="lg"
-                            type="submit"
+                          <SchedulerConfirmationModal
+                            onConfirm={handleSubmit}
                             disabled={isOperationDisabled || isSubmitting || !isValid}
-                          >
-                            <div className="d-flex justify-content-center align-items-center">
-                              {t('scheduler.button_start')}
-                              <Sprite symbol="caret-right" width="24" height="24" className="ms-1" />
-                            </div>
-                          </rb.Button>
+                          />
                         </rb.Form>
                       </>
                     )}
