@@ -32,7 +32,7 @@ export default function SchedulerConfirmationModal({ onConfirm, disabled }: Sche
         onCancel={handleClose}
         onConfirm={onConfirm}
         size="lg"
-        showCloseButton={true}
+        closeButton={true}
         headerClassName={styles['modalHeader']}
         titleClassName={styles['modalTitle']}
       >
