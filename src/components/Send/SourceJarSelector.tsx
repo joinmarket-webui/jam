@@ -37,13 +37,10 @@ export const SourceJarSelector = ({
 }: SourceJarSelectorProps) => {
   const { t } = useTranslation()
   const [field] = useField<JarIndex>(name)
-  const [consideredUtxos] = useField<Utxos | undefined>('consideredUtxos')
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
   const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>()
-  //const [unFrozenUtxos, setUnFrozenUtxos] = useState<Utxos>([])
-  //const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -51,27 +48,6 @@ export const SourceJarSelector = ({
       (lhs, rhs) => lhs.accountIndex - rhs.accountIndex,
     )
   }, [walletInfo])
-
-  /*useEffect(() => {
-    if (frozenUtxos.length === 0 && unFrozenUtxos.length === 0) {
-      return
-    }
-    const frozenUtxosToUpdate = frozenUtxos.filter((utxo: Utxo) => utxo.checked && !utxo.locktime)
-    const timeLockedUtxo = frozenUtxos.find((utxo: Utxo) => utxo.checked && utxo.locktime)
-    const allUnFrozenUnchecked = unFrozenUtxos.every((utxo: Utxo) => !utxo.checked)
-
-    if (frozenUtxos.length > 0 && timeLockedUtxo) {
-      setAlert({ variant: 'danger', message: `${t('show_utxos.alert_for_time_locked')} ${timeLockedUtxo.locktime}` })
-    } else if (
-      (frozenUtxos.length > 0 || unFrozenUtxos.length > 0) &&
-      allUnFrozenUnchecked &&
-      frozenUtxosToUpdate.length === 0
-    ) {
-      setAlert({ variant: 'warning', message: t('show_utxos.alert_for_unfreeze_utxos'), dismissible: true })
-    } else {
-      setAlert(undefined)
-    }
-  }, [frozenUtxos, unFrozenUtxos, t, setAlert])*/
 
   const handleUtxosFrozenState = useCallback(
     async (selectedUtxos: Utxos) => {
@@ -98,20 +74,7 @@ export const SourceJarSelector = ({
         ])
 
         if (res.length !== 0) {
-          const allUtxosData = await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
-          if (allUtxosData) {
-            const selectedUtxos = allUtxosData.utxos
-              .filter((utxo) => utxo.mixdepth === field.value && !utxo.frozen)
-              .map((utxo) => utxo.utxo)
-            form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
-          }
-        } else {
-          if (walletInfo) {
-            const selectedUtxos = walletInfo.utxosByJar[field.value]
-              .filter((utxo) => !utxo.frozen)
-              .map((utxo) => utxo.utxo)
-            form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
-          }
+          await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
         }
 
         setShowUtxos(undefined)
@@ -120,7 +83,7 @@ export const SourceJarSelector = ({
         setShowUtxos({ ...showUtxos, isLoading: false, alert: { variant: 'danger', message: err.message } })
       }
     },
-    [showUtxos, wallet, reloadCurrentWalletInfo, field, form, walletInfo, consideredUtxos],
+    [showUtxos, wallet, reloadCurrentWalletInfo],
   )
 
   return (
@@ -161,7 +124,6 @@ export const SourceJarSelector = ({
                     variant={it.accountIndex === field.value ? variant : undefined}
                     onClick={(jarIndex) => {
                       form.setFieldValue(field.name, jarIndex, true)
-                      form.setFieldValue(consideredUtxos.name, undefined, false)
                       if (
                         it.accountIndex === field.value &&
                         !disabled &&
@@ -172,12 +134,6 @@ export const SourceJarSelector = ({
                           utxos: walletInfo.utxosByJar[it.accountIndex],
                           isLoading: false,
                         })
-                      }
-                      if (walletInfo) {
-                        const selectedUtxos = walletInfo.utxosByJar[jarIndex]
-                          .filter((utxo) => !utxo.frozen)
-                          .map((utxo) => utxo.utxo)
-                        form.setFieldValue(consideredUtxos.name, selectedUtxos, true)
                       }
                     }}
                   />

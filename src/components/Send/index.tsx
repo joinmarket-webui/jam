@@ -18,11 +18,7 @@ import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-
 import { initialNumCollaborators } from './helpers'
-import { SelectableUtxo, UtxoListDisplay } from './ShowUtxos'
-import Divider from '../Divider'
-import { useSettings } from '../../context/SettingsContext'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
@@ -80,53 +76,6 @@ const createInitialValues = (numCollaborators: number, feeConfigValues: FeeValue
     isCoinJoin: INITIAL_IS_COINJOIN,
     numCollaborators,
   }
-}
-
-type ReviewConsideredUtxosProps = {
-  utxos: SelectableUtxo[]
-}
-const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
-  const { t } = useTranslation()
-  const settings = useSettings()
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-
-  const customTheme = {
-    Table: `
-    --data-table-library_grid-template-columns: 2.5rem 12rem 2fr 1fr 8.7rem;
-    @media only screen and (min-width: 768px) {
-      --data-table-library_grid-template-columns: 1.7rem 11.3rem 2fr 1fr 8.7rem;
-    }
-  `,
-    BaseCell: `
-    padding: 0.35rem  0.15rem !important;
-    margin: 0.15rem 0px !important;
-  `,
-  }
-
-  return (
-    <rb.Row className="mt-3">
-      <rb.Col xs={4} md={3} className="text-end">
-        <strong>{t('show_utxos.considered_utxos')}</strong>
-      </rb.Col>
-      <rb.Col xs={8} md={9}>
-        <Divider toggled={isOpen} onToggle={() => setIsOpen((current) => !current)} className="mb-3" />
-        <rb.Collapse in={isOpen}>
-          <div className="text-start">
-            <UtxoListDisplay
-              utxos={utxos}
-              settings={settings}
-              onToggle={() => {
-                // No-op since these UTXOs are only for review and are not selectable
-              }}
-              showBackgroundColor={false}
-              customTheme={customTheme}
-              disableCheckboxCell={true}
-            />
-          </div>
-        </rb.Collapse>
-      </rb.Col>
-    </rb.Row>
-  )
 }
 
 type SendProps = {
@@ -565,20 +514,11 @@ export default function Send({ wallet }: SendProps) {
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
+            consideredUtxos: (walletInfo?.utxosByJar[showConfirmSendModal.sourceJarIndex!] || [])
+              .filter((utxo) => !utxo.frozen)
+              .sort((a, b) => a.confirmations - b.confirmations),
           }}
-        >
-          {showConfirmSendModal.consideredUtxos &&
-            walletInfo &&
-            showConfirmSendModal.sourceJarIndex !== undefined &&
-            (() => {
-              const selectedUtxosList = showConfirmSendModal.consideredUtxos
-              const utxoList = walletInfo.utxosByJar[showConfirmSendModal.sourceJarIndex]
-                .filter((utxo) => selectedUtxosList.some((selectedUtxos) => selectedUtxos === utxo.utxo))
-                .map((it) => ({ ...it, checked: false, selectable: false }))
-                .sort((a, b) => a.confirmations - b.confirmations)
-              return <ReviewConsideredUtxos utxos={utxoList} />
-            })()}
-        </PaymentConfirmModal>
+        />
       )}
     </div>
   )

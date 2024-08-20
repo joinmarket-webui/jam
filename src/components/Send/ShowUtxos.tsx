@@ -36,7 +36,6 @@ interface UtxoRowProps {
   showBackgroundColor: boolean
   walletInfo: WalletInfo
   t: TFunction
-  disableCheckboxCell?: boolean
 }
 
 interface UtxoListDisplayProps {
@@ -44,29 +43,16 @@ interface UtxoListDisplayProps {
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
   showBackgroundColor: boolean
-  customTheme?: {
-    Table: string
-    BaseCell: string
-  }
-  disableCheckboxCell?: boolean
 }
 
-const UtxoRow = ({
-  utxo,
-  onToggle,
-  showBackgroundColor,
-  settings,
-  walletInfo,
-  t,
-  disableCheckboxCell,
-}: UtxoRowProps) => {
+const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
   const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
   const tags = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
   return (
     <Row
       item={utxo}
-      className={classNames(styles.row, styles[`row-${tags[0].color || 'normal'}`], {
+      className={classNames(styles.row, styles[`row-${tags[0]?.color || 'normal'}`], {
         [styles['row-frozen']]: utxo.frozen,
         'bg-transparent': !showBackgroundColor,
         'cursor-pointer': utxo.selectable,
@@ -74,22 +60,20 @@ const UtxoRow = ({
       })}
       onClick={() => utxo.selectable && onToggle(utxo)}
     >
-      {!disableCheckboxCell && (
-        <Cell>
-          {utxo.selectable && (
-            <div className="d-flex justify-content-center align-items-center">
-              <input
-                id={`utxo-checkbox-${utxo.utxo}`}
-                type="checkbox"
-                checked={utxo.checked}
-                disabled={!utxo.selectable}
-                onChange={() => utxo.selectable && onToggle(utxo)}
-                className={styles.checkbox}
-              />
-            </div>
-          )}
-        </Cell>
-      )}
+      <Cell>
+        {utxo.selectable && (
+          <div className="d-flex justify-content-center align-items-center">
+            <input
+              id={`utxo-checkbox-${utxo.utxo}`}
+              type="checkbox"
+              checked={utxo.checked}
+              disabled={!utxo.selectable}
+              onChange={() => utxo.selectable && onToggle(utxo)}
+              className={styles.checkbox}
+            />
+          </div>
+        )}
+      </Cell>
       <Cell>
         <UtxoIcon value={utxo} tags={tags} />
       </Cell>
@@ -126,32 +110,29 @@ const UtxoRow = ({
 
 type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'id'>
 
-const UtxoListDisplay = ({
-  utxos,
-  onToggle,
-  settings,
-  showBackgroundColor = true,
-  customTheme,
-  disableCheckboxCell = false,
-}: UtxoListDisplayProps) => {
+const DEFAULT_UTXO_LIST_THEME = {
+  Table: `
+  --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
+`,
+  BaseCell: `
+  padding: 0.35rem 0.25rem !important;
+  margin: 0.15rem 0px !important;
+`,
+  Cell: `
+  &:nth-of-type(3) {
+    text-align: left;
+  }
+  &:nth-of-type(5) {
+    text-align: right;
+  }
+`,
+}
+
+const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true }: UtxoListDisplayProps) => {
   const { t } = useTranslation()
   const walletInfo = useCurrentWalletInfo()
 
-  const defaultTheme = {
-    Table: `
-    --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
-  `,
-    BaseCell: `
-    padding: 0.35rem 0.25rem !important;
-    margin: 0.15rem 0px !important;
-  `,
-    Cell: `
-    &:nth-of-type(5) {
-      text-align: right;
-    }
-  `,
-  }
-  const tableTheme = useTheme(customTheme ?? defaultTheme)
+  const tableTheme = useTheme(DEFAULT_UTXO_LIST_THEME)
 
   const tableData: TableTypes.Data<SelectableUtxoTableRowData> = useMemo(
     () => ({
@@ -182,7 +163,6 @@ const UtxoListDisplay = ({
                     settings={settings}
                     walletInfo={walletInfo}
                     t={t}
-                    disableCheckboxCell={disableCheckboxCell}
                   />
                 )
               })}
