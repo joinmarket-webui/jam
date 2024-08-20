@@ -53,8 +53,6 @@ export type Utxo = {
   // `locktime` in format "yyyy-MM-dd 00:00:00"
   // NOTE: it is unparsable with safari Date constructor
   locktime?: string
-  // TODO: remove 'tags' prop
-  tags?: { tag: string; color: string }[]
 }
 
 export type Utxos = Utxo[]

@@ -13,7 +13,10 @@ import Balance from '../Balance'
 import Divider from '../Divider'
 import { BaseModal } from '../Modal'
 import Sprite from '../Sprite'
-import { utxoTags } from '../jar_details/UtxoList'
+import { utxoTags } from '../utxo/utils'
+import { UtxoConfirmations } from '../utxo/Confirmations'
+import UtxoIcon from '../utxo/UtxoIcon'
+import UtxoTags from '../utxo/UtxoTags'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
 
@@ -42,81 +45,15 @@ interface UtxoListDisplayProps {
   showBackgroundColor: boolean
 }
 
-// Utility function to Identifies Icons
-const utxoIcon = (tag: string, isFrozen: boolean) => {
-  if (isFrozen && tag === 'bond') return 'timelock'
-  if (isFrozen) return 'snowflake'
-  if (tag === 'bond') return 'timelock'
-  if (tag === 'cj-out') return 'mixed'
-  if (tag === 'deposit' || tag === 'non-cj-change' || tag === 'reused') return 'unmixed'
-  return 'unmixed' // fallback
-}
-
-// Utility function to allot classes
-const allotClasses = (tag: string, isFrozen: boolean) => {
-  if (isFrozen) return { row: styles.frozenUtxo, tag: styles.utxoTagFreeze }
-  if (tag === 'deposit') return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
-  if (tag === 'joined' || tag === 'cj-out') return { row: styles.joinedUtxoAndCjout, tag: styles.utxoTagJoinedAndCjout }
-  if (tag === 'non-cj-change' || tag === 'reused')
-    return { row: styles.changeAndReuseUtxo, tag: styles.utxoTagChangeAndReuse }
-  return { row: styles.depositUtxo, tag: styles.utxoTagDeposit }
-}
-
-interface ConfirmationFormat {
-  symbol: string
-  display: string
-  confirmations: number
-}
-
-const formatConfirmations = (confirmations: number): ConfirmationFormat => ({
-  symbol: `confs-${confirmations >= 6 ? 'full' : confirmations}`,
-  display: confirmations > 9999 ? `${Number(9999).toLocaleString()}+` : confirmations.toLocaleString(),
-  confirmations,
-})
-
-const Confirmations = ({ value }: { value: ConfirmationFormat }) =>
-  value.confirmations > 9999 ? (
-    <rb.OverlayTrigger
-      popperConfig={{
-        modifiers: [
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 1],
-            },
-          },
-        ],
-      }}
-      overlay={(props) => <rb.Tooltip {...props}>{value.confirmations.toLocaleString()}</rb.Tooltip>}
-    >
-      <div>
-        <Sprite symbol={value.symbol} width="28px" height="28px" className="mb-1" />
-        {value.display}
-      </div>
-    </rb.OverlayTrigger>
-  ) : (
-    <div>
-      <Sprite symbol={value.symbol} width="28px" height="28px" className="mb-1" />
-      {value.display}
-    </div>
-  )
-
 const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
-  const address = useMemo(() => shortenStringMiddle(utxo.address, 16), [utxo.address])
-  const confFormat = useMemo(() => formatConfirmations(utxo.confirmations), [utxo.confirmations])
-  const tag = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
-
-  const { icon, rowAndTagClass } = useMemo(() => {
-    if (tag.length === 0) {
-      return { icon: 'unmixed', rowAndTagClass: { row: styles.depositUtxo, tag: styles.utxoTagDeposit } }
-    }
-    return { icon: utxoIcon(tag[0].tag, utxo.frozen), rowAndTagClass: allotClasses(tag[0].tag, utxo.frozen) }
-  }, [tag, utxo.frozen])
+  const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
+  const tags = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
   return (
     <Row
       item={utxo}
-      className={classNames(rowAndTagClass.row, {
+      className={classNames(styles.row, styles[`row-${tags[0].color || 'normal'}`], {
+        [styles['row-frozen']]: utxo.frozen,
         'bg-transparent': !showBackgroundColor,
         'cursor-pointer': utxo.selectable,
         'cursor-not-allowed': !utxo.selectable,
@@ -125,24 +62,34 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
     >
       <Cell>
         {utxo.selectable && (
-          <input
-            id={`utxo-checkbox-${utxo.utxo}`}
-            type="checkbox"
-            checked={utxo.checked}
-            disabled={!utxo.selectable}
-            onChange={() => utxo.selectable && onToggle(utxo)}
-            className={classNames(utxo.frozen ? styles.squareFrozenToggleButton : styles.squareToggleButton, {
-              [styles.selected]: utxo.checked,
-            })}
-          />
+          <div className="d-flex justify-content-center align-items-center">
+            <input
+              id={`utxo-checkbox-${utxo.utxo}`}
+              type="checkbox"
+              checked={utxo.checked}
+              disabled={!utxo.selectable}
+              onChange={() => utxo.selectable && onToggle(utxo)}
+              className={styles.checkbox}
+            />
+          </div>
         )}
       </Cell>
       <Cell>
-        <Sprite symbol={icon} width="23px" height="23px" />
+        <UtxoIcon value={utxo} tags={tags} />
       </Cell>
-      <Cell className="slashed-zeroes">{address}</Cell>
+      <Cell className="slashed-zeroes">
+        <rb.OverlayTrigger
+          overlay={(props) => (
+            <rb.Tooltip className="slashed-zeroes" {...props}>
+              {utxo.address}
+            </rb.Tooltip>
+          )}
+        >
+          <span>{displayAddress}</span>
+        </rb.OverlayTrigger>
+      </Cell>
       <Cell>
-        <Confirmations value={confFormat} />
+        <UtxoConfirmations value={utxo} />
       </Cell>
       <Cell>
         <Balance
@@ -155,16 +102,13 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
         />
       </Cell>
       <Cell>
-        <div className={classNames(rowAndTagClass.tag, 'd-inline-block')}>{tag.length ? tag[0].tag : ''}</div>
+        <UtxoTags value={tags} />
       </Cell>
     </Row>
   )
 }
 
-type SelectableUtxoTableRowData = SelectableUtxo & {
-  // TODO: add "tags" here and remove from "Utxo" type
-  // tags?: { tag: string; color: string }[]
-} & Pick<TableTypes.TableNode, 'id'>
+type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'id'>
 
 const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true }: UtxoListDisplayProps) => {
   const { t } = useTranslation()
@@ -172,14 +116,16 @@ const UtxoListDisplay = ({ utxos, onToggle, settings, showBackgroundColor = true
 
   const TABLE_THEME = {
     Table: `
-    --data-table-library_grid-template-columns: 3.5rem 2.5rem 12rem 2fr 3fr 10rem;
-    @media only screen and (min-width: 768px) {
-      --data-table-library_grid-template-columns: 3.5rem 2.5rem 14rem 5fr 3fr 10rem};
-    }
+    --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
   `,
     BaseCell: `
     padding: 0.35rem 0.25rem !important;
     margin: 0.15rem 0px !important;
+  `,
+    Cell: `
+    &:nth-of-type(5) {
+      text-align: right;
+    }
   `,
   }
   const tableTheme = useTheme(TABLE_THEME)
@@ -265,8 +211,8 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
       backdrop={true}
       title={t('show_utxos.show_utxo_title')}
       closeButton
-      headerClassName={styles.customHeaderClass}
-      titleClassName={styles.customTitleClass}
+      headerClassName=""
+      titleClassName=""
     >
       <rb.Modal.Body>
         {isLoading ? (
