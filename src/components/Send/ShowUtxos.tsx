@@ -51,7 +51,15 @@ interface UtxoListDisplayProps {
   disableCheckboxCell?: boolean
 }
 
-const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t }: UtxoRowProps) => {
+const UtxoRow = ({
+  utxo,
+  onToggle,
+  showBackgroundColor,
+  settings,
+  walletInfo,
+  t,
+  disableCheckboxCell,
+}: UtxoRowProps) => {
   const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
   const tags = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
@@ -66,20 +74,22 @@ const UtxoRow = ({ utxo, onToggle, showBackgroundColor, settings, walletInfo, t 
       })}
       onClick={() => utxo.selectable && onToggle(utxo)}
     >
-      <Cell>
-        {utxo.selectable && (
-          <div className="d-flex justify-content-center align-items-center">
-            <input
-              id={`utxo-checkbox-${utxo.utxo}`}
-              type="checkbox"
-              checked={utxo.checked}
-              disabled={!utxo.selectable}
-              onChange={() => utxo.selectable && onToggle(utxo)}
-              className={styles.checkbox}
-            />
-          </div>
-        )}
-      </Cell>
+      {!disableCheckboxCell && (
+        <Cell>
+          {utxo.selectable && (
+            <div className="d-flex justify-content-center align-items-center">
+              <input
+                id={`utxo-checkbox-${utxo.utxo}`}
+                type="checkbox"
+                checked={utxo.checked}
+                disabled={!utxo.selectable}
+                onChange={() => utxo.selectable && onToggle(utxo)}
+                className={styles.checkbox}
+              />
+            </div>
+          )}
+        </Cell>
+      )}
       <Cell>
         <UtxoIcon value={utxo} tags={tags} />
       </Cell>
