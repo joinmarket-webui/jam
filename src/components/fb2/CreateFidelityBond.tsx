@@ -159,6 +159,23 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     if (lockDate) loadTimeLockedAddress(lockDate)
   }, [lockDate, loadTimeLockedAddress])
 
+  const [countdown, setCountdown] = useState(5)
+  const [isClickable, setIsClickable] = useState(false)
+
+  const startCountdown = () => {
+    const interval = setInterval(() => {
+      console.log(countdown)
+      setCountdown((prevCountdown) => {
+        if (prevCountdown <= 1) {
+          clearInterval(interval)
+          setIsClickable(true)
+          return 0
+        }
+        return prevCountdown - 1
+      })
+    }, 1000)
+  }
+
   const primaryButtonText = (currentStep: number) => {
     switch (currentStep) {
       case steps.selectDate:
@@ -171,7 +188,8 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
         }
         return t('earn.fidelity_bond.select_utxos.text_primary_button')
       case steps.confirmation:
-        return t('earn.fidelity_bond.confirmation.text_primary_button')
+        if (isClickable) return t('earn.fidelity_bond.confirmation.text_primary_button')
+        else return `Wait ${countdown} Seconds`
       default:
         return null
     }
@@ -216,10 +234,12 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     }
 
     if (currentStep === steps.confirmation) {
-      if (alert) {
-        return steps.failed
+      if (isClickable) {
+        if (alert) {
+          return steps.failed
+        }
+        return steps.done
       }
-      return steps.done
     }
 
     return null
@@ -228,6 +248,12 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
   const onPrimaryButtonClicked = async () => {
     if (nextStep(step) === null) {
       return
+    }
+
+    if (nextStep(step) === steps.confirmation) {
+      setIsClickable(false)
+      setCountdown(5)
+      startCountdown()
     }
 
     if (nextStep(step) === steps.failed) {

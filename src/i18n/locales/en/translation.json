@@ -515,7 +515,7 @@
         "body": "It will be impossible to spend time-locked funds until the fidelity bond expires. Date of expiration is {{ humanReadableDuration }} on {{date}}."
       },
       "confirmation": {
-        "text_primary_button": "Done",
+        "text_primary_button": "Create fidelity bond",
         "text_secondary_button": "Back"
       },
       "title": "Configure Fidelity Bond",
