@@ -105,30 +105,9 @@ const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps
   return (
     <rb.Container>
       <rb.Row>
-        <rb.Col sm={6}>
-          <rb.Form.Group controlId="lockdateYear">
-            <rb.Form.Label form="fidelity-bond-form">
-              <Trans i18nKey="earn.fidelity_bond.select_date.form_label_year">Year</Trans>
-            </rb.Form.Label>
-            <rb.Form.Select
-              defaultValue={initialYear}
-              onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
-              required
-              isInvalid={!isLockdateYearValid}
-              disabled={disabled}
-              data-testid="select-lockdate-year"
-            >
-              {selectableYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </rb.Form.Select>
-          </rb.Form.Group>
-        </rb.Col>
-        <rb.Col sm={6}>
+        <rb.Col sm={5}>
           <rb.Form.Group controlId="lockdateMonth">
-            <rb.Form.Label form="fidelity-bond-form">
+            <rb.Form.Label form="fidelity-bond-form" className="fs-5">
               <Trans i18nKey="earn.fidelity_bond.select_date.form_label_month">Month</Trans>
             </rb.Form.Label>
             <rb.Form.Select
@@ -142,6 +121,27 @@ const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps
               {selectableMonths.map((it) => (
                 <option key={it.value} value={it.value} disabled={it.disabled}>
                   {it.displayValue}
+                </option>
+              ))}
+            </rb.Form.Select>
+          </rb.Form.Group>
+        </rb.Col>
+        <rb.Col sm={5}>
+          <rb.Form.Group controlId="lockdateYear">
+            <rb.Form.Label form="fidelity-bond-form" className="fs-5">
+              <Trans i18nKey="earn.fidelity_bond.select_date.form_label_year">Year</Trans>
+            </rb.Form.Label>
+            <rb.Form.Select
+              defaultValue={initialYear}
+              onChange={(e) => setLockdateYear(parseInt(e.target.value, 10))}
+              required
+              isInvalid={!isLockdateYearValid}
+              disabled={disabled}
+              data-testid="select-lockdate-year"
+            >
+              {selectableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
                 </option>
               ))}
             </rb.Form.Select>
