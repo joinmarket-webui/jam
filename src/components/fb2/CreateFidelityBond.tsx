@@ -458,6 +458,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                     <SelectDate
                       description={t('earn.fidelity_bond.select_date.description')}
                       yearsRange={yearsRange}
+                      lockdate={lockDate}
                       onChange={(date) => setLockDate(date)}
                     />
                     {bondWithSelectedLockDateAlreadyExists && (

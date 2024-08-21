@@ -43,13 +43,13 @@ interface ConfirmationProps {
   timelockedAddress: Api.BitcoinAddress
 }
 
-const SelectDate = ({ description, yearsRange, disabled, onChange }: SelectDateProps) => {
+const SelectDate = ({ description, yearsRange, lockdate, disabled, onChange }: SelectDateProps) => {
   return (
     <div className="d-flex gap-4">
       <Sprite symbol="clock" width="24" height="24" />
       <div className="d-flex flex-column gap-4 w-100">
         <div className={styles.stepDescription}>{description}</div>
-        <LockdateForm yearsRange={yearsRange} onChange={onChange} disabled={disabled} />
+        <LockdateForm yearsRange={yearsRange} lockdate={lockdate} onChange={onChange} disabled={disabled} />
       </div>
     </div>
   )

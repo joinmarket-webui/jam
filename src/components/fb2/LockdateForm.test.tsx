@@ -9,10 +9,11 @@ import LockdateForm, { _minMonth, _selectableMonths, _selectableYears } from './
 
 describe('<LockdateForm />', () => {
   const now = new Date(Date.UTC(2009, 0, 3))
+  const lockdate = null
   const setup = (onChange: (lockdate: Api.Lockdate | null) => void) => {
     render(
       <I18nextProvider i18n={i18n}>
-        <LockdateForm onChange={onChange} now={now} />
+        <LockdateForm onChange={onChange} lockdate={lockdate} now={now} />
       </I18nextProvider>,
     )
   }
