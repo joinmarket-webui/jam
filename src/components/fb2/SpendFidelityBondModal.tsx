@@ -372,6 +372,7 @@ const RenewFidelityBondModal = ({
         <SelectDate
           description={t('earn.fidelity_bond.select_date.description')}
           yearsRange={yearsRange}
+          lockdate={null}
           disabled={isLoading}
           onChange={onSelectedDateChanged}
         />

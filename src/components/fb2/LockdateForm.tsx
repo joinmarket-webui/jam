@@ -59,17 +59,21 @@ export const _selectableYears = (yearsRange: fb.YearsRange, now = new Date()): n
 
 export interface LockdateFormProps {
   onChange: (lockdate: Api.Lockdate | null) => void
+  lockdate: Api.Lockdate | null
   yearsRange?: fb.YearsRange
   now?: Date
   disabled?: boolean
 }
 
-const LockdateForm = ({ onChange, now, yearsRange, disabled }: LockdateFormProps) => {
+const LockdateForm = ({ onChange, now, lockdate, yearsRange, disabled }: LockdateFormProps) => {
   const { i18n } = useTranslation()
   const _now = useMemo<Date>(() => now || new Date(), [now])
   const _yearsRange = useMemo<fb.YearsRange>(() => yearsRange || fb.DEFAULT_TIMELOCK_YEARS_RANGE, [yearsRange])
 
-  const initialValue = useMemo<Api.Lockdate>(() => fb.lockdate.initial(_now, _yearsRange), [_now, _yearsRange])
+  const initialValue = useMemo<Api.Lockdate>(() => {
+    if (lockdate) return lockdate
+    return fb.lockdate.initial(_now, _yearsRange)
+  }, [_now, _yearsRange, lockdate])
   const initialDate = useMemo(() => new Date(fb.lockdate.toTimestamp(initialValue)), [initialValue])
   const initialYear = useMemo(() => initialDate.getUTCFullYear(), [initialDate])
   const initialMonth = useMemo(() => (initialDate.getUTCMonth() + 1) as Month, [initialDate])
