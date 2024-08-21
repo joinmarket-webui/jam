@@ -111,3 +111,7 @@
 .subTitle {
   font-size: 0.8rem;
 }
+
+.stepHeader {
+  width: 8rem;
+}

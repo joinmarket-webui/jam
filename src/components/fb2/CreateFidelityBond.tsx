@@ -416,7 +416,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                     <div className={styles.circle}>
                       <div className={styles.step}>{index + 1}</div>
                     </div>
-                    {tab}
+                    <div className={styles.stepHeader}>{tab}</div>
                     {stepTitle(index)}
                   </div>
                   <Sprite symbol={step === index ? 'caret-up' : 'caret-down'} width="20" height="20" />
