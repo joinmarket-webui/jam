@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useField, useFormikContext } from 'formik'
 import { useSettings } from '../../context/SettingsContext'
@@ -26,11 +26,6 @@ const CollaboratorsSelector = ({
   const form = useFormikContext<any>()
 
   const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>(String(field.value) || '1')
-  const [isSelected, setIsSelected] = useState<boolean>(true)
-
-  useEffect(() => {
-    validateAndSetCustomNumCollaborators(customNumCollaboratorsInput)
-  }, [customNumCollaboratorsInput])
 
   const defaultCollaboratorsSelection = useMemo(() => {
     const start = Math.max(minNumCollaborators, 8)
@@ -61,7 +56,7 @@ const CollaboratorsSelector = ({
       </div>
       <div className="d-flex flex-row flex-wrap gap-2">
         {defaultCollaboratorsSelection.map((number) => {
-          const currentlySelected = !isSelected && field.value === number
+          const currentlySelected = !usesCustomNumCollaborators && field.value === number
           return (
             <rb.Button
               key={number}
@@ -71,12 +66,6 @@ const CollaboratorsSelector = ({
               })}
               onClick={() => {
                 validateAndSetCustomNumCollaborators(String(number))
-                setIsSelected(!isSelected)
-                defaultCollaboratorsSelection.forEach((number) => {
-                  if (field.value === number || customNumCollaboratorsInput === String(number)) {
-                    setIsSelected(false)
-                  }
-                })
               }}
               disabled={disabled}
             >
@@ -92,7 +81,7 @@ const CollaboratorsSelector = ({
           placeholder={t('send.input_num_collaborators_placeholder')}
           value={customNumCollaboratorsInput}
           className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
-            [styles.selected]: isSelected,
+            [styles.selected]: usesCustomNumCollaborators,
           })}
           onChange={(e) => {
             setCustomNumCollaboratorsInput(e.target.value)
@@ -103,7 +92,6 @@ const CollaboratorsSelector = ({
             if (val !== undefined && val !== '') {
               setCustomNumCollaboratorsInput(val)
               validateAndSetCustomNumCollaborators(val)
-              setIsSelected(!isSelected)
             }
           }}
           disabled={disabled}
