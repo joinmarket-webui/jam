@@ -516,7 +516,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
             {!isLoading && primaryButtonText(step) !== null && (
               <rb.Button
                 className="w-100"
-                variant={'dark'}
+                variant={nextStep(step) === steps.confirmation && !onlyCjOutOrFbUtxosSelected() ? 'danger' : 'dark'}
                 disabled={nextStep(step) === null}
                 type="submit"
                 onClick={onPrimaryButtonClicked}
