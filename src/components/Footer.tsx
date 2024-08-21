@@ -13,6 +13,7 @@ import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
 import { toSemVer } from '../utils'
 import { OrderbookOverlay } from './Orderbook'
+import { OrderbookOverlay } from './Orderbook'
 import packageInfo from '../../package.json'
 
 const APP_DISPLAY_VERSION = (() => {
@@ -30,6 +31,7 @@ export default function Footer() {
 
   const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
+  const [isShowOrderbook, setIsShowOrderbook] = useState(false)
   const [isShowOrderbook, setIsShowOrderbook] = useState(false)
 
   const cheatsheetEnabled = useMemo(() => !!currentWallet, [currentWallet])
