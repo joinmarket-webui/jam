@@ -6,7 +6,7 @@ export const initialNumCollaborators = (minValue: number) => {
   if (minValue > 8) {
     return minValue + pseudoRandomNumber(0, 2)
   }
-  return pseudoRandomNumber(8, 10)
+  return 1
 }
 
 // not cryptographically random. returned number is in range [min, max] (both inclusive).

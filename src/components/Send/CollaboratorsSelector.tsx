@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useField, useFormikContext } from 'formik'
 import { useSettings } from '../../context/SettingsContext'
@@ -25,7 +25,12 @@ const CollaboratorsSelector = ({
   const [field] = useField<number>(name)
   const form = useFormikContext<any>()
 
-  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>()
+  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>(String(field.value) || '1')
+  const [isSelected, setIsSelected] = useState<boolean>(true)
+
+  useEffect(() => {
+    validateAndSetCustomNumCollaborators(customNumCollaboratorsInput)
+  }, [customNumCollaboratorsInput])
 
   const defaultCollaboratorsSelection = useMemo(() => {
     const start = Math.max(minNumCollaborators, 8)
@@ -49,22 +54,29 @@ const CollaboratorsSelector = ({
     <rb.Form.Group className={styles.collaboratorsSelector}>
       <rb.Form.Label className="mb-0">
         {t('send.label_num_collaborators', { numCollaborators: field.value })}
+        <span className="badge ms-2 rounded-pill bg-warning">dev</span>
       </rb.Form.Label>
       <div className="mb-2">
         <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>
       </div>
       <div className="d-flex flex-row flex-wrap gap-2">
         {defaultCollaboratorsSelection.map((number) => {
-          const isSelected = !usesCustomNumCollaborators && field.value === number
+          const currentlySelected = !isSelected && field.value === number
           return (
             <rb.Button
               key={number}
               variant={settings.theme === 'light' ? 'white' : 'dark'}
               className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
-                [styles.selected]: isSelected,
+                [styles.selected]: currentlySelected,
               })}
               onClick={() => {
                 validateAndSetCustomNumCollaborators(String(number))
+                setIsSelected(!isSelected)
+                defaultCollaboratorsSelection.forEach((number) => {
+                  if (field.value === number || customNumCollaboratorsInput === String(number)) {
+                    setIsSelected(false)
+                  }
+                })
               }}
               disabled={disabled}
             >
@@ -78,9 +90,9 @@ const CollaboratorsSelector = ({
           max={maxNumCollaborators}
           isInvalid={usesCustomNumCollaborators && !isValidNumCollaborators(field.value, minNumCollaborators)}
           placeholder={t('send.input_num_collaborators_placeholder')}
-          value={customNumCollaboratorsInput || ''}
+          value={customNumCollaboratorsInput}
           className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
-            [styles.selected]: usesCustomNumCollaborators,
+            [styles.selected]: isSelected,
           })}
           onChange={(e) => {
             setCustomNumCollaboratorsInput(e.target.value)
@@ -91,6 +103,7 @@ const CollaboratorsSelector = ({
             if (val !== undefined && val !== '') {
               setCustomNumCollaboratorsInput(val)
               validateAndSetCustomNumCollaborators(val)
+              setIsSelected(!isSelected)
             }
           }}
           disabled={disabled}
