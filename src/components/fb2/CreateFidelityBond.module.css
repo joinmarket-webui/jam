@@ -110,6 +110,7 @@
 
 .subTitle {
   font-size: 0.8rem;
+  color: var(--bs-gray-100);
 }
 
 .stepHeader {

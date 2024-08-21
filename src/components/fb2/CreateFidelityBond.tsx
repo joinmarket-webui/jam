@@ -17,6 +17,8 @@ import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
 import styles from './CreateFidelityBond.module.css'
 import { jarName } from '../jars/Jar'
 import { spendUtxosWithDirectSend, errorResolver } from './SpendFidelityBondModal'
+import Balance from '../Balance'
+import { useSettings } from '../../context/SettingsContext'
 
 export const LockInfoAlert = ({ lockDate, className }: { lockDate: Api.Lockdate; className?: string }) => {
   const { t, i18n } = useTranslation()
@@ -304,6 +306,8 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     }
   }
 
+  const settings = useSettings()
+
   const stepTitle = (currentStep: Number) => {
     if (currentStep === steps.selectDate && lockDate !== null) {
       return (
@@ -312,6 +316,19 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
     }
     if (currentStep === steps.selectJar && selectedJar !== undefined) {
       return <span className={styles.subTitle}>{`- Jar ${jarName(selectedJar)}`}</span>
+    }
+    if (currentStep === steps.selectUtxos && selectedUtxos.length !== 0) {
+      return (
+        <span className={styles.subTitle}>
+          {'- '}
+          <Balance
+            valueString={selectedUtxos.reduce((acc, utxo) => acc + utxo.value, 0).toString()}
+            convertToUnit={settings.unit}
+            showBalance={true}
+            colored={false}
+          />
+        </span>
+      )
     }
   }
 
