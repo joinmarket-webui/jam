@@ -67,7 +67,7 @@ function CollaborativeTransactionOptions({
     amount:
       selectedAmount?.isSweep && sourceJarBalance
         ? sourceJarBalance.calculatedAvailableBalanceInSats
-        : selectedAmount?.value ?? null,
+        : (selectedAmount?.value ?? null),
     numCollaborators: selectedNumCollaborators ?? null,
     isCoinjoin: true,
   })
@@ -134,8 +134,8 @@ function CollaborativeTransactionOptions({
           numCollaborators={selectedNumCollaborators ?? null}
           amount={
             selectedAmount?.isSweep
-              ? sourceJarBalance?.calculatedAvailableBalanceInSats ?? null
-              : selectedAmount?.value ?? null
+              ? (sourceJarBalance?.calculatedAvailableBalanceInSats ?? null)
+              : (selectedAmount?.value ?? null)
           }
           onClick={() => {
             setActiveFeeConfigModalSection('cj_fee')
