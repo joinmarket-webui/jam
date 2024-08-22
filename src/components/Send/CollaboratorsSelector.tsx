@@ -6,6 +6,7 @@ import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
 import styles from './CollaboratorsSelector.module.css'
 import { isValidNumCollaborators } from './helpers'
+import { isDevMode } from '../../constants/debugFeatures'
 
 type CollaboratorsSelectorProps = {
   name: string
@@ -24,8 +25,9 @@ const CollaboratorsSelector = ({
 
   const [field] = useField<number>(name)
   const form = useFormikContext<any>()
+  const initialNumCollaboratorsInput = isDevMode() ? '1' : ''
 
-  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>(String(field.value) || '1')
+  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>(initialNumCollaboratorsInput)
 
   const defaultCollaboratorsSelection = useMemo(() => {
     const start = Math.max(minNumCollaborators, 8)
@@ -49,7 +51,7 @@ const CollaboratorsSelector = ({
     <rb.Form.Group className={styles.collaboratorsSelector}>
       <rb.Form.Label className="mb-0">
         {t('send.label_num_collaborators', { numCollaborators: field.value })}
-        <span className="badge ms-2 rounded-pill bg-warning">dev</span>
+        {isDevMode() && <span className="badge ms-2 rounded-pill bg-warning">dev</span>}
       </rb.Form.Label>
       <div className="mb-2">
         <rb.Form.Text className="text-secondary">{t('send.description_num_collaborators')}</rb.Form.Text>

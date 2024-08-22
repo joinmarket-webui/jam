@@ -1,12 +1,14 @@
+import { isDevMode } from '../../constants/debugFeatures'
 import { isValidNumber } from '../../utils'
 
 export const MAX_NUM_COLLABORATORS = 99
 
-export const initialNumCollaborators = (minValue: number) => {
+export const initialNumCollaborators = (minValue: number): number => {
   if (minValue > 8) {
     return minValue + pseudoRandomNumber(0, 2)
   }
-  return 1
+
+  return isDevMode() ? 1 : pseudoRandomNumber(8, 10)
 }
 
 // not cryptographically random. returned number is in range [min, max] (both inclusive).
