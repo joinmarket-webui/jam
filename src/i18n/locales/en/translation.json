@@ -55,7 +55,8 @@
     "warning_alert_button_ok": "Fine with me.",
     "cheatsheet": "Cheatsheet",
     "websocket_connected": "Websocket connected",
-    "websocket_disconnected": "Websocket disconnected"
+    "websocket_disconnected": "Websocket disconnected",
+    "orderbook": "Orderbook"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
