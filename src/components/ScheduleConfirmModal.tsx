@@ -21,7 +21,7 @@ export default function ScheduleConfirmModal({
         title={title}
         onCancel={onCancel}
         onConfirm={onConfirm}
-        showCloseButton={showCloseButton}
+        closeButton={showCloseButton}
         disabled={disabled}
       >
         {t('scheduler.confirm_modal.body')}
