@@ -190,7 +190,12 @@ const renderOrderAsRow = (item: OrderTableRow, settings: any) => {
             }}
             overlay={(props) => (
               <rb.Tooltip {...props}>
-                <Balance valueString={String(item.bondValue.amount)} convertToUnit={BTC} showBalance={true} />
+                <Balance
+                  valueString={String(item.bondValue.amount)}
+                  colored={false}
+                  convertToUnit={BTC}
+                  showBalance={true}
+                />
                 <div className="small">
                   {item.bondValue.displayLocktime} ({item.bondValue.displayExpiresIn})
                 </div>
