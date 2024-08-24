@@ -13,6 +13,7 @@ import { ExtendedLink } from './ExtendedLink'
 import { JarDetailsOverlay } from './jar_details/JarDetailsOverlay'
 import { Jars } from './Jars'
 import styles from './MainWalletView.module.css'
+import Divider from './Divider'
 
 interface WalletHeaderProps {
   walletName: string
@@ -148,18 +149,29 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
         <rb.Row>
           <WalletHeaderRescanning walletName={wallet.displayName} isLoading={isLoading} />
         </rb.Row>
+      ) : !currentWalletInfo || isLoading ? (
+        <rb.Row>
+          <WalletHeaderPlaceholder />
+        </rb.Row>
       ) : (
-        <rb.Row onClick={() => settingsDispatch({ showBalance: !settings.showBalance })} className="cursor-pointer">
-          {!currentWalletInfo || isLoading ? (
-            <WalletHeaderPlaceholder />
-          ) : (
-            <WalletHeader
-              walletName={wallet.displayName}
-              balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
-              unit={settings.unit}
-              showBalance={settings.showBalance}
-            />
-          )}
+        <rb.Row
+          className="cursor-pointer"
+          onClick={() => {
+            if (!settings.showBalance) {
+              settingsDispatch({ unit: 'BTC', showBalance: true })
+            } else if (settings.unit === 'BTC') {
+              settingsDispatch({ unit: 'sats', showBalance: true })
+            } else {
+              settingsDispatch({ unit: 'BTC', showBalance: false })
+            }
+          }}
+        >
+          <WalletHeader
+            walletName={wallet.displayName}
+            balance={currentWalletInfo.balanceSummary.calculatedTotalBalanceInSats}
+            unit={settings.unit}
+            showBalance={settings.showBalance}
+          />
         </rb.Row>
       )}
       <div className={styles.walletBody}>
@@ -215,21 +227,13 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
             </div>
           </rb.Row>
         </rb.Collapse>
-        <rb.Row className="d-flex justify-content-center">
-          <rb.Col xs={showJars ? 12 : 10} md={showJars ? 12 : 8}>
-            <div className={styles.jarsDividerContainer}>
-              <hr className={styles.dividerLine} />
-              <button
-                className={styles.dividerButton}
-                disabled={serviceInfo?.rescanning}
-                onClick={() => setShowJars((current) => !current)}
-              >
-                <Sprite symbol={showJars ? 'caret-up' : 'caret-down'} width="20" height="20" />
-              </button>
-              <hr className={styles.dividerLine} />
-            </div>
-          </rb.Col>
-        </rb.Row>
+        <Divider
+          toggled={showJars}
+          onToggle={() => setShowJars((current) => !current)}
+          disabled={serviceInfo?.rescanning}
+          xs={showJars ? 12 : 10}
+          md={showJars ? 12 : 8}
+        />
       </div>
     </div>
   )

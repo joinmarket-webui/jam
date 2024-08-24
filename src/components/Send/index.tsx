@@ -18,7 +18,6 @@ import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-
 import { initialNumCollaborators } from './helpers'
 
 const INITIAL_DESTINATION = null
@@ -515,6 +514,9 @@ export default function Send({ wallet }: SendProps) {
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
+            consideredUtxos: (walletInfo?.utxosByJar[showConfirmSendModal.sourceJarIndex!] || [])
+              .filter((utxo) => !utxo.frozen)
+              .sort((a, b) => a.confirmations - b.confirmations),
           }}
         />
       )}

@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Field, Formik, FormikErrors, FormikProps } from 'formik'
+import { Field, Formik, FormikErrors, FormikProps, useField } from 'formik'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
 import ToggleSwitch from '../ToggleSwitch'
@@ -67,7 +67,7 @@ function CollaborativeTransactionOptions({
     amount:
       selectedAmount?.isSweep && sourceJarBalance
         ? sourceJarBalance.calculatedAvailableBalanceInSats
-        : selectedAmount?.value ?? null,
+        : (selectedAmount?.value ?? null),
     numCollaborators: selectedNumCollaborators ?? null,
     isCoinjoin: true,
   })
@@ -134,8 +134,8 @@ function CollaborativeTransactionOptions({
           numCollaborators={selectedNumCollaborators ?? null}
           amount={
             selectedAmount?.isSweep
-              ? sourceJarBalance?.calculatedAvailableBalanceInSats ?? null
-              : selectedAmount?.value ?? null
+              ? (sourceJarBalance?.calculatedAvailableBalanceInSats ?? null)
+              : (selectedAmount?.value ?? null)
           }
           onClick={() => {
             setActiveFeeConfigModalSection('cj_fee')
@@ -243,6 +243,9 @@ const InnerSendForm = ({
 }: InnerSendFormProps) => {
   const { t } = useTranslation()
   const serviceInfo = useServiceInfo()
+  const amountField = useField<AmountValue>('amount')
+  const amountMeta = amountField[1]
+  const amountHelper = amountField[2]
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -261,11 +264,25 @@ const InnerSendForm = ({
     return buildCoinjoinRequirementSummary(sourceJarUtxos)
   }, [sourceJarUtxos])
 
-  const sourceJarBalance =
-    props.values.sourceJarIndex !== undefined ? jarBalances[props.values.sourceJarIndex] : undefined
+  const sourceJarBalance = useMemo(
+    () => (props.values.sourceJarIndex !== undefined ? jarBalances[props.values.sourceJarIndex] : undefined),
+    [jarBalances, props.values.sourceJarIndex],
+  )
 
   const showCoinjoinPreconditionViolationAlert =
     !isLoading && !disabled && props.values.isCoinJoin && sourceJarCoinjoinPreconditionSummary?.isFulfilled === false
+
+  //Effect to change the field value whenever the sourceJarBalance changes (sourceJarBalance will change when quick freeze/unfreeze is performed or different source jar is selected)
+  useEffect(() => {
+    if (!sourceJarBalance) return
+    amountHelper.setValue(
+      amountMeta.initialValue || {
+        value: null,
+        isSweep: false,
+      },
+      true,
+    )
+  }, [sourceJarBalance, amountHelper, amountMeta.initialValue])
 
   return (
     <>

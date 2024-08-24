@@ -55,7 +55,8 @@
     "warning_alert_button_ok": "Fine with me.",
     "cheatsheet": "Cheatsheet",
     "websocket_connected": "Websocket connected",
-    "websocket_disconnected": "Websocket disconnected"
+    "websocket_disconnected": "Websocket disconnected",
+    "orderbook": "Orderbook"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -707,12 +708,9 @@
   },
   "show_utxos": {
     "select_utxos": "Select UTXOs",
-    "selected_utxos": "Selected UTXOs",
+    "considered_utxos": "Considered UTXOs",
     "show_utxo_title": "Select UTXOs to be considered",
     "show_utxo_subtitle": "The following UTXOs are considered in the transaction. Every unselected UTXO will be frozen and can be unfrozen later on.",
-    "show_utxo_subtitle_when_allutxos_are_frozen": "The following UTXOs are frozen. Please select them to be considered in the transaction.",
-    "alert_for_unfreeze_utxos": "At least one UTXO is required to perform a transaction",
-    "alert_for_time_locked": "Selected UTXO is Time Locked till",
-    "alert_for_empty_utxos": "Please Unfreeze UTXOs to send"
+    "show_utxo_subtitle_when_allutxos_are_frozen": "The following UTXOs are frozen. Please select them to be considered in the transaction."
   }
 }
