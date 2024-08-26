@@ -13,17 +13,15 @@ export default function ScheduleConfirmModal({
 }: PropsWithChildren<ScheduleConfirmModalProps>) {
   const { t } = useTranslation()
   return (
-    <>
-      <ConfirmModal
-        isShown={isShown}
-        title={title}
-        onCancel={onCancel}
-        onConfirm={onConfirm}
-        closeButton={closeButton}
-        disabled={disabled}
-      >
-        {t('scheduler.confirm_modal.body')}
-      </ConfirmModal>
-    </>
+    <ConfirmModal
+      isShown={isShown}
+      title={title}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+      closeButton={closeButton}
+      disabled={disabled}
+    >
+      {t('scheduler.confirm_modal.body')}
+    </ConfirmModal>
   )
 }
