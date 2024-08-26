@@ -559,7 +559,7 @@ export default function Jam({ wallet }: JamProps) {
                               setShowScheduleConfirmModal(false)
                             }}
                             onConfirm={handleSubmit}
-                            showCloseButton={true}
+                            closeButton={true}
                             disabled={isOperationDisabled || isSubmitting || !isValid}
                           />
                         </rb.Form>

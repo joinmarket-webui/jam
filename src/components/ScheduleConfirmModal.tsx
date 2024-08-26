@@ -1,18 +1,16 @@
+import { PropsWithChildren } from 'react'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
 import { useTranslation } from 'react-i18next'
 
-interface ScheduleConfirmModalProps extends ConfirmModalProps {
-  showCloseButton: boolean
-  disabled: boolean
-}
+type ScheduleConfirmModalProps = ConfirmModalProps
 export default function ScheduleConfirmModal({
   isShown,
   title,
   onCancel,
   onConfirm,
-  showCloseButton,
+  closeButton,
   disabled,
-}: ScheduleConfirmModalProps) {
+}: PropsWithChildren<ScheduleConfirmModalProps>) {
   const { t } = useTranslation()
   return (
     <>
@@ -21,7 +19,7 @@ export default function ScheduleConfirmModal({
         title={title}
         onCancel={onCancel}
         onConfirm={onConfirm}
-        closeButton={showCloseButton}
+        closeButton={closeButton}
         disabled={disabled}
       >
         {t('scheduler.confirm_modal.body')}
