@@ -90,7 +90,7 @@ describe('<Wallet />', () => {
     )
 
     expect(screen.getByText(walletDisplayName(dummyWalletFileName))).toBeInTheDocument()
-    expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('wallets.wallet_preview.placeholder_password')).toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_unlock')).toBeInTheDocument()
     expect(screen.queryByText('wallets.wallet_preview.button_open')).not.toBeInTheDocument()
@@ -107,7 +107,7 @@ describe('<Wallet />', () => {
     )
 
     expect(screen.getByText(walletDisplayName(dummyWalletFileName))).toBeInTheDocument()
-    expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_open')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
     expect(screen.queryByPlaceholderText('wallets.wallet_preview.placeholder_password')).not.toBeInTheDocument()
@@ -123,7 +123,7 @@ describe('<Wallet />', () => {
       }),
     )
 
-    expect(screen.getByText('wallets.wallet_preview.wallet_unlocked')).toBeInTheDocument()
+    expect(screen.getByText('wallets.wallet_preview.wallet_active')).toBeInTheDocument()
     expect(screen.getByText('wallets.wallet_preview.button_lock')).toBeInTheDocument()
 
     const lockWalletButton = screen.getByText('wallets.wallet_preview.button_lock')

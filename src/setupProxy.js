@@ -32,7 +32,8 @@ module.exports = (app) => {
      * - translate header "x-jm-authorization" to "Authorization"
      */
     app.use(
-      createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
+      createProxyMiddleware({
+        pathFilter: `${PUBLIC_URL}/jmws`,
         target: `https://127.0.0.1:${JMWALLETD_WEBSOCKET_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}/jmws`]: '' },
         changeOrigin: true,
@@ -41,20 +42,24 @@ module.exports = (app) => {
       }),
     )
     app.use(
-      createProxyMiddleware(`${PUBLIC_URL}/api/`, {
+      createProxyMiddleware({
+        pathFilter: `${PUBLIC_URL}/api/`,
         target: `https://127.0.0.1:${JMWALLETD_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
         secure: false,
-        onProxyReq: (proxyReq, req, res) => {
-          if (req.headers['x-jm-authorization']) {
-            proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
-          }
+        on: {
+          proxyReq: (proxyReq, req, res) => {
+            if (req.headers['x-jm-authorization']) {
+              proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
+            }
+          },
         },
       }),
     )
     app.use(
-      createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
+      createProxyMiddleware({
+        pathFilter: `${PUBLIC_URL}/obwatch/`,
         target: `http://127.0.0.1:${JMOBWATCH_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}/obwatch/`]: '' },
         changeOrigin: true,
@@ -69,7 +74,8 @@ module.exports = (app) => {
      * - proxy all API requests to "Jam API"
      */
     app.use(
-      createProxyMiddleware(`${PUBLIC_URL}/jmws`, {
+      createProxyMiddleware({
+        pathFilter: `${PUBLIC_URL}/jmws`,
         target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
@@ -78,7 +84,8 @@ module.exports = (app) => {
       }),
     )
     app.use(
-      createProxyMiddleware(`${PUBLIC_URL}/api/`, {
+      createProxyMiddleware({
+        pathFilter: `${PUBLIC_URL}/api/`,
         target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
@@ -86,7 +93,8 @@ module.exports = (app) => {
       }),
     )
     app.use(
-      createProxyMiddleware(`${PUBLIC_URL}/obwatch/`, {
+      createProxyMiddleware({
+        pathFilter: `${PUBLIC_URL}/obwatch/`,
         target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,
@@ -94,7 +102,8 @@ module.exports = (app) => {
       }),
     )
     app.use(
-      createProxyMiddleware(`${PUBLIC_URL}/jam/`, {
+      createProxyMiddleware({
+        pathFilter: `${PUBLIC_URL}/jam/`,
         target: `http://127.0.0.1:${JAM_API_PORT}`,
         pathRewrite: { [`^${PUBLIC_URL}`]: '' },
         changeOrigin: true,

@@ -233,7 +233,6 @@
     "matrix": "Matrix",
     "telegram": "Telegram",
     "jm_twitter": "JoinMarket Twitter",
-    "jam_twitter": "Jam Twitter",
     "confirm_locking_modal_title": "Lock Wallet",
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
@@ -261,6 +260,9 @@
       "label_max_cj_fee_rel": "Relative limit (per collaborator)",
       "description_max_cj_fee_rel": "The maximum fee you are willing to pay per collaborator, as a percentage of the transaction amount. Example: if you send 2 million sats and the maximum fee is set to 0.1%, you will at most pay 2,000 sats to a single collaborator.",
       "feedback_invalid_max_cj_fee_rel": "Please provide a valid maximum relative fee between {{ min }} and {{ max }}.",
+      "label_max_sweep_fee_change": "Collaborative sweep fee change",
+      "description_max_sweep_fee_change": "The maximum fee increase you are willing to pay on collaborative sweep transactions, as a percentage of the estimated transaction fee. Example: when set to 60% with 10 sats/vByte, the actual fee for collaborative sweeps can be between 4 and 16 sats/vByte. Default: {{ defaultValue }}",
+      "feedback_invalid_max_sweep_fee_change": "Please provide a valid maximum sweep fee change between {{ min }} and {{ max }}.",
       "text_button_cancel": "Cancel",
       "text_button_submit": "Save",
       "text_button_submitting": "Saving...",
@@ -494,6 +496,7 @@
         "label_selected_utxos": "UTXOs that will be time-locked:"
       },
       "create_fidelity_bond": {
+        "title": "Create Fidelity Bond",
         "success_text": "Fidelity bond created!",
         "text_primary_button": "Done",
         "text_primary_button_unfreeze": "Unfreeze UTXOs",
@@ -606,6 +609,9 @@
     "placeholder_search": "Search",
     "text_orderbook_filter_count": "{{ filterCount }} entries match given search criteria",
     "label_highlight_own_orders": "Highlight my offers",
+    "text_highlight_own_orders_subtitle": "It might take some time for your offer and your bond to appear in your local orderbook.",
+    "label_pin_to_top_own_orders": "Pin my offers",
+    "text_pin_to_top_own_orders_subtitle": "Displays your offers at the top of the table",
     "table": {
       "heading_type": "Type",
       "heading_counterparty": "Counterparty",
