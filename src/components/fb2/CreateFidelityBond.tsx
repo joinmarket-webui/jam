@@ -395,7 +395,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
         </rb.Modal.Header>
         <rb.Modal.Body>
           {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
-          {bondWithSelectedLockDateAlreadyExists && (
+          {bondWithSelectedLockDateAlreadyExists && timelockedAddress && (
             <Alert
               className="text-start mt-2"
               variant="warning"
@@ -538,7 +538,12 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
         <rb.Modal.Footer>
           <div className="d-flex flex-row gap-2 w-100">
             {!isLoading && secondaryButtonText(step) !== null && (
-              <rb.Button className="w-100" variant="none" onClick={onSecondaryButtonClicked}>
+              <rb.Button
+                className="w-100"
+                variant="light"
+                disabled={nextStep(step) === steps.selectJar}
+                onClick={onSecondaryButtonClicked}
+              >
                 {secondaryButtonText(step)}
               </rb.Button>
             )}
