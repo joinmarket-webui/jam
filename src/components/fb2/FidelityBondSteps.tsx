@@ -218,7 +218,7 @@ const Confirmation = ({ lockDate, jar, selectedUtxos, timelockedAddress }: Confi
   return (
     <>
       <div className="d-flex gap-5 px-4 align-items-center">
-        <Sprite symbol="fb-filled" width="60" height="110" className={styles.fbIcon} />
+        <Sprite symbol="fb-filled" width="55" height="100" className={styles.fbIcon} />
         <div className="d-flex flex-column gap-3">
           {confirmationItems.map((item, index) => (
             <div className="d-flex align-items-center gap-2" key={index}>
