@@ -375,7 +375,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
             <rb.Modal.Title>{t('earn.fidelity_bond.create_fidelity_bond.title')}</rb.Modal.Title>
           </rb.Modal.Header>
           <rb.Modal.Body>
-            <div className="d-flex justify-content-center align-items-center mt-5">
+            <div className="d-flex justify-content-center align-items-center m-5">
               <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
               <div>{t('earn.fidelity_bond.text_creating')}</div>
             </div>
@@ -529,6 +529,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                       selectedUtxos={selectedUtxos}
                       timelockedAddress={timelockedAddress!}
                     />
+                    <LockInfoAlert className="text-start mt-4" lockDate={lockDate!} />
                   </div>
                 )}
               </div>
