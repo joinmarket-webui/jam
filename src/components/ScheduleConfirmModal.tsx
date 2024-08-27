@@ -10,7 +10,7 @@ export default function ScheduleConfirmModal({
   onConfirm,
   closeButton,
   disabled,
-}: PropsWithChildren<ScheduleConfirmModalProps>) {
+}: ScheduleConfirmModalProps) {
   const { t } = useTranslation()
   return (
     <ConfirmModal
