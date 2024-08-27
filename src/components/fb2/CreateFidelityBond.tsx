@@ -395,6 +395,13 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
         </rb.Modal.Header>
         <rb.Modal.Body>
           {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
+          {bondWithSelectedLockDateAlreadyExists && (
+            <Alert
+              className="text-start mt-2"
+              variant="warning"
+              message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
+            />
+          )}
           {otherFidelityBondExists && (
             <div className={styles.formMessageWhenBondAlreadyExists}>
               <Trans i18nKey="earn.fidelity_bond.subtitle_fidelity_bond_exists">
@@ -461,13 +468,6 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                       lockdate={lockDate}
                       onChange={(date) => setLockDate(date)}
                     />
-                    {bondWithSelectedLockDateAlreadyExists && (
-                      <Alert
-                        className="text-start mt-4"
-                        variant="warning"
-                        message={<Trans i18nKey="earn.fidelity_bond.select_date.warning_fb_with_same_expiry" />}
-                      />
-                    )}
                   </div>
                 )}
 
