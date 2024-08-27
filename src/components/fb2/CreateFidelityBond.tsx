@@ -426,7 +426,16 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                 {timelockedAddress ? (
                   <code className={styles.timelockedAddress}>{timelockedAddress}</code>
                 ) : (
-                  <div>{t('earn.fidelity_bond.error_loading_address')}</div>
+                  <div>
+                    <rb.Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                  </div>
                 )}
               </div>
             </div>
