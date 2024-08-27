@@ -438,7 +438,9 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                 <div key={index} className={styles.tab}>
                   <div className="d-flex align-items-center gap-4">
                     <div className={styles.circle}>
-                      <div className={styles.step}>{index + 1}</div>
+                      <div className={styles.step}>
+                        {index === 3 ? <Sprite symbol="checkmark" width="20" height="20" /> : index + 1}
+                      </div>
                     </div>
                     <div className={styles.stepHeader}>{tab}</div>
                     {stepTitle(index)}
