@@ -18,13 +18,16 @@ import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-
+import { isDevMode } from '../../constants/debugFeatures'
 import { initialNumCollaborators } from './helpers'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
 const INITIAL_AMOUNT = null
 const INITIAL_IS_COINJOIN = true
+
+// set the default to one collaborat
+const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
 
 type MaxFeeConfigMissingAlertProps = {
   onSuccess: () => void
@@ -98,7 +101,10 @@ export default function Send({ wallet }: SendProps) {
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
   const [minNumCollaborators, setMinNumCollaborators] = useState(JM_MINIMUM_MAKERS_DEFAULT)
-  const initNumCollaborators = useMemo(() => initialNumCollaborators(minNumCollaborators), [minNumCollaborators])
+  const initNumCollaborators = useMemo(
+    () => (isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : initialNumCollaborators(minNumCollaborators)),
+    [minNumCollaborators],
+  )
 
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
   const maxFeesConfigMissing = useMemo(

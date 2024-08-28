@@ -1,12 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useField, useFormikContext } from 'formik'
 import { useSettings } from '../../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
-import styles from './CollaboratorsSelector.module.css'
 import { isValidNumCollaborators } from './helpers'
-import { isDevMode } from '../../constants/debugFeatures'
+import styles from './CollaboratorsSelector.module.css'
 
 type CollaboratorsSelectorProps = {
   name: string
@@ -25,11 +24,8 @@ const CollaboratorsSelector = ({
 
   const [field] = useField<number>(name)
   const form = useFormikContext<any>()
-  const initialNumCollaboratorsInput = isDevMode() ? '1' : undefined
 
-  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string | undefined>(
-    initialNumCollaboratorsInput,
-  )
+  const [customNumCollaboratorsInput, setCustomNumCollaboratorsInput] = useState<string>()
 
   const defaultCollaboratorsSelection = useMemo(() => {
     const start = Math.max(minNumCollaborators, 8)
@@ -40,14 +36,23 @@ const CollaboratorsSelector = ({
     return field.value === undefined || String(field.value) === customNumCollaboratorsInput
   }, [field.value, customNumCollaboratorsInput])
 
-  const validateAndSetCustomNumCollaborators = (candidate: string) => {
-    const parsed = parseInt(candidate, 10)
-    if (isValidNumCollaborators(parsed, minNumCollaborators)) {
-      form.setFieldValue(field.name, parsed, true)
-    } else {
-      form.setFieldValue(field.name, undefined, true)
+  const validateAndSetCustomNumCollaborators = useCallback(
+    (candidate: string) => {
+      const parsed = parseInt(candidate, 10)
+      if (isValidNumCollaborators(parsed, minNumCollaborators)) {
+        form.setFieldValue(field.name, parsed, true)
+      } else {
+        form.setFieldValue(field.name, undefined, true)
+      }
+    },
+    [form, field.name, minNumCollaborators],
+  )
+
+  useEffect(() => {
+    if (!defaultCollaboratorsSelection.includes(field.value)) {
+      setCustomNumCollaboratorsInput(String(field.value))
     }
-  }
+  }, [validateAndSetCustomNumCollaborators, field.value, defaultCollaboratorsSelection, setCustomNumCollaboratorsInput])
 
   return (
     <rb.Form.Group className={styles.collaboratorsSelector}>
