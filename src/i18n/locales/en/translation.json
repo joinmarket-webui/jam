@@ -663,7 +663,7 @@
     },
     "confirm_modal": {
       "title": "Start Scheduled Sweep",
-      "body": "Are you sure you want to start the scheduled sweep?"
+      "body": "Are you sure you want to start a scheduled sweep?"
     }
   },
   "modal": {
