@@ -14,11 +14,10 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+import { ConfirmModal, ConfirmModalProps } from './Modal'
 import FeeConfigModal from './settings/FeeConfigModal'
-
-import styles from './Jam.module.css'
 import { useFeeConfigValues } from '../hooks/Fees'
-import ScheduleConfirmModal from './ScheduleConfirmModal'
+import styles from './Jam.module.css'
 
 const DEST_ADDRESS_COUNT_PROD = 3
 const DEST_ADDRESS_COUNT_TEST = 1
@@ -141,6 +140,17 @@ function SchedulerSuccessMessage({ schedule, onConfirm }: SchedulerSuccessMessag
         </rb.Button>
       </div>
     </>
+  )
+}
+
+type ScheduleConfirmModalProps = Omit<ConfirmModalProps, 'title'>
+
+function ScheduleConfirmModal(props: ScheduleConfirmModalProps) {
+  const { t } = useTranslation()
+  return (
+    <ConfirmModal title={t('scheduler.confirm_modal.title')} {...props}>
+      {t('scheduler.confirm_modal.body')}
+    </ConfirmModal>
   )
 }
 
@@ -284,6 +294,7 @@ export default function Jam({ wallet }: JamProps) {
     }
 
     setAlert(undefined)
+    setShowScheduleConfirmModal(false)
     setIsWaitingSchedulerStart(true)
 
     const destinations = addressValueKeys(addressCount).map((key) => values[key])
@@ -328,7 +339,6 @@ export default function Jam({ wallet }: JamProps) {
 
     setAlert(undefined)
     setIsWaitingSchedulerStop(true)
-    setShowScheduleConfirmModal(false)
 
     const abortCtrl = new AbortController()
     return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal })
@@ -543,9 +553,7 @@ export default function Jam({ wallet }: JamProps) {
                             variant="dark"
                             size="lg"
                             disabled={isOperationDisabled || isSubmitting || !isValid}
-                            onClick={() => {
-                              setShowScheduleConfirmModal(true)
-                            }}
+                            onClick={() => setShowScheduleConfirmModal(true)}
                           >
                             <div className="d-flex justify-content-center align-items-center">
                               {t('scheduler.button_start')}
@@ -554,12 +562,8 @@ export default function Jam({ wallet }: JamProps) {
                           </rb.Button>
                           <ScheduleConfirmModal
                             isShown={showScheduleConfirmModal}
-                            title={t('scheduler.confirm_modal.title')}
-                            onCancel={() => {
-                              setShowScheduleConfirmModal(false)
-                            }}
+                            onCancel={() => setShowScheduleConfirmModal(false)}
                             onConfirm={handleSubmit}
-                            closeButton={true}
                             disabled={isOperationDisabled || isSubmitting || !isValid}
                           />
                         </rb.Form>
