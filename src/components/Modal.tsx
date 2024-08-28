@@ -69,7 +69,7 @@ const InfoModal = ({
   )
 }
 
-export type ConfirmModalProps = BaseModalProps & {
+export type ConfirmModalProps = Omit<BaseModalProps, 'closeButton'> & {
   onConfirm: () => void
   disabled?: boolean
 }
