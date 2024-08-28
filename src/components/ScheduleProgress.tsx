@@ -120,35 +120,33 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
         </p>
         <p className="text-secondary text-small">{t('scheduler.progress_description')}</p>
       </div>
-      <div className={styles['jamPot-container']}>
-        <Sprite symbol="jampot" width={156} />
+      <div className="d-flex justify-content-center">
+        <Sprite symbol="jampot" width="180" />
       </div>
 
-      <div className={[styles.text, 'text-secondary'].join(' ')}>
+      <div className="d-flex justify-content-center text-secondary">
         <div>
           {steps.completedTxs < steps.txs.length ? (
-            <>
-              <div>
-                <rb.Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                  className="ms-1 me-2"
-                />
-                <Trans
-                  i18nKey="scheduler.progress_current_state"
-                  values={{
-                    current: steps.completedTxs + 1,
-                    total: steps.txs.length,
-                  }}
-                >
-                  Waiting for transaction <strong>current</strong> of
-                  <strong>total</strong> to process...
-                </Trans>
-              </div>
-            </>
+            <div>
+              <rb.Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+                className="ms-1 me-2"
+              />
+              <Trans
+                i18nKey="scheduler.progress_current_state"
+                values={{
+                  current: steps.completedTxs + 1,
+                  total: steps.txs.length,
+                }}
+              >
+                Waiting for transaction <strong>current</strong> of
+                <strong>total</strong> to process...
+              </Trans>
+            </div>
           ) : (
             <div>
               <rb.Spinner
