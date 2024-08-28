@@ -2,7 +2,7 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import styles from './ScheduleProgress.module.css'
 import { Schedule } from '../context/ServiceInfoContext'
-import Sprite from './Sprite'
+import JamCookingPot from './JamCookingPot'
 
 const scheduleToSteps = (schedule: Schedule) => {
   // Example Schedule:
@@ -121,7 +121,7 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
         <p className="text-secondary text-small">{t('scheduler.progress_description')}</p>
       </div>
       <div className={styles['jamPot-container']}>
-        <Sprite symbol="jampot" width={156} />
+        <JamCookingPot height={150} width={156} />
       </div>
 
       <div className={[styles.text, 'text-secondary'].join(' ')}>
