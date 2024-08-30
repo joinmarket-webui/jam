@@ -2,6 +2,7 @@ import * as rb from 'react-bootstrap'
 import { Trans, useTranslation } from 'react-i18next'
 import styles from './ScheduleProgress.module.css'
 import { Schedule } from '../context/ServiceInfoContext'
+import Sprite from './Sprite'
 
 const scheduleToSteps = (schedule: Schedule) => {
   // Example Schedule:
@@ -119,37 +120,33 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
         </p>
         <p className="text-secondary text-small">{t('scheduler.progress_description')}</p>
       </div>
-      <div className={styles['schedule-progress']}>
-        <div className={styles['progress-container']}>
-          <div className={styles['progress-track']}></div>
-          {stepsJsx}
-        </div>
+      <div className="d-flex justify-content-center">
+        <Sprite symbol="jampot" width="180" />
       </div>
-      <div className={[styles.text, 'text-secondary'].join(' ')}>
+
+      <div className="d-flex justify-content-center text-secondary">
         <div>
           {steps.completedTxs < steps.txs.length ? (
-            <>
-              <div>
-                <rb.Spinner
-                  as="span"
-                  animation="border"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                  className="ms-1 me-2"
-                />
-                <Trans
-                  i18nKey="scheduler.progress_current_state"
-                  values={{
-                    current: steps.completedTxs + 1,
-                    total: steps.txs.length,
-                  }}
-                >
-                  Waiting for transaction <strong>current</strong> of
-                  <strong>total</strong> to process...
-                </Trans>
-              </div>
-            </>
+            <div>
+              <rb.Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+                className="ms-1 me-2"
+              />
+              <Trans
+                i18nKey="scheduler.progress_current_state"
+                values={{
+                  current: steps.completedTxs + 1,
+                  total: steps.txs.length,
+                }}
+              >
+                Waiting for transaction <strong>current</strong> of
+                <strong>total</strong> to process...
+              </Trans>
+            </div>
           ) : (
             <div>
               <rb.Spinner
@@ -163,6 +160,13 @@ const ScheduleProgress = ({ schedule }: ScheduleProgressProps) => {
               {t('scheduler.progress_done')}
             </div>
           )}
+        </div>
+      </div>
+
+      <div className={styles['schedule-progress']}>
+        <div className={styles['progress-container']}>
+          <div className={styles['progress-track']}></div>
+          {stepsJsx}
         </div>
       </div>
     </div>

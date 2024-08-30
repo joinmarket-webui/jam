@@ -33,7 +33,6 @@
 
 .modalFooter .buttonContainer :global .btn {
   flex-grow: 1;
-  min-height: 2.8rem;
   font-weight: 500;
   border-color: none !important;
 }

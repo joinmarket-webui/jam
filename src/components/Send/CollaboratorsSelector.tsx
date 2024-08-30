@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useField, useFormikContext } from 'formik'
 import { useSettings } from '../../context/SettingsContext'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
-import styles from './CollaboratorsSelector.module.css'
 import { isValidNumCollaborators } from './helpers'
+import styles from './CollaboratorsSelector.module.css'
 
 type CollaboratorsSelectorProps = {
   name: string
@@ -36,14 +36,23 @@ const CollaboratorsSelector = ({
     return field.value === undefined || String(field.value) === customNumCollaboratorsInput
   }, [field.value, customNumCollaboratorsInput])
 
-  const validateAndSetCustomNumCollaborators = (candidate: string) => {
-    const parsed = parseInt(candidate, 10)
-    if (isValidNumCollaborators(parsed, minNumCollaborators)) {
-      form.setFieldValue(field.name, parsed, true)
-    } else {
-      form.setFieldValue(field.name, undefined, true)
+  const validateAndSetCustomNumCollaborators = useCallback(
+    (candidate: string) => {
+      const parsed = parseInt(candidate, 10)
+      if (isValidNumCollaborators(parsed, minNumCollaborators)) {
+        form.setFieldValue(field.name, parsed, true)
+      } else {
+        form.setFieldValue(field.name, undefined, true)
+      }
+    },
+    [form, field.name, minNumCollaborators],
+  )
+
+  useEffect(() => {
+    if (!defaultCollaboratorsSelection.includes(field.value)) {
+      setCustomNumCollaboratorsInput(String(field.value))
     }
-  }
+  }, [validateAndSetCustomNumCollaborators, field.value, defaultCollaboratorsSelection, setCustomNumCollaboratorsInput])
 
   return (
     <rb.Form.Group className={styles.collaboratorsSelector}>
@@ -55,13 +64,13 @@ const CollaboratorsSelector = ({
       </div>
       <div className="d-flex flex-row flex-wrap gap-2">
         {defaultCollaboratorsSelection.map((number) => {
-          const isSelected = !usesCustomNumCollaborators && field.value === number
+          const currentlySelected = !usesCustomNumCollaborators && field.value === number
           return (
             <rb.Button
               key={number}
               variant={settings.theme === 'light' ? 'white' : 'dark'}
               className={classNames(styles.collaboratorsSelectorElement, 'border', 'border-1', {
-                [styles.selected]: isSelected,
+                [styles.selected]: currentlySelected,
               })}
               onClick={() => {
                 validateAndSetCustomNumCollaborators(String(number))

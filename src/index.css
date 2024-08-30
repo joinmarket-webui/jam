@@ -483,11 +483,11 @@ table.striped tr:hover td {
   }
 }
 
-footer .cheatsheet-link.nav-link {
+footer .nav-link {
   color: var(--bs-gray-900);
 }
 
-:root[data-theme='dark'] footer .cheatsheet-link.nav-link {
+:root[data-theme='dark'] footer .nav-link {
   color: var(--bs-gray-400);
 }
 

@@ -2,10 +2,11 @@ import { isValidNumber } from '../../utils'
 
 export const MAX_NUM_COLLABORATORS = 99
 
-export const initialNumCollaborators = (minValue: number) => {
+export const initialNumCollaborators = (minValue: number): number => {
   if (minValue > 8) {
     return minValue + pseudoRandomNumber(0, 2)
   }
+
   return pseudoRandomNumber(8, 10)
 }
 

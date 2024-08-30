@@ -1,19 +1,18 @@
 import { ReactNode, PropsWithChildren } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
-import styles from './Modal.module.css'
 import Sprite from './Sprite'
+import styles from './Modal.module.css'
 
-type BaseModalProps = {
-  isShown: boolean
-  title: ReactNode | string
-  onCancel: () => void
-  backdrop?: rb.ModalProps['backdrop']
-  size?: rb.ModalProps['size']
-  showCloseButton?: boolean
-  headerClassName?: string
-  titleClassName?: string
-}
+type BaseModalProps = Pick<rb.ModalProps, 'className' | 'backdrop' | 'size'> &
+  Pick<rb.ModalHeaderProps, 'closeButton'> & {
+    isShown: boolean
+    title: ReactNode | string
+    onCancel: () => void
+    headerClassName?: rb.ModalHeaderProps['className']
+    titleClassName?: rb.ModalTitleProps['className']
+  }
+
 const BaseModal = ({
   isShown,
   title,
@@ -21,9 +20,10 @@ const BaseModal = ({
   onCancel,
   size,
   backdrop = 'static',
-  showCloseButton = false,
-  headerClassName,
-  titleClassName,
+  closeButton = false,
+  className = styles.modal,
+  headerClassName = styles.modalHeader,
+  titleClassName = styles.modalTitle,
 }: PropsWithChildren<BaseModalProps>) => {
   return (
     <rb.Modal
@@ -35,10 +35,10 @@ const BaseModal = ({
       animation={true}
       backdrop={backdrop}
       size={size}
-      className={styles.modal}
+      className={className}
     >
-      <rb.Modal.Header className={`${styles['modal-header']} ${headerClassName}`} closeButton={showCloseButton}>
-        <rb.Modal.Title className={`${styles['modal-title']} ${titleClassName}`}>{title}</rb.Modal.Title>
+      <rb.Modal.Header className={headerClassName} closeButton={closeButton}>
+        <rb.Modal.Title className={titleClassName}>{title}</rb.Modal.Title>
       </rb.Modal.Header>
       {children}
     </rb.Modal>
@@ -59,8 +59,8 @@ const InfoModal = ({
 }: PropsWithChildren<InfoModalProps>) => {
   return (
     <BaseModal {...baseModalProps} onCancel={onCancel} backdrop={true}>
-      <rb.Modal.Body className={styles['modal-body']}>{children}</rb.Modal.Body>
-      <rb.Modal.Footer className={styles['modal-footer']}>
+      <rb.Modal.Body className={styles.modalBody}>{children}</rb.Modal.Body>
+      <rb.Modal.Footer className={styles.modalFooter}>
         <rb.Button variant="outline-dark" onClick={() => onSubmit()}>
           {submitButtonText}
         </rb.Button>
@@ -69,10 +69,9 @@ const InfoModal = ({
   )
 }
 
-export type ConfirmModalProps = BaseModalProps & {
+export type ConfirmModalProps = Omit<BaseModalProps, 'closeButton'> & {
   onConfirm: () => void
   disabled?: boolean
-  confirmVariant?: string
 }
 
 const ConfirmModal = ({
@@ -80,15 +79,14 @@ const ConfirmModal = ({
   onCancel,
   onConfirm,
   disabled = false,
-  confirmVariant = 'outline-dark',
   ...baseModalProps
 }: PropsWithChildren<ConfirmModalProps>) => {
   const { t } = useTranslation()
 
   return (
     <BaseModal {...baseModalProps} onCancel={onCancel}>
-      <rb.Modal.Body className={styles['modal-body']}>{children}</rb.Modal.Body>
-      <rb.Modal.Footer className={styles['modal-footer']}>
+      <rb.Modal.Body className={styles.modalBody}>{children}</rb.Modal.Body>
+      <rb.Modal.Footer className={styles.modalFooter}>
         <rb.Button
           variant="outline-dark"
           onClick={() => onCancel()}
@@ -97,7 +95,7 @@ const ConfirmModal = ({
           <Sprite symbol="cancel" width="26" height="26" />
           <div>{t('modal.confirm_button_reject')}</div>
         </rb.Button>
-        <rb.Button variant={confirmVariant} onClick={() => onConfirm()} disabled={disabled}>
+        <rb.Button variant="outline-dark" onClick={() => onConfirm()} disabled={disabled}>
           {t('modal.confirm_button_accept')}
         </rb.Button>
       </rb.Modal.Footer>
@@ -105,4 +103,4 @@ const ConfirmModal = ({
   )
 }
 
-export { InfoModal, ConfirmModal }
+export { BaseModal, InfoModal, ConfirmModal }

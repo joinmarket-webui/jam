@@ -39,7 +39,7 @@ interface BalanceComponentProps {
   symbol?: JSX.Element
   showSymbol?: boolean
   frozen?: boolean
-  isColorChange?: boolean
+  colored?: boolean
   frozenSymbol?: boolean
 }
 
@@ -47,7 +47,7 @@ const BalanceComponent = ({
   symbol,
   showSymbol = true,
   frozen = false,
-  isColorChange = false,
+  colored = true,
   frozenSymbol = true,
   children,
 }: PropsWithChildren<BalanceComponentProps>) => {
@@ -55,7 +55,7 @@ const BalanceComponent = ({
     <span
       className={classNames('balance-hook', 'd-inline-flex align-items-center', {
         [styles.frozen]: frozen,
-        [styles.balance]: !isColorChange,
+        [styles.balanceColor]: colored,
       })}
     >
       {children}
@@ -69,7 +69,7 @@ const DECIMAL_POINT_CHAR = '.'
 
 type BitcoinBalanceProps = Omit<BalanceComponentProps, 'symbol'> & { value: number }
 
-const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
+const BitcoinBalance = ({ value, colored = true, ...props }: BitcoinBalanceProps) => {
   const numberString = formatBtc(value)
   const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
 
@@ -78,10 +78,10 @@ const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
   return (
-    <BalanceComponent symbol={BTC_SYMBOL} {...props}>
+    <BalanceComponent symbol={BTC_SYMBOL} colored={colored} {...props}>
       <span
-        className={classNames(`slashed-zeroes`, {
-          [styles.bitcoinAmount]: !props.isColorChange,
+        className={classNames(`slashed-zeroes`, styles.bitcoinAmount, styles.bitcoinAmountSpacing, {
+          [styles.bitcoinAmountColor]: colored,
         })}
         data-testid="bitcoin-amount"
         data-integer-part-is-zero={integerPartIsZero}
@@ -105,11 +105,11 @@ const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
 
 type SatsBalanceProps = Omit<BalanceComponentProps, 'symbol'> & { value: number }
 
-const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
+const SatsBalance = ({ value, colored = true, ...props }: SatsBalanceProps) => {
   return (
-    <BalanceComponent symbol={SAT_SYMBOL} {...props}>
+    <BalanceComponent symbol={SAT_SYMBOL} colored={colored} {...props}>
       <span
-        className={classNames(`slashed-zeroes`, { [styles.satsAmount]: !props.isColorChange })}
+        className={classNames(`slashed-zeroes`, { [styles.satsAmountColor]: colored })}
         data-testid="sats-amount"
         data-raw-value={value}
       >

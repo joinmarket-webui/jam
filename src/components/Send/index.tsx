@@ -4,6 +4,7 @@ import { FormikProps } from 'formik'
 import { useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import * as Api from '../../libs/JmWalletApi'
+import { isDevMode } from '../../constants/debugFeatures'
 import PageTitle from '../PageTitle'
 import Sprite from '../Sprite'
 import { SendForm, SendFormValues } from './SendForm'
@@ -18,13 +19,15 @@ import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
-
 import { initialNumCollaborators } from './helpers'
 
 const INITIAL_DESTINATION = null
 const INITIAL_SOURCE_JAR_INDEX = null
 const INITIAL_AMOUNT = null
 const INITIAL_IS_COINJOIN = true
+
+// set the default to one collaborat
+const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
 
 type MaxFeeConfigMissingAlertProps = {
   onSuccess: () => void
@@ -98,7 +101,10 @@ export default function Send({ wallet }: SendProps) {
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isSending, setIsSending] = useState(false)
   const [minNumCollaborators, setMinNumCollaborators] = useState(JM_MINIMUM_MAKERS_DEFAULT)
-  const initNumCollaborators = useMemo(() => initialNumCollaborators(minNumCollaborators), [minNumCollaborators])
+  const initNumCollaborators = useMemo(
+    () => (isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : initialNumCollaborators(minNumCollaborators)),
+    [minNumCollaborators],
+  )
 
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
   const maxFeesConfigMissing = useMemo(
@@ -515,6 +521,9 @@ export default function Send({ wallet }: SendProps) {
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
+            consideredUtxos: (walletInfo?.utxosByJar[showConfirmSendModal.sourceJarIndex!] || [])
+              .filter((utxo) => !utxo.frozen)
+              .sort((a, b) => a.confirmations - b.confirmations),
           }}
         />
       )}

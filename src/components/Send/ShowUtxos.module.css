@@ -1,88 +1,37 @@
-.joinedUtxoAndCjout {
+.utxoListDisplayHeight {
+  max-height: 15.7rem;
+}
+
+.row.row-normal {
+  background-color: transparent !important;
+}
+
+.row.row-success {
   background-color: #27ae600d !important;
   color: #27ae60 !important;
 }
 
-.frozenUtxo {
-  background-color: #2d9cdb0d !important;
-  color: #2d9cdb !important;
+.row.row-warning {
+  background-color: #bb97200d !important;
+  color: #ebc957 !important;
 }
 
-.depositUtxo {
-  background-color: var(--bs-body-bg) !important;
-  color: var(--bs-modal-color) !important;
-}
-
-.changeAndReuseUtxo {
+.row.row-danger {
   background-color: #eb57570d !important;
   color: #eb5757 !important;
 }
 
-.subTitle {
-  color: #777777 !important;
+.row.row-frozen {
+  background-color: #2d9cdb0d !important;
+  color: #2d9cdb !important;
 }
 
-.utxoTagDeposit {
-  color: #999999;
-  border: 1px solid #bbbbbb;
-  background-color: #dedede !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
+.checkbox {
+  width: 24px;
+  height: 24px;
 }
 
-.utxoTagJoinedAndCjout {
-  border: 1px solid #27ae60;
-  background-color: #c6eed7 !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
-}
-
-.utxoTagFreeze {
-  border: 1px solid #2d9cdb;
-  background-color: #bce7ff !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
-}
-
-.utxoTagChangeAndReuse {
-  border: 1px solid #eb5757;
-  background-color: #fac7c7 !important;
-  border-radius: 0.35rem;
-  padding: 0rem 0.25rem;
-}
-
-.squareToggleButton {
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 3px;
-  border: 1px solid var(--bs-body-color);
-  margin-top: 0.45rem;
-}
-
-.selected {
-  visibility: visible !important;
-  background-color: var(--bs-body-color);
-}
-
-.squareFrozenToggleButton {
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 3px;
-  border: 1px solid #2d9cdb;
-  margin-top: 0.45rem;
-}
-
-.utxoListDisplayHeight {
-  max-height: 17.6rem;
-}
-
-.customHeaderClass {
-  background-color: var(--bs-gray-800) !important;
-  padding: var(--bs-modal-header-padding) !important;
-}
-
-.customTitleClass {
-  color: var(--bs-heading-color) !important;
+.checkbox:checked,
+.checkbox:indeterminate {
+  accent-color: var(--bs-black);
 }

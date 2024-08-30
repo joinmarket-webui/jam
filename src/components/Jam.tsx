@@ -14,6 +14,7 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+import { ConfirmModal, ConfirmModalProps } from './Modal'
 import FeeConfigModal from './settings/FeeConfigModal'
 import Accordion from './Accordion'
 import styles from './Jam.module.css'
@@ -143,6 +144,17 @@ function SchedulerSuccessMessage({ schedule, onConfirm }: SchedulerSuccessMessag
   )
 }
 
+type ScheduleConfirmModalProps = Omit<ConfirmModalProps, 'title'>
+
+function ScheduleConfirmModal(props: ScheduleConfirmModalProps) {
+  const { t } = useTranslation()
+  return (
+    <ConfirmModal title={t('scheduler.confirm_modal.title')} {...props}>
+      {t('scheduler.confirm_modal.body')}
+    </ConfirmModal>
+  )
+}
+
 interface JamProps {
   wallet: CurrentWallet
 }
@@ -164,6 +176,7 @@ export default function Jam({ wallet }: JamProps) {
   const [lastKnownSchedule, resetLastKnownSchedule] = useLatestTruthy(currentSchedule ?? undefined)
   const [isShowSuccessMessage, setIsShowSuccessMessage] = useState(false)
   const [feeConfigValues, reloadFeeConfigValues] = useFeeConfigValues()
+  const [showScheduleConfirmModal, setShowScheduleConfirmModal] = useState(false)
   const maxFeesConfigMissing = useMemo(
     () =>
       feeConfigValues && (feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined),
@@ -282,6 +295,7 @@ export default function Jam({ wallet }: JamProps) {
     }
 
     setAlert(undefined)
+    setShowScheduleConfirmModal(false)
     setIsWaitingSchedulerStart(true)
 
     const destinations = addressValueKeys(addressCount).map((key) => values[key])
@@ -554,19 +568,24 @@ export default function Jam({ wallet }: JamProps) {
                           })}
 
                           <p className="text-secondary mb-4">{t('scheduler.description_fees')}</p>
-
                           <rb.Button
                             className="w-100 mb-4"
                             variant="dark"
                             size="lg"
-                            type="submit"
                             disabled={isOperationDisabled || isSubmitting || !isValid}
+                            onClick={() => setShowScheduleConfirmModal(true)}
                           >
                             <div className="d-flex justify-content-center align-items-center">
                               {t('scheduler.button_start')}
                               <Sprite symbol="caret-right" width="24" height="24" className="ms-1" />
                             </div>
                           </rb.Button>
+                          <ScheduleConfirmModal
+                            isShown={showScheduleConfirmModal}
+                            onCancel={() => setShowScheduleConfirmModal(false)}
+                            onConfirm={handleSubmit}
+                            disabled={isOperationDisabled || isSubmitting || !isValid}
+                          />
                         </rb.Form>
                       </>
                     )}

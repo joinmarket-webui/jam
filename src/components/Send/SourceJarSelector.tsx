@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
-import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxo } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 import { ShowUtxos } from './ShowUtxos'
 import { useTranslation } from 'react-i18next'
@@ -21,11 +21,10 @@ export type SourceJarSelectorProps = {
 }
 
 interface ShowUtxosProps {
-  jarIndex?: string
-  isOpen?: boolean
+  utxos: Utxos
+  isLoading: boolean
+  alert?: SimpleAlert
 }
-
-export type UtxoList = Utxo[]
 
 export const SourceJarSelector = ({
   name,
@@ -41,11 +40,7 @@ export const SourceJarSelector = ({
   const form = useFormikContext<any>()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
 
-  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps | undefined>(undefined)
-  const [alert, setAlert] = useState<SimpleAlert | undefined>(undefined)
-  const [isUtxosLoading, setIsUtxosLoading] = useState<boolean>(false)
-  const [unFrozenUtxos, setUnFrozenUtxos] = useState<UtxoList>([])
-  const [frozenUtxos, setFrozenUtxos] = useState<UtxoList>([])
+  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>()
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -54,73 +49,42 @@ export const SourceJarSelector = ({
     )
   }, [walletInfo])
 
-  useEffect(() => {
-    if (showUtxos?.jarIndex && walletInfo?.utxosByJar) {
-      const data = Object.entries(walletInfo.utxosByJar).find(([key]) => key === showUtxos.jarIndex)
-      const utxos: any = data ? data[1] : []
+  const handleUtxosFrozenState = useCallback(
+    async (selectedUtxos: Utxos) => {
+      if (!showUtxos) return
 
-      const frozenUtxoList = utxos
-        .filter((utxo: any) => utxo.frozen)
-        .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: false }))
-      const unFrozenUtxosList = utxos
-        .filter((utxo: any) => !utxo.frozen)
-        .map((utxo: any) => ({ ...utxo, id: utxo.utxo, checked: true }))
+      const abortCtrl = new AbortController()
 
-      setFrozenUtxos(frozenUtxoList)
-      setUnFrozenUtxos(unFrozenUtxosList)
-    }
-  }, [walletInfo, showUtxos?.jarIndex, t])
+      const selectedUtxosIds = selectedUtxos.map((it) => it.utxo)
+      const frozenUtxosToUnfreeze = selectedUtxos.filter((utxo) => utxo.frozen)
+      const unfrozenUtxosToFreeze = showUtxos.utxos
+        .filter((utxo) => !utxo.frozen)
+        .filter((it) => !selectedUtxosIds.includes(it.utxo))
 
-  useEffect(() => {
-    if (frozenUtxos.length === 0 && unFrozenUtxos.length === 0) {
-      return
-    }
-    const frozenUtxosToUpdate = frozenUtxos.filter((utxo: Utxo) => utxo.checked && !utxo.locktime)
-    const timeLockedUtxo = frozenUtxos.find((utxo: Utxo) => utxo.checked && utxo.locktime)
-    const allUnFrozenUnchecked = unFrozenUtxos.every((utxo: Utxo) => !utxo.checked)
+      try {
+        setShowUtxos({ ...showUtxos, isLoading: true, alert: undefined })
 
-    if (frozenUtxos.length > 0 && timeLockedUtxo) {
-      setAlert({ variant: 'danger', message: `${t('show_utxos.alert_for_time_locked')} ${timeLockedUtxo.locktime}` })
-    } else if (
-      (frozenUtxos.length > 0 || unFrozenUtxos.length > 0) &&
-      allUnFrozenUnchecked &&
-      frozenUtxosToUpdate.length === 0
-    ) {
-      setAlert({ variant: 'warning', message: t('show_utxos.alert_for_unfreeze_utxos'), dismissible: true })
-    } else {
-      setAlert(undefined)
-    }
-  }, [frozenUtxos, unFrozenUtxos, t, setAlert])
+        const res = await Promise.all([
+          ...frozenUtxosToUnfreeze.map((utxo) =>
+            Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: false }),
+          ),
+          ...unfrozenUtxosToFreeze.map((utxo) =>
+            Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: true }),
+          ),
+        ])
 
-  const handleUtxosFrozenState = useCallback(async () => {
-    const abortCtrl = new AbortController()
-    const frozenUtxosToUpdate = frozenUtxos
-      .filter((utxo) => utxo.checked && !utxo.locktime)
-      .map((utxo) => ({ utxo: utxo.utxo, freeze: false }))
-    const unFrozenUtxosToUpdate = unFrozenUtxos
-      .filter((utxo) => !utxo.checked)
-      .map((utxo) => ({ utxo: utxo.utxo, freeze: true }))
+        if (res.length !== 0) {
+          await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+        }
 
-    try {
-      const res = await Promise.all([
-        ...frozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
-        ...unFrozenUtxosToUpdate.map((utxo) => Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, utxo)),
-      ])
-
-      if (res.length !== 0) {
-        setIsUtxosLoading(true)
-        await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+        setShowUtxos(undefined)
+      } catch (err: any) {
+        if (abortCtrl.signal.aborted) return
+        setShowUtxos({ ...showUtxos, isLoading: false, alert: { variant: 'danger', message: err.message } })
       }
-
-      setShowUtxos(undefined)
-    } catch (err: any) {
-      if (!abortCtrl.signal.aborted) {
-        setAlert({ variant: 'danger', message: err.message, dismissible: true })
-      }
-    } finally {
-      setIsUtxosLoading(false)
-    }
-  }, [frozenUtxos, unFrozenUtxos, wallet, reloadCurrentWalletInfo])
+    },
+    [showUtxos, wallet, reloadCurrentWalletInfo],
+  )
 
   return (
     <>
@@ -132,19 +96,14 @@ export const SourceJarSelector = ({
           </rb.Placeholder>
         ) : (
           <div className={styles.sourceJarsContainer}>
-            {showUtxos?.isOpen && (
+            {showUtxos && (
               <ShowUtxos
-                isOpen={showUtxos.isOpen}
+                isOpen={true}
+                isLoading={showUtxos.isLoading}
+                utxos={showUtxos.utxos}
+                alert={showUtxos.alert}
                 onConfirm={handleUtxosFrozenState}
-                onCancel={() => {
-                  setShowUtxos(undefined)
-                }}
-                alert={alert}
-                isLoading={isUtxosLoading}
-                frozenUtxos={frozenUtxos}
-                unFrozenUtxos={unFrozenUtxos}
-                setFrozenUtxos={setFrozenUtxos}
-                setUnFrozenUtxos={setUnFrozenUtxos}
+                onCancel={() => setShowUtxos(undefined)}
               />
             )}
             {jarBalances.map((it) => {
@@ -163,7 +122,7 @@ export const SourceJarSelector = ({
                       walletInfo.balanceSummary.calculatedTotalBalanceInSats,
                     )}
                     variant={it.accountIndex === field.value ? variant : undefined}
-                    onClick={(jarIndex: number) => {
+                    onClick={(jarIndex) => {
                       form.setFieldValue(field.name, jarIndex, true)
                       if (
                         it.accountIndex === field.value &&
@@ -172,8 +131,8 @@ export const SourceJarSelector = ({
                         it.calculatedTotalBalanceInSats > 0
                       ) {
                         setShowUtxos({
-                          jarIndex: it.accountIndex.toString(),
-                          isOpen: true,
+                          utxos: walletInfo.utxosByJar[it.accountIndex],
+                          isLoading: false,
                         })
                       }
                     }}

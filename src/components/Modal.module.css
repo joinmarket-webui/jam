@@ -8,7 +8,7 @@
   box-shadow: 0px 0px 24px rgba(0, 0, 0, 0.25) !important;
 }
 
-.modal-header {
+.modalHeader {
   display: flex !important;
   justify-content: center !important;
   background-color: transparent !important;
@@ -16,20 +16,20 @@
   padding: 1.25rem 1.25rem 0 1.25rem !important;
 }
 
-.modal-title {
+.modalTitle {
   font-size: 1.3rem !important;
   font-weight: 600 !important;
   color: var(--bs-body-color) !important;
 }
 
-.modal-body {
+.modalBody {
   text-align: center !important;
   font-size: 1rem !important;
   font-weight: 400 !important;
   padding: 0.25rem 1.25rem 1rem 1.25rem !important;
 }
 
-.modal-footer {
+.modalFooter {
   display: flex !important;
   justify-content: center !important;
   gap: 1rem;
@@ -37,7 +37,7 @@
   padding: 1rem 1.25rem 1.25rem 1.25rem !important;
 }
 
-.modal-footer :global .btn {
+.modalFooter :global .btn {
   --bs-btn-border-color: var(--bs-border-color);
   flex-grow: 1;
   min-height: 2.8rem;
