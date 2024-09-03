@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import { Formik, FormikErrors, FormikValues, useFormikContext } from 'formik'
@@ -14,10 +14,12 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+import ScheduleDetails, { TransformedScheduleEntry } from './ScheduleDetails'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
 import FeeConfigModal from './settings/FeeConfigModal'
 import Accordion from './Accordion'
 import styles from './Jam.module.css'
+import { Table, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { useFeeConfigValues } from '../hooks/Fees'
 
 const DEST_ADDRESS_COUNT_PROD = 3
@@ -352,21 +354,14 @@ export default function Jam({ wallet }: JamProps) {
       })
   }
 
-  function getScheduleDetails(currentSchedule: Schedule) {
-    const idIndices = currentSchedule.length === 2 ? [1] : [4, 6, 7]
-    const typeIndices = currentSchedule.length === 2 ? [0] : [1, 3, 5]
-
-    return idIndices.map((idIndex, index) => (
-      <React.Fragment key={index}>
-        <p>
-          Id - {index + 1}: {currentSchedule[idIndex]?.[3]}
-        </p>
-        <p>
-          Type - {index + 1}: {currentSchedule[typeIndices[index]]?.[3]}
-        </p>
-      </React.Fragment>
-    ))
-  }
+  // Add a function to transform the schedule data to include Jar information
+  const transformScheduleData = useCallback((schedule: Schedule) => {
+    return schedule.map((item) => ({
+      id: item[3],
+      type: item[4],
+      jar: item[0], // Assuming item[0] contains the Jar number
+    }))
+  }, [])
 
   return (
     <>
@@ -399,9 +394,9 @@ export default function Jam({ wallet }: JamProps) {
                   >
                     <div className="d-flex justify-content-center align-items-center">{t('scheduler.button_stop')}</div>
                   </rb.Button>
-                  {currentSchedule.length === 2 || currentSchedule.length === 8 ? (
-                    <Accordion title={t('scheduler.details')}>{getScheduleDetails(currentSchedule)}</Accordion>
-                  ) : null}
+                  <Accordion title="Schedule Details">
+                    <ScheduleDetails schedule={transformScheduleData(currentSchedule)} />
+                  </Accordion>
                 </>
               )}
             </>
