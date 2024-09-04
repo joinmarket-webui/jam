@@ -33,8 +33,12 @@ describe('<Settings />', () => {
     expect(screen.queryByText(/settings.use_(dark|light)_theme/)).toBeVisible()
     expect(screen.queryByText(/English/)).toBeVisible()
 
+    expect(screen.getByText('settings.section_title_market')).toBeVisible()
+    expect(screen.queryByText(/settings.show_fee_config/)).toBeVisible()
+
     expect(screen.getByText('settings.section_title_wallet')).toBeVisible()
     expect(screen.queryByText(/settings.(show|hide)_seed/)).toBeVisible()
+    expect(screen.queryByText(/settings.button_lock_wallet/)).toBeVisible()
     expect(screen.queryByText(/settings.button_switch_wallet/)).toBeVisible()
 
     expect(screen.getByText('settings.section_title_community')).toBeVisible()
