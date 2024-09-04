@@ -165,7 +165,6 @@
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "jm_twitter": "JoinMarket Twitter",
     "confirm_locking_modal_title": "Verrouiller le Portefeuille",
     "fees": {
       "text_button_cancel": "Annuler",

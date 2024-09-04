@@ -135,30 +135,28 @@ export default function App() {
                   <h5 className="alert-heading">
                     {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}
                   </h5>
-                  {!sessionConnectionError.response?.ok && (
-                    <>
-                      <p>
-                        <Trans
-                          i18nKey="app.alert_no_connection_details"
-                          components={{
-                            1: (
-                              <a
-                                className="alert-link"
-                                href="https://jamdocs.org/FAQ/#how-to-resolve-no-connection-to-gateway"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                the docs
-                              </a>
-                            ),
-                          }}
-                        />
-                      </p>
-                      <pre>
-                        {sessionConnectionError.response.status}&nbsp;{sessionConnectionError.response.statusText}&nbsp;
-                        {sessionConnectionError.response.url}
-                      </pre>
-                    </>
+                  <p>
+                    <Trans
+                      i18nKey="app.alert_no_connection_details"
+                      components={{
+                        1: (
+                          <a
+                            className="alert-link"
+                            href="https://jamdocs.org/FAQ/#how-to-resolve-no-connection-to-gateway"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            the docs
+                          </a>
+                        ),
+                      }}
+                    />
+                  </p>
+                  {sessionConnectionError.response && !sessionConnectionError.response.ok && (
+                    <pre>
+                      {sessionConnectionError.response.status}&nbsp;{sessionConnectionError.response.statusText}&nbsp;
+                      {sessionConnectionError.response.url}
+                    </pre>
                   )}
                 </rb.Alert>
               }

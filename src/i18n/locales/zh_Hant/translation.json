@@ -221,7 +221,6 @@
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "jm_twitter": "JoinMarket 推特",
     "confirm_locking_modal_title": "鎖上錢包",
     "confirm_locking_modal_body_earn": "收益處於活躍狀態。錢包上鎖將停止服務。你可以關閉瀏覽器窗口並讓它在背景中運行。",
     "confirm_locking_modal_body_jam": "協作式交易正在進行中。錢包上鎖將停止服務。你可以關閉瀏覽器窗口並讓它在背景中運行。",
