@@ -38,8 +38,8 @@ describe('<Settings />', () => {
     expect(screen.queryByText(/settings.button_switch_wallet/)).toBeVisible()
 
     expect(screen.getByText('settings.section_title_community')).toBeVisible()
+    expect(screen.queryByText(/settings.matrix/)).toBeVisible()
     expect(screen.queryByText(/settings.telegram/)).toBeVisible()
-    expect(screen.queryByText(/settings.jm_twitter/)).toBeVisible()
 
     expect(screen.getByText('settings.section_title_community')).toBeVisible()
     expect(screen.queryByText(/settings.documentation/)).toBeVisible()

@@ -185,7 +185,6 @@
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "jm_twitter": "JoinMarket no Twitter",
     "confirm_locking_modal_title": "Trancar Carteira",
     "confirm_locking_modal_body_earn": "'Lucrar' está ativo. Bloquear a carteira interromperá o serviço. Você pode fechar a janela do navegador para deixá-lo rodar em segundo plano.",
     "confirm_locking_modal_body_jam": "Uma transação colaborativa está sendo executada. Bloquear a carteira interromperá o serviço. Você pode fechar a janela do navegador para deixá-lo rodar em segundo plano.",
