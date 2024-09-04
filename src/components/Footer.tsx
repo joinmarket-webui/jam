@@ -155,6 +155,14 @@ export default function Footer() {
                 <Sprite symbol="github" width="18px" height="18px" />
               </a>
               <a
+                href="https://matrix.to/#/%23jam:bitcoin.kyoto"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="d-flex align-items-center text-secondary"
+              >
+                <Sprite symbol="matrix" width="18px" height="18px" />
+              </a>
+              <a
                 href="https://t.me/JoinMarketWebUI"
                 target="_blank"
                 rel="noopener noreferrer"
