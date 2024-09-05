@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Bip39MnemonicWordInput } from './MnemonicWordInput'
 import { MNEMONIC_WORDS } from '../constants/bip39words'
 import * as rb from 'react-bootstrap'
@@ -23,8 +23,8 @@ const MnemonicDropdown = forwardRef<HTMLDivElement, MnemonicDropdownProps>(({ sh
   <rb.Dropdown show={show}>
     <rb.Dropdown.Menu className={`table-responsive ${style.dropdownMenu}`} ref={ref}>
       {words.map((word) => (
-        <div className="m-1">
-          <rb.Dropdown.Item key={word} onClick={() => onSelect(word)} className="p-2">
+        <div className="m-1" key={word}>
+          <rb.Dropdown.Item onClick={() => onSelect(word)} className="p-2">
             {word}
           </rb.Dropdown.Item>
         </div>
@@ -43,56 +43,64 @@ export default function MnemonicPhraseInput({
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRefs = useRef<HTMLInputElement[]>([])
   const [showDropdown, setShowDropdown] = useState<number | null>(null)
-  const [filteredWords, setFilteredWords] = useState<string[] | undefined>(undefined)
+  const [filteredWords, setFilteredWords] = useState<string[]>([])
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const focusNextInput = useCallback((index: number) => {
+    inputRefs.current[index]?.focus()
+  }, [])
 
   useEffect(() => {
     if (activeIndex < mnemonicPhrase.length && isValid && isValid(activeIndex)) {
       const nextIndex = activeIndex + 1
       setActiveIndex(nextIndex)
-
-      if (inputRefs.current[nextIndex]) {
-        inputRefs.current[nextIndex].focus()
-      }
-    }
-  }, [mnemonicPhrase, activeIndex, isValid])
-
-  const handleInputChange = (value: string, index: number) => {
-    const newPhrase = mnemonicPhrase.map((old, i) => (i === index ? value : old))
-    onChange(newPhrase)
-    handleDropdownValue(value, index)
-  }
-
-  const handleDropdownValue = (value: string, index: number) => {
-    const matched = value ? MNEMONIC_WORDS.filter((word) => word.startsWith(value)) : []
-    if (matched.length > 0) {
-      setShowDropdown(index)
-      setFilteredWords(matched)
-    } else {
       setShowDropdown(null)
-      setFilteredWords(undefined)
+      focusNextInput(nextIndex)
     }
-  }
+  }, [mnemonicPhrase, activeIndex, isValid, focusNextInput])
 
-  const handleSelectWord = (word: string, index: number) => {
-    const newPhrase = mnemonicPhrase.map((old, i) => (i === index ? word : old))
-    onChange(newPhrase)
-    setShowDropdown(null)
-  }
+  const updateFilteredWords = useCallback((value: string, index: number) => {
+    const matched = value ? MNEMONIC_WORDS.filter((word) => word.startsWith(value)) : []
+    setShowDropdown(matched.length > 0 ? index : null)
+    setFilteredWords(matched)
+  }, [])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      if (filteredWords && filteredWords.length > 0 && dropdownRef.current) {
-        const firstItem = dropdownRef.current.querySelector('.dropdown-item')
-        if (firstItem) {
-          ;(firstItem as HTMLElement).focus()
+  const handleInputChange = useCallback(
+    (value: string, index: number, selectWordFromDropdown = false) => {
+      const newPhrase = mnemonicPhrase.map((word, i) => (i === index ? value : word))
+      onChange(newPhrase)
+      if (selectWordFromDropdown) {
+        setShowDropdown(null)
+        if (!isValid) {
+          focusNextInput(index + 1)
+        }
+      } else {
+        updateFilteredWords(value, index)
+      }
+    },
+    [mnemonicPhrase, onChange, isValid, focusNextInput, updateFilteredWords],
+  )
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, value: string, wordIndex: number) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        if (filteredWords.length > 0 && dropdownRef.current) {
+          const firstItem = dropdownRef.current.querySelector('.dropdown-item')
+          if (firstItem) {
+            ;(firstItem as HTMLElement).focus()
+          }
+        }
+      } else if (e.key === 'Enter') {
+        const matched = MNEMONIC_WORDS.filter((word) => word.startsWith(value))
+        if (matched.length === 1) {
+          handleInputChange(matched[0], wordIndex, true)
+          e.preventDefault()
         }
       }
-    } else if (e.key === 'Enter') {
-      setShowDropdown(null)
-    }
-  }
+    },
+    [filteredWords, handleInputChange],
+  )
 
   return (
     <div className="container slashed-zeroes p-0">
@@ -102,18 +110,18 @@ export default function MnemonicPhraseInput({
         const wordGroup = mnemonicPhrase.slice(outerIndex, Math.min(outerIndex + columns, mnemonicPhrase.length))
 
         return (
-          <div
-            className="row mb-4"
-            key={outerIndex}
-            onKeyDown={(e) => {
-              handleKeyDown(e)
-            }}
-          >
+          <div className="row mb-4" key={outerIndex}>
             {wordGroup.map((givenWord, innerIndex) => {
               const wordIndex = outerIndex + innerIndex
               const isCurrentActive = wordIndex === activeIndex
               return (
-                <div className="col" key={wordIndex}>
+                <div
+                  className="col"
+                  key={wordIndex}
+                  onKeyDown={(e) => {
+                    handleKeyDown(e, givenWord, wordIndex)
+                  }}
+                >
                   <Bip39MnemonicWordInput
                     forwardRef={(el: HTMLInputElement) => (inputRefs.current[wordIndex] = el)}
                     index={wordIndex}
@@ -123,7 +131,7 @@ export default function MnemonicPhraseInput({
                     disabled={isDisabled ? isDisabled(wordIndex) : undefined}
                     onFocus={() => {
                       setActiveIndex(wordIndex)
-                      handleDropdownValue(givenWord, wordIndex)
+                      updateFilteredWords(givenWord, wordIndex)
                     }}
                     autoFocus={isCurrentActive}
                   />
@@ -132,7 +140,7 @@ export default function MnemonicPhraseInput({
                       ref={dropdownRef}
                       show={showDropdown === wordIndex}
                       words={filteredWords}
-                      onSelect={(word) => handleSelectWord(word, wordIndex)}
+                      onSelect={(word) => handleInputChange(word, wordIndex, true)}
                     />
                   )}
                 </div>
