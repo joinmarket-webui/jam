@@ -216,7 +216,7 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
           {serviceInfo && isFeatureEnabled('rescanChain', serviceInfo) && (
             <Link to={routes.rescanChain} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
               <Sprite symbol="block" width="24" height="24" />
-              {t('settings.rescan_chain_option')}
+              {t('settings.rescan_chain')}
             </Link>
           )}
 

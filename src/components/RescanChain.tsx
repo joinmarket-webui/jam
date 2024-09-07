@@ -46,7 +46,7 @@ const RescanChainForm = ({ disabled, submitButtonText, onSubmit }: RescanChainFo
         validate={(values) => {
           const errors = {} as FormikErrors<RescanChainFormValues>
           if (typeof values.blockheight !== 'number' || values.blockheight < 0) {
-            errors.blockheight = t('rescan_chain.valid_blockheight_error', {
+            errors.blockheight = t('rescan_chain.feedback_invalid_blockheight', {
               min: 0,
             })
           }
@@ -57,14 +57,16 @@ const RescanChainForm = ({ disabled, submitButtonText, onSubmit }: RescanChainFo
         {({ handleSubmit, handleBlur, handleChange, values, touched, errors, isSubmitting }) => (
           <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
             <rb.Form.Group controlId="blockheight" className="mb-4">
-              <rb.Form.Label>{t('rescan_chain.blockheight_label')}</rb.Form.Label>
-              <rb.Form.Text className="d-block text-secondary mb-2">{t('rescan_chain.blockheight_info')}</rb.Form.Text>
+              <rb.Form.Label>{t('rescan_chain.label_blockheight')}</rb.Form.Label>
+              <rb.Form.Text className="d-block text-secondary mb-2">
+                {t('rescan_chain.description_blockheight')}
+              </rb.Form.Text>
               <rb.InputGroup hasValidation>
                 <rb.InputGroup.Text id="blockheight-addon1">
                   <Sprite symbol="block" width="24" height="24" name="Block" />
                 </rb.InputGroup.Text>
                 <rb.Form.Control
-                  aria-label={t('rescan_chain.blockheight_label')}
+                  aria-label={t('rescan_chain.label_blockheight')}
                   className="slashed-zeroes"
                   name="blockheight"
                   type="number"
@@ -147,7 +149,7 @@ export default function RescanChain({ wallet }: RescanChainProps) {
         <RescanChainForm
           disabled={serviceInfo?.rescanning}
           submitButtonText={(isSubmitting) =>
-            t(isSubmitting ? 'rescan_chain.submitting_button' : 'rescan_chain.submit_button')
+            t(isSubmitting ? 'rescan_chain.text_button_submitting' : 'rescan_chain.text_button_submit')
           }
           onSubmit={async (values) => {
             const abortCtrl = new AbortController()
