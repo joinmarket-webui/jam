@@ -213,16 +213,10 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
             {t('settings.button_switch_wallet')}
           </Link>
 
-          {serviceInfo && isFeatureEnabled('rescanChain', serviceInfo) && isDebugFeatureEnabled('rescanChainPage') && (
-            <Link
-              to={routes.rescanChain}
-              className={`btn btn-outline-dark ${styles['settings-btn']} position-relative`}
-            >
+          {serviceInfo && isFeatureEnabled('rescanChain', serviceInfo) && (
+            <Link to={routes.rescanChain} className={`btn btn-outline-dark ${styles['settings-btn']}`}>
               <Sprite symbol="block" width="24" height="24" />
-              Rescan chain
-              <span className="position-absolute top-50 start-0 translate-middle badge rounded-pill bg-warning">
-                dev
-              </span>
+              {t('settings.rescan_chain_option')}
             </Link>
           )}
 

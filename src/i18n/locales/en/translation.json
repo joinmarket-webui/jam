@@ -236,6 +236,7 @@
     "confirm_locking_modal_title": "Lock Wallet",
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
+    "rescan_chain_option": "Rescan chain",
     "fees": {
       "title": "Fee Limits",
       "description": "Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default values when the JoinMarket service restarts, e.g. on a system reboot. For more information, <1>see the documentation on fees</1>.",
@@ -269,6 +270,16 @@
       "error_loading_fee_config_failed": "Error while loading fee config values.",
       "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}"
     }
+  },
+  "rescan_chain": {
+    "title": "Rescan timechain (Experimental)",
+    "subtitle": "Rescan the local timechain for wallet related transactions.",
+    "blockheight_label": "Blockheight",
+    "blockheight_info": "The height of the chain at which the rescan process is started.",
+    "error_rescanning_failed": "Error while starting the rescan process. Reason: {{ reason }}",
+    "valid_blockheight_error": "Please provide a valid blockheight value greater than or equal to {{ min }}.",
+    "submit_button": "Rescan timechain",
+    "submitting_button": "Rescaning timechain"
   },
   "logs": {
     "title": "Logs",

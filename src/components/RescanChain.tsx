@@ -46,7 +46,7 @@ const RescanChainForm = ({ disabled, submitButtonText, onSubmit }: RescanChainFo
         validate={(values) => {
           const errors = {} as FormikErrors<RescanChainFormValues>
           if (typeof values.blockheight !== 'number' || values.blockheight < 0) {
-            errors.blockheight = t('Please provide a valid blockheight value greater than or equal to {{ min }}.', {
+            errors.blockheight = t('rescan_chain.valid_blockheight_error', {
               min: 0,
             })
           }
@@ -57,16 +57,14 @@ const RescanChainForm = ({ disabled, submitButtonText, onSubmit }: RescanChainFo
         {({ handleSubmit, handleBlur, handleChange, values, touched, errors, isSubmitting }) => (
           <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
             <rb.Form.Group controlId="blockheight" className="mb-4">
-              <rb.Form.Label>{t('Blockheight')}</rb.Form.Label>
-              <rb.Form.Text className="d-block text-secondary mb-2">
-                {t('The height of the chain at which the rescan process is started.')}
-              </rb.Form.Text>
+              <rb.Form.Label>{t('rescan_chain.blockheight_label')}</rb.Form.Label>
+              <rb.Form.Text className="d-block text-secondary mb-2">{t('rescan_chain.blockheight_info')}</rb.Form.Text>
               <rb.InputGroup hasValidation>
                 <rb.InputGroup.Text id="blockheight-addon1">
                   <Sprite symbol="block" width="24" height="24" name="Block" />
                 </rb.InputGroup.Text>
                 <rb.Form.Control
-                  aria-label={t('Blockheight')}
+                  aria-label={t('rescan_chain.blockheight_label')}
                   className="slashed-zeroes"
                   name="blockheight"
                   type="number"
@@ -131,7 +129,7 @@ export default function RescanChain({ wallet }: RescanChainProps) {
       } catch (e: any) {
         if (signal.aborted) return
 
-        const message = t('Error while starting the rescan process. Reason: {{ reason }}', {
+        const message = t('rescan_chain.error_rescanning_failed', {
           reason: e.message || t('global.errors.reason_unknown'),
         })
         setAlert({ variant: 'danger', message })
@@ -142,16 +140,15 @@ export default function RescanChain({ wallet }: RescanChainProps) {
 
   return (
     <div className="import-wallet">
-      <PageTitle
-        title={t('Rescan timechain (Experimental)')}
-        subtitle={t('Rescan the local timechain for wallet related transactions.')}
-      />
+      <PageTitle title={t('rescan_chain.title')} subtitle={t('rescan_chain.subtitle')} />
       {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
       <div className="mb-4">
         {serviceInfo?.rescanning === true && <rb.Alert variant="success">{t('app.alert_rescan_in_progress')}</rb.Alert>}
         <RescanChainForm
           disabled={serviceInfo?.rescanning}
-          submitButtonText={(isSubmitting) => t(isSubmitting ? 'Rescan timechain' : 'Rescan timechain')}
+          submitButtonText={(isSubmitting) =>
+            t(isSubmitting ? 'rescan_chain.submitting_button' : 'rescan_chain.submit_button')
+          }
           onSubmit={async (values) => {
             const abortCtrl = new AbortController()
 
