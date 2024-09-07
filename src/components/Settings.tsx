@@ -16,7 +16,7 @@ import languages from '../i18n/languages'
 import styles from './Settings.module.css'
 import SeedModal from './settings/SeedModal'
 import FeeConfigModal from './settings/FeeConfigModal'
-import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
+import { isDevMode } from '../constants/debugFeatures'
 import { isFeatureEnabled } from '../constants/features'
 import { CurrentWallet } from '../context/WalletContext'
 
