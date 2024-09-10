@@ -71,6 +71,7 @@ export default function MnemonicPhraseInput({
       onChange(newPhrase)
       updateFilteredWords(value, index)
       if (selectWordFromDropdown) {
+        setShowDropdown(null)
         if (!isValid) {
           focusNextInput(index + 1)
         }
