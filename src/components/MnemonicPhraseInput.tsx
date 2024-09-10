@@ -69,13 +69,11 @@ export default function MnemonicPhraseInput({
     (value: string, index: number, selectWordFromDropdown = false) => {
       const newPhrase = mnemonicPhrase.map((word, i) => (i === index ? value : word))
       onChange(newPhrase)
+      updateFilteredWords(value, index)
       if (selectWordFromDropdown) {
-        setShowDropdown(null)
         if (!isValid) {
           focusNextInput(index + 1)
         }
-      } else {
-        updateFilteredWords(value, index)
       }
     },
     [mnemonicPhrase, onChange, isValid, focusNextInput, updateFilteredWords],
@@ -94,12 +92,18 @@ export default function MnemonicPhraseInput({
       } else if (e.key === 'Enter') {
         const matched = MNEMONIC_WORDS.filter((word) => word.startsWith(value))
         if (matched.length === 1) {
-          handleInputChange(matched[0], wordIndex, true)
           e.preventDefault()
+          handleInputChange(matched[0], wordIndex, true)
+        }
+      } else if (e.key === 'Tab') {
+        const matched = MNEMONIC_WORDS.filter((word) => word.startsWith(value))
+        if (matched.length === 1 && value === matched[0]) {
+          e.preventDefault()
+          focusNextInput(wordIndex + 1)
         }
       }
     },
-    [filteredWords, handleInputChange],
+    [filteredWords, handleInputChange, focusNextInput],
   )
 
   return (
@@ -131,7 +135,7 @@ export default function MnemonicPhraseInput({
                     disabled={isDisabled ? isDisabled(wordIndex) : undefined}
                     onFocus={() => {
                       setActiveIndex(wordIndex)
-                      updateFilteredWords(givenWord, wordIndex)
+                      givenWord && updateFilteredWords(givenWord, wordIndex)
                     }}
                     autoFocus={isCurrentActive}
                   />
