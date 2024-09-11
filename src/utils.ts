@@ -119,7 +119,7 @@ export const noop = () => {}
 export const setIntervalDebounced = (
   callback: () => Promise<void>,
   delay: Milliseconds,
-  onTimerIdChanged: (timerId: NodeJS.Timer) => void,
+  onTimerIdChanged: (timerId: NodeJS.Timeout) => void,
   onError: (error: any, loop: () => void) => void = (_, loop) => loop(),
 ) => {
   ;(function loop() {

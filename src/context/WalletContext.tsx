@@ -347,7 +347,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
         })
     }
 
-    let interval: NodeJS.Timer
+    let interval: NodeJS.Timeout
     setIntervalDebounced(renewToken, API_AUTH_TOKEN_RENEW_INTERVAL, (timerId) => (interval = timerId))
 
     return () => {
