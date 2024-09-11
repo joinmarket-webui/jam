@@ -100,6 +100,7 @@ export default function MnemonicPhraseInput({
         const matched = MNEMONIC_WORDS.filter((word) => word.startsWith(value))
         if (matched.length === 1 && value === matched[0]) {
           e.preventDefault()
+          setShowDropdown(null)
           focusNextInput(wordIndex + 1)
         }
       }
