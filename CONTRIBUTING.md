@@ -44,7 +44,7 @@ This creates and funds a wallet `Satoshi` with password `test`.
 Start the UI on port 3000:
 
 ```sh
-npm run dev:start
+npm run dev
 ```
 
 Make your changes and be sure to manually test them before submitting them to us.
@@ -100,7 +100,7 @@ This creates and funds a wallet `Satoshi` with password `test`.
 Start the UI on port 3000:
 
 ```sh
-npm run dev:start
+npm run dev
 ```
 
 Enjoy the test drive!
