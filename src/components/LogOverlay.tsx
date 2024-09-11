@@ -159,7 +159,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
                 <div className="my-4">
                   <span className="badge rounded-pill bg-warning me-2">dev</span>
                   In order to test the log file feature, start the application with
-                  <code className="mx-2">npm run dev:start:secondary</code>.
+                  <code className="mx-2">npm run dev:secondary</code>.
                 </div>
               )}
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}

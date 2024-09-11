@@ -11,7 +11,7 @@ For a complete development environment you need a local JoinMarket instance that
 ## Linting
 
 We use Create React App's [default ESLint integration](https://create-react-app.dev/docs/setting-up-your-editor/#displaying-lint-output-in-the-editor).
-You'll see linting issues in the console when running the app with `npm run dev:start`.
+You'll see linting issues in the console when running the app with `npm run dev`.
 Pull request builds will fail if ESLint is not happy with the code.
 
 ## Code Formatting
@@ -118,5 +118,5 @@ In short:
 ```bash
 git clone https://github.com/joinmarket-webui/jam.git
 cd jam/
-npm install && npm run dev:start
+npm install && npm run dev
 ```
