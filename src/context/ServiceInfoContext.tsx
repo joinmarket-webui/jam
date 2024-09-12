@@ -215,7 +215,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
 
     refreshSession()
 
-    let interval: NodeJS.Timer
+    let interval: NodeJS.Timeout
     setIntervalDebounced(refreshSession, SESSION_REQUEST_INTERVAL, (timerId) => (interval = timerId))
 
     return () => {
