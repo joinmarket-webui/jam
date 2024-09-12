@@ -175,13 +175,13 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
     <rb.Nav className="justify-content-center align-items-stretch">
       {joiningRoute && (
         <rb.Nav.Item className="d-flex align-items-stretch">
-          <NavLink to={joiningRoute} onClick={onClick} className="nav-link d-flex align-items-center">
+          <NavLink
+            to={joiningRoute}
+            onClick={onClick}
+            className="nav-link d-flex justify-content-center align-items-center"
+          >
             <rb.Navbar.Text className="d-md-none">{t('navbar.joining_in_progress')}</rb.Navbar.Text>
-            <JoiningIndicator
-              isOn={true}
-              className="navbar-text text-success"
-              title={t('navbar.joining_in_progress')}
-            />
+            <JoiningIndicator isOn={true} title={t('navbar.joining_in_progress')} />
           </NavLink>
         </rb.Nav.Item>
       )}
