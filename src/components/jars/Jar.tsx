@@ -209,12 +209,14 @@ const SelectableJar = ({
  */
 const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) => {
   const [jarIsOpen, setJarIsOpen] = useState(false)
-  const onMouseOver = () => setJarIsOpen(true)
-  const onMouseOut = () => setJarIsOpen(false)
+  const openJar = () => setJarIsOpen(true)
+  const closeJar = () => setJarIsOpen(false)
 
   return (
-    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
+    <div onMouseOver={openJar} onMouseOut={closeJar}>
       <rb.OverlayTrigger
+        placement="top"
+        trigger="hover"
         popperConfig={{
           modifiers: [
             {
