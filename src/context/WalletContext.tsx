@@ -312,10 +312,10 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
           currentWalletInfoRef.current === undefined ||
           !!utxoResponse.utxos.find(
             (utxo) =>
-              // reload display data if:
+              // reload "display" data if:
               // no address summary could be found for a returned UTXO...
               currentWalletInfoRef.current!.addressSummary[utxo.address] === undefined ||
-              // ...or if the address is still considered new
+              // ...or if the address is still considered "new"
               currentWalletInfoRef.current!.addressSummary[utxo.address].status === 'new',
           )
 
