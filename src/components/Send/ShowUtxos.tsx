@@ -78,7 +78,7 @@ const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
       <Cell>
         <UtxoIcon value={utxo} tags={tags} />
       </Cell>
-      <Cell className="slashed-zeroes">
+      <Cell className="font-monospace slashed-zeroes">
         <rb.OverlayTrigger
           overlay={(props) => (
             <rb.Tooltip className="slashed-zeroes" {...props}>
