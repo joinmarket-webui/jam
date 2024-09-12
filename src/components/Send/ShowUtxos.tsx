@@ -212,9 +212,9 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
     <BaseModal
       isShown={isOpen}
       onCancel={onCancel}
-      backdrop={true}
       title={t('show_utxos.show_utxo_title')}
-      closeButton
+      backdrop={!isLoading}
+      closeButton={!isLoading}
       headerClassName=""
       titleClassName=""
     >
@@ -274,6 +274,7 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
         <rb.Button
           variant="light"
           onClick={() => onCancel()}
+          disabled={isLoading}
           className="d-flex flex-1 justify-content-center align-items-center"
         >
           <Sprite symbol="cancel" width="26" height="26" />
