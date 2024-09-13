@@ -437,7 +437,7 @@ export default function Send({ wallet }: SendProps) {
               </div>
               <rb.Alert variant="success" className="d-flex align-items-center">
                 {t('send.text_coinjoin_already_running')}
-                <Sprite className="ms-auto" symbol="joining" width="20" height="20" />
+                <Sprite className="ms-auto" symbol="mixed" width="24" height="24" />
               </rb.Alert>
               <rb.Button
                 variant="none"
