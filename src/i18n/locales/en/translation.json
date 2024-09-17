@@ -353,7 +353,10 @@
       "text_miner_fee_in_targeted_blocks_one": "High priority estimate (next block)",
       "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks",
       "label_considered_utxos": "Considered UTXOs",
-      "description_considered_utxos": "One or more of the following UTXOs are taken into account to create the transaction."
+      "description_considered_utxos": "One or more of the following UTXOs will be used to create the transaction: ",
+      "label_selected_utxos": "Selected UTXOs",
+      "description_selected_utxos_one": "The following UTXO will used to create the transaction: ",
+      "description_selected_utxos_other": "The following UTXOs will used to create the transaction: "
     },
     "confirm_abort_modal": {
       "title": "Abort payment",
