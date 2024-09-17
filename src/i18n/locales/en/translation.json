@@ -354,9 +354,10 @@
       "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks",
       "label_eligible_utxos": "Eligible UTXOs",
       "description_eligible_utxos": "One or more of the following UTXOs will be included in the transaction: ",
-      "label_selected_utxos": "Selected UTXOs",
-      "description_selected_utxos_one": "The following UTXO will be included the transaction: ",
-      "description_selected_utxos_other": "The following UTXOs will be included the transaction: "
+      "label_selected_utxos_one": "Selected UTXO",
+      "label_selected_utxos_other": "Selected UTXOs",
+      "description_selected_utxos_one": "The following UTXO will be included in the transaction: ",
+      "description_selected_utxos_other": "The following UTXOs will be included in the transaction: "
     },
     "confirm_abort_modal": {
       "title": "Abort payment",

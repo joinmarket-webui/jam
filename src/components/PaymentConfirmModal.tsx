@@ -69,10 +69,10 @@ const ReviewUtxos = ({ settings, availableUtxos, isSweep }: ReviewUtxosProps) =>
   const allUtxosAreUsed = isSweep || availableUtxos.length === 1
   return (
     <rb.Row className="mt-2">
-      <rb.Col xs={4} md={3} className="text-end">
+      <rb.Col xs={4} md={3} className="d-flex align-items-center justify-content-end text-end">
         <strong>
           {allUtxosAreUsed
-            ? t('send.confirm_send_modal.label_selected_utxos')
+            ? t('send.confirm_send_modal.label_selected_utxos', { count: availableUtxos.length })
             : t('send.confirm_send_modal.label_eligible_utxos')}
         </strong>
       </rb.Col>
