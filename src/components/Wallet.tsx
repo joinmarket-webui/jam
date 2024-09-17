@@ -172,22 +172,23 @@ export default function Wallet({
             <div>
               <rb.Card.Title>
                 {isActive ? (
-                  <span style={{ position: 'relative' }}>
-                    {lockWallet ? (
-                      <Link className="wallet-name" to={routes.wallet}>
-                        {displayName}
-                      </Link>
-                    ) : (
-                      <>{displayName}</>
-                    )}
-                    {makerRunning && <TabActivityIndicator isOn={true} />}
-                    {coinjoinInProgress && <JoiningIndicator isOn={true} className="text-success" />}
-                  </span>
+                  <div className="d-flex align-items-center">
+                    <div className="position-relative">
+                      {lockWallet ? (
+                        <Link className="wallet-name" to={routes.wallet}>
+                          {displayName}
+                        </Link>
+                      ) : (
+                        <>{displayName}</>
+                      )}
+                      {makerRunning && <TabActivityIndicator isOn={true} />}
+                    </div>
+                    {coinjoinInProgress && <JoiningIndicator isOn={true} size={24} />}
+                  </div>
                 ) : (
                   <>{displayName}</>
                 )}
               </rb.Card.Title>
-
               {isActive ? (
                 <span className="text-success">{t('wallets.wallet_preview.wallet_active')}</span>
               ) : (

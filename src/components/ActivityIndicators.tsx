@@ -21,11 +21,11 @@ interface JoiningIndicatorProps {
   className?: string
 }
 
-export function JoiningIndicator({ isOn, size = 30, className = '', ...props }: JoiningIndicatorProps) {
+export function JoiningIndicator({ isOn, size = 32, className = '', ...props }: JoiningIndicatorProps) {
   return (
     <span className="joining-indicator">
       <ActivityIndicator isOn={isOn}>
-        {isOn && <Sprite symbol="joining" width={size} height={size} className={`p-1 ${className}`} {...props} />}
+        {isOn && <Sprite symbol="mixed" width={size} height={size} className={`${className}`} {...props} />}
       </ActivityIndicator>
     </span>
   )
