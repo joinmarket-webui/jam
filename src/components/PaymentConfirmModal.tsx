@@ -69,13 +69,16 @@ const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
   return (
     <rb.Row className="mt-2">
       <rb.Col xs={4} md={3} className="text-end">
-        <strong>{t('show_utxos.considered_utxos')}</strong>
+        <strong>{t('send.confirm_send_modal.label_considered_utxos')}</strong>
       </rb.Col>
       <rb.Col xs={8} md={9}>
         <Divider toggled={isOpen} onToggle={() => setIsOpen((current) => !current)} />
       </rb.Col>
       <rb.Collapse in={isOpen}>
-        <rb.Col xs={12} className="mt-2">
+        <rb.Col xs={12}>
+          <div className="my-2 text-start text-secondary">
+            {t('send.confirm_send_modal.description_considered_utxos')}
+          </div>
           <UtxoListDisplay
             utxos={utxos}
             settings={settings}

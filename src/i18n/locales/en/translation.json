@@ -351,7 +351,9 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "High priority estimate (next block)",
-      "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks"
+      "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks",
+      "label_considered_utxos": "Considered UTXOs",
+      "description_considered_utxos": "One or more of the following UTXOs are taken into account to create the transaction."
     },
     "confirm_abort_modal": {
       "title": "Abort payment",
@@ -718,7 +720,6 @@
   },
   "show_utxos": {
     "select_utxos": "Select UTXOs",
-    "considered_utxos": "Considered UTXOs",
     "show_utxo_title": "Select UTXOs to be considered",
     "show_utxo_subtitle": "The following UTXOs are considered in the transaction. Every unselected UTXO will be frozen and can be unfrozen later on.",
     "show_utxo_subtitle_when_allutxos_are_frozen": "The following UTXOs are frozen. Please select them to be considered in the transaction."
