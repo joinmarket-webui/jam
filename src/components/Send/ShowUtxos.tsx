@@ -35,16 +35,12 @@ interface UtxoRowProps {
   settings: Settings
   walletInfo: WalletInfo
   t: TFunction
-  // TODO: remove
-  showBackgroundColor?: boolean
 }
 
 interface UtxoListDisplayProps {
   utxos: SelectableUtxo[]
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
-  // TODO: remove
-  showBackgroundColor?: boolean
 }
 
 const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
@@ -113,7 +109,7 @@ type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'i
 
 const DEFAULT_UTXO_LIST_THEME = {
   Table: `
-  --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
+  --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3.75rem 11rem 1fr};
 `,
   BaseCell: `
   padding: 0.35rem 0.25rem !important;
