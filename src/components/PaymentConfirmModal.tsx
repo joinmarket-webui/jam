@@ -73,7 +73,7 @@ const ReviewUtxos = ({ settings, availableUtxos, isSweep }: ReviewUtxosProps) =>
         <strong>
           {allUtxosAreUsed
             ? t('send.confirm_send_modal.label_selected_utxos')
-            : t('send.confirm_send_modal.label_considered_utxos')}
+            : t('send.confirm_send_modal.label_eligible_utxos')}
         </strong>
       </rb.Col>
       <rb.Col xs={8} md={9}>
@@ -84,7 +84,7 @@ const ReviewUtxos = ({ settings, availableUtxos, isSweep }: ReviewUtxosProps) =>
           <div className="my-2 text-start text-secondary">
             {allUtxosAreUsed
               ? t('send.confirm_send_modal.description_selected_utxos', { count: availableUtxos.length })
-              : t('send.confirm_send_modal.description_considered_utxos')}
+              : t('send.confirm_send_modal.description_eligible_utxos')}
           </div>
           <UtxoListDisplay
             utxos={availableUtxos.map((it) => ({ ...it, checked: false, selectable: false }))}

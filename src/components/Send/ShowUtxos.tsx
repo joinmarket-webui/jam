@@ -212,7 +212,7 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
     <BaseModal
       isShown={isOpen}
       onCancel={onCancel}
-      title={t('show_utxos.show_utxo_title')}
+      title={t('show_utxos.title')}
       backdrop={!isLoading}
       closeButton={!isLoading}
       headerClassName=""
@@ -226,10 +226,9 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
           </div>
         ) : (
           <>
-            <rb.Row className="text-secondary px-3 mb-2">
-              {upperUtxos.length > 0
-                ? t('show_utxos.show_utxo_subtitle')
-                : t('show_utxos.show_utxo_subtitle_when_allutxos_are_frozen')}
+            <rb.Row className="text-secondary mb-2">
+              <div>{t('show_utxos.subtitle', { count: selectedUtxos.length })}</div>
+              <div>{t('show_utxos.text_subtitle_addon')}</div>
             </rb.Row>
             {alert && (
               <rb.Row>

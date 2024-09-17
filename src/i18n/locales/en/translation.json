@@ -352,11 +352,11 @@
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "High priority estimate (next block)",
       "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks",
-      "label_considered_utxos": "Considered UTXOs",
-      "description_considered_utxos": "One or more of the following UTXOs will be used to create the transaction: ",
+      "label_eligible_utxos": "Eligible UTXOs",
+      "description_eligible_utxos": "One or more of the following UTXOs will be included in the transaction: ",
       "label_selected_utxos": "Selected UTXOs",
-      "description_selected_utxos_one": "The following UTXO will used to create the transaction: ",
-      "description_selected_utxos_other": "The following UTXOs will used to create the transaction: "
+      "description_selected_utxos_one": "The following UTXO will be included the transaction: ",
+      "description_selected_utxos_other": "The following UTXOs will be included the transaction: "
     },
     "confirm_abort_modal": {
       "title": "Abort payment",
@@ -722,9 +722,11 @@
     }
   },
   "show_utxos": {
-    "select_utxos": "Select UTXOs",
-    "show_utxo_title": "Select UTXOs to be considered",
-    "show_utxo_subtitle": "The following UTXOs are considered in the transaction. Every unselected UTXO will be frozen and can be unfrozen later on.",
-    "show_utxo_subtitle_when_allutxos_are_frozen": "The following UTXOs are frozen. Please select them to be considered in the transaction."
+    "text_select_utxos_tooltip": "Select UTXOs",
+    "title": "Select eligible UTXOs",
+    "subtitle_zero": "Please select one or more UTXOs for possible inclusion in the transaction.",
+    "subtitle_one": "The selected UTXO is eligible for inclusion in the transaction.",
+    "subtitle_other": "The selected UTXOs are eligible for inclusion in the transaction.",
+    "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
   }
 }
