@@ -276,7 +276,15 @@ const EarnForm = ({
   }
 
   return (
-    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
+    <Formik
+      initialValues={initialValues}
+      validate={validate}
+      onSubmit={onSubmit}
+      validateOnMount={true}
+      initialTouched={{
+        minsize: true,
+      }}
+    >
       {(props) => {
         const { handleSubmit, setFieldValue, handleBlur, values, touched, errors, isSubmitting } = props
         const minsizeField = props.getFieldProps<AmountValue>('minsize')

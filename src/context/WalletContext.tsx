@@ -1,4 +1,4 @@
-import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useMemo } from 'react'
+import { createContext, useEffect, useCallback, useState, useContext, PropsWithChildren, useMemo, useRef } from 'react'
 import { getSession, setSession } from '../session'
 import * as fb from '../components/fb/utils'
 import * as Api from '../libs/JmWalletApi'
@@ -143,6 +143,7 @@ interface WalletContextEntry<T extends CurrentWallet> {
   currentWalletInfo: WalletInfo | undefined
   reloadCurrentWalletInfo: {
     reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
+    reloadAllForce: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
     reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<UtxosResponse>
   }
 }
@@ -280,7 +281,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
     [fetchDisplay],
   )
 
-  const reloadAll = useCallback(
+  const reloadAllForce = useCallback(
     ({ signal }: { signal: AbortSignal }): Promise<WalletInfo> =>
       Promise.all([reloadUtxos({ signal }), reloadDisplay({ signal })])
         .then((data) => toCombinedRawData(data[0], data[1]))
@@ -298,12 +299,44 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
     return toWalletInfo(combinedRawData)
   }, [combinedRawData])
 
+  const currentWalletInfoRef = useRef(currentWalletInfo)
+
+  useEffect(() => {
+    currentWalletInfoRef.current = currentWalletInfo
+  }, [currentWalletInfoRef, currentWalletInfo])
+
+  const reloadAllIfNecessary = useCallback(
+    ({ signal }: { signal: AbortSignal }): Promise<WalletInfo> =>
+      reloadUtxos({ signal }).then((utxoResponse) => {
+        const needsDisplayReload =
+          currentWalletInfoRef.current === undefined ||
+          !!utxoResponse.utxos.find(
+            (utxo) =>
+              // reload "display" data if:
+              // no address summary could be found for a returned UTXO...
+              currentWalletInfoRef.current!.addressSummary[utxo.address] === undefined ||
+              // ...or if the address is still considered "new"
+              currentWalletInfoRef.current!.addressSummary[utxo.address].status === 'new',
+          )
+
+        if (!needsDisplayReload) {
+          return currentWalletInfoRef.current!
+        }
+
+        return reloadDisplay({ signal })
+          .then((displayResponse) => toCombinedRawData(utxoResponse, displayResponse))
+          .then((raw) => toWalletInfo(raw))
+      }),
+    [currentWalletInfoRef, reloadUtxos, reloadDisplay],
+  )
+
   const reloadCurrentWalletInfo = useMemo(
     () => ({
-      reloadAll,
+      reloadAll: reloadAllIfNecessary,
+      reloadAllForce,
       reloadUtxos,
     }),
-    [reloadAll, reloadUtxos],
+    [reloadAllIfNecessary, reloadUtxos, reloadAllForce],
   )
 
   useEffect(() => {
