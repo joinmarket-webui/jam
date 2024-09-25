@@ -117,7 +117,7 @@ describe('<LockdateForm />', () => {
     })
   })
 
-  describe('_selectableMonth', () => {
+  describe('_selectableMonths', () => {
     const yearsRange = fb.toYearsRange(0, 2)
 
     const january2009 = new Date(Date.UTC(2009, 0))
