@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import * as rb from 'react-bootstrap'
 import Sprite from './Sprite'
 import Balance from './Balance'
-import { useSettings } from '../context/SettingsContext'
+import { Settings, useSettings } from '../context/SettingsContext'
 import { FeeValues, TxFee, useEstimatedMaxCollaboratorFee } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
 import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
@@ -11,7 +11,7 @@ import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
 import styles from './PaymentConfirmModal.module.css'
 import { Utxos } from '../context/WalletContext'
-import { SelectableUtxo, UtxoListDisplay } from './Send/ShowUtxos'
+import { UtxoListDisplay } from './Send/ShowUtxos'
 import Divider from './Divider'
 
 const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee, txFeeFactor) => {
@@ -58,26 +58,36 @@ const useMiningFeeText = ({ tx_fees, tx_fees_factor }: Pick<FeeValues, 'tx_fees'
   }, [t, tx_fees, tx_fees_factor])
 }
 
-type ReviewConsideredUtxosProps = {
-  utxos: SelectableUtxo[]
+type ReviewUtxosProps = Required<Pick<PaymentDisplayInfo, 'isSweep' | 'availableUtxos'>> & {
+  settings: Settings
 }
-const ReviewConsideredUtxos = ({ utxos }: ReviewConsideredUtxosProps) => {
-  const { t } = useTranslation()
-  const settings = useSettings()
-  const [isOpen, setIsOpen] = useState<boolean>(false)
 
+const ReviewUtxos = ({ settings, availableUtxos, isSweep }: ReviewUtxosProps) => {
+  const { t } = useTranslation()
+  const [isOpen, setIsOpen] = useState<boolean>(availableUtxos.length === 1)
+
+  const allUtxosAreUsed = isSweep || availableUtxos.length === 1
   return (
     <rb.Row className="mt-2">
-      <rb.Col xs={4} md={3} className="text-end">
-        <strong>{t('show_utxos.considered_utxos')}</strong>
+      <rb.Col xs={4} md={3} className="d-flex align-items-center justify-content-end text-end">
+        <strong>
+          {allUtxosAreUsed
+            ? t('send.confirm_send_modal.label_selected_utxos', { count: availableUtxos.length })
+            : t('send.confirm_send_modal.label_eligible_utxos')}
+        </strong>
       </rb.Col>
       <rb.Col xs={8} md={9}>
         <Divider toggled={isOpen} onToggle={() => setIsOpen((current) => !current)} />
       </rb.Col>
       <rb.Collapse in={isOpen}>
-        <rb.Col xs={12} className="mt-2">
+        <rb.Col xs={12}>
+          <div className="my-2 text-start text-secondary">
+            {allUtxosAreUsed
+              ? t('send.confirm_send_modal.description_selected_utxos', { count: availableUtxos.length })
+              : t('send.confirm_send_modal.description_eligible_utxos')}
+          </div>
           <UtxoListDisplay
-            utxos={utxos}
+            utxos={availableUtxos.map((it) => ({ ...it, checked: false, selectable: false }))}
             settings={settings}
             onToggle={() => {
               // No-op since these UTXOs are only for review and are not selectable
@@ -98,7 +108,7 @@ interface PaymentDisplayInfo {
   numCollaborators?: number
   feeConfigValues?: FeeValues
   showPrivacyInfo?: boolean
-  consideredUtxos?: Utxos
+  availableUtxos?: Utxos
 }
 
 interface PaymentConfirmModalProps extends ConfirmModalProps {
@@ -115,7 +125,7 @@ export function PaymentConfirmModal({
     numCollaborators,
     feeConfigValues,
     showPrivacyInfo = true,
-    consideredUtxos = [],
+    availableUtxos = [],
   },
   children,
   ...confirmModalProps
@@ -243,8 +253,8 @@ export function PaymentConfirmModal({
             </rb.Col>
           </rb.Row>
         )}
-        {consideredUtxos.length !== 0 && (
-          <ReviewConsideredUtxos utxos={consideredUtxos.map((it) => ({ ...it, checked: false, selectable: false }))} />
+        {availableUtxos.length > 0 && (
+          <ReviewUtxos settings={settings} availableUtxos={availableUtxos} isSweep={isSweep} />
         )}
         {children && (
           <rb.Row>

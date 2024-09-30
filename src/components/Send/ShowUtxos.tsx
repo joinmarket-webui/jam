@@ -35,16 +35,12 @@ interface UtxoRowProps {
   settings: Settings
   walletInfo: WalletInfo
   t: TFunction
-  // TODO: remove
-  showBackgroundColor?: boolean
 }
 
 interface UtxoListDisplayProps {
   utxos: SelectableUtxo[]
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
-  // TODO: remove
-  showBackgroundColor?: boolean
 }
 
 const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
@@ -78,7 +74,7 @@ const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
       <Cell>
         <UtxoIcon value={utxo} tags={tags} />
       </Cell>
-      <Cell className="slashed-zeroes">
+      <Cell className="font-monospace slashed-zeroes">
         <rb.OverlayTrigger
           overlay={(props) => (
             <rb.Tooltip className="slashed-zeroes" {...props}>
@@ -113,7 +109,7 @@ type SelectableUtxoTableRowData = SelectableUtxo & Pick<TableTypes.TableNode, 'i
 
 const DEFAULT_UTXO_LIST_THEME = {
   Table: `
-  --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3rem 12rem 1fr};
+  --data-table-library_grid-template-columns: 2.5rem 2.5rem 17rem 3.75rem 11rem 1fr};
 `,
   BaseCell: `
   padding: 0.35rem 0.25rem !important;
@@ -212,9 +208,9 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
     <BaseModal
       isShown={isOpen}
       onCancel={onCancel}
-      backdrop={true}
-      title={t('show_utxos.show_utxo_title')}
-      closeButton
+      title={t('show_utxos.title')}
+      backdrop={!isLoading}
+      closeButton={!isLoading}
       headerClassName=""
       titleClassName=""
     >
@@ -226,10 +222,9 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
           </div>
         ) : (
           <>
-            <rb.Row className="text-secondary px-3 mb-2">
-              {upperUtxos.length > 0
-                ? t('show_utxos.show_utxo_subtitle')
-                : t('show_utxos.show_utxo_subtitle_when_allutxos_are_frozen')}
+            <rb.Row className="text-secondary mb-2">
+              <div>{t('show_utxos.subtitle', { count: selectedUtxos.length })}</div>
+              <div>{t('show_utxos.text_subtitle_addon')}</div>
             </rb.Row>
             {alert && (
               <rb.Row>
@@ -274,6 +269,7 @@ const ShowUtxos = ({ isOpen, onCancel, onConfirm, isLoading, utxos, alert }: Sho
         <rb.Button
           variant="light"
           onClick={() => onCancel()}
+          disabled={isLoading}
           className="d-flex flex-1 justify-content-center align-items-center"
         >
           <Sprite symbol="cancel" width="26" height="26" />

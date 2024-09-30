@@ -521,7 +521,7 @@ export default function Send({ wallet }: SendProps) {
             isCoinjoin: showConfirmSendModal.isCoinJoin,
             numCollaborators: showConfirmSendModal.numCollaborators!,
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
-            consideredUtxos: (walletInfo?.utxosByJar[showConfirmSendModal.sourceJarIndex!] || [])
+            availableUtxos: (walletInfo?.utxosByJar[showConfirmSendModal.sourceJarIndex!] || [])
               .filter((utxo) => !utxo.frozen)
               .sort((a, b) => a.confirmations - b.confirmations),
           }}
