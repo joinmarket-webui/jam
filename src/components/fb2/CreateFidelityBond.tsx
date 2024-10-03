@@ -19,6 +19,7 @@ import { jarName } from '../jars/Jar'
 import { spendUtxosWithDirectSend, errorResolver } from './SpendFidelityBondModal'
 import Balance from '../Balance'
 import { useSettings } from '../../context/SettingsContext'
+import { useFeeConfigValues } from '../../hooks/Fees'
 
 export const LockInfoAlert = ({ lockDate, className }: { lockDate: Api.Lockdate; className?: string }) => {
   const { t, i18n } = useTranslation()
@@ -61,6 +62,8 @@ interface CreateFidelityBondProps {
 const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDone }: CreateFidelityBondProps) => {
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+  const feeConfigValues = useFeeConfigValues()[0]
+
   const [showCreateFidelityBondModal, setShowCreateFidelityBondModal] = useState(false)
   const [creatingFidelityBond, setCreatingFidelityBond] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -528,6 +531,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
                       jar={selectedJar!}
                       selectedUtxos={selectedUtxos}
                       timelockedAddress={timelockedAddress!}
+                      feeConfigValues={feeConfigValues}
                     />
                     <LockInfoAlert className="text-start mt-4" lockDate={lockDate!} />
                   </div>
