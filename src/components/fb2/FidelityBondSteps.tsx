@@ -13,6 +13,8 @@ import * as fb from './utils'
 import styles from './FidelityBondSteps.module.css'
 import { UtxoListDisplay } from '../Send/ShowUtxos'
 import Divider from '../Divider'
+import { FeeValues } from '../../hooks/Fees'
+import { useMiningFeeText } from '../PaymentConfirmModal'
 
 type SelectDateProps = {
   description: string
@@ -41,6 +43,7 @@ interface ConfirmationProps {
   jar: JarIndex
   selectedUtxos: Utxo[]
   timelockedAddress: Api.BitcoinAddress
+  feeConfigValues?: FeeValues
 }
 
 const SelectDate = ({ description, yearsRange, lockdate, disabled, onChange }: SelectDateProps) => {
@@ -150,7 +153,7 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
   return (
     <>
       <div className="d-flex flex-column gap-4">
-        <UtxoListDisplay utxos={upperUtxos} onToggle={handleToggle} settings={settings} showBackgroundColor={true} />
+        <UtxoListDisplay utxos={upperUtxos} onToggle={handleToggle} settings={settings} />
         {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
           <Divider
             toggled={showFrozenUtxos}
@@ -158,21 +161,20 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
             className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
           />
         )}
-        {showFrozenUtxos && (
-          <UtxoListDisplay utxos={lowerUtxos} onToggle={handleToggle} settings={settings} showBackgroundColor={true} />
-        )}
+        {showFrozenUtxos && <UtxoListDisplay utxos={lowerUtxos} onToggle={handleToggle} settings={settings} />}
       </div>
     </>
   )
 }
 
-const Confirmation = ({ lockDate, jar, selectedUtxos, timelockedAddress }: ConfirmationProps) => {
+const Confirmation = ({ lockDate, jar, selectedUtxos, timelockedAddress, feeConfigValues }: ConfirmationProps) => {
   useEffect(() => {
     console.log('lockDate', lockDate)
     console.log('jar', jar)
     console.log('selected', selectedUtxos)
   }, [jar, lockDate, selectedUtxos])
 
+  const miningFeeText = useMiningFeeText({ ...feeConfigValues })
   const settings = useSettings()
   const { t, i18n } = useTranslation()
 
@@ -229,6 +231,14 @@ const Confirmation = ({ lockDate, jar, selectedUtxos, timelockedAddress }: Confi
               </div>
             </div>
           ))}
+          {miningFeeText && (
+            <div>
+              <div className={styles.confirmationStepLabel}>
+                <strong>{t('send.confirm_send_modal.label_miner_fee')}</strong>
+              </div>
+              <div className={styles.confirmationStepContent}>{miningFeeText}</div>
+            </div>
+          )}
         </div>
       </div>
     </>
