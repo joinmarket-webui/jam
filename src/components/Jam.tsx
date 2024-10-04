@@ -14,10 +14,13 @@ import ToggleSwitch from './ToggleSwitch'
 import Sprite from './Sprite'
 import Balance from './Balance'
 import ScheduleProgress from './ScheduleProgress'
+import ScheduleDetails, { TransformedScheduleEntry } from './ScheduleDetails'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
 import FeeConfigModal from './settings/FeeConfigModal'
-import { useFeeConfigValues } from '../hooks/Fees'
+import Accordion from './Accordion'
 import styles from './Jam.module.css'
+import { Table, Body, Row, Cell } from '@table-library/react-table-library/table'
+import { useFeeConfigValues } from '../hooks/Fees'
 
 const DEST_ADDRESS_COUNT_PROD = 3
 const DEST_ADDRESS_COUNT_TEST = 1
@@ -351,6 +354,15 @@ export default function Jam({ wallet }: JamProps) {
       })
   }
 
+  // Add a function to transform the schedule data to include Jar information
+  const transformScheduleData = useCallback((schedule: Schedule) => {
+    return schedule.map((item) => ({
+      id: item[3],
+      type: item[4],
+      jar: item[0], // Assuming item[0] contains the Jar number
+    }))
+  }, [])
+
   return (
     <>
       <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
@@ -382,6 +394,9 @@ export default function Jam({ wallet }: JamProps) {
                   >
                     <div className="d-flex justify-content-center align-items-center">{t('scheduler.button_stop')}</div>
                   </rb.Button>
+                  <Accordion title="Schedule Details">
+                    <ScheduleDetails schedule={transformScheduleData(currentSchedule)} />
+                  </Accordion>
                 </>
               )}
             </>
