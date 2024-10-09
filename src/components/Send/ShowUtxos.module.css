@@ -1,0 +1,37 @@
+.utxoListDisplayHeight {
+  max-height: 15.7rem;
+}
+
+.row.row-normal {
+  background-color: transparent !important;
+}
+
+.row.row-success {
+  background-color: #27ae600d !important;
+  color: #27ae60 !important;
+}
+
+.row.row-warning {
+  background-color: #bb97200d !important;
+  color: #ebc957 !important;
+}
+
+.row.row-danger {
+  background-color: #eb57570d !important;
+  color: #eb5757 !important;
+}
+
+.row.row-frozen {
+  background-color: #2d9cdb0d !important;
+  color: #2d9cdb !important;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+}
+
+.checkbox:checked,
+.checkbox:indeterminate {
+  accent-color: var(--bs-black);
+}

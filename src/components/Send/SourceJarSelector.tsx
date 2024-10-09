@@ -1,10 +1,13 @@
-import { useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
-import { WalletInfo } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
+import { ShowUtxos } from './ShowUtxos'
+import { useTranslation } from 'react-i18next'
+import * as Api from '../../libs/JmWalletApi'
 
 export type SourceJarSelectorProps = {
   name: string
@@ -12,20 +15,32 @@ export type SourceJarSelectorProps = {
   className?: string
   variant: 'default' | 'warning'
   walletInfo?: WalletInfo
+  wallet: CurrentWallet
   isLoading: boolean
   disabled?: boolean
+}
+
+interface ShowUtxosProps {
+  utxos: Utxos
+  isLoading: boolean
+  alert?: SimpleAlert
 }
 
 export const SourceJarSelector = ({
   name,
   label,
   walletInfo,
+  wallet,
   variant,
   isLoading,
   disabled = false,
 }: SourceJarSelectorProps) => {
+  const { t } = useTranslation()
   const [field] = useField<JarIndex>(name)
   const form = useFormikContext<any>()
+  const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
+
+  const [showUtxos, setShowUtxos] = useState<ShowUtxosProps>()
 
   const jarBalances = useMemo(() => {
     if (!walletInfo) return []
@@ -33,6 +48,43 @@ export const SourceJarSelector = ({
       (lhs, rhs) => lhs.accountIndex - rhs.accountIndex,
     )
   }, [walletInfo])
+
+  const handleUtxosFrozenState = useCallback(
+    async (selectedUtxos: Utxos) => {
+      if (!showUtxos) return
+
+      const abortCtrl = new AbortController()
+
+      const selectedUtxosIds = selectedUtxos.map((it) => it.utxo)
+      const frozenUtxosToUnfreeze = selectedUtxos.filter((utxo) => utxo.frozen)
+      const unfrozenUtxosToFreeze = showUtxos.utxos
+        .filter((utxo) => !utxo.frozen)
+        .filter((it) => !selectedUtxosIds.includes(it.utxo))
+
+      try {
+        setShowUtxos({ ...showUtxos, isLoading: true, alert: undefined })
+
+        const res = await Promise.all([
+          ...frozenUtxosToUnfreeze.map((utxo) =>
+            Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: false }),
+          ),
+          ...unfrozenUtxosToFreeze.map((utxo) =>
+            Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: true }),
+          ),
+        ])
+
+        if (res.length !== 0) {
+          await reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal })
+        }
+
+        setShowUtxos(undefined)
+      } catch (err: any) {
+        if (abortCtrl.signal.aborted) return
+        setShowUtxos({ ...showUtxos, isLoading: false, alert: { variant: 'danger', message: err.message } })
+      }
+    },
+    [showUtxos, wallet, reloadCurrentWalletInfo],
+  )
 
   return (
     <>
@@ -44,22 +96,50 @@ export const SourceJarSelector = ({
           </rb.Placeholder>
         ) : (
           <div className={styles.sourceJarsContainer}>
-            {jarBalances.map((it) => (
-              <SelectableJar
-                key={it.accountIndex}
-                index={it.accountIndex}
-                balance={it.calculatedAvailableBalanceInSats}
-                frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
-                isSelectable={!disabled && !isLoading && it.calculatedAvailableBalanceInSats > 0}
-                isSelected={it.accountIndex === field.value}
-                fillLevel={jarFillLevel(
-                  it.calculatedTotalBalanceInSats,
-                  walletInfo.balanceSummary.calculatedTotalBalanceInSats,
-                )}
-                variant={it.accountIndex === field.value ? variant : undefined}
-                onClick={(jarIndex) => form.setFieldValue(field.name, jarIndex, true)}
+            {showUtxos && (
+              <ShowUtxos
+                isOpen={true}
+                isLoading={showUtxos.isLoading}
+                utxos={showUtxos.utxos}
+                alert={showUtxos.alert}
+                onConfirm={handleUtxosFrozenState}
+                onCancel={() => setShowUtxos(undefined)}
               />
-            ))}
+            )}
+            {jarBalances.map((it) => {
+              return (
+                <div key={it.accountIndex}>
+                  <SelectableJar
+                    tooltipText={t('show_utxos.text_select_utxos_tooltip')}
+                    isOpen={true}
+                    index={it.accountIndex}
+                    balance={it.calculatedAvailableBalanceInSats}
+                    frozenBalance={it.calculatedFrozenOrLockedBalanceInSats}
+                    isSelectable={!disabled && !isLoading && it.calculatedTotalBalanceInSats > 0}
+                    isSelected={it.accountIndex === field.value}
+                    fillLevel={jarFillLevel(
+                      it.calculatedTotalBalanceInSats,
+                      walletInfo.balanceSummary.calculatedTotalBalanceInSats,
+                    )}
+                    variant={it.accountIndex === field.value ? variant : undefined}
+                    onClick={(jarIndex) => {
+                      form.setFieldValue(field.name, jarIndex, true)
+                      if (
+                        it.accountIndex === field.value &&
+                        !disabled &&
+                        !isLoading &&
+                        it.calculatedTotalBalanceInSats > 0
+                      ) {
+                        setShowUtxos({
+                          utxos: walletInfo.utxosByJar[it.accountIndex],
+                          isLoading: false,
+                        })
+                      }
+                    }}
+                  />
+                </div>
+              )
+            })}
           </div>
         )}
 

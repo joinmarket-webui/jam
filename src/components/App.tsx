@@ -67,14 +67,14 @@ export default function App() {
   }, [clearCurrentWallet])
 
   const reloadWalletInfo = useCallback(
-    (delay: Milliseconds) => {
+    ({ delay, force }: { delay: Milliseconds; force: boolean }) => {
       setReloadingWalletInfoCounter((current) => current + 1)
       console.info('Reloading wallet info...')
       return new Promise<WalletInfo>((resolve, reject) =>
         setTimeout(() => {
+          const reload = force ? reloadCurrentWalletInfo.reloadAllForce : reloadCurrentWalletInfo.reloadAll
           const abortCtrl = new AbortController()
-          reloadCurrentWalletInfo
-            .reloadAll({ signal: abortCtrl.signal })
+          reload({ signal: abortCtrl.signal })
             .then((result) => resolve(result))
             .catch((error) => reject(error))
             .finally(() => {
@@ -135,30 +135,28 @@ export default function App() {
                   <h5 className="alert-heading">
                     {t('app.alert_no_connection', { connectionError: sessionConnectionError.message })}
                   </h5>
-                  {!sessionConnectionError.response?.ok && (
-                    <>
-                      <p>
-                        <Trans
-                          i18nKey="app.alert_no_connection_details"
-                          components={{
-                            1: (
-                              <a
-                                className="alert-link"
-                                href="https://jamdocs.org/FAQ/#how-to-resolve-no-connection-to-gateway"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                the docs
-                              </a>
-                            ),
-                          }}
-                        />
-                      </p>
-                      <pre>
-                        {sessionConnectionError.response.status}&nbsp;{sessionConnectionError.response.statusText}&nbsp;
-                        {sessionConnectionError.response.url}
-                      </pre>
-                    </>
+                  <p>
+                    <Trans
+                      i18nKey="app.alert_no_connection_details"
+                      components={{
+                        1: (
+                          <a
+                            className="alert-link"
+                            href="https://jamdocs.org/FAQ/#how-to-resolve-no-connection-to-gateway"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            the docs
+                          </a>
+                        ),
+                      }}
+                    />
+                  </p>
+                  {sessionConnectionError.response && !sessionConnectionError.response.ok && (
+                    <pre>
+                      {sessionConnectionError.response.status}&nbsp;{sessionConnectionError.response.statusText}&nbsp;
+                      {sessionConnectionError.response.url}
+                    </pre>
                   )}
                 </rb.Alert>
               }
@@ -288,7 +286,7 @@ const MAX_RECURSIVE_WALLET_INFO_RELOADS = 10
 
 interface WalletInfoAutoReloadProps {
   currentWallet: CurrentWallet | null
-  reloadWalletInfo: (delay: Milliseconds) => Promise<WalletInfo>
+  reloadWalletInfo: ({ delay, force }: { delay: Milliseconds; force: boolean }) => Promise<WalletInfo>
 }
 
 /**
@@ -318,7 +316,7 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
     function reloadAfterUnlock() {
       if (!currentWallet) return
 
-      reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_UNLOCK).catch((err) => console.error(err))
+      reloadWalletInfo({ delay: RELOAD_WALLET_INFO_DELAY.AFTER_UNLOCK, force: true }).catch((err) => console.error(err))
     },
     [currentWallet, reloadWalletInfo],
   )
@@ -337,14 +335,14 @@ const WalletInfoAutoReload = ({ currentWallet, reloadWalletInfo }: WalletInfoAut
         callCounter: number = 0,
       ) => {
         if (callCounter >= maxCalls) return
-        const info = await reloadWalletInfo(delay)
+        const info = await reloadWalletInfo({ delay, force: false })
         const newBalance = info.balanceSummary.calculatedTotalBalanceInSats
         if (newBalance > currentBalance) {
           await reloadWhileBalanceChangesRecursively(newBalance, delay, maxCalls, callCounter++)
         }
       }
 
-      reloadWalletInfo(RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN)
+      reloadWalletInfo({ delay: RELOAD_WALLET_INFO_DELAY.AFTER_RESCAN, force: false })
         .then((info) =>
           reloadWhileBalanceChangesRecursively(
             info.balanceSummary.calculatedTotalBalanceInSats,

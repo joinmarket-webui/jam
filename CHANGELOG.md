@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0](https://github.com/joinmarket-webui/jam/compare/v0.2.0...v0.3.0) (2024-10-01)
+
+#### Added
+
+* **config:** ability to customize "max sweep fee change" setting ([#793](https://github.com/joinmarket-webui/jam/issues/793)) ([b4f8a56](https://github.com/joinmarket-webui/jam/commit/b4f8a56baa5e1f4bbad1cd437a3f08172d9db026))
+* display warning on fidelity bond with same expiry date ([#741](https://github.com/joinmarket-webui/jam/issues/741)) ([c04007d](https://github.com/joinmarket-webui/jam/commit/c04007d2968dd587f6fdc0d85798412c2d892f97))
+* **earn:** add simple stats to earn report ([#731](https://github.com/joinmarket-webui/jam/issues/731)) ([24a9026](https://github.com/joinmarket-webui/jam/commit/24a9026a24579ba8ba5e99117b58dc6c31c3c3bc))
+* **orderbook:** show fidelity bond value and locktime ([#766](https://github.com/joinmarket-webui/jam/issues/766)) ([3bcbdee](https://github.com/joinmarket-webui/jam/commit/3bcbdeed191486047ae58913d9017f58b88245a4))
+* **rescan:** ability to rescan timechain ([#838](https://github.com/joinmarket-webui/jam/issues/838)) ([3ec72b1](https://github.com/joinmarket-webui/jam/commit/3ec72b187d78def597399ccb49573bfeae855a9a))
+* **ui**: unit toggle on main wallet view ([#806](https://github.com/joinmarket-webui/jam/issues/806)) ([09aa113](https://github.com/joinmarket-webui/jam/commit/09aa1133a6851356cfa10733f46166a743cfeb9e))
+* **import**: validate mnemonic phrase against BIP39 wordlist ([#739](https://github.com/joinmarket-webui/jam/issues/739)) ([69e8fa7](https://github.com/joinmarket-webui/jam/commit/69e8fa7f1218fffb83d1c372d39c2264de909b63))
+* **send**: quick freeze/unfreeze UTXOs on send page ([#771](https://github.com/joinmarket-webui/jam/issues/771)) ([5c8f81e](https://github.com/joinmarket-webui/jam/commit/5c8f81e92d59b38b83c21739fba0ef7c16505e82))
+* **send**: show "selected" UTXOs before performing transaction ([#773](https://github.com/joinmarket-webui/jam/issues/773)) ([96844d9](https://github.com/joinmarket-webui/jam/commit/96844d982f895406dbc23ed329491fe499e9a625))
+
+#### Fixed
+
+* allow absolute maker fee of zero ([#727](https://github.com/joinmarket-webui/jam/issues/727)) ([c04a830](https://github.com/joinmarket-webui/jam/commit/c04a8304dbbce6a2dbfdfbada22317a97815dc3e))
+* amount input field to properly interpret BTC ([#800](https://github.com/joinmarket-webui/jam/issues/800)) ([072a419](https://github.com/joinmarket-webui/jam/commit/072a41950d7efab144bab079be3641df8095c985))
+* **earn:** validate offer minsize ([#745](https://github.com/joinmarket-webui/jam/issues/745)) ([7aef192](https://github.com/joinmarket-webui/jam/commit/7aef192e72de95c8cc3b20e0a76f369e98208318))
+* **fb:** months order across timezones ([#853](https://github.com/joinmarket-webui/jam/issues/853)) ([d2116f5](https://github.com/joinmarket-webui/jam/commit/d2116f5ce703f8e7790e55d6179899cfa925fe14))
+* **fb:** display error alert in modal  ([#777](https://github.com/joinmarket-webui/jam/pull/776)) ([fef6260](https://github.com/joinmarket-webui/jam/commit/fef6260be03d1fe0bf65e1b6fafb8f10dbf8d2af))
+* **i18n:** description values for Chinese translations ([#829](https://github.com/joinmarket-webui/jam/issues/829)) ([ba84d59](https://github.com/joinmarket-webui/jam/commit/ba84d59e84ce6f8b785954eda25636587278fef5))
+* **main:** properly fade out jar tooltips ([#848](https://github.com/joinmarket-webui/jam/issues/848)) ([1f6eddf](https://github.com/joinmarket-webui/jam/commit/1f6eddfe1740d267950499c4b9967cd5869b432f))
+
 ## [0.2.0](https://github.com/joinmarket-webui/jam/compare/v0.1.6...v0.2.0) (2024-02-24)
 
 #### Fixed

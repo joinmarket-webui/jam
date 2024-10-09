@@ -91,9 +91,15 @@ export default function JarSelectorModal({
       </rb.Modal.Body>
       <rb.Modal.Footer className={styles.modalFooter}>
         <rb.Button variant="light" onClick={cancel} className="d-flex justify-content-center align-items-center">
-          {t('modal.confirm_button_reject')}
+          <Sprite symbol="cancel" width="26" height="26" />
+          <div>{t('modal.confirm_button_reject')}</div>
         </rb.Button>
-        <rb.Button disabled={isConfirming || selectedJar === undefined} variant="dark" onClick={confirm}>
+        <rb.Button
+          disabled={isConfirming || selectedJar === undefined}
+          variant="dark"
+          onClick={confirm}
+          className="flex-1 d-flex justify-content-center align-items-center"
+        >
           {isConfirming ? (
             <>
               <rb.Spinner as="span" animation="border" size="sm" role="status" />

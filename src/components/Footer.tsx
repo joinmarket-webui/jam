@@ -12,6 +12,7 @@ import { InfoModal } from './Modal'
 import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import { routes } from '../constants/routes'
 import { toSemVer } from '../utils'
+import { OrderbookOverlay } from './Orderbook'
 import packageInfo from '../../package.json'
 
 const APP_DISPLAY_VERSION = (() => {
@@ -29,8 +30,10 @@ export default function Footer() {
 
   const [showBetaWarning, setShowBetaWarning] = useState(false)
   const [showCheatsheet, setShowCheatsheet] = useState(false)
+  const [isShowOrderbook, setIsShowOrderbook] = useState(false)
 
   const cheatsheetEnabled = useMemo(() => !!currentWallet, [currentWallet])
+  const orderbookEnabled = useMemo(() => !!currentWallet, [currentWallet])
   const websocketConnected = useMemo(() => websocketState === WebSocket.OPEN, [websocketState])
 
   useEffect(() => {
@@ -82,7 +85,7 @@ export default function Footer() {
               </Trans>
             </div>
           </div>
-          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center">
+          <div className="d-flex order-1 flex-1 flex-grow-0 justify-content-center align-items-center gap-1">
             {cheatsheetEnabled && (
               <>
                 <Cheatsheet show={showCheatsheet} onHide={() => setShowCheatsheet(false)} />
@@ -90,12 +93,34 @@ export default function Footer() {
                   <rb.Button
                     type="button"
                     variant="link"
-                    className="cheatsheet-link nav-link text-start border-0 px-2"
+                    className="nav-link text-start border-0 px-2"
                     onClick={() => setShowCheatsheet(true)}
                   >
                     <div className="d-flex justify-content-center align-items-center">
                       <Sprite symbol="file-outline" width="24" height="24" />
-                      <div className="ps-0">{t('footer.cheatsheet')}</div>
+                      <div className="ps-1">{t('footer.cheatsheet')}</div>
+                    </div>
+                  </rb.Button>
+                </rb.Nav.Item>
+              </>
+            )}
+            {orderbookEnabled && (
+              <>
+                <OrderbookOverlay
+                  show={isShowOrderbook}
+                  onHide={() => setIsShowOrderbook(false)}
+                  nickname={serviceInfo?.nickname ?? undefined}
+                />
+                <rb.Nav.Item>
+                  <rb.Button
+                    type="button"
+                    variant="link"
+                    className="nav-link text-start border-0 px-2"
+                    onClick={() => setIsShowOrderbook(true)}
+                  >
+                    <div className="d-flex justify-content-center align-items-center">
+                      <Sprite symbol="globe" width="24" height="24" />
+                      <div className="ps-1">{t('footer.orderbook')}</div>
                     </div>
                   </rb.Button>
                 </rb.Nav.Item>
@@ -104,13 +129,13 @@ export default function Footer() {
           </div>
           <div className="d-flex flex-1 order-2 justify-content-end align-items-center gap-1">
             {isDebugFeatureEnabled('devSetupPage') && (
-              <div className="d-none d-md-block text-small text-start mx-1">
+              <div className="d-none d-md-block text-small text-start">
                 <Link className="text-warning" to={routes.__devSetup}>
                   Dev Setup
                 </Link>
               </div>
             )}
-            <div className="text-small text-start text-secondary mx-1">
+            <div className="text-small text-start text-secondary me-1">
               <a
                 href="https://github.com/joinmarket-webui/jam/tags"
                 target="_blank"
@@ -120,7 +145,7 @@ export default function Footer() {
                 v{APP_DISPLAY_VERSION}
               </a>
             </div>
-            <div className="d-flex gap-2 me-2">
+            <div className="d-flex gap-2 me-1">
               <a
                 href="https://github.com/joinmarket-webui/jam"
                 target="_blank"
@@ -128,6 +153,14 @@ export default function Footer() {
                 className="d-flex align-items-center text-secondary"
               >
                 <Sprite symbol="github" width="18px" height="18px" />
+              </a>
+              <a
+                href="https://matrix.to/#/%23jam:bitcoin.kyoto"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="d-flex align-items-center text-secondary"
+              >
+                <Sprite symbol="matrix" width="18px" height="18px" />
               </a>
               <a
                 href="https://t.me/JoinMarketWebUI"

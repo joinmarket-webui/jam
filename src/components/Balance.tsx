@@ -39,23 +39,28 @@ interface BalanceComponentProps {
   symbol?: JSX.Element
   showSymbol?: boolean
   frozen?: boolean
+  colored?: boolean
+  frozenSymbol?: boolean
 }
 
 const BalanceComponent = ({
   symbol,
   showSymbol = true,
   frozen = false,
+  colored = true,
+  frozenSymbol = true,
   children,
 }: PropsWithChildren<BalanceComponentProps>) => {
   return (
     <span
-      className={classNames(styles.balance, 'balance-hook', 'd-inline-flex align-items-center', {
+      className={classNames('balance-hook', 'd-inline-flex align-items-center', {
         [styles.frozen]: frozen,
+        [styles.balanceColor]: colored,
       })}
     >
       {children}
       {showSymbol && symbol}
-      {frozen && FROZEN_SYMBOL}
+      {frozen && frozenSymbol && FROZEN_SYMBOL}
     </span>
   )
 }
@@ -64,7 +69,7 @@ const DECIMAL_POINT_CHAR = '.'
 
 type BitcoinBalanceProps = Omit<BalanceComponentProps, 'symbol'> & { value: number }
 
-const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
+const BitcoinBalance = ({ value, colored = true, ...props }: BitcoinBalanceProps) => {
   const numberString = formatBtc(value)
   const [integerPart, fractionalPart] = numberString.split(DECIMAL_POINT_CHAR)
 
@@ -73,9 +78,11 @@ const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
   const fractionalPartStartsWithZero = fractionPartArray[0] === '0'
 
   return (
-    <BalanceComponent symbol={BTC_SYMBOL} {...props}>
+    <BalanceComponent symbol={BTC_SYMBOL} colored={colored} {...props}>
       <span
-        className={`${styles.bitcoinAmount} slashed-zeroes`}
+        className={classNames(`slashed-zeroes`, styles.bitcoinAmount, styles.bitcoinAmountSpacing, {
+          [styles.bitcoinAmountColor]: colored,
+        })}
         data-testid="bitcoin-amount"
         data-integer-part-is-zero={integerPartIsZero}
         data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
@@ -98,10 +105,14 @@ const BitcoinBalance = ({ value, ...props }: BitcoinBalanceProps) => {
 
 type SatsBalanceProps = Omit<BalanceComponentProps, 'symbol'> & { value: number }
 
-const SatsBalance = ({ value, ...props }: SatsBalanceProps) => {
+const SatsBalance = ({ value, colored = true, ...props }: SatsBalanceProps) => {
   return (
-    <BalanceComponent symbol={SAT_SYMBOL} {...props}>
-      <span className={`${styles.satsAmount} slashed-zeroes`} data-testid="sats-amount" data-raw-value={value}>
+    <BalanceComponent symbol={SAT_SYMBOL} colored={colored} {...props}>
+      <span
+        className={classNames(`slashed-zeroes`, { [styles.satsAmountColor]: colored })}
+        data-testid="sats-amount"
+        data-raw-value={value}
+      >
         {formatSats(value)}
       </span>
     </BalanceComponent>

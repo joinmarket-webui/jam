@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import * as rb from 'react-bootstrap'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
 import { Table, Header, HeaderRow, HeaderCell, Body, Row, Cell } from '@table-library/react-table-library/table'
 import { usePagination } from '@table-library/react-table-library/pagination'
 import { useRowSelect, HeaderCellSelect, CellSelect, SelectTypes } from '@table-library/react-table-library/select'
@@ -13,83 +12,19 @@ import { useTheme } from '@table-library/react-table-library/theme'
 import { useSettings } from '../../context/SettingsContext'
 import { Utxo, WalletInfo } from '../../context/WalletContext'
 import * as fb from '../fb/utils'
+import { utxoTags, UtxoTag } from '../utxo/utils'
 import { shortenStringMiddle } from '../../utils'
 import Sprite from '../Sprite'
 import Balance from '../Balance'
 import TablePagination from '../TablePagination'
 import styles from './UtxoList.module.css'
+import UtxoIcon from '../utxo/UtxoIcon'
+import { UtxoConfirmations } from '../utxo/Confirmations'
+import UtxoTags from '../utxo/UtxoTags'
 
 const withTooltip = ({ node, tooltip }: { node: React.ReactElement; tooltip: React.ReactElement }) => {
   return (
     <rb.OverlayTrigger overlay={(props) => <rb.Tooltip {...props}>{tooltip}</rb.Tooltip>}>{node}</rb.OverlayTrigger>
-  )
-}
-
-const ADDRESS_STATUS_COLORS: { [key: string]: string } = {
-  new: 'normal',
-  used: 'normal',
-  reused: 'danger',
-  'cj-out': 'success',
-  'change-out': 'warning',
-  'non-cj-change': 'normal',
-  deposit: 'normal',
-}
-
-type Tag = { tag: string; color: string }
-
-const utxoTags = (utxo: Utxo, walletInfo: WalletInfo, t: TFunction): Tag[] => {
-  const rawStatus = walletInfo.addressSummary[utxo.address]?.status
-
-  let status: string | null = null
-
-  // If a UTXO is locked, it's `status` will be the locktime, with other states
-  // appended in brackets, e.g. `2099-12-01 [LOCKED] [FROZEN]`
-  if (rawStatus && !utxo.locktime) {
-    const indexOfOtherTag = rawStatus.indexOf('[')
-
-    if (indexOfOtherTag !== -1) {
-      status = rawStatus.substring(0, indexOfOtherTag).trim()
-    } else {
-      status = rawStatus
-    }
-  }
-
-  const tags: Tag[] = []
-
-  if (utxo.label) tags.push({ tag: utxo.label, color: 'normal' })
-  if (status) tags.push({ tag: status, color: ADDRESS_STATUS_COLORS[status] || 'normal' })
-  if (fb.utxo.isFidelityBond(utxo)) tags.push({ tag: t('jar_details.utxo_list.utxo_tag_fb'), color: 'dark' })
-  return tags
-}
-
-const utxoIcon = (utxo: Utxo, t: TFunction) => {
-  if (fb.utxo.isFidelityBond(utxo)) {
-    return withTooltip({
-      node: (
-        <div className={styles.utxoIcon}>
-          <Sprite className={styles.iconLocked} symbol="timelock" width="20" height="20" />
-        </div>
-      ),
-      tooltip: <div>{t('jar_details.utxo_list.utxo_tooltip_locktime', { locktime: utxo.locktime })}</div>,
-    })
-  } else if (utxo.frozen) {
-    return (
-      <div className={styles.utxoIcon}>
-        <Sprite className={styles.iconFrozen} symbol="snowflake" width="20" height="20" />
-      </div>
-    )
-  }
-  return <></>
-}
-
-const utxoConfirmations = (utxo: Utxo) => {
-  const symbol = `confs-${utxo.confirmations >= 6 ? 'full' : utxo.confirmations}`
-
-  return (
-    <div className={classNames(styles.utxoConfirmations, styles[`utxoConfirmations-${utxo.confirmations}`])}>
-      <Sprite symbol={symbol} width="20" height="20" />
-      <div>{utxo.confirmations}</div>
-    </div>
   )
 }
 
@@ -110,6 +45,14 @@ const TABLE_THEME = {
   `,
   BaseCell: `
     padding: 0.25rem 0.25rem !important;
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+    input:checked, input:indeterminate {
+      accent-color: var(--bs-black);
+    }
     &:nth-of-type(1) {
       text-align: center;
     }
@@ -158,7 +101,7 @@ const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
 
 interface UtxoTableRow extends Utxo, TableTypes.TableNode {
   _icon: JSX.Element
-  _tags: Tag[]
+  _tags: UtxoTag[]
   _confs: JSX.Element
 }
 
@@ -187,9 +130,9 @@ const UtxoList = ({
       nodes: utxos.map((utxo: Utxo) => ({
         ...utxo,
         id: utxo.utxo,
-        _icon: utxoIcon(utxo, t),
+        _icon: <UtxoIcon value={utxo} size={20} />,
         _tags: utxoTags(utxo, walletInfo, t),
-        _confs: utxoConfirmations(utxo),
+        _confs: <UtxoConfirmations className={utxo.confirmations === 0 ? 'text-info' : 'text-success'} value={utxo} />,
       })),
     }),
     [utxos, walletInfo, t],
@@ -254,7 +197,9 @@ const UtxoList = ({
         [SORT_KEYS.value]: (array) => array.sort((a, b) => a.value - b.value),
         [SORT_KEYS.confirmations]: (array) => array.sort((a, b) => a.confirmations - b.confirmations),
         [SORT_KEYS.tags]: (array) =>
-          array.sort((a, b) => (String(a._tags[0]?.tag) || 'z').localeCompare(String(b._tags[0]?.tag) || 'z')),
+          array.sort((a, b) =>
+            (String(a._tags[0]?.displayValue) || 'z').localeCompare(String(b._tags[0]?.displayValue) || 'z'),
+          ),
       },
     },
   )
@@ -327,6 +272,7 @@ const UtxoList = ({
                         convertToUnit={settings.unit}
                         showBalance={settings.showBalance}
                         frozen={item.frozen}
+                        colored={!item.locktime}
                       />
                     </Cell>
                     <Cell>
@@ -348,13 +294,7 @@ const UtxoList = ({
                     </Cell>
                     <Cell>{item._confs}</Cell>
                     <Cell>
-                      <div className={styles.utxoTagList}>
-                        {item._tags.map((tag: Tag, index: number) => (
-                          <div key={index} className={classNames(styles.utxoTag, styles[`utxoTag-${tag.color}`])}>
-                            {tag.tag}
-                          </div>
-                        ))}
-                      </div>
+                      <UtxoTags value={item._tags} />
                     </Cell>
                     <Cell>
                       <rb.Button

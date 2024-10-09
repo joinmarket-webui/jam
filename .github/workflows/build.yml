@@ -1,13 +1,15 @@
 name: Build
 
 on:
-  # Run the build for pushes and pull requests targeting master
+  # Run the build for pushes and pull requests targeting master and devel
   push:
     branches:
       - master
+      - devel
   pull_request:
     branches:
       - master
+      - devel
 
 jobs:
   build:

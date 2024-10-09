@@ -55,7 +55,8 @@
     "warning_alert_button_ok": "Fine with me.",
     "cheatsheet": "Cheatsheet",
     "websocket_connected": "Websocket connected",
-    "websocket_disconnected": "Websocket disconnected"
+    "websocket_disconnected": "Websocket disconnected",
+    "orderbook": "Orderbook"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
@@ -232,10 +233,10 @@
     "github": "GitHub",
     "matrix": "Matrix",
     "telegram": "Telegram",
-    "jm_twitter": "JoinMarket Twitter",
     "confirm_locking_modal_title": "Lock Wallet",
     "confirm_locking_modal_body_earn": "Earn is active. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
     "confirm_locking_modal_body_jam": "A collaborative transaction is being executed. Locking the wallet will stop the service. You can close the browser window to let it run in the background.",
+    "rescan_chain": "Rescan chain",
     "fees": {
       "title": "Fee Limits",
       "description": "Adjust mining fees and collaborator fees according to your needs. These settings will be reset to default values when the JoinMarket service restarts, e.g. on a system reboot. For more information, <1>see the documentation on fees</1>.",
@@ -269,6 +270,16 @@
       "error_loading_fee_config_failed": "Error while loading fee config values.",
       "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}"
     }
+  },
+  "rescan_chain": {
+    "title": "Rescan timechain (Experimental)",
+    "subtitle": "Rescan the local timechain for wallet related transactions.",
+    "label_blockheight": "Rescan height",
+    "description_blockheight": "The height of the chain at which the rescan process is started.",
+    "error_rescanning_failed": "Error while starting the rescan process. Reason: {{ reason }}",
+    "feedback_invalid_blockheight": "Please provide a valid value between {{ min }} and the current blockheight.",
+    "text_button_submit": "Rescan timechain",
+    "text_button_submitting": "Rescanning timechain..."
   },
   "logs": {
     "title": "Logs",
@@ -340,7 +351,13 @@
       "text_miner_fee_in_satspervbyte_exact": "{{ value }} sats/vByte",
       "text_miner_fee_in_satspervbyte_randomized": "{{ min }} - {{ max }} sats/vByte",
       "text_miner_fee_in_targeted_blocks_one": "High priority estimate (next block)",
-      "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks"
+      "text_miner_fee_in_targeted_blocks_other": "Using estimate for inclusion in next {{ count }} blocks",
+      "label_eligible_utxos": "Eligible UTXOs",
+      "description_eligible_utxos": "One or more of the following UTXOs will be included in the transaction: ",
+      "label_selected_utxos_one": "Selected UTXO",
+      "label_selected_utxos_other": "Selected UTXOs",
+      "description_selected_utxos_one": "The following UTXO will be included in the transaction: ",
+      "description_selected_utxos_other": "The following UTXOs will be included in the transaction: "
     },
     "confirm_abort_modal": {
       "title": "Abort payment",
@@ -659,6 +676,10 @@
       "subtitle": "Successfully completed a single scheduled transaction.",
       "subtitle_other": "Successfully completed {{ count }} scheduled transactions.",
       "text_button_submit": "Continue"
+    },
+    "confirm_modal": {
+      "title": "Start Scheduled Sweep",
+      "body": "Are you sure you want to start a scheduled sweep?"
     }
   },
   "modal": {
@@ -700,5 +721,13 @@
       "utxo_detail_label_locktime": "Locktime",
       "utxo_detail_label_status": "Address status"
     }
+  },
+  "show_utxos": {
+    "text_select_utxos_tooltip": "Select UTXOs",
+    "title": "Select eligible UTXOs",
+    "subtitle_zero": "Please select one or more UTXOs for possible inclusion in the transaction.",
+    "subtitle_one": "The selected UTXO is eligible for inclusion in the transaction.",
+    "subtitle_other": "The selected UTXOs are eligible for inclusion in the transaction.",
+    "text_subtitle_addon": "Unselected UTXOs will be frozen and can be unfrozen later anytime."
   }
 }

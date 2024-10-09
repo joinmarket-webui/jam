@@ -22,7 +22,7 @@ npm run regtest:init
 npm run regtest:mine
 
 # start jam in development mode
-npm run dev:start
+npm run dev
 
 [...]
 
@@ -49,7 +49,7 @@ npm run regtest:init
 Once the regtest environment is up and running you can start Jam with:
 
 ```sh
-npm run dev:start
+npm run dev
 ```
 
 ### Stop
