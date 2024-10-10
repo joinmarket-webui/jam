@@ -44,14 +44,11 @@ const WalletCreationForm = ({
     const abortCtrl = new AbortController()
 
     Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
       .then((data) => {
         if (abortCtrl.signal.aborted) return
         setWalletList(data.wallets)
       })
-      .catch(() => {
-        // do nothing on purpose
-      })
+      .catch(() => {})
 
     return () => abortCtrl.abort()
   }, [t])
