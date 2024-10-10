@@ -16,6 +16,7 @@ import { CopyButton } from '../CopyButton'
 import { LockInfoAlert } from './CreateFidelityBond'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import styles from './SpendFidelityBondModal.module.css'
+import { errorResolver } from '../../utils'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -43,11 +44,6 @@ interface Result {
   txInfo?: TxInfo
   mustReload: boolean
 }
-
-const errorResolver = (t: TFunction, i18nKey: string | string[]) => ({
-  resolver: (_: Response, reason: string) => `${t(i18nKey)} ${reason}`,
-  fallbackReason: t('global.errors.reason_unknown'),
-})
 
 type UtxoDirectSendRequest = {
   destination: Api.BitcoinAddress

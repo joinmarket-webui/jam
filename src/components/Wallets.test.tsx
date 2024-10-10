@@ -62,11 +62,7 @@ describe('<Wallets />', () => {
         json: () => Promise.resolve({}),
       }),
     )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: false,
-      }),
-    )
+    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(Promise.reject(new Error('wallets.error_loading_failed')))
 
     await act(async () => setup({}))
 
@@ -147,12 +143,9 @@ describe('<Wallets />', () => {
           }),
       }),
     )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ wallets: ['wallet0.jmdat', 'wallet1.jmdat'] }),
-      }),
-    )
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+      wallets: ['wallet0.jmdat', 'wallet1.jmdat'],
+    })
     ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
       Promise.resolve({
         ok: true,
@@ -226,12 +219,9 @@ describe('<Wallets />', () => {
             }),
         }),
       )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+        wallets: [dummyWalletFileName],
+      })
       ;(apiMock.postWalletUnlock as jest.Mock).mockReturnValue(
         Promise.resolve({
           ok: true,
@@ -278,12 +268,9 @@ describe('<Wallets />', () => {
             }),
         }),
       )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+        wallets: [dummyWalletFileName],
+      })
       ;(apiMock.postWalletUnlock as jest.Mock).mockReturnValue(
         Promise.resolve({
           ok: false,
@@ -321,12 +308,9 @@ describe('<Wallets />', () => {
             }),
         }),
       )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+        wallets: [dummyWalletFileName],
+      })
       ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
         Promise.resolve({
           ok: true,
@@ -369,12 +353,9 @@ describe('<Wallets />', () => {
             }),
         }),
       )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+        wallets: [dummyWalletFileName],
+      })
       ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
         Promise.resolve({
           ok: false,
@@ -425,12 +406,9 @@ describe('<Wallets />', () => {
               }),
           }),
         )
-        ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-          Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-          }),
-        )
+        ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+          wallets: [dummyWalletFileName],
+        })
         ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
           Promise.resolve({
             ok: true,

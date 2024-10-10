@@ -8,7 +8,7 @@ import Alert from './Alert'
 import Wallet from './Wallet'
 import PageTitle from './PageTitle'
 import { useServiceInfo, useReloadServiceInfo } from '../context/ServiceInfoContext'
-import { walletDisplayName } from '../utils'
+import { errorResolver, walletDisplayName } from '../utils'
 import * as Api from '../libs/JmWalletApi'
 import { routes } from '../constants/routes'
 import { ConfirmModal } from './Modal'
@@ -176,7 +176,6 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
     const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
 
     const loadingWallets = Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('wallets.error_loading_failed'))))
       .then((data) => sortWallets(data.wallets || [], currentWallet?.walletFileName))
       .then((sortedWalletList) => {
         if (abortCtrl.signal.aborted) return
