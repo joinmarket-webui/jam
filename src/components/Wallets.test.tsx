@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
-import { act, render, screen, waitFor, waitForElementToBeRemoved } from '../testUtils'
+import { act, render, screen, waitFor } from '../testUtils'
 import user from '@testing-library/user-event'
 
 import * as apiMock from '../libs/JmWalletApi'
@@ -39,13 +39,13 @@ describe('<Wallets />', () => {
   const neverResolvingPromise = new Promise(() => {})
   beforeEach(() => {
     ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue(neverResolvingPromise)
   })
 
   it('should display loading indicator while fetching data', async () => {
     ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue(neverResolvingPromise)
 
     setup({})
 
@@ -55,7 +55,7 @@ describe('<Wallets />', () => {
   })
 
   it('should display error message when loading wallets fails', async () => {
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
     ;(apiMock.getSession as jest.Mock).mockReturnValue(
       Promise.resolve({
         ok: true,
@@ -72,11 +72,7 @@ describe('<Wallets />', () => {
   })
 
   it('should display alert when rescanning is active', async () => {
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: false,
-      }),
-    )
+    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(Promise.reject(new Error('wallets.error_loading_failed')))
     ;(apiMock.getSession as jest.Mock).mockReturnValue(
       Promise.resolve({
         ok: true,
@@ -106,18 +102,12 @@ describe('<Wallets />', () => {
           }),
       }),
     )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ wallets: [] }),
-      }),
-    )
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ version: '0.9.10dev' }),
-      }),
-    )
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+      wallets: [],
+    })
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
+      version: '0.9.10dev',
+    })
 
     await act(async () => setup({}))
 
@@ -146,12 +136,9 @@ describe('<Wallets />', () => {
     ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
       wallets: ['wallet0.jmdat', 'wallet1.jmdat'],
     })
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ version: '0.9.10dev' }),
-      }),
-    )
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
+      version: '0.9.10dev',
+    })
 
     await act(async () => setup({}))
 
@@ -182,18 +169,12 @@ describe('<Wallets />', () => {
           }),
       }),
     )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ wallets: [] }),
-      }),
-    )
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ version: '0.9.9' }),
-      }),
-    )
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
+      wallets: [],
+    })
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
+      version: '0.9.9',
+    })
 
     await act(async () => setup({}))
 

@@ -21,6 +21,10 @@ type GetWalletAllResponse = {
   wallets: WalletFileName[]
 }
 
+interface JmGetInfoData {
+  version: string
+}
+
 type Mixdepth = number
 type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
 type BitcoinAddress = string
@@ -255,9 +259,14 @@ const Helper = (() => {
 })()
 
 const getGetinfo = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${basePath()}/v1/getinfo`, {
-    signal,
-  })
+  const response = await fetch(`${basePath()}/v1/getinfo`, { signal })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  const data: JmGetInfoData = await response.json()
+  return data
 }
 
 const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {

@@ -61,10 +61,6 @@ interface JmSessionData {
   rescanning: boolean
 }
 
-interface JmGetInfoData {
-  version: string
-}
-
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
@@ -113,8 +109,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     const abortCtrl = new AbortController()
 
     Api.getGetinfo({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((data: JmGetInfoData) => toSemVer(data.version))
+      .then((data) => toSemVer(data.version))
       .catch((_) => UNKNOWN_VERSION)
       .then((version) => {
         if (!abortCtrl.signal.aborted) {
