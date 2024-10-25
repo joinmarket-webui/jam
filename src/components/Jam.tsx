@@ -27,8 +27,8 @@ const getNewAddressesForTesting = (
   count: number,
   mixdepth: number,
 ): Array<Api.BitcoinAddress> => {
-  const externalBranch = walletInfo.data.display.walletinfo.accounts[mixdepth].branches.find((branch) => {
-    return branch.branch.split('\t')[0] === 'external addresses'
+  const externalBranch = walletInfo.data.display.walletinfo.accounts?.[mixdepth]?.branches?.find((branch) => {
+    return branch.branch?.split('\t')[0] === 'external addresses'
   })
 
   const newEntries = (externalBranch?.entries || []).filter((entry) => entry.status === 'new').slice(0, count)
@@ -37,7 +37,7 @@ const getNewAddressesForTesting = (
     throw new Error(`Cannot find enough fresh addresses in mixdepth ${mixdepth}`)
   }
 
-  return newEntries.map((it) => it.address)
+  return newEntries.map((it) => it.address).filter((address): address is string => address !== undefined)
 }
 
 const getNewAddressesForTestingOrEmpty = (
@@ -273,8 +273,8 @@ export default function Jam({ wallet }: JamProps) {
         .map((it) => it[6])
         .every((it) => it === 1 || typeof it === 'string')
 
-      const lastEntryState = lastKnownSchedule[lastKnownSchedule.length - 1][6]
-      const lastEntrySuccess = isInMempoolOrSuccess(lastEntryState)
+      const lastEntryState = lastKnownSchedule?.[lastKnownSchedule.length - 1]?.[6]
+      const lastEntrySuccess = lastEntryState !== undefined && isInMempoolOrSuccess(lastEntryState)
 
       // Workaround to prevent race conditions: Since the schedule info is polled,
       // it'll be possible that the latest known state still has the success flag
@@ -282,7 +282,7 @@ export default function Jam({ wallet }: JamProps) {
       // In this case, additionally check that every remaining UTXO is frozen
       // (indicating the opteration was successfully completed).
       // Hint: In dev mode, this will only work if you send coins to an external wallet.
-      const allUtxosFrozen = walletInfo.data.utxos.utxos.every((it) => it.frozen)
+      const allUtxosFrozen = walletInfo.data.utxos.utxos?.every((it) => it.frozen) ?? false
 
       setIsShowSuccessMessage(firstEntriesSuccess && (lastEntrySuccess || allUtxosFrozen))
     }
@@ -299,7 +299,7 @@ export default function Jam({ wallet }: JamProps) {
 
     const destinations = addressValueKeys(addressCount).map((key) => values[key])
 
-    const body: Api.StartSchedulerRequest = {
+    const body: Api.RunScheduleRequest = {
       destination_addresses: destinations,
     }
 
@@ -323,7 +323,6 @@ export default function Jam({ wallet }: JamProps) {
 
     const abortCtrl = new AbortController()
     return Api.postSchedulerStart({ ...wallet, signal: abortCtrl.signal }, body)
-      .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_starting_schedule_failed'))))
       .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .catch((err) => {
         if (abortCtrl.signal.aborted) return
@@ -342,7 +341,6 @@ export default function Jam({ wallet }: JamProps) {
 
     const abortCtrl = new AbortController()
     return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? true : Api.Helper.throwError(res, t('scheduler.error_stopping_schedule_failed'))))
       .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .catch((err) => {
         if (abortCtrl.signal.aborted) return

@@ -1,5 +1,5 @@
+import { Utxo } from '../libs/JmWalletApi'
 import { DEFAULT_REQUIREMENT_OPTIONS, buildCoinjoinRequirementSummary } from './CoinjoinRequirements'
-import { Utxo } from '../context/WalletContext'
 
 describe('CoinjoinRequirements', () => {
   const defaultOptions = DEFAULT_REQUIREMENT_OPTIONS
@@ -57,7 +57,7 @@ describe('CoinjoinRequirements', () => {
     })
   })
 
-  it('should NOT be fulfilled on utxos with to little confirmations', () => {
+  it('should NOT be fulfilled on utxos with too little confirmations', () => {
     let preconditionSummary = buildCoinjoinRequirementSummary([
       {
         frozen: false,

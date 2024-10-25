@@ -154,9 +154,8 @@ export default function Send({ wallet }: SendProps) {
         signal: props.signal,
         mixdepth: props.jarIndex,
       })
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res, t('receive.error_loading_address_failed'))))
         .then((data) => {
-          return data.address
+          return data
         })
         .catch((err) => {
           if (!props.signal.aborted) {
@@ -165,7 +164,7 @@ export default function Send({ wallet }: SendProps) {
           throw err
         })
     },
-    [wallet, setAlert, t],
+    [wallet, setAlert],
   )
 
   const waitForUtxosToBeSpentContext = useMemo(
@@ -251,17 +250,19 @@ export default function Send({ wallet }: SendProps) {
 
     let success = false
     try {
-      const res = await Api.postDirectSend(
+      const body = await Api.postDirectSend(
         { ...wallet },
         { mixdepth: sourceJarIndex, amount_sats: amountSats, destination, txfee: txFee.value },
       )
 
-      if (res.ok) {
-        // TODO: add type for json response
-        const {
-          txinfo: { outputs, inputs, txid },
-        } = await res.json()
-        const output = outputs.find((o: any) => o.address === destination)
+      // Extract data from the response
+      const {
+        txinfo: { outputs, inputs, txid },
+      } = body
+
+      // Find the output matching the destination address
+      const output = outputs?.find((o) => o.address === destination)
+      if (output) {
         setPaymentSuccessfulInfoAlert({
           variant: 'success',
           message: t('send.alert_payment_successful', {
@@ -270,20 +271,21 @@ export default function Send({ wallet }: SendProps) {
             txid,
           }),
         })
-        setWaitForUtxosToBeSpent(inputs.map((it: any) => it.outpoint))
+        if (inputs) {
+          setWaitForUtxosToBeSpent(
+            inputs.map((it) => it.outpoint).filter((outpoint): outpoint is string => outpoint !== undefined),
+          )
+        }
         success = true
       } else {
-        const errorMessage = await Api.Helper.extractErrorMessage(res)
-        const message = `${errorMessage} ${
-          res.status === 400 ? t('send.direct_payment_error_message_bad_request') : ''
-        }`
-        setAlert({ variant: 'danger', message })
+        // Handle the case where the output wasn't found
+        setAlert({ variant: 'danger', message: t('send.direct_payment_error_output_not_found') })
       }
-
-      setIsSending(false)
     } catch (e: any) {
+      const errorMessage = e.message || t('send.direct_payment_error_message')
+      setAlert({ variant: 'danger', message: errorMessage })
+    } finally {
       setIsSending(false)
-      setAlert({ variant: 'danger', message: e.message })
     }
 
     return success
@@ -301,7 +303,7 @@ export default function Send({ wallet }: SendProps) {
 
     let success = false
     try {
-      const res = await Api.postCoinjoin(
+      const data = await Api.postCoinjoin(
         { ...wallet },
         {
           mixdepth: sourceJarIndex,
@@ -312,19 +314,13 @@ export default function Send({ wallet }: SendProps) {
         },
       )
 
-      if (res.ok) {
-        const data = await res.json()
-        console.log(data)
-        success = true
-      } else {
-        const message = await Api.Helper.extractErrorMessage(res)
-        setAlert({ variant: 'danger', message })
-      }
-
+      console.log(data)
+      success = true
       setIsSending(false)
     } catch (e: any) {
       setIsSending(false)
-      setAlert({ variant: 'danger', message: e.message })
+      const message = e.message || t('global.errors.reason_unknown')
+      setAlert({ variant: 'danger', message })
     }
 
     return success
@@ -353,12 +349,10 @@ export default function Send({ wallet }: SendProps) {
     setAlert(undefined)
 
     const abortCtrl = new AbortController()
-    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
-      .catch((err) => {
-        if (abortCtrl.signal.aborted) return
-        setAlert({ variant: 'danger', message: err.message })
-      })
+    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal }).catch((err) => {
+      if (abortCtrl.signal.aborted) return
+      setAlert({ variant: 'danger', message: err.message })
+    })
   }
 
   const onSubmit = async (values: SendFormValues) => {
@@ -515,7 +509,7 @@ export default function Send({ wallet }: SendProps) {
             sourceJarIndex: showConfirmSendModal.sourceJarIndex,
             destination: showConfirmSendModal.destination?.value!,
             amount: showConfirmSendModal.amount!.isSweep
-              ? sortedAccountBalances[showConfirmSendModal.sourceJarIndex!].calculatedAvailableBalanceInSats
+              ? (sortedAccountBalances[showConfirmSendModal.sourceJarIndex!]?.calculatedAvailableBalanceInSats ?? 0)
               : showConfirmSendModal.amount!.value!,
             isSweep: showConfirmSendModal.amount!.isSweep,
             isCoinjoin: showConfirmSendModal.isCoinJoin,
@@ -523,7 +517,7 @@ export default function Send({ wallet }: SendProps) {
             feeConfigValues: { ...feeConfigValues, tx_fees: showConfirmSendModal.txFee },
             availableUtxos: (walletInfo?.utxosByJar[showConfirmSendModal.sourceJarIndex!] || [])
               .filter((utxo) => !utxo.frozen)
-              .sort((a, b) => a.confirmations - b.confirmations),
+              .sort((a, b) => (a.confirmations ?? 0) - (b.confirmations ?? 0)),
           }}
         />
       )}

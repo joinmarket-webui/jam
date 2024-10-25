@@ -1,6 +1,7 @@
 import * as fb from '../components/fb/utils'
-import { groupByJar, Utxos } from '../context/WalletContext'
+import { groupByJar } from '../context/WalletContext'
 import { JM_TAKER_UTXO_AGE_DEFAULT } from '../constants/config'
+import { Utxos } from '../libs/JmWalletApi'
 
 export type CoinjoinRequirementOptions = {
   minNumberOfUtxos: number // min amount of utxos available
@@ -34,7 +35,7 @@ const filterEligibleUtxos = (utxos: Utxos) => {
 }
 
 const filterUtxosViolatingMinConfirmationRequirement = (utxos: Utxos, minConfirmation: number) => {
-  return utxos.filter((it) => it.confirmations < minConfirmation)
+  return utxos.filter((it) => it.confirmations !== undefined && it.confirmations < minConfirmation)
 }
 
 const filterUtxosViolatingTriesLeftRequirement = (utxos: Utxos) => {
@@ -74,9 +75,12 @@ export const buildCoinjoinRequirementSummary = (
   const violations: CoinjoinRequirementViolationWithJarIndex[] = []
 
   for (const jarIndex in utxosByJars) {
-    const violationsByJar = buildCoinjoinViolationSummaryForJar(utxosByJars[jarIndex], options)
-    if (violationsByJar.hasViolations) {
-      violations.push({ jarIndex: +jarIndex, ...violationsByJar })
+    const jarUtxos = utxosByJars[jarIndex]
+    if (jarUtxos) {
+      const violationsByJar = buildCoinjoinViolationSummaryForJar(jarUtxos, options)
+      if (violationsByJar.hasViolations) {
+        violations.push({ jarIndex: +jarIndex, ...violationsByJar })
+      }
     }
   }
 
@@ -84,7 +88,7 @@ export const buildCoinjoinRequirementSummary = (
     .filter((it) => it.utxosViolatingMinConfirmations.length > 0)
     .map((it) =>
       it.utxosViolatingMinConfirmations.reduce(
-        (acc, utxo) => Math.min(acc, utxo.confirmations),
+        (acc, utxo) => Math.min(acc, utxo.confirmations ?? Number.MAX_SAFE_INTEGER),
         Number.MAX_SAFE_INTEGER,
       ),
     )

@@ -20,7 +20,7 @@ export type CurrentWallet = MinimalWalletContext & {
 class CurrentWalletImpl implements CurrentWallet {
   readonly walletFileName: Api.WalletFileName
   readonly #displayName: string
-  token: Api.ApiToken // TODO: should be private
+  token: string // TODO: should be private
 
   constructor(ctx: MinimalWalletContext) {
     this.walletFileName = ctx.walletFileName
@@ -32,55 +32,27 @@ class CurrentWalletImpl implements CurrentWallet {
     return this.#displayName
   }
 
-  updateToken(token: Api.ApiToken) {
+  updateToken(token: string) {
     this.token = token
   }
 }
 
-// TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
-export type Utxo = {
-  address: Api.BitcoinAddress
-  path: string
-  label: string
-  value: Api.AmountSats
-  tries: number
-  tries_remaining: number
-  external: boolean
-  mixdepth: number
-  confirmations: number
-  frozen: boolean
-  utxo: Api.UtxoId
-  // `locktime` in format "yyyy-MM-dd 00:00:00"
-  // NOTE: it is unparsable with safari Date constructor
-  locktime?: string
-}
-
-export type Utxos = Utxo[]
-
-interface UtxosResponse {
-  utxos: Utxos
-}
-
-interface WalletDisplayResponse {
-  walletinfo: WalletDisplayInfo
-}
-
 type BalanceString = `${number}.${string}`
 
-interface WalletDisplayInfo {
-  wallet_name: string
-  total_balance: BalanceString
-  /**
-   * @since clientserver v0.9.7
-   * @description available balance (total - frozen - locked)
-   *   This value can report less than available in case of address reuse.
-   *   See https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1285#issuecomment-1136438072
-   *   Utxos controlled by the same key will not be taken into account if at least one output is
-   *   frozen (last checked on 2022-05-24).
-   */
-  available_balance: BalanceString
-  accounts: Account[]
-}
+// interface WalletDisplayInfo {
+//   wallet_name: string
+//   total_balance: BalanceString
+//   /**
+//    * @since clientserver v0.9.7
+//    * @description available balance (total - frozen - locked)
+//    *   This value can report less than available in case of address reuse.
+//    *   See https://github.com/JoinMarket-Org/joinmarket-clientserver/pull/1285#issuecomment-1136438072
+//    *   Utxos controlled by the same key will not be taken into account if at least one output is
+//    *   frozen (last checked on 2022-05-24).
+//    */
+//   available_balance: BalanceString
+//   accounts: Account[]
+// }
 
 export interface Account {
   account: string
@@ -96,7 +68,8 @@ export interface Branch {
   entries: BranchEntry[]
 }
 
-export type AddressStatus = 'new' | 'used' | 'reused' | 'cj-out' | 'change-out' | 'non-cj-change' | 'deposit'
+// add type hardening here
+export type AddressStatus = string //'new' | 'used' | 'reused' | 'cj-out' | 'change-out' | 'non-cj-change' | 'deposit'
 
 export interface BranchEntry {
   hd_path: string
@@ -109,8 +82,8 @@ export interface BranchEntry {
 }
 
 export type CombinedRawWalletData = {
-  utxos: UtxosResponse
-  display: WalletDisplayResponse
+  utxos: Api.ListUtxosResponse
+  display: Api.WalletDisplayResponse
 }
 
 type AddressInfo = {
@@ -123,10 +96,10 @@ type AddressSummary = {
 }
 
 type FidelityBondSummary = {
-  fbOutputs: Utxos
+  fbOutputs: Api.Utxos
 }
 
-export type UtxosByJar = { [key: JarIndex]: Utxos }
+export type UtxosByJar = { [key: JarIndex]: Api.Utxos }
 
 export interface WalletInfo {
   balanceSummary: WalletBalanceSummary
@@ -144,37 +117,47 @@ interface WalletContextEntry<T extends CurrentWallet> {
   reloadCurrentWalletInfo: {
     reloadAll: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
     reloadAllForce: ({ signal }: { signal: AbortSignal }) => Promise<WalletInfo>
-    reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<UtxosResponse>
+    reloadUtxos: ({ signal }: { signal: AbortSignal }) => Promise<Api.ListUtxosResponse>
   }
 }
 
-const toAddressSummary = (res: WalletDisplayResponse): AddressSummary => {
+const toAddressSummary = (res: Api.WalletDisplayResponse): AddressSummary => {
   const accounts = res.walletinfo.accounts
-  return accounts
-    .flatMap((it) => it.branches)
-    .flatMap((it) => it.entries)
-    .reduce((acc, { address, status }) => {
-      acc[address] = { address, status }
-      return acc
-    }, {} as AddressSummary)
+  return (
+    accounts
+      .flatMap((it) => it.branches)
+      // clean up this logic
+      .flatMap((it) => (it ? it.entries : []))
+      .reduce((acc, entry) => {
+        if (entry?.address && entry?.status) {
+          const { address, status } = entry
+          acc[address] = { address, status }
+        }
+        return acc
+      }, {} as AddressSummary)
+  )
 }
 
-const toFidelityBondSummary = (res: UtxosResponse): FidelityBondSummary => {
-  const fbOutputs = res.utxos
-    .filter((utxo) => fb.utxo.isFidelityBond(utxo))
-    .sort((a, b) => {
-      const aLocked = fb.utxo.isLocked(a)
-      const bLocked = fb.utxo.isLocked(b)
+const toFidelityBondSummary = (res: Api.ListUtxosResponse): FidelityBondSummary => {
+  if (res.utxos) {
+    const fbOutputs = res.utxos
+      .filter((utxo) => fb.utxo.isFidelityBond(utxo))
+      .sort((a, b) => {
+        const aLocked = fb.utxo.isLocked(a)
+        const bLocked = fb.utxo.isLocked(b)
 
-      if (aLocked && bLocked) {
-        return b.value - a.value
-      } else {
-        return aLocked ? -1 : 1
-      }
-    })
-  return {
-    fbOutputs,
+        if (aLocked && bLocked && b.value && a.value) {
+          return b.value - a.value
+        } else {
+          return aLocked ? -1 : 1
+        }
+      })
+    return {
+      fbOutputs,
+    }
   }
+  // handle this better
+  return { fbOutputs: [] }
 }
 
 const WalletContext = createContext<WalletContextEntry<CurrentWalletImpl> | undefined>(undefined)
@@ -189,9 +172,11 @@ const restoreWalletFromSession = (): CurrentWalletImpl | null => {
     : null
 }
 
-export const groupByJar = (utxos: Utxos): UtxosByJar => {
+export const groupByJar = (utxos: Api.Utxos): UtxosByJar => {
+  if (!utxos) return {}
   return utxos.reduce((res, utxo) => {
     const { mixdepth } = utxo
+    if (!mixdepth) return res
     res[mixdepth] = res[mixdepth] || []
     res[mixdepth].push(utxo)
     return res
@@ -202,7 +187,7 @@ const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
   const balanceSummary = toBalanceSummary(data)
   const addressSummary = toAddressSummary(data.display)
   const fidelityBondSummary = toFidelityBondSummary(data.utxos)
-  const utxosByJar = groupByJar(data.utxos.utxos)
+  const utxosByJar = data.utxos.utxos ? groupByJar(data.utxos.utxos) : {}
 
   return {
     balanceSummary,
@@ -213,7 +198,7 @@ const toWalletInfo = (data: CombinedRawWalletData): WalletInfo => {
   }
 }
 
-const toCombinedRawData = (utxos: UtxosResponse, display: WalletDisplayResponse) => ({ utxos, display })
+const toCombinedRawData = (utxos: Api.ListUtxosResponse, display: Api.WalletDisplayResponse) => ({ utxos, display })
 
 const WalletProvider = ({ children }: PropsWithChildren<any>) => {
   const [currentWallet, setCurrentWalletOrNull] = useState(restoreWalletFromSession)
@@ -229,8 +214,8 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
     setCurrentWalletOrNull(null)
   }, [setCurrentWalletOrNull])
 
-  const [utxoResponse, setUtxoResponse] = useState<UtxosResponse>()
-  const [displayResponse, setDisplayResponse] = useState<WalletDisplayResponse>()
+  const [utxoResponse, setUtxoResponse] = useState<Api.ListUtxosResponse>()
+  const [displayResponse, setDisplayResponse] = useState<Api.WalletDisplayResponse>()
 
   const fetchUtxos = useCallback(
     async ({ signal }: { signal: AbortSignal }) => {
@@ -238,9 +223,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
         throw new Error('Cannot load wallet info: Wallet not present')
       }
 
-      return await Api.getWalletUtxos({ ...currentWallet, signal }).then(
-        (res): Promise<UtxosResponse> => (res.ok ? res.json() : Api.Helper.throwError(res)),
-      )
+      return await Api.getWalletUtxos({ ...currentWallet, signal })
     },
     [currentWallet],
   )
@@ -252,9 +235,7 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       }
 
       const { walletFileName, token } = currentWallet
-      return await Api.getWalletDisplay({ walletFileName, token, signal }).then(
-        (res): Promise<WalletDisplayResponse> => (res.ok ? res.json() : Api.Helper.throwError(res)),
-      )
+      return await Api.getWalletDisplay({ walletFileName, token, signal })
     },
     [currentWallet],
   )
@@ -310,13 +291,14 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
       reloadUtxos({ signal }).then((utxoResponse) => {
         const needsDisplayReload =
           currentWalletInfoRef.current === undefined ||
-          !!utxoResponse.utxos.find(
+          !!utxoResponse.utxos?.find(
             (utxo) =>
               // reload "display" data if:
               // no address summary could be found for a returned UTXO...
-              currentWalletInfoRef.current!.addressSummary[utxo.address] === undefined ||
-              // ...or if the address is still considered "new"
-              currentWalletInfoRef.current!.addressSummary[utxo.address].status === 'new',
+              utxo.address &&
+              (currentWalletInfoRef.current!.addressSummary[utxo.address] === undefined ||
+                // ...or if the address is still considered "new"
+                currentWalletInfoRef.current?.addressSummary[utxo.address]?.status === 'new'),
           )
 
         if (!needsDisplayReload) {
@@ -365,12 +347,9 @@ const WalletProvider = ({ children }: PropsWithChildren<any>) => {
           refresh_token: session.auth.refresh_token,
         },
       )
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
         .then((body) => {
-          const auth = Api.Helper.parseAuthProps(body)
-
-          setSession({ walletFileName: currentWallet.walletFileName, auth })
-          currentWallet.updateToken(auth.token)
+          setSession({ walletFileName: currentWallet.walletFileName, auth: body })
+          currentWallet.updateToken(body.token)
           console.debug('Successfully renewed auth token.')
         })
         .catch((err) => {

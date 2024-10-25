@@ -17,16 +17,14 @@ export default function SeedModal({ wallet, show, onHide }: SeedModalProps) {
 
   const [revealSeed, setRevealSeed] = useState(false)
   const [seedError, setSeedError] = useState(false)
-  const [seed, setSeed] = useState(null)
+  const [seed, setSeed] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadSeed = async () => {
       setIsLoading(true)
       try {
-        const res = await Api.getWalletSeed(wallet)
-        const { seedphrase } = await (res.ok ? res.json() : Api.Helper.throwError(res))
-
+        const { seedphrase } = await Api.getWalletSeed(wallet)
         setIsLoading(false)
         setSeed(seedphrase)
       } catch (e) {

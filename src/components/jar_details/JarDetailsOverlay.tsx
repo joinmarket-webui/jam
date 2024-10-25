@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import classNames from 'classnames'
 import * as Api from '../../libs/JmWalletApi'
 import { useSettings } from '../../context/SettingsContext'
-import { Account, Utxo, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
+import { Account, WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import { useServiceInfo } from '../../context/ServiceInfoContext'
 import * as fb from '../fb/utils'
 import Alert from '../Alert'
@@ -78,7 +78,7 @@ const Header = ({ jar, nextJar, previousJar, onHide, isLoading }: HeaderProps) =
  * @param utxo UTXO to check whether freez/unfreeze is allowed
  * @returns true when UTXO can be frozen/unfrozen
  */
-const canBeFrozenOrUnfrozen = (utxo: Utxo) => {
+const canBeFrozenOrUnfrozen = (utxo: Api.Utxo) => {
   const isUnfreezeEnabled = !fb.utxo.isFidelityBond(utxo)
   const allowedToExecute = !utxo.frozen || isUnfreezeEnabled
 
@@ -121,7 +121,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }, [isLoading, isTakerOrMakerRunning])
 
   const [selectedUtxoIds, setSelectedUtxoIds] = useState<Array<string>>([])
-  const [detailUtxo, setDetailUtxo] = useState<Utxo>()
+  const [detailUtxo, setDetailUtxo] = useState<Api.Utxo>()
 
   const tabs = [
     { label: t('jar_details.title_tab_utxos'), value: TABS.UTXOS },
@@ -131,11 +131,11 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const jar = useMemo(() => props.jars[jarIndex], [props.jars, jarIndex])
   const utxos = useMemo(() => props.walletInfo.utxosByJar[jarIndex] || [], [props.walletInfo, jarIndex])
   const selectedUtxos = useMemo(
-    () => utxos.filter((utxo: Utxo) => selectedUtxoIds.includes(utxo.utxo)),
+    () => utxos.filter((utxo: Api.Utxo) => utxo.utxo && selectedUtxoIds.includes(utxo.utxo)),
     [utxos, selectedUtxoIds],
   )
   const selectedUtxosBalance: Api.AmountSats = useMemo(() => {
-    return selectedUtxos.map((it) => it.value).reduce((acc, curr) => acc + curr, 0)
+    return selectedUtxos.map((it) => it.value ?? 0).reduce((acc, curr) => acc + curr, 0)
   }, [selectedUtxos])
 
   const nextJar = useCallback(
@@ -212,7 +212,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   }, [isLoading, reloadCurrentWalletInfo])
 
   const changeUtxoFreezeState = useCallback(
-    async ({ utxos, freeze }: { utxos: Utxo[]; freeze: boolean }) => {
+    async ({ utxos, freeze }: { utxos: Api.Utxo[]; freeze: boolean }) => {
       if (!isActionsEnabled || utxos.length <= 0) return
 
       setAlert(undefined)
@@ -220,18 +220,14 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
       const abortCtrl = new AbortController()
 
-      const freezeCalls = utxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
-        Api.postFreeze({ ...props.wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: freeze }).then(
-          (res) => {
-            if (!res.ok) {
-              return Api.Helper.throwError(
-                res,
-                freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos'),
-              )
-            }
-          },
-        ),
-      )
+      const freezeCalls = utxos
+        .filter(canBeFrozenOrUnfrozen)
+        .map((utxo) =>
+          Api.postFreeze(
+            { ...props.wallet, signal: abortCtrl.signal },
+            { 'utxo-string': utxo.utxo ?? '', freeze: freeze },
+          ),
+        )
 
       return Promise.all(freezeCalls)
         .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
@@ -245,7 +241,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
           freeze ? setIsLoadingFreeze(false) : setIsLoadingUnfreeze(false)
         })
     },
-    [isActionsEnabled, props.wallet, reloadCurrentWalletInfo, t],
+    [isActionsEnabled, props.wallet, reloadCurrentWalletInfo],
   )
 
   const utxoListTitle = useMemo(() => {
@@ -314,7 +310,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     >
       <rb.Offcanvas.Header>
         <rb.Container fluid="lg">
-          <Header jar={jar} nextJar={nextJar} previousJar={previousJar} onHide={props.onHide} isLoading={isLoading} />
+          {jar && (
+            <Header jar={jar} nextJar={nextJar} previousJar={previousJar} onHide={props.onHide} isLoading={isLoading} />
+          )}
         </rb.Container>
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
@@ -345,7 +343,9 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
             <UtxoDetailModal
               isShown={detailUtxo !== undefined}
               utxo={detailUtxo}
-              status={props.walletInfo.addressSummary[detailUtxo.address]?.status}
+              status={
+                detailUtxo?.address ? (props.walletInfo.addressSummary[detailUtxo.address]?.status ?? null) : null
+              }
               close={() => setDetailUtxo(undefined)}
             />
           )}
@@ -363,7 +363,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         <div>
                           <Trans i18nKey="jar_details.utxo_list.text_balance_sum_total">
                             <Balance
-                              valueString={jar.account_balance}
+                              valueString={jar?.account_balance ?? '0'}
                               convertToUnit={settings.unit}
                               showBalance={settings.showBalance}
                             />
@@ -404,7 +404,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           setDetailUtxo={setDetailUtxo}
                           toggleFreezeState={
                             isActionsEnabled
-                              ? (utxo: Utxo) => changeUtxoFreezeState({ utxos: [utxo], freeze: !utxo.frozen })
+                              ? (utxo: Api.Utxo) => changeUtxoFreezeState({ utxos: [utxo], freeze: !utxo.frozen })
                               : undefined
                           }
                         />
@@ -413,18 +413,19 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                   </>
                 ) : (
                   <rb.Accordion flush className="p-3 p-lg-0">
-                    {jar.branches
-                      .filter((it) => it.entries.length > 0)
-                      .map((branch, index) => (
-                        <rb.Accordion.Item className={styles.jarItem} key={branch.branch} eventKey={`${index}`}>
-                          <rb.Accordion.Header>
-                            <DisplayBranchHeader branch={branch} />
-                          </rb.Accordion.Header>
-                          <rb.Accordion.Body>
-                            <DisplayBranchBody branch={branch} />
-                          </rb.Accordion.Body>
-                        </rb.Accordion.Item>
-                      ))}
+                    {jar &&
+                      jar.branches
+                        .filter((it) => it.entries.length > 0)
+                        .map((branch, index) => (
+                          <rb.Accordion.Item className={styles.jarItem} key={branch.branch} eventKey={`${index}`}>
+                            <rb.Accordion.Header>
+                              <DisplayBranchHeader branch={branch} />
+                            </rb.Accordion.Header>
+                            <rb.Accordion.Body>
+                              <DisplayBranchBody branch={branch} />
+                            </rb.Accordion.Body>
+                          </rb.Accordion.Item>
+                        ))}
                   </rb.Accordion>
                 )}
               </div>

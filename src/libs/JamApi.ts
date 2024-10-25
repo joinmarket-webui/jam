@@ -1,4 +1,4 @@
-import { ApiToken, JmApiError, Helper as ApiHelper } from '../libs/JmWalletApi'
+import { JmApiError, Helper as ApiHelper } from '../libs/JmWalletApi'
 
 const basePath = () => `${window.JM.PUBLIC_PATH}/jam/api/v0`
 
@@ -7,7 +7,7 @@ interface ApiRequestContext {
 }
 
 interface AuthApiRequestContext extends ApiRequestContext {
-  token: ApiToken
+  token: string
 }
 
 /**

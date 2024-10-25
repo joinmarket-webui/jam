@@ -60,15 +60,11 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
       setLockingWallet(true)
 
       try {
-        const res = await Api.getWalletLock(wallet)
+        await Api.getWalletLock(wallet)
 
         setLockingWallet(false)
-        if (res.ok || res.status === 401) {
-          stopWallet()
-          navigate(navigateTo)
-        } else {
-          await Api.Helper.throwError(res)
-        }
+        stopWallet()
+        navigate(navigateTo)
       } catch (e: any) {
         setLockingWallet(false)
 
