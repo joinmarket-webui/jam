@@ -1,4 +1,5 @@
 import { percentageToFactor } from '../utils'
+import { JM_DUST_THRESHOLD } from './jm'
 
 export const TX_FEES_FACTOR_MIN = 0 // 0%
 /**
@@ -18,3 +19,7 @@ export const MAX_SWEEP_FEE_CHANGE_MAX = percentageToFactor(100)
 export const OFFER_FEE_REL_MIN = percentageToFactor(0.0001)
 export const OFFER_FEE_REL_MAX = percentageToFactor(10)
 export const OFFER_FEE_REL_STEP = percentageToFactor(0.0001)
+
+export const OFFER_FEE_ABS_MIN = 0
+
+export const OFFER_MINSIZE_MIN = JM_DUST_THRESHOLD

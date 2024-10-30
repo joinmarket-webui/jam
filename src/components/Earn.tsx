@@ -8,7 +8,13 @@ import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo, Wallet
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
 import { JM_DUST_THRESHOLD } from '../constants/jm'
-import { OFFER_FEE_REL_MAX, OFFER_FEE_REL_MIN, OFFER_FEE_REL_STEP } from '../constants/jam'
+import {
+  OFFER_FEE_ABS_MIN,
+  OFFER_FEE_REL_MAX,
+  OFFER_FEE_REL_MIN,
+  OFFER_FEE_REL_STEP,
+  OFFER_MINSIZE_MIN,
+} from '../constants/jam'
 import * as Api from '../libs/JmWalletApi'
 import * as fb from './fb/utils'
 import Sprite from './Sprite'
@@ -225,8 +231,6 @@ const EarnForm = ({
     )
   }, [walletInfo])
 
-  const offerMinsizeMin = JM_DUST_THRESHOLD
-
   const offerMinsizeMax = useMemo(() => {
     return Math.max(0, maxAvailableBalanceInJar - JM_DUST_THRESHOLD)
   }, [maxAvailableBalanceInJar])
@@ -251,7 +255,7 @@ const EarnForm = ({
     }
 
     if (isAbsOffer) {
-      if (!isValidNumber(values.feeAbs?.value) || values.feeAbs!.value! < 0) {
+      if (!isValidNumber(values.feeAbs?.value) || values.feeAbs!.value! < OFFER_FEE_ABS_MIN) {
         errors.feeAbs = t('earn.feedback_invalid_abs_fee')
       }
     }
@@ -260,11 +264,11 @@ const EarnForm = ({
       errors.minsize = t('earn.feedback_invalid_min_amount')
     } else {
       const minsize = values.minsize?.value || 0
-      if (offerMinsizeMin > offerMinsizeMax) {
+      if (OFFER_MINSIZE_MIN > offerMinsizeMax) {
         errors.minsize = t('earn.feedback_invalid_min_amount_insufficient_funds')
-      } else if (minsize < offerMinsizeMin || minsize > offerMinsizeMax) {
+      } else if (minsize < OFFER_MINSIZE_MIN || minsize > offerMinsizeMax) {
         errors.minsize = t('earn.feedback_invalid_min_amount_range', {
-          minAmountMin: offerMinsizeMin.toLocaleString(),
+          minAmountMin: OFFER_MINSIZE_MIN.toLocaleString(),
           minAmountMax: offerMinsizeMax.toLocaleString(),
         })
       }
