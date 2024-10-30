@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useRefreshConfigValues } from '../context/ServiceConfigContext'
 import { AmountSats } from '../libs/JmWalletApi'
 import { isValidNumber } from '../utils'
+import { FEE_CONFIG_KEYS } from '../constants/config'
 
 export type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
 export type TxFeeValue = number
@@ -13,14 +14,6 @@ export type TxFee = {
 export const toTxFeeValueUnit = (val?: TxFeeValue): TxFeeValueUnit | undefined => {
   if (val === undefined || !Number.isInteger(val) || val < 1) return undefined
   return val <= 1_000 ? 'blocks' : 'sats/kilo-vbyte'
-}
-
-export const FEE_CONFIG_KEYS = {
-  tx_fees: { section: 'POLICY', field: 'tx_fees' },
-  tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
-  max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },
-  max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
-  max_sweep_fee_change: { section: 'POLICY', field: 'max_sweep_fee_change' },
 }
 
 export interface FeeValues {
