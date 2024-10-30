@@ -6,8 +6,14 @@ import { TFunction } from 'i18next'
 import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo, WalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
-import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
-import { JM_DUST_THRESHOLD } from '../constants/jm'
+import {
+  calcOfferMinsizeMax,
+  factorToPercentage,
+  isAbsoluteOffer,
+  isRelativeOffer,
+  isValidNumber,
+  percentageToFactor,
+} from '../utils'
 import {
   OFFER_FEE_ABS_MIN,
   OFFER_FEE_REL_MAX,
@@ -220,20 +226,9 @@ const EarnForm = ({
 }: EarnFormProps) => {
   const { t } = useTranslation()
 
-  const maxAvailableBalanceInJar = useMemo(() => {
-    return Math.max(
-      0,
-      Math.max(
-        ...Object.values(walletInfo?.balanceSummary.accountBalances || []).map(
-          (it) => it.calculatedAvailableBalanceInSats,
-        ),
-      ),
-    )
-  }, [walletInfo])
-
   const offerMinsizeMax = useMemo(() => {
-    return Math.max(0, maxAvailableBalanceInJar - JM_DUST_THRESHOLD)
-  }, [maxAvailableBalanceInJar])
+    return walletInfo === undefined ? 0 : calcOfferMinsizeMax(walletInfo.balanceSummary.accountBalances)
+  }, [walletInfo])
 
   const validate = (values: EarnFormValues) => {
     const errors = {} as FormikErrors<EarnFormValues>
@@ -277,15 +272,7 @@ const EarnForm = ({
   }
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validate={validate}
-      onSubmit={onSubmit}
-      validateOnMount={true}
-      initialTouched={{
-        minsize: true,
-      }}
-    >
+    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
       {(props) => {
         const { handleSubmit, setFieldValue, handleBlur, values, touched, errors, isSubmitting } = props
         const minsizeField = props.getFieldProps<AmountValue>('minsize')
