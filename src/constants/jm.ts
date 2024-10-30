@@ -27,7 +27,7 @@ export const JM_DUST_THRESHOLD = 27_300
 // See: https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/v0.9.11/src/jmclient/configure.py#L321 (last check on 2024-07-09 of v0.9.11)
 export const JM_MAX_SWEEP_FEE_CHANGE_DEFAULT = 0.8
 
-export const FEE_CONFIG_KEYS = {
+export const FEE_CONFIG_KEYS: Record<string, ConfigKey> = {
   tx_fees: { section: 'POLICY', field: 'tx_fees' },
   tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
   max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },

@@ -11,7 +11,7 @@ import {
 import { useCurrentWallet, useClearCurrentWallet } from './WalletContext'
 import { useWebsocket } from './WebsocketContext'
 import { clearSession } from '../session'
-import { CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../constants/config'
+import { CJ_STATE_TAKER_RUNNING, CJ_STATE_MAKER_RUNNING } from '../constants/jm'
 import { noop, setIntervalDebounced, toSemVer, UNKNOWN_VERSION } from '../utils'
 
 import * as Api from '../libs/JmWalletApi'

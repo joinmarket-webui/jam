@@ -8,7 +8,7 @@ import { TxFeeInputField, validateTxFee } from './TxFeeInputField'
 import { FeeValues, useLoadFeeConfigValues } from '../../hooks/Fees'
 import { useUpdateConfigValues } from '../../context/ServiceConfigContext'
 import { isDebugFeatureEnabled } from '../../constants/debugFeatures'
-import { FEE_CONFIG_KEYS, JM_MAX_SWEEP_FEE_CHANGE_DEFAULT } from '../../constants/config'
+import { FEE_CONFIG_KEYS, JM_MAX_SWEEP_FEE_CHANGE_DEFAULT } from '../../constants/jm'
 import {
   CJ_FEE_ABS_MAX,
   CJ_FEE_ABS_MIN,

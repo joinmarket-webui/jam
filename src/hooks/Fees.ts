@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useRefreshConfigValues } from '../context/ServiceConfigContext'
 import { AmountSats } from '../libs/JmWalletApi'
 import { isValidNumber } from '../utils'
-import { FEE_CONFIG_KEYS } from '../constants/config'
+import { FEE_CONFIG_KEYS } from '../constants/jm'
 
 export type TxFeeValueUnit = 'blocks' | 'sats/kilo-vbyte'
 export type TxFeeValue = number

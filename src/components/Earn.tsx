@@ -22,7 +22,7 @@ import Accordion from './Accordion'
 import BitcoinAmountInput, { AmountValue, toAmountValue } from './BitcoinAmountInput'
 import { isValidAmount } from './Send/helpers'
 import styles from './Earn.module.css'
-import { JM_DUST_THRESHOLD } from '../constants/config'
+import { JM_DUST_THRESHOLD } from '../constants/jm'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
