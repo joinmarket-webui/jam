@@ -7,6 +7,8 @@ import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo, WalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
+import { JM_DUST_THRESHOLD } from '../constants/jm'
+import { OFFER_FEE_REL_MAX, OFFER_FEE_REL_MIN, OFFER_FEE_REL_STEP } from '../constants/jam'
 import * as Api from '../libs/JmWalletApi'
 import * as fb from './fb/utils'
 import Sprite from './Sprite'
@@ -22,7 +24,6 @@ import Accordion from './Accordion'
 import BitcoinAmountInput, { AmountValue, toAmountValue } from './BitcoinAmountInput'
 import { isValidAmount } from './Send/helpers'
 import styles from './Earn.module.css'
-import { JM_DUST_THRESHOLD } from '../constants/jm'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -193,9 +194,6 @@ function CurrentOffer({ offer, nickname }: CurrentOfferProps) {
     </div>
   )
 }
-const feeRelMin = percentageToFactor(0.0001)
-const feeRelMax = percentageToFactor(10)
-const feeRelPercentageStep = 0.0001
 
 interface EarnFormProps {
   initialValues?: EarnFormValues
@@ -244,10 +242,10 @@ const EarnForm = ({
     }
 
     if (isRelOffer) {
-      if (!isValidNumber(values.feeRel) || values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
+      if (!isValidNumber(values.feeRel) || values.feeRel < OFFER_FEE_REL_MIN || values.feeRel > OFFER_FEE_REL_MAX) {
         errors.feeRel = t('earn.feedback_invalid_rel_fee', {
-          feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
-          feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
+          feeRelPercentageMin: `${factorToPercentage(OFFER_FEE_REL_MIN)}%`,
+          feeRelPercentageMax: `${factorToPercentage(OFFER_FEE_REL_MAX)}%`,
         })
       }
     }
@@ -346,8 +344,8 @@ const EarnForm = ({
                             value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
                             isValid={touched.feeRel && !errors.feeRel}
                             isInvalid={touched.feeRel && !!errors.feeRel}
-                            min={factorToPercentage(feeRelMin)}
-                            step={feeRelPercentageStep}
+                            min={factorToPercentage(OFFER_FEE_REL_MIN)}
+                            step={factorToPercentage(OFFER_FEE_REL_STEP)}
                           />
                           <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
                         </rb.InputGroup>
