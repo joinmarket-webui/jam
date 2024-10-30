@@ -193,9 +193,8 @@ function CurrentOffer({ offer, nickname }: CurrentOfferProps) {
     </div>
   )
 }
-
-const feeRelMin = 0.0
-const feeRelMax = 0.1 // 10%
+const feeRelMin = percentageToFactor(0.0001)
+const feeRelMax = percentageToFactor(10)
 const feeRelPercentageStep = 0.0001
 
 interface EarnFormProps {
@@ -347,7 +346,7 @@ const EarnForm = ({
                             value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
                             isValid={touched.feeRel && !errors.feeRel}
                             isInvalid={touched.feeRel && !!errors.feeRel}
-                            min={0}
+                            min={factorToPercentage(feeRelMin)}
                             step={feeRelPercentageStep}
                           />
                           <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
