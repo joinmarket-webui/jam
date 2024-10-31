@@ -6,8 +6,8 @@
   "repository": "git@github.com:joinmarket-webui/jam.git",
   "license": "MIT",
   "engines": {
-    "node": ">=16.11.0",
-    "npm": ">=8.0.0"
+    "node": ">=22.11.0",
+    "npm": ">=10.9.0"
   },
   "homepage": ".",
   "devDependencies": {
