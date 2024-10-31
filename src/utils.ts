@@ -1,4 +1,6 @@
-import { AmountSats, OfferType, WalletFileName } from './libs/JmWalletApi'
+import { JM_DUST_THRESHOLD } from './constants/jm'
+import type { AccountBalances } from './context/BalanceSummary'
+import type { AmountSats, OfferType, WalletFileName } from './libs/JmWalletApi'
 
 const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
@@ -134,4 +136,16 @@ export const setIntervalDebounced = (
       }, delay),
     )
   })()
+}
+
+const calcMaxAvailableBalanceInJar = (accountBalances: AccountBalances) => {
+  return Math.max(0, Math.max(...Object.values(accountBalances || []).map((it) => it.calculatedAvailableBalanceInSats)))
+}
+
+export const calcOfferMinsizeMax = (
+  accountBalances: AccountBalances,
+  minBufferAmount: AmountSats = JM_DUST_THRESHOLD,
+) => {
+  const maxAvailableBalanceInJar = calcMaxAvailableBalanceInJar(accountBalances)
+  return Math.max(0, maxAvailableBalanceInJar - minBufferAmount)
 }
