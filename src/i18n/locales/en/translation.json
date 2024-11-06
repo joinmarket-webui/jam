@@ -719,7 +719,8 @@
       "utxo_detail_label_confirmations": "Confirmations",
       "utxo_detail_label_is_frozen": "Is frozen",
       "utxo_detail_label_locktime": "Locktime",
-      "utxo_detail_label_status": "Address status"
+      "utxo_detail_label_status": "Address status",
+      "subtitle_options_disabled": "A Maker/Taker operation is in progress. Some operations are disabled"
     }
   },
   "show_utxos": {
