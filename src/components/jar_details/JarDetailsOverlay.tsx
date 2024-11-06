@@ -370,20 +370,20 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           </Trans>
                         </div>
                       </div>
+                      {!isActionsEnabled && (
+                        <div className="d-flex align-items-center mb-2 fw-bold text-secondary">
+                          <Sprite
+                            className="rounded-circle border border-1 me-2 border-secondary"
+                            symbol="info"
+                            width="20"
+                            height="20"
+                          />
+                          <Trans i18nKey="jar_details.utxo_list.subtitle_options_disabled" />
+                        </div>
+                      )}
                       {selectedUtxos.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column gap-2">
                           <div className="order-1 order-sm-0">
-                            {!isActionsEnabled && (
-                              <div className="d-flex align-items-center mb-2 fw-bold text-secondary">
-                                <Sprite
-                                  className="rounded-circle border border-1 me-2"
-                                  symbol="info"
-                                  width="20"
-                                  height="20"
-                                />
-                                <Trans i18nKey="jar_details.utxo_list.subtitle_options_disabled" />
-                              </div>
-                            )}
                             <div className={styles.freezeUnfreezeButtonsContainer}>
                               {freezeButton}
                               {unfreezeButton}

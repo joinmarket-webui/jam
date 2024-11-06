@@ -129,6 +129,11 @@
   background-color: var(--bs-gray-800) !important;
 }
 
+:root[data-theme='dark'] .freezeUnfreezeButtonsContainer button:disabled {
+  color: var(--bs-gray-400) !important;
+  border-color: var(--bs-gray-500) !important;
+}
+
 :root[data-theme='dark'] .freezeUnfreezeButtonsContainer button:hover {
   background-color: var(--bs-gray-900) !important;
   border-color: var(--bs-gray-900) !important;
