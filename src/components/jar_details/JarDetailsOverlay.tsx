@@ -99,9 +99,12 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
+
+  const isCoinjoinInProgress = useMemo(() => serviceInfo?.coinjoinInProgress === true, [serviceInfo])
+  const isMakerRunning = useMemo(() => serviceInfo?.makerRunning === true, [serviceInfo])
   const isTakerOrMakerRunning = useMemo(
-    () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
-    [serviceInfo],
+    () => isCoinjoinInProgress || isMakerRunning,
+    [isCoinjoinInProgress, isMakerRunning],
   )
 
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -378,7 +381,15 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                             width="20"
                             height="20"
                           />
-                          <Trans i18nKey="jar_details.utxo_list.text_actions_disabled" />
+                          {isCoinjoinInProgress && (
+                            <Trans i18nKey="jar_details.utxo_list.text_actions_disabled_taker_running" />
+                          )}
+                          {isMakerRunning && (
+                            <Trans i18nKey="jar_details.utxo_list.text_actions_disabled_maker_running" />
+                          )}
+                          {!isMakerRunning && !isCoinjoinInProgress && (
+                            <Trans i18nKey="jar_details.utxo_list.text_actions_disabled" />
+                          )}
                         </div>
                       )}
                       {selectedUtxos.length > 0 && (
