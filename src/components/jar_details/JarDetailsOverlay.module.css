@@ -104,6 +104,11 @@
   border-radius: 0.35rem;
 }
 
+.freezeUnfreezeButtonsContainer button:disabled {
+  color: var(--bs-gray-800) !important;
+  border-color: var(--bs-gray-900) !important;
+}
+
 .freezeBtn {
   color: var(--bs-blue) !important;
   border-color: var(--bs-blue) !important;
@@ -111,6 +116,7 @@
 .freezeBtn:hover {
   background-color: rgba(13, 110, 253, 0.07) !important;
 }
+
 .unfreezeBtn {
   color: var(--bs-red) !important;
   border-color: var(--bs-red) !important;
@@ -121,6 +127,11 @@
 
 :root[data-theme='dark'] .freezeUnfreezeButtonsContainer button {
   background-color: var(--bs-gray-800) !important;
+}
+
+:root[data-theme='dark'] .freezeUnfreezeButtonsContainer button:disabled {
+  color: var(--bs-gray-400) !important;
+  border-color: var(--bs-gray-500) !important;
 }
 
 :root[data-theme='dark'] .freezeUnfreezeButtonsContainer button:hover {

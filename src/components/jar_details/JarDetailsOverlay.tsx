@@ -99,9 +99,12 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
   const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const serviceInfo = useServiceInfo()
+
+  const isCoinjoinInProgress = useMemo(() => serviceInfo?.coinjoinInProgress === true, [serviceInfo])
+  const isMakerRunning = useMemo(() => serviceInfo?.makerRunning === true, [serviceInfo])
   const isTakerOrMakerRunning = useMemo(
-    () => serviceInfo && (serviceInfo.makerRunning || serviceInfo.coinjoinInProgress),
-    [serviceInfo],
+    () => isCoinjoinInProgress || isMakerRunning,
+    [isCoinjoinInProgress, isMakerRunning],
   )
 
   const [alert, setAlert] = useState<SimpleAlert>()
@@ -370,15 +373,32 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                           </Trans>
                         </div>
                       </div>
+                      {!isActionsEnabled && (
+                        <div className="d-flex align-items-center mb-2 px-2 text-secondary">
+                          <Sprite
+                            className="rounded-circle border border-1 me-2 border-secondary"
+                            symbol="info"
+                            width="20"
+                            height="20"
+                          />
+                          {isCoinjoinInProgress && (
+                            <Trans i18nKey="jar_details.utxo_list.text_actions_disabled_taker_running" />
+                          )}
+                          {isMakerRunning && (
+                            <Trans i18nKey="jar_details.utxo_list.text_actions_disabled_maker_running" />
+                          )}
+                          {!isMakerRunning && !isCoinjoinInProgress && (
+                            <Trans i18nKey="jar_details.utxo_list.text_actions_disabled" />
+                          )}
+                        </div>
+                      )}
                       {selectedUtxos.length > 0 && (
                         <div className="d-flex justify-content-between align-items-center w-100 flex-sm-row flex-column gap-2">
                           <div className="order-1 order-sm-0">
-                            {isActionsEnabled && (
-                              <div className={styles.freezeUnfreezeButtonsContainer}>
-                                {freezeButton}
-                                {unfreezeButton}
-                              </div>
-                            )}
+                            <div className={styles.freezeUnfreezeButtonsContainer}>
+                              {freezeButton}
+                              {unfreezeButton}
+                            </div>
                           </div>
                           {selectedUtxosBalance > 0 && (
                             <div className="order-0 order-sm-1">
