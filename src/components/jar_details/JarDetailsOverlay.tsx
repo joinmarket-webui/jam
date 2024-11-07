@@ -371,14 +371,14 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         </div>
                       </div>
                       {!isActionsEnabled && (
-                        <div className="d-flex align-items-center mb-2 fw-bold text-secondary">
+                        <div className="d-flex align-items-center mb-2 px-2 text-secondary">
                           <Sprite
                             className="rounded-circle border border-1 me-2 border-secondary"
                             symbol="info"
                             width="20"
                             height="20"
                           />
-                          <Trans i18nKey="jar_details.utxo_list.subtitle_options_disabled" />
+                          <Trans i18nKey="jar_details.utxo_list.text_actions_disabled" />
                         </div>
                       )}
                       {selectedUtxos.length > 0 && (
