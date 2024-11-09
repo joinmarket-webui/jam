@@ -28,8 +28,8 @@ import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
 import { CreateFidelityBond2 } from './fb2/CreateFidelityBond'
-import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
-import { RenewFidelityBondModal, SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
+import { ExistingFidelityBond, CreatingFidelityBond } from './fb2/ExistingFidelityBond'
+import { RenewFidelityBondModal, SpendFidelityBondModal } from './fb2/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -443,6 +443,10 @@ export default function Earn({ wallet }: EarnProps) {
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
   const [isShowOrderbook, setIsShowOrderbook] = useState(false)
+  const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
+  const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
+  const [amount, setAmount] = useState<Api.AmountSats>(0)
+  const [isCreatingFB, setIsCreatingFB] = useState(false)
 
   const [initialValues, setInitialValues] = useState(initialFormValues())
 
@@ -450,6 +454,7 @@ export default function Earn({ wallet }: EarnProps) {
     return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
   }, [currentWalletInfo])
 
+  console.log(fidelityBonds)
   const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<Api.UtxoId>()
   const [renewFidelityBondId, setRenewFidelityBondId] = useState<Api.UtxoId>()
 
@@ -708,6 +713,9 @@ export default function Earn({ wallet }: EarnProps) {
                     </ExistingFidelityBond>
                   )
                 })}
+                {isCreatingFB && (
+                  <CreatingFidelityBond timelockedAddress={timelockedAddress} lockDate={lockDate} amount={amount} />
+                )}
                 <>
                   {!serviceInfo?.makerRunning &&
                     !serviceInfo?.coinjoinInProgress &&
@@ -727,6 +735,12 @@ export default function Earn({ wallet }: EarnProps) {
                           wallet={wallet}
                           walletInfo={currentWalletInfo}
                           onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                          timelockedAddress={timelockedAddress}
+                          setTimelockedAddress={(address) => setTimelockedAddress(address)}
+                          lockDate={lockDate}
+                          setLockDate={(date) => setLockDate(date)}
+                          setAmount={(amount) => setAmount(amount)}
+                          setIsCreatingFB={(input) => setIsCreatingFB(input)}
                         />
                       </>
                     ) : (

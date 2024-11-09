@@ -148,6 +148,7 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
     } else {
       onUtxoDeselected(utxo)
     }
+    // console.log('selected Utxos:', selectedUtxos)
   }
 
   return (

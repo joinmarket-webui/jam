@@ -57,28 +57,46 @@ interface CreateFidelityBondProps {
   wallet: CurrentWallet
   walletInfo: WalletInfo
   onDone: () => void
+  timelockedAddress: Api.BitcoinAddress | undefined
+  setTimelockedAddress: (address: Api.BitcoinAddress | undefined) => void
+  lockDate: Api.Lockdate | null
+  setLockDate: (date: Api.Lockdate | null) => void
+  setAmount: (amount: Api.AmountSats) => void
+  setIsCreatingFB: (input: boolean) => void
 }
 
-const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDone }: CreateFidelityBondProps) => {
+const CreateFidelityBond2 = ({
+  otherFidelityBondExists,
+  wallet,
+  walletInfo,
+  onDone,
+  timelockedAddress,
+  setTimelockedAddress,
+  lockDate,
+  setLockDate,
+  setAmount,
+  setIsCreatingFB,
+}: CreateFidelityBondProps) => {
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const feeConfigValues = useFeeConfigValues()[0]
 
   const [showCreateFidelityBondModal, setShowCreateFidelityBondModal] = useState(false)
-  const [creatingFidelityBond, setCreatingFidelityBond] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [alert, setAlert] = useState<SimpleAlert>()
   const [step, setStep] = useState(steps.selectDate)
-  const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
   const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
-  const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
 
   // Check if all utxos are selected
   const selectedUtxosTotalValue = useMemo(
     () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
     [selectedUtxos],
   )
+  useEffect(() => {
+    setAmount(selectedUtxosTotalValue)
+  }, [selectedUtxosTotalValue, setAmount])
+
   const allUtxosSelected = useMemo(
     () => walletInfo.balanceSummary.calculatedTotalBalanceInSats === selectedUtxosTotalValue,
     [walletInfo, selectedUtxosTotalValue],
@@ -157,7 +175,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
           setAlert({ variant: 'danger', message: err.message })
         })
     },
-    [t, wallet],
+    [t, wallet, setTimelockedAddress],
   )
 
   useEffect(() => {
@@ -270,7 +288,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
       const abortCtrl = new AbortController()
       const requestContext = { ...wallet, signal: abortCtrl.signal }
       reset()
-      setCreatingFidelityBond(true)
+      setIsCreatingFB(true)
       await spendUtxosWithDirectSend(
         requestContext,
         {
@@ -289,7 +307,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
             Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond')),
         },
       )
-      setCreatingFidelityBond(false)
+      setIsCreatingFB(false)
       onDone()
       return
     }
@@ -365,7 +383,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
           </div>
         </div>
       )}
-      {
+      {/* {
         <rb.Modal
           show={creatingFidelityBond}
           animation={true}
@@ -384,7 +402,7 @@ const CreateFidelityBond2 = ({ otherFidelityBondExists, wallet, walletInfo, onDo
             </div>
           </rb.Modal.Body>
         </rb.Modal>
-      }
+      } */}
       <rb.Modal
         show={showCreateFidelityBondModal}
         animation={true}

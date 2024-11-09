@@ -547,7 +547,7 @@
         "button_create": "Create Fidelity Bond"
       },
       "existing": {
-        "title_active": "Fidelity Bond",
+        "title_active": "<strong>Active</strong> Fidelity Bond",
         "title_expired": "Fidelity Bond <1>expired</1>",
         "label_locked_until": "Locked until",
         "label_expired_on": "Expired on",
