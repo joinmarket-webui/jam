@@ -454,9 +454,13 @@ export default function Earn({ wallet }: EarnProps) {
     return currentWalletInfo?.fidelityBondSummary.fbOutputs || []
   }, [currentWalletInfo])
 
-  console.log(fidelityBonds)
   const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<Api.UtxoId>()
   const [renewFidelityBondId, setRenewFidelityBondId] = useState<Api.UtxoId>()
+
+  const reset = () => {
+    setTimelockedAddress(undefined)
+    setLockDate(null)
+  }
 
   const isSufficientFundsAvailable = useMemo(
     () => (currentWalletInfo?.balanceSummary.calculatedAvailableBalanceInSats ?? 0) > 0,
@@ -741,6 +745,7 @@ export default function Earn({ wallet }: EarnProps) {
                           setLockDate={(date) => setLockDate(date)}
                           setAmount={(amount) => setAmount(amount)}
                           setIsCreatingFB={(input) => setIsCreatingFB(input)}
+                          resetThisAsWell={() => reset()}
                         />
                       </>
                     ) : (

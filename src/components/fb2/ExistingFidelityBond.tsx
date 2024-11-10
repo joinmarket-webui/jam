@@ -110,7 +110,7 @@ interface CreatingFidelityBondProps {
 
 const CreatingFidelityBond = ({ timelockedAddress, lockDate, amount }: CreatingFidelityBondProps) => {
   const settings = useSettings()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   // const humanReadableLockDuration = useMemo(() => {
   //   const locktime = fb.utxo.getLocktime(fidelityBond)

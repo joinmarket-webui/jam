@@ -63,6 +63,7 @@ interface CreateFidelityBondProps {
   setLockDate: (date: Api.Lockdate | null) => void
   setAmount: (amount: Api.AmountSats) => void
   setIsCreatingFB: (input: boolean) => void
+  resetThisAsWell: () => void
 }
 
 const CreateFidelityBond2 = ({
@@ -76,6 +77,7 @@ const CreateFidelityBond2 = ({
   setLockDate,
   setAmount,
   setIsCreatingFB,
+  resetThisAsWell,
 }: CreateFidelityBondProps) => {
   const { t } = useTranslation()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
@@ -115,8 +117,8 @@ const CreateFidelityBond2 = ({
     setStep(steps.selectDate)
     setSelectedJar(undefined)
     setSelectedUtxos([])
-    setLockDate(null)
-    setTimelockedAddress(undefined)
+    // setLockDate(null)
+    // setTimelockedAddress(undefined)
     setAlert(undefined)
   }
 
@@ -281,6 +283,7 @@ const CreateFidelityBond2 = ({
 
     if (nextStep(step) === steps.failed) {
       reset()
+      resetThisAsWell()
       return
     }
 
@@ -288,6 +291,7 @@ const CreateFidelityBond2 = ({
       const abortCtrl = new AbortController()
       const requestContext = { ...wallet, signal: abortCtrl.signal }
       reset()
+      resetThisAsWell()
       setIsCreatingFB(true)
       await spendUtxosWithDirectSend(
         requestContext,
@@ -317,6 +321,7 @@ const CreateFidelityBond2 = ({
       setStep(next)
     } else {
       reset()
+      resetThisAsWell()
       setStep(0)
     }
   }
@@ -383,26 +388,6 @@ const CreateFidelityBond2 = ({
           </div>
         </div>
       )}
-      {/* {
-        <rb.Modal
-          show={creatingFidelityBond}
-          animation={true}
-          backdrop="static"
-          centered={true}
-          keyboard={false}
-          onHide={() => setCreatingFidelityBond(false)}
-        >
-          <rb.Modal.Header closeButton>
-            <rb.Modal.Title>{t('earn.fidelity_bond.create_fidelity_bond.title')}</rb.Modal.Title>
-          </rb.Modal.Header>
-          <rb.Modal.Body>
-            <div className="d-flex justify-content-center align-items-center m-5">
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-              <div>{t('earn.fidelity_bond.text_creating')}</div>
-            </div>
-          </rb.Modal.Body>
-        </rb.Modal>
-      } */}
       <rb.Modal
         show={showCreateFidelityBondModal}
         animation={true}
@@ -469,7 +454,7 @@ const CreateFidelityBond2 = ({
                   <div className="d-flex align-items-center gap-4">
                     <div className={styles.circle}>
                       <div className={styles.step}>
-                        {index === 3 ? <Sprite symbol="checkmark" width="20" height="20" /> : index + 1}
+                        {index === 3 ? <Sprite symbol="checkmark" width="20" height="30" /> : index + 1}
                       </div>
                     </div>
                     <div className={styles.stepHeader}>{tab}</div>
