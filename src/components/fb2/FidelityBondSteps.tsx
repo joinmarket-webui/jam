@@ -148,23 +148,20 @@ const SelectUtxos = ({ selectedUtxos, utxos, onUtxoSelected, onUtxoDeselected }:
     } else {
       onUtxoDeselected(utxo)
     }
-    // console.log('selected Utxos:', selectedUtxos)
   }
 
   return (
-    <>
-      <div className="d-flex flex-column gap-4">
-        <UtxoListDisplay utxos={upperUtxos} onToggle={handleToggle} settings={settings} />
-        {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
-          <Divider
-            toggled={showFrozenUtxos}
-            onToggle={() => setShowFrozenUtxos((current) => !current)}
-            className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
-          />
-        )}
-        {showFrozenUtxos && <UtxoListDisplay utxos={lowerUtxos} onToggle={handleToggle} settings={settings} />}
-      </div>
-    </>
+    <div>
+      <UtxoListDisplay utxos={upperUtxos} onToggle={handleToggle} settings={settings} />
+      {upperUtxos.length > 0 && lowerUtxos.length > 0 && (
+        <Divider
+          toggled={showFrozenUtxos}
+          onToggle={() => setShowFrozenUtxos((current) => !current)}
+          className={`mt-4 ${showFrozenUtxos && 'mb-4'}`}
+        />
+      )}
+      {showFrozenUtxos && <UtxoListDisplay utxos={lowerUtxos} onToggle={handleToggle} settings={settings} />}
+    </div>
   )
 }
 

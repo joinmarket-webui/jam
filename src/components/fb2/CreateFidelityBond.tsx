@@ -43,6 +43,32 @@ export const LockInfoAlert = ({ lockDate, className }: { lockDate: Api.Lockdate;
   )
 }
 
+interface TabHeaderProps {
+  stepIcon: number | React.ReactNode
+  title: string
+  subtitle?: string | React.ReactNode
+}
+const TabHeader = ({ stepIcon, title, subtitle }: TabHeaderProps) => {
+  return (
+    <>
+      <div className="d-flex align-items-center gap-4">
+        <div className={styles.stepCircle}>
+          <div className={styles.stepIcon}>{stepIcon}</div>
+        </div>
+        <div className={styles.stepHeader}>
+          <div className={styles.stepTitle}>{title}</div>
+          {subtitle && (
+            <span className={styles.stepSubtitle}>
+              {`- `}
+              {subtitle}
+            </span>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+
 const steps = {
   selectDate: 0,
   selectJar: 1,
@@ -80,6 +106,8 @@ const CreateFidelityBond2 = ({
   resetThisAsWell,
 }: CreateFidelityBondProps) => {
   const { t } = useTranslation()
+
+  const settings = useSettings()
   const reloadCurrentWalletInfo = useReloadCurrentWalletInfo()
   const feeConfigValues = useFeeConfigValues()[0]
 
@@ -332,32 +360,6 @@ const CreateFidelityBond2 = ({
     }
   }
 
-  const settings = useSettings()
-
-  const stepTitle = (currentStep: Number) => {
-    if (currentStep === steps.selectDate && lockDate !== null) {
-      return (
-        <span className={styles.subTitle}>{`- ${new Date(fb.lockdate.toTimestamp(lockDate)).toDateString()}`}</span>
-      )
-    }
-    if (currentStep === steps.selectJar && selectedJar !== undefined) {
-      return <span className={styles.subTitle}>{`- Jar ${jarName(selectedJar)}`}</span>
-    }
-    if (currentStep === steps.selectUtxos && selectedUtxos.length !== 0) {
-      return (
-        <span className={styles.subTitle}>
-          {'- '}
-          <Balance
-            valueString={selectedUtxos.reduce((acc, utxo) => acc + utxo.value, 0).toString()}
-            convertToUnit={settings.unit}
-            showBalance={true}
-            colored={false}
-          />
-        </span>
-      )
-    }
-  }
-
   return (
     <div>
       {otherFidelityBondExists ? (
@@ -448,37 +450,22 @@ const CreateFidelityBond2 = ({
           </div>
 
           <div className={styles.tabs}>
-            {['Expiration date', 'Funding Source', 'UTXO Overview', 'Confirmation'].map((tab, index) => (
-              <div key={index}>
-                <div className={styles.tab}>
-                  <div className="d-flex align-items-center gap-4">
-                    <div className={styles.circle}>
-                      <div className={styles.step}>
-                        {index === 3 ? <Sprite symbol="checkmark" width="20" height="30" /> : index + 1}
-                      </div>
-                    </div>
-                    <div className={styles.stepHeader}>{tab}</div>
-                    {stepTitle(index)}
-                  </div>
-                  <Sprite symbol={step === index ? 'caret-up' : 'caret-down'} width="20" height="20" />
-                </div>
-
-                {index === 0 && isLoading && (
-                  <div className="d-flex justify-content-center align-items-center m-5">
-                    <rb.Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-2"
-                    />
-                    <div>{t('earn.fidelity_bond.text_loading')}</div>
-                  </div>
-                )}
-
-                {!isLoading && step === index && step === 0 && (
-                  <div className="m-4">
+            <rb.Accordion
+              activeKey={step >= steps.selectDate && step <= steps.confirmation ? String(step) : undefined}
+              flush
+            >
+              <rb.Accordion.Item eventKey={String(steps.selectDate)}>
+                <rb.Accordion.Header>
+                  <TabHeader
+                    title="Expiration date" /*TODO: i18n */
+                    subtitle={
+                      lockDate ? new Date(fb.lockdate.toTimestamp(lockDate)).toDateString() : undefined
+                    } /*TODO: i18n */
+                    stepIcon={steps.selectDate + 1}
+                  />
+                </rb.Accordion.Header>
+                <rb.Accordion.Body>
+                  <div>
                     <SelectDate
                       description={t('earn.fidelity_bond.select_date.description')}
                       yearsRange={yearsRange}
@@ -486,10 +473,18 @@ const CreateFidelityBond2 = ({
                       onChange={(date) => setLockDate(date)}
                     />
                   </div>
-                )}
-
-                {step === index && step === 1 && (
-                  <div className="m-4">
+                </rb.Accordion.Body>
+              </rb.Accordion.Item>
+              <rb.Accordion.Item eventKey={String(steps.selectJar)}>
+                <rb.Accordion.Header>
+                  <TabHeader
+                    title="Funding Source" /*TODO: i18n */
+                    subtitle={selectedJar !== undefined ? `Jar ${jarName(selectedJar)}` : undefined} /*TODO: i18n */
+                    stepIcon={steps.selectJar + 1}
+                  />
+                </rb.Accordion.Header>
+                <rb.Accordion.Body>
+                  <div>
                     <SelectJar
                       description={t('earn.fidelity_bond.select_jar.description')}
                       accountBalances={walletInfo.balanceSummary.accountBalances}
@@ -504,43 +499,74 @@ const CreateFidelityBond2 = ({
                       }}
                     />
                   </div>
-                )}
-                {step === index && step === 2 && (
-                  <div className="m-4">
-                    <SelectUtxos
-                      walletInfo={walletInfo}
-                      jar={selectedJar!}
-                      utxos={walletInfo.utxosByJar[selectedJar!]}
-                      selectedUtxos={selectedUtxos}
-                      onUtxoSelected={(utxo) => {
-                        setSelectedUtxos([...selectedUtxos, utxo])
-                      }}
-                      onUtxoDeselected={(utxo) => {
-                        setSelectedUtxos(selectedUtxos.filter((it) => it.utxo !== utxo.utxo))
-                      }}
-                    />
-                    {allUtxosSelected && (
-                      <Alert
-                        variant="warning"
-                        message={<Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use" />}
+                </rb.Accordion.Body>
+              </rb.Accordion.Item>
+              <rb.Accordion.Item eventKey={String(steps.selectUtxos)}>
+                <rb.Accordion.Header>
+                  <TabHeader
+                    title="UTXO Overview" /*TODO: i18n */
+                    subtitle={
+                      selectedUtxos.length > 0 ? (
+                        <Balance
+                          valueString={selectedUtxos.reduce((acc, utxo) => acc + utxo.value, 0).toString()}
+                          convertToUnit={settings.unit}
+                          showBalance={true}
+                          colored={false}
+                        />
+                      ) : undefined
+                    }
+                    stepIcon={steps.selectUtxos + 1}
+                  />
+                </rb.Accordion.Header>
+                <rb.Accordion.Body>
+                  {selectedJar !== undefined && (
+                    <div>
+                      <SelectUtxos
+                        walletInfo={walletInfo}
+                        jar={selectedJar}
+                        utxos={walletInfo.utxosByJar[selectedJar]}
+                        selectedUtxos={selectedUtxos}
+                        onUtxoSelected={(utxo) => {
+                          setSelectedUtxos([...selectedUtxos, utxo])
+                        }}
+                        onUtxoDeselected={(utxo) => {
+                          setSelectedUtxos(selectedUtxos.filter((it) => it.utxo !== utxo.utxo))
+                        }}
                       />
-                    )}
-                  </div>
-                )}
-                {step === index && step === 3 && (
-                  <div className="m-4">
-                    <Confirmation
-                      lockDate={lockDate!}
-                      jar={selectedJar!}
-                      selectedUtxos={selectedUtxos}
-                      timelockedAddress={timelockedAddress!}
-                      feeConfigValues={feeConfigValues}
-                    />
-                    <LockInfoAlert className="text-start mt-4" lockDate={lockDate!} />
-                  </div>
-                )}
-              </div>
-            ))}
+                      {allUtxosSelected && (
+                        <Alert
+                          variant="warning"
+                          message={<Trans i18nKey="earn.fidelity_bond.alert_all_funds_in_use" />}
+                        />
+                      )}
+                    </div>
+                  )}
+                </rb.Accordion.Body>
+              </rb.Accordion.Item>
+
+              <rb.Accordion.Item eventKey={String(steps.confirmation)}>
+                <rb.Accordion.Header>
+                  <TabHeader
+                    title="Confirmation" /*TODO: i18n */
+                    stepIcon={<Sprite symbol="checkmark" width="20" height="30" />}
+                  />
+                </rb.Accordion.Header>
+                <rb.Accordion.Body>
+                  {lockDate !== null && timelockedAddress !== undefined && selectedJar !== undefined && (
+                    <div>
+                      <Confirmation
+                        lockDate={lockDate}
+                        jar={selectedJar}
+                        selectedUtxos={selectedUtxos}
+                        timelockedAddress={timelockedAddress}
+                        feeConfigValues={feeConfigValues}
+                      />
+                      <LockInfoAlert className="text-start mt-4" lockDate={lockDate!} />
+                    </div>
+                  )}
+                </rb.Accordion.Body>
+              </rb.Accordion.Item>
+            </rb.Accordion>
           </div>
         </rb.Modal.Body>
         <rb.Modal.Footer>

@@ -78,20 +78,6 @@
   border-color: var(--bs-gray-700);
 }
 
-.circle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.8rem 0.8rem;
-  border-radius: 100%;
-  background-color: var(--bs-gray-100);
-}
-
-.step {
-  position: absolute;
-  color: var(--bs-gray-900);
-}
-
 .addressLabel {
   color: var(--bs-gray-600);
   font-size: 1rem;
@@ -108,11 +94,39 @@
   font-size: 0.8rem;
 }
 
-.subTitle {
-  font-size: 0.8rem;
-  color: var(--bs-gray-100);
+.stepHeader {
+  display: flex;
+  align-items: center;
 }
 
-.stepHeader {
-  width: 8rem;
+.stepHeader .stepTitle {
+  min-width: 8rem;
+}
+
+.stepHeader .stepSubtitle {
+  font-size: 0.8rem;
+}
+
+.stepCircle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 100%;
+  background-color: var(--bs-gray-100);
+  color: var(--bs-gray-900);
+}
+
+.stepCircle .stepIcon {
+  position: absolute;
+  font-size: 0.8rem;
+}
+
+.tabs :global(.accordion-button.collapsed) .stepCircle {
+  background-color: var(--bs-gray-400);
+}
+
+.tabs :global(.accordion) {
+  --bs-accordion-active-color: var(--bs-white);
+  --bs-accordion-active-bg: var(--bs-gray-800);
 }
