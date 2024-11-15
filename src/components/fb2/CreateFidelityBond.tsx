@@ -449,8 +449,8 @@ const CreateFidelityBond2 = ({
 
           <div className={styles.tabs}>
             {['Expiration date', 'Funding Source', 'UTXO Overview', 'Confirmation'].map((tab, index) => (
-              <div>
-                <div key={index} className={styles.tab}>
+              <div key={index}>
+                <div className={styles.tab}>
                   <div className="d-flex align-items-center gap-4">
                     <div className={styles.circle}>
                       <div className={styles.step}>
