@@ -1,5 +1,7 @@
 import { t } from 'i18next'
 import { errorResolver } from '../utils'
+import createClient from 'openapi-fetch'
+import type { paths } from './JmWalletApiTypes'
 
 /**
  * Simple collection of api requests to jmwalletd.
@@ -15,11 +17,14 @@ import { errorResolver } from '../utils'
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
+const client = createClient<paths>({ baseUrl: basePath() })
+
 type ApiToken = string
 type WalletFileName = `${string}.jmdat`
-type GetWalletAllResponse = {
-  wallets: WalletFileName[]
-}
+// type GetWalletAllResponse = paths['/wallet/all']['get']['responses']['200']['content']['application/json']
+// type GetWalletAllResponse = {
+//   wallets: WalletFileName[]
+// }
 
 type Mixdepth = number
 type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
@@ -295,14 +300,13 @@ const getAddressTimelockNew = async ({
   })
 }
 
-const getWalletAll = async ({ signal }: ApiRequestContext): Promise<GetWalletAllResponse> => {
-  const response = await fetch(`${basePath()}/v1/wallet/all`, { signal })
+const getWalletAll = async ({ signal }: ApiRequestContext) => {
+  const { data, error, response } = await client.GET('/wallet/all', { signal })
 
-  if (!response.ok) {
+  if (error) {
     Helper.throwResolved(response, errorResolver(t, 'wallets.error_loading_failed'))
   }
 
-  const data: GetWalletAllResponse = await response.json()
   return data
 }
 
