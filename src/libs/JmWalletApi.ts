@@ -17,7 +17,7 @@ import type { paths } from './JmWalletApiTypes'
  */
 const basePath = () => `${window.JM.PUBLIC_PATH}/api`
 
-const client = createClient<paths>({ baseUrl: basePath() })
+const client = createClient<paths>({ baseUrl: `${window.JM.PUBLIC_PATH}/api/v1` })
 
 type ApiToken = string
 type WalletFileName = `${string}.jmdat`
@@ -305,6 +305,11 @@ const getWalletAll = async ({ signal }: ApiRequestContext) => {
 
   if (error) {
     Helper.throwResolved(response, errorResolver(t, 'wallets.error_loading_failed'))
+  }
+
+  if (typeof data === 'undefined') {
+    // do something here
+    throw new Error()
   }
 
   return data
