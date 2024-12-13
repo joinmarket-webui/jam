@@ -90,17 +90,6 @@ type Utxos = NonNullable<ListUtxosResponse['utxos']>
 type Utxo = Utxos[number]
 // end generated types
 
-// interface JmSessionData {
-//   session: boolean
-//   maker_running: boolean
-//   coinjoin_in_process: boolean
-//   wallet_name: WalletFileName | 'None'
-//   schedule: Schedule | null
-//   offer_list: Offer[] | null
-//   nickname: string | null
-//   rescanning: boolean
-// }
-
 type Mixdepth = number
 type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
 type BitcoinAddress = string
@@ -108,36 +97,6 @@ type BitcoinAddress = string
 type Vout = number
 type TxId = string
 type UtxoId = `${TxId}:${Vout}`
-
-// for JM versions <0.9.11
-// type SingleTokenAuthContext = { // I don't see this type in the generated types; why was it being used?
-//   token: string
-//   refresh_token: undefined
-// }
-
-// for JM versions >=0.9.11
-// type RefreshTokenAuthContext = { // this is now TokenResponse
-//   token: string
-//   token_type: string // "bearer"
-//   expires_in: Seconds // 1800
-//   scope: string
-//   refresh_token: string
-// }
-
-// type CreateWalletInfo = {
-//   walletname: WalletFileName
-//   seedphrase: string
-// }
-
-// type UnlockWalletInfo = {
-//   walletname: WalletFileName
-// }
-
-// type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
-
-// type WalletAuthContext = CreateWalletInfo & ApiAuthContext
-
-// type WalletUnlockContext = UnlockWalletInfo & ApiAuthContext
 
 type WithErrorMessage = {
   errorMessage?: string
@@ -175,13 +134,7 @@ interface ApiError {
   message: string
 }
 
-// add type hardening for these values
 type WalletType = 'sw-fb'
-
-// interface TokenRequest {
-//   grant_type: 'refresh_token' | string
-//   refresh_token: string
-// }
 
 interface NarrowedCreateWalletRequest {
   walletname: WalletFileName | string
@@ -207,11 +160,6 @@ interface NarrowedStartMakerRequest {
   ordertype: OfferType
   minsize: AmountSats
 }
-
-// interface StartSchedulerRequest {
-//   destination_addresses: BitcoinAddress[]
-//   tumbler_options?: TumblerOptions
-// }
 
 const Helper = (() => {
   const extractErrorMessage = async (response: Response, fallbackReason = response.statusText): Promise<string> => {
@@ -609,14 +557,9 @@ const getWalletUtxos = async ({
     throw new Error()
   }
 
-  // Type narrowing: Ensure that there is at least one UTXO
-  if (!data.utxos || data.utxos.length === 0) {
-    throw new Error('No UTXOs found')
-  }
-
   // Transform only the utxo field into the narrowed UtxoId type, keeping all other fields
-  const utxosWithNarrowedUtxo: Array<Omit<(typeof data.utxos)[0], 'utxo'> & { utxo: UtxoId }> = data.utxos.map(
-    (utxo) => {
+  const utxosWithNarrowedUtxo: Array<Omit<NonNullable<typeof data.utxos>[number], 'utxo'> & { utxo: UtxoId }> =
+    data.utxos?.map((utxo) => {
       if (!utxo.utxo) {
         throw new Error('UTXO field is missing in the response')
       }
@@ -634,8 +577,7 @@ const getWalletUtxos = async ({
         ...utxo,
         utxo: utxoId,
       }
-    },
-  )
+    }) ?? []
 
   return { utxos: utxosWithNarrowedUtxo }
 }
