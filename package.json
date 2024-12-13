@@ -106,7 +106,7 @@
     ],
     "clearMocks": true,
     "transformIgnorePatterns": [
-      "node_modules/(?!@table-library)"
+      "node_modules/(?!(openapi-fetch|@table-library)/)"
     ]
   }
 }

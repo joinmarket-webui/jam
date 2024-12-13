@@ -6,11 +6,10 @@ import Balance from './Balance'
 import { Settings, useSettings } from '../context/SettingsContext'
 import { FeeValues, TxFee, useEstimatedMaxCollaboratorFee } from '../hooks/Fees'
 import { ConfirmModal, ConfirmModalProps } from './Modal'
-import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
+import { AmountSats, BitcoinAddress, Utxos } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
 import styles from './PaymentConfirmModal.module.css'
-import { Utxos } from '../context/WalletContext'
 import { UtxoListDisplay } from './Send/ShowUtxos'
 import Divider from './Divider'
 
@@ -101,7 +100,7 @@ const ReviewUtxos = ({ settings, availableUtxos, isSweep }: ReviewUtxosProps) =>
 
 interface PaymentDisplayInfo {
   sourceJarIndex?: JarIndex
-  destination: BitcoinAddress | string
+  destination: BitcoinAddress
   amount: AmountSats
   isSweep: boolean
   isCoinjoin: boolean

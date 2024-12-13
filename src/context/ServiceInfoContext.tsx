@@ -50,21 +50,6 @@ export interface Offer {
   cjfee: string
 }
 
-interface JmSessionData {
-  session: boolean
-  maker_running: boolean
-  coinjoin_in_process: boolean
-  wallet_name: Api.WalletFileName | 'None'
-  schedule: Schedule | null
-  offer_list: Offer[] | null
-  nickname: string | null
-  rescanning: boolean
-}
-
-interface JmGetInfoData {
-  version: string
-}
-
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
@@ -113,8 +98,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     const abortCtrl = new AbortController()
 
     Api.getGetinfo({ signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((data: JmGetInfoData) => toSemVer(data.version))
+      .then((data) => toSemVer(data.version))
       .catch((_) => UNKNOWN_VERSION)
       .then((version) => {
         if (!abortCtrl.signal.aborted) {
@@ -145,33 +129,20 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
         clearSession()
       }
 
-      const fetch = Api.getSession({ signal, token: currentWallet?.token })
-        .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-        .then((data: JmSessionData): ServiceInfo => {
-          const {
-            session: sessionActive,
-            maker_running: makerRunning,
-            coinjoin_in_process: coinjoinInProgress,
-            wallet_name: walletFileNameOrNoneString,
-            offer_list: offers,
-            rescanning,
-            schedule,
-            nickname,
-          } = data
-          const activeWalletFileName = walletFileNameOrNoneString !== 'None' ? walletFileNameOrNoneString : null
-          return {
-            walletFileName: activeWalletFileName,
-            sessionActive,
-            makerRunning,
-            coinjoinInProgress,
-            schedule,
-            offers,
-            nickname,
-            rescanning,
-          }
-        })
+      const data = Api.getSession({ signal, token: currentWallet?.token }).then((data): ServiceInfo => {
+        return {
+          walletFileName: data.wallet_name,
+          sessionActive: data.session,
+          makerRunning: data.maker_running,
+          coinjoinInProgress: data.coinjoin_in_process,
+          schedule: data.schedule ?? null,
+          offers: data.offer_list ?? null,
+          nickname: data.nickname ?? null,
+          rescanning: data.rescanning,
+        }
+      })
 
-      return fetch
+      return data
         .then((info: ServiceInfo) => {
           if (!signal.aborted) {
             dispatchServiceInfo(info)
@@ -294,5 +265,6 @@ export {
   useSessionConnectionError,
   ServiceInfo,
   Schedule,
+  ScheduleEntry,
   StateFlag,
 }

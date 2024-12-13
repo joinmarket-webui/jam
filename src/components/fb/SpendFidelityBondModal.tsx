@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import { CurrentWallet, Utxo, Utxos, WalletInfo } from '../../context/WalletContext'
+import { CurrentWallet, WalletInfo } from '../../context/WalletContext'
 import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
 import Alert from '../Alert'
@@ -16,7 +16,6 @@ import { CopyButton } from '../CopyButton'
 import { LockInfoAlert } from './CreateFidelityBond'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import styles from './SpendFidelityBondModal.module.css'
-import { errorResolver } from '../../utils'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -48,22 +47,11 @@ interface Result {
 type UtxoDirectSendRequest = {
   destination: Api.BitcoinAddress
   sourceJarIndex: JarIndex
-  utxos: Utxos
+  utxos: Api.Utxos
 }
 
-type UtxoDirectSendHook = {
-  onReloadWalletError: (res: Response) => Promise<never>
-  onFreezeUtxosError: (res: Response) => Promise<never>
-  onUnfreezeUtxosError: (res: Response) => Promise<never>
-  onSendError: (res: Response) => Promise<never>
-}
-
-const spendUtxosWithDirectSend = async (
-  context: Api.WalletRequestContext,
-  request: UtxoDirectSendRequest,
-  hooks: UtxoDirectSendHook,
-) => {
-  if (request.utxos.length === 0) {
+const spendUtxosWithDirectSend = async (context: Api.WalletRequestContext, request: UtxoDirectSendRequest) => {
+  if (!request.utxos || request.utxos.length === 0) {
     // this is a programming error (no translation needed)
     throw new Error('Precondition failed: No UTXO(s) provided.')
   }
@@ -78,9 +66,10 @@ const spendUtxosWithDirectSend = async (
 
   // reload utxos
   const utxosFromSourceJar = (
-    await Api.getWalletUtxos(context)
-      .then((res) => (res.ok ? res.json() : hooks.onReloadWalletError(res)))
-      .then((data) => data.utxos as Utxos)
+    await Api.getWalletUtxos({
+      ...context,
+      errorMessage: 'global.errors.error_reloading_wallet_failed',
+    }).then((data) => data.utxos)
   ).filter((utxo) => utxo.mixdepth === request.sourceJarIndex)
 
   const utxosToSpend = utxosFromSourceJar.filter((it) => spendableUtxoIds.includes(it.utxo))
@@ -97,36 +86,48 @@ const spendUtxosWithDirectSend = async (
   const utxosThatWereUnfrozen: Api.UtxoId[] = []
 
   try {
-    const freezeCalls = utxosToFreeze.map((utxo) =>
-      Api.postFreeze(context, { utxo: utxo.utxo, freeze: true }).then((res) => {
-        if (!res.ok) return hooks.onFreezeUtxosError(res)
+    const freezeCalls = utxosToFreeze.map(async (utxo) => {
+      // on freeze error
+      const req = { 'utxo-string': utxo.utxo, freeze: true }
+      await Api.postFreeze({ ...context, errorMessage: 'earn.fidelity_bond.move.error_freezing_utxos' }, req)
+
+      if (utxo.utxo) {
         utxosThatWereFrozen.push(utxo.utxo)
-      }),
-    )
+      }
+    })
+
     // freeze unused coins not part of the payment
     await Promise.all(freezeCalls)
 
     const unfreezeCalls = utxosToSpend
       .filter((it) => it.frozen)
-      .map((utxo) =>
-        Api.postFreeze(context, { utxo: utxo.utxo, freeze: false }).then((res) => {
-          if (!res.ok) return hooks.onUnfreezeUtxosError(res)
+      .map(async (utxo) => {
+        // on unfreeze error
+        await Api.postFreeze(
+          { ...context, errorMessage: 'earn.fidelity_bond.move.error_unfreezing_fidelity_bond' },
+          { 'utxo-string': utxo.utxo ?? '', freeze: false },
+        )
+
+        if (utxo.utxo) {
           utxosThatWereUnfrozen.push(utxo.utxo)
-        }),
-      )
+        }
+      })
     // unfreeze potentially frozen coins that are about to be spent
     await Promise.all(unfreezeCalls)
 
     // spend fidelity bond (by sweeping whole jar)
+    // on send error
     return await Api.postDirectSend(context, {
       destination: request.destination,
       mixdepth: request.sourceJarIndex,
       amount_sats: 0, // sweep
-    }).then((res) => (res.ok ? res.json() : hooks.onSendError(res)))
+    })
   } finally {
     try {
       // try unfreezing all previously frozen coins
-      const unfreezeCalls = utxosThatWereFrozen.map((utxo) => Api.postFreeze(context, { utxo, freeze: false }))
+      const unfreezeCalls = utxosThatWereFrozen.map((utxo) =>
+        Api.postFreeze(context, { 'utxo-string': utxo, freeze: false }),
+      )
 
       await Promise.allSettled(unfreezeCalls)
     } catch (e) {
@@ -136,7 +137,9 @@ const spendUtxosWithDirectSend = async (
 
     try {
       // try freezing all previously unfrozen coins
-      const freezeCalls = utxosThatWereUnfrozen.map((utxo) => Api.postFreeze(context, { utxo, freeze: true }))
+      const freezeCalls = utxosThatWereUnfrozen.map((utxo) =>
+        Api.postFreeze(context, { 'utxo-string': utxo, freeze: true }),
+      )
 
       await Promise.allSettled(freezeCalls)
     } catch (e) {
@@ -147,7 +150,7 @@ const spendUtxosWithDirectSend = async (
 }
 
 type SendFidelityBondToAddressProps = {
-  fidelityBond: Utxo | undefined
+  fidelityBond: Api.Utxo | undefined
   destination: Api.BitcoinAddress
   wallet: CurrentWallet
   t: TFunction
@@ -161,28 +164,15 @@ const sendFidelityBondToAddress = async ({ fidelityBond, destination, wallet, t 
   const abortCtrl = new AbortController()
   const requestContext = { ...wallet, signal: abortCtrl.signal }
 
-  return await spendUtxosWithDirectSend(
-    requestContext,
-    {
-      destination,
-      sourceJarIndex: fidelityBond.mixdepth,
-      utxos: [fidelityBond],
-    },
-    {
-      onReloadWalletError: (res) =>
-        Api.Helper.throwResolved(res, errorResolver(t, 'global.errors.error_reloading_wallet_failed')),
-      onFreezeUtxosError: (res) =>
-        Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_freezing_utxos')),
-      onUnfreezeUtxosError: (res) =>
-        Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_unfreezing_fidelity_bond')),
-      onSendError: (res) =>
-        Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond')),
-    },
-  )
+  return await spendUtxosWithDirectSend(requestContext, {
+    destination,
+    sourceJarIndex: fidelityBond.mixdepth ?? 0, // how to handle this?
+    utxos: [fidelityBond],
+  })
 }
 
 type SendFidelityBondToJarProps = {
-  fidelityBond: Utxo | undefined
+  fidelityBond: Api.Utxo | undefined
   targetJarIndex: JarIndex
   wallet: CurrentWallet
   t: TFunction
@@ -196,12 +186,11 @@ const sendFidelityBondToJar = async ({ fidelityBond, targetJarIndex, wallet, t }
   const abortCtrl = new AbortController()
   const requestContext = { ...wallet, signal: abortCtrl.signal }
 
-  const destination = await Api.getAddressNew({ ...requestContext, mixdepth: targetJarIndex })
-    .then((res) => {
-      if (res.ok) return res.json()
-      return Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_loading_address'))
-    })
-    .then((data) => data.address as Api.BitcoinAddress)
+  const destination = await Api.getAddressNew({
+    ...requestContext,
+    mixdepth: targetJarIndex,
+    errorMessage: 'earn.fidelity_bond.move.error_loading_address',
+  })
 
   return await sendFidelityBondToAddress({ destination, fidelityBond, wallet, t })
 }
@@ -254,7 +243,7 @@ const RenewFidelityBondModal = ({
   const submitButtonRef = useRef<HTMLButtonElement>(null)
 
   const fidelityBond = useMemo(() => {
-    return walletInfo.data.utxos.utxos.find((utxo) => utxo.utxo === fidelityBondId)
+    return walletInfo.data.utxos.utxos?.find((utxo) => utxo.utxo === fidelityBondId)
   }, [walletInfo, fidelityBondId])
 
   const waitForUtxosToBeSpentContext = useMemo(
@@ -286,11 +275,10 @@ const RenewFidelityBondModal = ({
         ...wallet,
         lockdate,
         signal,
-      }).then((res) => {
-        return res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_loading_address'))
+        errorMessage: 'earn.fidelity_bond.error_loading_address',
       })
     },
-    [wallet, t],
+    [wallet],
   )
 
   useEffect(
@@ -517,7 +505,7 @@ const RenewFidelityBondModal = ({
           data={{
             sourceJarIndex: undefined, // dont show a source jar - might be confusing in this context
             destination: timelockedAddress,
-            amount: fidelityBond.value,
+            amount: fidelityBond.value ?? 0,
             isSweep: true,
             isCoinjoin: false, // not sent as collaborative transaction
             numCollaborators: undefined,
@@ -569,7 +557,7 @@ const SpendFidelityBondModal = ({
   const submitButtonRef = useRef<HTMLButtonElement>(null)
 
   const fidelityBond = useMemo(() => {
-    return walletInfo.data.utxos.utxos.find((utxo) => utxo.utxo === fidelityBondId)
+    return walletInfo.data.utxos.utxos?.find((utxo) => utxo.utxo === fidelityBondId) ?? undefined
   }, [walletInfo, fidelityBondId])
 
   const waitForUtxosToBeSpentContext = useMemo(
@@ -731,7 +719,7 @@ const SpendFidelityBondModal = ({
             destination: String(
               t('send.confirm_send_modal.text_source_jar', { jarId: jarInitial(selectedDestinationJarIndex) }),
             ),
-            amount: fidelityBond.value,
+            amount: fidelityBond.value ?? 0,
             isSweep: true,
             isCoinjoin: false, // not sent as collaborative transaction
             numCollaborators: undefined,

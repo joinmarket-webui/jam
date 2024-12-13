@@ -1,5 +1,4 @@
-import { Lockdate } from '../../libs/JmWalletApi'
-import { Utxo } from '../../context/WalletContext'
+import { Lockdate, Utxo } from '../../libs/JmWalletApi'
 
 type TimeInterval = number
 
@@ -39,7 +38,7 @@ export const lockdate = (() => {
   }
   const toTimestamp = (lockdate: Lockdate): Milliseconds => {
     const split = lockdate.split('-')
-    if (split.length !== 2 || split[0].length !== 4 || split[1].length !== 2) {
+    if (split.length !== 2 || !split[0] || split[0].length !== 4 || !split[1] || split[1].length !== 2) {
       throw new Error('Unsupported format')
     }
 
@@ -93,10 +92,11 @@ export const utxo = (() => {
   const getLocktime = (utxo: Utxo): Milliseconds | null => {
     if (!isFidelityBond(utxo)) return null
 
+    if (!utxo.path) return null
     const pathAndLocktime = utxo.path.split(':')
     if (pathAndLocktime.length !== 2) return null
 
-    const locktimeUnixTimestamp: Seconds = parseInt(pathAndLocktime[1], 10)
+    const locktimeUnixTimestamp: Seconds = parseInt(pathAndLocktime[1] ?? '0', 10)
     if (Number.isNaN(locktimeUnixTimestamp)) return null
 
     return locktimeUnixTimestamp * 1_000

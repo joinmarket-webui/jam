@@ -37,16 +37,16 @@ const WalletCreationForm = ({
   onCancel,
   onSubmit,
 }: WalletCreationFormProps) => {
-  const [walletList, setWalletList] = useState<Api.WalletFileName[] | null>(null)
+  const [walletList, setWalletList] = useState<Api.WalletFileName[]>([])
   const { t, i18n } = useTranslation()
 
   useEffect(() => {
     const abortCtrl = new AbortController()
 
     Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((data) => {
+      .then((wallets) => {
         if (abortCtrl.signal.aborted) return
-        setWalletList(data.wallets)
+        setWalletList(wallets)
       })
       .catch(() => {})
 
@@ -59,7 +59,7 @@ const WalletCreationForm = ({
       if (!values.walletName || !validateWalletName(values.walletName)) {
         errors.walletName = t('create_wallet.feedback_invalid_wallet_name')
       }
-      if (walletList && walletList.includes(`${values.walletName}.jmdat`)) {
+      if (walletList.includes(`${values.walletName}.jmdat`)) {
         errors.walletName = t('create_wallet.feedback_wallet_name_already_exists')
       }
       if (!values.password) {

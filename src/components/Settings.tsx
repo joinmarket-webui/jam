@@ -60,15 +60,11 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
       setLockingWallet(true)
 
       try {
-        const res = await Api.getWalletLock(wallet)
+        await Api.getWalletLock(wallet)
 
         setLockingWallet(false)
-        if (res.ok || res.status === 401) {
-          stopWallet()
-          navigate(navigateTo)
-        } else {
-          await Api.Helper.throwError(res)
-        }
+        stopWallet()
+        navigate(navigateTo)
       } catch (e: any) {
         setLockingWallet(false)
 
@@ -82,7 +78,7 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
   useEffect(() => {
     const abortCtrl = new AbortController()
     fetchFeatures({ ...wallet, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwResolved(res)))
       .then((data) => data && data.features)
       .then((features) => {
         if (abortCtrl.signal.aborted) return

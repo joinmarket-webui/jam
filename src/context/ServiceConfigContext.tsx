@@ -3,10 +3,6 @@ import { MinimalWalletContext, useCurrentWallet } from './WalletContext'
 
 import * as Api from '../libs/JmWalletApi'
 
-interface JmConfigData {
-  configvalue: string
-}
-
 export type SectionKey = string
 
 export interface ServiceConfig {
@@ -62,8 +58,7 @@ const fetchConfigValues = async ({
 }) => {
   const fetches: Promise<ServiceConfigValue>[] = configKeys.map((configKey) => {
     return Api.postConfigGet({ ...wallet, signal }, { section: configKey.section, field: configKey.field })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((data: JmConfigData) => {
+      .then((data) => {
         return {
           key: configKey,
           value: data.configvalue,
@@ -100,9 +95,7 @@ const pushConfigValues = async ({
         field: update.key.field,
         value: update.value,
       },
-    )
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
-      .then((_) => update)
+    ).then((_) => update)
   })
 
   return Promise.all(fetches)
@@ -145,13 +138,12 @@ const ServiceConfigProvider = ({ children }: PropsWithChildren<{}>) => {
   const loadConfigValueIfAbsent = useCallback(
     async ({ signal, key }: LoadConfigValueProps) => {
       if (serviceConfig.current) {
-        const valueAlreadyPresent =
-          serviceConfig.current[key.section] && serviceConfig.current[key.section][key.field] !== undefined
+        const valueAlreadyPresent = serviceConfig.current[key.section]?.[key.field] !== undefined
 
         if (valueAlreadyPresent) {
           return {
             key,
-            value: serviceConfig.current[key.section][key.field],
+            value: serviceConfig.current[key.section]?.[key.field],
           } as ServiceConfigValue
         }
       }
@@ -159,7 +151,7 @@ const ServiceConfigProvider = ({ children }: PropsWithChildren<{}>) => {
       return refreshConfigValues({ signal, keys: [key] }).then((conf) => {
         return {
           key,
-          value: conf[key.section][key.field],
+          value: conf[key.section]?.[key.field],
         } as ServiceConfigValue
       })
     },

@@ -3,7 +3,7 @@ import { useField, useFormikContext } from 'formik'
 import * as rb from 'react-bootstrap'
 import { jarFillLevel, SelectableJar } from '../jars/Jar'
 import { noop } from '../../utils'
-import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo, Utxos } from '../../context/WalletContext'
+import { WalletInfo, CurrentWallet, useReloadCurrentWalletInfo } from '../../context/WalletContext'
 import styles from './SourceJarSelector.module.css'
 import { ShowUtxos } from './ShowUtxos'
 import { useTranslation } from 'react-i18next'
@@ -21,7 +21,7 @@ export type SourceJarSelectorProps = {
 }
 
 interface ShowUtxosProps {
-  utxos: Utxos
+  utxos: Api.Utxos
   isLoading: boolean
   alert?: SimpleAlert
 }
@@ -50,7 +50,7 @@ export const SourceJarSelector = ({
   }, [walletInfo])
 
   const handleUtxosFrozenState = useCallback(
-    async (selectedUtxos: Utxos) => {
+    async (selectedUtxos: Api.Utxos) => {
       if (!showUtxos) return
 
       const abortCtrl = new AbortController()
@@ -64,13 +64,15 @@ export const SourceJarSelector = ({
       try {
         setShowUtxos({ ...showUtxos, isLoading: true, alert: undefined })
 
+        const processUtxos = (utxos: Api.Utxos, freeze: boolean) =>
+          utxos.map((utxo) => {
+            const req = { 'utxo-string': utxo.utxo ?? '', freeze }
+            return Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, req)
+          })
+
         const res = await Promise.all([
-          ...frozenUtxosToUnfreeze.map((utxo) =>
-            Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: false }),
-          ),
-          ...unfrozenUtxosToFreeze.map((utxo) =>
-            Api.postFreeze({ ...wallet, signal: abortCtrl.signal }, { utxo: utxo.utxo, freeze: true }),
-          ),
+          ...processUtxos(frozenUtxosToUnfreeze, false),
+          ...processUtxos(unfrozenUtxosToFreeze, true),
         ])
 
         if (res.length !== 0) {
@@ -131,7 +133,7 @@ export const SourceJarSelector = ({
                         it.calculatedTotalBalanceInSats > 0
                       ) {
                         setShowUtxos({
-                          utxos: walletInfo.utxosByJar[it.accountIndex],
+                          utxos: walletInfo.utxosByJar[it.accountIndex] as Api.Utxos,
                           isLoading: false,
                         })
                       }

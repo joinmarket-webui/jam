@@ -32,7 +32,7 @@ function sortWallets(
 
 interface WalletsProps {
   currentWallet: CurrentWallet | null
-  startWallet: (walletFileName: Api.WalletFileName, auth: Api.ApiAuthContext) => void
+  startWallet: (walletFileName: Api.WalletFileName, auth: Api.TokenResponse) => void
   stopWallet: () => void
 }
 
@@ -70,12 +70,9 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
       setAlert(undefined)
       setUnlockWalletFileName(walletFileName)
       try {
-        const res = await Api.postWalletUnlock({ walletFileName }, { password })
-        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
-
+        const body = await Api.postWalletUnlock({ walletFileName }, { password })
         setUnlockWalletFileName(undefined)
-
-        const auth = Api.Helper.parseAuthProps(body)
+        const auth = { token: body.token, refresh_token: body.refresh_token } as Api.TokenResponse
         startWallet(body.walletname, auth)
         navigate(routes.wallet)
       } catch (e: any) {
@@ -115,31 +112,30 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
       setAlert(undefined)
 
       try {
-        const res = await Api.getWalletLock({ ...currentWallet })
+        const body = await Api.getWalletLock({ ...currentWallet })
 
         // On status OK or UNAUTHORIZED, stop the wallet and clear all local
         // information. The token might have become invalid or another one might have been
         // issued for the same wallet, etc.
         // In any case, the user has no access to the wallet anymore.
-        if (res.ok || res.status === 401) {
-          stopWallet()
-        }
+        stopWallet()
 
-        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
         const { walletname: lockedWalletFileName, already_locked } = body
 
+        // TypeScript now knows createdWalletFileName is of type `${string}.jmdat`
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           dismissible: false,
           message: already_locked
             ? t('wallets.wallet_preview.alert_wallet_already_locked', {
-                walletName: walletDisplayName(lockedWalletFileName),
+                walletName: walletDisplayName(Api.toWalletFileName(lockedWalletFileName)),
               })
             : t('wallets.wallet_preview.alert_wallet_locked_successfully', {
-                walletName: walletDisplayName(lockedWalletFileName),
+                walletName: walletDisplayName(Api.toWalletFileName(lockedWalletFileName)),
               }),
         })
       } catch (e: any) {
+        stopWallet()
         const message = e.message || t('global.errors.reason_unknown')
         setAlert({ variant: 'danger', dismissible: false, message })
       }
@@ -176,7 +172,9 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
     const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
 
     const loadingWallets = Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((data) => sortWallets(data.wallets || [], currentWallet?.walletFileName))
+      .then((wallets) => {
+        return sortWallets(wallets, currentWallet?.walletFileName)
+      })
       .then((sortedWalletList) => {
         if (abortCtrl.signal.aborted) return
 

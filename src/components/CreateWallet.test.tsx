@@ -26,7 +26,7 @@ describe('<CreateWallet />', () => {
   const setup = ({
     startWallet = NOOP,
   }: {
-    startWallet?: (name: apiMock.WalletFileName, auth: apiMock.ApiAuthContext) => void
+    startWallet?: (name: apiMock.WalletFileName, auth: apiMock.TokenResponse) => void
   }) => {
     render(
       <BrowserRouter>
@@ -43,15 +43,9 @@ describe('<CreateWallet />', () => {
   })
 
   it('should display alert when rescanning is active', async () => {
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            rescanning: true,
-          }),
-      }),
-    )
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+      rescanning: true,
+    })
 
     await act(async () => setup({}))
 
@@ -90,9 +84,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should show validation message to user if duplicate wallet name', async () => {
-    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-      wallets: [`${testWalletName}.jmdat`],
-    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([`${testWalletName}.jmdat`])
     setup({})
 
     expect(await screen.queryByText('create_wallet.feedback_wallet_name_already_exists')).not.toBeInTheDocument()
@@ -144,17 +136,11 @@ describe('<CreateWallet />', () => {
   })
 
   it('should advance to WalletCreationConfirmation after wallet is created', async () => {
-    ;(apiMock.postWalletCreate as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            walletname: `${testWalletName}.jmdat`,
-            token: 'ANY_TOKEN',
-            seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
-          }),
-      }),
-    )
+    ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValue({
+      walletname: `${testWalletName}.jmdat`,
+      token: 'ANY_TOKEN',
+      seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
+    })
 
     setup({})
 
@@ -172,17 +158,11 @@ describe('<CreateWallet />', () => {
   })
 
   it('should verify that "skip" button is NOT visible by default (feature is disabled)', async () => {
-    ;(apiMock.postWalletCreate as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            walletname: `${testWalletName}.jmdat`,
-            token: 'ANY_TOKEN',
-            seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
-          }),
-      }),
-    )
+    ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValue({
+      walletname: `${testWalletName}.jmdat`,
+      token: 'ANY_TOKEN',
+      seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
+    })
 
     setup({})
 
@@ -210,13 +190,9 @@ describe('<CreateWallet />', () => {
   it('should verify that "skip" button IS visible when feature is enabled', async () => {
     __testSetDebugFeatureEnabled('skipWalletBackupConfirmation', true)
     ;(apiMock.postWalletCreate as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          walletname: `${testWalletName}.jmdat`,
-          token: 'ANY_TOKEN',
-          seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
-        }),
+      walletname: `${testWalletName}.jmdat`,
+      token: 'ANY_TOKEN',
+      seedphrase: DUMMY_MNEMONIC_PHRASE.join(' '),
     })
 
     setup({})

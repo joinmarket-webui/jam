@@ -571,7 +571,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
         .then((res) => {
           if (!res.ok && res.type !== 'opaqueredirect') {
             // e.g. error is raised if ob-watcher is not running
-            return ApiHelper.throwError(res)
+            return ApiHelper.throwResolved(res)
           }
 
           return ObwatchApi.fetchOrderbook({ signal })
