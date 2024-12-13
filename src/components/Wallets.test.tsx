@@ -85,9 +85,7 @@ describe('<Wallets />', () => {
       coinjoin_in_process: false,
       wallet_name: 'None',
     })
-    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-      wallets: [],
-    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([])
     ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
       version: '0.9.10dev',
     })
@@ -110,9 +108,7 @@ describe('<Wallets />', () => {
       coinjoin_in_process: false,
       wallet_name: 'None',
     })
-    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-      wallets: ['wallet0.jmdat', 'wallet1.jmdat'],
-    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue(['wallet0.jmdat', 'wallet1.jmdat'])
     ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
       version: '0.9.10dev',
     })
@@ -140,9 +136,7 @@ describe('<Wallets />', () => {
       coinjoin_in_process: false,
       wallet_name: 'None',
     })
-    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-      wallets: [],
-    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([])
     ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
       version: '0.9.9',
     })
@@ -165,9 +159,7 @@ describe('<Wallets />', () => {
         coinjoin_in_process: false,
         wallet_name: 'None',
       })
-      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-        wallets: [dummyWalletFileName],
-      })
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
       ;(apiMock.postWalletUnlock as jest.Mock).mockResolvedValue({
         walletname: dummyWalletFileName,
         token: dummyToken,
@@ -202,9 +194,7 @@ describe('<Wallets />', () => {
         coinjoin_in_process: false,
         wallet_name: 'None',
       })
-      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-        wallets: [dummyWalletFileName],
-      })
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
       ;(apiMock.postWalletUnlock as jest.Mock).mockImplementation(() => Promise.reject(new Error(apiErrorMessage)))
 
       await act(async () => setup({}))
@@ -231,9 +221,7 @@ describe('<Wallets />', () => {
         coinjoin_in_process: false,
         wallet_name: dummyWalletFileName,
       })
-      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-        wallets: [dummyWalletFileName],
-      })
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
       ;(apiMock.getWalletLock as jest.Mock).mockResolvedValue({
         walletname: dummyWalletFileName,
         already_locked: false,
@@ -268,21 +256,11 @@ describe('<Wallets />', () => {
         coinjoin_in_process: false,
         wallet_name: dummyWalletFileName,
       })
-      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-        wallets: [dummyWalletFileName],
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
+      ;(apiMock.getWalletLock as jest.Mock).mockRejectedValue({
+        message: apiErrorMessage,
+        response: { status: 401 },
       })
-      ;(apiMock.getWalletLock as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 401,
-        json: async () => ({ message: apiErrorMessage }),
-      })
-      // ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
-      //   Promise.resolve({
-      //     ok: false,
-      //     status: 401,
-      //     json: () => Promise.resolve({ message: apiErrorMessage }),
-      //   }),
-      // )
 
       await act(async () =>
         setup({
@@ -303,8 +281,8 @@ describe('<Wallets />', () => {
       await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
 
       // on 401 errors, stopWallet *should* have been called
-      expect(mockStopWallet).toHaveBeenCalled()
-      expect(screen.getByText(apiErrorMessage)).toBeInTheDocument()
+      await waitFor(() => expect(mockStopWallet).toHaveBeenCalled())
+      expect(await screen.findByText(apiErrorMessage)).toBeInTheDocument()
     })
 
     it.each`
@@ -320,9 +298,7 @@ describe('<Wallets />', () => {
           coinjoin_in_process: coinjoinInProgress,
           wallet_name: dummyWalletFileName,
         })
-        ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-          wallets: [dummyWalletFileName],
-        })
+        ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
         ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
           Promise.resolve({
             ok: true,

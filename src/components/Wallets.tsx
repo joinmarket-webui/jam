@@ -135,6 +135,7 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
               }),
         })
       } catch (e: any) {
+        stopWallet()
         const message = e.message || t('global.errors.reason_unknown')
         setAlert({ variant: 'danger', dismissible: false, message })
       }

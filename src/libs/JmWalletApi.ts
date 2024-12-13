@@ -16,9 +16,7 @@ import { Offer, Schedule, ScheduleEntry } from '../context/ServiceInfoContext'
  * 'x-jm-authorization' so that any reverse proxy can apply its own
  * authentication mechanism.
  */
-const basePath = () => `${window.JM.PUBLIC_PATH}/api/v1`
-
-const client = createClient<paths>({ baseUrl: basePath() })
+const client = createClient<paths>({ baseUrl: `${window.JM.PUBLIC_PATH}/api/v1` })
 
 type WalletFileName = `${string}.jmdat`
 

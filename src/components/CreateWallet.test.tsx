@@ -84,9 +84,7 @@ describe('<CreateWallet />', () => {
   })
 
   it('should show validation message to user if duplicate wallet name', async () => {
-    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue({
-      wallets: [`${testWalletName}.jmdat`],
-    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([`${testWalletName}.jmdat`])
     setup({})
 
     expect(await screen.queryByText('create_wallet.feedback_wallet_name_already_exists')).not.toBeInTheDocument()

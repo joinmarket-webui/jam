@@ -176,7 +176,7 @@ export const groupByJar = (utxos: Api.Utxos): UtxosByJar => {
   if (!utxos) return {}
   return utxos.reduce((res, utxo) => {
     const { mixdepth } = utxo
-    if (!mixdepth) return res
+    if (mixdepth === undefined) return res
     res[mixdepth] = res[mixdepth] || []
     res[mixdepth].push(utxo)
     return res
