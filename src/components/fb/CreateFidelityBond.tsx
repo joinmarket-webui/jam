@@ -163,7 +163,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
     const freezeCalls = utxos.map(async (utxo) => {
       const req = { 'utxo-string': utxo.utxo ?? '', freeze }
-      await Api.postFreeze({ ...wallet }, req)
+      await Api.postFreeze(
+        {
+          ...wallet,
+          errorMessage: freeze
+            ? 'earn.fidelity_bond.error_freezing_utxos'
+            : 'earn.fidelity_bond.error_unfreezing_utxos',
+        },
+        req,
+      )
 
       if (!utxo.frozen && freeze) {
         utxosThatWereFrozen.push(utxo)
@@ -191,6 +199,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       ...wallet,
       signal: abortCtrl.signal,
       lockdate: lockDate,
+      errorMessage: 'fidelity_bond.error_loading_timelock_address_failed',
     })
       .then((data) => setTimelockedAddress(data))
       .then((_) => setAlert(undefined))

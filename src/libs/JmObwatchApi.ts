@@ -37,7 +37,7 @@ const orderbookJson = async ({ signal }: { signal: AbortSignal }) => {
 }
 
 const fetchOrderbook = async (options: { signal: AbortSignal }): Promise<OrderbookJson> => {
-  return orderbookJson(options).then((res) => (res.ok ? res.json() : ApiHelper.throwError(res)))
+  return orderbookJson(options).then((res) => (res.ok ? res.json() : ApiHelper.throwResolved(res)))
 }
 
 const refreshOrderbook = async ({ signal, redirect }: { signal: AbortSignal; redirect: RequestRedirect }) => {

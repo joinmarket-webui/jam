@@ -16,7 +16,7 @@ import { Offer, Schedule, ScheduleEntry } from '../context/ServiceInfoContext'
  * 'x-jm-authorization' so that any reverse proxy can apply its own
  * authentication mechanism.
  */
-const basePath = () => `${window.JM.PUBLIC_PATH}/api`
+const basePath = () => `${window.JM.PUBLIC_PATH}/api/v1`
 
 const client = createClient<paths>({ baseUrl: basePath() })
 
@@ -141,6 +141,10 @@ type UtxoId = `${TxId}:${Vout}`
 
 // type WalletUnlockContext = UnlockWalletInfo & ApiAuthContext
 
+type WithErrorMessage = {
+  errorMessage?: string
+}
+
 type WithWalletFileName = {
   walletFileName: WalletFileName
 }
@@ -240,13 +244,6 @@ const Helper = (() => {
     }
   }
 
-  /**
-   * @deprecated Use `throwResolved()` instead
-   */
-  const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
-    throw new JmApiError(response, await extractErrorMessage(response, fallbackReason))
-  }
-
   const DEFAULT_RESOLVER = (res: Response, reason: string) => reason
 
   const throwResolved = async (
@@ -272,7 +269,6 @@ const Helper = (() => {
   }
 
   return {
-    throwError,
     throwResolved,
     extractErrorMessage,
     buildAuthHeader,
@@ -280,7 +276,7 @@ const Helper = (() => {
 })()
 
 const getGetinfo = async ({ signal }: ApiRequestContext) => {
-  const { data, error, response } = await client.GET('/getinfo', { signal })
+  const { data, response } = await client.GET('/getinfo', { signal })
 
   if (!response.ok) {
     Helper.throwResolved(response)
@@ -295,12 +291,12 @@ const getGetinfo = async ({ signal }: ApiRequestContext) => {
 }
 
 const getSession = async ({ token, signal }: ApiRequestContext & { token?: string }) => {
-  const { data, error, response } = await client.GET('/session', {
+  const { data, response } = await client.GET('/session', {
     headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
     signal,
   })
 
-  if (error) {
+  if (!response.ok) {
     Helper.throwResolved(response)
   }
 
@@ -377,7 +373,7 @@ const getSession = async ({ token, signal }: ApiRequestContext & { token?: strin
 }
 
 const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenRequest) => {
-  const { data, error, response } = await client.POST('/token', {
+  const { data, response } = await client.POST('/token', {
     headers: { ...Helper.buildAuthHeader(token) },
     body: req,
     signal,
@@ -395,21 +391,25 @@ const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenReq
   return data
 }
 
-const getAddressNew = async ({ token, signal, walletFileName, mixdepth }: WalletRequestContext & WithMixdepth) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/address/new/{mixdepth}', {
+const getAddressNew = async ({
+  token,
+  signal,
+  walletFileName,
+  mixdepth,
+  errorMessage,
+}: WalletRequestContext & WithMixdepth & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/address/new/{mixdepth}', {
     params: { path: { walletname: walletFileName, mixdepth: String(mixdepth) } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 
   if (!response.ok) {
-    Helper.throwResolved(response, errorResolver(t, 'receive.error_loading_address_failed'))
-    // return Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_loading_address'))
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    return '' // Ensure destination is always a string
   }
 
   return data
@@ -420,15 +420,16 @@ const getAddressTimelockNew = async ({
   signal,
   walletFileName,
   lockdate,
-}: WalletRequestContext & WithLockdate) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/address/timelock/new/{lockdate}', {
+  errorMessage,
+}: WalletRequestContext & WithLockdate & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/address/timelock/new/{lockdate}', {
     params: { path: { walletname: walletFileName, lockdate } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 
   if (!response.ok) {
-    Helper.throwResolved(response, errorResolver(t, 'earn.fidelity_bond.error_loading_address'))
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
   }
 
   if (typeof data === 'undefined') {
@@ -440,7 +441,7 @@ const getAddressTimelockNew = async ({
 }
 
 const getWalletAll = async ({ signal }: ApiRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/all', { signal })
+  const { data, response } = await client.GET('/wallet/all', { signal })
 
   if (!response.ok) {
     Helper.throwResolved(response, errorResolver(t, 'wallets.error_loading_failed'))
@@ -451,11 +452,13 @@ const getWalletAll = async ({ signal }: ApiRequestContext) => {
     throw new Error()
   }
 
-  return data
+  const typedWallets = data.wallets?.map((wallet) => toWalletFileName(wallet)) ?? []
+
+  return typedWallets
 }
 
 const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWalletRequest) => {
-  const { data, error, response } = await client.POST('/wallet/create', {
+  const { data, response } = await client.POST('/wallet/create', {
     body: req,
     signal,
   })
@@ -478,7 +481,7 @@ const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWallet
 }
 
 const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWalletRequest) => {
-  const { data, error, response } = await client.POST('/wallet/recover', {
+  const { data, response } = await client.POST('/wallet/recover', {
     body: req,
     signal,
   })
@@ -501,7 +504,7 @@ const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWall
 }
 
 const getWalletDisplay = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/display', {
+  const { data, response } = await client.GET('/wallet/{walletname}/display', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
@@ -520,7 +523,7 @@ const getWalletDisplay = async ({ token, signal, walletFileName }: WalletRequest
 }
 
 const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/getseed', {
+  const { data, response } = await client.GET('/wallet/{walletname}/getseed', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
@@ -545,7 +548,7 @@ const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestCon
  * Note: Performs a non-idempotent GET request.
  */
 const getWalletLock = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/lock', {
+  const { data, response } = await client.GET('/wallet/{walletname}/lock', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
@@ -567,7 +570,7 @@ const postWalletUnlock = async (
   { signal, walletFileName }: ApiRequestContext & WithWalletFileName,
   { password }: UnlockWalletRequest,
 ) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/unlock', {
+  const { data, response } = await client.POST('/wallet/{walletname}/unlock', {
     params: { path: { walletname: walletFileName } },
     body: { password },
     signal,
@@ -587,15 +590,20 @@ const postWalletUnlock = async (
   return { ...data, walletname }
 }
 
-const getWalletUtxos = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/utxos', {
+const getWalletUtxos = async ({
+  token,
+  signal,
+  walletFileName,
+  errorMessage,
+}: WalletRequestContext & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/utxos', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 
   if (!response.ok) {
-    Helper.throwResolved(response, errorResolver(t, 'global.errors.error_reloading_wallet_failed'))
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
   }
 
   if (typeof data === 'undefined') {
@@ -635,7 +643,7 @@ const getWalletUtxos = async ({ token, signal, walletFileName }: WalletRequestCo
 }
 
 const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestContext, req: StartMakerRequest) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/maker/start', {
+  const { data, response } = await client.POST('/wallet/{walletname}/maker/start', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     body: req,
@@ -661,7 +669,7 @@ const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestCo
  * Note: Performs a non-idempotent GET request.
  */
 const getMakerStop = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/maker/stop', {
+  const { data, response } = await client.GET('/wallet/{walletname}/maker/stop', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
@@ -680,8 +688,11 @@ const getMakerStop = async ({ token, signal, walletFileName }: WalletRequestCont
   return data
 }
 
-const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestContext, req: DirectSendRequest) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/taker/direct-send', {
+const postDirectSend = async (
+  { token, signal, walletFileName, errorMessage }: WalletRequestContext & WithErrorMessage,
+  req: DirectSendRequest,
+) => {
+  const { data, response } = await client.POST('/wallet/{walletname}/taker/direct-send', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     body: req,
@@ -691,7 +702,7 @@ const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestCo
   if (!response.ok) {
     //earn.fidelity_bond.error_creating_fidelity_bond
     //Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond')),
-    Helper.throwResolved(response)
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
   }
 
   if (typeof data === 'undefined') {
@@ -703,7 +714,7 @@ const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestCo
 }
 
 const postCoinjoin = async ({ token, signal, walletFileName }: WalletRequestContext, req: DoCoinjoinRequest) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/taker/coinjoin', {
+  const { data, response } = await client.POST('/wallet/{walletname}/taker/coinjoin', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     body: req,
@@ -746,7 +757,7 @@ const postCoinjoin = async ({ token, signal, walletFileName }: WalletRequestCont
  * ```
  */
 const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/yieldgen/report', { signal })
+  const { data, response } = await client.GET('/wallet/yieldgen/report', { signal })
 
   // 404 is returned till the maker is started at least once
   if (response.status === 404) return []
@@ -763,10 +774,10 @@ const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
 }
 
 const postFreeze = async (
-  { token, signal, walletFileName }: WalletRequestContext,
+  { token, signal, walletFileName, errorMessage }: WalletRequestContext & WithErrorMessage,
   { 'utxo-string': utxo, freeze = true }: FreezeRequest,
 ) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/freeze', {
+  const { data, response } = await client.POST('/wallet/{walletname}/freeze', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     body: { 'utxo-string': utxo, freeze },
@@ -774,23 +785,14 @@ const postFreeze = async (
   })
 
   if (!response.ok) {
-    // Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_freezing_utxos')),
-    //  Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_unfreezing_fidelity_bond')),
-    // freeze ? t('fidelity_bond.error_freezing_utxos') : t('fidelity_bond.error_unfreezing_utxos'),
-    Helper.throwResolved(
-      response,
-      errorResolver(
-        t,
-        freeze ? t('earn.fidelity_bond.error_freezing_utxos') : t('earn.fidelity_bond.error_unfreezing_utxos'),
-      ),
-    )
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
   }
 
   return data
 }
 
 const postSchedulerStart = async ({ token, signal, walletFileName }: WalletRequestContext, req: RunScheduleRequest) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/taker/schedule', {
+  const { data, response } = await client.POST('/wallet/{walletname}/taker/schedule', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     body: req,
@@ -809,16 +811,20 @@ const postSchedulerStart = async ({ token, signal, walletFileName }: WalletReque
   return data
 }
 
-const getTakerStop = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/taker/stop', {
+const getTakerStop = async ({
+  token,
+  signal,
+  walletFileName,
+  errorMessage,
+}: WalletRequestContext & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/taker/stop', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
 
   if (!response.ok) {
-    // just throw response in index.tsx call
-    Helper.throwResolved(response, errorResolver(t, 'scheduler.error_stopping_schedule_failed'))
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
   }
 
   if (typeof data === 'undefined') {
@@ -830,7 +836,7 @@ const getTakerStop = async ({ token, signal, walletFileName }: WalletRequestCont
 }
 
 const getSchedule = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/taker/schedule', {
+  const { data, response } = await client.GET('/wallet/{walletname}/taker/schedule', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
@@ -852,7 +858,7 @@ const getSchedule = async ({ token, signal, walletFileName }: WalletRequestConte
  * Change a config variable (for the duration of this backend daemon process instance).
  */
 const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigSetRequest) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/configset', {
+  const { data, response } = await client.POST('/wallet/{walletname}/configset', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     body: req,
@@ -877,7 +883,7 @@ const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestCon
  * @returns an object with property `configvalue` as string
  */
 const postConfigGet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigGetRequest) => {
-  const { data, error, response } = await client.POST('/wallet/{walletname}/configget', {
+  const { data, response } = await client.POST('/wallet/{walletname}/configget', {
     params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     body: req,
@@ -905,7 +911,7 @@ const getRescanBlockchain = async ({
   walletFileName,
   blockheight,
 }: WalletRequestContext & WithBlockheight) => {
-  const { data, error, response } = await client.GET('/wallet/{walletname}/rescanblockchain/{blockheight}', {
+  const { data, response } = await client.GET('/wallet/{walletname}/rescanblockchain/{blockheight}', {
     params: { path: { walletname: walletFileName, blockheight: blockheight } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
@@ -968,6 +974,7 @@ export {
   WalletRequestContext,
   WalletFileName,
   WithWalletFileName,
+  WithErrorMessage,
   WithApiToken,
   Lockdate,
   TxId,

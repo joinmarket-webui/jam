@@ -78,7 +78,7 @@ export default function Settings({ wallet, stopWallet }: SettingsProps) {
   useEffect(() => {
     const abortCtrl = new AbortController()
     fetchFeatures({ ...wallet, signal: abortCtrl.signal })
-      .then((res) => (res.ok ? res.json() : Api.Helper.throwError(res)))
+      .then((res) => (res.ok ? res.json() : Api.Helper.throwResolved(res)))
       .then((data) => data && data.features)
       .then((features) => {
         if (abortCtrl.signal.aborted) return

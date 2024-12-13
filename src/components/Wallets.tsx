@@ -171,9 +171,8 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
     const loadingServiceInfo = reloadServiceInfo({ signal: abortCtrl.signal })
 
     const loadingWallets = Api.getWalletAll({ signal: abortCtrl.signal })
-      .then((data) => {
-        const validWallets = (data.wallets || []).map(Api.toWalletFileName)
-        return sortWallets(validWallets, currentWallet?.walletFileName)
+      .then((wallets) => {
+        return sortWallets(wallets, currentWallet?.walletFileName)
       })
       .then((sortedWalletList) => {
         if (abortCtrl.signal.aborted) return

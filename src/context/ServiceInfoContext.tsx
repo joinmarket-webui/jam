@@ -129,7 +129,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
         clearSession()
       }
 
-      const fetch = Api.getSession({ signal, token: currentWallet?.token }).then((data): ServiceInfo => {
+      const data = Api.getSession({ signal, token: currentWallet?.token }).then((data): ServiceInfo => {
         return {
           walletFileName: data.wallet_name,
           sessionActive: data.session,
@@ -142,7 +142,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
         }
       })
 
-      return fetch
+      return data
         .then((info: ServiceInfo) => {
           if (!signal.aborted) {
             dispatchServiceInfo(info)

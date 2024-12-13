@@ -153,6 +153,7 @@ export default function Send({ wallet }: SendProps) {
         ...wallet,
         signal: props.signal,
         mixdepth: props.jarIndex,
+        errorMessage: 'receive.error_loading_address_failed',
       })
         .then((data) => {
           return data

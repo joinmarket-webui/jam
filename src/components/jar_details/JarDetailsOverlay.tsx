@@ -220,14 +220,16 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
 
       const abortCtrl = new AbortController()
 
-      const freezeCalls = utxos
-        .filter(canBeFrozenOrUnfrozen)
-        .map((utxo) =>
-          Api.postFreeze(
-            { ...props.wallet, signal: abortCtrl.signal },
-            { 'utxo-string': utxo.utxo ?? '', freeze: freeze },
-          ),
-        )
+      const freezeCalls = utxos.filter(canBeFrozenOrUnfrozen).map((utxo) =>
+        Api.postFreeze(
+          {
+            ...props.wallet,
+            signal: abortCtrl.signal,
+            errorMessage: freeze ? 'fidelity_bond.error_freezing_utxos' : 'fidelity_bond.error_unfreezing_utxos',
+          },
+          { 'utxo-string': utxo.utxo ?? '', freeze: freeze },
+        ),
+      )
 
       return Promise.all(freezeCalls)
         .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))

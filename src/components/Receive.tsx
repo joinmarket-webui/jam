@@ -65,7 +65,12 @@ export default function Receive({ wallet }: ReceiveProps) {
     setAlert(undefined)
     setIsLoading(true)
 
-    Api.getAddressNew({ ...wallet, mixdepth: selectedJarIndex, signal: abortCtrl.signal })
+    Api.getAddressNew({
+      ...wallet,
+      mixdepth: selectedJarIndex,
+      signal: abortCtrl.signal,
+      errorMessage: 'receive.error_loading_address_failed',
+    })
       .then((data) => setAddress(data))
       .catch((err) => {
         !abortCtrl.signal.aborted && setAlert({ variant: 'danger', message: err.message })

@@ -340,7 +340,11 @@ export default function Jam({ wallet }: JamProps) {
     setIsWaitingSchedulerStop(true)
 
     const abortCtrl = new AbortController()
-    return Api.getTakerStop({ ...wallet, signal: abortCtrl.signal })
+    return Api.getTakerStop({
+      ...wallet,
+      signal: abortCtrl.signal,
+      errorMessage: 'scheduler.error_stopping_schedule_failed',
+    })
       .then((_) => reloadServiceInfo({ signal: abortCtrl.signal }))
       .catch((err) => {
         if (abortCtrl.signal.aborted) return
