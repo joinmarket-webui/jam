@@ -23,7 +23,7 @@ import {
   isValidNumber,
   walletDisplayNameToFileName,
 } from '../utils'
-import { JM_GAPLIMIT_DEFAULT, JM_GAPLIMIT_CONFIGKEY } from '../constants/config'
+import { JM_GAPLIMIT_DEFAULT, JM_GAPLIMIT_CONFIGKEY } from '../constants/jm'
 
 type ImportWalletDetailsFormValues = {
   mnemonicPhrase: MnemonicPhrase

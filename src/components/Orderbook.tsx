@@ -17,7 +17,7 @@ import { BTC, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '../ut
 import { isDebugFeatureEnabled, isDevMode } from '../constants/debugFeatures'
 import ToggleSwitch from './ToggleSwitch'
 import { pseudoRandomNumber } from './Send/helpers'
-import { JM_DUST_THRESHOLD } from '../constants/config'
+import { JM_DUST_THRESHOLD } from '../constants/jm'
 import * as fb from './fb/utils'
 import styles from './Orderbook.module.css'
 

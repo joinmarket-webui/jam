@@ -1,7 +1,7 @@
 import * as fb from '../components/fb/utils'
 import { groupByJar } from '../context/WalletContext'
-import { JM_TAKER_UTXO_AGE_DEFAULT } from '../constants/config'
 import { Utxos } from '../libs/JmWalletApi'
+import { JM_TAKER_UTXO_AGE_DEFAULT } from '../constants/jm'
 
 export type CoinjoinRequirementOptions = {
   minNumberOfUtxos: number // min amount of utxos available

@@ -7,6 +7,7 @@ import {
   formatSats,
   formatBtc,
   formatBtcDisplayValue,
+  calcOfferMinsizeMax,
 } from './utils'
 
 describe('shortenStringMiddle', () => {
@@ -178,5 +179,43 @@ describe('formatBtcDisplayValue', () => {
     expect(formatBtcDisplayValue(0, { withSymbol: true })).toBe('₿ 0.00 000 000')
     expect(formatBtcDisplayValue(1, { withSymbol: true })).toBe('₿ 0.00 000 001')
     expect(formatBtcDisplayValue(123456789, { withSymbol: true })).toBe('₿ 1.23 456 789')
+  })
+})
+
+describe('calcOfferMinsizeMax', () => {
+  it('should calc offer minsize based on wallet balance', () => {
+    expect(calcOfferMinsizeMax({})).toBe(0)
+    expect(
+      calcOfferMinsizeMax(
+        {
+          '0': {
+            accountIndex: 0,
+            calculatedTotalBalanceInSats: 21,
+            calculatedAvailableBalanceInSats: 21,
+            calculatedFrozenOrLockedBalanceInSats: 0,
+          },
+        },
+        0,
+      ),
+    ).toBe(21)
+    expect(
+      calcOfferMinsizeMax(
+        {
+          '0': {
+            accountIndex: 0,
+            calculatedTotalBalanceInSats: 42,
+            calculatedAvailableBalanceInSats: 41,
+            calculatedFrozenOrLockedBalanceInSats: 1,
+          },
+          '1': {
+            accountIndex: 1,
+            calculatedTotalBalanceInSats: 42_000,
+            calculatedAvailableBalanceInSats: 1,
+            calculatedFrozenOrLockedBalanceInSats: 41_999,
+          },
+        },
+        21,
+      ),
+    ).toBe(20)
   })
 })

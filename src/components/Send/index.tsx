@@ -18,7 +18,7 @@ import { useServiceInfo, useReloadServiceInfo } from '../../context/ServiceInfoC
 import { useLoadConfigValue } from '../../context/ServiceConfigContext'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import { routes } from '../../constants/routes'
-import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/config'
+import { JM_MINIMUM_MAKERS_DEFAULT } from '../../constants/jm'
 import { initialNumCollaborators } from './helpers'
 
 const INITIAL_DESTINATION = null

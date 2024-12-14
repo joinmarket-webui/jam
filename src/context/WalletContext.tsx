@@ -3,7 +3,7 @@ import { getSession, setSession } from '../session'
 import * as fb from '../components/fb/utils'
 import * as Api from '../libs/JmWalletApi'
 import { WalletBalanceSummary, toBalanceSummary } from './BalanceSummary'
-import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/config'
+import { JM_API_AUTH_TOKEN_EXPIRY } from '../constants/jm'
 import { isDevMode } from '../constants/debugFeatures'
 import { setIntervalDebounced, walletDisplayName } from '../utils'
 

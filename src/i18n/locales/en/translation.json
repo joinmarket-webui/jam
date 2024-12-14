@@ -66,7 +66,7 @@
     "splashscreen_description_line1": "Your wallet, your coins.",
     "splashscreen_description_line2": "100% open-source & open-design.",
     "splashscreen_warning_title": "Warning",
-    "splashscreen_warning_text": "While JoinMarket is tried and tested, Jam is anything but. It is beta software, so please <2>read the documentation</2> and use it with caution. You can <1>help to improve the project on GitHub</1>.",
+    "splashscreen_warning_text": "While JoinMarket is tried and tested, Jam is not. It is beta software, so please <2>read the documentation</2> and use it with caution. You can <1>help to improve the project on GitHub</1>.",
     "screen_1_title": "Welcome to Jam for JoinMarket!",
     "screen_1_description": "Jam is an interface for JoinMarket, a privacy-focused software solution that aims to improve the confidentiality and privacy of your bitcoin transactions. Its main focus is to facilitate the creation of collaborative transactions through a peer-to-peer marketplace.",
     "screen_2_title": "Collaborative Transactions",
@@ -719,7 +719,10 @@
       "utxo_detail_label_confirmations": "Confirmations",
       "utxo_detail_label_is_frozen": "Is frozen",
       "utxo_detail_label_locktime": "Locktime",
-      "utxo_detail_label_status": "Address status"
+      "utxo_detail_label_status": "Address status",
+      "text_actions_disabled": "Some operations are disabled.",
+      "text_actions_disabled_maker_running": "Earn is active. Some operations are disabled.",
+      "text_actions_disabled_taker_running": "A collaborative transaction is currently in progress. Some operations are disabled."
     }
   },
   "show_utxos": {

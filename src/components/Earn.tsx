@@ -6,7 +6,21 @@ import { TFunction } from 'i18next'
 import { useSettings } from '../context/SettingsContext'
 import { CurrentWallet, useCurrentWalletInfo, useReloadCurrentWalletInfo, WalletInfo } from '../context/WalletContext'
 import { useServiceInfo, useReloadServiceInfo, Offer } from '../context/ServiceInfoContext'
-import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, isValidNumber, percentageToFactor } from '../utils'
+import {
+  calcOfferMinsizeMax,
+  factorToPercentage,
+  isAbsoluteOffer,
+  isRelativeOffer,
+  isValidNumber,
+  percentageToFactor,
+} from '../utils'
+import {
+  OFFER_FEE_ABS_MIN,
+  OFFER_FEE_REL_MAX,
+  OFFER_FEE_REL_MIN,
+  OFFER_FEE_REL_STEP,
+  OFFER_MINSIZE_MIN,
+} from '../constants/jam'
 import * as Api from '../libs/JmWalletApi'
 import * as fb from './fb/utils'
 import Sprite from './Sprite'
@@ -22,7 +36,6 @@ import Accordion from './Accordion'
 import BitcoinAmountInput, { AmountValue, toAmountValue } from './BitcoinAmountInput'
 import { isValidAmount } from './Send/helpers'
 import styles from './Earn.module.css'
-import { JM_DUST_THRESHOLD } from '../constants/config'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
 // Even though the API response suggests that the maker has started or stopped immediately, it seems that this is not always the case.
@@ -194,10 +207,6 @@ function CurrentOffer({ offer, nickname }: CurrentOfferProps) {
   )
 }
 
-const feeRelMin = 0.0
-const feeRelMax = 0.1 // 10%
-const feeRelPercentageStep = 0.0001
-
 interface EarnFormProps {
   initialValues?: EarnFormValues
   submitButtonText: (isSubmitting: boolean) => React.ReactNode | string
@@ -217,22 +226,9 @@ const EarnForm = ({
 }: EarnFormProps) => {
   const { t } = useTranslation()
 
-  const maxAvailableBalanceInJar = useMemo(() => {
-    return Math.max(
-      0,
-      Math.max(
-        ...Object.values(walletInfo?.balanceSummary.accountBalances || []).map(
-          (it) => it.calculatedAvailableBalanceInSats,
-        ),
-      ),
-    )
-  }, [walletInfo])
-
-  const offerMinsizeMin = JM_DUST_THRESHOLD
-
   const offerMinsizeMax = useMemo(() => {
-    return Math.max(0, maxAvailableBalanceInJar - JM_DUST_THRESHOLD)
-  }, [maxAvailableBalanceInJar])
+    return walletInfo === undefined ? 0 : calcOfferMinsizeMax(walletInfo.balanceSummary.accountBalances)
+  }, [walletInfo])
 
   const validate = (values: EarnFormValues) => {
     const errors = {} as FormikErrors<EarnFormValues>
@@ -245,16 +241,16 @@ const EarnForm = ({
     }
 
     if (isRelOffer) {
-      if (!isValidNumber(values.feeRel) || values.feeRel < feeRelMin || values.feeRel > feeRelMax) {
+      if (!isValidNumber(values.feeRel) || values.feeRel < OFFER_FEE_REL_MIN || values.feeRel > OFFER_FEE_REL_MAX) {
         errors.feeRel = t('earn.feedback_invalid_rel_fee', {
-          feeRelPercentageMin: `${factorToPercentage(feeRelMin)}%`,
-          feeRelPercentageMax: `${factorToPercentage(feeRelMax)}%`,
+          feeRelPercentageMin: `${factorToPercentage(OFFER_FEE_REL_MIN)}%`,
+          feeRelPercentageMax: `${factorToPercentage(OFFER_FEE_REL_MAX)}%`,
         })
       }
     }
 
     if (isAbsOffer) {
-      if (!isValidNumber(values.feeAbs?.value) || values.feeAbs!.value! < 0) {
+      if (!isValidNumber(values.feeAbs?.value) || values.feeAbs!.value! < OFFER_FEE_ABS_MIN) {
         errors.feeAbs = t('earn.feedback_invalid_abs_fee')
       }
     }
@@ -263,11 +259,11 @@ const EarnForm = ({
       errors.minsize = t('earn.feedback_invalid_min_amount')
     } else {
       const minsize = values.minsize?.value || 0
-      if (offerMinsizeMin > offerMinsizeMax) {
+      if (OFFER_MINSIZE_MIN > offerMinsizeMax) {
         errors.minsize = t('earn.feedback_invalid_min_amount_insufficient_funds')
-      } else if (minsize < offerMinsizeMin || minsize > offerMinsizeMax) {
+      } else if (minsize < OFFER_MINSIZE_MIN || minsize > offerMinsizeMax) {
         errors.minsize = t('earn.feedback_invalid_min_amount_range', {
-          minAmountMin: offerMinsizeMin.toLocaleString(),
+          minAmountMin: OFFER_MINSIZE_MIN.toLocaleString(),
           minAmountMax: offerMinsizeMax.toLocaleString(),
         })
       }
@@ -276,15 +272,7 @@ const EarnForm = ({
   }
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validate={validate}
-      onSubmit={onSubmit}
-      validateOnMount={true}
-      initialTouched={{
-        minsize: true,
-      }}
-    >
+    <Formik initialValues={initialValues} validate={validate} onSubmit={onSubmit}>
       {(props) => {
         const { handleSubmit, setFieldValue, handleBlur, values, touched, errors, isSubmitting } = props
         const minsizeField = props.getFieldProps<AmountValue>('minsize')
@@ -347,8 +335,8 @@ const EarnForm = ({
                             value={typeof values.feeRel === 'number' ? factorToPercentage(values.feeRel) : ''}
                             isValid={touched.feeRel && !errors.feeRel}
                             isInvalid={touched.feeRel && !!errors.feeRel}
-                            min={0}
-                            step={feeRelPercentageStep}
+                            min={factorToPercentage(OFFER_FEE_REL_MIN)}
+                            step={factorToPercentage(OFFER_FEE_REL_STEP)}
                           />
                           <rb.Form.Control.Feedback type="invalid">{errors.feeRel}</rb.Form.Control.Feedback>
                         </rb.InputGroup>
