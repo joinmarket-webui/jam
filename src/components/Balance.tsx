@@ -36,7 +36,7 @@ const FROZEN_SYMBOL = (
 )
 
 interface BalanceComponentProps {
-  symbol?: JSX.Element
+  symbol?: React.ReactNode
   showSymbol?: boolean
   frozen?: boolean
   colored?: boolean
