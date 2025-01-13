@@ -229,8 +229,7 @@ const getGetinfo = async ({ signal }: ApiRequestContext) => {
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('getinfo response is undefined')
   }
 
   return data
@@ -247,8 +246,7 @@ const getSession = async ({ token, signal }: ApiRequestContext & { token?: strin
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('session response is undefined')
   }
 
   // Transform wallet_name to the narrower WalletFileName type
@@ -330,8 +328,7 @@ const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenReq
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post token response is undefined')
   }
 
   return data
@@ -379,8 +376,7 @@ const getAddressTimelockNew = async ({
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get address time lock response is undefined')
   }
 
   return data
@@ -394,8 +390,7 @@ const getWalletAll = async ({ signal }: ApiRequestContext) => {
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get wallet all response is undefined')
   }
 
   const typedWallets = data.wallets?.map((wallet) => toWalletFileName(wallet)) ?? []
@@ -414,8 +409,7 @@ const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWallet
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post wallet create response is undefined')
   }
 
   const walletname = toWalletFileName(data.walletname)
@@ -437,8 +431,7 @@ const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWall
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post wallet recover response is undefined')
   }
 
   const walletname = toWalletFileName(data.walletname)
@@ -461,8 +454,7 @@ const getWalletDisplay = async ({ token, signal, walletFileName }: WalletRequest
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get wallet display response is undefined')
   }
 
   return data
@@ -480,8 +472,7 @@ const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestCon
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get wallet seed response is undefined')
   }
 
   return data
@@ -505,8 +496,7 @@ const getWalletLock = async ({ token, signal, walletFileName }: WalletRequestCon
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get wallet lock response is undefined')
   }
 
   return data
@@ -527,8 +517,7 @@ const postWalletUnlock = async (
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post wallet unlock response is undefined')
   }
 
   const walletname = toWalletFileName(data.walletname)
@@ -553,8 +542,7 @@ const getWalletUtxos = async ({
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get wallet utxos response is undefined')
   }
 
   // Transform only the utxo field into the narrowed UtxoId type, keeping all other fields
@@ -595,11 +583,9 @@ const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestCo
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post maker start response is undefined')
   }
 
-  // how to handle this never type
   return data
 }
 
@@ -620,11 +606,9 @@ const getMakerStop = async ({ token, signal, walletFileName }: WalletRequestCont
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get maker stop response is undefined')
   }
 
-  // how to handle this never type
   return data
 }
 
@@ -640,14 +624,11 @@ const postDirectSend = async (
   })
 
   if (!response.ok) {
-    //earn.fidelity_bond.error_creating_fidelity_bond
-    //Api.Helper.throwResolved(res, errorResolver(t, 'earn.fidelity_bond.move.error_spending_fidelity_bond')),
     errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post direct send response is undefined')
   }
 
   return data
@@ -666,8 +647,7 @@ const postCoinjoin = async ({ token, signal, walletFileName }: WalletRequestCont
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post coinjoin response is undefined')
   }
 
   // how to handle this never type?
@@ -706,8 +686,7 @@ const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get yieldgen report response is undefined')
   }
 
   return data
@@ -744,8 +723,7 @@ const postSchedulerStart = async ({ token, signal, walletFileName }: WalletReque
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post scheduler start response is undefined')
   }
 
   return data
@@ -768,8 +746,7 @@ const getTakerStop = async ({
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get taker stop response is undefined')
   }
 
   return data
@@ -787,8 +764,7 @@ const getSchedule = async ({ token, signal, walletFileName }: WalletRequestConte
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get schedule response is undefined')
   }
 
   return data
@@ -810,8 +786,7 @@ const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestCon
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post config set response is undefined')
   }
 
   return data
@@ -835,8 +810,7 @@ const postConfigGet = async ({ token, signal, walletFileName }: WalletRequestCon
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('post config get response is undefined')
   }
 
   return data
@@ -862,8 +836,7 @@ const getRescanBlockchain = async ({
   }
 
   if (typeof data === 'undefined') {
-    // do something here
-    throw new Error()
+    throw new Error('get rescan blockchain response is undefined')
   }
 
   return data

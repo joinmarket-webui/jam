@@ -510,7 +510,7 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 value: String(originalGaplimit),
               },
             ],
-            wallet: { walletFileName, token: recoverBody.token },
+            wallet: { walletFileName, token: unlockBody.token },
           })
         }
 

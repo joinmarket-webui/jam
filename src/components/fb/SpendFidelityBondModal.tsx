@@ -117,11 +117,14 @@ const spendUtxosWithDirectSend = async (context: Api.WalletRequestContext, reque
 
     // spend fidelity bond (by sweeping whole jar)
     // on send error
-    return await Api.postDirectSend(context, {
-      destination: request.destination,
-      mixdepth: request.sourceJarIndex,
-      amount_sats: 0, // sweep
-    })
+    return await Api.postDirectSend(
+      { ...context, errorMessage: 'earn.fidelity_bond.move.error_spending_fidelity_bond' },
+      {
+        destination: request.destination,
+        mixdepth: request.sourceJarIndex,
+        amount_sats: 0, // sweep
+      },
+    )
   } finally {
     try {
       // try unfreezing all previously frozen coins

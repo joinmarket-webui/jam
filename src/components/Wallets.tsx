@@ -122,7 +122,6 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
 
         const { walletname: lockedWalletFileName, already_locked } = body
 
-        // TypeScript now knows createdWalletFileName is of type `${string}.jmdat`
         setAlert({
           variant: already_locked ? 'warning' : 'success',
           dismissible: false,

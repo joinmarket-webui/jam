@@ -81,7 +81,7 @@ const parseYieldgenTimestamp = (val: RawYielgenTimestamp) => {
   return new Date(Date.parse(`${val} GMT`))
 }
 
-function yieldgenReportLineToEarnReportEntry(line: string): EarnReportEntry | null {
+const yieldgenReportLineToEarnReportEntry = (line: string): EarnReportEntry | null => {
   if (!line.includes(',')) return null
 
   const values = line.split(',')
@@ -91,13 +91,13 @@ function yieldgenReportLineToEarnReportEntry(line: string): EarnReportEntry | nu
 
   return {
     timestamp: parseYieldgenTimestamp(values[0]!),
-    cjTotalAmount: values[1] ? parseInt(values[1], 10) : null,
-    inputCount: values[2] ? parseInt(values[2], 10) : null,
-    inputAmount: values[3] ? parseInt(values[3], 10) : null,
-    fee: values[4] ? parseInt(values[4], 10) : null,
-    earnedAmount: values[5] ? parseInt(values[5], 10) : null,
-    confirmationDuration: values[6] ? parseFloat(values[6]) : null,
-    notes: values[7] || null,
+    cjTotalAmount: values[1] && values[1] !== '' ? parseInt(values[1], 10) : null,
+    inputCount: values[2] && values[2] !== '' ? parseInt(values[2], 10) : null,
+    inputAmount: values[3] && values[3] !== '' ? parseInt(values[3], 10) : null,
+    fee: values[4] && values[4] !== '' ? parseInt(values[4], 10) : null,
+    earnedAmount: values[5] && values[5] !== '' ? parseInt(values[5], 10) : null,
+    confirmationDuration: values[6] && values[6] !== '' ? parseFloat(values[6]) : null,
+    notes: values[7] && values[7] !== '' ? values[7] : null,
   }
 }
 

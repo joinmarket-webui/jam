@@ -159,7 +159,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
     const abortCtrl = new AbortController()
 
-    let utxosThatWereFrozen: Api.Utxos = []
+    const utxosThatWereFrozen: Api.Utxos = []
 
     const freezeCalls = utxos.map(async (utxo) => {
       const req = { 'utxo-string': utxo.utxo ?? '', freeze }
@@ -212,11 +212,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const directSweepToFidelityBond = (jarIndex: JarIndex, address: Api.BitcoinAddress) => {
     setIsLoading(true)
 
-    Api.postDirectSend(wallet, {
-      mixdepth: jarIndex,
-      destination: address,
-      amount_sats: 0, // sweep
-    })
+    Api.postDirectSend(
+      { ...wallet, errorMessage: 'earn.fidelity_bond.error_creating_fidelity_bond' },
+      {
+        mixdepth: jarIndex,
+        destination: address,
+        amount_sats: 0, // sweep
+      },
+    )
       .then((body) => {
         if (body?.txinfo?.inputs) {
           setUtxoIdsToBeSpent(
@@ -466,7 +469,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const onlyCjOutOrFbUtxosSelected = () => {
     return selectedUtxos.every(
-      (utxo) => utxo.address !== undefined && walletInfo.addressSummary[utxo.address]?.status === 'cj-out', // || utxo.locktime !== undefined), // this locktime does not seem to exist on the utxo type
+      (utxo) => utxo.address !== undefined && walletInfo.addressSummary[utxo.address]?.status === 'cj-out', // || utxo.locktime !== undefined), // locktime does not exist on the generated utxo type
     )
   }
 
