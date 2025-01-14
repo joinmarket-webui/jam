@@ -1,3 +1,9 @@
+import { t } from 'i18next'
+import { errorResolver } from '../utils'
+import createClient from 'openapi-fetch'
+import type { paths, components } from './JmWalletApiTypes'
+import { Offer, Schedule, ScheduleEntry } from '../context/ServiceInfoContext'
+
 /**
  * Simple collection of api requests to jmwalletd.
  *
@@ -10,10 +16,79 @@
  * 'x-jm-authorization' so that any reverse proxy can apply its own
  * authentication mechanism.
  */
-const basePath = () => `${window.JM.PUBLIC_PATH}/api`
+const client = createClient<paths>({ baseUrl: `${window.JM.PUBLIC_PATH}/api/v1` })
 
-type ApiToken = string
 type WalletFileName = `${string}.jmdat`
+
+// Type Guards/Conversions
+export const toWalletFileName = (walletname: string): WalletFileName => {
+  return walletname.endsWith('.jmdat') ? (walletname as WalletFileName) : `${walletname}.jmdat`
+}
+
+export const toUtxoId = (input: string | undefined): UtxoId | undefined => {
+  if (typeof input === 'undefined') {
+    return undefined
+  }
+
+  // Split the input string by ':' to separate the string and number parts
+  const [vout, txId] = input.split(':')
+
+  // Check if num is a valid number and str exists
+  if (!vout || isNaN(Number(txId))) {
+    throw new Error(`Invalid format: Expected \`string:number\` but received '${input}'`)
+  }
+
+  // Return the formatted template literal string
+  return `${vout}:${Number(txId)}` as UtxoId
+}
+
+export const convertToStartMakerApiRequest = (narrowed: NarrowedStartMakerRequest): StartMakerRequest => {
+  return {
+    txfee: '0', // this was currently not being passed in the request
+    cjfee_a: narrowed.cjfee_a.toString(),
+    cjfee_r: narrowed.cjfee_r.toString(),
+    ordertype: narrowed.ordertype,
+    minsize: narrowed.minsize.toString(),
+  }
+}
+
+export const convertToCreateWalletApiRequest = (narrowed: NarrowedCreateWalletRequest): CreateWalletRequest => {
+  return {
+    walletname: narrowed.walletname,
+    password: narrowed.password,
+    wallettype: narrowed.wallettype ?? 'sw-fb',
+  }
+}
+
+export const convertToRecoverWalletApiRequest = (narrowed: NarrowedRecoverWalletRequest): RecoverWalletRequest => {
+  return {
+    walletname: narrowed.walletname,
+    password: narrowed.password,
+    seedphrase: narrowed.seedphrase,
+    wallettype: narrowed.wallettype ?? 'sw-fb',
+  }
+}
+
+// begin generated types
+type CreateWalletRequest = components['schemas']['CreateWalletRequest']
+type RecoverWalletRequest = components['schemas']['RecoverWalletRequest']
+type TokenRequest = components['schemas']['TokenRequest']
+type UnlockWalletRequest = components['schemas']['UnlockWalletRequest']
+type StartMakerRequest = components['schemas']['StartMakerRequest']
+type DirectSendRequest = components['schemas']['DirectSendRequest']
+type DoCoinjoinRequest = components['schemas']['DoCoinjoinRequest']
+type FreezeRequest = components['schemas']['FreezeRequest']
+type RunScheduleRequest = components['schemas']['RunScheduleRequest']
+type ConfigSetRequest = components['schemas']['ConfigSetRequest']
+type ConfigGetRequest = components['schemas']['ConfigGetRequest']
+
+type WalletDisplayResponse = components['schemas']['WalletDisplayResponse']
+type TokenResponse = components['schemas']['TokenResponse']
+type ListUtxosResponse = components['schemas']['ListUtxosResponse']
+
+type Utxos = NonNullable<ListUtxosResponse['utxos']>
+type Utxo = Utxos[number]
+// end generated types
 
 type Mixdepth = number
 type AmountSats = number // TODO: should be BigInt! Remove once every caller migrated to TypeScript.
@@ -23,28 +98,15 @@ type Vout = number
 type TxId = string
 type UtxoId = `${TxId}:${Vout}`
 
-// for JM versions <0.9.11
-type SingleTokenAuthContext = {
-  token: ApiToken
-  refresh_token: undefined
+type WithErrorMessage = {
+  errorMessage?: string
 }
-
-// for JM versions >=0.9.11
-type RefreshTokenAuthContext = {
-  token: ApiToken
-  token_type: string // "bearer"
-  expires_in: Seconds // 1800
-  scope: string
-  refresh_token: ApiToken
-}
-
-type ApiAuthContext = SingleTokenAuthContext | RefreshTokenAuthContext
 
 type WithWalletFileName = {
   walletFileName: WalletFileName
 }
 type WithApiToken = {
-  token: ApiToken
+  token: string
 }
 type WithMixdepth = {
   mixdepth: Mixdepth
@@ -74,26 +136,17 @@ interface ApiError {
 
 type WalletType = 'sw-fb'
 
-interface TokenRequest {
-  grant_type: 'refresh_token' | string
-  refresh_token: string
-}
-
-interface CreateWalletRequest {
+interface NarrowedCreateWalletRequest {
   walletname: WalletFileName | string
   password: string
   wallettype?: WalletType
 }
 
-interface RecoverWalletRequest {
+interface NarrowedRecoverWalletRequest {
   walletname: WalletFileName | string
   password: string
   seedphrase: string
   wallettype?: WalletType
-}
-
-interface WalletUnlockRequest {
-  password: string
 }
 
 // only support starting the maker with native segwit offers
@@ -101,69 +154,11 @@ type RelOfferType = 'sw0reloffer'
 type AbsOfferType = 'sw0absoffer'
 type OfferType = RelOfferType | AbsOfferType | string
 
-interface StartMakerRequest {
+interface NarrowedStartMakerRequest {
   cjfee_a: AmountSats
   cjfee_r: number
   ordertype: OfferType
   minsize: AmountSats
-}
-
-interface DirectSendRequest {
-  mixdepth: Mixdepth
-  destination: BitcoinAddress
-  amount_sats: AmountSats
-  txfee?: number
-}
-
-interface DoCoinjoinRequest {
-  mixdepth: Mixdepth
-  destination: BitcoinAddress
-  amount_sats: AmountSats
-  counterparties: number
-  txfee?: number
-}
-
-interface FreezeRequest {
-  utxo: UtxoId
-  freeze: boolean
-}
-
-interface ConfigSetRequest {
-  section: string
-  field: string
-  value: string
-}
-
-interface ConfigGetRequest {
-  section: string
-  field: string
-}
-
-interface StartSchedulerRequest {
-  destination_addresses: BitcoinAddress[]
-  tumbler_options?: TumblerOptions
-}
-
-interface TumblerOptions {
-  restart?: boolean
-  schedulefile?: string
-  addrcount?: number
-  makercountrange?: number[]
-  minmakercount?: number
-  mixdepthcount?: number
-  txcountparams?: number[]
-  mintxcount?: number
-  donateamount?: number
-  timelambda?: number
-  stage1_timelambda_increase?: number
-  waittime?: number
-  mincjamount?: number
-  liquiditywait?: number
-  maxbroadcasts?: number
-  maxcreatetx?: number
-  amtmixdepths?: number
-  rounding_chance?: number
-  rounding_sigfig_weights?: number[]
 }
 
 const Helper = (() => {
@@ -195,13 +190,6 @@ const Helper = (() => {
     }
   }
 
-  /**
-   * @deprecated Use `throwResolved()` instead
-   */
-  const throwError = async (response: Response, fallbackReason = response.statusText): Promise<never> => {
-    throw new JmApiError(response, await extractErrorMessage(response, fallbackReason))
-  }
-
   const DEFAULT_RESOLVER = (res: Response, reason: string) => reason
 
   const throwResolved = async (
@@ -219,62 +207,155 @@ const Helper = (() => {
    * The 'x-jm-authorization' header is forwarded as 'Authorization' header in
    * requests to jmwalletd by the reverse proxy.
    *
-   * @param {ApiToken} token the bearer token
+   * @param {string} token the bearer token
    * @returns an object containing the authorization header
    */
-  const buildAuthHeader = (token: ApiToken) => {
+  const buildAuthHeader = (token: string) => {
     return { 'x-jm-authorization': `Bearer ${token}` }
   }
 
-  // Simple helper method to parse auth properties.
-  // TODO: This can be removed when the API methods
-  // return typed responses (see #670)
-  const parseAuthProps = (body: any): ApiAuthContext => {
-    return {
-      token: body.token,
-      token_type: body.token_type,
-      expires_in: body.expires_in,
-      scope: body.scope,
-      refresh_token: body.refresh_token,
-    }
-  }
-
   return {
-    throwError,
     throwResolved,
     extractErrorMessage,
     buildAuthHeader,
-    parseAuthProps,
   }
 })()
 
 const getGetinfo = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${basePath()}/v1/getinfo`, {
-    signal,
-  })
+  const { data, response } = await client.GET('/getinfo', { signal })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('getinfo response is undefined')
+  }
+
+  return data
 }
 
-const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiToken }) => {
-  return await fetch(`${basePath()}/v1/session`, {
+const getSession = async ({ token, signal }: ApiRequestContext & { token?: string }) => {
+  const { data, response } = await client.GET('/session', {
     headers: token ? { ...Helper.buildAuthHeader(token) } : undefined,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('session response is undefined')
+  }
+
+  // Transform wallet_name to the narrower WalletFileName type
+  const walletFileName: WalletFileName | null = data.wallet_name.endsWith('.jmdat')
+    ? (data.wallet_name as WalletFileName)
+    : null
+
+  // Transform schedule to the narrower Schedule type
+  const schedule: Schedule | undefined = data.schedule
+    ?.map((entry) => {
+      const [mixdepth, amountFraction, amountCounterparties, destination, waitTime, rounding, stateFlag] = entry
+
+      if (
+        typeof mixdepth === 'number' &&
+        typeof amountFraction === 'number' &&
+        typeof amountCounterparties === 'number' &&
+        (destination === 'INTERNAL' || typeof destination === 'string') &&
+        typeof waitTime === 'number' &&
+        typeof rounding === 'number' &&
+        (stateFlag === 0 || stateFlag === 1 || typeof stateFlag === 'string')
+      ) {
+        return [
+          mixdepth,
+          amountFraction,
+          amountCounterparties,
+          destination,
+          waitTime,
+          rounding,
+          stateFlag,
+        ] as ScheduleEntry
+      }
+      return null
+    })
+    .filter((entry): entry is ScheduleEntry => entry !== null)
+
+  // Transform offer_list to the narrower Offer[] type
+  const offers: Offer[] | undefined = data.offer_list
+    ?.map((offer) => {
+      const { oid, ordertype, minsize, maxsize, txfee, cjfee } = offer
+
+      if (
+        typeof oid === 'number' &&
+        (ordertype === 'sw0reloffer' || ordertype === 'sw0absoffer' || typeof ordertype === 'string') &&
+        typeof minsize === 'number' &&
+        typeof maxsize === 'number' &&
+        typeof txfee === 'number' &&
+        typeof cjfee === 'string'
+      ) {
+        return {
+          oid,
+          ordertype: ordertype as OfferType,
+          minsize: minsize as AmountSats,
+          maxsize: maxsize as AmountSats,
+          txfee: txfee as AmountSats,
+          cjfee,
+        }
+      }
+      return null
+    })
+    .filter((offer): offer is Offer => offer !== null)
+
+  return {
+    ...data,
+    wallet_name: walletFileName,
+    schedule,
+    offer_list: offers,
+  }
 }
 
 const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenRequest) => {
-  return await fetch(`${basePath()}/v1/token`, {
+  const { data, response } = await client.POST('/token', {
     headers: { ...Helper.buildAuthHeader(token) },
-    method: 'POST',
-    body: JSON.stringify(req),
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post token response is undefined')
+  }
+
+  return data
 }
 
-const getAddressNew = async ({ token, signal, walletFileName, mixdepth }: WalletRequestContext & WithMixdepth) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/address/new/${mixdepth}`, {
+const getAddressNew = async ({
+  token,
+  signal,
+  walletFileName,
+  mixdepth,
+  errorMessage,
+}: WalletRequestContext & WithMixdepth & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/address/new/{mixdepth}', {
+    params: { path: { walletname: walletFileName, mixdepth: String(mixdepth) } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    return '' // Ensure destination is always a string
+  }
+
+  return data
 }
 
 const getAddressTimelockNew = async ({
@@ -282,51 +363,119 @@ const getAddressTimelockNew = async ({
   signal,
   walletFileName,
   lockdate,
-}: WalletRequestContext & WithLockdate) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/address/timelock/new/${lockdate}`, {
+  errorMessage,
+}: WalletRequestContext & WithLockdate & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/address/timelock/new/{lockdate}', {
+    params: { path: { walletname: walletFileName, lockdate } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get address time lock response is undefined')
+  }
+
+  return data
 }
 
 const getWalletAll = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/all`, {
-    signal,
-  })
+  const { data, response } = await client.GET('/wallet/all', { signal })
+
+  if (!response.ok) {
+    Helper.throwResolved(response, errorResolver(t, 'wallets.error_loading_failed'))
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get wallet all response is undefined')
+  }
+
+  const typedWallets = data.wallets?.map((wallet) => toWalletFileName(wallet)) ?? []
+
+  return typedWallets
 }
 
 const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWalletRequest) => {
-  const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
-
-  return await fetch(`${basePath()}/v1/wallet/create`, {
-    method: 'POST',
-    body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
+  const { data, response } = await client.POST('/wallet/create', {
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post wallet create response is undefined')
+  }
+
+  const walletname = toWalletFileName(data.walletname)
+
+  return {
+    ...data,
+    walletname,
+  }
 }
 
 const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWalletRequest) => {
-  const walletname = req.walletname.endsWith('.jmdat') ? req.walletname : `${req.walletname}.jmdat`
-
-  return await fetch(`${basePath()}/v1/wallet/recover`, {
-    method: 'POST',
-    body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
+  const { data, response } = await client.POST('/wallet/recover', {
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post wallet recover response is undefined')
+  }
+
+  const walletname = toWalletFileName(data.walletname)
+
+  return {
+    ...data,
+    walletname,
+  }
 }
 
 const getWalletDisplay = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/display`, {
+  const { data, response } = await client.GET('/wallet/{walletname}/display', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get wallet display response is undefined')
+  }
+
+  return data
 }
 
 const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/getseed`, {
+  const { data, response } = await client.GET('/wallet/{walletname}/getseed', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get wallet seed response is undefined')
+  }
+
+  return data
 }
 
 /**
@@ -336,44 +485,108 @@ const getWalletSeed = async ({ token, signal, walletFileName }: WalletRequestCon
  * Note: Performs a non-idempotent GET request.
  */
 const getWalletLock = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/lock`, {
+  const { data, response } = await client.GET('/wallet/{walletname}/lock', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get wallet lock response is undefined')
+  }
+
+  return data
 }
 
 const postWalletUnlock = async (
   { signal, walletFileName }: ApiRequestContext & WithWalletFileName,
-  { password }: WalletUnlockRequest,
+  { password }: UnlockWalletRequest,
 ) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/unlock`, {
-    method: 'POST',
-    body: JSON.stringify({ password }),
+  const { data, response } = await client.POST('/wallet/{walletname}/unlock', {
+    params: { path: { walletname: walletFileName } },
+    body: { password },
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post wallet unlock response is undefined')
+  }
+
+  const walletname = toWalletFileName(data.walletname)
+
+  return { ...data, walletname }
 }
 
-const getWalletUtxos = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/utxos`, {
+const getWalletUtxos = async ({
+  token,
+  signal,
+  walletFileName,
+  errorMessage,
+}: WalletRequestContext & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/utxos', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get wallet utxos response is undefined')
+  }
+
+  // Transform only the utxo field into the narrowed UtxoId type, keeping all other fields
+  const utxosWithNarrowedUtxo: Array<Omit<NonNullable<typeof data.utxos>[number], 'utxo'> & { utxo: UtxoId }> =
+    data.utxos?.map((utxo) => {
+      if (!utxo.utxo) {
+        throw new Error('UTXO field is missing in the response')
+      }
+
+      const [txId, voutStr] = utxo.utxo.split(':')
+      const vout = Number(voutStr)
+
+      if (!txId || isNaN(vout)) {
+        throw new Error(`Invalid UTXO format: ${utxo.utxo}`)
+      }
+
+      const utxoId: UtxoId = `${txId}:${vout}`
+
+      return {
+        ...utxo,
+        utxo: utxoId,
+      }
+    }) ?? []
+
+  return { utxos: utxosWithNarrowedUtxo }
 }
 
 const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestContext, req: StartMakerRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/maker/start`, {
-    method: 'POST',
+  const { data, response } = await client.POST('/wallet/{walletname}/maker/start', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify({
-      ...req,
-      // We enforce type-safety for the following properties, but their values must actually be passed as string!
-      cjfee_a: String(req.cjfee_a),
-      cjfee_r: String(req.cjfee_r),
-      minsize: String(req.minsize),
-      txfee: String(0),
-    }),
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post maker start response is undefined')
+  }
+
+  return data
 }
 
 /**
@@ -382,28 +595,63 @@ const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestCo
  * Note: Performs a non-idempotent GET request.
  */
 const getMakerStop = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/maker/stop`, {
+  const { data, response } = await client.GET('/wallet/{walletname}/maker/stop', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get maker stop response is undefined')
+  }
+
+  return data
 }
 
-const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestContext, req: DirectSendRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/direct-send`, {
-    method: 'POST',
+const postDirectSend = async (
+  { token, signal, walletFileName, errorMessage }: WalletRequestContext & WithErrorMessage,
+  req: DirectSendRequest,
+) => {
+  const { data, response } = await client.POST('/wallet/{walletname}/taker/direct-send', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify(req),
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post direct send response is undefined')
+  }
+
+  return data
 }
 
 const postCoinjoin = async ({ token, signal, walletFileName }: WalletRequestContext, req: DoCoinjoinRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/coinjoin`, {
-    method: 'POST',
+  const { data, response } = await client.POST('/wallet/{walletname}/taker/coinjoin', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify(req),
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post coinjoin response is undefined')
+  }
+
+  // how to handle this never type?
+  return data
 }
 
 /**
@@ -429,62 +677,119 @@ const postCoinjoin = async ({ token, signal, walletFileName }: WalletRequestCont
  * ```
  */
 const getYieldgenReport = async ({ signal }: ApiRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/yieldgen/report`, {
-    signal,
-  })
+  const { data, response } = await client.GET('/wallet/yieldgen/report', { signal })
+
+  // 404 is returned till the maker is started at least once
+  if (response.status === 404) return []
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get yieldgen report response is undefined')
+  }
+
+  return data
 }
 
 const postFreeze = async (
-  { token, signal, walletFileName }: WalletRequestContext,
-  { utxo, freeze = true }: FreezeRequest,
+  { token, signal, walletFileName, errorMessage }: WalletRequestContext & WithErrorMessage,
+  { 'utxo-string': utxo, freeze = true }: FreezeRequest,
 ) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/freeze`, {
-    method: 'POST',
+  const { data, response } = await client.POST('/wallet/{walletname}/freeze', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify({
-      'utxo-string': utxo,
-      freeze,
-    }),
+    body: { 'utxo-string': utxo, freeze },
     signal,
   })
+
+  if (!response.ok) {
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
+  }
+
+  return data
 }
 
-const postSchedulerStart = async (
-  { token, signal, walletFileName }: WalletRequestContext,
-  req: StartSchedulerRequest,
-) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/schedule`, {
-    method: 'POST',
+const postSchedulerStart = async ({ token, signal, walletFileName }: WalletRequestContext, req: RunScheduleRequest) => {
+  const { data, response } = await client.POST('/wallet/{walletname}/taker/schedule', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify({ ...req }),
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response, errorResolver(t, 'scheduler.error_starting_schedule_failed'))
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post scheduler start response is undefined')
+  }
+
+  return data
 }
 
-const getTakerStop = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/stop`, {
+const getTakerStop = async ({
+  token,
+  signal,
+  walletFileName,
+  errorMessage,
+}: WalletRequestContext & WithErrorMessage) => {
+  const { data, response } = await client.GET('/wallet/{walletname}/taker/stop', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    errorMessage ? Helper.throwResolved(response, errorResolver(t, errorMessage)) : Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get taker stop response is undefined')
+  }
+
+  return data
 }
 
 const getSchedule = async ({ token, signal, walletFileName }: WalletRequestContext) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/schedule`, {
+  const { data, response } = await client.GET('/wallet/{walletname}/taker/schedule', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get schedule response is undefined')
+  }
+
+  return data
 }
 
 /**
  * Change a config variable (for the duration of this backend daemon process instance).
  */
 const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigSetRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/configset`, {
-    method: 'POST',
+  const { data, response } = await client.POST('/wallet/{walletname}/configset', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify(req),
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post config set response is undefined')
+  }
+
+  return data
 }
 
 /**
@@ -493,12 +798,22 @@ const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestCon
  * @returns an object with property `configvalue` as string
  */
 const postConfigGet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigGetRequest) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/configget`, {
-    method: 'POST',
+  const { data, response } = await client.POST('/wallet/{walletname}/configget', {
+    params: { path: { walletname: walletFileName } },
     headers: { ...Helper.buildAuthHeader(token) },
-    body: JSON.stringify(req),
+    body: req,
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('post config get response is undefined')
+  }
+
+  return data
 }
 
 /**
@@ -510,10 +825,21 @@ const getRescanBlockchain = async ({
   walletFileName,
   blockheight,
 }: WalletRequestContext & WithBlockheight) => {
-  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/rescanblockchain/${blockheight}`, {
+  const { data, response } = await client.GET('/wallet/{walletname}/rescanblockchain/{blockheight}', {
+    params: { path: { walletname: walletFileName, blockheight: blockheight } },
     headers: { ...Helper.buildAuthHeader(token) },
     signal,
   })
+
+  if (!response.ok) {
+    Helper.throwResolved(response)
+  }
+
+  if (typeof data === 'undefined') {
+    throw new Error('get rescan blockchain response is undefined')
+  }
+
+  return data
 }
 
 class JmApiError extends Error {
@@ -553,17 +879,21 @@ export {
   getRescanBlockchain,
   Helper,
   JmApiError,
-  ApiAuthContext,
-  StartSchedulerRequest,
+  TokenResponse,
+  WalletDisplayResponse,
+  ListUtxosResponse,
   StartMakerRequest,
+  RunScheduleRequest,
   WalletRequestContext,
-  ApiToken,
   WalletFileName,
   WithWalletFileName,
+  WithErrorMessage,
   WithApiToken,
   Lockdate,
   TxId,
   UtxoId,
+  Utxos,
+  Utxo,
   Mixdepth,
   AmountSats,
   OfferType,

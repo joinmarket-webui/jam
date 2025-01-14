@@ -15,7 +15,7 @@ import { Route, routes } from '../constants/routes'
 import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 
 type CreatedWalletWithAuth = CreatedWalletInfo & {
-  auth: Api.ApiAuthContext
+  auth: Api.TokenResponse
 }
 
 interface BackupConfirmationProps {
@@ -95,7 +95,7 @@ const BackupConfirmation = ({ wallet, onSuccess, onCancel }: BackupConfirmationP
 
 interface CreateWalletProps {
   parentRoute: Route
-  startWallet: (name: Api.WalletFileName, auth: Api.ApiAuthContext) => void
+  startWallet: (name: Api.WalletFileName, auth: Api.TokenResponse) => void
 }
 
 export default function CreateWallet({ parentRoute, startWallet }: CreateWalletProps) {
@@ -117,11 +117,14 @@ export default function CreateWallet({ parentRoute, startWallet }: CreateWalletP
       setAlert(undefined)
 
       try {
-        const res = await Api.postWalletCreate({}, { walletname: walletDisplayNameToFileName(walletName), password })
-        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
+        const req = Api.convertToCreateWalletApiRequest({
+          walletname: walletDisplayNameToFileName(walletName),
+          password,
+        })
+        const body = await Api.postWalletCreate({}, req)
 
         const { seedphrase, walletname: createdWalletFileName } = body
-        const auth = Api.Helper.parseAuthProps(body)
+        const auth = { token: body.token, refresh_token: body.refresh_token } as Api.TokenResponse
 
         setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, auth })
       } catch (e: any) {

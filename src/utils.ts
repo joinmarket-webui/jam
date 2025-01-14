@@ -1,6 +1,7 @@
+import { TFunction } from 'i18next'
+import { AmountSats, OfferType, WalletFileName } from './libs/JmWalletApi'
 import { JM_DUST_THRESHOLD } from './constants/jm'
 import type { AccountBalances } from './context/BalanceSummary'
-import type { AmountSats, OfferType, WalletFileName } from './libs/JmWalletApi'
 
 const BTC_FORMATTER = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 1,
@@ -137,6 +138,11 @@ export const setIntervalDebounced = (
     )
   })()
 }
+
+export const errorResolver = (t: TFunction, i18nKey: string | string[]) => ({
+  resolver: (_: Response, reason: string) => `${t(i18nKey)} ${reason}`,
+  fallbackReason: t('global.errors.reason_unknown'),
+})
 
 const calcMaxAvailableBalanceInJar = (accountBalances: AccountBalances) => {
   return Math.max(0, Math.max(...Object.values(accountBalances || []).map((it) => it.calculatedAvailableBalanceInSats)))

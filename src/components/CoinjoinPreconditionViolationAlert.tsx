@@ -69,9 +69,11 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
                   <li key={index} className="mb-2 slashed-zeroes small" style={{ display: 'inline-flex' }}>
                     <span className="pe-1" style={{ display: 'inline-flex' }}>
                       <Sprite symbol="jar-closed-fill-50" width="20" height="20" />
-                      <span className="slashed-zeroes">
-                        <strong>{jarInitial(utxo.mixdepth)}</strong>
-                      </span>
+                      {utxo.mixdepth && (
+                        <span className="slashed-zeroes">
+                          <strong>{jarInitial(utxo.mixdepth)}</strong>
+                        </span>
+                      )}
                       :
                     </span>
                     <div>
@@ -84,7 +86,7 @@ export const CoinjoinPreconditionViolationAlert = forwardRef(
                       />
                       )
                       <br />
-                      <small>{shortenStringMiddle(utxo.utxo, 32)}</small>
+                      {utxo.utxo && <small>{shortenStringMiddle(utxo.utxo, 32)}</small>}
                     </div>
                   </li>
                 ))}

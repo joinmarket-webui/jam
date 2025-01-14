@@ -414,12 +414,12 @@ const toStartMakerRequest = (values: EarnFormValues): Api.StartMakerRequest => {
   // prevent providing an invalid value by setting the ignored prop to zero
   const cjfee_a = isAbsoluteOffer(values.offertype) ? values.feeAbs!.value! : 0
   const cjfee_r = isRelativeOffer(values.offertype) ? values.feeRel : 0
-  return {
+  return Api.convertToStartMakerApiRequest({
     ordertype: values.offertype,
     minsize: values.minsize!.value!,
     cjfee_a,
     cjfee_r,
-  }
+  })
 }
 
 interface EarnProps {
@@ -470,7 +470,6 @@ export default function Earn({ wallet }: EarnProps) {
       // Wait for the websocket or session response!
       return (
         Api.postMakerStart({ ...wallet }, toStartMakerRequest(values))
-          .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
           // show the loader a little longer to avoid flickering
           .then((result) => new Promise((r) => setTimeout(() => r(result), 200)))
           .catch((e) => {
@@ -490,7 +489,6 @@ export default function Earn({ wallet }: EarnProps) {
     // There is no response data to check if maker got stopped:
     // Wait for the websocket or session response!
     return Api.getMakerStop({ ...wallet })
-      .then((res) => (res.ok ? true : Api.Helper.throwError(res)))
       .then((result) => new Promise((r) => setTimeout(() => r(result), MAKER_STOP_RESPONSE_DELAY_MS)))
       .catch((e) => {
         setIsWaitingMakerStop(false)
@@ -688,7 +686,7 @@ export default function Earn({ wallet }: EarnProps) {
                             variant={settings.theme === 'dark' ? 'light' : 'dark'}
                             className="w-100 d-flex justify-content-center align-items-center"
                             disabled={moveToJarFidelityBondId !== undefined}
-                            onClick={() => setMoveToJarFidelityBondId(fidelityBond.utxo)}
+                            onClick={() => setMoveToJarFidelityBondId(Api.toUtxoId(fidelityBond.utxo))}
                           >
                             <Sprite className="me-1 mb-1" symbol="unlock" width="24" height="24" />
                             {t('earn.fidelity_bond.existing.button_spend')}
@@ -697,7 +695,7 @@ export default function Earn({ wallet }: EarnProps) {
                             variant={settings.theme === 'dark' ? 'light' : 'dark'}
                             className="w-100 d-flex justify-content-center align-items-center"
                             disabled={renewFidelityBondId !== undefined}
-                            onClick={() => setRenewFidelityBondId(fidelityBond.utxo)}
+                            onClick={() => setRenewFidelityBondId(Api.toUtxoId(fidelityBond.utxo))}
                           >
                             <Sprite className="me-1" symbol="refresh" width="24" height="24" />
                             {t('earn.fidelity_bond.existing.button_renew')}

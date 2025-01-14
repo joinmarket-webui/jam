@@ -122,8 +122,7 @@ export default function RescanChain({ wallet }: RescanChainProps) {
       setAlert(undefined)
 
       try {
-        const res = await Api.getRescanBlockchain({ ...wallet, signal, blockheight })
-        if (!res.ok) await Api.Helper.throwError(res)
+        await Api.getRescanBlockchain({ ...wallet, signal, blockheight })
 
         dispatchServiceInfo({
           rescanning: true,

@@ -80,7 +80,7 @@ export function LogOverlay({ currentWallet, show, onHide }: LogOverlayProps) {
   const refresh = useCallback(
     (signal: AbortSignal) => {
       return fetchLog({ token: currentWallet.token, signal, fileName: JMWALLETD_LOG_FILE_NAME })
-        .then((res) => (res.ok ? res.text() : ApiHelper.throwError(res)))
+        .then((res) => (res.ok ? res.text() : ApiHelper.throwResolved(res)))
         .then((data) => {
           if (signal.aborted) return
           setAlert(undefined)

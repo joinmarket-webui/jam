@@ -90,14 +90,14 @@ const yieldgenReportLineToEarnReportEntry = (line: string): EarnReportEntry | nu
   if (values.length < 8) return null
 
   return {
-    timestamp: parseYieldgenTimestamp(values[0]),
-    cjTotalAmount: values[1] !== '' ? parseInt(values[1], 10) : null,
-    inputCount: values[2] !== '' ? parseInt(values[2], 10) : null,
-    inputAmount: values[3] !== '' ? parseInt(values[3], 10) : null,
-    fee: values[4] !== '' ? parseInt(values[4], 10) : null,
-    earnedAmount: values[5] !== '' ? parseInt(values[5], 10) : null,
-    confirmationDuration: values[6] !== '' ? parseFloat(values[6]) : null,
-    notes: values[7] !== '' ? values[7] : null,
+    timestamp: parseYieldgenTimestamp(values[0]!),
+    cjTotalAmount: values[1] && values[1] !== '' ? parseInt(values[1], 10) : null,
+    inputCount: values[2] && values[2] !== '' ? parseInt(values[2], 10) : null,
+    inputAmount: values[3] && values[3] !== '' ? parseInt(values[3], 10) : null,
+    fee: values[4] && values[4] !== '' ? parseInt(values[4], 10) : null,
+    earnedAmount: values[5] && values[5] !== '' ? parseInt(values[5], 10) : null,
+    confirmationDuration: values[6] && values[6] !== '' ? parseFloat(values[6]) : null,
+    notes: values[7] && values[7] !== '' ? values[7] : null,
   }
 }
 
@@ -443,13 +443,7 @@ export function EarnReportOverlay({ show, onHide }: rb.OffcanvasProps) {
   const refresh = useCallback(
     (signal: AbortSignal) => {
       return Api.getYieldgenReport({ signal })
-        .then((res) => {
-          if (res.ok) return res.json()
-          // 404 is returned till the maker is started at least once
-          if (res.status === 404) return { yigen_data: [] }
-          return Api.Helper.throwError(res)
-        })
-        .then((data) => data.yigen_data as YieldgenReportLinesWithHeader)
+        .then((data) => data as YieldgenReportLinesWithHeader)
         .then((linesWithHeader) => yieldgenReportToEarnReportEntries(linesWithHeader))
         .then((earnReportEntries) => {
           if (signal.aborted) return

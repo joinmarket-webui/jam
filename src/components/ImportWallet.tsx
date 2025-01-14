@@ -84,7 +84,7 @@ interface ImportWalletDetailsFormProps {
 }
 
 type RecoveredWalletWithAuth = Pick<CreatedWalletInfo, 'walletFileName'> & {
-  auth: Api.ApiAuthContext
+  auth: Api.TokenResponse
 }
 
 const ImportWalletDetailsForm = ({
@@ -381,7 +381,7 @@ enum ImportWalletSteps {
 
 interface ImportWalletProps {
   parentRoute: Route
-  startWallet: (name: Api.WalletFileName, auth: Api.ApiAuthContext) => void
+  startWallet: (name: Api.WalletFileName, auth: Api.TokenResponse) => void
 }
 
 export default function ImportWallet({ parentRoute, startWallet }: ImportWalletProps) {
@@ -457,18 +457,22 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
 
       try {
         // Step #1: recover wallet
-        const recoverResponse = await Api.postWalletRecover({ signal }, { walletname, password, seedphrase })
-        const recoverBody = await (recoverResponse.ok ? recoverResponse.json() : Api.Helper.throwError(recoverResponse))
+        const req = Api.convertToRecoverWalletApiRequest({
+          walletname,
+          password,
+          seedphrase,
+        })
+        const recoverBody = await Api.postWalletRecover({ signal }, req)
 
         const { walletname: walletFileName } = recoverBody
-        let auth: Api.ApiAuthContext = Api.Helper.parseAuthProps(recoverBody)
+        const auth = { token: recoverBody.token, refresh_token: recoverBody.refresh_token } as Api.TokenResponse
         setRecoveredWallet({ walletFileName, auth })
 
         // Step #2: update the gaplimit config value if necessary
         const originalGaplimit = await refreshConfigValues({
           signal,
           keys: [JM_GAPLIMIT_CONFIGKEY],
-          wallet: { walletFileName, token: auth.token },
+          wallet: { walletFileName, token: recoverBody.token },
         })
           .then((it) => it[JM_GAPLIMIT_CONFIGKEY.section] || {})
           .then((it) => parseInt(it[JM_GAPLIMIT_CONFIGKEY.field] || String(JM_GAPLIMIT_DEFAULT), 10))
@@ -486,18 +490,14 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 value: String(gaplimit),
               },
             ],
-            wallet: { walletFileName, token: auth.token },
+            wallet: { walletFileName, token: recoverBody.token },
           })
         }
 
         // Step #3: lock and unlock the wallet (for new addresses to be imported)
-        const lockResponse = await Api.getWalletLock({ walletFileName, token: auth.token })
-        if (!lockResponse.ok) await Api.Helper.throwError(lockResponse)
+        await Api.getWalletLock({ walletFileName, token: recoverBody.token })
 
-        const unlockResponse = await Api.postWalletUnlock({ walletFileName }, { password })
-        const unlockBody = await (unlockResponse.ok ? unlockResponse.json() : Api.Helper.throwError(unlockResponse))
-
-        auth = Api.Helper.parseAuthProps(unlockBody)
+        const unlockBody = await Api.postWalletUnlock({ walletFileName }, { password })
 
         // Step #4: reset `gaplimit´ to previous value if necessary
         if (gaplimitUpdateNecessary) {
@@ -510,26 +510,22 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
                 value: String(originalGaplimit),
               },
             ],
-            wallet: { walletFileName, token: auth.token },
+            wallet: { walletFileName, token: unlockBody.token },
           })
         }
 
         // Step #5: invoke rescanning the timechain
         console.info('Will start rescanning timechain from block %d', blockheight)
 
-        const rescanResponse = await Api.getRescanBlockchain({
+        await Api.getRescanBlockchain({
           signal,
           walletFileName,
           token: unlockBody.token,
           blockheight,
         })
-        if (!rescanResponse.ok) {
-          await Api.Helper.throwError(rescanResponse)
-        } else {
-          dispatchServiceInfo({
-            rescanning: true,
-          })
-        }
+        dispatchServiceInfo({
+          rescanning: true,
+        })
 
         startWallet(walletFileName, auth)
         nextStep()

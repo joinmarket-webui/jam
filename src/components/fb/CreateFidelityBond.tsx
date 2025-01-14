@@ -4,8 +4,6 @@ import * as Api from '../../libs/JmWalletApi'
 import { Trans, useTranslation } from 'react-i18next'
 import {
   CurrentWallet,
-  Utxo,
-  Utxos,
   WalletInfo,
   useCurrentWalletInfo,
   useReloadCurrentWalletInfo,
@@ -83,14 +81,14 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
   const [selectedJar, setSelectedJar] = useState<JarIndex>()
-  const [selectedUtxos, setSelectedUtxos] = useState<Utxos>([])
+  const [selectedUtxos, setSelectedUtxos] = useState<Api.Utxos>([])
   const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
-  const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState([])
-  const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Utxo>()
-  const [frozenUtxos, setFrozenUtxos] = useState<Utxos>([])
+  const [utxoIdsToBeSpent, setUtxoIdsToBeSpent] = useState<string[]>([])
+  const [createdFidelityBondUtxo, setCreatedFidelityBondUtxo] = useState<Api.Utxo>()
+  const [frozenUtxos, setFrozenUtxos] = useState<Api.Utxos>([])
 
   const selectedUtxosTotalValue = useMemo(
-    () => selectedUtxos.map((it) => it.value).reduce((prev, curr) => prev + curr, 0),
+    () => selectedUtxos.map((it) => it.value).reduce((prev, curr = 0) => (prev ?? 0) + curr, 0),
     [selectedUtxos],
   )
   const allUtxosSelected = useMemo(
@@ -148,35 +146,37 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     }
   }, [showCreateFidelityBondModal, reloadCurrentWalletInfo, t])
 
-  const freezeUtxos = (utxos: Utxos) => {
+  const freezeUtxos = (utxos: Api.Utxos) => {
     changeUtxoFreeze(utxos, true)
   }
 
-  const unfreezeUtxos = (utxos: Utxos) => {
+  const unfreezeUtxos = (utxos: Api.Utxos) => {
     changeUtxoFreeze(utxos, false)
   }
 
-  const changeUtxoFreeze = (utxos: Utxos, freeze: boolean) => {
+  const changeUtxoFreeze = (utxos: Api.Utxos, freeze: boolean) => {
     setIsLoading(true)
 
     const abortCtrl = new AbortController()
 
-    let utxosThatWereFrozen: Utxos = []
+    const utxosThatWereFrozen: Api.Utxos = []
 
-    const freezeCalls = utxos.map((utxo) =>
-      Api.postFreeze({ ...wallet }, { utxo: utxo.utxo, freeze: freeze }).then((res) => {
-        if (res.ok) {
-          if (!utxo.frozen && freeze) {
-            utxosThatWereFrozen.push(utxo)
-          }
-        } else {
-          return Api.Helper.throwError(
-            res,
-            freeze ? t('earn.fidelity_bond.error_freezing_utxos') : t('earn.fidelity_bond.error_unfreezing_utxos'),
-          )
-        }
-      }),
-    )
+    const freezeCalls = utxos.map(async (utxo) => {
+      const req = { 'utxo-string': utxo.utxo ?? '', freeze }
+      await Api.postFreeze(
+        {
+          ...wallet,
+          errorMessage: freeze
+            ? 'earn.fidelity_bond.error_freezing_utxos'
+            : 'earn.fidelity_bond.error_unfreezing_utxos',
+        },
+        req,
+      )
+
+      if (!utxo.frozen && freeze) {
+        utxosThatWereFrozen.push(utxo)
+      }
+    })
 
     Promise.all(freezeCalls)
       .then((_) => reloadCurrentWalletInfo.reloadUtxos({ signal: abortCtrl.signal }))
@@ -199,11 +199,9 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       ...wallet,
       signal: abortCtrl.signal,
       lockdate: lockDate,
+      errorMessage: 'fidelity_bond.error_loading_timelock_address_failed',
     })
-      .then((res) => {
-        return res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_loading_address'))
-      })
-      .then((data) => setTimelockedAddress(data.address))
+      .then((data) => setTimelockedAddress(data))
       .then((_) => setAlert(undefined))
       .catch((err) => {
         setAlert({ variant: 'danger', message: err.message })
@@ -214,15 +212,23 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
   const directSweepToFidelityBond = (jarIndex: JarIndex, address: Api.BitcoinAddress) => {
     setIsLoading(true)
 
-    Api.postDirectSend(wallet, {
-      mixdepth: jarIndex,
-      destination: address,
-      amount_sats: 0, // sweep
-    })
-      .then((res) =>
-        res.ok ? res.json() : Api.Helper.throwError(res, t('earn.fidelity_bond.error_creating_fidelity_bond')),
-      )
-      .then((body) => setUtxoIdsToBeSpent(body.txinfo.inputs.map((input: any) => input.outpoint)))
+    Api.postDirectSend(
+      { ...wallet, errorMessage: 'earn.fidelity_bond.error_creating_fidelity_bond' },
+      {
+        mixdepth: jarIndex,
+        destination: address,
+        amount_sats: 0, // sweep
+      },
+    )
+      .then((body) => {
+        if (body?.txinfo?.inputs) {
+          setUtxoIdsToBeSpent(
+            body.txinfo.inputs
+              .map((input) => input.outpoint)
+              .filter((outpoint): outpoint is string => outpoint !== undefined),
+          )
+        }
+      })
       .then((_) => setAlert(undefined))
       .catch((err) => {
         setIsLoading(false)
@@ -243,15 +249,15 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         .then((res) => {
           if (abortCtrl.signal.aborted) return
 
-          const allUtxoIds = res.utxos.map((utxo) => utxo.utxo)
-          const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds.includes(utxoId))
+          const allUtxoIds = res.utxos?.map((utxo) => utxo.utxo)
+          const utxoIdsStillPresent = utxoIdsToBeSpent.filter((utxoId) => allUtxoIds?.includes(utxoId))
 
           if (utxoIdsStillPresent.length === 0) {
             // Note that two fidelity bonds with the same locktime will end up on the same address.
             // Therefore, this might not actually be the UTXO we just created.
             // Since we're using it only for displaying locktime and address, this should be fine though.
-            const fbOutputs = res.utxos.filter((utxo) => fb.utxo.isFidelityBond(utxo))
-            const fbUtxo = fbOutputs.find((utxo) => utxo.address === timelockedAddress)
+            const fbOutputs = res.utxos?.filter((utxo) => fb.utxo.isFidelityBond(utxo))
+            const fbUtxo = fbOutputs?.find((utxo) => utxo.address === timelockedAddress)
 
             if (fbUtxo !== undefined) {
               setCreatedFidelityBondUtxo(fbUtxo)
@@ -316,7 +322,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             accountBalances={walletInfo.balanceSummary.accountBalances}
             totalBalance={walletInfo.balanceSummary.calculatedTotalBalanceInSats}
             isJarSelectable={(jarIndex) =>
-              walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
+              !!walletInfo.utxosByJar[jarIndex] && walletInfo.utxosByJar[jarIndex].length > 0
             }
             selectedJar={selectedJar}
             onJarSelected={(accountIndex) => setSelectedJar(accountIndex)}
@@ -328,7 +334,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             <SelectUtxos
               walletInfo={walletInfo}
               jar={selectedJar!}
-              utxos={walletInfo.utxosByJar[selectedJar!]}
+              utxos={walletInfo.utxosByJar[selectedJar!] ?? []}
               selectedUtxos={selectedUtxos}
               onUtxoSelected={(utxo) => setSelectedUtxos([...selectedUtxos, utxo])}
               onUtxoDeselected={(utxo) => setSelectedUtxos(selectedUtxos.filter((it) => it !== utxo))}
@@ -343,7 +349,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           <FreezeUtxos
             walletInfo={walletInfo}
             jar={selectedJar!}
-            utxos={walletInfo.utxosByJar[selectedJar!]}
+            utxos={walletInfo.utxosByJar[selectedJar!] ?? []}
             selectedUtxos={selectedUtxos}
             isLoading={isLoading}
           />
@@ -367,7 +373,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
             <ReviewInputs
               lockDate={lockDate!}
               jar={selectedJar!}
-              utxos={walletInfo.utxosByJar[selectedJar!]}
+              utxos={walletInfo.utxosByJar[selectedJar!] ?? []}
               selectedUtxos={selectedUtxos}
               timelockedAddress={timelockedAddress}
             />
@@ -426,7 +432,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
         return t('earn.fidelity_bond.select_utxos.text_primary_button')
       case steps.freezeUtxos:
         const utxosAreFrozen = fb.utxo.allAreFrozen(
-          fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar!], selectedUtxos),
+          fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar!] ?? [], selectedUtxos),
         )
 
         if (utxosAreFrozen) {
@@ -463,7 +469,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
 
   const onlyCjOutOrFbUtxosSelected = () => {
     return selectedUtxos.every(
-      (utxo) => walletInfo.addressSummary[utxo.address]?.status === 'cj-out' || utxo.locktime !== undefined,
+      (utxo) => utxo.address !== undefined && walletInfo.addressSummary[utxo.address]?.status === 'cj-out', // || utxo.locktime !== undefined), // locktime does not exist on the generated utxo type
     )
   }
 
@@ -515,7 +521,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
       }
 
       const utxosAreFrozen = fb.utxo.allAreFrozen(
-        fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar!], selectedUtxos),
+        fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar!] ?? [], selectedUtxos),
       )
       if (utxosAreFrozen) {
         return steps.reviewInputs
@@ -561,7 +567,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
     }
 
     if (step === steps.freezeUtxos) {
-      const utxosToFreeze = fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar!], selectedUtxos)
+      const utxosToFreeze = fb.utxo.utxosToFreeze(walletInfo.utxosByJar[selectedJar!] ?? [], selectedUtxos)
       const utxosAreFrozen = fb.utxo.allAreFrozen(utxosToFreeze)
 
       if (!utxosAreFrozen) {
@@ -632,7 +638,7 @@ const CreateFidelityBond = ({ otherFidelityBondExists, wallet, walletInfo, onDon
           data={{
             sourceJarIndex: undefined, // dont show a source jar - might be confusing in this context
             destination: timelockedAddress,
-            amount: selectedUtxosTotalValue,
+            amount: selectedUtxosTotalValue ?? 0,
             isSweep: true,
             isCoinjoin: false, // not sent as collaborative transaction
             numCollaborators: undefined,

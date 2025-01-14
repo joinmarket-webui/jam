@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
-import { act, render, screen, waitFor, waitForElementToBeRemoved } from '../testUtils'
+import { act, render, screen, waitFor } from '../testUtils'
 import user from '@testing-library/user-event'
 
 import * as apiMock from '../libs/JmWalletApi'
@@ -38,14 +38,14 @@ describe('<Wallets />', () => {
 
   const neverResolvingPromise = new Promise(() => {})
   beforeEach(() => {
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue(neverResolvingPromise)
   })
 
   it('should display loading indicator while fetching data', async () => {
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(neverResolvingPromise)
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(neverResolvingPromise)
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue(neverResolvingPromise)
 
     setup({})
 
@@ -55,18 +55,9 @@ describe('<Wallets />', () => {
   })
 
   it('should display error message when loading wallets fails', async () => {
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(neverResolvingPromise)
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-      }),
-    )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: false,
-      }),
-    )
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue(neverResolvingPromise)
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue({})
+    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(Promise.reject(new Error('wallets.error_loading_failed')))
 
     await act(async () => setup({}))
 
@@ -76,20 +67,10 @@ describe('<Wallets />', () => {
   })
 
   it('should display alert when rescanning is active', async () => {
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: false,
-      }),
-    )
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            rescanning: true,
-          }),
-      }),
-    )
+    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(Promise.reject(new Error('wallets.error_loading_failed')))
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+      rescanning: true,
+    })
 
     await act(async () => setup({}))
 
@@ -98,30 +79,16 @@ describe('<Wallets />', () => {
   })
 
   it('should display big call-to-action buttons if no wallet has been created yet', async () => {
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            session: false,
-            maker_running: false,
-            coinjoin_in_process: false,
-            wallet_name: 'None',
-          }),
-      }),
-    )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ wallets: [] }),
-      }),
-    )
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ version: '0.9.10dev' }),
-      }),
-    )
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+      session: false,
+      maker_running: false,
+      coinjoin_in_process: false,
+      wallet_name: 'None',
+    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([])
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
+      version: '0.9.10dev',
+    })
 
     await act(async () => setup({}))
 
@@ -135,30 +102,16 @@ describe('<Wallets />', () => {
   })
 
   it('should display login for available wallets', async () => {
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            session: false,
-            maker_running: false,
-            coinjoin_in_process: false,
-            wallet_name: 'None',
-          }),
-      }),
-    )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ wallets: ['wallet0.jmdat', 'wallet1.jmdat'] }),
-      }),
-    )
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ version: '0.9.10dev' }),
-      }),
-    )
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+      session: false,
+      maker_running: false,
+      coinjoin_in_process: false,
+      wallet_name: 'None',
+    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue(['wallet0.jmdat', 'wallet1.jmdat'])
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
+      version: '0.9.10dev',
+    })
 
     await act(async () => setup({}))
 
@@ -177,30 +130,16 @@ describe('<Wallets />', () => {
   })
 
   it('should hide "Import Wallet"-button on unsupported backend version', async () => {
-    ;(apiMock.getSession as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            session: false,
-            maker_running: false,
-            coinjoin_in_process: false,
-            wallet_name: 'None',
-          }),
-      }),
-    )
-    ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ wallets: [] }),
-      }),
-    )
-    ;(apiMock.getGetinfo as jest.Mock).mockReturnValue(
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ version: '0.9.9' }),
-      }),
-    )
+    ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+      session: false,
+      maker_running: false,
+      coinjoin_in_process: false,
+      wallet_name: 'None',
+    })
+    ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([])
+    ;(apiMock.getGetinfo as jest.Mock).mockResolvedValue({
+      version: '0.9.9',
+    })
 
     await act(async () => setup({}))
 
@@ -214,35 +153,18 @@ describe('<Wallets />', () => {
     const dummyPassword = 'correct horse battery staple'
 
     it('should unlock inactive wallet successfully', async () => {
-      ;(apiMock.getSession as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              session: false,
-              maker_running: false,
-              coinjoin_in_process: false,
-              wallet_name: 'None',
-            }),
-        }),
-      )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
-      ;(apiMock.postWalletUnlock as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              walletname: dummyWalletFileName,
-              token: dummyToken,
-              refresh_token: dummyToken,
-            }),
-        }),
-      )
+      ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+        session: false,
+        maker_running: false,
+        coinjoin_in_process: false,
+        wallet_name: 'None',
+      })
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
+      ;(apiMock.postWalletUnlock as jest.Mock).mockResolvedValue({
+        walletname: dummyWalletFileName,
+        token: dummyToken,
+        refresh_token: dummyToken,
+      })
 
       await act(async () => setup({}))
 
@@ -266,30 +188,14 @@ describe('<Wallets />', () => {
     it('should add alert if unlocking of inactive wallet fails', async () => {
       const apiErrorMessage = 'ANY_ERROR_MESSAGE with template <Wallet>'
 
-      ;(apiMock.getSession as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              session: false,
-              maker_running: false,
-              coinjoin_in_process: false,
-              wallet_name: 'None',
-            }),
-        }),
-      )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
-      ;(apiMock.postWalletUnlock as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: false,
-          json: () => Promise.resolve({ message: apiErrorMessage }),
-        }),
-      )
+      ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+        session: false,
+        maker_running: false,
+        coinjoin_in_process: false,
+        wallet_name: 'None',
+      })
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
+      ;(apiMock.postWalletUnlock as jest.Mock).mockImplementation(() => Promise.reject(new Error(apiErrorMessage)))
 
       await act(async () => setup({}))
 
@@ -309,30 +215,17 @@ describe('<Wallets />', () => {
     })
 
     it('should lock active wallet successfully', async () => {
-      ;(apiMock.getSession as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              session: true,
-              maker_running: false,
-              coinjoin_in_process: false,
-              wallet_name: dummyWalletFileName,
-            }),
-        }),
-      )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
-      ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ walletname: dummyWalletFileName, already_locked: false }),
-        }),
-      )
+      ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+        session: true,
+        maker_running: false,
+        coinjoin_in_process: false,
+        wallet_name: dummyWalletFileName,
+      })
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
+      ;(apiMock.getWalletLock as jest.Mock).mockResolvedValue({
+        walletname: dummyWalletFileName,
+        already_locked: false,
+      })
 
       await act(async () =>
         setup({
@@ -357,31 +250,17 @@ describe('<Wallets />', () => {
     it('should add alert but clear wallet if locking active wallet fails with UNAUTHORIZED', async () => {
       const apiErrorMessage = 'Invalid credentials.'
 
-      ;(apiMock.getSession as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () =>
-            Promise.resolve({
-              session: true,
-              maker_running: false,
-              coinjoin_in_process: false,
-              wallet_name: dummyWalletFileName,
-            }),
-        }),
-      )
-      ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-        }),
-      )
-      ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
-        Promise.resolve({
-          ok: false,
-          status: 401,
-          json: () => Promise.resolve({ message: apiErrorMessage }),
-        }),
-      )
+      ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+        session: true,
+        maker_running: false,
+        coinjoin_in_process: false,
+        wallet_name: dummyWalletFileName,
+      })
+      ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
+      ;(apiMock.getWalletLock as jest.Mock).mockRejectedValue({
+        message: apiErrorMessage,
+        response: { status: 401 },
+      })
 
       await act(async () =>
         setup({
@@ -402,8 +281,8 @@ describe('<Wallets />', () => {
       await waitFor(() => screen.findByText('wallets.wallet_preview.button_lock'))
 
       // on 401 errors, stopWallet *should* have been called
-      expect(mockStopWallet).toHaveBeenCalled()
-      expect(screen.getByText(apiErrorMessage)).toBeInTheDocument()
+      await waitFor(() => expect(mockStopWallet).toHaveBeenCalled())
+      expect(await screen.findByText(apiErrorMessage)).toBeInTheDocument()
     })
 
     it.each`
@@ -413,24 +292,13 @@ describe('<Wallets />', () => {
     `(
       'should confirm locking wallet if maker ($makerRunning) or taker ($coinjoinInProgress) is running',
       async ({ makerRunning, coinjoinInProgress, expectedModalBody }) => {
-        ;(apiMock.getSession as jest.Mock).mockReturnValue(
-          Promise.resolve({
-            ok: true,
-            json: () =>
-              Promise.resolve({
-                session: true,
-                maker_running: makerRunning,
-                coinjoin_in_process: coinjoinInProgress,
-                wallet_name: dummyWalletFileName,
-              }),
-          }),
-        )
-        ;(apiMock.getWalletAll as jest.Mock).mockReturnValue(
-          Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ wallets: [dummyWalletFileName] }),
-          }),
-        )
+        ;(apiMock.getSession as jest.Mock).mockResolvedValue({
+          session: true,
+          maker_running: makerRunning,
+          coinjoin_in_process: coinjoinInProgress,
+          wallet_name: dummyWalletFileName,
+        })
+        ;(apiMock.getWalletAll as jest.Mock).mockResolvedValue([dummyWalletFileName])
         ;(apiMock.getWalletLock as jest.Mock).mockReturnValue(
           Promise.resolve({
             ok: true,
