@@ -19,7 +19,7 @@ import UtxoIcon from '../utxo/UtxoIcon'
 import UtxoTags from '../utxo/UtxoTags'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
-import { get } from 'http'
+
 
 interface ShowUtxosProps {
   isOpen: boolean
