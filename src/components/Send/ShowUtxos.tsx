@@ -19,6 +19,7 @@ import UtxoIcon from '../utxo/UtxoIcon'
 import UtxoTags from '../utxo/UtxoTags'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
+import { get } from 'http'
 
 interface ShowUtxosProps {
   isOpen: boolean
@@ -47,6 +48,14 @@ const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
   const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
   const tags = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
+  const getCheckboxClass = () => {
+    const baseClass = styles.checkbox
+    if (utxo.frozen) return `${baseClass} ${styles['checkbox-frozen']}`
+    if (tags[0]?.color === 'success') return `${baseClass} ${styles['checkbox-success']}`
+    if (tags[0]?.color === 'danger') return `${baseClass} ${styles['checkbox-danger']}`
+    return `${baseClass} ${styles['checkbox-normal']}`
+  }
+
   return (
     <Row
       item={utxo}
@@ -66,7 +75,7 @@ const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
               checked={utxo.checked}
               disabled={!utxo.selectable}
               onChange={() => utxo.selectable && onToggle(utxo)}
-              className={styles.checkbox}
+              className={getCheckboxClass()}
             />
           </div>
         )}
