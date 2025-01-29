@@ -20,7 +20,6 @@ import UtxoTags from '../utxo/UtxoTags'
 import { shortenStringMiddle } from '../../utils'
 import styles from './ShowUtxos.module.css'
 
-
 interface ShowUtxosProps {
   isOpen: boolean
   isLoading: boolean
