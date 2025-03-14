@@ -83,7 +83,7 @@ services:
   irc:
     container_name: jm_regtest_irc
     restart: unless-stopped
-    image: ghcr.io/ergochat/ergo:v2.10.0
+    image: ghcr.io/ergochat/ergo:v2.10.0@sha256:cb72a03a95724d993c0304658b2c4ce1b2e51a99bd0de0124498cdbb5c80e52c 
     expose:
       - 6667
     volumes:
@@ -92,7 +92,7 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: polarlightning/bitcoind:27.0
+    image: polarlightning/bitcoind:27.0@sha256:7ac359cacd1c667fae321fe049d3d860eb85f1f14aff805e96246c5dc70f2f13
     command:
       # rpcauth (user=regtest; password=regtest)
       # rpcauth (user=joinmarket; password=joinmarket)
@@ -167,7 +167,7 @@ services:
   explorer:
     container_name: jm_regtest_explorer
     restart: unless-stopped
-    image: getumbrel/btc-rpc-explorer:v3.4.0
+    image: getumbrel/btc-rpc-explorer:v3.4.0@sha256:e85a1fe80919d308b1f80de2dc7174e7b61ec79384d695304fbf259b67b53594
     environment:
       BTCEXP_HOST: 0.0.0.0
       BTCEXP_PORT: 3002
