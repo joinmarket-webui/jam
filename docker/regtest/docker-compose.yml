@@ -156,7 +156,7 @@ services:
 
   nginx:
     container_name: jm_regtest_nginx_test_basepath
-    image: nginx
+    image: nginx:1.27.4-alpine3.21@sha256:4ff102c5d78d254a6f0da062b3cf39eaf07f01eec0927fd21e219d0af8bc0591
     volumes:
       - ./dockerfile-deps/nginx:/etc/nginx/templates
     ports:
