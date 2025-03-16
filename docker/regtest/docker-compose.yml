@@ -89,6 +89,13 @@ services:
     volumes:
       - "joinmarket_directory_node_datadir:/root/.joinmarket"
       - "./out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
+    healthcheck:
+      test: ["CMD", "supervisorctl", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   irc:
     container_name: jm_regtest_irc
