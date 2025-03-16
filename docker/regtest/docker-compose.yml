@@ -19,9 +19,12 @@ services:
       - "joinmarket_datadir:/root/.joinmarket"
       - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
-      - bitcoind
-      - bitcoind_regtest_initializer
-      - irc
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      irc:
+        condition: service_started
 
   joinmarket2:
     container_name: jm_regtest_joinmarket2
@@ -40,8 +43,12 @@ services:
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
     depends_on:
-      - bitcoind
-      - irc
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      irc:
+        condition: service_started
 
   joinmarket3:
     container_name: jm_regtest_joinmarket3
@@ -61,9 +68,12 @@ services:
       - "joinmarket3_datadir:/root/.joinmarket"
       - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
-      - bitcoind
-      - bitcoind_regtest_initializer
-      - irc
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      irc:
+        condition: service_started
 
   joinmarket_directory_node:
     container_name: jm_regtest_joinmarket_directory_node
@@ -136,6 +146,13 @@ services:
     volumes:
       - "bitcoin_datadir:/home/bitcoin/data"
       - "bitcoin_wallet_datadir:/home/bitcoin/walletdata"
+    healthcheck:
+      test: [ "CMD", "/entrypoint.sh", "bitcoin-cli", "-chain=regtest", "-rpcport=43782", "-datadir=/home/bitcoin/data", "-getinfo" ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   bitcoind_regtest_initializer:
       container_name: jm_regtest_bitcoind_initializer
@@ -152,7 +169,8 @@ services:
       volumes:
         - "initializer_datadir:/root/.regtest-initializer"
       depends_on:
-        - bitcoind
+        bitcoind:
+          condition: service_healthy
 
   nginx:
     container_name: jm_regtest_nginx_test_basepath
@@ -182,7 +200,8 @@ services:
     ports:
       - "3002:3002"
     depends_on:
-      - bitcoind
+      bitcoind:
+        condition: service_healthy
 
 volumes:
   bitcoin_datadir:
