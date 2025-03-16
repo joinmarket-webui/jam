@@ -188,6 +188,13 @@ services:
       - "8000:80"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --output-document /dev/null http://127.0.0.1:80/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   explorer:
     container_name: jm_regtest_explorer

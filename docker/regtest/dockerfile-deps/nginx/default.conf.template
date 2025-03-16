@@ -29,4 +29,9 @@ server {
     location /joinmarket {
         proxy_pass http://host.docker.internal:3000/joinmarket;
     }
+
+    location = /health {
+        default_type application/json;
+        return 200 '{ "status": "UP" }';
+    }
 }
