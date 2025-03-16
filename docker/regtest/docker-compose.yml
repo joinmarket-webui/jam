@@ -83,7 +83,7 @@ services:
   irc:
     container_name: jm_regtest_irc
     restart: unless-stopped
-    image: ghcr.io/ergochat/ergo:v2.10.0@sha256:cb72a03a95724d993c0304658b2c4ce1b2e51a99bd0de0124498cdbb5c80e52c 
+    image: ghcr.io/ergochat/ergo:v2.15.0@sha256:135cd42c6300d957e0045ee53fbe886e43e1c04bb621391ed7b8940c174d68f3
     expose:
       - 6667
     volumes:
