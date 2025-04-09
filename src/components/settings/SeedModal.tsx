@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import * as rb from 'react-bootstrap'
 import { useTranslation } from 'react-i18next'
 import Seedphrase from '../Seedphrase'
-import ToggleSwitch from '../ToggleSwitch'
 import { CurrentWallet } from '../../context/WalletContext'
 import * as Api from '../../libs/JmWalletApi'
+import { setSession } from '../../session'
 
 interface SeedModalProps {
   wallet: CurrentWallet
@@ -56,6 +56,7 @@ export default function SeedModal({ wallet, show, onHide }: SeedModalProps) {
         clearTimeout(showSeedTimeout)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show, wallet])
 
   useEffect(() => {
@@ -85,6 +86,16 @@ export default function SeedModal({ wallet, show, onHide }: SeedModalProps) {
       // Verify password by attempting to unlock wallet
       const res = await Api.postWalletUnlock({ walletFileName: wallet.walletFileName }, { password })
       if (res.ok) {
+        // Parse the response body to get both token and refresh_token
+        const body = await res.json()
+        const auth = Api.Helper.parseAuthProps(body)
+
+        // Store both tokens in session
+        setSession({
+          walletFileName: wallet.walletFileName,
+          auth: auth, // This includes both token and refresh_token
+        })
+
         setIsAuthenticated(true)
         setRevealSeed(true)
         setTimeLeft(30)
