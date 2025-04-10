@@ -30,7 +30,7 @@ type Output = {
   address: string
 }
 
-type TxInfo = {
+export type TxInfo = {
   hex: string
   inputs: Input[]
   outputs: Output[]
@@ -541,7 +541,7 @@ type SpendFidelityBondModalProps = {
   wallet: CurrentWallet
   walletInfo: WalletInfo
   onClose: (result: Result) => void
-  destinationJarIndex?: JarIndex
+  destinationJarIndex: JarIndex
 } & Omit<rb.ModalProps, 'onHide'>
 
 const SpendFidelityBondModal = ({
@@ -566,9 +566,7 @@ const SpendFidelityBondModal = ({
   const [parentMustReload, setParentMustReload] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const isLoading = useMemo(() => isSending || waitForUtxosToBeSpent.length > 0, [isSending, waitForUtxosToBeSpent])
-
-  const enableDestinationJarSelection = useMemo(() => destinationJarIndex === undefined, [destinationJarIndex])
-  const [showConfirmSendModal, setShowConfirmSendModal] = useState(!enableDestinationJarSelection)
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(true)
 
   const submitButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -663,16 +661,7 @@ const SpendFidelityBondModal = ({
       )
     }
 
-    return (
-      <SelectJar
-        description={t('earn.fidelity_bond.move.select_jar.description')}
-        accountBalances={walletInfo.balanceSummary.accountBalances}
-        totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
-        isJarSelectable={() => true}
-        selectedJar={selectedDestinationJarIndex}
-        onJarSelected={setSelectedDestinationJarIndex}
-      />
-    )
+    return null
   }
 
   return (
@@ -720,12 +709,10 @@ const SpendFidelityBondModal = ({
         <PaymentConfirmModal
           size="lg"
           isShown={true}
-          title={t(`earn.fidelity_bond.move.${enableDestinationJarSelection ? 'confirm_send_modal.title' : 'title'}`)}
+          title={t(`earn.fidelity_bond.move.confirm_send_modal.title`)}
           onCancel={() => {
             setShowConfirmSendModal(false)
-            if (!enableDestinationJarSelection) {
-              onClose({ txInfo, mustReload: parentMustReload })
-            }
+            onClose({ txInfo, mustReload: parentMustReload })
           }}
           onConfirm={() => {
             submitButtonRef.current?.click()
@@ -741,6 +728,9 @@ const SpendFidelityBondModal = ({
             numCollaborators: undefined,
             feeConfigValues,
             showPrivacyInfo: false,
+            walletInfo,
+            selectedDestinationJarIndex: selectedDestinationJarIndex,
+            setSelectedDestinationJarIndex,
           }}
         />
       )}
