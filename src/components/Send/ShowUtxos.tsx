@@ -42,11 +42,29 @@ interface UtxoListDisplayProps {
   onToggle: (utxo: SelectableUtxo) => void
   settings: Settings
 }
+interface Tag {
+  color?: 'success' | 'danger' | string // Adjust based on actual tag structure
+}
 
 const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
   const displayAddress = useMemo(() => shortenStringMiddle(utxo.address, 24), [utxo.address])
   const tags = useMemo(() => utxoTags(utxo, walletInfo, t), [utxo, walletInfo, t])
 
+  const getCheckboxClass = (utxo: Utxo, tags: Tag[]) => {
+    const baseClass = styles.checkbox
+
+    if (utxo.frozen) return `${baseClass} ${styles['checkbox-frozen']}`
+
+    const firstTagColor = tags[0]?.color
+    switch (firstTagColor) {
+      case 'success':
+        return `${baseClass} ${styles['checkbox-success']}`
+      case 'danger':
+        return `${baseClass} ${styles['checkbox-danger']}`
+      default:
+        return `${baseClass} ${styles['checkbox-normal']}`
+    }
+  }
   return (
     <Row
       item={utxo}
@@ -66,7 +84,7 @@ const UtxoRow = ({ utxo, onToggle, settings, walletInfo, t }: UtxoRowProps) => {
               checked={utxo.checked}
               disabled={!utxo.selectable}
               onChange={() => utxo.selectable && onToggle(utxo)}
-              className={styles.checkbox}
+              className={getCheckboxClass(utxo, tags)}
             />
           </div>
         )}

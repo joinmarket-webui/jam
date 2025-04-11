@@ -39,6 +39,9 @@ class CurrentWalletImpl implements CurrentWallet {
 
 // TODO: move these interfaces to JmWalletApi, once distinct types are used as return value instead of plain "Response"
 export type Utxo = {
+  frozen: boolean
+  checked: boolean
+  selectable: boolean
   address: Api.BitcoinAddress
   path: string
   label: string
@@ -48,7 +51,6 @@ export type Utxo = {
   external: boolean
   mixdepth: number
   confirmations: number
-  frozen: boolean
   utxo: Api.UtxoId
   // `locktime` in format "yyyy-MM-dd 00:00:00"
   // NOTE: it is unparsable with safari Date constructor

@@ -31,7 +31,23 @@
   height: 24px;
 }
 
-.checkbox:checked,
-.checkbox:indeterminate {
+.checkbox-success:checked {
+  accent-color: #27ae60;
+}
+
+.checkbox-frozen:checked {
+  accent-color: #2d9cdb;
+}
+
+.checkbox-danger:checked {
+  accent-color: #eb5757;
+}
+
+.checkbox-normal:checked {
+  accent-color: var(--bs-black);
+}
+
+/* black in dark mode also */
+[data-theme='dark'] .checkbox-normal:checked {
   accent-color: var(--bs-black);
 }
