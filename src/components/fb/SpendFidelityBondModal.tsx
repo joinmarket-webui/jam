@@ -31,7 +31,7 @@ type Output = {
   address: string
 }
 
-export type TxInfo = {
+type TxInfo = {
   hex: string
   inputs: Input[]
   outputs: Output[]
@@ -732,16 +732,18 @@ const SpendFidelityBondModal = ({
           }}
         >
           {walletInfo && (
-            <div className="border-top mt-2">
-              <Accordion title={t('earn.button_settings')}>
-                <SelectJar
-                  description={t('earn.fidelity_bond.move.select_jar.description')}
-                  accountBalances={walletInfo.balanceSummary.accountBalances}
-                  totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
-                  isJarSelectable={() => true}
-                  selectedJar={selectedDestinationJarIndex}
-                  onJarSelected={setSelectedDestinationJarIndex}
-                />
+            <div className="mt-2">
+              <Accordion title={t('earn.fidelity_bond.move.select_jar.button_settings')}>
+                <div className="mb-4">
+                  <SelectJar
+                    description={t('earn.fidelity_bond.move.select_jar.description')}
+                    accountBalances={walletInfo.balanceSummary.accountBalances}
+                    totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
+                    isJarSelectable={() => true}
+                    selectedJar={selectedDestinationJarIndex}
+                    onJarSelected={setSelectedDestinationJarIndex}
+                  />
+                </div>
               </Accordion>
             </div>
           )}
