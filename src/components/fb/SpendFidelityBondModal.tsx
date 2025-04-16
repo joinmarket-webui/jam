@@ -7,7 +7,7 @@ import * as Api from '../../libs/JmWalletApi'
 import * as fb from './utils'
 import Alert from '../Alert'
 import Sprite from '../Sprite'
-import { SelectDate } from './FidelityBondSteps'
+import { SelectDate, SelectJar } from './FidelityBondSteps'
 import { PaymentConfirmModal } from '../PaymentConfirmModal'
 import { jarInitial } from '../jars/Jar'
 import { useFeeConfigValues } from '../../hooks/Fees'
@@ -16,6 +16,7 @@ import { CopyButton } from '../CopyButton'
 import { LockInfoAlert } from './CreateFidelityBond'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import styles from './SpendFidelityBondModal.module.css'
+import Accordion from '../Accordion'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -728,11 +729,23 @@ const SpendFidelityBondModal = ({
             numCollaborators: undefined,
             feeConfigValues,
             showPrivacyInfo: false,
-            walletInfo,
-            selectedDestinationJarIndex: selectedDestinationJarIndex,
-            setSelectedDestinationJarIndex,
           }}
-        />
+        >
+          {walletInfo && (
+            <div className="border-top mt-2">
+              <Accordion title={t('earn.button_settings')}>
+                <SelectJar
+                  description={t('earn.fidelity_bond.move.select_jar.description')}
+                  accountBalances={walletInfo.balanceSummary.accountBalances}
+                  totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
+                  isJarSelectable={() => true}
+                  selectedJar={selectedDestinationJarIndex}
+                  onJarSelected={setSelectedDestinationJarIndex}
+                />
+              </Accordion>
+            </div>
+          )}
+        </PaymentConfirmModal>
       )}
     </>
   )

@@ -10,11 +10,9 @@ import { AmountSats, BitcoinAddress } from '../libs/JmWalletApi'
 import { jarInitial } from './jars/Jar'
 import { isValidNumber } from '../utils'
 import styles from './PaymentConfirmModal.module.css'
-import { Utxos, WalletInfo } from '../context/WalletContext'
+import { Utxos } from '../context/WalletContext'
 import { UtxoListDisplay } from './Send/ShowUtxos'
 import Divider from './Divider'
-import Accordion from './Accordion'
-import { SelectJar } from './fb/FidelityBondSteps'
 
 const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee, txFeeFactor) => {
   if (txFee.unit !== 'sats/kilo-vbyte') {
@@ -111,9 +109,6 @@ interface PaymentDisplayInfo {
   feeConfigValues?: FeeValues
   showPrivacyInfo?: boolean
   availableUtxos?: Utxos
-  walletInfo?: WalletInfo
-  selectedDestinationJarIndex?: JarIndex
-  setSelectedDestinationJarIndex?: (jarIndex: JarIndex) => void
 }
 
 interface PaymentConfirmModalProps extends ConfirmModalProps {
@@ -131,9 +126,6 @@ export function PaymentConfirmModal({
     feeConfigValues,
     showPrivacyInfo = true,
     availableUtxos = [],
-    walletInfo,
-    selectedDestinationJarIndex,
-    setSelectedDestinationJarIndex,
   },
   children,
   ...confirmModalProps
@@ -268,20 +260,6 @@ export function PaymentConfirmModal({
           <rb.Row>
             <rb.Col xs={12}>{children}</rb.Col>
           </rb.Row>
-        )}
-        {walletInfo && (
-          <div className="border-top mt-2">
-            <Accordion title={t('earn.button_settings')}>
-              <SelectJar
-                description={t('earn.fidelity_bond.move.select_jar.description')}
-                accountBalances={walletInfo!.balanceSummary.accountBalances}
-                totalBalance={walletInfo!.balanceSummary.calculatedAvailableBalanceInSats}
-                isJarSelectable={() => true}
-                selectedJar={selectedDestinationJarIndex}
-                onJarSelected={setSelectedDestinationJarIndex || (() => {})}
-              />
-            </Accordion>
-          </div>
         )}
       </rb.Container>
     </ConfirmModal>
