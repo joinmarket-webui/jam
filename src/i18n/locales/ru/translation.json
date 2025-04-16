@@ -1,7 +1,7 @@
 {
   "global": {
     "loading": "Загрузка",
-    "button_copy_text": "Копия",
+    "button_copy_text": "Копировать",
     "button_copy_text_confirmed": "Скопировано",
     "next": "Вперед",
     "back": "Назад",
@@ -12,15 +12,15 @@
     "table": {
       "pagination": {
         "items_per_page": {
-          "label": "Кол на стр",
+          "label": "записей на стр",
           "text_option_show_all": "Все"
         },
         "page_selector": {
-          "label_current": "Стр",
+          "label_current": "Страница",
           "label_first": "Первая",
           "label_previous": "Пред",
           "label_next": "След",
-          "label_last": "Посл"
+          "label_last": "Последняя"
         }
       }
     },
