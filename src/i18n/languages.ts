@@ -5,6 +5,7 @@ import pt_BR from './locales/pt_BR/translation.json'
 import zh_Hans from './locales/zh_Hans/translation.json'
 import zh_Hant from './locales/zh_Hant/translation.json'
 import de from './locales/de/translation.json'
+import ru from './locales/ru/translation.json'
 
 const languages = [
   {
@@ -41,6 +42,11 @@ const languages = [
     key: 'de',
     description: 'Deutsch',
     translation: de,
+  },
+  {
+    key: 'ru',
+    description: 'Русский',
+    translation: ru,
   },
 ]
 
