@@ -576,6 +576,7 @@
         "error_unfreezing_fidelity_bond": "Error while unfreezing expired fidelity bond.",
         "error_spending_fidelity_bond": "Error while unlocking expired fidelity bond.",
         "select_jar": {
+          "button_settings": "Unlock options",
           "description": "Select a jar to move the expired fidelity bond into."
         },
         "confirm_send_modal": {
