@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "es5",
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "jsx": "react-jsx",
     "skipLibCheck": true,
-    "allowJs": false,
-    "resolveJsonModule": true
-  }
+    "moduleResolution": "node"
+  },
+  "include": ["src"]
 }

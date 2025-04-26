@@ -59,6 +59,7 @@ interface JmSessionData {
   offer_list: Offer[] | null
   nickname: string | null
   rescanning: boolean
+  rescanProgress: number | null
 }
 
 interface JmGetInfoData {
@@ -69,6 +70,7 @@ type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
 type RescanBlockchainInProgressFlag = { rescanning: boolean }
+type RescanBlockchainProgress = { rescanProgress: number | null }
 
 type SessionInfo = {
   walletFileName: Api.WalletFileName | null
@@ -86,6 +88,7 @@ type ServiceInfo = SessionFlag &
   MakerRunningFlag &
   CoinjoinInProgressFlag &
   RescanBlockchainInProgressFlag &
+  RescanBlockchainProgress &
   SessionInfo &
   ServerInfo
 
@@ -155,6 +158,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
             wallet_name: walletFileNameOrNoneString,
             offer_list: offers,
             rescanning,
+            rescanProgress,
             schedule,
             nickname,
           } = data
@@ -168,6 +172,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
             offers,
             nickname,
             rescanning,
+            rescanProgress,
           }
         })
 
@@ -185,7 +190,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
           }
           return info
         })
-        .catch((err) => {
+        .catch((err: any) => {
           if (!signal.aborted) {
             const isUnauthorized = err instanceof Api.JmApiError && err.response?.status === 401
             if (isUnauthorized) {
@@ -206,7 +211,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     const refreshSession = (): Promise<void> => {
       return reloadServiceInfo({ signal: abortCtrl.signal })
         .then(noop)
-        .catch((err) => {
+        .catch((err: any) => {
           if (!abortCtrl.signal.aborted) {
             console.error(err)
           }
