@@ -24,6 +24,7 @@ const BalanceLoadingIndicator = () => {
 }
 
 interface WalletPreviewProps {
+  rescanProgress?: number
   wallet: CurrentWallet
   rescanInProgress: boolean
   totalBalance?: AmountSats

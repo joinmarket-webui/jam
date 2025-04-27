@@ -33,11 +33,13 @@
   "app": {
     "alert_no_connection": "No connection to backend: {{ connectionError }}",
     "alert_no_connection_details": "Please confirm that the backend is running and <1>see the docs for more information</1>.",
-    "alert_rescan_in_progress": "Rescanning in progress..."
+    "alert_rescan_in_progress": "Rescanning in progress...",
+    "alert_rescan_in_progress_with_progress": "Rescanning in progress ({{progress}}%)..."
   },
   "navbar": {
     "title": "Jam",
     "text_rescan_in_progress": "Rescanning...",
+    "text_rescan_in_progress_with_progress": "Rescanning ({{progress}}%)...",
     "button_create_wallet": "Create Wallet",
     "button_import_wallet": "Import Wallet",
     "tab_send": "Send",
@@ -196,6 +198,7 @@
   "current_wallet": {
     "text_loading": "Loading",
     "text_rescan_in_progress": "Rescanning in progress...",
+    "text_rescan_in_progress_with_progress": "Rescanning in progress ({{progress}}%)...",
     "button_deposit": "Receive",
     "button_withdraw": "Send",
     "error_loading_failed": "Loading wallet failed.",

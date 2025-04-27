@@ -51,7 +51,15 @@ const WalletHeaderPlaceholder = () => {
   )
 }
 
-const WalletHeaderRescanning = ({ walletName, isLoading }: { walletName: string; isLoading: boolean }) => {
+const WalletHeaderRescanning = ({
+  walletName,
+  isLoading,
+  serviceInfo,
+}: {
+  walletName: string
+  isLoading: boolean
+  serviceInfo: any
+}) => {
   const { t } = useTranslation()
   return (
     <div className={styles.walletHeader}>
@@ -61,7 +69,13 @@ const WalletHeaderRescanning = ({ walletName, isLoading }: { walletName: string;
           <rb.Placeholder className={styles.subtitlePlaceholder} />
         </rb.Placeholder>
       ) : (
-        <h2>{t('current_wallet.text_rescan_in_progress')}</h2>
+        <h2>
+          {serviceInfo?.rescanProgress !== undefined
+            ? t('current_wallet.text_rescan_in_progress_with_progress', {
+                progress: Math.round(serviceInfo.rescanProgress * 100),
+              })
+            : t('current_wallet.text_rescan_in_progress')}
+        </h2>
       )}
     </div>
   )
@@ -147,7 +161,7 @@ export default function MainWalletView({ wallet }: MainWalletViewProps) {
       )}
       {serviceInfo?.rescanning === true ? (
         <rb.Row>
-          <WalletHeaderRescanning walletName={wallet.displayName} isLoading={isLoading} />
+          <WalletHeaderRescanning walletName={wallet.displayName} isLoading={isLoading} serviceInfo={serviceInfo} />
         </rb.Row>
       ) : !currentWalletInfo || isLoading ? (
         <rb.Row>
