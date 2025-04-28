@@ -72,7 +72,7 @@ const WalletHeaderRescanning = ({
         <h2>
           {serviceInfo?.rescanProgress !== undefined
             ? t('current_wallet.text_rescan_in_progress_with_progress', {
-                progress: Math.round(serviceInfo.rescanProgress * 100),
+                progress: Math.floor(serviceInfo.rescanProgress * 100),
               })
             : t('current_wallet.text_rescan_in_progress')}
         </h2>

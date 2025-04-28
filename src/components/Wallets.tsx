@@ -212,7 +212,11 @@ export default function Wallets({ currentWallet, startWallet, stopWallet }: Wall
         />
         {serviceInfo?.rescanning === true && (
           <rb.Alert variant="info" data-testid="alert-rescanning">
-            {t('app.alert_rescan_in_progress')}
+            {serviceInfo.rescanProgress !== undefined
+              ? t('app.alert_rescan_in_progress_with_progress', {
+                  progress: Math.floor(serviceInfo.rescanProgress * 100),
+                })
+              : t('app.alert_rescan_in_progress')}
           </rb.Alert>
         )}
         {alert && <Alert {...alert} />}

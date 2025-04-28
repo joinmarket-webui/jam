@@ -52,7 +52,11 @@ const WalletPreview = ({ wallet, rescanInProgress, totalBalance, unit, showBalan
         {wallet && <div className="fw-normal">{wallet.displayName}</div>}
         <div className="text-body">
           {rescanInProgress ? (
-            <div className="cursor-wait">{t('navbar.text_rescan_in_progress')}</div>
+            <div className="cursor-wait">
+              {rescanProgress !== undefined
+                ? t('navbar.text_rescan_in_progress_with_progress', { progress: Math.floor(rescanProgress * 100) })
+                : t('navbar.text_rescan_in_progress')}
+            </div>
           ) : (
             <>
               {totalBalance === undefined ? (
