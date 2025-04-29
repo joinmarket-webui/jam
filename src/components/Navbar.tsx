@@ -32,7 +32,14 @@ interface WalletPreviewProps {
   showBalance?: boolean
 }
 
-const WalletPreview = ({ wallet, rescanInProgress, totalBalance, unit, showBalance = false }: WalletPreviewProps) => {
+const WalletPreview = ({
+  wallet,
+  rescanInProgress,
+  rescanProgress,
+  totalBalance,
+  unit,
+  showBalance = false,
+}: WalletPreviewProps) => {
   const { t } = useTranslation()
 
   return (
@@ -349,6 +356,7 @@ export default function Navbar() {
                       <WalletPreview
                         wallet={currentWallet}
                         rescanInProgress={rescanInProgress}
+                        rescanProgress={serviceInfo?.rescanProgress}
                         totalBalance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
                         showBalance={settings.showBalance}
                         unit={settings.unit}

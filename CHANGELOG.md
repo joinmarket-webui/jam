@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
-* **rescan:** display progress percentage during rescan operation
+* **rescan:** display progress percentage during rescan operation with optimized polling interval
 * **config:** ability to customize "max sweep fee change" setting ([#793](https://github.com/joinmarket-webui/jam/issues/793)) ([b4f8a56](https://github.com/joinmarket-webui/jam/commit/b4f8a56baa5e1f4bbad1cd437a3f08172d9db026))
 * display warning on fidelity bond with same expiry date ([#741](https://github.com/joinmarket-webui/jam/issues/741)) ([c04007d](https://github.com/joinmarket-webui/jam/commit/c04007d2968dd587f6fdc0d85798412c2d892f97))
 * **earn:** add simple stats to earn report ([#731](https://github.com/joinmarket-webui/jam/issues/731)) ([24a9026](https://github.com/joinmarket-webui/jam/commit/24a9026a24579ba8ba5e99117b58dc6c31c3c3bc))

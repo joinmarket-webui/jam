@@ -19,7 +19,7 @@ import * as Api from '../libs/JmWalletApi'
 // interval for periodic session requests
 const SESSION_REQUEST_INTERVAL: Milliseconds = 10_000
 // interval for periodic rescan progress updates (shorter than session requests)
-const RESCAN_PROGRESS_INTERVAL: Milliseconds = 2_000
+const RESCAN_PROGRESS_INTERVAL: Milliseconds = 10_000
 
 type AmountFraction = number
 type AmountCounterparties = number
@@ -243,7 +243,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
         if (!abortCtrl.signal.aborted) {
           console.error('Error fetching rescan progress:', err)
           // If we get a 404 error, mark the API as not supported
-          if (err instanceof Api.JmApiError && err.status === 404) {
+          if (err instanceof Api.JmApiError && err.response.status === 404) {
             isRescanProgressApiSupported = false
             console.log('Rescan progress API not supported by this backend version')
           }
