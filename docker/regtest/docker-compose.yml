@@ -19,9 +19,12 @@ services:
       - "joinmarket_datadir:/root/.joinmarket"
       - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
-      - bitcoind
-      - bitcoind_regtest_initializer
-      - irc
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      irc:
+        condition: service_started
 
   joinmarket2:
     container_name: jm_regtest_joinmarket2
@@ -40,8 +43,12 @@ services:
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
     depends_on:
-      - bitcoind
-      - irc
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      irc:
+        condition: service_started
 
   joinmarket3:
     container_name: jm_regtest_joinmarket3
@@ -61,9 +68,12 @@ services:
       - "joinmarket3_datadir:/root/.joinmarket"
       - "initializer_datadir:/root/.regtest-initializer"
     depends_on:
-      - bitcoind
-      - bitcoind_regtest_initializer
-      - irc
+      bitcoind:
+        condition: service_healthy
+      bitcoind_regtest_initializer:
+        condition: service_started
+      irc:
+        condition: service_started
 
   joinmarket_directory_node:
     container_name: jm_regtest_joinmarket_directory_node
@@ -79,6 +89,13 @@ services:
     volumes:
       - "joinmarket_directory_node_datadir:/root/.joinmarket"
       - "./out/hidden_service_dir:/root/.joinmarket/hidden_service_dir:z"
+    healthcheck:
+      test: ["CMD", "supervisorctl", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   irc:
     container_name: jm_regtest_irc
@@ -92,7 +109,7 @@ services:
   bitcoind:
     container_name: jm_regtest_bitcoind
     restart: unless-stopped
-    image: polarlightning/bitcoind:27.0@sha256:7ac359cacd1c667fae321fe049d3d860eb85f1f14aff805e96246c5dc70f2f13
+    image: polarlightning/bitcoind:28.0@sha256:ff435d758c89f01823924e057d5d5e4206d350ae69dff5e0dc1bbc9c6a36d010
     command:
       # rpcauth (user=regtest; password=regtest)
       # rpcauth (user=joinmarket; password=joinmarket)
@@ -136,6 +153,13 @@ services:
     volumes:
       - "bitcoin_datadir:/home/bitcoin/data"
       - "bitcoin_wallet_datadir:/home/bitcoin/walletdata"
+    healthcheck:
+      test: [ "CMD", "/entrypoint.sh", "bitcoin-cli", "-chain=regtest", "-rpcport=43782", "-datadir=/home/bitcoin/data", "-getinfo" ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   bitcoind_regtest_initializer:
       container_name: jm_regtest_bitcoind_initializer
@@ -152,17 +176,25 @@ services:
       volumes:
         - "initializer_datadir:/root/.regtest-initializer"
       depends_on:
-        - bitcoind
+        bitcoind:
+          condition: service_healthy
 
   nginx:
     container_name: jm_regtest_nginx_test_basepath
-    image: nginx
+    image: nginx:1.27.4-alpine3.21@sha256:4ff102c5d78d254a6f0da062b3cf39eaf07f01eec0927fd21e219d0af8bc0591
     volumes:
       - ./dockerfile-deps/nginx:/etc/nginx/templates
     ports:
       - "8000:80"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --output-document /dev/null http://127.0.0.1:80/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   explorer:
     container_name: jm_regtest_explorer
@@ -182,7 +214,8 @@ services:
     ports:
       - "3002:3002"
     depends_on:
-      - bitcoind
+      bitcoind:
+        condition: service_healthy
 
 volumes:
   bitcoin_datadir:

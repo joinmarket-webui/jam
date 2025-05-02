@@ -31,7 +31,7 @@ VANITYTORGEN_REPO_DIR="${WORKDIR}/vanitytorgen"
 # TODO: fork of "https://github.com/Kexkey/vanitytorgen" - should be forked by jam org?
 VANITYTORGEN_REPO_URL="https://github.com/theborakompanioni/vanitytorgen"
 VANITYTORGEN_REPO_BRANCH="main"
-VANITYTORGEN_REPO_REF="85fa0c36208975f4e22bf10fb77b3d9bafb51979"
+VANITYTORGEN_REPO_REF="f497346ab540153f06edabe65df37ae5536a2d9a"
 
 # onion addresses are base32 - base32 alphabet allows letters [a-z] and digits [2-7]
 PREFIX_CHARS="234567abcdefghijklmnopqrstuvwxyz" # "jam"

@@ -21,6 +21,13 @@ services:
       - 62601 # obwatch
       - 28183 # jmwalletd api
       - 28283 # jmwalletd websocket
+    healthcheck:
+      test: ["CMD", "supervisorctl", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
 
   joinmarket_jam_standalone:
     build:
@@ -40,3 +47,10 @@ services:
     expose:
       - 80    # nginx
       - 28183 # jmwalletd api
+    healthcheck:
+      test: [ "CMD", "dinitctl", "status", "jmwalletd" ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+      start_interval: 3s
