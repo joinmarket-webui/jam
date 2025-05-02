@@ -220,6 +220,11 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
       // Skip if API is not supported (returned 404 previously)
       if (!isRescanProgressApiSupported) return
 
+      // Initialize rescanProgress to undefined to avoid briefly showing old progress
+      dispatchServiceInfo({
+        rescanProgress: undefined,
+      })
+      
       try {
         const res = await Api.getRescanInfo({
           signal: abortCtrl.signal,
@@ -234,19 +239,18 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
               rescanProgress: data.progress,
             })
           }
-        } else if (res.status === 404) {
-          // API not supported (backend version < v0.9.12)
+        } else {
+          // Handle all non-OK responses, not just 404
+          // False positives (e.g. temporary failures) would simply lead to the progress not being displayed
           isRescanProgressApiSupported = false
-          console.log('Rescan progress API not supported by this backend version')
+          console.log('Rescan progress API not supported or temporarily unavailable')
         }
       } catch (err) {
         if (!abortCtrl.signal.aborted) {
           console.error('Error fetching rescan progress:', err)
-          // If we get a 404 error, mark the API as not supported
-          if (err instanceof Api.JmApiError && err.response.status === 404) {
-            isRescanProgressApiSupported = false
-            console.log('Rescan progress API not supported by this backend version')
-          }
+          // Mark the API as not supported for any error
+          isRescanProgressApiSupported = false
+          console.log('Rescan progress API not supported or temporarily unavailable')
         }
       }
     }
