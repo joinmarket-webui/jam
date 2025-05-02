@@ -61,7 +61,6 @@ interface JmSessionData {
   offer_list: Offer[] | null
   nickname: string | null
   rescanning: boolean
-  rescan_progress?: number
 }
 
 interface JmGetInfoData {
@@ -163,7 +162,6 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
             rescanning,
             schedule,
             nickname,
-            rescan_progress: rescanProgress,
           } = data
           const activeWalletFileName = walletFileNameOrNoneString !== 'None' ? walletFileNameOrNoneString : null
           return {
@@ -175,7 +173,6 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
             offers,
             nickname,
             rescanning,
-            rescanProgress,
           }
         })
 
