@@ -212,6 +212,11 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
   useEffect(() => {
     if (!serviceInfo?.rescanning || !currentWallet) return
 
+    // Initialize rescanProgress to undefined to avoid briefly showing old progress
+    dispatchServiceInfo({
+      rescanProgress: undefined,
+    })
+
     const abortCtrl = new AbortController()
     // Flag to track if the API is supported
     let isRescanProgressApiSupported = true
@@ -219,11 +224,6 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     const fetchRescanProgress = async (): Promise<void> => {
       // Skip if API is not supported (returned 404 previously)
       if (!isRescanProgressApiSupported) return
-
-      // Initialize rescanProgress to undefined to avoid briefly showing old progress
-      dispatchServiceInfo({
-        rescanProgress: undefined,
-      })
 
       try {
         const res = await Api.getRescanInfo({
