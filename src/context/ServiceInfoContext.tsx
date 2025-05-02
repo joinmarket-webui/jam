@@ -224,7 +224,7 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
       dispatchServiceInfo({
         rescanProgress: undefined,
       })
-      
+
       try {
         const res = await Api.getRescanInfo({
           signal: abortCtrl.signal,
