@@ -18,6 +18,8 @@ import * as Api from '../libs/JmWalletApi'
 
 // interval for periodic session requests
 const SESSION_REQUEST_INTERVAL: Milliseconds = 10_000
+// interval for periodic rescan progress updates (shorter than session requests)
+const RESCAN_PROGRESS_INTERVAL: Milliseconds = 10_000
 
 type AmountFraction = number
 type AmountCounterparties = number
@@ -68,7 +70,10 @@ interface JmGetInfoData {
 type SessionFlag = { sessionActive: boolean }
 type MakerRunningFlag = { makerRunning: boolean }
 type CoinjoinInProgressFlag = { coinjoinInProgress: boolean }
-type RescanBlockchainInProgressFlag = { rescanning: boolean }
+type RescanBlockchainInProgressFlag = {
+  rescanning: boolean
+  rescanProgress?: number
+}
 
 type SessionInfo = {
   walletFileName: Api.WalletFileName | null
@@ -199,6 +204,64 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
     },
     [currentWallet, clearCurrentWallet],
   )
+
+  // Fetch rescan progress when rescanning is true
+  useEffect(() => {
+    if (!serviceInfo?.rescanning || !currentWallet) return
+
+    // Initialize rescanProgress to undefined to avoid briefly showing old progress
+    dispatchServiceInfo({
+      rescanProgress: undefined,
+    })
+
+    const abortCtrl = new AbortController()
+    // Flag to track if the API is supported
+    let isRescanProgressApiSupported = true
+
+    const fetchRescanProgress = async (): Promise<void> => {
+      // Skip if API is not supported (returned 404 previously)
+      if (!isRescanProgressApiSupported) return
+
+      try {
+        const res = await Api.getRescanInfo({
+          signal: abortCtrl.signal,
+          token: currentWallet.token,
+          walletFileName: currentWallet.walletFileName,
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          if (!abortCtrl.signal.aborted && data.progress !== undefined) {
+            dispatchServiceInfo({
+              rescanProgress: data.progress,
+            })
+          }
+        } else {
+          // Handle all non-OK responses, not just 404
+          // False positives (e.g. temporary failures) would simply lead to the progress not being displayed
+          isRescanProgressApiSupported = false
+          console.log('Rescan progress API not supported or temporarily unavailable')
+        }
+      } catch (err) {
+        if (!abortCtrl.signal.aborted) {
+          console.error('Error fetching rescan progress:', err)
+          // Mark the API as not supported for any error
+          isRescanProgressApiSupported = false
+          console.log('Rescan progress API not supported or temporarily unavailable')
+        }
+      }
+    }
+
+    fetchRescanProgress()
+
+    let interval: NodeJS.Timeout
+    setIntervalDebounced(fetchRescanProgress, RESCAN_PROGRESS_INTERVAL, (timerId) => (interval = timerId))
+
+    return () => {
+      clearInterval(interval)
+      abortCtrl.abort()
+    }
+  }, [serviceInfo?.rescanning, currentWallet, dispatchServiceInfo])
 
   useEffect(() => {
     const abortCtrl = new AbortController()

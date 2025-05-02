@@ -504,6 +504,15 @@ const postConfigGet = async ({ token, signal, walletFileName }: WalletRequestCon
 /**
  * Use this operation on recovered wallets to re-sync the wallet
  */
+/**
+ * Get the current rescan status and progress for a wallet.
+ */
+const getRescanInfo = async ({ token, signal, walletFileName }: WalletRequestContext) => {
+  return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/getrescaninfo`, {
+    headers: { ...Helper.buildAuthHeader(token) },
+    signal,
+  })
+}
 const getRescanBlockchain = async ({
   token,
   signal,
@@ -551,6 +560,7 @@ export {
   getTakerStop,
   getSchedule,
   getRescanBlockchain,
+  getRescanInfo,
   Helper,
   JmApiError,
   ApiAuthContext,
