@@ -231,9 +231,9 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
 
         if (res.ok) {
           const data = await res.json()
-          if (!abortCtrl.signal.aborted && data.progress !== undefined) {
+          if (!abortCtrl.signal.aborted) {
             dispatchServiceInfo({
-              rescanProgress: data.progress,
+              rescanProgress: data.rescanning === true ? data.progress : undefined,
             })
           }
         } else {
@@ -241,6 +241,10 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
           // False positives (e.g. temporary failures) would simply lead to the progress not being displayed
           isRescanProgressApiSupported = false
           console.log('Rescan progress API not supported or temporarily unavailable')
+
+          dispatchServiceInfo({
+            rescanProgress: undefined,
+          })
         }
       } catch (err) {
         if (!abortCtrl.signal.aborted) {
