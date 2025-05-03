@@ -26,6 +26,18 @@
   color: #2d9cdb !important;
 }
 
+.row.row-dark {
+  --bs-code-color: var(--bs-gray-600);
+  background-color: var(--bs-gray-200);
+  color: var(--bs-gray-600);
+}
+
+:root[data-theme='dark'] .row.row-dark {
+  --bs-code-color: var(--bs-gray-900);
+  background-color: var(--bs-gray-700);
+  color: var(--bs-gray-900);
+}
+
 .checkbox {
   width: 24px;
   height: 24px;
