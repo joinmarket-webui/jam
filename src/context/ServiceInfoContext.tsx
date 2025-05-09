@@ -214,12 +214,10 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
       rescanProgress: undefined,
     })
 
-    const abortCtrl = new AbortController()
-    // Flag to track if the API is supported
     let isRescanProgressApiSupported = true
+    const abortCtrl = new AbortController()
 
     const fetchRescanProgress = async (): Promise<void> => {
-      // Skip if API is not supported (returned 404 previously)
       if (!isRescanProgressApiSupported) return
 
       try {
@@ -231,9 +229,9 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
 
         if (res.ok) {
           const data = await res.json()
-          if (!abortCtrl.signal.aborted && data.progress !== undefined) {
+          if (!abortCtrl.signal.aborted) {
             dispatchServiceInfo({
-              rescanProgress: data.progress,
+              rescanProgress: data.rescanning === true ? data.progress : undefined,
             })
           }
         } else {
@@ -241,13 +239,16 @@ const ServiceInfoProvider = ({ children }: PropsWithChildren<{}>) => {
           // False positives (e.g. temporary failures) would simply lead to the progress not being displayed
           isRescanProgressApiSupported = false
           console.log('Rescan progress API not supported or temporarily unavailable')
+
+          dispatchServiceInfo({
+            rescanProgress: undefined,
+          })
         }
       } catch (err) {
         if (!abortCtrl.signal.aborted) {
-          console.error('Error fetching rescan progress:', err)
+          console.warn('Error fetching rescan progress:', err)
           // Mark the API as not supported for any error
           isRescanProgressApiSupported = false
-          console.log('Rescan progress API not supported or temporarily unavailable')
         }
       }
     }
