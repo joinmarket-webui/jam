@@ -483,28 +483,26 @@ const RenewFidelityBondModal = ({
           {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
           {modalBodyContent}
         </rb.Modal.Body>
-        <rb.Modal.Footer>
-          <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
-            {!txInfo && (
-              <rb.Button
-                variant="light"
-                disabled={isLoading}
-                onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
-                className="flex-1 d-flex justify-content-center align-items-center"
-              >
-                {t('global.cancel')}
-              </rb.Button>
-            )}
+        <rb.Modal.Footer className="gap-4">
+          {!txInfo && (
             <rb.Button
-              ref={submitButtonRef}
-              variant="dark"
-              className="flex-1 d-flex justify-content-center align-items-center"
-              disabled={isLoading || timelockedAddress === undefined}
-              onClick={onPrimaryButtonClicked}
+              variant="light"
+              disabled={isLoading}
+              onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
+              className="d-flex flex-1 justify-content-center align-items-center"
             >
-              {primaryButtonContent}
+              {t('global.cancel')}
             </rb.Button>
-          </div>
+          )}
+          <rb.Button
+            ref={submitButtonRef}
+            variant="dark"
+            className="d-flex flex-1 justify-content-center align-items-center"
+            disabled={isLoading || timelockedAddress === undefined}
+            onClick={onPrimaryButtonClicked}
+          >
+            {primaryButtonContent}
+          </rb.Button>
         </rb.Modal.Footer>
       </rb.Modal>
       {lockDate && fidelityBond && timelockedAddress !== undefined && (
@@ -684,26 +682,24 @@ const SpendFidelityBondModal = ({
           {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
           {ModalBodyContent()}
         </rb.Modal.Body>
-        <rb.Modal.Footer>
-          <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
-            <rb.Button
-              variant="light"
-              disabled={isLoading}
-              onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
-              className="flex-1 d-flex justify-content-center align-items-center"
-            >
-              {t('earn.fidelity_bond.move.text_button_cancel')}
-            </rb.Button>
-            <rb.Button
-              ref={submitButtonRef}
-              variant="dark"
-              className="flex-1 d-flex justify-content-center align-items-center"
-              disabled={isLoading || selectedDestinationJarIndex === undefined}
-              onClick={onPrimaryButtonClicked}
-            >
-              {primaryButtonContent}
-            </rb.Button>
-          </div>
+        <rb.Modal.Footer className="gap-4">
+          <rb.Button
+            variant="light"
+            disabled={isLoading}
+            onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
+            className="d-flex flex-1 justify-content-center align-items-center"
+          >
+            {t('earn.fidelity_bond.move.text_button_cancel')}
+          </rb.Button>
+          <rb.Button
+            ref={submitButtonRef}
+            variant="dark"
+            className="d-flex flex-1 justify-content-center align-items-center"
+            disabled={isLoading || selectedDestinationJarIndex === undefined}
+            onClick={onPrimaryButtonClicked}
+          >
+            {primaryButtonContent}
+          </rb.Button>
         </rb.Modal.Footer>
       </rb.Modal>
       {showConfirmSendModal && fidelityBond && selectedDestinationJarIndex !== undefined && (
