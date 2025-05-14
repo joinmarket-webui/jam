@@ -44,9 +44,9 @@
 }
 
 .checkbox-normal:checked {
-  accent-color: var(--bs-black);
+  accent-color: #000000;
 }
 
 :root[data-theme='dark'] .checkbox-normal:checked {
-  accent-color: var(--bs-white);
+  accent-color: #000000;
 }
