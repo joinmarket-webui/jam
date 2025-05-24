@@ -36,3 +36,14 @@
   --jam-utxo-color: #2d9cdb;
   --jam-utxo-checkbox-accent-color: var(--jam-utxo-color);
 }
+
+.row.row-dark {
+  --bs-code-color: var(--bs-gray-600);
+  --jam-utxo-bg-color: var(--bs-gray-200);
+  --jam-utxo-color: var(--bs-gray-600);
+}
+:root[data-theme='dark'] .row.row-dark {
+  --bs-code-color: var(--bs-gray-900);
+  --jam-utxo-bg-color: var(--bs-gray-700);
+  --jam-utxo-color: var(--bs-gray-900);
+}

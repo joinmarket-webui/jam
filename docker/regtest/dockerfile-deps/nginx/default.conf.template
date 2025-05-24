@@ -1,6 +1,6 @@
 # To test the reverse proxy setup, run the dev server using:
 #
-# PUBLIC_URL=/joinmarket npm start
+# PUBLIC_URL=/joinmarket npm run dev
 #
 # And visit http://localhost:8000/joinmarket/extrapath/
 # Note: Keep the trailing slash!
@@ -28,5 +28,10 @@ server {
 
     location /joinmarket {
         proxy_pass http://host.docker.internal:3000/joinmarket;
+    }
+
+    location = /health {
+        default_type application/json;
+        return 200 '{ "status": "UP" }';
     }
 }

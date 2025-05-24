@@ -16,6 +16,7 @@ import { CopyButton } from '../CopyButton'
 import { LockInfoAlert } from './CreateFidelityBond'
 import { useWaitForUtxosToBeSpent } from '../../hooks/WaitForUtxosToBeSpent'
 import styles from './SpendFidelityBondModal.module.css'
+import Accordion from '../Accordion'
 
 type Input = {
   outpoint: Api.UtxoId
@@ -482,28 +483,26 @@ const RenewFidelityBondModal = ({
           {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
           {modalBodyContent}
         </rb.Modal.Body>
-        <rb.Modal.Footer>
-          <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
-            {!txInfo && (
-              <rb.Button
-                variant="light"
-                disabled={isLoading}
-                onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
-                className="flex-1 d-flex justify-content-center align-items-center"
-              >
-                {t('global.cancel')}
-              </rb.Button>
-            )}
+        <rb.Modal.Footer className="gap-4">
+          {!txInfo && (
             <rb.Button
-              ref={submitButtonRef}
-              variant="dark"
-              className="flex-1 d-flex justify-content-center align-items-center"
-              disabled={isLoading || timelockedAddress === undefined}
-              onClick={onPrimaryButtonClicked}
+              variant="light"
+              disabled={isLoading}
+              onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
+              className="d-flex flex-1 justify-content-center align-items-center"
             >
-              {primaryButtonContent}
+              {t('global.cancel')}
             </rb.Button>
-          </div>
+          )}
+          <rb.Button
+            ref={submitButtonRef}
+            variant="dark"
+            className="d-flex flex-1 justify-content-center align-items-center"
+            disabled={isLoading || timelockedAddress === undefined}
+            onClick={onPrimaryButtonClicked}
+          >
+            {primaryButtonContent}
+          </rb.Button>
         </rb.Modal.Footer>
       </rb.Modal>
       {lockDate && fidelityBond && timelockedAddress !== undefined && (
@@ -541,7 +540,7 @@ type SpendFidelityBondModalProps = {
   wallet: CurrentWallet
   walletInfo: WalletInfo
   onClose: (result: Result) => void
-  destinationJarIndex?: JarIndex
+  destinationJarIndex: JarIndex
 } & Omit<rb.ModalProps, 'onHide'>
 
 const SpendFidelityBondModal = ({
@@ -566,9 +565,7 @@ const SpendFidelityBondModal = ({
   const [parentMustReload, setParentMustReload] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const isLoading = useMemo(() => isSending || waitForUtxosToBeSpent.length > 0, [isSending, waitForUtxosToBeSpent])
-
-  const enableDestinationJarSelection = useMemo(() => destinationJarIndex === undefined, [destinationJarIndex])
-  const [showConfirmSendModal, setShowConfirmSendModal] = useState(!enableDestinationJarSelection)
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(true)
 
   const submitButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -663,16 +660,7 @@ const SpendFidelityBondModal = ({
       )
     }
 
-    return (
-      <SelectJar
-        description={t('earn.fidelity_bond.move.select_jar.description')}
-        accountBalances={walletInfo.balanceSummary.accountBalances}
-        totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
-        isJarSelectable={() => true}
-        selectedJar={selectedDestinationJarIndex}
-        onJarSelected={setSelectedDestinationJarIndex}
-      />
-    )
+    return null
   }
 
   return (
@@ -694,38 +682,34 @@ const SpendFidelityBondModal = ({
           {alert && <Alert {...alert} className="mt-0" onClose={() => setAlert(undefined)} />}
           {ModalBodyContent()}
         </rb.Modal.Body>
-        <rb.Modal.Footer>
-          <div className="w-100 d-flex gap-4 justify-content-center align-items-center">
-            <rb.Button
-              variant="light"
-              disabled={isLoading}
-              onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
-              className="flex-1 d-flex justify-content-center align-items-center"
-            >
-              {t('earn.fidelity_bond.move.text_button_cancel')}
-            </rb.Button>
-            <rb.Button
-              ref={submitButtonRef}
-              variant="dark"
-              className="flex-1 d-flex justify-content-center align-items-center"
-              disabled={isLoading || selectedDestinationJarIndex === undefined}
-              onClick={onPrimaryButtonClicked}
-            >
-              {primaryButtonContent}
-            </rb.Button>
-          </div>
+        <rb.Modal.Footer className="gap-4">
+          <rb.Button
+            variant="light"
+            disabled={isLoading}
+            onClick={() => onClose({ txInfo, mustReload: parentMustReload })}
+            className="d-flex flex-1 justify-content-center align-items-center"
+          >
+            {t('earn.fidelity_bond.move.text_button_cancel')}
+          </rb.Button>
+          <rb.Button
+            ref={submitButtonRef}
+            variant="dark"
+            className="d-flex flex-1 justify-content-center align-items-center"
+            disabled={isLoading || selectedDestinationJarIndex === undefined}
+            onClick={onPrimaryButtonClicked}
+          >
+            {primaryButtonContent}
+          </rb.Button>
         </rb.Modal.Footer>
       </rb.Modal>
       {showConfirmSendModal && fidelityBond && selectedDestinationJarIndex !== undefined && (
         <PaymentConfirmModal
           size="lg"
           isShown={true}
-          title={t(`earn.fidelity_bond.move.${enableDestinationJarSelection ? 'confirm_send_modal.title' : 'title'}`)}
+          title={t(`earn.fidelity_bond.move.confirm_send_modal.title`)}
           onCancel={() => {
             setShowConfirmSendModal(false)
-            if (!enableDestinationJarSelection) {
-              onClose({ txInfo, mustReload: parentMustReload })
-            }
+            onClose({ txInfo, mustReload: parentMustReload })
           }}
           onConfirm={() => {
             submitButtonRef.current?.click()
@@ -742,7 +726,24 @@ const SpendFidelityBondModal = ({
             feeConfigValues,
             showPrivacyInfo: false,
           }}
-        />
+        >
+          {walletInfo && (
+            <div className="mt-2">
+              <Accordion title={t('earn.fidelity_bond.move.select_jar.button_settings')}>
+                <div className="mb-4">
+                  <SelectJar
+                    description={t('earn.fidelity_bond.move.select_jar.description')}
+                    accountBalances={walletInfo.balanceSummary.accountBalances}
+                    totalBalance={walletInfo.balanceSummary.calculatedAvailableBalanceInSats}
+                    isJarSelectable={() => true}
+                    selectedJar={selectedDestinationJarIndex}
+                    onJarSelected={setSelectedDestinationJarIndex}
+                  />
+                </div>
+              </Accordion>
+            </div>
+          )}
+        </PaymentConfirmModal>
       )}
     </>
   )

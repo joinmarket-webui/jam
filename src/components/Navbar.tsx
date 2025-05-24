@@ -24,6 +24,7 @@ const BalanceLoadingIndicator = () => {
 }
 
 interface WalletPreviewProps {
+  rescanProgress?: number
   wallet: CurrentWallet
   rescanInProgress: boolean
   totalBalance?: AmountSats
@@ -31,7 +32,14 @@ interface WalletPreviewProps {
   showBalance?: boolean
 }
 
-const WalletPreview = ({ wallet, rescanInProgress, totalBalance, unit, showBalance = false }: WalletPreviewProps) => {
+const WalletPreview = ({
+  wallet,
+  rescanInProgress,
+  rescanProgress,
+  totalBalance,
+  unit,
+  showBalance = false,
+}: WalletPreviewProps) => {
   const { t } = useTranslation()
 
   return (
@@ -51,7 +59,11 @@ const WalletPreview = ({ wallet, rescanInProgress, totalBalance, unit, showBalan
         {wallet && <div className="fw-normal">{wallet.displayName}</div>}
         <div className="text-body">
           {rescanInProgress ? (
-            <div className="cursor-wait">{t('navbar.text_rescan_in_progress')}</div>
+            <div className="cursor-wait">
+              {rescanProgress !== undefined
+                ? t('navbar.text_rescan_in_progress_with_progress', { progress: Math.floor(rescanProgress * 100) })
+                : t('navbar.text_rescan_in_progress')}
+            </div>
           ) : (
             <>
               {totalBalance === undefined ? (
@@ -344,6 +356,7 @@ export default function Navbar() {
                       <WalletPreview
                         wallet={currentWallet}
                         rescanInProgress={rescanInProgress}
+                        rescanProgress={serviceInfo?.rescanProgress}
                         totalBalance={currentWalletInfo?.balanceSummary.calculatedTotalBalanceInSats}
                         showBalance={settings.showBalance}
                         unit={settings.unit}

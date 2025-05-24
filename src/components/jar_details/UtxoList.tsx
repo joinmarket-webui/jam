@@ -100,9 +100,9 @@ const toUtxo = (tableNode: TableTypes.TableNode): Utxo => {
 }
 
 interface UtxoTableRow extends Utxo, TableTypes.TableNode {
-  _icon: JSX.Element
+  _icon: React.ReactNode
   _tags: UtxoTag[]
-  _confs: JSX.Element
+  _confs: React.ReactNode
 }
 
 interface UtxoListProps {
