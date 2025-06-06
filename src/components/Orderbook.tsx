@@ -564,6 +564,26 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
     })
   }
 
+  const tryFetch = useCallback((signal: AbortSignal) => {
+    setIsLoading(true)
+    return ObwatchApi.fetchOrderbook({ signal })
+      .then((orderbook) => {
+        if (signal.aborted) return
+
+        setIsLoading(false)
+        setAlert(undefined)
+        setOffers(orderbook.offers || [])
+        setFidelityBonds(new Map((orderbook.fidelitybonds || []).map((it) => [it.counterparty, it])))
+
+        if (isDevMode()) {
+          console.table(orderbook.offers)
+        }
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [])
+
   const refresh = useCallback(
     (signal: AbortSignal) => {
       setIsLoading(true)
@@ -574,46 +594,43 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
             return ApiHelper.throwError(res)
           }
 
-          return ObwatchApi.fetchOrderbook({ signal })
-        })
-        .then((orderbook) => {
-          if (signal.aborted) return
-
-          setIsLoading(false)
-          setAlert(undefined)
-          setOffers(orderbook.offers || [])
-          setFidelityBonds(new Map((orderbook.fidelitybonds || []).map((it) => [it.counterparty, it])))
-
-          if (isDevMode()) {
-            console.table(orderbook.offers)
-          }
+          return tryFetch(signal)
         })
         .catch((e) => {
           if (signal.aborted) return
-          setIsLoading(false)
           const message = t('orderbook.error_loading_orderbook_failed', {
             reason: e.message || t('global.errors.reason_unknown'),
           })
           setAlert({ variant: 'danger', message })
         })
+        .finally(() => {
+          setIsLoading(false)
+        })
     },
-    [t],
+    [tryFetch, t],
   )
 
   useEffect(() => {
     if (!show) return
 
     const abortCtrl = new AbortController()
-
-    refresh(abortCtrl.signal).finally(() => {
-      if (abortCtrl.signal.aborted) return
-      setIsInitialized(true)
-    })
+    tryFetch(abortCtrl.signal)
+      .catch((e) => {
+        if (abortCtrl.signal.aborted) return
+        const message = t('orderbook.error_loading_orderbook_failed', {
+          reason: e.message || t('global.errors.reason_unknown'),
+        })
+        setAlert({ variant: 'danger', message })
+      })
+      .finally(() => {
+        if (abortCtrl.signal.aborted) return
+        setIsInitialized(true)
+      })
 
     return () => {
       abortCtrl.abort()
     }
-  }, [show, refresh])
+  }, [t, show, tryFetch])
 
   return (
     <rb.Offcanvas
