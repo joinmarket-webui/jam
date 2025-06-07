@@ -11,7 +11,6 @@ import { CurrentWallet, useCurrentWallet, useCurrentWalletInfo } from '../contex
 import { useServiceInfo, useSessionConnectionError } from '../context/ServiceInfoContext'
 import { routes } from '../constants/routes'
 import { AmountSats } from '../libs/JmWalletApi'
-import { isDebugFeatureEnabled } from '../constants/debugFeatures'
 
 import styles from './Navbar.module.css'
 
@@ -197,11 +196,9 @@ const TrailingNav = ({ joiningRoute, onClick }: TrailingNavProps) => {
           </NavLink>
         </rb.Nav.Item>
       )}
-      {isDebugFeatureEnabled('fastThemeToggle') && (
-        <rb.Nav.Item className="d-none d-md-flex align-items-stretch">
-          <FastThemeToggle />
-        </rb.Nav.Item>
-      )}
+      <rb.Nav.Item className="d-none d-md-flex align-items-stretch">
+        <FastThemeToggle />
+      </rb.Nav.Item>
       <rb.Nav.Item className="d-flex align-items-stretch">
         <NavLink
           to={routes.settings}
@@ -309,11 +306,9 @@ export default function Navbar() {
                     <span>{t('navbar.menu')}</span>
                   </rb.Navbar.Toggle>
                 </div>
-                {isDebugFeatureEnabled('fastThemeToggle') && (
-                  <rb.Nav.Item className="d-none d-md-flex align-items-center pe-2">
-                    <FastThemeToggle />
-                  </rb.Nav.Item>
-                )}
+                <rb.Nav.Item className="d-none d-md-flex align-items-center pe-2">
+                  <FastThemeToggle />
+                </rb.Nav.Item>
                 <rb.Navbar.Offcanvas className={`navbar-offcanvas navbar-${settings.theme}`} placement="end">
                   <rb.Offcanvas.Header>
                     <rb.Offcanvas.Title>{t('navbar.title')}</rb.Offcanvas.Title>
