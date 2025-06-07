@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0](https://github.com/joinmarket-webui/jam/compare/v0.3.0...v0.4.0) (2025-06-07)
+
+#### Added
+
+* ability to select jar when unlocking fidelity bond ([#574](https://github.com/joinmarket-webui/jam/issues/574)) ([#885](https://github.com/joinmarket-webui/jam/issues/885)) ([1f2acd2](https://github.com/joinmarket-webui/jam/commit/1f2acd2322f099b6a21eb30c14764b87e0f1ee45))
+* add color-coded checkboxes for UTXO states in Send view ([#878](https://github.com/joinmarket-webui/jam/issues/878)) ([6baf92e](https://github.com/joinmarket-webui/jam/commit/6baf92ecf459e1c4bd6398a28abf3e01bd46c721))
+* fast theme toggle in navbar ([#904](https://github.com/joinmarket-webui/jam/issues/904)) ([69f65fa](https://github.com/joinmarket-webui/jam/commit/69f65fa3bd376e10245c3bd9034f43cd2b20fddd))
+* orderbook hard refresh ([#906](https://github.com/joinmarket-webui/jam/issues/906)) ([83ef6d2](https://github.com/joinmarket-webui/jam/commit/83ef6d2505b2c35ebe2e364cb92424c74a9fa7d6))
+* show progress during rescan ([#894](https://github.com/joinmarket-webui/jam/issues/894)) ([c608c58](https://github.com/joinmarket-webui/jam/commit/c608c583aa0ba53bd470743a09a0005bc12935bf))
+
+#### Fixed
+
+* relative fee greater than zero ([#862](https://github.com/joinmarket-webui/jam/issues/862)) ([5c3306b](https://github.com/joinmarket-webui/jam/commit/5c3306bd573696989f2e506be64187582fac7ed8))
+* **ui:** fidelity bond utxo row color in dark mode ([#898](https://github.com/joinmarket-webui/jam/issues/898)) ([3019285](https://github.com/joinmarket-webui/jam/commit/30192857f81910db1142e2a02f08f3b23dd24136))
+* **ui:** fix button alignment in jar selection modal ([#897](https://github.com/joinmarket-webui/jam/issues/897)) ([10ad2a6](https://github.com/joinmarket-webui/jam/commit/10ad2a61d4c18dc4a6d3a6f6fc31d2a88b852e9f))
 ## [0.3.0](https://github.com/joinmarket-webui/jam/compare/v0.2.0...v0.3.0) (2024-10-01)
 
 #### Added
