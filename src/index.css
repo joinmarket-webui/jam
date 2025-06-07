@@ -619,6 +619,12 @@ h2 {
   --bs-tertiary-bg: var(--bs-gray-900);
 }
 
+.dropdown-menu {
+  --bs-dropdown-link-hover-color: var(--bs-white);
+  --bs-dropdown-link-hover-bg: var(--bs-gray-dark);
+  --bs-dropdown-link-active-bg: var(--bs-gray-dark);
+}
+
 :root[data-theme='dark'] .accordion {
   --bs-accordion-color: var(--bs-white);
   --bs-accordion-active-color: var(--bs-white);

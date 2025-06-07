@@ -372,12 +372,14 @@ const offerToTableEntry = (
 
 interface OrderbookProps {
   entries: OrderTableEntry[]
+  reload: (signal: AbortSignal) => Promise<void>
+  isReloading: boolean
   refresh: (signal: AbortSignal) => Promise<void>
-  isLoading: boolean
+  isRefreshing: boolean
   nickname?: string
 }
 
-export function Orderbook({ entries, refresh, isLoading: isLoadingRefresh, nickname }: OrderbookProps) {
+export function Orderbook({ entries, reload, isReloading, refresh, isRefreshing, nickname }: OrderbookProps) {
   const { t } = useTranslation()
   const settings = useSettings()
   const [search, setSearch] = useState('')
@@ -385,6 +387,7 @@ export function Orderbook({ entries, refresh, isLoading: isLoadingRefresh, nickn
   const [isPinToTopOwnOffers, setIsPinToTopOwnOffers] = useState(false)
   const [highlightedOrders, setHighlightedOrders] = useState<OrderTableEntry[]>([])
   const [pinToTopOrders, setPinToTopOrders] = useState<OrderTableEntry[]>([])
+  const isLoading = useMemo(() => isReloading || isRefreshing, [isReloading, isRefreshing])
 
   const tableData: TableTypes.Data<OrderTableRow> = useMemo(() => {
     const searchVal = search.replace('.', '').toLowerCase()
@@ -434,25 +437,47 @@ export function Orderbook({ entries, refresh, isLoading: isLoadingRefresh, nickn
   return (
     <div className={styles.orderbookContainer}>
       <div className={styles.titleBar}>
-        <div className="d-flex justify-content-center align-items-center gap-2">
-          <rb.Button
-            className={styles.refreshButton}
-            variant={settings.theme}
+        <div className="d-flex justify-content-center align-items-center gap-3">
+          <rb.SplitButton
+            size="sm"
+            variant={`${settings.theme === 'dark' ? 'outline-dark' : 'outline-dark'}`}
+            title={
+              <div className={styles.refreshButton} title={t('orderbook.button_reload_title')}>
+                {isLoading ? (
+                  <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                ) : (
+                  <Sprite symbol="refresh" width="24" height="24" />
+                )}
+              </div>
+            }
+            disabled={isLoading}
             onClick={() => {
-              if (isLoadingRefresh) return
+              if (isLoading) return
 
               const abortCtrl = new AbortController()
-              refresh(abortCtrl.signal).finally(() => {
+              console.log('Reloading orderbook...')
+              reload(abortCtrl.signal).finally(() => {
                 console.log('Finished reloading orderbook.')
               })
             }}
           >
-            {isLoadingRefresh ? (
-              <rb.Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-            ) : (
-              <Sprite symbol="refresh" width="24" height="24" />
-            )}
-          </rb.Button>
+            <rb.Dropdown.Item
+              eventKey="1"
+              active={false}
+              title={t('orderbook.button_refresh_title')}
+              onClick={() => {
+                if (isLoading) return
+
+                const abortCtrl = new AbortController()
+                console.log('Refreshing orderbook...')
+                refresh(abortCtrl.signal).finally(() => {
+                  console.log('Finished refreshing orderbook.')
+                })
+              }}
+            >
+              {t('orderbook.button_refresh_text')}
+            </rb.Dropdown.Item>
+          </rb.SplitButton>
           <div className="small">
             {search === '' ? (
               <>
@@ -478,7 +503,7 @@ export function Orderbook({ entries, refresh, isLoading: isLoadingRefresh, nickn
               name="search"
               placeholder={t('orderbook.placeholder_search')}
               value={search}
-              disabled={isLoadingRefresh}
+              disabled={isLoading}
               onChange={(e) => setSearch(e.target.value)}
             />
           </rb.Form.Group>
@@ -498,7 +523,7 @@ export function Orderbook({ entries, refresh, isLoading: isLoadingRefresh, nickn
                     subtitle={ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
                     toggledOn={isHighlightOwnOffers}
                     onToggle={(isToggled) => setIsHighlightOwnOffers(isToggled)}
-                    disabled={isLoadingRefresh || ownOffers.length === 0}
+                    disabled={isLoading || ownOffers.length === 0}
                   />
                   {ownOffers.length > 0 && (
                     <ToggleSwitch
@@ -511,7 +536,7 @@ export function Orderbook({ entries, refresh, isLoading: isLoadingRefresh, nickn
                           setIsHighlightOwnOffers(true)
                         }
                       }}
-                      disabled={isLoadingRefresh}
+                      disabled={isLoading}
                     />
                   )}
                 </div>
@@ -534,7 +559,8 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
   const { t, i18n } = useTranslation()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isReloading, setIsReloading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [offers, setOffers] = useState<ObwatchApi.Offer[]>()
   const [fidelityBonds, setFidelityBonds] = useState<Map<string, ObwatchApi.FidelityBond>>()
   const [__dev_showGenerateDemoOfferButton] = useState(isDebugFeatureEnabled('enableDemoOrderbook'))
@@ -564,48 +590,70 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
     })
   }
 
+  const reload = useCallback(
+    (signal: AbortSignal, delay: number = 200) => {
+      setIsReloading(true)
+      return (
+        ObwatchApi.fetchOrderbook({ signal })
+          // show the loader a little longer to avoid flickering
+          .then((it) => new Promise<ObwatchApi.OrderbookJson>((resolve) => setTimeout(() => resolve(it), delay)))
+          .then((orderbook) => {
+            if (signal.aborted) return
+
+            setIsReloading(false)
+            setAlert(undefined)
+            setOffers(orderbook.offers || [])
+            setFidelityBonds(new Map((orderbook.fidelitybonds || []).map((it) => [it.counterparty, it])))
+
+            if (isDevMode()) {
+              console.table(orderbook.offers)
+            }
+          })
+          .catch((e) => {
+            if (signal.aborted) return
+            const message = t('orderbook.error_loading_orderbook_failed', {
+              reason: e.message || t('global.errors.reason_unknown'),
+            })
+            setAlert({ variant: 'danger', message })
+          })
+          .finally(() => {
+            setIsReloading(false)
+          })
+      )
+    },
+    [t],
+  )
+
   const refresh = useCallback(
     (signal: AbortSignal) => {
-      setIsLoading(true)
+      setIsRefreshing(true)
       return ObwatchApi.refreshOrderbook({ signal, redirect: 'manual' })
         .then((res) => {
           if (!res.ok && res.type !== 'opaqueredirect') {
             // e.g. error is raised if ob-watcher is not running
             return ApiHelper.throwError(res)
           }
-
-          return ObwatchApi.fetchOrderbook({ signal })
-        })
-        .then((orderbook) => {
-          if (signal.aborted) return
-
-          setIsLoading(false)
-          setAlert(undefined)
-          setOffers(orderbook.offers || [])
-          setFidelityBonds(new Map((orderbook.fidelitybonds || []).map((it) => [it.counterparty, it])))
-
-          if (isDevMode()) {
-            console.table(orderbook.offers)
-          }
+          return reload(signal, 0)
         })
         .catch((e) => {
           if (signal.aborted) return
-          setIsLoading(false)
           const message = t('orderbook.error_loading_orderbook_failed', {
             reason: e.message || t('global.errors.reason_unknown'),
           })
           setAlert({ variant: 'danger', message })
         })
+        .finally(() => {
+          setIsRefreshing(false)
+        })
     },
-    [t],
+    [reload, t],
   )
 
   useEffect(() => {
     if (!show) return
 
     const abortCtrl = new AbortController()
-
-    refresh(abortCtrl.signal).finally(() => {
+    reload(abortCtrl.signal).finally(() => {
       if (abortCtrl.signal.aborted) return
       setIsInitialized(true)
     })
@@ -613,7 +661,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
     return () => {
       abortCtrl.abort()
     }
-  }, [show, refresh])
+  }, [show, reload])
 
   return (
     <rb.Offcanvas
@@ -638,7 +686,7 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
       </rb.Offcanvas.Header>
       <rb.Offcanvas.Body>
         <rb.Container fluid="lg" className="py-3">
-          {!isInitialized && isLoading ? (
+          {!isInitialized && isReloading ? (
             Array(5)
               .fill('')
               .map((_, index) => {
@@ -671,10 +719,17 @@ export function OrderbookOverlay({ nickname, show, onHide }: OrderbookOverlayPro
                 </rb.Row>
               )}
               {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-              {tableEntries && (
+              {isInitialized && (
                 <rb.Row>
                   <rb.Col className="px-0">
-                    <Orderbook nickname={nickname} entries={tableEntries} refresh={refresh} isLoading={isLoading} />
+                    <Orderbook
+                      nickname={nickname}
+                      entries={tableEntries || []}
+                      reload={reload}
+                      isReloading={isReloading}
+                      refresh={refresh}
+                      isRefreshing={isRefreshing}
+                    />
                   </rb.Col>
                 </rb.Row>
               )}
