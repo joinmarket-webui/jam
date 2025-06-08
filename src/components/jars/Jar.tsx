@@ -216,7 +216,6 @@ const OpenableJar = ({ tooltipText, onClick, ...jarProps }: OpenableJarProps) =>
     <div onMouseOver={openJar} onMouseOut={closeJar}>
       <rb.OverlayTrigger
         placement="top"
-        trigger="hover"
         popperConfig={{
           modifiers: [
             {
