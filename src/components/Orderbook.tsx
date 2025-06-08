@@ -27,22 +27,22 @@ const TABLE_THEME = {
     font-size: 0.9rem;
   `,
   BaseCell: `
-    &:nth-of-type(3) div div {
+    &:nth-of-type(3) div button {
       justify-content: center;
     }
-    &:nth-of-type(4) div div {
+    &:nth-of-type(4) div button {
       justify-content: end;
     }
-    &:nth-of-type(5) div div {
+    &:nth-of-type(5) div button {
       justify-content: end;
     }
-    &:nth-of-type(6) div div {
+    &:nth-of-type(6) div button {
       justify-content: end;
     }
-    &:nth-of-type(7) div div {
+    &:nth-of-type(7) div button {
       justify-content: end;
     }
-    &:nth-of-type(8) div div {
+    &:nth-of-type(8) div button {
       justify-content: end;
     }
   `,

@@ -29,16 +29,16 @@ const TABLE_THEME = {
     font-size: 0.9rem;
   `,
   BaseCell: `
-    &:nth-of-type(2) div div {
+    &:nth-of-type(2) div button {
       justify-content: end;
     }
-    &:nth-of-type(3) div div {
+    &:nth-of-type(3) div button {
       justify-content: end;
     }
-    &:nth-of-type(4) div div {
+    &:nth-of-type(4) div button {
       justify-content: end;
     }
-    &:nth-of-type(5) div div {
+    &:nth-of-type(5) div button {
       justify-content: end;
     }
   `,

@@ -56,17 +56,20 @@ const TABLE_THEME = {
     &:nth-of-type(1) {
       text-align: center;
     }
+    &:nth-of-type(2) div button {
+      justify-content: center;
+    }
     &:nth-of-type(3) {
       text-align: center;
       padding: 0 !important;
     }
-    &:nth-of-type(4) div div {
+    &:nth-of-type(4) div button {
       justify-content: end;
     }
     &:nth-of-type(6) {
       padding: 0 !important;
     }
-    &:nth-of-type(6) div div {
+    &:nth-of-type(6) div button {
       justify-content: center;
     }
   `,
