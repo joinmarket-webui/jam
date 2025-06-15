@@ -31,8 +31,7 @@ OUTPUT_FILE="$SCRIPT_DIR/.env.generated"
 
 # generate an onion address
 HS_SCRIPT_TARGET_DIR="${SCRIPT_DIR}/out/hidden_service_dir"
-HS_SCRIPT_WORK_DIR="${SCRIPT_DIR}/.tmp/generate-onion-address-work"
-. "$SCRIPT_DIR/generate-onion-address.sh" "${HS_SCRIPT_TARGET_DIR}" "${HS_SCRIPT_WORK_DIR}"
+. "$SCRIPT_DIR/generate-onion-address.sh" "${HS_SCRIPT_TARGET_DIR}"
 
 
 ONION_ADDRESS=`cat ${HS_SCRIPT_TARGET_DIR}/hostname`
