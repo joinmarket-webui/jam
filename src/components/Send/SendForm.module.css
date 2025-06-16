@@ -1,9 +1,0 @@
-.blurred {
-  filter: blur(2px);
-}
-
-.input {
-  height: 3.5rem;
-  width: 100%;
-  border-radius: 0.25rem;
-}
