@@ -3,8 +3,8 @@ import { Button } from "./ui/button";
 import { Jar } from "./layout/Jar";
 import { Info, RefreshCw, Loader2 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
-import { useDisplayMode } from "./layout/Layout";
 import { Alert, AlertDescription } from "./ui/alert";
+import { useDisplayMode } from "./layout/display-mode-context";
 
 export default function JamLanding() {
   const {
