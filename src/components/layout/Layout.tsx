@@ -63,29 +63,36 @@ export function Layout({ children }: LayoutProps) {
   });
 
   // Create the jars array by combining jar templates with actual account data
-  const jars: Jar[] = walletData
-    ? walletData.walletinfo.accounts.map((account, index) => {
-        // Parse balance as a float from BTC value, then convert to sats (multiply by 100,000,000)
-        const btcBalance = parseFloat(account.available_balance) || 0;
-        const satsBalance = Math.round(btcBalance * 100_000_000);
+  interface WalletAccount {
+    account: string;
+    account_balance: string;
+    available_balance: string;
+  }
 
-        // Only use up to 5 accounts, matching with jar templates
-        if (index >= jarTemplates.length) {
+  const jars: Jar[] = walletData
+    ? walletData.walletinfo.accounts.map(
+        (account: WalletAccount, index: number) => {
+          // Parse balance as a float from BTC value, then convert to sats (multiply by 100,000,000)
+          const btcBalance: number = parseFloat(account.available_balance) || 0;
+          const satsBalance: number = Math.round(btcBalance * 100_000_000);
+
+          // Only use up to 5 accounts, matching with jar templates
+          if (index >= jarTemplates.length) {
+            return {
+              name: `Account ${account.account}`,
+              color: "#808080" as JarColor, // Default color
+              balance: satsBalance,
+              account: account.account,
+            };
+          }
+
           return {
-            name: `Account ${account.account}`,
-            color: "#808080" as JarColor, // Default color
+            ...jarTemplates[index],
             balance: satsBalance,
-            icon: "📁",
             account: account.account,
           };
         }
-
-        return {
-          ...jarTemplates[index],
-          balance: satsBalance,
-          account: account.account,
-        };
-      })
+      )
     : jarTemplates.map((jar) => ({ ...jar, balance: 0 }));
 
   const totalBalance = jars.reduce((acc, jar) => acc + jar.balance, 0);

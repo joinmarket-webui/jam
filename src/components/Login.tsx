@@ -76,13 +76,8 @@ const LoginPage = () => {
 
       navigate("/");
     } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "status" in err &&
-        err.status === 401
-      ) {
-        setError("Incorrect password");
+      if (typeof err === "object" && err !== null && "message" in err) {
+        setError(err.message as string);
       } else {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
       }

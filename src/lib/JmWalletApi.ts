@@ -1,51 +1,267 @@
-import axios from "axios";
-import type { AxiosInstance } from "axios";
+import { createClient } from "./jm-api";
+import { getSession } from "./session";
 import { apiConfig } from "./config";
-import { getSession as getStoredSession } from "./session";
 
-// Create axios instance with base configuration
-const createApiInstance = (): AxiosInstance => {
-  const instance = axios.create({
-    baseURL: apiConfig.baseUrl,
-    timeout: 30000,
-    headers: {
-      "Content-Type": "application/json",
+// Create client with base configuration
+const clientOptions = {
+  baseUrl: apiConfig.baseUrl || "/api/v1/",
+};
+
+// Initialize client
+const client = createClient(clientOptions);
+
+// Helper function to add auth header to requests
+const getAuthHeaders = () => {
+  const session = getSession();
+  if (session?.auth?.token) {
+    return {
+      Authorization: `Bearer ${session.auth.token}`,
+    };
+  }
+  return {};
+};
+
+// Export the client and individual API functions with proper typing
+export default client;
+
+// Re-export types from the generated client for easier access
+export type {
+  TokenResponse,
+  ListWalletsResponse,
+  GetAddressResponse,
+  ConfigGetResponse,
+} from "./jm-api/generated/client/types.gen";
+
+// Re-export SDK functions
+export {
+  token,
+  createwallet,
+  recoverwallet,
+  unlockwallet,
+  lockwallet,
+  displaywallet,
+  session,
+  version,
+  listwallets,
+  getaddress,
+  startmaker,
+  stopmaker,
+  docoinjoin,
+  getschedule,
+  runschedule,
+  stopcoinjoin,
+} from "./jm-api/generated/client/sdk.gen";
+
+/**
+ * Helper function to get all wallets
+ */
+export const getWalletAll = async () => {
+  const { data, error } = await client.get({
+    url: "/wallet/all",
+  });
+
+  if (error) {
+    console.error("Error fetching wallets:", error);
+    throw error;
+  }
+
+  return data as { wallets: string[] };
+};
+
+/**
+ * Helper function to unlock a wallet
+ */
+export const unlockWallet = async (
+  walletFileName: string,
+  password: string
+) => {
+  const { data, error } = await client.post({
+    url: `/wallet/${encodeURIComponent(walletFileName)}/unlock`,
+    body: { password },
+  });
+
+  if (error) {
+    console.error("Error unlocking wallet:", error);
+    throw error;
+  }
+
+  return data as { walletname: string; token: string };
+};
+
+/**
+ * Helper function to create a new wallet
+ */
+export const createWallet = async (
+  walletName: string,
+  password: string,
+  walletType: string = "sw-fb"
+) => {
+  // Create a fresh client instance for this call to avoid auth middleware
+  const freshClient = createClient(clientOptions);
+
+  const { data, error } = await freshClient.post({
+    url: "/wallet/create",
+    body: {
+      walletname: walletName,
+      password,
+      wallettype: walletType,
     },
   });
 
-  // Request interceptor to add auth token
-  instance.interceptors.request.use(
-    (config) => {
-      const session = getStoredSession();
-      if (session?.auth?.token) {
-        config.headers.Authorization = `Bearer ${session.auth.token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
+  if (error) {
+    console.error("Error creating wallet:", error);
+    throw error;
+  }
 
-  // Response interceptor for error handling
-  instance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        // Handle unauthorized - maybe clear session and redirect to login
-        console.error("Unauthorized request - clearing session");
-        // You might want to dispatch a logout action here
-      }
-      return Promise.reject(error);
-    }
-  );
-
-  return instance;
+  const responseData = data as CreateWalletResponse;
+  return {
+    walletname: responseData?.walletname || "",
+    token: responseData?.token || "",
+    seedphrase: responseData?.seedphrase || "",
+  };
 };
 
-const api = createApiInstance();
+/**
+ * Helper function to lock a wallet
+ */
+export const lockWallet = async (walletName: string) => {
+  const { data, error } = await client.get({
+    url: `/wallet/${encodeURIComponent(walletName)}/lock`,
+    headers: getAuthHeaders(),
+  });
 
-// Types for API responses
+  if (error) {
+    console.error("Error locking wallet:", error);
+    throw error;
+  }
+
+  const responseData = data as LockWalletResponse;
+  return {
+    walletname: responseData?.walletname || "",
+    already_locked: responseData?.already_locked || false,
+  };
+};
+
+/**
+ * Helper function to get session information
+ */
+export const getJmSession = async () => {
+  // Create a fresh client instance for this call to avoid auth middleware
+  const freshClient = createClient(clientOptions);
+
+  const { data, error } = await freshClient.get({
+    url: "/session",
+  });
+
+  if (error) {
+    console.error("Error fetching session:", error);
+    throw error;
+  }
+
+  const responseData = data as SessionResponse;
+  return {
+    session: responseData?.session || false,
+    wallet_name: responseData?.wallet_name || "",
+    maker_running: responseData?.maker_running || false,
+    coinjoin_in_process: responseData?.coinjoin_in_process || false,
+    schedule_in_process: !!responseData?.schedule,
+  };
+};
+
+/**
+ * Helper function to get wallet display information
+ */
+export const getWalletDisplay = async (walletName: string) => {
+  const { data, error } = await client.get({
+    url: `/wallet/${encodeURIComponent(walletName)}/display`,
+    headers: getAuthHeaders(),
+  });
+
+  if (error) {
+    console.error("Error fetching wallet display:", error);
+    throw error;
+  }
+
+  const responseData = data as WalletDisplayResponse;
+  return {
+    walletinfo: responseData?.walletinfo || {},
+  };
+};
+
+/**
+ * Helper function to get a new address
+ */
+export const getNewAddress = async (
+  walletName: string,
+  mixdepth: number = 0
+) => {
+  const { data, error } = await client.get({
+    url: `/wallet/${encodeURIComponent(walletName)}/address/new/${mixdepth}`,
+    headers: getAuthHeaders(),
+  });
+
+  if (error) {
+    console.error("Error fetching new address:", error);
+    throw error;
+  }
+
+  return { address: data as string };
+};
+
+/**
+ * Helper function to start maker service
+ */
+export const startMaker = async (
+  walletName: string,
+  config: {
+    txfee?: string;
+    cjfee_a?: string;
+    cjfee_r?: string;
+    ordertype?: string;
+    minsize?: string;
+  } = {}
+) => {
+  const defaultConfig = {
+    txfee: "0",
+    cjfee_a: "250",
+    cjfee_r: "0.0003",
+    ordertype: "sw0absoffer",
+    minsize: "1",
+    ...config,
+  };
+
+  const { data, error } = await client.post({
+    url: `/wallet/${encodeURIComponent(walletName)}/maker/start`,
+    body: defaultConfig,
+    headers: getAuthHeaders(),
+  });
+
+  if (error) {
+    console.error("Error starting maker:", error);
+    throw error;
+  }
+
+  return data as Record<string, unknown>;
+};
+
+/**
+ * Helper function to stop maker service
+ */
+export const stopMaker = async (walletName: string) => {
+  const { data, error } = await client.get({
+    url: `/wallet/${encodeURIComponent(walletName)}/maker/stop`,
+    headers: getAuthHeaders(),
+  });
+
+  if (error) {
+    console.error("Error stopping maker:", error);
+    throw error;
+  }
+
+  return data as Record<string, unknown>;
+};
+
+// Export all the same types from the old API to maintain compatibility
 export interface WalletListResponse {
   wallets: string[];
 }
@@ -67,6 +283,7 @@ export interface SessionResponse {
   maker_running: boolean;
   coinjoin_in_process: boolean;
   schedule_in_process: boolean;
+  schedule?: unknown;
 }
 
 export interface WalletDisplayResponse {
@@ -90,174 +307,3 @@ export interface LockWalletResponse {
   walletname: string;
   already_locked: boolean;
 }
-
-// API function to get all available wallets
-export const getWalletAll = async (): Promise<WalletListResponse> => {
-  try {
-    const response = await api.get("/api/v1/wallet/all");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching wallets:", error);
-    throw error;
-  }
-};
-
-// API function to unlock a wallet
-export const unlockWallet = async (
-  walletFileName: string,
-  password: string
-): Promise<UnlockWalletResponse> => {
-  try {
-    const response = await api.post(
-      `/api/v1/wallet/${encodeURIComponent(walletFileName)}/unlock`,
-      { password }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error unlocking wallet:", error);
-    throw error;
-  }
-};
-
-// API function to create a new wallet
-export const createWallet = async (
-  walletName: string,
-  password: string,
-  walletType: string = "sw-fb"
-): Promise<CreateWalletResponse> => {
-  try {
-    // Create a completely fresh axios instance without any interceptors
-    const freshAxios = axios.create({
-      baseURL: apiConfig.baseUrl,
-      timeout: 30000,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const response = await freshAxios.post("/api/v1/wallet/create", {
-      walletname: walletName,
-      password,
-      wallettype: walletType,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error creating wallet:", error);
-    throw error;
-  }
-};
-
-// API function to lock a wallet
-export const lockWallet = async (
-  walletName: string
-): Promise<LockWalletResponse> => {
-  try {
-    const response = await api.get(
-      `/api/v1/wallet/${encodeURIComponent(walletName)}/lock`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error locking wallet:", error);
-    throw error;
-  }
-};
-
-// API function to get session information
-export const getJmSession = async (): Promise<SessionResponse> => {
-  try {
-    // Create a completely fresh axios instance without any interceptors
-    const freshAxios = axios.create({
-      baseURL: apiConfig.baseUrl,
-      timeout: 30000,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const response = await freshAxios.get("/api/v1/session");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching session:", error);
-    throw error;
-  }
-};
-
-// API function to get wallet display information
-export const getWalletDisplay = async (
-  walletName: string
-): Promise<WalletDisplayResponse> => {
-  try {
-    const response = await api.get(
-      `/api/v1/wallet/${encodeURIComponent(walletName)}/display`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching wallet display:", error);
-    throw error;
-  }
-};
-
-// API function to get a new address
-export const getNewAddress = async (
-  walletName: string,
-  mixdepth: number = 0
-): Promise<AddressResponse> => {
-  try {
-    const response = await api.get(
-      `/api/v1/wallet/${encodeURIComponent(walletName)}/address/new/${mixdepth}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching new address:", error);
-    throw error;
-  }
-};
-
-// API function to start maker service
-export const startMaker = async (
-  walletName: string,
-  config: {
-    txfee?: string;
-    cjfee_a?: string;
-    cjfee_r?: string;
-    ordertype?: string;
-    minsize?: string;
-  } = {}
-): Promise<Record<string, unknown>> => {
-  try {
-    const defaultConfig = {
-      txfee: "0",
-      cjfee_a: "250",
-      cjfee_r: "0.0003",
-      ordertype: "sw0absoffer",
-      minsize: "1",
-      ...config,
-    };
-
-    const response = await api.post(
-      `/api/v1/wallet/${encodeURIComponent(walletName)}/maker/start`,
-      defaultConfig
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error starting maker:", error);
-    throw error;
-  }
-};
-
-// API function to stop maker service
-export const stopMaker = async (
-  walletName: string
-): Promise<Record<string, unknown>> => {
-  try {
-    const response = await api.get(
-      `/api/v1/wallet/${encodeURIComponent(walletName)}/maker/stop`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error stopping maker:", error);
-    throw error;
-  }
-};
-
-export default api;
