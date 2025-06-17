@@ -62,7 +62,6 @@ const LoginPage = () => {
     e.preventDefault()
 
     if (!selectedWallet) return
-    if (!password) return
 
     try {
       const response = await unlockWallet.mutateAsync({
@@ -70,7 +69,7 @@ const LoginPage = () => {
           walletname: encodeURIComponent(selectedWallet),
         },
         body: {
-          password,
+          password: password || '',
         },
       })
 
@@ -91,7 +90,11 @@ const LoginPage = () => {
         <Card className="shadow-lg">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Wallet className="w-6 h-6 text-primary" />
+              {isLoadingWallets ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : (
+                <Wallet className="h-6 w-6 text-primary" />
+              )}
             </div>
             <CardTitle className="text-2xl font-bold">Welcome to Jam</CardTitle>
             <CardDescription>Select your wallet and enter your password to continue</CardDescription>
@@ -112,6 +115,7 @@ const LoginPage = () => {
                   value={selectedWallet}
                   onValueChange={setSelectedWallet}
                   disabled={isLoading || wallets === undefined || wallets.length === 0}
+                  required
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a wallet" />
@@ -138,10 +142,9 @@ const LoginPage = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={password || ''}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading || !selectedWallet}
+                    disabled={isLoading}
                     placeholder="Enter your password"
                     className="pl-10 pr-10"
-                    required
                   />
                   <Button
                     type="button"
@@ -155,10 +158,10 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !selectedWallet || !password} size="lg">
+              <Button type="submit" className="w-full" disabled={isLoading || !selectedWallet} size="lg">
                 {isUnlockingWallet ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Unlocking...
                   </>
                 ) : (
