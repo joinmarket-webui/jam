@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useNavigate, Link } from 'react-router-dom'
 import { setSession } from '@/lib/session'
@@ -35,6 +35,14 @@ const LoginPage = () => {
   }, [listwalletsQuery.error])
 
   const wallets = useMemo(() => listwalletsQuery.data?.wallets, [listwalletsQuery.data])
+
+  useEffect(
+    function preselectWalletIfOnlyOneExists() {
+      if (wallets === undefined || wallets.length !== 1) return
+      setSelectedWallet((current) => current ?? wallets[0])
+    },
+    [wallets],
+  )
 
   const unlockWallet = useMutation({
     ...unlockwalletMutation({ client }),
