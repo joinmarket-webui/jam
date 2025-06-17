@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient } from '@tanstack/react-query'
 
 // Create a client with default configuration
 export const queryClient = new QueryClient({
@@ -20,4 +20,4 @@ export const queryClient = new QueryClient({
       retry: 1,
     },
   },
-});
+})

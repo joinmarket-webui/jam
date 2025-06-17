@@ -1,10 +1,10 @@
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Jar } from "./layout/Jar";
-import { Info, RefreshCw, Loader2 } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
-import { Alert, AlertDescription } from "./ui/alert";
-import { useDisplayMode } from "./layout/display-mode-context";
+import { Card } from './ui/card'
+import { Button } from './ui/button'
+import { Jar } from './layout/Jar'
+import { Info, RefreshCw, Loader2 } from 'lucide-react'
+import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip'
+import { Alert, AlertDescription } from './ui/alert'
+import { useDisplayMode } from './layout/display-mode-context'
 
 export default function JamLanding() {
   const {
@@ -17,14 +17,12 @@ export default function JamLanding() {
     isLoading,
     error,
     refetchWalletData,
-  } = useDisplayMode();
+  } = useDisplayMode()
 
   return (
     <div className="flex flex-col items-center justify-center py-8">
       <div className="text-center mb-8">
-        <div className="text-lg opacity-80 text-gray-400">
-          {displayMode === "btc" ? "Bitcoin" : "Satoshi"}
-        </div>
+        <div className="text-lg opacity-80 text-gray-400">{displayMode === 'btc' ? 'Bitcoin' : 'Satoshi'}</div>
         <div className="text-4xl font-light tracking-wider mb-2 flex justify-center items-center cursor-pointer select-none min-h-[56px]">
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[56px]">
@@ -35,12 +33,11 @@ export default function JamLanding() {
               <span
                 onClick={toggleDisplayMode}
                 title="Click to toggle sats/bitcoin"
-                className="tabular-nums min-w-[250px] text-center">
-                {formatAmount(totalBalance)}{" "}
+                className="tabular-nums min-w-[250px] text-center"
+              >
+                {formatAmount(totalBalance)}{' '}
               </span>
-              <span className="flex items-center min-h-[48px]">
-                {getLogo("lg")}
-              </span>
+              <span className="flex items-center min-h-[48px]">{getLogo('lg')}</span>
             </>
           )}
         </div>
@@ -55,11 +52,7 @@ export default function JamLanding() {
         <Alert variant="destructive" className="mb-4 max-w-2xl">
           <AlertDescription>
             Error loading wallet data: {error.message}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetchWalletData()}
-              className="ml-2">
+            <Button variant="outline" size="sm" onClick={() => refetchWalletData()} className="ml-2">
               <RefreshCw className="h-4 w-4 mr-2" /> Retry
             </Button>
           </AlertDescription>
@@ -102,9 +95,7 @@ export default function JamLanding() {
               </Tooltip>
             ))
           ) : (
-            <div className="flex-1 text-center py-4 text-gray-500">
-              No accounts found in wallet
-            </div>
+            <div className="flex-1 text-center py-4 text-gray-500">No accounts found in wallet</div>
           )}
         </div>
       </Card>
@@ -113,11 +104,12 @@ export default function JamLanding() {
           variant="ghost"
           size="sm"
           onClick={() => refetchWalletData()}
-          className="flex gap-2 items-center text-gray-500">
+          className="flex gap-2 items-center text-gray-500"
+        >
           <RefreshCw className="h-4 w-4" />
           Refresh
         </Button>
       </div>
     </div>
-  );
+  )
 }

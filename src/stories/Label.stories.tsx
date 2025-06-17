@@ -1,29 +1,28 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Label } from "../components/ui/label";
-import { Input } from "../components/ui/input";
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { Label } from '../components/ui/label'
+import { Input } from '../components/ui/input'
 
 const meta: Meta<typeof Label> = {
-  title: "Core/Label",
+  title: 'Core/Label',
   component: Label,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
-        component:
-          "A label component that provides accessible labeling for form controls.",
+        component: 'A label component that provides accessible labeling for form controls.',
       },
     },
   },
-};
-export default meta;
+}
+export default meta
 
-type Story = StoryObj<typeof Label>;
+type Story = StoryObj<typeof Label>
 
 export const Default: Story = {
   args: {
-    children: "Label text",
+    children: 'Label text',
   },
-};
+}
 
 export const WithInput: Story = {
   render: () => (
@@ -32,7 +31,7 @@ export const WithInput: Story = {
       <Input id="username" placeholder="Enter username" />
     </div>
   ),
-};
+}
 
 export const Required: Story = {
   render: () => (
@@ -43,32 +42,26 @@ export const Required: Story = {
       <Input id="email" type="email" placeholder="Enter your email" />
     </div>
   ),
-};
+}
 
 export const WithHelpText: Story = {
   render: () => (
     <div className="space-y-2">
       <Label htmlFor="password">Password</Label>
       <Input id="password" type="password" placeholder="Enter password" />
-      <p className="text-sm text-muted-foreground">
-        Must be at least 8 characters long
-      </p>
+      <p className="text-sm text-muted-foreground">Must be at least 8 characters long</p>
     </div>
   ),
-};
+}
 
 export const Disabled: Story = {
   render: () => (
     <div className="space-y-2 group" data-disabled="true">
       <Label htmlFor="disabled-input">Disabled Field</Label>
-      <Input
-        id="disabled-input"
-        placeholder="This field is disabled"
-        disabled
-      />
+      <Input id="disabled-input" placeholder="This field is disabled" disabled />
     </div>
   ),
-};
+}
 
 export const MultipleLabels: Story = {
   render: () => (
@@ -87,4 +80,4 @@ export const MultipleLabels: Story = {
       </div>
     </div>
   ),
-};
+}

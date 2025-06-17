@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from '@storybook/react-vite'
 import {
   Select,
   SelectContent,
@@ -8,25 +8,24 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Label } from "../components/ui/label";
+} from '../components/ui/select'
+import { Label } from '../components/ui/label'
 
 const meta: Meta<typeof Select> = {
-  title: "Core/Select",
+  title: 'Core/Select',
   component: Select,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   parameters: {
     docs: {
       description: {
-        component:
-          "A select component built on top of Radix UI with customizable styling.",
+        component: 'A select component built on top of Radix UI with customizable styling.',
       },
     },
   },
-};
-export default meta;
+}
+export default meta
 
-type Story = StoryObj<typeof Select>;
+type Story = StoryObj<typeof Select>
 
 export const Default: Story = {
   render: () => (
@@ -43,7 +42,7 @@ export const Default: Story = {
       </SelectContent>
     </Select>
   ),
-};
+}
 
 export const WithLabel: Story = {
   render: () => (
@@ -61,7 +60,7 @@ export const WithLabel: Story = {
       </Select>
     </div>
   ),
-};
+}
 
 export const WithGroups: Story = {
   render: () => (
@@ -86,7 +85,7 @@ export const WithGroups: Story = {
       </SelectContent>
     </Select>
   ),
-};
+}
 
 export const SmallSize: Story = {
   render: () => (
@@ -103,7 +102,7 @@ export const SmallSize: Story = {
       </SelectContent>
     </Select>
   ),
-};
+}
 
 export const Disabled: Story = {
   render: () => (
@@ -117,7 +116,7 @@ export const Disabled: Story = {
       </SelectContent>
     </Select>
   ),
-};
+}
 
 export const WithDisabledItems: Story = {
   render: () => (
@@ -137,7 +136,7 @@ export const WithDisabledItems: Story = {
       </SelectContent>
     </Select>
   ),
-};
+}
 
 export const WithDefaultValue: Story = {
   render: () => (
@@ -152,7 +151,7 @@ export const WithDefaultValue: Story = {
       </SelectContent>
     </Select>
   ),
-};
+}
 
 export const FullWidth: Story = {
   render: () => (
@@ -167,4 +166,4 @@ export const FullWidth: Story = {
       </SelectContent>
     </Select>
   ),
-};
+}

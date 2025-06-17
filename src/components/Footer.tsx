@@ -1,5 +1,5 @@
-import { File } from "lucide-react";
-import { Button } from "./ui/button";
+import { File } from 'lucide-react'
+import { Button } from './ui/button'
 
 export function Footer() {
   return (
@@ -18,5 +18,5 @@ export function Footer() {
       </div>
       <span className="flex-1 text-right opacity-70">© 2025 Hodlers</span>
     </footer>
-  );
+  )
 }

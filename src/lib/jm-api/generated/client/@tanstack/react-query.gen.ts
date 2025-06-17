@@ -28,8 +28,8 @@ import {
   configget,
   freeze,
   getseed,
-} from "../sdk.gen";
-import { queryOptions, type UseMutationOptions } from "@tanstack/react-query";
+} from '../sdk.gen'
+import { queryOptions, type UseMutationOptions } from '@tanstack/react-query'
 import type {
   TokenData,
   TokenError,
@@ -77,45 +77,44 @@ import type {
   FreezeError,
   FreezeResponse2,
   GetseedData,
-} from "../types.gen";
-import { client as _heyApiClient } from "../client.gen";
+} from '../types.gen'
+import { client as _heyApiClient } from '../client.gen'
 
 export type QueryKey<TOptions extends Options> = [
-  Pick<TOptions, "baseUrl" | "body" | "headers" | "path" | "query"> & {
-    _id: string;
-    _infinite?: boolean;
-  }
-];
+  Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
+    _id: string
+    _infinite?: boolean
+  },
+]
 
 const createQueryKey = <TOptions extends Options>(
   id: string,
   options?: TOptions,
-  infinite?: boolean
+  infinite?: boolean,
 ): [QueryKey<TOptions>[0]] => {
   const params: QueryKey<TOptions>[0] = {
     _id: id,
     baseUrl: (options?.client ?? _heyApiClient).getConfig().baseUrl,
-  } as QueryKey<TOptions>[0];
+  } as QueryKey<TOptions>[0]
   if (infinite) {
-    params._infinite = infinite;
+    params._infinite = infinite
   }
   if (options?.body) {
-    params.body = options.body;
+    params.body = options.body
   }
   if (options?.headers) {
-    params.headers = options.headers;
+    params.headers = options.headers
   }
   if (options?.path) {
-    params.path = options.path;
+    params.path = options.path
   }
   if (options?.query) {
-    params.query = options.query;
+    params.query = options.query
   }
-  return [params];
-};
+  return [params]
+}
 
-export const tokenQueryKey = (options?: Options<TokenData>) =>
-  createQueryKey("token", options);
+export const tokenQueryKey = (options?: Options<TokenData>) => createQueryKey('token', options)
 
 /**
  * The token endpoint is used by the client to obtain an access token using a grant such as refresh token
@@ -130,12 +129,12 @@ export const tokenOptions = (options?: Options<TokenData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: tokenQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * The token endpoint is used by the client to obtain an access token using a grant such as refresh token
@@ -143,27 +142,22 @@ export const tokenOptions = (options?: Options<TokenData>) => {
  *
  */
 export const tokenMutation = (
-  options?: Partial<Options<TokenData>>
+  options?: Partial<Options<TokenData>>,
 ): UseMutationOptions<TokenResponse2, TokenError, Options<TokenData>> => {
-  const mutationOptions: UseMutationOptions<
-    TokenResponse2,
-    TokenError,
-    Options<TokenData>
-  > = {
+  const mutationOptions: UseMutationOptions<TokenResponse2, TokenError, Options<TokenData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await token({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const createwalletQueryKey = (options?: Options<CreatewalletData>) =>
-  createQueryKey("createwallet", options);
+export const createwalletQueryKey = (options?: Options<CreatewalletData>) => createQueryKey('createwallet', options)
 
 /**
  * create a new wallet
@@ -177,43 +171,34 @@ export const createwalletOptions = (options?: Options<CreatewalletData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: createwalletQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * create a new wallet
  * Give a filename (.jmdat must be included) and a password, create the wallet and get back the seedphrase for the newly persisted wallet file. The wallettype variable must be one of "sw" - segwit native, "sw-legacy" - segwit legacy or "sw-fb" - segwit native with fidelity bonds supported, the last of which is the default. Note that this operation cannot be performed when a wallet is already loaded (unlocked).
  */
 export const createwalletMutation = (
-  options?: Partial<Options<CreatewalletData>>
-): UseMutationOptions<
-  CreatewalletResponse,
-  CreatewalletError,
-  Options<CreatewalletData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    CreatewalletResponse,
-    CreatewalletError,
-    Options<CreatewalletData>
-  > = {
+  options?: Partial<Options<CreatewalletData>>,
+): UseMutationOptions<CreatewalletResponse, CreatewalletError, Options<CreatewalletData>> => {
+  const mutationOptions: UseMutationOptions<CreatewalletResponse, CreatewalletError, Options<CreatewalletData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await createwallet({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const recoverwalletQueryKey = (options?: Options<RecoverwalletData>) =>
-  createQueryKey("recoverwallet", options);
+export const recoverwalletQueryKey = (options?: Options<RecoverwalletData>) => createQueryKey('recoverwallet', options)
 
 /**
  * recover a wallet from a seedphrase
@@ -227,43 +212,34 @@ export const recoverwalletOptions = (options?: Options<RecoverwalletData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: recoverwalletQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * recover a wallet from a seedphrase
  * Give a filename (.jmdat must be included), a wallettype, a seedphrase and a password, create the wallet for the newly persisted wallet file. The wallettype variable must be one of "sw" - segwit native, "sw-legacy" - segwit legacy or "sw-fb" - segwit native with fidelity bonds supported, the last of which is the default. The seedphrase must be a single string with words space-separated, and must conform to BIP39 (else 400 is returned). Note that this operation cannot be performed when a wallet is already loaded (unlocked).
  */
 export const recoverwalletMutation = (
-  options?: Partial<Options<RecoverwalletData>>
-): UseMutationOptions<
-  RecoverwalletResponse,
-  RecoverwalletError,
-  Options<RecoverwalletData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    RecoverwalletResponse,
-    RecoverwalletError,
-    Options<RecoverwalletData>
-  > = {
+  options?: Partial<Options<RecoverwalletData>>,
+): UseMutationOptions<RecoverwalletResponse, RecoverwalletError, Options<RecoverwalletData>> => {
+  const mutationOptions: UseMutationOptions<RecoverwalletResponse, RecoverwalletError, Options<RecoverwalletData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await recoverwallet({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const unlockwalletQueryKey = (options: Options<UnlockwalletData>) =>
-  createQueryKey("unlockwallet", options);
+export const unlockwalletQueryKey = (options: Options<UnlockwalletData>) => createQueryKey('unlockwallet', options)
 
 /**
  * decrypt an existing wallet
@@ -277,43 +253,34 @@ export const unlockwalletOptions = (options: Options<UnlockwalletData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: unlockwalletQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * decrypt an existing wallet
  * Give the password for the specified (existing) wallet file, and it will be decrypted ready for use. Note that this operation cannot be performed when another wallet is already loaded (unlocked).
  */
 export const unlockwalletMutation = (
-  options?: Partial<Options<UnlockwalletData>>
-): UseMutationOptions<
-  UnlockwalletResponse,
-  UnlockwalletError,
-  Options<UnlockwalletData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    UnlockwalletResponse,
-    UnlockwalletError,
-    Options<UnlockwalletData>
-  > = {
+  options?: Partial<Options<UnlockwalletData>>,
+): UseMutationOptions<UnlockwalletResponse, UnlockwalletError, Options<UnlockwalletData>> => {
+  const mutationOptions: UseMutationOptions<UnlockwalletResponse, UnlockwalletError, Options<UnlockwalletData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await unlockwallet({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const lockwalletQueryKey = (options: Options<LockwalletData>) =>
-  createQueryKey("lockwallet", options);
+export const lockwalletQueryKey = (options: Options<LockwalletData>) => createQueryKey('lockwallet', options)
 
 /**
  * block access to a currently decrypted wallet
@@ -327,15 +294,14 @@ export const lockwalletOptions = (options: Options<LockwalletData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: lockwalletQueryKey(options),
-  });
-};
+  })
+}
 
-export const displaywalletQueryKey = (options: Options<DisplaywalletData>) =>
-  createQueryKey("displaywallet", options);
+export const displaywalletQueryKey = (options: Options<DisplaywalletData>) => createQueryKey('displaywallet', options)
 
 /**
  * get detailed breakdown of wallet contents by account.
@@ -349,15 +315,14 @@ export const displaywalletOptions = (options: Options<DisplaywalletData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: displaywalletQueryKey(options),
-  });
-};
+  })
+}
 
-export const sessionQueryKey = (options?: Options<SessionData>) =>
-  createQueryKey("session", options);
+export const sessionQueryKey = (options?: Options<SessionData>) => createQueryKey('session', options)
 
 /**
  * get current status of backend
@@ -371,15 +336,14 @@ export const sessionOptions = (options?: Options<SessionData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: sessionQueryKey(options),
-  });
-};
+  })
+}
 
-export const versionQueryKey = (options?: Options<VersionData>) =>
-  createQueryKey("version", options);
+export const versionQueryKey = (options?: Options<VersionData>) => createQueryKey('version', options)
 
 /**
  * get info on backend
@@ -393,15 +357,14 @@ export const versionOptions = (options?: Options<VersionData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: versionQueryKey(options),
-  });
-};
+  })
+}
 
-export const listwalletsQueryKey = (options?: Options<ListwalletsData>) =>
-  createQueryKey("listwallets", options);
+export const listwalletsQueryKey = (options?: Options<ListwalletsData>) => createQueryKey('listwallets', options)
 
 /**
  * get current available wallets
@@ -415,24 +378,22 @@ export const listwalletsOptions = (options?: Options<ListwalletsData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: listwalletsQueryKey(options),
-  });
-};
+  })
+}
 
 export const yieldgenreportQueryKey = (options?: Options<YieldgenreportData>) =>
-  createQueryKey("yieldgenreport", options);
+  createQueryKey('yieldgenreport', options)
 
 /**
  * get latest report on yield generating activity
  * Get list of coinjoins taken part in as maker (across all wallets). Data returned as list of strings, each one in the same comma separated format as found in yigen-statement.csv. Note that this returns all lines in the file, including the lines that are only present to represent the starting of a bot. Those lines contain the word Connected and can be thus discarded. The header line is also delivered and so can be ignored as per the client requirements.
  *
  */
-export const yieldgenreportOptions = (
-  options?: Options<YieldgenreportData>
-) => {
+export const yieldgenreportOptions = (options?: Options<YieldgenreportData>) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
       const { data } = await yieldgenreport({
@@ -440,15 +401,14 @@ export const yieldgenreportOptions = (
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: yieldgenreportQueryKey(options),
-  });
-};
+  })
+}
 
-export const getaddressQueryKey = (options: Options<GetaddressData>) =>
-  createQueryKey("getaddress", options);
+export const getaddressQueryKey = (options: Options<GetaddressData>) => createQueryKey('getaddress', options)
 
 /**
  * get a fresh address in the given account for depositing funds.
@@ -462,24 +422,21 @@ export const getaddressOptions = (options: Options<GetaddressData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: getaddressQueryKey(options),
-  });
-};
+  })
+}
 
-export const rescanblockchainQueryKey = (
-  options: Options<RescanblockchainData>
-) => createQueryKey("rescanblockchain", options);
+export const rescanblockchainQueryKey = (options: Options<RescanblockchainData>) =>
+  createQueryKey('rescanblockchain', options)
 
 /**
  * Rescan the blockchain from a given blockheight
  * Use this operation on recovered wallets to re-sync the wallet
  */
-export const rescanblockchainOptions = (
-  options: Options<RescanblockchainData>
-) => {
+export const rescanblockchainOptions = (options: Options<RescanblockchainData>) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
       const { data } = await rescanblockchain({
@@ -487,15 +444,14 @@ export const rescanblockchainOptions = (
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: rescanblockchainQueryKey(options),
-  });
-};
+  })
+}
 
-export const getrescaninfoQueryKey = (options: Options<GetrescaninfoData>) =>
-  createQueryKey("getrescaninfo", options);
+export const getrescaninfoQueryKey = (options: Options<GetrescaninfoData>) => createQueryKey('getrescaninfo', options)
 
 /**
  * get the current rescan status
@@ -509,24 +465,21 @@ export const getrescaninfoOptions = (options: Options<GetrescaninfoData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: getrescaninfoQueryKey(options),
-  });
-};
+  })
+}
 
-export const gettimelockaddressQueryKey = (
-  options: Options<GettimelockaddressData>
-) => createQueryKey("gettimelockaddress", options);
+export const gettimelockaddressQueryKey = (options: Options<GettimelockaddressData>) =>
+  createQueryKey('gettimelockaddress', options)
 
 /**
  * get a fresh timelock address
  * get a new timelocked address, for depositing funds, to create a fidelity bond, which will automatically be used when the maker is started. specify the date in YYYY-mm as the last path parameter. Note that mixdepth is not specified as timelock addresses are always in mixdepth(account) zero.
  */
-export const gettimelockaddressOptions = (
-  options: Options<GettimelockaddressData>
-) => {
+export const gettimelockaddressOptions = (options: Options<GettimelockaddressData>) => {
   return queryOptions({
     queryFn: async ({ queryKey, signal }) => {
       const { data } = await gettimelockaddress({
@@ -534,15 +487,14 @@ export const gettimelockaddressOptions = (
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: gettimelockaddressQueryKey(options),
-  });
-};
+  })
+}
 
-export const listutxosQueryKey = (options: Options<ListutxosData>) =>
-  createQueryKey("listutxos", options);
+export const listutxosQueryKey = (options: Options<ListutxosData>) => createQueryKey('listutxos', options)
 
 /**
  * list details of all utxos currently in the wallet.
@@ -556,15 +508,14 @@ export const listutxosOptions = (options: Options<ListutxosData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: listutxosQueryKey(options),
-  });
-};
+  })
+}
 
-export const directsendQueryKey = (options: Options<DirectsendData>) =>
-  createQueryKey("directsend", options);
+export const directsendQueryKey = (options: Options<DirectsendData>) => createQueryKey('directsend', options)
 
 /**
  * create and broadcast a transaction (without coinjoin)
@@ -578,43 +529,34 @@ export const directsendOptions = (options: Options<DirectsendData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: directsendQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * create and broadcast a transaction (without coinjoin)
  * create and broadcast a transaction (without coinjoin)
  */
 export const directsendMutation = (
-  options?: Partial<Options<DirectsendData>>
-): UseMutationOptions<
-  DirectsendResponse,
-  DirectsendError,
-  Options<DirectsendData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    DirectsendResponse,
-    DirectsendError,
-    Options<DirectsendData>
-  > = {
+  options?: Partial<Options<DirectsendData>>,
+): UseMutationOptions<DirectsendResponse, DirectsendError, Options<DirectsendData>> => {
+  const mutationOptions: UseMutationOptions<DirectsendResponse, DirectsendError, Options<DirectsendData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await directsend({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const startmakerQueryKey = (options: Options<StartmakerData>) =>
-  createQueryKey("startmaker", options);
+export const startmakerQueryKey = (options: Options<StartmakerData>) => createQueryKey('startmaker', options)
 
 /**
  * Start the yield generator service.
@@ -628,39 +570,34 @@ export const startmakerOptions = (options: Options<StartmakerData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: startmakerQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * Start the yield generator service.
  * Start the yield generator service with the configuration settings specified in the POST request. Note that if fidelity bonds are enabled in the wallet, and a timelock address has been generated, and then funded, the fidelity bond will automatically be advertised without any specific configuration in this request. Note that if the wallet does not have confirmed coins, or another taker or maker coinjoin service is already running, the maker will not start.
  */
 export const startmakerMutation = (
-  options?: Partial<Options<StartmakerData>>
+  options?: Partial<Options<StartmakerData>>,
 ): UseMutationOptions<unknown, StartmakerError, Options<StartmakerData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    StartmakerError,
-    Options<StartmakerData>
-  > = {
+  const mutationOptions: UseMutationOptions<unknown, StartmakerError, Options<StartmakerData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await startmaker({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const stopmakerQueryKey = (options: Options<StopmakerData>) =>
-  createQueryKey("stopmaker", options);
+export const stopmakerQueryKey = (options: Options<StopmakerData>) => createQueryKey('stopmaker', options)
 
 /**
  * stop the yield generator service
@@ -674,15 +611,14 @@ export const stopmakerOptions = (options: Options<StopmakerData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: stopmakerQueryKey(options),
-  });
-};
+  })
+}
 
-export const docoinjoinQueryKey = (options: Options<DocoinjoinData>) =>
-  createQueryKey("docoinjoin", options);
+export const docoinjoinQueryKey = (options: Options<DocoinjoinData>) => createQueryKey('docoinjoin', options)
 
 /**
  * initiate a coinjoin as taker
@@ -696,39 +632,34 @@ export const docoinjoinOptions = (options: Options<DocoinjoinData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: docoinjoinQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * initiate a coinjoin as taker
  * initiate a coinjoin as taker
  */
 export const docoinjoinMutation = (
-  options?: Partial<Options<DocoinjoinData>>
+  options?: Partial<Options<DocoinjoinData>>,
 ): UseMutationOptions<unknown, DocoinjoinError, Options<DocoinjoinData>> => {
-  const mutationOptions: UseMutationOptions<
-    unknown,
-    DocoinjoinError,
-    Options<DocoinjoinData>
-  > = {
+  const mutationOptions: UseMutationOptions<unknown, DocoinjoinError, Options<DocoinjoinData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await docoinjoin({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const getscheduleQueryKey = (options: Options<GetscheduleData>) =>
-  createQueryKey("getschedule", options);
+export const getscheduleQueryKey = (options: Options<GetscheduleData>) => createQueryKey('getschedule', options)
 
 /**
  * get the schedule that is currently running
@@ -742,15 +673,14 @@ export const getscheduleOptions = (options: Options<GetscheduleData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: getscheduleQueryKey(options),
-  });
-};
+  })
+}
 
-export const runscheduleQueryKey = (options: Options<RunscheduleData>) =>
-  createQueryKey("runschedule", options);
+export const runscheduleQueryKey = (options: Options<RunscheduleData>) => createQueryKey('runschedule', options)
 
 /**
  * create and run a schedule of transactions
@@ -764,43 +694,34 @@ export const runscheduleOptions = (options: Options<RunscheduleData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: runscheduleQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * create and run a schedule of transactions
  * Creates and then starts a schedule of transactions.
  */
 export const runscheduleMutation = (
-  options?: Partial<Options<RunscheduleData>>
-): UseMutationOptions<
-  RunscheduleResponse,
-  RunscheduleError,
-  Options<RunscheduleData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    RunscheduleResponse,
-    RunscheduleError,
-    Options<RunscheduleData>
-  > = {
+  options?: Partial<Options<RunscheduleData>>,
+): UseMutationOptions<RunscheduleResponse, RunscheduleError, Options<RunscheduleData>> => {
+  const mutationOptions: UseMutationOptions<RunscheduleResponse, RunscheduleError, Options<RunscheduleData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await runschedule({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const stopcoinjoinQueryKey = (options: Options<StopcoinjoinData>) =>
-  createQueryKey("stopcoinjoin", options);
+export const stopcoinjoinQueryKey = (options: Options<StopcoinjoinData>) => createQueryKey('stopcoinjoin', options)
 
 /**
  * stop a running coinjoin attempt
@@ -814,15 +735,14 @@ export const stopcoinjoinOptions = (options: Options<StopcoinjoinData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: stopcoinjoinQueryKey(options),
-  });
-};
+  })
+}
 
-export const configsettingQueryKey = (options: Options<ConfigsettingData>) =>
-  createQueryKey("configsetting", options);
+export const configsettingQueryKey = (options: Options<ConfigsettingData>) => createQueryKey('configsetting', options)
 
 /**
  * change a config variable
@@ -836,43 +756,34 @@ export const configsettingOptions = (options: Options<ConfigsettingData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: configsettingQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * change a config variable
  * change a config variable (for the duration of this backend daemon process instance)
  */
 export const configsettingMutation = (
-  options?: Partial<Options<ConfigsettingData>>
-): UseMutationOptions<
-  ConfigsettingResponse,
-  ConfigsettingError,
-  Options<ConfigsettingData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    ConfigsettingResponse,
-    ConfigsettingError,
-    Options<ConfigsettingData>
-  > = {
+  options?: Partial<Options<ConfigsettingData>>,
+): UseMutationOptions<ConfigsettingResponse, ConfigsettingError, Options<ConfigsettingData>> => {
+  const mutationOptions: UseMutationOptions<ConfigsettingResponse, ConfigsettingError, Options<ConfigsettingData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await configsetting({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const configgetQueryKey = (options: Options<ConfiggetData>) =>
-  createQueryKey("configget", options);
+export const configgetQueryKey = (options: Options<ConfiggetData>) => createQueryKey('configget', options)
 
 /**
  * get the value of a specific config setting
@@ -886,43 +797,34 @@ export const configgetOptions = (options: Options<ConfiggetData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: configgetQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * get the value of a specific config setting
  * Get the value of a specific config setting. Note values are always returned as string.
  */
 export const configgetMutation = (
-  options?: Partial<Options<ConfiggetData>>
-): UseMutationOptions<
-  ConfiggetResponse,
-  ConfiggetError,
-  Options<ConfiggetData>
-> => {
-  const mutationOptions: UseMutationOptions<
-    ConfiggetResponse,
-    ConfiggetError,
-    Options<ConfiggetData>
-  > = {
+  options?: Partial<Options<ConfiggetData>>,
+): UseMutationOptions<ConfiggetResponse, ConfiggetError, Options<ConfiggetData>> => {
+  const mutationOptions: UseMutationOptions<ConfiggetResponse, ConfiggetError, Options<ConfiggetData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await configget({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const freezeQueryKey = (options: Options<FreezeData>) =>
-  createQueryKey("freeze", options);
+export const freezeQueryKey = (options: Options<FreezeData>) => createQueryKey('freeze', options)
 
 /**
  * freeze or unfreeze an individual utxo for spending
@@ -936,39 +838,34 @@ export const freezeOptions = (options: Options<FreezeData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: freezeQueryKey(options),
-  });
-};
+  })
+}
 
 /**
  * freeze or unfreeze an individual utxo for spending
  * freeze or unfreeze an individual utxo for spending
  */
 export const freezeMutation = (
-  options?: Partial<Options<FreezeData>>
+  options?: Partial<Options<FreezeData>>,
 ): UseMutationOptions<FreezeResponse2, FreezeError, Options<FreezeData>> => {
-  const mutationOptions: UseMutationOptions<
-    FreezeResponse2,
-    FreezeError,
-    Options<FreezeData>
-  > = {
+  const mutationOptions: UseMutationOptions<FreezeResponse2, FreezeError, Options<FreezeData>> = {
     mutationFn: async (localOptions) => {
       const { data } = await freeze({
         ...options,
         ...localOptions,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
-  };
-  return mutationOptions;
-};
+  }
+  return mutationOptions
+}
 
-export const getseedQueryKey = (options: Options<GetseedData>) =>
-  createQueryKey("getseed", options);
+export const getseedQueryKey = (options: Options<GetseedData>) => createQueryKey('getseed', options)
 
 /**
  * get the mnemonic recovery phrase with the optional passphrase
@@ -982,9 +879,9 @@ export const getseedOptions = (options: Options<GetseedData>) => {
         ...queryKey[0],
         signal,
         throwOnError: true,
-      });
-      return data;
+      })
+      return data
     },
     queryKey: getseedQueryKey(options),
-  });
-};
+  })
+}
