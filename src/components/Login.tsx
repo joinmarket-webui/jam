@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { useNavigate, Link } from 'react-router-dom'
 import { setSession } from '@/lib/session'
 import { Button } from '@/components/ui/button'
@@ -9,73 +10,67 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { formatWalletName } from '@/lib/utils'
-import { listwallets, unlockwallet } from '@/lib/jm-api/generated/client'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { createApiClient } from '@/lib/config'
+
+// TODO: client should be globally accessible
+const client = createApiClient()
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const [wallets, setWallets] = useState<string[]>([])
   const [selectedWallet, setSelectedWallet] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>()
 
-  useEffect(() => {
-    // Fetch available wallets when component mounts
-    const fetchWallets = async () => {
-      try {
-        setIsLoading(true)
-        const { data, error } = await listwallets()
-        if (error || !data?.wallets) {
-          throw new Error('No wallets found')
-        }
-        setWallets(data.wallets || [])
-        if (data.wallets && data.wallets.length > 0) {
-          setSelectedWallet(data.wallets[0])
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch wallets')
-        console.error(err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  const listwalletsQuery = useQuery({
+    ...listwalletsOptions({ client }),
+  })
 
-    fetchWallets()
-  }, [])
+  const isLoadingWallets = useMemo(() => listwalletsQuery.isFetching, [listwalletsQuery.isFetching])
+  const wallets = useMemo(() => listwalletsQuery.data?.wallets, [listwalletsQuery.data])
+
+  const unlockWallet = useMutation({
+    ...unlockwalletMutation({ client }),
+    onSuccess: () => {
+      toast.success('Successfully unlocked wallet.')
+    },
+    onError: (error) => {
+      console.error('Error unlocking wallet', error)
+      toast.error(`Failed to unlock wallet: ${error.message || 'Unknown reason.'}`)
+    },
+  })
+
+  const isUnlockingWallet = useMemo(() => unlockWallet.isPending, [unlockWallet.isPending])
+  const isLoading = useMemo(() => isLoadingWallets || isUnlockingWallet, [isLoadingWallets, isUnlockingWallet])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedWallet || !password) return
 
+    setError(undefined)
     try {
-      setIsLoading(true)
-      setError(null)
-
-      const { data, error } = await unlockwallet({
-        path: { walletname: selectedWallet },
-        body: { password },
+      const response = await unlockWallet.mutateAsync({
+        path: {
+          walletname: encodeURIComponent(selectedWallet),
+        },
+        body: {
+          password,
+        },
       })
 
-      if (error) {
-        throw error
-      }
-
-      // Save session data
       setSession({
-        walletFileName: selectedWallet,
-        auth: { token: data?.token || '' },
+        walletFileName: response.walletname,
+        auth: { token: response.token, refresh_token: response.refresh_token },
       })
 
-      navigate('/')
+      await navigate('/')
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
         setError(err.message as string)
       } else {
         setError(err instanceof Error ? err.message : 'Unknown error occurred')
       }
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -105,20 +100,20 @@ const LoginPage = () => {
                 <Select
                   value={selectedWallet}
                   onValueChange={setSelectedWallet}
-                  disabled={isLoading || wallets.length === 0}
+                  disabled={isLoading || wallets === undefined || wallets.length === 0}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a wallet" />
                   </SelectTrigger>
                   <SelectContent>
-                    {wallets.map((wallet) => (
-                      <SelectItem key={wallet} value={wallet}>
+                    {wallets?.map((wallet, index) => (
+                      <SelectItem key={index} value={wallet}>
                         {formatWalletName(wallet)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {wallets.length === 0 && !isLoading && (
+                {!isLoadingWallets && (wallets === undefined || wallets.length === 0) && (
                   <p className="text-sm text-muted-foreground">No wallets found. Please create a wallet first.</p>
                 )}
               </div>
@@ -150,7 +145,7 @@ const LoginPage = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading || !selectedWallet || !password} size="lg">
-                {isLoading ? (
+                {isUnlockingWallet ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Logging in...
