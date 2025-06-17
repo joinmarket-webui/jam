@@ -1,7 +1,7 @@
-import path from "path";
-import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react";
-import { defineConfig, type ServerOptions } from "vite";
+import path from 'path'
+import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig, type ServerOptions } from 'vite'
 
 const BACKEND_NATIVE = 'native'
 const BACKEND_STANDALONE = 'jam-standalone'
@@ -31,11 +31,11 @@ export default defineConfig(() => {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./src"),
+        '@': path.resolve(__dirname, './src'),
       },
     },
     server,
-  }  
+  }
 })
 
 /**
@@ -48,30 +48,30 @@ export default defineConfig(() => {
 const serverConfigNative = (): ServerOptions => {
   return {
     proxy: {
-      "/api": {
+      '/api': {
         target: `https://127.0.0.1:${JMWALLETD_API_PORT}`,
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
-          proxy.on("proxyReq", (_proxyReq, req, _res) => {
+          proxy.on('proxyReq', (_proxyReq, req, _res) => {
             if (req.headers['x-jm-authorization']) {
               _proxyReq.setHeader('Authorization', req.headers['x-jm-authorization'])
             }
-          });
+          })
         },
       },
-      "/obwatch": {
+      '/obwatch': {
         target: `https://127.0.0.1:${JMOBWATCH_PORT}`,
         changeOrigin: true,
         secure: false,
-        rewrite: (p) => p.replace(/^\/obwatch/, ""),
+        rewrite: (p) => p.replace(/^\/obwatch/, ''),
       },
-      "/jmws": {
+      '/jmws': {
         target: `https://127.0.0.1:${JMWALLETD_WEBSOCKET_PORT}`,
         changeOrigin: true,
         secure: false,
         ws: true,
-        rewrite: (p) => p.replace(/^\/jmws/, ""),
+        rewrite: (p) => p.replace(/^\/jmws/, ''),
       },
     },
   }
@@ -85,23 +85,23 @@ const serverConfigNative = (): ServerOptions => {
 const serverConfigStandalone = (): ServerOptions => {
   return {
     proxy: {
-      "/api": {
+      '/api': {
         target: `https://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
       },
-      "/obwatch": {
+      '/obwatch': {
         target: `https://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
       },
-      "/jmws": {
+      '/jmws': {
         target: `https://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
         ws: true,
       },
-      "/jam": {
+      '/jam': {
         target: `https://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
@@ -109,4 +109,3 @@ const serverConfigStandalone = (): ServerOptions => {
     },
   }
 }
-

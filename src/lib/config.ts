@@ -1,6 +1,6 @@
-import type { Client } from "@hey-api/client-fetch";
-import { createClient } from "./jm-api";
-import type { ClientOptions } from "./jm-api/generated/client";
+import type { Client } from '@hey-api/client-fetch'
+import { createClient } from './jm-api'
+import type { ClientOptions } from './jm-api/generated/client'
 
 type ApiToken = string
 
@@ -36,9 +36,9 @@ export const createApiClient = (): Client => {
   const jamAuthMiddleware = createJamAuthenticationMiddleware('example')
   client.interceptors.request.use(jamAuthMiddleware)
 
-  const isDevelopment = import.meta.env.DEV;
+  const isDevelopment = import.meta.env.DEV
 
-  if (isDevelopment) {   
+  if (isDevelopment) {
     client.interceptors.request.use(loggingRequestInterceptor)
     client.interceptors.response.use(loggingResponseInterceptor)
   }
