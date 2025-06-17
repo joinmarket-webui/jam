@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { createWallet, getJmSession } from "@/lib/JmWalletApi";
 import { setSession, clearSession } from "@/lib/session";
 import { formatWalletName } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { createwallet, session } from "@/lib/jm-api/generated/client";
 
 const CreateWallet = () => {
   const navigate = useNavigate();
@@ -55,12 +55,12 @@ const CreateWallet = () => {
 
       // Check if there's an active session on the server
       try {
-        const sessionInfo = await getJmSession();
-        if (sessionInfo.session || sessionInfo.wallet_name !== "None") {
+        const { data: sessionInfo } = await session();
+        if (sessionInfo?.session || sessionInfo?.wallet_name !== "None") {
           console.warn("Active session detected:", sessionInfo);
           toast.error(
             `Cannot create wallet as "${formatWalletName(
-              sessionInfo.wallet_name
+              sessionInfo?.wallet_name || "Unknown"
             )}" wallet is currently active.`,
             {
               description: (
@@ -87,10 +87,24 @@ const CreateWallet = () => {
       const walletFileName = walletName.endsWith(".jmdat")
         ? walletName
         : `${walletName}.jmdat`;
-      const response = await createWallet(walletFileName, password);
+      const { data: response, error: createError } = await createwallet({
+        body: {
+          walletname: walletFileName,
+          password,
+          wallettype: "sw-fb",
+        },
+      });
 
-      setSeedPhrase(response.seedphrase);
-      setStep("seed");
+      if (createError) {
+        throw createError;
+      }
+
+      if (response?.seedphrase) {
+        setSeedPhrase(response.seedphrase);
+        setStep("seed");
+      } else {
+        throw new Error("No seedphrase returned");
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create wallet";

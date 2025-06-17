@@ -1,4 +1,3 @@
-import { getWalletAll, unlockWallet } from "@/lib/JmWalletApi";
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { setSession } from "@/lib/session";
@@ -22,6 +21,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { formatWalletName } from "@/lib/utils";
+import { listwallets, unlockwallet } from "@/lib/jm-api/generated/client";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -37,13 +37,13 @@ const LoginPage = () => {
     const fetchWallets = async () => {
       try {
         setIsLoading(true);
-        const response = await getWalletAll();
-        if (!response || !response.wallets) {
+        const { data, error } = await listwallets();
+        if (error || !data?.wallets) {
           throw new Error("No wallets found");
         }
-        setWallets(response.wallets || []);
-        if (response.wallets && response.wallets.length > 0) {
-          setSelectedWallet(response.wallets[0]);
+        setWallets(data.wallets || []);
+        if (data.wallets && data.wallets.length > 0) {
+          setSelectedWallet(data.wallets[0]);
         }
       } catch (err) {
         setError(
@@ -66,12 +66,19 @@ const LoginPage = () => {
       setIsLoading(true);
       setError(null);
 
-      const response = await unlockWallet(selectedWallet, password);
+      const { data, error } = await unlockwallet({
+        path: { walletname: selectedWallet },
+        body: { password },
+      });
+
+      if (error) {
+        throw error;
+      }
 
       // Save session data
       setSession({
         walletFileName: selectedWallet,
-        auth: { token: response.token },
+        auth: { token: data?.token || "" },
       });
 
       navigate("/");

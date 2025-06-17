@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Navbar } from "../Navbar";
 import { Footer } from "../Footer";
 import { useQuery } from "@tanstack/react-query";
-import { getWalletDisplay, getJmSession } from "@/lib/JmWalletApi";
 import { getSession } from "@/lib/session";
 import { DisplayModeContext, jarTemplates } from "./display-mode-context";
 import type { Jar, JarColor } from "./display-mode-context";
+import { displaywallet } from "@/lib/jm-api/generated/client";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -49,13 +49,21 @@ export function Layout({ children }: LayoutProps) {
       }
 
       // First ensure we have a session
-      const sessionInfo = await getJmSession();
-      if (!sessionInfo.session) {
+      const { data: sessionInfo } = await session();
+      if (!sessionInfo?.session) {
         throw new Error("No active session");
       }
 
       // Then get wallet display data
-      return getWalletDisplay(walletFileName);
+      const { data: walletInfo, error } = await displaywallet({
+        path: { walletname: walletFileName },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      return walletInfo;
     },
     enabled: !!walletFileName,
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -64,16 +72,17 @@ export function Layout({ children }: LayoutProps) {
 
   // Create the jars array by combining jar templates with actual account data
   interface WalletAccount {
-    account: string;
-    account_balance: string;
-    available_balance: string;
+    account?: string;
+    account_balance?: string;
+    available_balance?: string;
   }
 
   const jars: Jar[] = walletData
     ? walletData.walletinfo.accounts.map(
         (account: WalletAccount, index: number) => {
           // Parse balance as a float from BTC value, then convert to sats (multiply by 100,000,000)
-          const btcBalance: number = parseFloat(account.available_balance) || 0;
+          const btcBalance: number =
+            parseFloat(account.available_balance || "0") || 0;
           const satsBalance: number = Math.round(btcBalance * 100_000_000);
 
           // Only use up to 5 accounts, matching with jar templates
@@ -146,7 +155,7 @@ export function Layout({ children }: LayoutProps) {
     getLogo,
     jars,
     totalBalance,
-    walletName: walletData?.walletinfo.wallet_name || null,
+    walletName: walletData?.walletinfo?.wallet_name || null,
     isLoading,
     error: error as Error | null,
     refetchWalletData,
