@@ -19,25 +19,30 @@ const client = createApiClient()
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const [selectedWallet, setSelectedWallet] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
+  const [selectedWallet, setSelectedWallet] = useState<string>()
+  const [password, setPassword] = useState<string>()
   const [showPassword, setShowPassword] = useState<boolean>(false)
-  const [error, setError] = useState<string>()
 
   const listwalletsQuery = useQuery({
     ...listwalletsOptions({ client }),
+    retry: false,
   })
 
   const isLoadingWallets = useMemo(() => listwalletsQuery.isFetching, [listwalletsQuery.isFetching])
+  const listwalletsError = useMemo(() => {
+    if (!listwalletsQuery.error) return undefined
+    return `Failed to load wallets: ${listwalletsQuery.error.message}`
+  }, [listwalletsQuery.error])
+
   const wallets = useMemo(() => listwalletsQuery.data?.wallets, [listwalletsQuery.data])
 
   const unlockWallet = useMutation({
     ...unlockwalletMutation({ client }),
+    retry: false,
     onSuccess: () => {
       toast.success('Successfully unlocked wallet.')
     },
     onError: (error) => {
-      console.error('Error unlocking wallet', error)
       toast.error(`Failed to unlock wallet: ${error.message || 'Unknown reason.'}`)
     },
   })
@@ -48,7 +53,9 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    setError(undefined)
+    if (!selectedWallet) return
+    if (!password) return
+
     try {
       const response = await unlockWallet.mutateAsync({
         path: {
@@ -65,12 +72,8 @@ const LoginPage = () => {
       })
 
       await navigate('/')
-    } catch (err: unknown) {
-      if (typeof err === 'object' && err !== null && 'message' in err) {
-        setError(err.message as string)
-      } else {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
-      }
+    } catch (error: unknown) {
+      console.error('Error unlocking wallet', error)
     }
   }
 
@@ -87,10 +90,10 @@ const LoginPage = () => {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {error && (
+            {listwalletsError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>{listwalletsError}</AlertDescription>
               </Alert>
             )}
 
@@ -125,7 +128,7 @@ const LoginPage = () => {
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    value={password}
+                    value={password || ''}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading || !selectedWallet}
                     placeholder="Enter your password"
@@ -148,17 +151,17 @@ const LoginPage = () => {
                 {isUnlockingWallet ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
+                    Unlocking...
                   </>
                 ) : (
-                  'Log in'
+                  'Unlock'
                 )}
               </Button>
             </form>
 
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
-                Don't have a wallet?{' '}
+                Don't have a wallet yet?{' '}
                 <Link
                   to="/create-wallet"
                   className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
