@@ -13,12 +13,7 @@ dist-ssr
 *.local
 
 # Environment variables
-.env
 .env.local
-.env.development
-.env.test
-.env.production
-.env.staging
 .env.*.local
 
 # Editor directories and files

@@ -12,13 +12,11 @@ import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { formatWalletName } from '@/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { createApiClient } from '@/lib/config'
-
-// TODO: client should be globally accessible
-const client = createApiClient()
+import { useApiClient } from '@/hooks/useApiClient'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const client = useApiClient()
   const [selectedWallet, setSelectedWallet] = useState<string>()
   const [password, setPassword] = useState<string>()
   const [showPassword, setShowPassword] = useState<boolean>(false)
