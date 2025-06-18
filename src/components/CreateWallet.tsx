@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
-import { createwallet, session } from '@/lib/jm-api/generated/client'
+import { createwallet, session, type CreateWalletResponse } from '@/lib/jm-api/generated/client'
 
 const CreateWallet = () => {
   const navigate = useNavigate()
@@ -19,7 +19,7 @@ const CreateWallet = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [seedPhrase, setSeedPhrase] = useState<string | null>(null)
+  const [createWalletResponse, setCreateWalletResponse] = useState<CreateWalletResponse>()
   const [step, setStep] = useState<'create' | 'seed' | 'confirm'>('create')
 
   const handleCreateWallet = async (e: React.FormEvent) => {
@@ -90,7 +90,7 @@ const CreateWallet = () => {
       }
 
       if (response?.seedphrase) {
-        setSeedPhrase(response.seedphrase)
+        setCreateWalletResponse(response)
         setStep('seed')
       } else {
         throw new Error('No seedphrase returned')
@@ -104,12 +104,12 @@ const CreateWallet = () => {
   }
 
   const handleConfirmSeed = () => {
-    if (seedPhrase) {
+    if (createWalletResponse?.seedphrase) {
       // Save session and navigate to dashboard
       const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
       setSession({
         walletFileName,
-        auth: { token: 'created' }, // We'll need to unlock it properly later
+        auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
       })
 
       navigate('/login', {
@@ -212,7 +212,7 @@ const CreateWallet = () => {
     <div className="space-y-6">
       <div className="bg-muted p-4 rounded-lg">
         <div className="grid grid-cols-3 gap-2 text-sm font-mono">
-          {seedPhrase?.split(' ').map((word, index) => (
+          {createWalletResponse?.seedphrase.split(' ').map((word, index) => (
             <div key={index} className="bg-background p-2 rounded border">
               <span className="text-muted-foreground mr-2">{index + 1}.</span>
               {word}
