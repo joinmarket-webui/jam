@@ -1,8 +1,9 @@
 import type { Client } from '@hey-api/client-fetch'
 import { createClient } from './jm-api'
-import type { ClientOptions } from './jm-api/generated/client'
+import type { ClientOptions, UnlockWalletResponse } from './jm-api/generated/client'
+import { getSession } from './session'
 
-type ApiToken = string
+type ApiToken = UnlockWalletResponse['token']
 
 const buildAuthHeader = (token: ApiToken): [string, string] => {
   return ['x-jm-authorization', `Bearer ${token}`]
@@ -17,10 +18,13 @@ async function loggingResponseInterceptor(response: Response) {
   return response
 }
 
-const createJamAuthenticationMiddleware = (apiToken: ApiToken) => {
+const createJamAuthenticationMiddleware = () => {
   return async (request: Request) => {
-    const authHeader = buildAuthHeader(apiToken)
-    request.headers.set(authHeader[0], authHeader[1])
+    const session = getSession()
+    if (session?.auth?.token) {
+      const authHeader = buildAuthHeader(session?.auth?.token)
+      request.headers.set(authHeader[0], authHeader[1])
+    }
     return request
   }
 }
@@ -33,7 +37,7 @@ export const createApiClient = (): Client => {
   const client = createClient(clientOptions)
 
   // TODO: store and load token from session storage with handling refresh token
-  const jamAuthMiddleware = createJamAuthenticationMiddleware('example')
+  const jamAuthMiddleware = createJamAuthenticationMiddleware()
   client.interceptors.request.use(jamAuthMiddleware)
 
   const isDevelopment = import.meta.env.DEV

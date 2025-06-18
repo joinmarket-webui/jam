@@ -1,10 +1,26 @@
+import type { UnlockWalletResponse } from './jm-api/generated/client'
+
+interface SessionData {
+  walletFileName: string
+  auth: {
+    token: UnlockWalletResponse['token']
+    refresh_token: UnlockWalletResponse['refresh_token']
+  }
+}
+
 // Function to save session after successful login
-export const setSession = (session: { walletFileName: string; auth: { token: string; refresh_token: string } }) => {
-  sessionStorage.setItem('joinmarket', JSON.stringify(session))
+export const setSession = (session: Partial<SessionData>) => {
+  sessionStorage.setItem(
+    'joinmarket',
+    JSON.stringify({
+      ...(getSession() || {}),
+      ...session,
+    }),
+  )
 }
 
 // Function to get current session
-export const getSession = () => {
+export const getSession = (): Partial<SessionData> | null => {
   const session = sessionStorage.getItem('joinmarket')
   return session ? JSON.parse(session) : null
 }
