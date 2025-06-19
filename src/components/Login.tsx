@@ -110,7 +110,7 @@ const LoginPage = () => {
               <div className="space-y-2">
                 <Label htmlFor="wallet-select">Wallet</Label>
                 <Select
-                  value={selectedWallet}
+                  value={selectedWallet ?? ''}
                   onValueChange={setSelectedWallet}
                   disabled={isLoading || wallets === undefined || wallets.length === 0}
                   required
