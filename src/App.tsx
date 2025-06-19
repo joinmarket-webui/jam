@@ -13,21 +13,20 @@ import { JM_API_AUTH_TOKEN_EXPIRY } from './constants/jm'
 import { setIntervalDebounced } from './lib/utils'
 import { toast } from 'sonner'
 import { token } from './lib/jm-api/generated/client'
+import { ThemeProvider } from 'next-themes'
 
-// Check if user is authenticated
 const isAuthenticated = () => {
   const session = getSession()
-  return session !== null
+  return session?.auth?.token !== undefined
 }
 
-// Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function App() {
   return (
-    <>
+    <ThemeProvider defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         <RefreshApiToken />
         <Router>
@@ -49,7 +48,7 @@ function App() {
           <Toaster closeButton />
         </Router>
       </QueryClientProvider>
-    </>
+    </ThemeProvider>
   )
 }
 

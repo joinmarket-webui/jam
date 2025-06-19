@@ -7,6 +7,7 @@ import { DisplayModeContext, jarTemplates } from './display-mode-context'
 import type { Jar, JarColor } from './display-mode-context'
 import { displaywallet, session as apiSession } from '@/lib/jm-api/generated/client'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useTheme } from 'next-themes'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -14,25 +15,19 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const client = useApiClient()
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') || 'dark'
-    }
-    return 'dark'
-  })
+  const { resolvedTheme, setTheme } = useTheme()
 
   const [displayMode, setDisplayMode] = useState<'sats' | 'btc'>('sats')
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-      document.documentElement.classList.remove('light')
-    } else {
+    if (resolvedTheme === 'light') {
       document.documentElement.classList.add('light')
       document.documentElement.classList.remove('dark')
+    } else {
+      document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
     }
-    localStorage.setItem('theme', theme)
-  }, [theme])
+  }, [resolvedTheme])
 
   // Get wallet name from session
   const session = getSession()
@@ -106,7 +101,7 @@ export function Layout({ children }: LayoutProps) {
 
   const totalBalance = jars.reduce((acc, jar) => acc + jar.balance, 0)
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
+  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
   const toggleDisplayMode = () => setDisplayMode((m) => (m === 'sats' ? 'btc' : 'sats'))
 
   function formatAmount(amount: number) {
@@ -161,7 +156,7 @@ export function Layout({ children }: LayoutProps) {
     <DisplayModeContext.Provider value={displayModeValue}>
       <div className="min-h-screen flex flex-col bg-white text-black dark:bg-[#181b20] dark:text-white transition-colors duration-300">
         <Navbar
-          theme={theme}
+          theme={resolvedTheme || 'dark'}
           toggleTheme={toggleTheme}
           toggleDisplayMode={toggleDisplayMode}
           formatAmount={formatAmount}
