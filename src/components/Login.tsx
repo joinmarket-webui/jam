@@ -13,6 +13,26 @@ import { formatWalletName } from '@/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { useApiClient } from '@/hooks/useApiClient'
+import { Skeleton } from './ui/skeleton'
+
+const LoginFormSkeleton = () => {
+  return (
+    <>
+      <div className="flex flex-col space-y-3">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[75px]" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[75px]" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div>&nbsp;</div>
+    </>
+  )
+}
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -104,8 +124,11 @@ const LoginPage = () => {
               </>
             )}
           </CardHeader>
+
           {isLoadingWallets ? (
-            <></>
+            <CardContent className="space-y-6">
+              <LoginFormSkeleton />
+            </CardContent>
           ) : (
             <>
               {listwalletsError ? (
@@ -143,9 +166,6 @@ const LoginPage = () => {
                           ))}
                         </SelectContent>
                       </Select>
-                      {!isLoadingWallets && (wallets === undefined || wallets.length === 0) && (
-                        <p className="text-sm text-muted-foreground">No wallets found. Please create a wallet first.</p>
-                      )}
                     </div>
 
                     <div className="space-y-2">
