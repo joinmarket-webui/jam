@@ -1,65 +1,19 @@
 {
   "name": "jam",
-  "version": "0.4.0",
   "private": true,
-  "description": "Your sats. Your privacy. Your profit.",
-  "repository": "git@github.com:joinmarket-webui/jam.git",
-  "license": "MIT",
-  "engines": {
-    "node": ">=22.11.0",
-    "npm": ">=10.9.0"
-  },
-  "homepage": ".",
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^22.8.5",
-    "@types/qrcode": "^1.5.5",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "conventional-changelog": "^6.0.0",
-    "http-proxy-middleware": "^3.0.5",
-    "husky": "^9.1.7",
-    "jest-watch-typeahead": "^2.2.2",
-    "jest-websocket-mock": "^2.5.0",
-    "lint-staged": "^15.5.2",
-    "prettier": "^3.5.3",
-    "react-scripts": "^5.0.1",
-    "typescript": "^4.9.5"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@table-library/react-table-library": "^4.1.15",
-    "bootstrap": "^5.3.6",
-    "classnames": "^2.5.1",
-    "formik": "^2.4.6",
-    "i18next": "^23.16.8",
-    "i18next-browser-languagedetector": "^8.1.0",
-    "qrcode": "^1.5.4",
-    "react": "^18.3.1",
-    "react-bootstrap": "^2.10.10",
-    "react-dom": "^18.3.1",
-    "react-i18next": "^15.4.1",
-    "react-router-bootstrap": "^0.26.3",
-    "react-router-dom": "^6.30.1"
-  },
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev:start": "echo 'Deprecated command will be removed soon. Please use `npm run dev` instead.'",
-    "dev:start:secondary": "echo 'Deprecated command will be removed soon. Please use `npm run dev:secondary` instead.'",
-    "dev": "REACT_APP_JAM_DEV_MODE=true npm start",
-    "dev:secondary": "PORT=3001 JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev:start",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "prepare": "husky",
-    "lint": "prettier --check --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx,json,css,md}'",
-    "format": "prettier --write --no-error-on-unmatched-pattern 'src/**/*.{js,jsx,ts,tsx,json,css,md}'",
-    "version": "node scripts/changelog.mjs && git checkout -b \"prepare-v${npm_package_version}-$(date +%s)\" && git add --all && git commit --message \"chore(release): v${npm_package_version}\" && git push --set-upstream origin $(git branch --show-current)",
-    "postversion": "which gh && gh pr create --title \"chore(release): v${npm_package_version}\" --body \"Prepares the v${npm_package_version} release.\" --assignee @me --label release --repo joinmarket-webui/jam --draft",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format": "npm run lint -- --fix && npm run prettier",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "prepare": "husky install",
+    "test": "vitest run",
     "regtest:build": "npm run regtest:clear && docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml build --pull",
     "regtest:rebuild": "rm -rf docker/regtest/.tmp && npm run regtest:build -- --no-cache",
     "regtest:clear": "docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml down --volumes --remove-orphans",
@@ -72,40 +26,69 @@
     "regtest:init": "./docker/regtest/init-setup.sh",
     "regtest:mine": "watch -n 11 ./docker/regtest/mine-block.sh"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": "prettier --write"
   },
   "prettier": {
     "printWidth": 120,
     "semi": false,
     "singleQuote": true
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-select": "^2.2.5",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.7",
+    "@tailwindcss/vite": "^4.1.10",
+    "@tanstack/react-query": "^5.80.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.518.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
+    "sonner": "^2.0.5",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.10",
+    "tw-animate-css": "^1.3.4"
   },
-  "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,json,css,md}": "prettier --no-error-on-unmatched-pattern --write"
+  "devDependencies": {
+    "@chromatic-com/storybook": "^4.0.0",
+    "@eslint/js": "^9.29.0",
+    "@playwright/test": "^1.53.1",
+    "@storybook/addon-a11y": "^9.0.12",
+    "@storybook/addon-docs": "^9.0.12",
+    "@storybook/addon-vitest": "^9.0.12",
+    "@storybook/react-vite": "^9.0.12",
+    "@types/node": "^22.15.29",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "@vitest/browser": "^3.2.4",
+    "conventional-changelog": "^7.1.0",
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-storybook": "^9.0.12",
+    "globals": "^16.2.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.5.3",
+    "storybook": "^9.0.12",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.34.1",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
   },
-  "jest": {
-    "extraGlobals": [
-      "Math",
-      "localStorage"
-    ],
-    "clearMocks": true,
-    "transformIgnorePatterns": [
-      "node_modules/(?!@table-library)"
-    ]
+  "overrides": {
+    "storybook": "$storybook"
   }
 }

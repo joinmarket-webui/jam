@@ -1,9 +1,0 @@
-git:
-  filters:
-    - filter_type: file
-      file_format: KEYVALUEJSON
-      source_file: src/i18n/locales/en/translation.json
-      source_language: en
-      translation_files_expression: src/i18n/locales/<lang>/translation.json
-  settings:
-    pr_branch_name: tx_translations_<br_unique_id>

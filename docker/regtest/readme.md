@@ -8,6 +8,7 @@ All containers will have a wallet named `Satoshi.jmdat` with password `test`.
 The second container has basic auth enabled (username `joinmarket` and password `joinmarket`).
 
 ## Common flow
+
 ```sh
 # (optional) once in a while rebuild the images
 npm run regtest:rebuild
@@ -65,9 +66,11 @@ npm run regtest:clear
 ```
 
 ### Mine
+
 Mine regtest blocks in a fixed interval (current default is every 11 seconds).
 This is useful for features that await confirmations or need incoming blocks regularly.
 e.g. This is necessary for scheduled transactions to execute successfully.
+
 ```sh
 npm run regtest:mine
 ```
@@ -86,6 +89,7 @@ This is useful if you want to perform regression tests.
 One additional JoinMarket container acts as [Directory Node](https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/onion-message-channels.md#directory) and exists solely to enable communication between peers.
 
 ### Build
+
 ```sh
 # building the images
 npm run regtest:build

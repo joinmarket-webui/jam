@@ -4,7 +4,6 @@ about: Suggest an idea
 title: ''
 labels: 'enhancement'
 assignees: ''
-
 ---
 
 Hey there! Thank you for proposing a new feature – your feedback is invaluable to open-source software development, and all contributions are greatly appreciated.
@@ -12,13 +11,13 @@ Hey there! Thank you for proposing a new feature – your feedback is invaluable
 🚨 Important warning: Be cautious of scammers in the comments. 🚨
 
 Red flags to watch out for:
+
 - Requests to email "official support" or links to external websites
 - Responses from recently created accounts, often lacking profile pictures
 - Inquiries for personal information that is not relevant to resolving your issue
 
-As long as you avoid sharing sensitive information (such as your seed phrase), you should be safe. 
+As long as you avoid sharing sensitive information (such as your seed phrase), you should be safe.
 However, it's best to avoid engaging with any suspicious comments.
-
 
 **Is your feature request related to a problem? Please describe.**
 

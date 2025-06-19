@@ -1,222 +1,280 @@
-import { useState, useCallback, useMemo } from 'react'
-import * as rb from 'react-bootstrap'
-import { Link, useNavigate } from 'react-router-dom'
-import { Trans, useTranslation } from 'react-i18next'
-import PageTitle from './PageTitle'
-import Sprite from './Sprite'
-import WalletCreationConfirmation, { CreatedWalletInfo } from './WalletCreationConfirmation'
-import PreventLeavingPageByMistake from './PreventLeavingPageByMistake'
-import WalletCreationForm, { CreateWalletFormValues } from './WalletCreationForm'
-import MnemonicPhraseInput from './MnemonicPhraseInput'
-import { walletDisplayName, walletDisplayNameToFileName } from '../utils'
-import { useServiceInfo } from '../context/ServiceInfoContext'
-import * as Api from '../libs/JmWalletApi'
-import { Route, routes } from '../constants/routes'
-import { isDebugFeatureEnabled } from '../constants/debugFeatures'
+import React, { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { setSession, clearSession } from '@/lib/session'
+import { formatWalletName } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
+import { toast } from 'sonner'
+import { createwallet, session, type CreateWalletResponse } from '@/lib/jm-api/generated/client'
 
-type CreatedWalletWithAuth = CreatedWalletInfo & {
-  auth: Api.ApiAuthContext
-}
+const CreateWallet = () => {
+  const navigate = useNavigate()
+  const [walletName, setWalletName] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [createWalletResponse, setCreateWalletResponse] = useState<CreateWalletResponse>()
+  const [step, setStep] = useState<'create' | 'seed' | 'confirm'>('create')
 
-interface BackupConfirmationProps {
-  wallet: CreatedWalletInfo
-  onSuccess: () => void
-  onCancel: () => void
-}
+  const handleCreateWallet = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-const BackupConfirmation = ({ wallet, onSuccess, onCancel }: BackupConfirmationProps) => {
-  const { t } = useTranslation()
+    // Validation
+    if (!walletName.trim()) {
+      toast.error('Wallet name is required')
+      return
+    }
 
-  const seedphrase = useMemo(() => wallet.seedphrase.split(' '), [wallet])
-  const [givenWords, setGivenWords] = useState(new Array(seedphrase.length).fill(''))
-  const [showSkipButton] = useState(isDebugFeatureEnabled('skipWalletBackupConfirmation'))
+    if (password.length < 8) {
+      toast.error('Password must be at least 8 characters long')
+      return
+    }
 
-  const isSeedBackupConfirmed = useMemo(
-    () => givenWords.every((word, index) => word === seedphrase[index]),
-    [givenWords, seedphrase],
+    if (password !== confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+
+      // Clear any existing local session
+      clearSession()
+
+      // Check if there's an active session on the server
+      try {
+        const { data: sessionInfo } = await session()
+        if (sessionInfo?.session || sessionInfo?.wallet_name !== 'None') {
+          console.warn('Active session detected:', sessionInfo)
+          toast.error(
+            `Cannot create wallet as "${formatWalletName(
+              sessionInfo?.wallet_name || 'Unknown',
+            )}" wallet is currently active.`,
+            {
+              description: (
+                <div className="text-black dark:text-white">
+                  Alternatively, you can{' '}
+                  <Link to="/login" className="underline hover:no-underline font-medium">
+                    log in with the existing wallet
+                  </Link>{' '}
+                  instead.
+                </div>
+              ),
+              duration: 8000,
+            },
+          )
+          return
+        }
+      } catch (sessionError) {
+        console.warn('Could not check session status:', sessionError)
+        // Continue anyway, wallet creation might still work
+      }
+
+      const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
+      const { data: response, error: createError } = await createwallet({
+        body: {
+          walletname: walletFileName,
+          password,
+          wallettype: 'sw-fb',
+        },
+      })
+
+      if (createError) {
+        throw createError
+      }
+
+      if (response?.seedphrase) {
+        setCreateWalletResponse(response)
+        setStep('seed')
+      } else {
+        throw new Error('No seedphrase returned')
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet'
+      toast.error(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleConfirmSeed = () => {
+    if (createWalletResponse?.seedphrase) {
+      // Save session and navigate to dashboard
+      const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
+      setSession({
+        walletFileName,
+        auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
+      })
+
+      navigate('/login', {
+        state: {
+          message: 'Wallet created successfully! Please log in with your credentials.',
+          walletName: walletFileName,
+        },
+      })
+    }
+  }
+
+  const renderCreateForm = () => (
+    <form onSubmit={handleCreateWallet} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="wallet-name">Wallet Name</Label>
+        <Input
+          id="wallet-name"
+          type="text"
+          value={walletName}
+          onChange={(e) => setWalletName(e.target.value)}
+          disabled={isLoading}
+          placeholder="Enter wallet name"
+          required
+        />
+        <p className="text-xs text-muted-foreground">Will be saved as {walletName || 'wallet-name'}.jmdat</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+            placeholder="Enter password"
+            className="pl-10 pr-10"
+            required
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2"
+            onClick={() => {
+              setShowConfirmPassword(false)
+              setShowPassword(!showPassword)
+            }}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="confirm-password">Confirm Password</Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="confirm-password"
+            type={showConfirmPassword ? 'text' : 'password'}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={isLoading}
+            placeholder="Confirm password"
+            className="pl-10 pr-10"
+            required
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2"
+            onClick={() => {
+              setShowPassword(false)
+              setShowConfirmPassword(!showConfirmPassword)
+            }}
+          >
+            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isLoading} size="lg">
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Creating Wallet...
+          </>
+        ) : (
+          'Create Wallet'
+        )}
+      </Button>
+    </form>
+  )
+
+  const renderSeedPhrase = () => (
+    <div className="space-y-6">
+      <div className="bg-muted p-4 rounded-lg">
+        <div className="grid grid-cols-3 gap-2 text-sm font-mono">
+          {createWalletResponse?.seedphrase.split(' ').map((word, index) => (
+            <div key={index} className="bg-background p-2 rounded border">
+              <span className="text-muted-foreground mr-2">{index + 1}.</span>
+              {word}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Important:</strong> Write down this seed phrase and store it safely. It's the only way to recover your
+          wallet if you lose access.
+        </AlertDescription>
+      </Alert>
+
+      <Button onClick={handleConfirmSeed} className="w-full" size="lg">
+        I have saved my seed phrase
+      </Button>
+    </div>
   )
 
   return (
-    <div>
-      <PreventLeavingPageByMistake />
-      <div className="fs-4">{t('create_wallet.confirm_backup_title')}</div>
-      <p className="text-secondary">{t('create_wallet.confirm_backup_subtitle')}</p>
-
-      <rb.Form noValidate>
-        <MnemonicPhraseInput
-          mnemonicPhrase={givenWords}
-          onChange={(val) => setGivenWords(val)}
-          isValid={(index) => givenWords[index] === seedphrase[index]}
-          isDisabled={(index) => givenWords[index] === seedphrase[index]}
-        />
-      </rb.Form>
-      {isSeedBackupConfirmed && (
-        <div className="mb-4 text-center text-success">{t('create_wallet.feedback_seed_confirmed')}</div>
-      )}
-
-      <rb.Button
-        className="w-100 mb-4"
-        variant="dark"
-        size="lg"
-        disabled={!isSeedBackupConfirmed}
-        onClick={() => onSuccess()}
-      >
-        {t('create_wallet.confirmation_button_fund_wallet')}
-      </rb.Button>
-
-      <div className="d-flex justify-content-between mb-4 gap-4">
-        <rb.Button variant="none" disabled={isSeedBackupConfirmed} onClick={() => onCancel()}>
-          <div className="d-flex justify-content-center align-items-center">
-            <Sprite symbol="arrow-left" width="20" height="20" className="me-2" />
-            {t('create_wallet.back_button')}
-          </div>
-        </rb.Button>
-
-        {showSkipButton && (
-          <rb.Button
-            className="position-relative"
-            variant="outline-dark"
-            disabled={isSeedBackupConfirmed}
-            onClick={() => onSuccess()}
-          >
-            <div className="d-flex justify-content-center align-items-center">
-              {t('create_wallet.skip_button')}
-              <Sprite symbol="arrow-right" width="20" height="20" className="ms-2" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <div className="w-full max-w-md">
+        <Card className="shadow-lg">
+          <CardHeader className="text-center space-y-2">
+            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Wallet className="w-6 h-6 text-primary" />
             </div>
-            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-              dev
-            </span>
-          </rb.Button>
-        )}
+            <CardTitle className="text-2xl font-bold">
+              {step === 'create' && 'Create New Wallet'}
+              {step === 'seed' && 'Save Your Seed Phrase'}
+            </CardTitle>
+            <CardDescription>
+              {step === 'create' && 'Set up a new Joinmarket wallet for CoinJoin privacy'}
+              {step === 'seed' && "This is your wallet's recovery phrase"}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-6">
+            {step === 'create' && renderCreateForm()}
+            {step === 'seed' && renderSeedPhrase()}
+
+            {step === 'create' && (
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Already have a wallet?{' '}
+                  <Link
+                    to="/login"
+                    className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
+                  >
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
 }
 
-interface CreateWalletProps {
-  parentRoute: Route
-  startWallet: (name: Api.WalletFileName, auth: Api.ApiAuthContext) => void
-}
-
-export default function CreateWallet({ parentRoute, startWallet }: CreateWalletProps) {
-  const { t } = useTranslation()
-  const serviceInfo = useServiceInfo()
-  const navigate = useNavigate()
-
-  const [alert, setAlert] = useState<SimpleAlert>()
-  const [createdWallet, setCreatedWallet] = useState<CreatedWalletWithAuth>()
-
-  const isCreated = useMemo(() => !!createdWallet?.walletFileName && !!createdWallet?.auth, [createdWallet])
-  const canCreate = useMemo(
-    () => !isCreated && !serviceInfo?.walletFileName && !serviceInfo?.rescanning,
-    [isCreated, serviceInfo],
-  )
-
-  const createWallet = useCallback(
-    async ({ walletName, password }: CreateWalletFormValues) => {
-      setAlert(undefined)
-
-      try {
-        const res = await Api.postWalletCreate({}, { walletname: walletDisplayNameToFileName(walletName), password })
-        const body = await (res.ok ? res.json() : Api.Helper.throwError(res))
-
-        const { seedphrase, walletname: createdWalletFileName } = body
-        const auth = Api.Helper.parseAuthProps(body)
-
-        setCreatedWallet({ walletFileName: createdWalletFileName, seedphrase, password, auth })
-      } catch (e: any) {
-        const message = t('create_wallet.error_creating_failed', {
-          reason: e.message || t('global.errors.reason_unknown'),
-        })
-        setAlert({ variant: 'danger', message })
-      }
-    },
-    [setAlert, setCreatedWallet, t],
-  )
-
-  const walletConfirmed = useCallback(() => {
-    if (createdWallet) {
-      setAlert(undefined)
-      startWallet(createdWallet.walletFileName, createdWallet.auth)
-      navigate(routes.wallet)
-    } else {
-      setAlert({ variant: 'danger', message: t('create_wallet.alert_confirmation_failed') })
-    }
-  }, [createdWallet, startWallet, navigate, setAlert, t])
-
-  const [showBackupConfirmation, setShowBackupConfirmation] = useState(false)
-
-  return (
-    <div className="create-wallet">
-      {createdWallet ? (
-        <PageTitle
-          title={t('create_wallet.title_wallet_created')}
-          subtitle={t('create_wallet.subtitle_wallet_created')}
-          success
-        />
-      ) : (
-        <PageTitle title={t('create_wallet.title')} />
-      )}
-      {alert && <rb.Alert variant={alert.variant}>{alert.message}</rb.Alert>}
-      {!canCreate && !isCreated ? (
-        <>
-          {serviceInfo?.walletFileName && (
-            <rb.Alert variant="warning">
-              <Trans
-                i18nKey="create_wallet.alert_other_wallet_unlocked"
-                values={{
-                  walletName: walletDisplayName(serviceInfo.walletFileName),
-                }}
-              >
-                Currently <strong>walletName</strong> is active. You need to lock it first.
-                <Link to={routes.walletList} className="alert-link">
-                  Go back
-                </Link>
-                .
-              </Trans>
-            </rb.Alert>
-          )}
-          {serviceInfo?.rescanning === true && (
-            <rb.Alert variant="warning" data-testid="alert-rescanning">
-              <Trans i18nKey="create_wallet.alert_rescan_in_progress">
-                Rescanning the timechain is currently in progress. Please wait until the process finishes and then try
-                again.
-                <Link to={routes.walletList} className="alert-link">
-                  Go back
-                </Link>
-                .
-              </Trans>
-            </rb.Alert>
-          )}
-        </>
-      ) : (
-        <>
-          <PreventLeavingPageByMistake />
-          {!serviceInfo?.walletFileName && !createdWallet && (
-            <WalletCreationForm
-              onCancel={() => navigate(routes[parentRoute])}
-              onSubmit={createWallet}
-              submitButtonText={(isSubmitting) =>
-                t(isSubmitting ? 'create_wallet.button_creating' : 'create_wallet.button_create')
-              }
-            />
-          )}
-          {createdWallet &&
-            (!showBackupConfirmation ? (
-              <WalletCreationConfirmation
-                wallet={createdWallet}
-                submitButtonText={(_) => t('create_wallet.next_button')}
-                onSubmit={async () => setShowBackupConfirmation(true)}
-              />
-            ) : (
-              <BackupConfirmation
-                wallet={createdWallet}
-                onSuccess={walletConfirmed}
-                onCancel={() => setShowBackupConfirmation(false)}
-              />
-            ))}
-        </>
-      )}
-    </div>
-  )
-}
+export default CreateWallet
