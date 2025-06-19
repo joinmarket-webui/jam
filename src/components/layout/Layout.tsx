@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Navbar } from '../Navbar'
 import { Footer } from '../Footer'
 import { useQuery } from '@tanstack/react-query'
@@ -16,18 +16,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const client = useApiClient()
   const { resolvedTheme, setTheme } = useTheme()
-
   const [displayMode, setDisplayMode] = useState<'sats' | 'btc'>('sats')
-
-  useEffect(() => {
-    if (resolvedTheme === 'light') {
-      document.documentElement.classList.add('light')
-      document.documentElement.classList.remove('dark')
-    } else {
-      document.documentElement.classList.add('dark')
-      document.documentElement.classList.remove('light')
-    }
-  }, [resolvedTheme])
 
   // Get wallet name from session
   const session = getSession()
