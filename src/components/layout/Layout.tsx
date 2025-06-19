@@ -5,13 +5,15 @@ import { useQuery } from '@tanstack/react-query'
 import { getSession } from '@/lib/session'
 import { DisplayModeContext, jarTemplates } from './display-mode-context'
 import type { Jar, JarColor } from './display-mode-context'
-import { displaywallet } from '@/lib/jm-api/generated/client'
+import { displaywallet, session as apiSession } from '@/lib/jm-api/generated/client'
+import { useApiClient } from '@/hooks/useApiClient'
 
 interface LayoutProps {
   children: React.ReactNode
 }
 
 export function Layout({ children }: LayoutProps) {
+  const client = useApiClient()
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') || 'dark'
@@ -49,13 +51,14 @@ export function Layout({ children }: LayoutProps) {
       }
 
       // First ensure we have a session
-      const { data: sessionInfo } = await session()
+      const { data: sessionInfo } = await apiSession({ client })
       if (!sessionInfo?.session) {
         throw new Error('No active session')
       }
 
       // Then get wallet display data
       const { data: walletInfo, error } = await displaywallet({
+        client,
         path: { walletname: walletFileName },
       })
 

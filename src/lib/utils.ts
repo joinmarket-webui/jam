@@ -16,5 +16,25 @@ export function formatWalletName(walletName: string | null | undefined): string 
   }
 
   // Remove .jmdat extension if present
-  return walletName.endsWith('.jmdat') ? walletName.slice(0, -6) : walletName
+  return walletName.endsWith('.jmdat') ? walletName.slice(0, '.jmdat'.length * -1) : walletName
+}
+
+export const setIntervalDebounced = (
+  callback: () => Promise<void>,
+  delay: number,
+  onTimerIdChanged: (timerId: NodeJS.Timeout) => void,
+  onError: (error: unknown, loop: () => void) => void = (_, loop) => loop(),
+) => {
+  ;(function loop() {
+    onTimerIdChanged(
+      setTimeout(async () => {
+        try {
+          await callback()
+          loop()
+        } catch (e: unknown) {
+          onError(e, loop)
+        }
+      }, delay),
+    )
+  })()
 }
