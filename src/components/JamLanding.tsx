@@ -4,7 +4,7 @@ import { Jar } from './layout/Jar'
 import { Info, RefreshCw, Loader2 } from 'lucide-react'
 import { Tooltip, TooltipTrigger, TooltipContent } from './ui/tooltip'
 import { Alert, AlertDescription } from './ui/alert'
-import { useDisplayMode } from './layout/display-mode-context'
+import { useJamDisplayContext } from './layout/display-mode-context'
 
 export default function JamLanding() {
   const {
@@ -17,7 +17,7 @@ export default function JamLanding() {
     isLoading,
     error,
     refetchWalletData,
-  } = useDisplayMode()
+  } = useJamDisplayContext()
 
   return (
     <div className="flex flex-col items-center justify-center py-8">

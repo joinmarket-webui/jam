@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import type { ReactNode } from 'react'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 
@@ -25,7 +26,7 @@ export interface DisplayModeContextType {
   displayMode: 'sats' | 'btc'
   toggleDisplayMode: () => void
   formatAmount: (amount: number) => string
-  getLogo: (size?: 'sm' | 'lg') => React.ReactNode
+  getLogo: (size?: 'sm' | 'lg') => ReactNode
   jars: Jar[]
   totalBalance: number
   walletName: string | null
@@ -36,10 +37,10 @@ export interface DisplayModeContextType {
 
 export const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined)
 
-export const useDisplayMode = () => {
+export const useJamDisplayContext = () => {
   const context = useContext(DisplayModeContext)
   if (context === undefined) {
-    throw new Error('useDisplayMode must be used within a Layout')
+    throw new Error('useJamDisplayContext must be used within a Layout')
   }
   return context
 }
