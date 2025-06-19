@@ -34,12 +34,101 @@ const LoginFormSkeleton = () => {
   )
 }
 
-const LoginPage = () => {
-  const navigate = useNavigate()
-  const client = useApiClient()
+interface LoginFormProps {
+  wallets: string[]
+  isSubmitting: boolean
+  onSubmit: (val: { walletFileName: string; password: string }) => Promise<void>
+}
+
+const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
   const [selectedWallet, setSelectedWallet] = useState<string>()
   const [password, setPassword] = useState<string>()
   const [showPassword, setShowPassword] = useState<boolean>(false)
+
+  useEffect(
+    function preselectWalletIfOnlyOneExists() {
+      if (wallets === undefined || wallets.length !== 1) return
+      setSelectedWallet((current) => current ?? wallets[0])
+    },
+    [wallets],
+  )
+
+  return (
+    <>
+      <form
+        onSubmit={(e: React.FormEvent) => {
+          e.preventDefault()
+
+          if (selectedWallet === undefined || password === undefined) return
+
+          onSubmit({ walletFileName: selectedWallet, password: password })
+        }}
+        className="space-y-4"
+      >
+        <div className="space-y-2">
+          <Label htmlFor="wallet-select">Wallet</Label>
+          <Select
+            value={selectedWallet ?? ''}
+            onValueChange={setSelectedWallet}
+            disabled={isSubmitting || wallets.length === 0}
+            required
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'} />
+            </SelectTrigger>
+            <SelectContent>
+              {wallets?.map((wallet, index) => (
+                <SelectItem key={index} value={wallet}>
+                  {formatWalletName(wallet)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password || ''}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="Enter your password"
+              className="pl-10 pr-10"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        <Button type="submit" className="w-full" disabled={isSubmitting || !selectedWallet} size="lg">
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Unlocking...
+            </>
+          ) : (
+            'Unlock'
+          )}
+        </Button>
+      </form>
+    </>
+  )
+}
+
+const LoginPage = () => {
+  const navigate = useNavigate()
+  const client = useApiClient()
 
   const listwalletsQuery = useQuery({
     ...listwalletsOptions({ client }),
@@ -57,14 +146,6 @@ const LoginPage = () => {
 
   const wallets = useMemo(() => listwalletsQuery.data?.wallets, [listwalletsQuery.data])
 
-  useEffect(
-    function preselectWalletIfOnlyOneExists() {
-      if (wallets === undefined || wallets.length !== 1) return
-      setSelectedWallet((current) => current ?? wallets[0])
-    },
-    [wallets],
-  )
-
   const unlockWallet = useMutation({
     ...unlockwalletMutation({ client }),
     retry: false,
@@ -77,20 +158,15 @@ const LoginPage = () => {
   })
 
   const isUnlockingWallet = useMemo(() => unlockWallet.isPending, [unlockWallet.isPending])
-  const isLoading = useMemo(() => isLoadingWallets || isUnlockingWallet, [isLoadingWallets, isUnlockingWallet])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!selectedWallet) return
-
+  const handleSubmit = async (data: { walletFileName: string; password: string }) => {
     try {
       const response = await unlockWallet.mutateAsync({
         path: {
-          walletname: encodeURIComponent(selectedWallet),
+          walletname: encodeURIComponent(data.walletFileName),
         },
         body: {
-          password: password || '',
+          password: data.password,
         },
       })
 
@@ -144,66 +220,7 @@ const LoginPage = () => {
                 </CardContent>
               ) : (
                 <CardContent className="space-y-6">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="wallet-select">Wallet</Label>
-                      <Select
-                        value={selectedWallet ?? ''}
-                        onValueChange={setSelectedWallet}
-                        disabled={isLoading || wallets === undefined || wallets.length === 0}
-                        required
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue
-                            placeholder={wallets && wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {wallets?.map((wallet, index) => (
-                            <SelectItem key={index} value={wallet}>
-                              {formatWalletName(wallet)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="password"
-                          type={showPassword ? 'text' : 'password'}
-                          value={password || ''}
-                          onChange={(e) => setPassword(e.target.value)}
-                          disabled={isLoading}
-                          placeholder="Enter your password"
-                          className="pl-10 pr-10"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-1 top-1/2 transform -translate-y-1/2"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={isLoading || !selectedWallet} size="lg">
-                      {isUnlockingWallet ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Unlocking...
-                        </>
-                      ) : (
-                        'Unlock'
-                      )}
-                    </Button>
-                  </form>
+                  <LoginForm wallets={wallets || []} isSubmitting={isUnlockingWallet} onSubmit={handleSubmit} />
 
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">
