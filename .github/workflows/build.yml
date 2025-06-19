@@ -34,6 +34,8 @@ jobs:
       # Checks
       - name: Lint
         run: npm run lint
+      - name: Install Playwright Browsers
+        run: npx playwright install
       # Test
       - name: Test
         run: npm test
