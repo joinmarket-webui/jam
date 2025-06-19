@@ -46,7 +46,7 @@ function App() {
             />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-          <Toaster />
+          <Toaster closeButton />
         </Router>
       </QueryClientProvider>
     </>
