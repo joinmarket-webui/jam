@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { setSession } from '@/lib/session'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,6 +33,7 @@ const LoginFormSkeleton = () => {
           <Skeleton className="h-12 w-full" />
         </div>
       </div>
+      <div>&nbsp;</div>
       <div>&nbsp;</div>
     </>
   )
@@ -201,9 +202,7 @@ const LoginPage = () => {
             </div>
             <CardTitle className="text-2xl font-bold">Welcome to Jam</CardTitle>
             {!isLoadingWallets && wallets !== undefined && wallets.length > 0 && (
-              <>
-                <CardDescription>Select a wallet and enter your password to continue.</CardDescription>
-              </>
+              <CardDescription>Select a wallet and enter your password to continue.</CardDescription>
             )}
           </CardHeader>
 
@@ -249,16 +248,28 @@ const LoginPage = () => {
                     <>
                       <LoginForm wallets={wallets || []} isSubmitting={isUnlockingWallet} onSubmit={handleSubmit} />
 
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground">
-                          Don't have a wallet yet?{' '}
-                          <Link
-                            to="/create-wallet"
-                            className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
-                          >
-                            Create a new wallet
-                          </Link>
-                        </p>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={async () => await navigate('/create-wallet')}
+                          className="cursor-pointer"
+                        >
+                          Create a new wallet
+                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger className="w-full">
+                            <Button
+                              variant="link"
+                              size="sm"
+                              onClick={async () => await navigate('/create-wallet')}
+                              disabled
+                            >
+                              Import an existing wallet
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Not yet implemented.</TooltipContent>
+                        </Tooltip>
                       </div>
                     </>
                   )}
