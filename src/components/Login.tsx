@@ -14,20 +14,24 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { useApiClient } from '@/hooks/useApiClient'
 import { Skeleton } from './ui/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 
 const LoginFormSkeleton = () => {
   return (
     <>
-      <div className="flex flex-col space-y-3">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-[75px]" />
-          <Skeleton className="h-10 w-full" />
+      <div className="flex flex-col space-y-6">
+        <Skeleton className="h-4 w-full" />
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-[75px]" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-[75px]" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-12 w-full" />
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-[75px]" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-        <Skeleton className="h-10 w-full" />
       </div>
       <div>&nbsp;</div>
     </>
@@ -41,14 +45,16 @@ interface LoginFormProps {
 }
 
 const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
-  const [selectedWallet, setSelectedWallet] = useState<string>()
-  const [password, setPassword] = useState<string>()
+  const [selectedWallet, setSelectedWallet] = useState<string | undefined>(
+    wallets.length !== 1 ? undefined : wallets[0],
+  )
+  const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
 
   useEffect(
     function preselectWalletIfOnlyOneExists() {
-      if (wallets === undefined || wallets.length !== 1) return
-      setSelectedWallet((current) => current ?? wallets[0])
+      if (wallets.length !== 1) return
+      setSelectedWallet(wallets[0])
     },
     [wallets],
   )
@@ -59,9 +65,9 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
         onSubmit={(e: React.FormEvent) => {
           e.preventDefault()
 
-          if (selectedWallet === undefined || password === undefined) return
+          if (selectedWallet === undefined) return
 
-          onSubmit({ walletFileName: selectedWallet, password: password })
+          onSubmit({ walletFileName: selectedWallet, password })
         }}
         className="space-y-4"
       >
@@ -93,7 +99,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              value={password || ''}
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
               placeholder="Enter your password"
@@ -190,11 +196,11 @@ const LoginPage = () => {
               {isLoadingWallets ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
-                <Wallet className="h-6 w-6 text-primary" />
+                <Wallet className="h-6 w-6 text-primary" onClick={async () => await listwalletsQuery.refetch()} />
               )}
             </div>
             <CardTitle className="text-2xl font-bold">Welcome to Jam</CardTitle>
-            {wallets !== undefined && wallets.length > 0 && (
+            {!isLoadingWallets && wallets !== undefined && wallets.length > 0 && (
               <>
                 <CardDescription>Select a wallet and enter your password to continue.</CardDescription>
               </>
@@ -220,19 +226,42 @@ const LoginPage = () => {
                 </CardContent>
               ) : (
                 <CardContent className="space-y-6">
-                  <LoginForm wallets={wallets || []} isSubmitting={isUnlockingWallet} onSubmit={handleSubmit} />
+                  {wallets!.length === 0 ? (
+                    <>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">It looks like you do not have a wallet, yet.</p>
+                      </div>
+                      <div className="space-y-4">
+                        <Button className="w-full" size="lg" onClick={async () => await navigate('/create-wallet')}>
+                          Create new wallet
+                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger className="w-full">
+                            <Button variant="secondary" className="w-full" size="lg" disabled>
+                              Import existing wallet
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Not yet implemented.</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <LoginForm wallets={wallets || []} isSubmitting={isUnlockingWallet} onSubmit={handleSubmit} />
 
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Don't have a wallet yet?{' '}
-                      <Link
-                        to="/create-wallet"
-                        className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
-                      >
-                        Create a new wallet
-                      </Link>
-                    </p>
-                  </div>
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground">
+                          Don't have a wallet yet?{' '}
+                          <Link
+                            to="/create-wallet"
+                            className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
+                          >
+                            Create a new wallet
+                          </Link>
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               )}
             </>
