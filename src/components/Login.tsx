@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff, RefreshCwIcon } from 'lucide-react'
 import { formatWalletName } from '@/lib/utils'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
@@ -29,7 +29,10 @@ const LoginPage = () => {
   const isLoadingWallets = useMemo(() => listwalletsQuery.isFetching, [listwalletsQuery.isFetching])
   const listwalletsError = useMemo(() => {
     if (!listwalletsQuery.error) return undefined
-    return `Failed to load wallets: ${listwalletsQuery.error.message}`
+    return {
+      message: `Failed to load wallets`,
+      error_description: listwalletsQuery.error.message || 'Unknown reason.',
+    }
   }, [listwalletsQuery.error])
 
   const wallets = useMemo(() => listwalletsQuery.data?.wallets, [listwalletsQuery.data])
@@ -95,91 +98,108 @@ const LoginPage = () => {
               )}
             </div>
             <CardTitle className="text-2xl font-bold">Welcome to Jam</CardTitle>
-            <CardDescription>Select your wallet and enter your password to continue</CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {listwalletsError && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{listwalletsError}</AlertDescription>
-              </Alert>
+            {wallets !== undefined && wallets.length > 0 && (
+              <>
+                <CardDescription>Select a wallet and enter your password to continue.</CardDescription>
+              </>
             )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="wallet-select">Wallet</Label>
-                <Select
-                  value={selectedWallet ?? ''}
-                  onValueChange={setSelectedWallet}
-                  disabled={isLoading || wallets === undefined || wallets.length === 0}
-                  required
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a wallet" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wallets?.map((wallet, index) => (
-                      <SelectItem key={index} value={wallet}>
-                        {formatWalletName(wallet)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {!isLoadingWallets && (wallets === undefined || wallets.length === 0) && (
-                  <p className="text-sm text-muted-foreground">No wallets found. Please create a wallet first.</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password || ''}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    placeholder="Enter your password"
-                    className="pl-10 pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </CardHeader>
+          {isLoadingWallets ? (
+            <></>
+          ) : (
+            <>
+              {listwalletsError ? (
+                <CardContent className="space-y-6">
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>{listwalletsError.message}</AlertTitle>
+                    <AlertDescription>{listwalletsError.error_description}</AlertDescription>
+                  </Alert>
+                  <Button variant="ghost" size="sm" onClick={async () => await listwalletsQuery.refetch()}>
+                    <RefreshCwIcon className="h-4 w-4" /> Retry
                   </Button>
-                </div>
-              </div>
+                </CardContent>
+              ) : (
+                <CardContent className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="wallet-select">Wallet</Label>
+                      <Select
+                        value={selectedWallet ?? ''}
+                        onValueChange={setSelectedWallet}
+                        disabled={isLoading || wallets === undefined || wallets.length === 0}
+                        required
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue
+                            placeholder={wallets && wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {wallets?.map((wallet, index) => (
+                            <SelectItem key={index} value={wallet}>
+                              {formatWalletName(wallet)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {!isLoadingWallets && (wallets === undefined || wallets.length === 0) && (
+                        <p className="text-sm text-muted-foreground">No wallets found. Please create a wallet first.</p>
+                      )}
+                    </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !selectedWallet} size="lg">
-                {isUnlockingWallet ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Unlocking...
-                  </>
-                ) : (
-                  'Unlock'
-                )}
-              </Button>
-            </form>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={password || ''}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isLoading}
+                          placeholder="Enter your password"
+                          className="pl-10 pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
 
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                Don't have a wallet yet?{' '}
-                <Link
-                  to="/create-wallet"
-                  className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
-                >
-                  Create a new wallet
-                </Link>
-              </p>
-            </div>
-          </CardContent>
+                    <Button type="submit" className="w-full" disabled={isLoading || !selectedWallet} size="lg">
+                      {isUnlockingWallet ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Unlocking...
+                        </>
+                      ) : (
+                        'Unlock'
+                      )}
+                    </Button>
+                  </form>
+
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Don't have a wallet yet?{' '}
+                      <Link
+                        to="/create-wallet"
+                        className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
+                      >
+                        Create a new wallet
+                      </Link>
+                    </p>
+                  </div>
+                </CardContent>
+              )}
+            </>
+          )}
         </Card>
       </div>
     </div>
