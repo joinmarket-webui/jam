@@ -25,7 +25,6 @@ It aims to provide sensible defaults and be easy to use for beginners while stil
 - 💬 Join our [Matrix room](https://matrix.to/#/%23jam:bitcoin.kyoto) to get help and [contribute](https://joinmarket-webui.github.io/jamdocs/contribute/)!
 - 📚 Check out the [documentation](https://joinmarket-webui.github.io/jamdocs/) and the [wiki](https://github.com/joinmarket-webui/jam/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
 
-
 ## 📸
 
 <div align="center">
