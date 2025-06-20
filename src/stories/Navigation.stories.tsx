@@ -23,7 +23,7 @@ export const Default: Story = {
 
 export const InContainer: Story = {
   render: () => (
-    <div className="max-w-md mx-auto border rounded-lg">
+    <div className="mx-auto max-w-md rounded-lg border">
       <Navigation />
     </div>
   ),

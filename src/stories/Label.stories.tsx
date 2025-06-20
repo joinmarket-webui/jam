@@ -49,14 +49,14 @@ export const WithHelpText: Story = {
     <div className="space-y-2">
       <Label htmlFor="password">Password</Label>
       <Input id="password" type="password" placeholder="Enter password" />
-      <p className="text-sm text-muted-foreground">Must be at least 8 characters long</p>
+      <p className="text-muted-foreground text-sm">Must be at least 8 characters long</p>
     </div>
   ),
 }
 
 export const Disabled: Story = {
   render: () => (
-    <div className="space-y-2 group" data-disabled="true">
+    <div className="group space-y-2" data-disabled="true">
       <Label htmlFor="disabled-input">Disabled Field</Label>
       <Input id="disabled-input" placeholder="This field is disabled" disabled />
     </div>

@@ -5,7 +5,7 @@ type DisplayLogoProps = {
 
 export function DisplayLogo({ displayMode, size = 'lg' }: DisplayLogoProps) {
   if (displayMode === 'btc') {
-    return <span className={size === 'sm' ? 'text-lg ml-1' : 'text-4xl ml-1'}>₿</span>
+    return <span className={size === 'sm' ? 'ml-1 text-lg' : 'ml-1 text-4xl'}>₿</span>
   }
 
   return (

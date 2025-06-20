@@ -21,11 +21,11 @@ export default function JamLanding() {
 
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      <div className="text-center mb-8">
-        <div className="text-lg opacity-80 text-gray-400">{displayMode === 'btc' ? 'Bitcoin' : 'Satoshi'}</div>
-        <div className="text-4xl font-light tracking-wider mb-2 flex justify-center items-center cursor-pointer select-none min-h-[56px]">
+      <div className="mb-8 text-center">
+        <div className="text-lg text-gray-400 opacity-80">{displayMode === 'btc' ? 'Bitcoin' : 'Satoshi'}</div>
+        <div className="mb-2 flex min-h-[56px] cursor-pointer items-center justify-center text-4xl font-light tracking-wider select-none">
           {isLoading ? (
-            <div className="flex items-center justify-center min-h-[56px]">
+            <div className="flex min-h-[56px] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
@@ -33,17 +33,17 @@ export default function JamLanding() {
               <span
                 onClick={toggleDisplayMode}
                 title="Click to toggle sats/bitcoin"
-                className="tabular-nums min-w-[250px] text-center"
+                className="min-w-[250px] text-center tabular-nums"
               >
                 {formatAmount(totalBalance)}{' '}
               </span>
-              <span className="flex items-center min-h-[48px]">{getLogo('lg')}</span>
+              <span className="flex min-h-[48px] items-center">{getLogo('lg')}</span>
             </>
           )}
         </div>
-        <div className="flex gap-4 justify-center mt-10">
-          <Button className="px-12 cursor-pointer">↓ Receive</Button>
-          <Button className="px-16 cursor-pointer" variant="outline">
+        <div className="mt-10 flex justify-center gap-4">
+          <Button className="cursor-pointer px-12">↓ Receive</Button>
+          <Button className="cursor-pointer px-16" variant="outline">
             ↑ Send
           </Button>
         </div>
@@ -53,16 +53,16 @@ export default function JamLanding() {
           <AlertDescription>
             Error loading wallet data: {error.message}
             <Button variant="outline" size="sm" onClick={() => refetchWalletData()} className="ml-2">
-              <RefreshCw className="h-4 w-4 mr-2" /> Retry
+              <RefreshCw className="mr-2 h-4 w-4" /> Retry
             </Button>
           </AlertDescription>
         </Alert>
       )}
-      <Card className="w-full max-w-2xl border-0 shadow-none text-black dark:text-white dark:bg-[#181b20] p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center w-full justify-center">
-            <span className="opacity-80 font-light">Wallet distribution</span>
-            <div className="text-black opacity-80 mx-3 dark:text-white">
+      <Card className="mb-8 w-full max-w-2xl border-0 p-6 text-black shadow-none dark:bg-[#181b20] dark:text-white">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex w-full items-center justify-center">
+            <span className="font-light opacity-80">Wallet distribution</span>
+            <div className="mx-3 text-black opacity-80 dark:text-white">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info size={16} />
@@ -74,14 +74,14 @@ export default function JamLanding() {
         </div>
         <div className="flex justify-between gap-4">
           {isLoading ? (
-            <div className="flex-1 flex justify-center py-8">
+            <div className="flex flex-1 justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : jars.length > 0 ? (
             jars.map((jar) => (
               <Tooltip key={jar.name}>
                 <TooltipTrigger asChild>
-                  <div className="flex flex-col cursor-pointer hover:scale-105 transition-all duration-300 items-center">
+                  <div className="flex cursor-pointer flex-col items-center transition-all duration-300 hover:scale-105">
                     <Jar
                       name={jar.name}
                       amount={jar.balance}
@@ -95,16 +95,16 @@ export default function JamLanding() {
               </Tooltip>
             ))
           ) : (
-            <div className="flex-1 text-center py-4 text-gray-500">No accounts found in wallet</div>
+            <div className="flex-1 py-4 text-center text-gray-500">No accounts found in wallet</div>
           )}
         </div>
       </Card>
-      <div className="flex justify-end w-full max-w-2xl">
+      <div className="flex w-full max-w-2xl justify-end">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => refetchWalletData()}
-          className="flex gap-2 items-center text-gray-500"
+          className="flex items-center gap-2 text-gray-500"
         >
           <RefreshCw className="h-4 w-4" />
           Refresh
