@@ -31,49 +31,49 @@ export function Navbar({
   const totalBalance = jars.reduce((acc, jar) => acc + jar.balance, 0)
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-gray-100 text-black dark:bg-[#23262b] dark:text-white transition-colors duration-300">
-      <div className="flex items-center flex-1 min-w-0">
+    <header className="flex items-center justify-between bg-gray-100 px-6 py-4 text-black transition-colors duration-300 dark:bg-[#23262b] dark:text-white">
+      <div className="flex min-w-0 flex-1 items-center">
         <Wallet className="mr-3" strokeWidth={1} />
-        <div className="flex flex-col relative">
-          <span className="flex font-thin -mb-1">Satoshi</span>
-          <Badge className="absolute right-3  -translate-x-1/2 -top-1 z-10" variant="dev">
+        <div className="relative flex flex-col">
+          <span className="-mb-1 flex font-thin">Satoshi</span>
+          <Badge className="absolute -top-1 right-3 z-10 -translate-x-1/2" variant="dev">
             dev
           </Badge>
-          <div className="text-lg font-light tracking-wider flex items-center min-h-[40px]">
+          <div className="flex min-h-[40px] items-center text-lg font-light tracking-wider">
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
             ) : (
               <>
                 <span
-                  className="tabular-nums text-center select-none cursor-pointer"
+                  className="cursor-pointer text-center tabular-nums select-none"
                   onClick={toggleDisplayMode}
                   title="Click to toggle sats/bitcoin"
                 >
                   {formatAmount(totalBalance)}
                 </span>
-                <span className="flex items-center min-h-[32px]">{getLogo('sm')}</span>
+                <span className="flex min-h-[32px] items-center">{getLogo('sm')}</span>
               </>
             )}
           </div>
         </div>
       </div>
-      <div className="flex gap-8 text-sm justify-center items-center flex-1 min-w-0">
-        <span className="opacity-70 cursor-pointer hover:underline">Receive</span>
-        <span className="opacity-70 hover:underline cursor-pointer relative">
+      <div className="flex min-w-0 flex-1 items-center justify-center gap-8 text-sm">
+        <span className="cursor-pointer opacity-70 hover:underline">Receive</span>
+        <span className="relative cursor-pointer opacity-70 hover:underline">
           <span>Earn</span>
-          <span className="text-[#6ee7b7] text-[8px] absolute -top-1 -right-2">●</span>
+          <span className="absolute -top-1 -right-2 text-[8px] text-[#6ee7b7]">●</span>
         </span>
-        <span className="opacity-70 cursor-pointer hover:underline">Send</span>
-        <span className=" text-gray-400 dark:text-gray-600">|</span>
-        <span className="opacity-70 cursor-pointer hover:underline">Sweep</span>
+        <span className="cursor-pointer opacity-70 hover:underline">Send</span>
+        <span className="text-gray-400 dark:text-gray-600">|</span>
+        <span className="cursor-pointer opacity-70 hover:underline">Sweep</span>
       </div>
-      <div className="flex items-center gap-2 justify-end flex-1 min-w-0">
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
           aria-label="Toggle dark/light mode"
-          className="text-black dark:text-white dark:hover:bg-zinc-700 hover:bg-zinc-200"
+          className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
         >
           {theme === 'dark' ? <Sun /> : <Moon />}
         </Button>
@@ -85,7 +85,7 @@ export function Navbar({
           size="icon"
           onClick={handleLogout}
           aria-label="Logout"
-          className="text-black dark:text-white dark:hover:bg-zinc-700 hover:bg-zinc-200"
+          className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
         >
           <LogOut />
         </Button>

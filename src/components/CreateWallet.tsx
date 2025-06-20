@@ -60,7 +60,7 @@ const CreateWallet = () => {
               description: (
                 <div className="text-black dark:text-white">
                   Alternatively, you can{' '}
-                  <Link to="/login" className="underline hover:no-underline font-medium">
+                  <Link to="/login" className="font-medium underline hover:no-underline">
                     log in with the existing wallet
                   </Link>{' '}
                   instead.
@@ -134,13 +134,13 @@ const CreateWallet = () => {
           placeholder="Enter wallet name"
           required
         />
-        <p className="text-xs text-muted-foreground">Will be saved as {walletName || 'wallet-name'}.jmdat</p>
+        <p className="text-muted-foreground text-xs">Will be saved as {walletName || 'wallet-name'}.jmdat</p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
             id="password"
             type={showPassword ? 'text' : 'password'}
@@ -148,14 +148,14 @@ const CreateWallet = () => {
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             placeholder="Enter password"
-            className="pl-10 pr-10"
+            className="pr-10 pl-10"
             required
           />
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2"
+            className="absolute top-1/2 right-1 -translate-y-1/2 transform"
             onClick={() => {
               setShowConfirmPassword(false)
               setShowPassword(!showPassword)
@@ -169,7 +169,7 @@ const CreateWallet = () => {
       <div className="space-y-2">
         <Label htmlFor="confirm-password">Confirm Password</Label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
             id="confirm-password"
             type={showConfirmPassword ? 'text' : 'password'}
@@ -177,14 +177,14 @@ const CreateWallet = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={isLoading}
             placeholder="Confirm password"
-            className="pl-10 pr-10"
+            className="pr-10 pl-10"
             required
           />
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2"
+            className="absolute top-1/2 right-1 -translate-y-1/2 transform"
             onClick={() => {
               setShowPassword(false)
               setShowConfirmPassword(!showConfirmPassword)
@@ -210,10 +210,10 @@ const CreateWallet = () => {
 
   const renderSeedPhrase = () => (
     <div className="space-y-6">
-      <div className="bg-muted p-4 rounded-lg">
-        <div className="grid grid-cols-3 gap-2 text-sm font-mono">
+      <div className="bg-muted rounded-lg p-4">
+        <div className="grid grid-cols-3 gap-2 font-mono text-sm">
           {createWalletResponse?.seedphrase.split(' ').map((word, index) => (
-            <div key={index} className="bg-background p-2 rounded border">
+            <div key={index} className="bg-background rounded border p-2">
               <span className="text-muted-foreground mr-2">{index + 1}.</span>
               {word}
             </div>
@@ -236,12 +236,12 @@ const CreateWallet = () => {
   )
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-lg">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Wallet className="w-6 h-6 text-primary" />
+          <CardHeader className="space-y-2 text-center">
+            <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+              <Wallet className="text-primary h-6 w-6" />
             </div>
             <CardTitle className="text-2xl font-bold">
               {step === 'create' && 'Create New Wallet'}
@@ -259,7 +259,7 @@ const CreateWallet = () => {
 
             {step === 'create' && (
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Already have a wallet?{' '}
                   <Link
                     to="/login"

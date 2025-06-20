@@ -96,7 +96,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -104,13 +104,13 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
               placeholder="Enter your password"
-              className="pl-10 pr-10"
+              className="pr-10 pl-10"
             />
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="absolute right-1 top-1/2 transform -translate-y-1/2"
+              className="absolute top-1/2 right-1 -translate-y-1/2 transform"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -189,15 +189,15 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-lg">
-          <CardHeader className="text-center space-y-2">
-            <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+          <CardHeader className="space-y-2 text-center">
+            <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
               {isLoadingWallets ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
-                <Wallet className="h-6 w-6 text-primary" onClick={async () => await listwalletsQuery.refetch()} />
+                <Wallet className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
               )}
             </div>
             <CardTitle className="text-2xl font-bold">Welcome to Jam</CardTitle>
@@ -228,7 +228,7 @@ const LoginPage = () => {
                   {wallets!.length === 0 ? (
                     <>
                       <div className="text-center">
-                        <p className="text-sm text-muted-foreground">It looks like you do not have a wallet, yet.</p>
+                        <p className="text-muted-foreground text-sm">It looks like you do not have a wallet, yet.</p>
                       </div>
                       <div className="space-y-4">
                         <Button className="w-full" size="lg" onClick={async () => await navigate('/create-wallet')}>

@@ -33,7 +33,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <DisplayModeContext.Provider value={displayModeValue}>
-      <div className="min-h-screen flex flex-col bg-white text-black dark:bg-[#181b20] dark:text-white transition-colors duration-300">
+      <div className="flex min-h-screen flex-col bg-white text-black transition-colors duration-300 dark:bg-[#181b20] dark:text-white">
         <Navbar
           theme={resolvedTheme || 'dark'}
           toggleTheme={toggleTheme}
