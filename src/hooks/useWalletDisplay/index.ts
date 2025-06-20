@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+
 import { listutxosOptions, sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { useApiClient } from '@/hooks/useApiClient'
 import { getSession } from '@/lib/session'
+
+import { useApiClient } from '@/hooks/useApiClient'
+
 import { jarTemplates } from '@/components/layout/display-mode-context'
 import type { Jar, JarColor } from '@/components/layout/display-mode-context'
 

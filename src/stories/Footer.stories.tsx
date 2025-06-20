@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
 import { Footer } from '../components/Footer'
 
 const meta: Meta<typeof Footer> = {

@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+
+import { Label } from '../components/ui/label'
 import {
   Select,
   SelectContent,
@@ -9,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select'
-import { Label } from '../components/ui/label'
 
 const meta: Meta<typeof Select> = {
   title: 'Core/Select',

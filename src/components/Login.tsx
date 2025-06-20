@@ -1,18 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
+
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, RefreshCwIcon, Wallet } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+
+import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { setSession } from '@/lib/session'
+import { formatWalletName } from '@/lib/utils'
+
+import { useApiClient } from '@/hooks/useApiClient'
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, Wallet, Lock, Loader2, Eye, EyeOff, RefreshCwIcon } from 'lucide-react'
-import { formatWalletName } from '@/lib/utils'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { useApiClient } from '@/hooks/useApiClient'
+
 import { Skeleton } from './ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 

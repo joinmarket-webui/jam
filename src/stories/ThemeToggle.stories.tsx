@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useEffect, useState } from 'react'
+
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta = {
   title: 'Core/ThemeToggle',
