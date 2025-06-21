@@ -1,10 +1,10 @@
-import { Navbar } from '../Navbar'
-import { Footer } from '../Footer'
-import { DisplayModeContext } from './display-mode-context'
 import { useTheme } from 'next-themes'
+import { DisplayLogo } from '@/components/DisplayLogo'
+import { Footer } from '@/components/Footer'
+import { Navbar } from '@/components/Navbar'
 import { useDisplayMode } from '@/hooks/useDisplayMode'
 import { useWalletDisplay } from '@/hooks/useWalletDisplay'
-import { DisplayLogo } from '../DisplayLogo'
+import { DisplayModeContext } from './display-mode-context'
 
 interface LayoutProps {
   children: React.ReactNode
