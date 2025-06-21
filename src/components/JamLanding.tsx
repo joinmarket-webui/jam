@@ -1,10 +1,10 @@
 import { Info, Loader2, RefreshCw } from 'lucide-react'
-import { Jar } from './layout/Jar'
-import { useJamDisplayContext } from './layout/display-mode-context'
-import { Alert, AlertDescription } from './ui/alert'
-import { Button } from './ui/button'
-import { Card } from './ui/card'
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import { Jar } from '@/components/layout/Jar'
+import { useJamDisplayContext } from '@/components/layout/display-mode-context'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export default function JamLanding() {
   const {

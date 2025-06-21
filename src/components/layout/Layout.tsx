@@ -1,9 +1,9 @@
 import { useTheme } from 'next-themes'
+import { DisplayLogo } from '@/components/DisplayLogo'
+import { Footer } from '@/components/Footer'
+import { Navbar } from '@/components/Navbar'
 import { useDisplayMode } from '@/hooks/useDisplayMode'
 import { useWalletDisplay } from '@/hooks/useWalletDisplay'
-import { DisplayLogo } from '../DisplayLogo'
-import { Footer } from '../Footer'
-import { Navbar } from '../Navbar'
 import { DisplayModeContext } from './display-mode-context'
 
 interface LayoutProps {

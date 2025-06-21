@@ -9,12 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useApiClient } from '@/hooks/useApiClient'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { setSession } from '@/lib/session'
 import { formatWalletName } from '@/lib/utils'
-import { Skeleton } from './ui/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 
 const LoginFormSkeleton = () => {
   return (

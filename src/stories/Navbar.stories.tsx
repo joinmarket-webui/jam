@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Bitcoin } from 'lucide-react'
 import { MemoryRouter } from 'react-router-dom'
+import { Navbar } from '@/components/Navbar'
 import type { JarColor } from '@/components/layout/display-mode-context'
-import { Navbar } from '../components/Navbar'
 
 const meta: Meta<typeof Navbar> = {
   title: 'Core/Navbar',

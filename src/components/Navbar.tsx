@@ -1,8 +1,8 @@
 import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
+import type { Jar } from '@/components/layout/display-mode-context'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { clearSession } from '@/lib/session'
-import type { Jar } from './layout/display-mode-context'
-import { Badge } from './ui/badge'
-import { Button } from './ui/button'
 
 interface NavbarProps {
   theme: string
