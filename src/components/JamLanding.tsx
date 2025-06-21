@@ -1,5 +1,4 @@
 import { Info, Loader2, RefreshCw } from 'lucide-react'
-
 import { Jar } from './layout/Jar'
 import { useJamDisplayContext } from './layout/display-mode-context'
 import { Alert, AlertDescription } from './ui/alert'

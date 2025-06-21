@@ -1,10 +1,8 @@
 import { useEffect } from 'react'
-
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { toast } from 'sonner'
-
 import CreateWallet from './components/CreateWallet'
 import JamLanding from './components/JamLanding'
 import LoginPage from './components/Login'

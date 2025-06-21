@@ -1,18 +1,15 @@
 import React, { useState } from 'react'
-
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Wallet } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-
-import { type CreateWalletResponse, createwallet, session } from '@/lib/jm-api/generated/client'
-import { clearSession, setSession } from '@/lib/session'
-import { formatWalletName } from '@/lib/utils'
-
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { type CreateWalletResponse, createwallet, session } from '@/lib/jm-api/generated/client'
+import { clearSession, setSession } from '@/lib/session'
+import { formatWalletName } from '@/lib/utils'
 
 const CreateWallet = () => {
   const navigate = useNavigate()

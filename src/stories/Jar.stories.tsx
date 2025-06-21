@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-
 import { Jar } from '../components/layout/Jar'
 
 const meta: Meta<typeof Jar> = {

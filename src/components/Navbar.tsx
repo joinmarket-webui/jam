@@ -1,7 +1,5 @@
 import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
-
 import { clearSession } from '@/lib/session'
-
 import type { Jar } from './layout/display-mode-context'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'

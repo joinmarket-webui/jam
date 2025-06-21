@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { toast } from 'sonner'
-
 import { Button } from '../components/ui/button'
 import { Toaster } from '../components/ui/sonner'
 
