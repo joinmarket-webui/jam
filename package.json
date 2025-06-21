@@ -33,14 +33,6 @@
     ],
     "*.{json,css,md}": "prettier --write"
   },
-  "prettier": {
-    "printWidth": 120,
-    "semi": false,
-    "singleQuote": true,
-    "plugins": [
-      "prettier-plugin-tailwindcss"
-    ]
-  },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -71,6 +63,7 @@
     "@storybook/addon-docs": "^9.0.12",
     "@storybook/addon-vitest": "^9.0.12",
     "@storybook/react-vite": "^9.0.12",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",

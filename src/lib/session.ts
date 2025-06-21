@@ -1,4 +1,4 @@
-import type { UnlockWalletResponse } from './jm-api/generated/client'
+import type { UnlockWalletResponse } from '@/lib/jm-api/generated/client'
 
 interface SessionData {
   walletFileName: string

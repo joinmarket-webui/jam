@@ -1,8 +1,8 @@
-import path from 'path'
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig, type ServerOptions, type UserConfig } from 'vite'
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
+import path from 'path'
+import { type ServerOptions, type UserConfig, defineConfig } from 'vite'
 
 const BACKEND_NATIVE = 'native'
 const BACKEND_STANDALONE = 'jam-standalone'

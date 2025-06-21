@@ -1,7 +1,7 @@
 import type { Client } from '@hey-api/client-fetch'
-import { createClient } from './jm-api'
-import type { ClientOptions, UnlockWalletResponse } from './jm-api/generated/client'
-import { getSession } from './session'
+import { createClient } from '@/lib/jm-api'
+import type { ClientOptions, UnlockWalletResponse } from '@/lib/jm-api/generated/client'
+import { getSession } from '@/lib/session'
 
 type ApiToken = UnlockWalletResponse['token']
 
