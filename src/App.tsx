@@ -14,6 +14,7 @@ import { token } from '@/lib/jm-api/generated/client'
 import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
+import { Receive } from './components/receive/Receive'
 
 const isAuthenticated = () => {
   const session = getSession()
@@ -39,6 +40,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <JamLanding />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/receive"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Receive />
                   </Layout>
                 </ProtectedRoute>
               }
