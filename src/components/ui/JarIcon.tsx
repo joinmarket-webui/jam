@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
-// Function to calculate the jar fill level based on jar balance relative to total balance
 const calculateJarFillLevel = (jarBalance: number, totalBalance: number): JarFillLevel => {
   if (totalBalance === 0) return 0
   if (jarBalance > totalBalance / 2) return 3
@@ -13,7 +12,6 @@ const calculateJarFillLevel = (jarBalance: number, totalBalance: number): JarFil
 
 type JarFillLevel = 0 | 1 | 2 | 3
 
-// Convert fill level to percentage for the visual display
 const fillLevelToPercent = (fillLevel: JarFillLevel): number => {
   switch (fillLevel) {
     case 0:
@@ -49,7 +47,6 @@ export function JarIcon({
   const fillLevel = calculateJarFillLevel(amount, totalBalance)
   const fillPercent = fillLevelToPercent(fillLevel)
 
-  // Determine if lid should be open (on hover or selected)
   const isLidOpen = isHovered || isSelected
 
   return (

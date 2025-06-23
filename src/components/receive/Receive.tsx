@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Copy, CopyCheck, RefreshCw, Share } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
-import { getaddress } from '@/lib/jm-api/generated/client/sdk.gen'
+import { getaddressOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { getSession } from '@/lib/session'
+import { btcToSats, satsToBtc } from '@/lib/utils'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { SelectableJar } from '../ui/SelectableJar'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -16,8 +17,7 @@ import { BitcoinQR } from './BitcoinQR'
 export const Receive = () => {
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [amount, setAmount] = useState<number | undefined>()
-  const [bitcoinAddress, setBitcoinAddress] = useState<string>('')
-  const [isQrLoading, setIsQrLoading] = useState(true)
+  const [bitcoinAddress, setBitcoinAddress] = useState<string | undefined>()
   const [copied, setCopied] = useState(false)
   const [amountDisplayMode, setAmountDisplayMode] = useState<'sats' | 'btc'>('sats')
 
@@ -31,36 +31,27 @@ export const Receive = () => {
 
   const walletFileName = session?.walletFileName
 
-  // Get address mutation
-  const getAddressMutation = useMutation({
-    mutationFn: async (mixdepth: string) => {
-      setIsQrLoading(true)
-      if (!walletFileName) throw new Error('No wallet loaded')
-
-      const { data } = await getaddress({
-        client,
-        path: {
-          walletname: walletFileName,
-          mixdepth,
-        },
-        throwOnError: true,
-      })
-
-      if (typeof data === 'object' && data !== null && 'address' in data) {
-        return (data as { address: string }).address
-      }
-      return String(data)
-    },
-    onSuccess: (data: string) => {
-      setBitcoinAddress(data)
-      setIsQrLoading(false)
-    },
-    onError: () => {
-      setIsQrLoading(false)
-      setBitcoinAddress('')
-      toast.error('Failed to get Bitcoin address')
-    },
+  const getAddressQuery = useQuery({
+    ...getaddressOptions({
+      client,
+      path: {
+        walletname: walletFileName!,
+        mixdepth: String(selectedJarIndex),
+      },
+    }),
+    retry: false,
+    enabled: walletFileName !== undefined && selectedJarIndex !== undefined,
+    staleTime: 1,
   })
+
+  useEffect(() => {
+    if (getAddressQuery.data === undefined) return
+    setBitcoinAddress(getAddressQuery.data.address)
+  }, [getAddressQuery.data])
+
+  const isQrLoading = useMemo(() => {
+    return getAddressQuery.isFetching
+  }, [getAddressQuery.isFetching])
 
   const copyToClipboard = () => {
     if (bitcoinAddress) {
@@ -72,7 +63,6 @@ export const Receive = () => {
     }
   }
 
-  // Create shareable link or data
   const shareAddress = () => {
     if (navigator.share && bitcoinAddress) {
       navigator
@@ -91,30 +81,14 @@ export const Receive = () => {
     }
   }
 
-  // Get new address for selected jar
   const getNewAddress = useCallback(() => {
-    setIsQrLoading(true)
-    const selectedJar = jars[selectedJarIndex]
-    if (selectedJar && selectedJar.account !== undefined) {
-      getAddressMutation.mutate(selectedJar.account)
-    } else {
-      setBitcoinAddress('')
-      setIsQrLoading(false)
-      toast.error('Jar not selected or no account available')
-    }
-  }, [jars, selectedJarIndex, getAddressMutation, setIsQrLoading])
+    getAddressQuery.refetch()
+  }, [getAddressQuery])
 
-  // Handle jar selection
   const selectJar = (index: number) => {
-    if (selectedJarIndex === index) return // Prevent re-selection
     setSelectedJarIndex(index)
-    const selectedJar = jars[index]
-    if (selectedJar && selectedJar.account !== undefined) {
-      getAddressMutation.mutate(selectedJar.account)
-    }
   }
 
-  // Handle amount input change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (value === '') {
@@ -124,35 +98,23 @@ export const Receive = () => {
 
     const numValue = parseFloat(value)
     if (amountDisplayMode === 'btc') {
-      // Convert BTC to sats for internal storage
-      setAmount(Math.floor(numValue * 100000000))
+      setAmount(btcToSats(numValue.toString()))
     } else {
       setAmount(Math.floor(numValue))
     }
   }
 
-  // Toggle display mode between sats and btc
   const toggleDisplayMode = () => {
     setAmountDisplayMode((prev) => (prev === 'sats' ? 'btc' : 'sats'))
   }
 
-  // Get display amount based on current mode
   const getDisplayAmount = () => {
     if (!amount) return ''
     if (amountDisplayMode === 'btc') {
-      return (amount / 100000000).toFixed(8)
+      return satsToBtc(amount.toString()).toFixed(8)
     }
     return amount.toString()
   }
-
-  // Load initial address when component mounts
-  useEffect(() => {
-    const selectedJar = jars[selectedJarIndex]
-    if (selectedJar && selectedJar.account !== undefined) {
-      getAddressMutation.mutate(selectedJar.account)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -161,6 +123,20 @@ export const Receive = () => {
 
     return () => clearTimeout(timer)
   }, [copied])
+
+  const selectedJar = jars[selectedJarIndex]
+  const hasValidJar = selectedJar && selectedJar.account !== undefined
+
+  if (!hasValidJar || !walletFileName) {
+    toast.error('No wallet or valid jar selected')
+
+    return (
+      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
+        <h1 className="mb-2 text-left text-2xl font-bold">Receive</h1>
+        <p className="text-muted-foreground mb-4">No wallet or valid jar selected</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full flex-col items-center justify-center px-4 pt-6">

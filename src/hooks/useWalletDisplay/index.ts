@@ -22,11 +22,9 @@ interface AccountBalance {
 export function useWalletDisplay(): UseWalletDisplayResult {
   const client = useApiClient()
 
-  // Get wallet name from session
   const session = getSession()
   const walletFileName = session?.walletFileName
 
-  // Check if a session is active
   const sessionQuery = useQuery({
     ...sessionOptions({ client }),
     enabled: !!walletFileName,

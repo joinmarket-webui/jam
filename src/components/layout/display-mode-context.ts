@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 
-// Define jar templates - without balances
 export const jarTemplates: Array<{
   name: string
   color: JarColor
