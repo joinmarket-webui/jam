@@ -16,28 +16,26 @@ import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
 import { Receive } from './components/receive/Receive'
 
-const isAuthenticated = () => {
-  const session = getSession()
-  return session?.auth?.token !== undefined
-}
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />
+const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
+  return authenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function App() {
+  const session = getSession()
+  const authenticated = session?.auth?.token !== undefined
+
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         <RefreshApiToken />
         <Router>
           <Routes>
-            <Route path="/login" element={isAuthenticated() ? <Navigate to="/" replace /> : <LoginPage />} />
-            <Route path="/create-wallet" element={isAuthenticated() ? <Navigate to="/" replace /> : <CreateWallet />} />
+            <Route path="/login" element={authenticated ? <Navigate to="/" replace /> : <LoginPage />} />
+            <Route path="/create-wallet" element={authenticated ? <Navigate to="/" replace /> : <CreateWallet />} />
             <Route
               path="/"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <JamLanding />
                   </Layout>
@@ -47,9 +45,9 @@ function App() {
             <Route
               path="/receive"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <Receive />
+                    <Receive walletFileName={session?.walletFileName || ''} />
                   </Layout>
                 </ProtectedRoute>
               }

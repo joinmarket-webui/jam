@@ -4,7 +4,6 @@ import { Copy, CopyCheck, RefreshCw, Share } from 'lucide-react'
 import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getaddressOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { getSession } from '@/lib/session'
 import { btcToSats, satsToBtc } from '@/lib/utils'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { SelectableJar } from '../ui/SelectableJar'
@@ -14,7 +13,11 @@ import { Skeleton } from '../ui/skeleton'
 import { BitcoinAmountInput } from './BitcoinAmountInput'
 import { BitcoinQR } from './BitcoinQR'
 
-export const Receive = () => {
+interface ReceiveProps {
+  walletFileName: string
+}
+
+export const Receive = ({ walletFileName }: ReceiveProps) => {
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [amount, setAmount] = useState<number | undefined>()
   const [bitcoinAddress, setBitcoinAddress] = useState<string | undefined>()
@@ -23,13 +26,10 @@ export const Receive = () => {
 
   const { jars } = useJamDisplayContext()
   const client = useApiClient()
-  const session = getSession()
 
   const totalBalance = useMemo(() => {
     return jars.reduce((total, jar) => total + (jar.balance || 0), 0)
   }, [jars])
-
-  const walletFileName = session?.walletFileName
 
   const getAddressQuery = useQuery({
     ...getaddressOptions({
@@ -64,7 +64,7 @@ export const Receive = () => {
   }
 
   const shareAddress = () => {
-    if (navigator.share && bitcoinAddress) {
+    if ('share' in navigator && bitcoinAddress) {
       navigator
         .share({
           title: 'Bitcoin Address',
@@ -77,7 +77,7 @@ export const Receive = () => {
     } else if (bitcoinAddress) {
       copyToClipboard()
     } else {
-      toast.error('No address to share')
+      toast.error('No Address to share')
     }
   }
 
@@ -124,16 +124,20 @@ export const Receive = () => {
     return () => clearTimeout(timer)
   }, [copied])
 
-  const selectedJar = jars[selectedJarIndex]
-  const hasValidJar = selectedJar && selectedJar.account !== undefined
-
-  if (!hasValidJar || !walletFileName) {
-    toast.error('No wallet or valid jar selected')
-
+  if (!walletFileName) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
         <h1 className="mb-2 text-left text-2xl font-bold">Receive</h1>
-        <p className="text-muted-foreground mb-4">No wallet or valid jar selected</p>
+        <p className="text-muted-foreground mb-4">No wallet available</p>
+      </div>
+    )
+  }
+
+  if (!jars || jars.length === 0) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
+        <h1 className="mb-2 text-left text-2xl font-bold">Receive</h1>
+        <p className="text-muted-foreground mb-4">Loading wallet data...</p>
       </div>
     )
   }
@@ -171,10 +175,12 @@ export const Receive = () => {
             {copied ? 'Copied' : 'Copy'}
           </Button>
 
-          <Button variant="outline" size="sm" onClick={shareAddress}>
-            <Share />
-            Share
-          </Button>
+          {'share' in navigator && (
+            <Button variant="outline" size="sm" onClick={shareAddress}>
+              <Share />
+              Share
+            </Button>
+          )}
         </div>
       </div>
 
