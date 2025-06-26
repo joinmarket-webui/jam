@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
@@ -10,6 +10,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/ui/sonner'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useSession } from '@/hooks/useSession'
 import { token } from '@/lib/jm-api/generated/client'
 import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
@@ -21,8 +22,9 @@ const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode
 }
 
 function App() {
-  const session = getSession()
-  const authenticated = session?.auth?.token !== undefined
+  const session = useSession()
+  const authenticated = useMemo(() => session?.auth?.token !== undefined, [session])
+  const walletFileName = useMemo(() => session?.walletFileName || '', [session])
 
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
@@ -47,7 +49,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <Receive walletFileName={session?.walletFileName || ''} />
+                    <Receive walletFileName={walletFileName} />
                   </Layout>
                 </ProtectedRoute>
               }

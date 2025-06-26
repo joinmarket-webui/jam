@@ -16,6 +16,8 @@ export const setSession = (session: Partial<SessionData>) => {
       ...session,
     }),
   )
+
+  dispatchEvent('sessionUpdate')
 }
 
 export const getSession = (): Partial<SessionData> | null => {
@@ -25,4 +27,11 @@ export const getSession = (): Partial<SessionData> | null => {
 
 export const clearSession = () => {
   sessionStorage.removeItem('joinmarket')
+
+  dispatchEvent('sessionUpdate')
+}
+
+// Dispatch custom event to notify components of session change
+function dispatchEvent(eventName: string) {
+  window.dispatchEvent(new CustomEvent(eventName))
 }
