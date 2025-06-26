@@ -57,9 +57,9 @@ export const Receive = () => {
     if (bitcoinAddress) {
       navigator.clipboard.writeText(bitcoinAddress)
       setCopied(true)
-      toast.success('Bitcoin address copied to clipboard')
+      toast.success('Address copied to clipboard')
     } else {
-      toast.error('No Bitcoin address to copy')
+      toast.error('No Address to copy')
     }
   }
 
@@ -77,7 +77,7 @@ export const Receive = () => {
     } else if (bitcoinAddress) {
       copyToClipboard()
     } else {
-      toast.error('No Bitcoin address to share')
+      toast.error('No address to share')
     }
   }
 
@@ -119,7 +119,7 @@ export const Receive = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setCopied(false)
-    }, 5000)
+    }, 1_500)
 
     return () => clearTimeout(timer)
   }, [copied])
@@ -204,11 +204,10 @@ export const Receive = () => {
               <div className="mx-1 mt-4">
                 <BitcoinAmountInput
                   amountDisplayMode={amountDisplayMode}
-                  getDisplayAmount={getDisplayAmount}
-                  handleAmountChange={handleAmountChange}
+                  value={getDisplayAmount()}
+                  onChange={handleAmountChange}
                   toggleDisplayMode={toggleDisplayMode}
-                  isQrLoading={isQrLoading}
-                  bitcoinAddress={bitcoinAddress}
+                  disabled={isQrLoading || !bitcoinAddress}
                 />
               </div>
             </div>

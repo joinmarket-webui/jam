@@ -24,13 +24,11 @@ type Story = StoryObj<typeof BitcoinAmountInput>
 const BitcoinAmountInputWrapper = ({
   initialMode = 'sats',
   initialAmount = '',
-  isQrLoading = false,
-  bitcoinAddress = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+  disabled = false,
 }: {
   initialMode?: 'sats' | 'btc'
   initialAmount?: string
-  isQrLoading?: boolean
-  bitcoinAddress?: string
+  disabled?: boolean
 }) => {
   const [amountDisplayMode, setAmountDisplayMode] = useState<'sats' | 'btc'>(initialMode)
   const [amount, setAmount] = useState(initialAmount)
@@ -43,18 +41,13 @@ const BitcoinAmountInputWrapper = ({
     setAmount(e.target.value)
   }
 
-  const getDisplayAmount = () => {
-    return amount
-  }
-
   return (
     <BitcoinAmountInput
       amountDisplayMode={amountDisplayMode}
-      getDisplayAmount={getDisplayAmount}
-      handleAmountChange={handleAmountChange}
+      value={amount}
+      onChange={handleAmountChange}
       toggleDisplayMode={toggleDisplayMode}
-      isQrLoading={isQrLoading}
-      bitcoinAddress={bitcoinAddress}
+      disabled={disabled}
     />
   )
 }
@@ -71,6 +64,6 @@ export const WithInitialAmount: Story = {
   render: () => <BitcoinAmountInputWrapper initialAmount="1000" initialMode="sats" />,
 }
 
-export const LoadingState: Story = {
-  render: () => <BitcoinAmountInputWrapper isQrLoading={true} />,
+export const DisabledState: Story = {
+  render: () => <BitcoinAmountInputWrapper disabled={true} />,
 }

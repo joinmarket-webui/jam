@@ -3,21 +3,21 @@ import { DisplayLogo } from '../DisplayLogo'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
+type DisplayMode = 'sats' | 'btc'
+
+interface BitcoinAmountInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
+  amountDisplayMode: DisplayMode
+  toggleDisplayMode: () => void
+}
+
 export const BitcoinAmountInput = ({
   amountDisplayMode,
-  getDisplayAmount,
-  handleAmountChange,
+  onChange,
+  value,
   toggleDisplayMode,
-  isQrLoading,
-  bitcoinAddress,
-}: {
-  amountDisplayMode: 'sats' | 'btc'
-  getDisplayAmount: () => string
-  handleAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  toggleDisplayMode: () => void
-  isQrLoading: boolean
-  bitcoinAddress?: string
-}) => {
+  disabled,
+  ...inputProps
+}: BitcoinAmountInputProps) => {
   return (
     <>
       <p className="mb-2 text-sm">Amount</p>
@@ -31,8 +31,8 @@ export const BitcoinAmountInput = ({
           <Input
             type="number"
             placeholder={`Enter Amount in ${amountDisplayMode}`}
-            value={getDisplayAmount()}
-            onChange={handleAmountChange}
+            value={value}
+            onChange={onChange}
             className="pl-8"
             step={amountDisplayMode === 'btc' ? '0.00000001' : '1'}
             inputMode="numeric"
@@ -40,7 +40,8 @@ export const BitcoinAmountInput = ({
             aria-label={`Amount in ${amountDisplayMode}`}
             autoComplete="off"
             autoFocus={true}
-            disabled={isQrLoading || !bitcoinAddress}
+            disabled={disabled}
+            {...inputProps}
           />
         </div>
         <Button variant="outline" size="sm" className="py-4 whitespace-nowrap" onClick={toggleDisplayMode}>
