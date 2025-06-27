@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
@@ -10,35 +10,46 @@ import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/ui/sonner'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useSession } from '@/hooks/useSession'
 import { token } from '@/lib/jm-api/generated/client'
 import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
+import { Receive } from './components/receive/Receive'
 
-const isAuthenticated = () => {
-  const session = getSession()
-  return session?.auth?.token !== undefined
-}
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />
+const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
+  return authenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function App() {
+  const session = useSession()
+  const authenticated = useMemo(() => session?.auth?.token !== undefined, [session])
+  const walletFileName = useMemo(() => session?.walletFileName || '', [session])
+
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         <RefreshApiToken />
         <Router>
           <Routes>
-            <Route path="/login" element={isAuthenticated() ? <Navigate to="/" replace /> : <LoginPage />} />
-            <Route path="/create-wallet" element={isAuthenticated() ? <Navigate to="/" replace /> : <CreateWallet />} />
+            <Route path="/login" element={authenticated ? <Navigate to="/" replace /> : <LoginPage />} />
+            <Route path="/create-wallet" element={authenticated ? <Navigate to="/" replace /> : <CreateWallet />} />
             <Route
               path="/"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <JamLanding />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/receive"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <Receive walletFileName={walletFileName} />
                   </Layout>
                 </ProtectedRoute>
               }

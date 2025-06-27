@@ -227,3 +227,8 @@
   color: hsl(221 95% 85%);
   opacity: 0.8;
 }
+
+html {
+  overflow: -moz-scrollbars-vertical;
+  overflow-y: scroll;
+}

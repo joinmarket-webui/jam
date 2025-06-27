@@ -37,7 +37,6 @@ export function Layout({ children }: LayoutProps) {
         <Navbar
           theme={resolvedTheme || 'dark'}
           toggleTheme={toggleTheme}
-          toggleDisplayMode={toggleDisplayMode}
           formatAmount={formatAmount}
           getLogo={(size) => <DisplayLogo displayMode={displayMode} size={size} />}
           jars={jars}
