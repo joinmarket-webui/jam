@@ -34,7 +34,7 @@ export default function JamLanding() {
             <>
               <span
                 onClick={toggleDisplayMode}
-                title={t('current_wallet.toggle_display_mode')}
+                title={displayMode === 'btc' ? t('settings.use_sats') : t('settings.use_btc')}
                 className="text-center tabular-nums"
               >
                 {formatAmount(totalBalance)}{' '}
@@ -109,7 +109,7 @@ export default function JamLanding() {
           className="flex items-center gap-2 text-gray-500"
         >
           <RefreshCw className="h-4 w-4" />
-          {t('current_wallet.refresh')}
+          {t('global.refresh')}
         </Button>
       </div>
     </div>
