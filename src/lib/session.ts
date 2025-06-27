@@ -8,7 +8,6 @@ interface SessionData {
   }
 }
 
-// Function to save session after successful login
 export const setSession = (session: Partial<SessionData>) => {
   sessionStorage.setItem(
     'joinmarket',
@@ -17,15 +16,22 @@ export const setSession = (session: Partial<SessionData>) => {
       ...session,
     }),
   )
+
+  dispatchEvent('sessionUpdate')
 }
 
-// Function to get current session
 export const getSession = (): Partial<SessionData> | null => {
   const session = sessionStorage.getItem('joinmarket')
   return session ? JSON.parse(session) : null
 }
 
-// Function to clear session on logout
 export const clearSession = () => {
   sessionStorage.removeItem('joinmarket')
+
+  dispatchEvent('sessionUpdate')
+}
+
+// Dispatch custom event to notify components of session change
+function dispatchEvent(eventName: string) {
+  window.dispatchEvent(new CustomEvent(eventName))
 }

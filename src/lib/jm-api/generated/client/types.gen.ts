@@ -83,7 +83,9 @@ export type StartMakerRequest = {
     minsize: string;
 };
 
-export type GetAddressResponse = string;
+export type GetAddressResponse = {
+    address: string;
+};
 
 export type ListWalletsResponse = {
     wallets?: Array<string>;

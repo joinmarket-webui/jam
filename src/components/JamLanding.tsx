@@ -33,7 +33,7 @@ export default function JamLanding() {
               <span
                 onClick={toggleDisplayMode}
                 title="Click to toggle sats/bitcoin"
-                className="min-w-[250px] text-center tabular-nums"
+                className="text-center tabular-nums"
               >
                 {formatAmount(totalBalance)}{' '}
               </span>

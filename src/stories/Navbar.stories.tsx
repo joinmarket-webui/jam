@@ -31,7 +31,6 @@ export const Default: Story = {
   args: {
     theme: 'light',
     toggleTheme: () => alert('Theme toggled!'),
-    toggleDisplayMode: () => alert('Display mode toggled!'),
     formatAmount: mockFormatAmount,
     getLogo: mockGetLogo,
     jars: mockJars,

@@ -5,18 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export const JM_WALLET_FILE_EXTENSION = '.jmdat'
+
 /**
  * Formats a wallet name by removing the .jmdat extension for UI display
  * @param walletName - The full wallet name with .jmdat extension
  * @returns The wallet name without the .jmdat extension
  */
-export function formatWalletName(walletName: string | null | undefined): string {
-  if (!walletName || walletName === 'None') {
-    return 'None'
-  }
-
-  // Remove .jmdat extension if present
-  return walletName.endsWith('.jmdat') ? walletName.slice(0, '.jmdat'.length * -1) : walletName
+export function formatWalletName(walletName: string): string {
+  return walletName.replace(JM_WALLET_FILE_EXTENSION, '')
 }
 
 export const setIntervalDebounced = (
@@ -38,3 +35,7 @@ export const setIntervalDebounced = (
     )
   })()
 }
+
+export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
+
+export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100000000)

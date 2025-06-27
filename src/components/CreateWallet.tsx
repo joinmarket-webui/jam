@@ -25,7 +25,6 @@ const CreateWallet = () => {
   const handleCreateWallet = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validation
     if (!walletName.trim()) {
       toast.error('Wallet name is required')
       return
