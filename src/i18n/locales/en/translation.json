@@ -1,6 +1,7 @@
 {
   "global": {
     "loading": "Loading",
+    "retry": "Retry",
     "button_copy_text": "Copy",
     "button_copy_text_confirmed": "Copied",
     "next": "Next",
@@ -207,7 +208,9 @@
     "jars_title": "Wallet distribution",
     "jars_title_popover": "Jars are used to segregate your sats into multiple buckets that are disconnected from each other, which aids privacy.",
     "account_heading_external_addresses": "External addresses for deposits",
-    "account_heading_internal_addresses": "Internal Addresses"
+    "account_heading_internal_addresses": "Internal Addresses",
+    "toggle_display_mode": "Click to toggle Sats/Bitcoin",
+    "refresh": "Refresh"
   },
   "settings": {
     "section_title_display": "Display",
