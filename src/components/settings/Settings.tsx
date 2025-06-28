@@ -16,15 +16,17 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { useDisplayMode } from '@/hooks/useDisplayMode'
+import { useJamDisplayContext } from '../layout/display-mode-context'
 import { LanguageSelector } from './LanguageSelector'
 import { SettingItem } from './SettingsItem'
 
 export const Settings = () => {
+  const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
-  const { displayMode, toggleDisplayMode } = useDisplayMode()
+  const { displayMode, toggleDisplayMode } = useJamDisplayContext()
   const [hideBalance, setHideBalance] = useState(false)
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
@@ -64,38 +66,33 @@ export const Settings = () => {
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <div>
-        <h1 className="m-5 text-2xl font-semibold tracking-tight">Settings</h1>
+        <h1 className="m-5 text-2xl font-semibold tracking-tight">{t('navbar.menu_mobile_settings')}</h1>
       </div>
 
       {/* Display Settings */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Display</CardTitle>
+          <CardTitle className="text-base font-medium">{t('settings.section_title_display')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
             icon={hideBalance ? EyeOff : Eye}
-            title="Hide balance"
+            title={t('settings.hide_balance')}
             action={handleHideBalance}
-            isToggle={true}
-            isActive={hideBalance}
             tooltip="Feature not yet implemented"
             disabled={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={Bitcoin}
-            title="Display amounts in sats"
+            title={t(displayMode === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
             action={toggleDisplayMode}
-            isToggle={true}
-            isActive={displayMode === 'sats'}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={resolvedTheme === 'dark' ? Sun : Moon}
-            title={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            title={resolvedTheme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
             action={toggleTheme}
             clickable={true}
           />
@@ -107,12 +104,12 @@ export const Settings = () => {
       {/* Market Settings */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Market</CardTitle>
+          <CardTitle className="text-base font-medium">{t('settings.section_title_market')}</CardTitle>
         </CardHeader>
         <CardContent>
           <SettingItem
             icon={DollarSign}
-            title="Adjust fee limits"
+            title={t('settings.show_fee_config')}
             action={handleAdjustFeeLimits}
             tooltip="Feature not yet implemented"
             disabled={true}
@@ -123,12 +120,12 @@ export const Settings = () => {
       {/* Wallet Settings */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Wallet</CardTitle>
+          <CardTitle className="text-base font-medium">{t('settings.section_title_wallet')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
             icon={Key}
-            title="Show seed phrase"
+            title={t('settings.show_seed')}
             action={handleShowSeedPhrase}
             tooltip="Feature not yet implemented"
             disabled={true}
@@ -136,7 +133,7 @@ export const Settings = () => {
           <Separator className="opacity-50" />
           <SettingItem
             icon={Unlock}
-            title="Lock wallet"
+            title={t('settings.button_lock_wallet')}
             action={handleLockWallet}
             tooltip="Feature not yet implemented"
             disabled={true}
@@ -144,7 +141,7 @@ export const Settings = () => {
           <Separator className="opacity-50" />
           <SettingItem
             icon={RotateCcw}
-            title="Switch wallet"
+            title={t('settings.button_switch_wallet')}
             action={handleSwitchWallet}
             tooltip="Feature not yet implemented"
             disabled={true}
@@ -152,7 +149,7 @@ export const Settings = () => {
           <Separator className="opacity-50" />
           <SettingItem
             icon={RefreshCw}
-            title="Rescan chain"
+            title={t('settings.rescan_chain')}
             action={handleRescanChain}
             tooltip="Feature not yet implemented"
             disabled={true}
@@ -160,7 +157,7 @@ export const Settings = () => {
           <Separator className="opacity-50" />
           <SettingItem
             icon={FileText}
-            title="Show logs"
+            title={t('settings.show_logs')}
             action={handleShowLogs}
             tooltip="Feature not yet implemented"
             disabled={true}
@@ -171,7 +168,7 @@ export const Settings = () => {
       {/* Community Settings */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Community</CardTitle>
+          <CardTitle className="text-base font-medium">{t('settings.section_title_community')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <div
@@ -183,7 +180,7 @@ export const Settings = () => {
                 <img src="/matrix-logo.png" alt="Matrix" className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-medium">Matrix</p>
+                <p className="text-sm font-medium">{t('settings.matrix')}</p>
               </div>
             </div>
             <ExternalLink className="text-muted-foreground h-3 w-3" />
@@ -198,7 +195,7 @@ export const Settings = () => {
                 <img src="/telegram-logo.png" alt="Telegram" className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-sm font-medium">Telegram</p>
+                <p className="text-sm font-medium">{t('settings.telegram')}</p>
               </div>
             </div>
             <ExternalLink className="text-muted-foreground h-3 w-3" />
@@ -209,12 +206,12 @@ export const Settings = () => {
       {/* Development & Documentation */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base font-medium">Development & Documentation</CardTitle>
+          <CardTitle className="text-base font-medium">{t('settings.section_title_dev')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
             icon={Book}
-            title="Documentation"
+            title={t('settings.documentation')}
             action={() => window.open('https://jamdocs.org', '_blank')}
             clickable={true}
             external={true}
@@ -222,7 +219,7 @@ export const Settings = () => {
           <Separator className="opacity-50" />
           <SettingItem
             icon={Github}
-            title="GitHub"
+            title={t('settings.github')}
             action={() => window.open('https://github.com/joinmarket-webui/jam', '_blank')}
             clickable={true}
             external={true}

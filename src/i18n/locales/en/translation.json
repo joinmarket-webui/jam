@@ -223,6 +223,7 @@
     "use_btc": "Display amounts in bitcoin",
     "use_dark_theme": "Switch to dark theme",
     "use_light_theme": "Switch to light theme",
+    "label_select_language": "Language",
     "text_help_translate": "Missing your language? Help us out!",
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",

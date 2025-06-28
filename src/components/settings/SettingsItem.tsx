@@ -6,8 +6,6 @@ export const SettingItem = ({
   icon: Icon,
   title,
   action,
-  isToggle = false,
-  isActive = false,
   tooltip,
   disabled = false,
   clickable = false,
@@ -16,8 +14,6 @@ export const SettingItem = ({
   icon: LucideIcon
   title: string
   action: () => void
-  isToggle?: boolean
-  isActive?: boolean
   tooltip?: string
   disabled?: boolean
   clickable?: boolean
@@ -38,19 +34,8 @@ export const SettingItem = ({
           <p className="text-sm font-medium">{title}</p>
         </div>
       </div>
-      {isToggle ? (
-        <Button
-          variant={isActive ? 'default' : 'outline'}
-          size="sm"
-          onClick={action}
-          disabled={disabled}
-          className={`h-7 px-3 text-xs ${isActive ? 'bg-primary hover:bg-primary/90' : 'hover:bg-muted'}`}
-          aria-label={`Toggle ${title}`}
-        >
-          {isActive ? 'On' : 'Off'}
-        </Button>
-      ) : external ? (
-        clickable ? (
+      {external &&
+        (!clickable ? (
           <ExternalLink className="text-muted-foreground h-3 w-3" />
         ) : (
           <Button
@@ -63,8 +48,7 @@ export const SettingItem = ({
           >
             <ExternalLink className="h-3 w-3" />
           </Button>
-        )
-      ) : null}
+        ))}
     </div>
   )
 
