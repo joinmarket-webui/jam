@@ -1,5 +1,4 @@
 import { ArrowUpDown } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
 import { DisplayLogo } from '../DisplayLogo'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -9,6 +8,8 @@ type DisplayMode = 'sats' | 'btc'
 interface BitcoinAmountInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
   amountDisplayMode: DisplayMode
   toggleDisplayMode: () => void
+  label?: string
+  placeholder?: string
 }
 
 export const BitcoinAmountInput = ({
@@ -17,13 +18,13 @@ export const BitcoinAmountInput = ({
   value,
   toggleDisplayMode,
   disabled,
+  label,
+  placeholder,
   ...inputProps
 }: BitcoinAmountInputProps) => {
-  const { t } = useTranslation()
-
   return (
     <>
-      <p className="mb-2 text-sm">{t('receive.label_amount_input')}</p>
+      {label && <p className="mb-2 text-sm">{label}</p>}
       <div className="flex w-full items-center gap-2">
         <div className="relative flex-1">
           <div onClick={toggleDisplayMode} className="absolute inset-y-0 left-0 flex items-center px-1">
@@ -33,7 +34,7 @@ export const BitcoinAmountInput = ({
           </div>
           <Input
             type="number"
-            placeholder={t('receive.placeholder_amount_input')}
+            placeholder={placeholder}
             value={value}
             onChange={onChange}
             className="pl-8"

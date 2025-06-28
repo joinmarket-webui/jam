@@ -217,6 +217,8 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
 
               <div className="mx-1 mt-4">
                 <BitcoinAmountInput
+                  label={t('receive.label_amount_input')}
+                  placeholder={t('receive.placeholder_amount_input')}
                   amountDisplayMode={amountDisplayMode}
                   value={getDisplayAmount()}
                   onChange={handleAmountChange}
