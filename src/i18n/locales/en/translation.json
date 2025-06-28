@@ -386,6 +386,7 @@
     "error_loading_address_failed": "Unable to get new address.",
     "error_copy_address_failed": "Could not copy address.",
     "button_copy_address": "Copy",
+    "button_share_address": "Share",
     "text_copy_address_confirmed": "Copied",
     "button_settings": "Receive options",
     "label_source_jar": "Receive to",
@@ -393,6 +394,7 @@
     "placeholder_amount_input": "Enter amount in sats or BTC...",
     "feedback_invalid_amount": "Please provide a valid amount.",
     "button_new_address": "Get new address",
+    "button_download_qr": "Download QR",
     "text_getting_address": "Getting new address"
   },
   "earn": {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Download } from 'lucide-react'
 import QRCode from 'qrcode'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { satsToBtc } from '@/lib/utils'
 import { Button } from '../ui/button'
@@ -13,6 +14,7 @@ interface BitcoinQRProps {
 }
 
 export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width = 260 }: BitcoinQRProps) => {
+  const { t } = useTranslation()
   const [data, setData] = useState<string>()
   const [image, setImage] = useState<string>()
   const [isHovering, setIsHovering] = useState(false)
@@ -70,7 +72,7 @@ export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width =
               aria-label="Download QR Code"
             >
               <Download size={18} />
-              Download QR
+              {t('receive.button_download_qr')}
             </Button>
           )}
         </>
