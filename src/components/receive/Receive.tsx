@@ -79,13 +79,10 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
           text: bitcoinAddress,
         })
         .catch(() => {
-          // Fall back to clipboard if sharing fails
-          copyToClipboard()
+          toast.error(t('receive.error_share_address_failed'))
         })
-    } else if (bitcoinAddress) {
-      copyToClipboard()
     } else {
-      toast.error(t('receive.error_copy_address_failed'))
+      toast.error(t('receive.error_share_address_failed'))
     }
   }
 
