@@ -8,6 +8,8 @@ type DisplayMode = 'sats' | 'btc'
 interface BitcoinAmountInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
   amountDisplayMode: DisplayMode
   toggleDisplayMode: () => void
+  label?: string
+  placeholder?: string
 }
 
 export const BitcoinAmountInput = ({
@@ -16,11 +18,13 @@ export const BitcoinAmountInput = ({
   value,
   toggleDisplayMode,
   disabled,
+  label,
+  placeholder,
   ...inputProps
 }: BitcoinAmountInputProps) => {
   return (
     <>
-      <p className="mb-2 text-sm">Amount</p>
+      {label && <p className="mb-2 text-sm">{label}</p>}
       <div className="flex w-full items-center gap-2">
         <div className="relative flex-1">
           <div onClick={toggleDisplayMode} className="absolute inset-y-0 left-0 flex items-center px-1">
@@ -30,7 +34,7 @@ export const BitcoinAmountInput = ({
           </div>
           <Input
             type="number"
-            placeholder={`Enter Amount in ${amountDisplayMode}`}
+            placeholder={placeholder}
             value={value}
             onChange={onChange}
             className="pl-8"
