@@ -164,9 +164,9 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
         )}
 
         {isQrLoading ? (
-          <Skeleton className="mt-4 h-4 w-[50%]" />
+          <Skeleton className="h-4 w-[50%]" />
         ) : (
-          <p className="mt-4 text-center text-xs break-all select-all">{bitcoinAddress}</p>
+          <p className="text-center font-mono text-xs break-all select-all">{bitcoinAddress}</p>
         )}
 
         <div className="mt-4 flex gap-2">

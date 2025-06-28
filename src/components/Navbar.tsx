@@ -73,9 +73,16 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
         >
           {theme === 'dark' ? <Sun /> : <Moon />}
         </Button>
-        <Button variant="ghost" size="icon" className="text-black dark:text-white">
-          <Settings />
-        </Button>
+        <Link to="/settings">
+          <Button
+            aria-label="Settings"
+            className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
+            variant="ghost"
+            size="icon"
+          >
+            <Settings />
+          </Button>
+        </Link>
         <Button
           variant="ghost"
           size="icon"

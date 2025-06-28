@@ -16,6 +16,7 @@ import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
 import { Receive } from './components/receive/Receive'
+import { Settings } from './components/settings/Settings'
 
 const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
   return authenticated ? <>{children}</> : <Navigate to="/login" replace />
@@ -50,6 +51,16 @@ function App() {
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <Receive walletFileName={walletFileName} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <Settings />
                   </Layout>
                 </ProtectedRoute>
               }
