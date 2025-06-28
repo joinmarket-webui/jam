@@ -1,3 +1,4 @@
+import type { DisplayMode } from '@/hooks/useDisplayMode'
 import { DisplayLogo } from '../DisplayLogo'
 import { JarIcon } from '../ui/JarIcon'
 
@@ -5,11 +6,11 @@ interface JarProps {
   name: string
   amount: number
   color: '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
-  displayMode: 'sats' | 'btc'
+  displayMode: DisplayMode
   totalBalance?: number
 }
 
-function formatAmount(amount: number, displayMode: 'sats' | 'btc') {
+function formatAmount(amount: number, displayMode: DisplayMode) {
   if (displayMode === 'btc') {
     return (amount / 100_000_000).toLocaleString(undefined, {
       maximumFractionDigits: 8,

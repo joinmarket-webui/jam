@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export type DisplayMode = 'sats' | 'btc'
+export type DisplayMode = 'sats' | 'btc' | 'private'
 
 export function useDisplayMode() {
   const [displayMode, setDisplayMode] = useState<DisplayMode>('sats')

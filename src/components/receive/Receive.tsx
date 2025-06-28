@@ -4,6 +4,7 @@ import { Copy, CopyCheck, RefreshCw, Share } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
+import type { DisplayMode } from '@/hooks/useDisplayMode'
 import { getaddressOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { btcToSats, satsToBtc } from '@/lib/utils'
 import { useJamDisplayContext } from '../layout/display-mode-context'
@@ -24,7 +25,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   const [amount, setAmount] = useState<number | undefined>()
   const [bitcoinAddress, setBitcoinAddress] = useState<string | undefined>()
   const [copied, setCopied] = useState(false)
-  const [amountDisplayMode, setAmountDisplayMode] = useState<'sats' | 'btc'>('sats')
+  const [amountDisplayMode, setAmountDisplayMode] = useState<DisplayMode>('sats')
 
   const { jars } = useJamDisplayContext()
   const client = useApiClient()

@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { ReactNode } from 'react'
+import type { DisplayMode } from '@/hooks/useDisplayMode'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 
@@ -22,7 +23,7 @@ export interface Jar {
 }
 
 export interface DisplayModeContextType {
-  displayMode: 'sats' | 'btc'
+  displayMode: DisplayMode
   toggleDisplayMode: () => void
   formatAmount: (amount: number) => string
   getLogo: (size?: 'sm' | 'lg') => ReactNode

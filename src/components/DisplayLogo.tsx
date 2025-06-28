@@ -1,5 +1,7 @@
+import type { DisplayMode } from '@/hooks/useDisplayMode'
+
 type DisplayLogoProps = {
-  displayMode: 'sats' | 'btc'
+  displayMode: DisplayMode
   size?: 'sm' | 'lg'
 }
 
