@@ -1,4 +1,5 @@
 import { Info, Loader2, RefreshCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Jar } from '@/components/layout/Jar'
 import { useJamDisplayContext } from '@/components/layout/display-mode-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -7,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export default function JamLanding() {
+  const { t } = useTranslation()
   const {
     displayMode,
     toggleDisplayMode,
@@ -32,7 +34,7 @@ export default function JamLanding() {
             <>
               <span
                 onClick={toggleDisplayMode}
-                title="Click to toggle sats/bitcoin"
+                title={displayMode === 'btc' ? t('settings.use_sats') : t('settings.use_btc')}
                 className="text-center tabular-nums"
               >
                 {formatAmount(totalBalance)}{' '}
@@ -42,18 +44,20 @@ export default function JamLanding() {
           )}
         </div>
         <div className="mt-10 flex justify-center gap-4">
-          <Button className="cursor-pointer px-12">↓ Receive</Button>
+          <Button className="cursor-pointer px-12">↓ {t('current_wallet.button_deposit')}</Button>
           <Button className="cursor-pointer px-16" variant="outline">
-            ↑ Send
+            ↑ {t('current_wallet.button_withdraw')}
           </Button>
         </div>
       </div>
       {error && (
         <Alert variant="destructive" className="mb-4 max-w-2xl">
           <AlertDescription>
-            Error loading wallet data: {error.message}
+            {t('global.errors.error_loading_wallet_failed', {
+              reason: error.message || t('global.errors.reason_unknown'),
+            })}
             <Button variant="outline" size="sm" onClick={() => refetchWalletData()} className="ml-2">
-              <RefreshCw className="mr-2 h-4 w-4" /> Retry
+              <RefreshCw className="mr-2 h-4 w-4" /> {t('global.retry')}
             </Button>
           </AlertDescription>
         </Alert>
@@ -61,13 +65,13 @@ export default function JamLanding() {
       <Card className="mb-8 w-full max-w-2xl border-0 p-6 text-black shadow-none dark:bg-[#181b20] dark:text-white">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex w-full items-center justify-center">
-            <span className="font-light opacity-80">Wallet distribution</span>
+            <span className="font-light opacity-80">{t('current_wallet.jars_title')}</span>
             <div className="mx-3 text-black opacity-80 dark:text-white">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info size={16} />
                 </TooltipTrigger>
-                <TooltipContent>Select a jar to get started</TooltipContent>
+                <TooltipContent>{t('current_wallet.jars_title_popover')}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -77,7 +81,7 @@ export default function JamLanding() {
             <div className="flex flex-1 justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
-          ) : jars.length > 0 ? (
+          ) : (
             jars.map((jar) => (
               <Tooltip key={jar.name}>
                 <TooltipTrigger asChild>
@@ -91,11 +95,9 @@ export default function JamLanding() {
                     />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>Open {jar.name} Jar</TooltipContent>
+                <TooltipContent>{t('current_wallet.jar_tooltip')}</TooltipContent>
               </Tooltip>
             ))
-          ) : (
-            <div className="flex-1 py-4 text-center text-gray-500">No accounts found in wallet</div>
           )}
         </div>
       </Card>
@@ -107,7 +109,7 @@ export default function JamLanding() {
           className="flex items-center gap-2 text-gray-500"
         >
           <RefreshCw className="h-4 w-4" />
-          Refresh
+          {t('global.refresh')}
         </Button>
       </div>
     </div>

@@ -1,6 +1,8 @@
 {
   "global": {
     "loading": "Loading",
+    "retry": "Retry",
+    "refresh": "Refresh",
     "button_copy_text": "Copy",
     "button_copy_text_confirmed": "Copied",
     "next": "Next",
