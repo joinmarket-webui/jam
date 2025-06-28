@@ -396,7 +396,7 @@
     "feedback_invalid_amount": "Please provide a valid amount.",
     "button_new_address": "Get new address",
     "button_download_qr": "Save QR Code to file",
-    "text_getting_address": "Getting new address"
+    "text_getting_address": "Getting new address."
   },
   "earn": {
     "title": "Earn",
