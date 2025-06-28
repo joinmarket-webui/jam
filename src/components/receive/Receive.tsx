@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Copy, CopyCheck, RefreshCw, Share } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
 import { getaddressOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
@@ -18,6 +19,7 @@ interface ReceiveProps {
 }
 
 export const Receive = ({ walletFileName }: ReceiveProps) => {
+  const { t } = useTranslation()
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [amount, setAmount] = useState<number | undefined>()
   const [bitcoinAddress, setBitcoinAddress] = useState<string | undefined>()
@@ -49,6 +51,12 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     setBitcoinAddress(getAddressQuery.data.address)
   }, [getAddressQuery.data])
 
+  useEffect(() => {
+    if (getAddressQuery.error) {
+      toast.error(t('receive.error_loading_address_failed'))
+    }
+  }, [getAddressQuery.error, t])
+
   const isQrLoading = useMemo(() => {
     return getAddressQuery.isFetching
   }, [getAddressQuery.isFetching])
@@ -57,9 +65,9 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     if (bitcoinAddress) {
       navigator.clipboard.writeText(bitcoinAddress)
       setCopied(true)
-      toast.success('Address copied to clipboard')
+      toast.success(t('receive.text_copy_address_confirmed'))
     } else {
-      toast.error('No Address to copy')
+      toast.error(t('receive.error_copy_address_failed'))
     }
   }
 
@@ -71,13 +79,10 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
           text: bitcoinAddress,
         })
         .catch(() => {
-          // Fall back to clipboard if sharing fails
-          copyToClipboard()
+          toast.error(t('receive.error_share_address_failed'))
         })
-    } else if (bitcoinAddress) {
-      copyToClipboard()
     } else {
-      toast.error('No Address to share')
+      toast.error(t('receive.error_share_address_failed'))
     }
   }
 
@@ -127,8 +132,8 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   if (!walletFileName) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <h1 className="mb-2 text-left text-2xl font-bold">Receive</h1>
-        <p className="text-muted-foreground mb-4">No wallet available</p>
+        <h1 className="mb-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
+        <p className="text-muted-foreground mb-4">{t('current_wallet.error_loading_failed')}</p>
       </div>
     )
   }
@@ -136,16 +141,16 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   if (!jars || jars.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <h1 className="mb-2 text-left text-2xl font-bold">Receive</h1>
-        <p className="text-muted-foreground mb-4">Loading wallet data...</p>
+        <h1 className="mb-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
+        <p className="text-muted-foreground mb-4">{t('current_wallet.text_loading')}</p>
       </div>
     )
   }
 
   return (
     <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-      <h1 className="mb-2 text-left text-2xl font-bold">Receive</h1>
-      <p className="text-muted-foreground mb-4 text-sm">Send sats to the address below to fund your wallet.</p>
+      <h1 className="mb-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
+      <p className="text-muted-foreground mb-4 text-sm">{t('receive.subtitle')}</p>
 
       <div className="flex w-full max-w-xl flex-col items-center justify-center rounded-lg border p-8">
         {isQrLoading ? (
@@ -154,7 +159,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
           <BitcoinQR address={bitcoinAddress} amount={amount} width={260} />
         ) : (
           <div className="flex h-[260px] w-[260px] animate-pulse items-center justify-center border text-gray-500">
-            No address available
+            {t('receive.error_loading_address_failed')}
           </div>
         )}
 
@@ -165,20 +170,20 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
         )}
 
         <div className="mt-4 flex gap-2">
-          <Button variant="outline" size="sm" onClick={getNewAddress}>
+          <Button variant="outline" size="sm" onClick={getNewAddress} disabled={getAddressQuery.isFetching}>
             <RefreshCw className="mr-1" />
-            Get new address
+            {getAddressQuery.isFetching ? t('receive.text_getting_address') : t('receive.button_new_address')}
           </Button>
 
           <Button variant="outline" size="sm" onClick={copyToClipboard}>
             {copied ? <CopyCheck /> : <Copy />}
-            {copied ? 'Copied' : 'Copy'}
+            {copied ? t('receive.text_copy_address_confirmed') : t('receive.button_copy_address')}
           </Button>
 
           {'share' in navigator && (
             <Button variant="outline" size="sm" onClick={shareAddress}>
               <Share />
-              Share
+              {t('receive.button_share_address')}
             </Button>
           )}
         </div>
@@ -187,11 +192,11 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
       <Accordion type="single" collapsible className="w-full max-w-xl">
         <AccordionItem value="options" className="border-0">
           <AccordionTrigger className="text-muted-foreground text-md rounded-none border-b p-4">
-            Receive options
+            {t('receive.button_settings')}
           </AccordionTrigger>
           <AccordionContent>
             <div className="w-full py-4">
-              <p className="mb-2 text-sm">Receive to</p>
+              <p className="mb-2 text-sm">{t('receive.label_source_jar')}</p>
 
               <div className="grid grid-cols-5 gap-4">
                 {jars.map((jar, index) => (
@@ -209,6 +214,8 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
 
               <div className="mx-1 mt-4">
                 <BitcoinAmountInput
+                  label={t('receive.label_amount_input')}
+                  placeholder={t('receive.placeholder_amount_input')}
                   amountDisplayMode={amountDisplayMode}
                   value={getDisplayAmount()}
                   onChange={handleAmountChange}
