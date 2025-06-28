@@ -24,7 +24,7 @@ export interface Jar {
 
 export interface DisplayModeContextType {
   displayMode: DisplayMode
-  toggleDisplayMode: () => void
+  toggleDisplayMode: (mode?: DisplayMode) => void
   formatAmount: (amount: number) => string
   getLogo: (size?: 'sm' | 'lg') => ReactNode
   jars: Jar[]

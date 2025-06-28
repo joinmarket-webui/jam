@@ -153,7 +153,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
       <h1 className="mb-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
       <p className="text-muted-foreground mb-4 text-sm">{t('receive.subtitle')}</p>
 
-      <div className="flex w-full max-w-xl flex-col items-center justify-center rounded-lg border p-8">
+      <div className="flex w-full max-w-xl flex-col items-center justify-center space-y-2 rounded-lg border p-8">
         {isQrLoading ? (
           <Skeleton className="h-[260px] w-[260px]" />
         ) : bitcoinAddress ? (
@@ -165,7 +165,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
         )}
 
         {isQrLoading ? (
-          <Skeleton className="h-4 w-[50%]" />
+          <Skeleton className="h-4 w-[65%]" />
         ) : (
           <p className="text-center font-mono text-xs break-all select-all">{bitcoinAddress}</p>
         )}

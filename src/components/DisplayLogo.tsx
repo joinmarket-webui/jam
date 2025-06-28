@@ -1,3 +1,4 @@
+import { EyeOff } from 'lucide-react'
 import type { DisplayMode } from '@/hooks/useDisplayMode'
 
 type DisplayLogoProps = {
@@ -8,6 +9,10 @@ type DisplayLogoProps = {
 export function DisplayLogo({ displayMode, size = 'lg' }: DisplayLogoProps) {
   if (displayMode === 'btc') {
     return <span className={`px-1 ${size === 'sm' ? 'text-md' : 'text-4xl'}`}>₿</span>
+  }
+
+  if (displayMode === 'private') {
+    return <EyeOff size={size === 'sm' ? 16 : 24} className="inline-block align-middle" />
   }
 
   return (
