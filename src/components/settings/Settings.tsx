@@ -21,22 +21,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { LanguageSelector } from './LanguageSelector'
+import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem } from './SettingsItem'
 
 export const Settings = () => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
+  const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [hideBalance, setHideBalance] = useState(false)
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
   const handleHideBalance = () => setHideBalance(!hideBalance)
-
-  const handleShowSeedPhrase = () => {
-    // TODO: Implement seed phrase modal
-    console.log('Show seed phrase')
-  }
 
   const handleLockWallet = () => {
     // TODO: Implement wallet lock
@@ -126,9 +123,8 @@ export const Settings = () => {
           <SettingItem
             icon={Key}
             title={t('settings.show_seed')}
-            action={handleShowSeedPhrase}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            action={() => setShowSeedDialog(true)}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
@@ -226,6 +222,8 @@ export const Settings = () => {
           />
         </CardContent>
       </Card>
+
+      <SeedPhraseDialog open={showSeedDialog} onOpenChange={setShowSeedDialog} />
     </div>
   )
 }

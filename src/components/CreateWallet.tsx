@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { hashPassword } from '@/lib/hash'
 import { type CreateWalletResponse, createwallet, session } from '@/lib/jm-api/generated/client'
 import { clearSession, setSession } from '@/lib/session'
 import { formatWalletName } from '@/lib/utils'
@@ -102,13 +103,15 @@ const CreateWallet = () => {
     }
   }
 
-  const handleConfirmSeed = () => {
+  const handleConfirmSeed = async () => {
     if (createWalletResponse?.seedphrase) {
       // Save session and navigate to dashboard
       const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
+      const hashedSecret = await hashPassword(password, walletFileName)
       setSession({
         walletFileName,
         auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
+        hashedSecret,
       })
 
       navigate('/login', {

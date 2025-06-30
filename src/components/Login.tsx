@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useApiClient } from '@/hooks/useApiClient'
+import { hashPassword } from '@/lib/hash'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { setSession } from '@/lib/session'
 import { formatWalletName } from '@/lib/utils'
@@ -177,9 +178,12 @@ const LoginPage = () => {
         },
       })
 
+      const hashedSecret = await hashPassword(data.password, data.walletFileName)
+
       setSession({
         walletFileName: response.walletname,
         auth: { token: response.token, refresh_token: response.refresh_token },
+        hashedSecret,
       })
 
       await navigate('/')
