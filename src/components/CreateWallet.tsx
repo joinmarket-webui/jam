@@ -105,9 +105,16 @@ const CreateWallet = () => {
 
   const handleConfirmSeed = () => {
     if (createWalletResponse?.seedphrase) {
-      // Save session and navigate to dashboard
+      let hashedSecret: string | undefined
       const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
-      const hashedSecret = hashPassword(password, walletFileName)
+
+      try {
+        hashedSecret = hashPassword(password, walletFileName)
+      } catch (hashError) {
+        console.warn('Failed to hash password, continuing without hash verification:', hashError)
+      }
+
+      // Save session and navigate to dashboard
       setSession({
         walletFileName,
         auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later

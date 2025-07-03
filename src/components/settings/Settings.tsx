@@ -19,6 +19,7 @@ import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { useSession } from '@/hooks/useSession'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
@@ -28,6 +29,7 @@ export const Settings = () => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
+  const session = useSession()
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [hideBalance, setHideBalance] = useState(false)
 
@@ -125,6 +127,8 @@ export const Settings = () => {
             title={t('settings.show_seed')}
             action={() => setShowSeedDialog(true)}
             clickable={true}
+            disabled={!session?.hashedSecret}
+            tooltip={!session?.hashedSecret ? 'Password verification unavailable.' : undefined}
           />
           <Separator className="opacity-50" />
           <SettingItem

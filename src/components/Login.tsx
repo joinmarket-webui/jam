@@ -169,6 +169,13 @@ const LoginPage = () => {
 
   const handleSubmit = async (data: { walletFileName: string; password: string }) => {
     try {
+      let hashedSecret: string | undefined
+      try {
+        hashedSecret = hashPassword(data.password, data.walletFileName)
+      } catch (hashError) {
+        console.warn('Failed to hash password, continuing without hash verification:', hashError)
+      }
+
       const response = await unlockWallet.mutateAsync({
         path: {
           walletname: encodeURIComponent(data.walletFileName),
@@ -177,8 +184,6 @@ const LoginPage = () => {
           password: data.password,
         },
       })
-
-      const hashedSecret = hashPassword(data.password, data.walletFileName)
 
       setSession({
         walletFileName: response.walletname,

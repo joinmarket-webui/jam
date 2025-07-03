@@ -85,10 +85,17 @@ export const SeedPhraseDialog = ({ open, onOpenChange }: SeedPhraseDialogProps) 
 
   const handlePasswordSubmit = () => {
     if (!password) return
-    if (!session?.hashedSecret || !walletFileName) {
+    if (!walletFileName) {
       setError('Session error. Please login again.')
       return
     }
+
+    // Check if hash verification is available
+    if (!session?.hashedSecret) {
+      setError('Password verification unavailable. Please login again.')
+      return
+    }
+
     try {
       const hashed = hashPassword(password, walletFileName)
       if (hashed === session.hashedSecret) {
