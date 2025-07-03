@@ -178,7 +178,7 @@ const LoginPage = () => {
         },
       })
 
-      const hashedSecret = await hashPassword(data.password, data.walletFileName)
+      const hashedSecret = hashPassword(data.password, data.walletFileName)
 
       setSession({
         walletFileName: response.walletname,

@@ -83,14 +83,14 @@ export const SeedPhraseDialog = ({ open, onOpenChange }: SeedPhraseDialogProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPasswordVerified, open])
 
-  const handlePasswordSubmit = async () => {
+  const handlePasswordSubmit = () => {
     if (!password) return
     if (!session?.hashedSecret || !walletFileName) {
       setError('Session error. Please login again.')
       return
     }
     try {
-      const hashed = await hashPassword(password, walletFileName)
+      const hashed = hashPassword(password, walletFileName)
       if (hashed === session.hashedSecret) {
         setIsPasswordVerified(true)
         setError('')

@@ -103,11 +103,11 @@ const CreateWallet = () => {
     }
   }
 
-  const handleConfirmSeed = async () => {
+  const handleConfirmSeed = () => {
     if (createWalletResponse?.seedphrase) {
       // Save session and navigate to dashboard
       const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
-      const hashedSecret = await hashPassword(password, walletFileName)
+      const hashedSecret = hashPassword(password, walletFileName)
       setSession({
         walletFileName,
         auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
