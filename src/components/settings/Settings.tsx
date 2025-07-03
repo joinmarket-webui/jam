@@ -172,9 +172,11 @@ export const Settings = () => {
           <CardTitle className="text-base font-medium">{t('settings.section_title_community')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
-          <div
-            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2"
-            onClick={() => window.open('https://matrix.to/#/%23jam:bitcoin.kyoto', '_blank')}
+          <a
+            href="https://matrix.to/#/%23jam:bitcoin.kyoto"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2 text-inherit no-underline"
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg">
@@ -185,11 +187,13 @@ export const Settings = () => {
               </div>
             </div>
             <ExternalLink className="text-muted-foreground h-3 w-3" />
-          </div>
+          </a>
           <Separator className="opacity-50" />
-          <div
-            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2"
-            onClick={() => window.open('https://t.me/JoinMarketWebUI', '_blank')}
+          <a
+            href="https://t.me/JoinMarketWebUI"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2 text-inherit no-underline"
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg">
@@ -200,7 +204,7 @@ export const Settings = () => {
               </div>
             </div>
             <ExternalLink className="text-muted-foreground h-3 w-3" />
-          </div>
+          </a>
         </CardContent>
       </Card>
 
@@ -213,7 +217,9 @@ export const Settings = () => {
           <SettingItem
             icon={Book}
             title={t('settings.documentation')}
-            action={() => window.open('https://jamdocs.org', '_blank')}
+            action={() => {
+              window.open('https://jamdocs.org', '_blank', 'noreferrer,noopener')
+            }}
             clickable={true}
             external={true}
           />
@@ -221,7 +227,9 @@ export const Settings = () => {
           <SettingItem
             icon={Github}
             title={t('settings.github')}
-            action={() => window.open('https://github.com/joinmarket-webui/jam', '_blank')}
+            action={() => {
+              window.open('https://github.com/joinmarket-webui/jam', '_blank', 'noreferrer,noopener')
+            }}
             clickable={true}
             external={true}
           />
