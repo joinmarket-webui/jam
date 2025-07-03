@@ -245,7 +245,7 @@
     "seed_modal_error": "Error while retrieving the seed phrase.",
     "seed_modal_no_data": "No seed phrase available.",
     "seed_modal_warning_title": "Important Security Warning",
-    "seed_modal_warning_message": "Never share your seed phrase with anyone. Anyone with access to these words can control your wallet and steal your funds.",
+    "seed_modal_warning_message": "Never share your seed phrase! Anyone with access to these words can control your wallet and will steal all of your funds.",
     "documentation": "Documentation",
     "github": "GitHub",
     "matrix": "Matrix",
