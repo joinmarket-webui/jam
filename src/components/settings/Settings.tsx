@@ -12,6 +12,7 @@ import {
   RefreshCw,
   FileText,
   Book,
+  // TODO: Remove depricated imports(company logos) from lucide react and use https://simpleicons.org directly
   Github,
   ExternalLink,
 } from 'lucide-react'

@@ -15,6 +15,11 @@ export const LanguageSelector = () => {
     return currentLanguage?.description || 'English'
   }
 
+  const getCurrentLanguageKey = () => {
+    const languageExists = languages.some((lang) => lang.key === i18n.language)
+    return languageExists ? i18n.language : 'en'
+  }
+
   return (
     <div className="flex items-center justify-between py-2">
       <div className="flex items-center gap-2">
@@ -26,7 +31,7 @@ export const LanguageSelector = () => {
         </div>
       </div>
 
-      <Select value={i18n.language} onValueChange={handleLanguageChange}>
+      <Select value={getCurrentLanguageKey()} onValueChange={handleLanguageChange}>
         <SelectTrigger className="h-7 w-38 text-xs" aria-label="Select language">
           <SelectValue placeholder={getCurrentLanguageDescription()} />
         </SelectTrigger>
