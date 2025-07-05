@@ -6,6 +6,10 @@ interface SessionData {
     token: UnlockWalletResponse['token']
     refresh_token: UnlockWalletResponse['refresh_token']
   }
+  rescan?: {
+    rescanning: boolean
+    progress?: number
+  }
 }
 
 export const setSession = (session: Partial<SessionData>) => {
