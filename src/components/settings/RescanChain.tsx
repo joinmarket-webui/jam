@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -13,8 +14,9 @@ import { useSession } from '@/hooks/useSession'
 import { rescanblockchain } from '@/lib/jm-api/generated/client/sdk.gen'
 import { setSession } from '@/lib/session'
 
-export const RescanChain = ({ onBack }: { onBack: () => void }) => {
+export const RescanChain = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const session = useSession()
   const client = useApiClient()
   const queryClient = useQueryClient()
@@ -77,7 +79,12 @@ export const RescanChain = ({ onBack }: { onBack: () => void }) => {
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={onBack} className="hover:bg-muted/50 h-8 w-8 p-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/settings')}
+          className="hover:bg-muted/50 h-8 w-8 p-0"
+        >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-semibold tracking-tight">{t('rescan_chain.title')}</h1>

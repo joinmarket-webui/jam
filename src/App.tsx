@@ -16,6 +16,7 @@ import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
 import { Receive } from './components/receive/Receive'
+import { RescanChain } from './components/settings/RescanChain'
 import { Settings } from './components/settings/Settings'
 
 const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
@@ -61,6 +62,16 @@ function App() {
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/rescan"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <RescanChain />
                   </Layout>
                 </ProtectedRoute>
               }

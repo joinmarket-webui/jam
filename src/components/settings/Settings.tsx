@@ -18,19 +18,19 @@ import {
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { LanguageSelector } from './LanguageSelector'
-import { RescanChain } from './RescanChain'
 import { SettingItem } from './SettingsItem'
 
 export const Settings = () => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
+  const navigate = useNavigate()
   const [hideBalance, setHideBalance] = useState(false)
-  const [currentPage, setCurrentPage] = useState<'settings' | 'rescan'>('settings')
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
@@ -52,7 +52,7 @@ export const Settings = () => {
   }
 
   const handleRescanChain = () => {
-    setCurrentPage('rescan')
+    navigate('/settings/rescan')
   }
 
   const handleShowLogs = () => {
@@ -63,14 +63,6 @@ export const Settings = () => {
   const handleAdjustFeeLimits = () => {
     // TODO: Implement fee limits adjustment
     console.log('Adjust fee limits')
-  }
-
-  const handleBackToSettings = () => {
-    setCurrentPage('settings')
-  }
-
-  if (currentPage === 'rescan') {
-    return <RescanChain onBack={handleBackToSettings} />
   }
 
   return (
