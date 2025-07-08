@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BitcoinAmountInput } from '@/components/receive/BitcoinAmountInput'
+import type { DisplayMode } from '@/hooks/useDisplayMode'
 
 const meta: Meta<typeof BitcoinAmountInput> = {
   title: 'Receive/BitcoinAmountInput',
@@ -28,13 +29,13 @@ const BitcoinAmountInputWrapper = ({
   label,
   placeholder,
 }: {
-  initialMode?: 'sats' | 'btc'
+  initialMode?: DisplayMode
   initialAmount?: string
   disabled?: boolean
   label?: string
   placeholder?: string
 }) => {
-  const [amountDisplayMode, setAmountDisplayMode] = useState<'sats' | 'btc'>(initialMode)
+  const [amountDisplayMode, setAmountDisplayMode] = useState<DisplayMode>(initialMode)
   const [amount, setAmount] = useState(initialAmount)
 
   const toggleDisplayMode = () => {

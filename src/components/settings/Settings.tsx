@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Eye,
   EyeOff,
@@ -12,6 +11,7 @@ import {
   RefreshCw,
   FileText,
   Book,
+  // TODO: Remove depricated imports(company logos) from lucide react and use https://simpleicons.org directly
   Github,
   ExternalLink,
 } from 'lucide-react'
@@ -30,12 +30,14 @@ export const Settings = () => {
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
   const session = useSession()
-  const [showSeedDialog, setShowSeedDialog] = useState(false)
-  const [hideBalance, setHideBalance] = useState(false)
+  const [showSeedDialog, setShowSeedDialog] = useState(false))
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
-  const handleHideBalance = () => setHideBalance(!hideBalance)
+  const handleShowSeedPhrase = () => {
+    // TODO: Implement seed phrase modal
+    console.log('Show seed phrase')
+  }
 
   const handleLockWallet = () => {
     // TODO: Implement wallet lock
@@ -75,17 +77,17 @@ export const Settings = () => {
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
-            icon={hideBalance ? EyeOff : Eye}
-            title={t('settings.hide_balance')}
-            action={handleHideBalance}
+            icon={displayMode === 'private' ? Eye : EyeOff}
+            title={t(displayMode === 'private' ? 'settings.show_balance' : 'settings.hide_balance')}
+            action={() => toggleDisplayMode(displayMode === 'private' ? 'sats' : 'private')}
             tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={Bitcoin}
             title={t(displayMode === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
-            action={toggleDisplayMode}
+            action={() => toggleDisplayMode(displayMode === 'btc' ? 'sats' : 'btc')}
             clickable={true}
           />
           <Separator className="opacity-50" />
@@ -171,9 +173,11 @@ export const Settings = () => {
           <CardTitle className="text-base font-medium">{t('settings.section_title_community')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
-          <div
-            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2"
-            onClick={() => window.open('https://matrix.to/#/%23jam:bitcoin.kyoto', '_blank')}
+          <a
+            href="https://matrix.to/#/%23jam:bitcoin.kyoto"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2 text-inherit no-underline"
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg">
@@ -184,11 +188,13 @@ export const Settings = () => {
               </div>
             </div>
             <ExternalLink className="text-muted-foreground h-3 w-3" />
-          </div>
+          </a>
           <Separator className="opacity-50" />
-          <div
-            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2"
-            onClick={() => window.open('https://t.me/JoinMarketWebUI', '_blank')}
+          <a
+            href="https://t.me/JoinMarketWebUI"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:bg-muted/50 -mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2 text-inherit no-underline"
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg">
@@ -199,7 +205,7 @@ export const Settings = () => {
               </div>
             </div>
             <ExternalLink className="text-muted-foreground h-3 w-3" />
-          </div>
+          </a>
         </CardContent>
       </Card>
 
@@ -212,7 +218,9 @@ export const Settings = () => {
           <SettingItem
             icon={Book}
             title={t('settings.documentation')}
-            action={() => window.open('https://jamdocs.org', '_blank')}
+            action={() => {
+              window.open('https://jamdocs.org', '_blank', 'noreferrer,noopener')
+            }}
             clickable={true}
             external={true}
           />
@@ -220,7 +228,9 @@ export const Settings = () => {
           <SettingItem
             icon={Github}
             title={t('settings.github')}
-            action={() => window.open('https://github.com/joinmarket-webui/jam', '_blank')}
+            action={() => {
+              window.open('https://github.com/joinmarket-webui/jam', '_blank', 'noreferrer,noopener')
+            }}
             clickable={true}
             external={true}
           />

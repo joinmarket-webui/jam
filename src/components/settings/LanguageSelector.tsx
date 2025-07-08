@@ -11,7 +11,7 @@ export const LanguageSelector = () => {
   }
 
   const getCurrentLanguageDescription = () => {
-    const currentLanguage = languages.find((lang) => lang.key === i18n.language)
+    const currentLanguage = languages.find((lang) => lang.key === i18n.resolvedLanguage)
     return currentLanguage?.description || 'English'
   }
 
@@ -26,7 +26,7 @@ export const LanguageSelector = () => {
         </div>
       </div>
 
-      <Select value={i18n.language} onValueChange={handleLanguageChange}>
+      <Select value={i18n.resolvedLanguage} onValueChange={handleLanguageChange}>
         <SelectTrigger className="h-7 w-38 text-xs" aria-label="Select language">
           <SelectValue placeholder={getCurrentLanguageDescription()} />
         </SelectTrigger>

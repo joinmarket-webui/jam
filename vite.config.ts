@@ -35,7 +35,10 @@ export default defineConfig((): UserConfig => {
         '@': path.resolve(__dirname, './src'),
       },
     },
-    server,
+    server: {
+      ...server,
+      open: true,
+    },
     test: {
       projects: [
         {
