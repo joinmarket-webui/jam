@@ -41,8 +41,8 @@ export const useRescanStatus = () => {
   }
 
   return {
-    isRescanning: rescanInfo?.rescanning || session?.rescan?.rescanning || false,
-    progress: rescanInfo?.progress || session?.rescan?.progress,
+    isRescanning: session?.rescan?.rescanning || false,
+    progress: session?.rescan?.progress,
     isLoading,
     rescanInfo,
   }

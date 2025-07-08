@@ -71,7 +71,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <RescanChain />
+                    <RescanChain walletFileName={walletFileName} />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -10,20 +10,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useRescanStatus } from '@/hooks/useRescanStatus'
-import { useSession } from '@/hooks/useSession'
 import { rescanblockchain } from '@/lib/jm-api/generated/client/sdk.gen'
 import { setSession } from '@/lib/session'
+import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 
-export const RescanChain = () => {
+export const RescanChain = ({ walletFileName }: { walletFileName: string }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const session = useSession()
   const client = useApiClient()
   const queryClient = useQueryClient()
   const { isRescanning, rescanInfo } = useRescanStatus()
-  const [rescanHeight, setRescanHeight] = useState('481824')
-
-  const walletFileName = session?.walletFileName || ''
+  const [rescanHeight, setRescanHeight] = useState<number>(SEGWIT_ACTIVATION_BLOCK)
 
   const rescanMutation = useMutation({
     mutationFn: async (blockHeight: number) => {
@@ -56,7 +53,7 @@ export const RescanChain = () => {
   })
 
   const handleRescan = async () => {
-    const blockHeight = parseInt(rescanHeight)
+    const blockHeight = rescanHeight
     if (isNaN(blockHeight) || blockHeight < 0) {
       toast.error(t('rescan_chain.feedback_invalid_blockheight', { min: 0 }))
       return
@@ -68,10 +65,6 @@ export const RescanChain = () => {
     }
 
     rescanMutation.mutate(blockHeight)
-  }
-
-  const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRescanHeight(e.target.value)
   }
 
   const isLoading = rescanMutation.isPending
@@ -108,7 +101,7 @@ export const RescanChain = () => {
                   id="rescanHeight"
                   type="number"
                   value={rescanHeight}
-                  onChange={handleHeightChange}
+                  onChange={(e) => setRescanHeight(parseInt(e.target.value))}
                   className="bg-background pl-10"
                   placeholder="Enter block height"
                 />

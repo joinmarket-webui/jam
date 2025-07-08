@@ -39,3 +39,5 @@ export const setIntervalDebounced = (
 export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
 
 export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100000000)
+
+export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
