@@ -1,9 +1,8 @@
 import { ArrowUpDown } from 'lucide-react'
+import type { DisplayMode } from '@/hooks/useDisplayMode'
 import { DisplayLogo } from '../DisplayLogo'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-
-type DisplayMode = 'sats' | 'btc'
 
 interface BitcoinAmountInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
   amountDisplayMode: DisplayMode

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Eye,
   EyeOff,
@@ -28,11 +27,8 @@ export const Settings = () => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
-  const [hideBalance, setHideBalance] = useState(false)
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-
-  const handleHideBalance = () => setHideBalance(!hideBalance)
 
   const handleShowSeedPhrase = () => {
     // TODO: Implement seed phrase modal
@@ -77,17 +73,17 @@ export const Settings = () => {
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
-            icon={hideBalance ? EyeOff : Eye}
-            title={t('settings.hide_balance')}
-            action={handleHideBalance}
+            icon={displayMode === 'private' ? Eye : EyeOff}
+            title={t(displayMode === 'private' ? 'settings.show_balance' : 'settings.hide_balance')}
+            action={() => toggleDisplayMode(displayMode === 'private' ? 'sats' : 'private')}
             tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={Bitcoin}
             title={t(displayMode === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
-            action={toggleDisplayMode}
+            action={() => toggleDisplayMode(displayMode === 'btc' ? 'sats' : 'btc')}
             clickable={true}
           />
           <Separator className="opacity-50" />
