@@ -60,7 +60,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <Settings />
+                    <Settings walletFileName={walletFileName} />
                   </Layout>
                 </ProtectedRoute>
               }

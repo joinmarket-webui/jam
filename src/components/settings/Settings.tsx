@@ -24,7 +24,6 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useApiClient } from '@/hooks/useApiClient'
-import { useSession } from '@/hooks/useSession'
 import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { clearSession } from '@/lib/session'
 import { useJamDisplayContext } from '../layout/display-mode-context'
@@ -32,26 +31,29 @@ import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem } from './SettingsItem'
 
-export const Settings = () => {
+interface SettingProps {
+  walletFileName: string
+}
+
+export const Settings = ({ walletFileName }: SettingProps) => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const navigate = useNavigate()
-  const session = useSession()
   const client = useApiClient()
 
   const lockWalletQuery = useQuery({
     ...lockwalletOptions({
       client,
-      path: { walletname: session?.walletFileName || '' },
+      path: { walletname: walletFileName },
     }),
     enabled: false,
   })
 
   const handleLockWallet = async () => {
-    if (!session?.walletFileName) {
+    if (!walletFileName) {
       toast.error('No wallet loaded')
       return
     }
@@ -59,9 +61,7 @@ export const Settings = () => {
     try {
       await lockWalletQuery.refetch()
       clearSession()
-      toast.success(
-        t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: session.walletFileName }),
-      )
+      toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletFileName }))
       navigate('/login')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
