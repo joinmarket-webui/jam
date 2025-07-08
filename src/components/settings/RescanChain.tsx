@@ -19,7 +19,7 @@ export const RescanChain = ({ walletFileName }: { walletFileName: string }) => {
   const navigate = useNavigate()
   const client = useApiClient()
   const queryClient = useQueryClient()
-  const { isRescanning, rescanInfo } = useRescanStatus()
+  const { isRescanning, rescanInfo, showCompletionMessage } = useRescanStatus()
   const [rescanHeight, setRescanHeight] = useState<number>(SEGWIT_ACTIVATION_BLOCK)
 
   const rescanMutation = useMutation({
@@ -116,19 +116,27 @@ export const RescanChain = ({ walletFileName }: { walletFileName: string }) => {
             >
               {isLoading
                 ? t('rescan_chain.text_button_submitting')
-                : isRescanning
-                  ? rescanInfo?.progress
-                    ? `${t('rescan_chain.text_button_submitting')} (${rescanInfo.progress}%)`
-                    : t('rescan_chain.text_button_submitting')
-                  : t('rescan_chain.text_button_submit')}
+                : showCompletionMessage
+                  ? 'Rescan Completed'
+                  : isRescanning
+                    ? rescanInfo?.progress
+                      ? `${t('rescan_chain.text_button_submitting')} (${rescanInfo.progress}%)`
+                      : t('rescan_chain.text_button_submitting')
+                    : t('rescan_chain.text_button_submit')}
             </Button>
 
-            {isRescanning && (
+            {(isLoading || isRescanning || showCompletionMessage) && (
               <div className="bg-muted/50 mt-4 rounded-lg p-3">
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw className={`h-4 w-4 ${showCompletionMessage ? 'text-green-600' : 'animate-spin'}`} />
                   <span className="text-sm">
-                    {rescanInfo?.progress ? `Rescanning... ${rescanInfo.progress}%` : 'Rescanning...'}
+                    {showCompletionMessage
+                      ? 'Rescan completed successfully!'
+                      : isLoading
+                        ? 'Starting rescan...'
+                        : rescanInfo?.progress
+                          ? `Rescanning... ${rescanInfo.progress}%`
+                          : 'Rescanning...'}
                   </span>
                 </div>
               </div>
