@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Eye,
   EyeOff,
@@ -30,14 +31,9 @@ export const Settings = () => {
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
   const session = useSession()
-  const [showSeedDialog, setShowSeedDialog] = useState(false))
+  const [showSeedDialog, setShowSeedDialog] = useState(false)
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-
-  const handleShowSeedPhrase = () => {
-    // TODO: Implement seed phrase modal
-    console.log('Show seed phrase')
-  }
 
   const handleLockWallet = () => {
     // TODO: Implement wallet lock
