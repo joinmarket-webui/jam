@@ -1,56 +1,93 @@
 import { useEffect, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getrescaninfoOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { setSession } from '@/lib/session'
+import { getrescaninfo } from '@/lib/jm-api/generated/client/sdk.gen'
+import { setSession, type RescanSession } from '@/lib/session'
 import { useApiClient } from './useApiClient'
 import { useSession } from './useSession'
+
+const RESCAN_PROGRESS_INTERVAL = 2000
 
 export const useRescanStatus = () => {
   const session = useSession()
   const client = useApiClient()
   const completionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [showCompletionMessage, setShowCompletionMessage] = useState(false)
-  const [wasRescanning, setWasRescanning] = useState(false)
+  const [rescanInfo, setRescanInfo] = useState<RescanSession | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const walletFileName = session?.walletFileName
 
-  const { data: rescanInfo, isLoading } = useQuery({
-    ...getrescaninfoOptions({
-      client,
-      path: { walletname: walletFileName || '' },
-    }),
-    enabled: !!walletFileName,
-    refetchInterval: 5000,
-  })
-
   useEffect(() => {
-    if (rescanInfo) {
-      if (rescanInfo.rescanning !== session?.rescan?.rescanning) {
-        setSession({
-          rescan: {
-            rescanning: rescanInfo.rescanning,
-            progress: rescanInfo.progress,
-          },
+    if (!session?.rescan?.rescanning || !walletFileName) {
+      setRescanInfo(null)
+      return
+    }
+
+    setRescanInfo(null)
+    setIsLoading(true)
+
+    const abortCtrl = new AbortController()
+
+    const fetchRescanProgress = async (): Promise<void> => {
+      try {
+        const { data } = await getrescaninfo({
+          client,
+          path: { walletname: walletFileName },
+          signal: abortCtrl.signal,
         })
-      }
 
-      if (wasRescanning && !rescanInfo.rescanning) {
-        setShowCompletionMessage(true)
+        if (!abortCtrl.signal.aborted && data) {
+          setRescanInfo(data)
+          setIsLoading(false)
 
-        completionTimeoutRef.current = setTimeout(() => {
-          setShowCompletionMessage(false)
-        }, 3000)
-      }
+          // If API says rescanning is false but session still has rescanning true,
+          // it means rescan completed
+          if (!data.rescanning && session?.rescan?.rescanning) {
+            setSession({
+              rescan: {
+                rescanning: false,
+                progress: data.progress || 100,
+              },
+            })
 
-      setWasRescanning(rescanInfo.rescanning)
-
-      // Clear completion message if rescanning starts again
-      if (rescanInfo.rescanning && completionTimeoutRef.current) {
-        clearTimeout(completionTimeoutRef.current)
-        setShowCompletionMessage(false)
+            setShowCompletionMessage(true)
+            completionTimeoutRef.current = setTimeout(() => {
+              setShowCompletionMessage(false)
+            }, 3000)
+          } else if (data.rescanning && data.progress !== session?.rescan?.progress) {
+            setSession({
+              rescan: {
+                rescanning: session?.rescan?.rescanning || true,
+                progress: data.progress,
+              },
+            })
+          }
+        }
+      } catch (err) {
+        if (!abortCtrl.signal.aborted) {
+          console.warn('Error fetching rescan progress:', err)
+          setIsLoading(false)
+          setRescanInfo(null)
+        }
       }
     }
-  }, [rescanInfo, session?.rescan?.rescanning, wasRescanning])
+
+    fetchRescanProgress()
+
+    const interval = setInterval(fetchRescanProgress, RESCAN_PROGRESS_INTERVAL)
+
+    return () => {
+      clearInterval(interval)
+      abortCtrl.abort()
+    }
+  }, [session?.rescan?.rescanning, walletFileName, client, session?.rescan?.progress])
+
+  // Clear completion message if rescanning starts again
+  useEffect(() => {
+    if (session?.rescan?.rescanning && completionTimeoutRef.current) {
+      clearTimeout(completionTimeoutRef.current)
+      setShowCompletionMessage(false)
+    }
+  }, [session?.rescan?.rescanning])
 
   useEffect(() => {
     return () => {

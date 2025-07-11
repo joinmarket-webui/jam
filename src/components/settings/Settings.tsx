@@ -29,7 +29,6 @@ export const Settings = () => {
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
   const navigate = useNavigate()
-  const [hideBalance, setHideBalance] = useState(false)
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
