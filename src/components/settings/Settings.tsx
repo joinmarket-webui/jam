@@ -53,11 +53,6 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   })
 
   const handleLockWallet = async () => {
-    if (!walletFileName) {
-      toast.error('No wallet loaded')
-      return
-    }
-
     try {
       await lockWalletQuery.refetch()
       clearSession()
