@@ -8,17 +8,36 @@ interface SelectableJarProps {
   totalBalance: number
   isSelected: boolean
   onClick: () => void
+  disabled?: boolean
 }
 
-export const SelectableJar = ({ name, color, balance, totalBalance, isSelected, onClick }: SelectableJarProps) => {
+export const SelectableJar = ({
+  name,
+  color,
+  balance,
+  totalBalance,
+  isSelected,
+  onClick,
+  disabled = false,
+}: SelectableJarProps) => {
+  const handleClick = () => {
+    if (!disabled) {
+      onClick()
+    }
+  }
+
   return (
-    <button className="flex flex-col items-center" onClick={onClick}>
+    <button
+      className={`flex flex-col items-center ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+      onClick={handleClick}
+      disabled={disabled}
+    >
       <JarIcon
         color={color}
         amount={balance || 0}
         isSelected={isSelected}
         totalBalance={totalBalance}
-        className={`cursor-pointer ${isSelected ? 'scale-[0.70]' : 'scale-[0.65]'}`}
+        className={`${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${isSelected ? 'scale-[0.70]' : 'scale-[0.65]'}`}
       />
 
       <span className="text-xs">{name}</span>
