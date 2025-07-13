@@ -3,6 +3,13 @@ import { Check, File, X } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { toSemVer } from '@/lib/utils'
+import packageInfo from '../../package.json'
+
+const APP_DISPLAY_VERSION = (() => {
+  const version = toSemVer(packageInfo.version)
+  return version.raw
+})()
 
 export function Footer() {
   const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
@@ -11,7 +18,7 @@ export function Footer() {
     <>
       <footer className="flex items-center justify-between bg-white p-4 text-xs text-black opacity-60 transition-colors duration-300 dark:bg-[#181b20] dark:text-white">
         <span className="flex-1">
-          This is beta software. <br />
+          This is pre-alpha software. <br />
           <a href="#" className="underline">
             Read this before using.
           </a>
@@ -22,7 +29,15 @@ export function Footer() {
             Cheatsheet
           </Button>
         </div>
-        <span className="flex-1 text-right opacity-70">© 2025 Hodlers</span>
+
+        <a
+          href="https://github.com/joinmarket-webui/jam/tags"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 text-right underline opacity-80"
+        >
+          v{APP_DISPLAY_VERSION}
+        </a>
       </footer>
 
       {isCheatsheetOpen && <Cheatsheet setIsCheatsheetOpen={setIsCheatsheetOpen} />}
@@ -95,7 +110,6 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
         </div>
 
         <div className="space-y-6">
-          {/* Step 1: Fund */}
           <div className="flex gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black text-sm font-bold text-white dark:bg-white dark:text-black">
               1
@@ -113,7 +127,6 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
             </div>
           </div>
 
-          {/* Step 2: Send */}
           <div className="flex gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black text-sm font-bold text-white dark:bg-white dark:text-black">
               2
@@ -131,7 +144,6 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
             </div>
           </div>
 
-          {/* Step 3: Bond */}
           <div className="flex gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black text-sm font-bold text-white dark:bg-white dark:text-black">
               3
@@ -150,7 +162,6 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
             </div>
           </div>
 
-          {/* Step 4: Earn */}
           <div className="flex gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black text-sm font-bold text-white dark:bg-white dark:text-black">
               4
@@ -168,7 +179,6 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
             </div>
           </div>
 
-          {/* Step 5: Schedule */}
           <div className="flex gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black text-sm font-bold text-white dark:bg-white dark:text-black">
               5
@@ -187,7 +197,6 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
             </div>
           </div>
 
-          {/* Step 6: Repeat */}
           <div className="flex gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black font-bold text-white dark:bg-white dark:text-black">
               <Check className="p-0.5" />
