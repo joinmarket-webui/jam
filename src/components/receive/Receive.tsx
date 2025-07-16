@@ -66,7 +66,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     if (bitcoinAddress) {
       navigator.clipboard.writeText(bitcoinAddress)
       setCopied(true)
-      toast.success(t('receive.text_copy_address_confirmed'))
+      toast.success(t('global.button_copy_text_confirmed'))
     } else {
       toast.error(t('receive.error_copy_address_failed'))
     }
@@ -178,7 +178,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
 
           <Button variant="outline" size="sm" onClick={copyToClipboard}>
             {copied ? <CopyCheck /> : <Copy />}
-            {copied ? t('receive.text_copy_address_confirmed') : t('receive.button_copy_address')}
+            {copied ? t('global.button_copy_text_confirmed') : t('global.button_copy_text')}
           </Button>
 
           {'share' in navigator && (

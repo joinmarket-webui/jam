@@ -6,6 +6,7 @@ interface SessionData {
     token: UnlockWalletResponse['token']
     refresh_token: UnlockWalletResponse['refresh_token']
   }
+  hashedSecret?: string
 }
 
 export const setSession = (session: Partial<SessionData>) => {
