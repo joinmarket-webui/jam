@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useSession } from '@/hooks/useSession'
 import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { clearSession } from '@/lib/session'
 import { useJamDisplayContext } from '../layout/display-mode-context'
@@ -43,6 +44,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const navigate = useNavigate()
   const client = useApiClient()
+  const session = useSession()
 
   const lockWalletQuery = useQuery({
     ...lockwalletOptions({
@@ -56,7 +58,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
     try {
       await lockWalletQuery.refetch()
       clearSession()
-      toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletFileName }))
+      toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletFileName }))
       navigate('/login')
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
