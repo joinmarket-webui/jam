@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   Eye,
   EyeOff,
@@ -18,27 +19,55 @@ import {
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { useApiClient } from '@/hooks/useApiClient'
 import { useSession } from '@/hooks/useSession'
+import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { clearSession } from '@/lib/session'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem } from './SettingsItem'
 
-export const Settings = () => {
+interface SettingProps {
+  walletFileName: string
+}
+
+export const Settings = ({ walletFileName }: SettingProps) => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
-  const session = useSession()
+
   const [showSeedDialog, setShowSeedDialog] = useState(false)
+  const navigate = useNavigate()
+  const client = useApiClient()
+  const session = useSession()
+
+  const lockWalletQuery = useQuery({
+    ...lockwalletOptions({
+      client,
+      path: { walletname: walletFileName },
+    }),
+    enabled: false,
+  })
+
+  const handleLockWallet = async () => {
+    try {
+      await lockWalletQuery.refetch()
+      clearSession()
+      toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletFileName }))
+      navigate('/login')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      toast.error(t('global.errors.error_reloading_wallet_failed', { reason: errorMessage }))
+      console.error('Failed to lock wallet:', error)
+    }
+  }
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-
-  const handleLockWallet = () => {
-    // TODO: Implement wallet lock
-    console.log('Lock wallet')
-  }
 
   const handleSwitchWallet = () => {
     // TODO: Implement wallet switch
@@ -133,8 +162,8 @@ export const Settings = () => {
             icon={Unlock}
             title={t('settings.button_lock_wallet')}
             action={handleLockWallet}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            disabled={lockWalletQuery.isFetching}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
@@ -177,7 +206,7 @@ export const Settings = () => {
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg">
-                <img src="/matrix-logo.png" alt="Matrix" className="h-4 w-4" />
+                <img src="/matrix-logo.png" alt="Matrix" className="light:invert-0 h-4 w-4 invert" />
               </div>
               <div>
                 <p className="text-sm font-medium">{t('settings.matrix')}</p>
