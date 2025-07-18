@@ -141,6 +141,10 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
     return selectedUtxos.map((it) => it.value).reduce((acc, curr) => acc + curr, 0)
   }, [selectedUtxos])
 
+  const utxosBalance: Api.AmountSats = useMemo(() => {
+    return utxos.reduce((acc, utxo) => acc + utxo.value, 0)
+  }, [utxos])
+
   const nextJar = useCallback(
     () => setJarIndex((current) => (current + 1 >= props.jars.length ? 0 : current + 1)),
     [props.jars],
@@ -366,7 +370,7 @@ const JarDetailsOverlay = (props: JarDetailsOverlayProps) => {
                         <div>
                           <Trans i18nKey="jar_details.utxo_list.text_balance_sum_total">
                             <Balance
-                              valueString={jar.account_balance}
+                              valueString={String(utxosBalance)}
                               convertToUnit={settings.unit}
                               showBalance={settings.showBalance}
                             />
