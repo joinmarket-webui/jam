@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Info, Square } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { DisplayLogo } from '../DisplayLogo'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -146,18 +147,18 @@ export const SendOptions = () => {
       <div className="space-y-4">
         <Label className="font-medium">{t('send.label_tx_fees')}</Label>
 
-        <div className="flex gap-2">
+        <div className="flex">
           <Button
             variant={miningFeeType === 'block' ? 'default' : 'outline'}
             onClick={() => setMiningFeeType('block')}
-            className="flex-1"
+            className="flex-1 rounded-r-none"
           >
             {t('settings.fees.radio_tx_fees_blocks')}
           </Button>
           <Button
             variant={miningFeeType === 'sats' ? 'default' : 'outline'}
             onClick={() => setMiningFeeType('sats')}
-            className="flex-1"
+            className="flex-1 rounded-l-none"
           >
             {t('settings.fees.radio_tx_fees_satspervbyte')}
           </Button>
@@ -171,8 +172,9 @@ export const SendOptions = () => {
 
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Square className="absolute top-1/2 left-1 -translate-y-1/2 text-gray-500" />
-
+            <div className="absolute top-1/2 left-1 -translate-y-1/2 text-gray-500">
+              {miningFeeType === 'block' ? <Square size={16} /> : <DisplayLogo displayMode={'sats'} size="sm" />}
+            </div>
             <Input value={blockTarget} onChange={(e) => setBlockTarget(e.target.value)} className="pl-8" />
           </div>
         </div>

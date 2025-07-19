@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BrushCleaning } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { satsToBtc, btcToSats } from '@/lib/utils'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { BitcoinAmountInput } from '../receive/BitcoinAmountInput'
@@ -11,7 +12,6 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import JarSelectorModal from './JarSelectorModal'
-import { SendOptions } from './SendOptions'
 
 type DisplayMode = 'sats' | 'btc'
 
@@ -106,7 +106,8 @@ const Send = () => {
         <Button
           onClick={() => {
             const jar = jars.find((jar) => selectedJar === jar.name)
-            if (jar) {
+
+            if (jar && jar.balance > 0) {
               if (amountDisplayMode === 'btc') {
                 const btcValue = satsToBtc(jar.balance.toString())
                 setAmount(btcValue.toFixed(8))
@@ -115,10 +116,12 @@ const Send = () => {
               }
             } else {
               setAmount('0')
+              toast.error(t('send.error_insufficient_balance'))
             }
           }}
           className="w-full"
           variant="outline"
+          disabled={!selectedJar || jars.find((jar) => jar.name === selectedJar)?.balance === 0}
         >
           <BrushCleaning className="mr-2 h-4 w-4" />
           {t('send.button_sweep')}
@@ -136,9 +139,8 @@ const Send = () => {
               <p>Not yet implemented</p>
             </TooltipContent>
           </Tooltip>
-          <AccordionContent>
-            <SendOptions />
-          </AccordionContent>
+
+          <AccordionContent>{/* <SendOptions /> */}</AccordionContent>
         </AccordionItem>
       </Accordion>
 

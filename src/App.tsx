@@ -58,11 +58,11 @@ function App() {
             <Route
               path="/send"
               element={
-                // <ProtectedRoute authenticated={authenticated}>
-                <Layout>
-                  <Send />
-                </Layout>
-                // </ProtectedRoute>
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <Send />
+                  </Layout>
+                </ProtectedRoute>
               }
             />
             <Route path="*" element={<Navigate to="/login" replace />} />
