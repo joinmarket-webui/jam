@@ -67,24 +67,36 @@ const API_AUTH_TOKEN_RENEW_INTERVAL = Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75
 
 function RefreshApiToken() {
   const client = useApiClient()
+  const session = useSession()
 
-  // TODO: stop this interval if no wallet if active
   useEffect(() => {
+    if (!session?.walletFileName || !session?.auth?.refresh_token) {
+      if (import.meta.env.DEV) {
+        console.info(`[DEV] No active wallet or refresh token, skipping refresh interval setup`)
+      }
+      return
+    }
+
     if (import.meta.env.DEV) {
-      toast.info(`[DEV] setup refresh interval`)
+      toast.info(`[DEV] setup refresh interval for wallet: ${session.walletFileName}`)
     }
 
     let intervalId: NodeJS.Timeout
     setIntervalDebounced(
       async () => {
-        const session = getSession()
-        if (session?.auth?.refresh_token === undefined) return
+        const currentSession = getSession()
+        if (!currentSession?.walletFileName || !currentSession?.auth?.refresh_token) {
+          if (import.meta.env.DEV) {
+            console.info(`[DEV] No active wallet, stopping refresh interval`)
+          }
+          return
+        }
 
         const response = await token({
           client,
           body: {
             grant_type: 'refresh_token',
-            refresh_token: session.auth.refresh_token,
+            refresh_token: currentSession.auth.refresh_token,
           },
         })
 
@@ -115,9 +127,9 @@ function RefreshApiToken() {
     return () => {
       clearInterval(intervalId)
     }
-  }, [client])
+  }, [client, session?.walletFileName, session?.auth?.refresh_token])
 
-  return <></>
+  return null
 }
 
 export default App
