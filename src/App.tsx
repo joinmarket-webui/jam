@@ -70,25 +70,30 @@ function RefreshApiToken() {
   const session = useSession()
 
   useEffect(() => {
-    if (!session?.walletFileName || !session?.auth?.refresh_token) {
+    if (!session?.walletFileName && session?.auth) {
       if (import.meta.env.DEV) {
-        console.info(`[DEV] No active wallet or refresh token, skipping refresh interval setup`)
+        console.log(`[DEV] No active wallet, clearing authentication tokens`)
       }
+      clearSession()
+      return
+    }
+  }, [session?.walletFileName, session?.auth])
+
+  // Set up token refresh interval only when wallet is active
+  useEffect(() => {
+    if (!session?.walletFileName || !session?.auth?.refresh_token) {
       return
     }
 
     if (import.meta.env.DEV) {
-      toast.info(`[DEV] setup refresh interval for wallet: ${session.walletFileName}`)
+      toast.info(`[DEV] setup refresh interval`)
     }
 
     let intervalId: NodeJS.Timeout
     setIntervalDebounced(
       async () => {
         const currentSession = getSession()
-        if (!currentSession?.walletFileName || !currentSession?.auth?.refresh_token) {
-          if (import.meta.env.DEV) {
-            console.info(`[DEV] No active wallet, stopping refresh interval`)
-          }
+        if (!currentSession?.auth?.refresh_token) {
           return
         }
 
@@ -129,7 +134,7 @@ function RefreshApiToken() {
     }
   }, [client, session?.walletFileName, session?.auth?.refresh_token])
 
-  return null
+  return <></>
 }
 
 export default App

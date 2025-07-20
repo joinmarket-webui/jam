@@ -235,7 +235,7 @@ const LoginPage = () => {
                           Create new wallet
                         </Button>
                         <Tooltip>
-                          <TooltipTrigger className="w-full">
+                          <TooltipTrigger asChild className="w-full">
                             <Button variant="secondary" className="w-full" size="lg" disabled>
                               Import existing wallet
                             </Button>
@@ -258,7 +258,7 @@ const LoginPage = () => {
                           Create a new wallet
                         </Button>
                         <Tooltip>
-                          <TooltipTrigger className="w-full">
+                          <TooltipTrigger asChild className="w-full">
                             <Button
                               variant="link"
                               size="sm"
