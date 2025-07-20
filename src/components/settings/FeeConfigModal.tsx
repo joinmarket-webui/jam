@@ -452,7 +452,7 @@ export default function FeeConfigModal({
             <Trans i18nKey="settings.fees.description">
               Fee description. See
               <a
-                href="https://jamdocs.org/market/fees/"
+                href="https://joinmarket-webui.github.io/jamdocs/market/fees/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="link-dark"

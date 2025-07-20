@@ -88,7 +88,12 @@ export default function Onboarding() {
               >
                 Help us improve the project on GitHub.
               </a>
-              <a href="https://jamdocs.org" target="_blank" rel="noopener noreferrer" className="link-secondary">
+              <a
+                href="https://joinmarket-webui.github.io/jamdocs/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link-secondary"
+              >
                 read the documentation
               </a>
             </Trans>

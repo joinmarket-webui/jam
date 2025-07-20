@@ -50,15 +50,27 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
           <div className="small text-secondary">
             <Trans i18nKey="cheatsheet.description">
               Follow the steps below to increase your financial privacy. It is advisable to switch from{' '}
-              <a href="https://jamdocs.org/glossary/#maker" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://joinmarket-webui.github.io/jamdocs/glossary/#maker"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 earning as a maker
               </a>{' '}
               to{' '}
-              <a href="https://jamdocs.org/glossary/#taker" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://joinmarket-webui.github.io/jamdocs/glossary/#taker"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 sending as a taker
               </a>{' '}
               back and forth.{' '}
-              <a href="https://jamdocs.org/interface/00-cheatsheet/" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://joinmarket-webui.github.io/jamdocs/interface/00-cheatsheet/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Learn more.
               </a>
             </Trans>
@@ -115,7 +127,11 @@ export default function Cheatsheet({ show = false, onHide }: CheatsheetProps) {
             <div className="small text-secondary">
               <Trans i18nKey="cheatsheet.repeat.description">
                 Still confused?{' '}
-                <a href="https://jamdocs.org/interface/00-cheatsheet/" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://joinmarket-webui.github.io/jamdocs/interface/00-cheatsheet/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Dig into the documentation
                 </a>
                 .

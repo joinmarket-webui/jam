@@ -22,8 +22,8 @@
 Jam is a web interface for [JoinMarket](https://github.com/JoinMarket-Org/joinmarket-clientserver/) focusing on user-friendliness and ease-of-use.
 It aims to provide sensible defaults and be easy to use for beginners while still having the features advanced users expect.
 
-- 💬 Join our [Matrix room](https://matrix.to/#/%23jam:bitcoin.kyoto) to get help and [contribute](https://jamdocs.org/contribute/)!
-- 📚 Check out the [documentation](https://jamdocs.org) and the [wiki](https://github.com/joinmarket-webui/jam/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
+- 💬 Join our [Matrix room](https://matrix.to/#/%23jam:bitcoin.kyoto) to get help and [contribute](https://joinmarket-webui.github.io/jamdocs/contribute/)!
+- 📚 Check out the [documentation](https://joinmarket-webui.github.io/jamdocs/) and the [wiki](https://github.com/joinmarket-webui/jam/wiki) for resources such as meeting notes, call recordings, ideas, and discussions.
 
 
 ## 📸
@@ -61,7 +61,7 @@ If your node system of choice is missing, feel free to integrate it and let us k
 </tbody>
 </table>
 
-Refer to [the installation docs](https://jamdocs.org/software/installation/) for more information on integrations as well as manual installation instructions.
+Refer to [the installation docs](https://joinmarket-webui.github.io/jamdocs/software/installation/) for more information on integrations as well as manual installation instructions.
 
 ## 🍊 Features
 
@@ -77,9 +77,9 @@ Refer to the [milestones](https://github.com/joinmarket-webui/jam/milestones) fo
 
 ## 🧑‍💻 Contribute
 
-This is a [free and open-source](https://jamdocs.org/philosophy/01-free-software/) software project and we love receiving pull-requests, bug reports, ideas, and feedback from everyone.
+This is a [free and open-source](https://joinmarket-webui.github.io/jamdocs/philosophy/01-free-software/) software project and we love receiving pull-requests, bug reports, ideas, and feedback from everyone.
 
-There are many ways you can contribute: testing, sharing ideas, writing documentation, creating tutorials, and—of course—writing code. Refer to the [general contribution guidelines](https://jamdocs.org/contribute/) to get started.
+There are many ways you can contribute: testing, sharing ideas, writing documentation, creating tutorials, and—of course—writing code. Refer to the [general contribution guidelines](https://joinmarket-webui.github.io/jamdocs/contribute/) to get started.
 
 ## 🛠️ Development
 

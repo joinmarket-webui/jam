@@ -142,7 +142,7 @@ export default function App() {
                         1: (
                           <a
                             className="alert-link"
-                            href="https://jamdocs.org/FAQ/#how-to-resolve-no-connection-to-gateway"
+                            href="https://joinmarket-webui.github.io/jamdocs/FAQ/#how-to-resolve-no-connection-to-gateway"
                             target="_blank"
                             rel="noopener noreferrer"
                           >
