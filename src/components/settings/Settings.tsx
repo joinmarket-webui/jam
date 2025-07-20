@@ -70,8 +70,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
   const handleSwitchWallet = () => {
-    // TODO: Implement wallet switch
-    console.log('Switch wallet')
+    navigate('/switch-wallet')
   }
 
   const handleRescanChain = () => {
@@ -170,8 +169,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={RotateCcw}
             title={t('settings.button_switch_wallet')}
             action={handleSwitchWallet}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
