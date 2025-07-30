@@ -39,3 +39,23 @@ export const setIntervalDebounced = (
 export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
 
 export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100000000)
+
+type SemVer = { major: number; minor: number; patch: number; raw?: string }
+
+export const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
+
+const versionRegex = new RegExp(/^v?(\d+)\.(\d+)\.(\d+).*$/)
+
+export const toSemVer = (raw?: string): SemVer => {
+  const arr = versionRegex.exec(raw || '')
+  if (!arr || arr.length < 4) {
+    return UNKNOWN_VERSION
+  }
+
+  return {
+    major: parseInt(arr[1], 10),
+    minor: parseInt(arr[2], 10),
+    patch: parseInt(arr[3], 10),
+    raw,
+  }
+}
