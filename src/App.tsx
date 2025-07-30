@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import CreateWallet from '@/components/CreateWallet'
 import JamLanding from '@/components/JamLanding'
 import LoginPage from '@/components/Login'
+import SwitchWallet from '@/components/SwitchWallet'
 import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/ui/sonner'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '@/constants/jm'
@@ -35,6 +36,12 @@ function App() {
           <Routes>
             <Route path="/login" element={authenticated ? <Navigate to="/" replace /> : <LoginPage />} />
             <Route path="/create-wallet" element={authenticated ? <Navigate to="/" replace /> : <CreateWallet />} />
+            <Route
+              path="/switch-wallet"
+              element={
+                authenticated ? <SwitchWallet walletFileName={walletFileName} /> : <Navigate to="/login" replace />
+              }
+            />
             <Route
               path="/"
               element={
