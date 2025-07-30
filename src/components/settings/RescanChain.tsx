@@ -18,7 +18,7 @@ export const RescanChain = ({ walletFileName }: { walletFileName: string }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-  const { isRescanning, rescanInfo, showCompletionMessage } = useRescanStatus()
+  const { isRescanning, rescanInfo } = useRescanStatus({ walletFileName })
   const [rescanHeight, setRescanHeight] = useState<number>(SEGWIT_ACTIVATION_BLOCK)
 
   const rescanMutation = useMutation({
@@ -122,25 +122,19 @@ export const RescanChain = ({ walletFileName }: { walletFileName: string }) => {
             >
               {isLoading
                 ? t('rescan_chain.text_button_submitting')
-                : showCompletionMessage
-                  ? 'Rescan Completed'
-                  : isRescanning
-                    ? rescanInfo?.progress
-                      ? `${t('rescan_chain.text_button_submitting')} (${rescanInfo.progress}%)`
-                      : t('rescan_chain.text_button_submitting')
-                    : t('rescan_chain.text_button_submit')}
+                : isRescanning
+                  ? rescanInfo?.progress
+                    ? `${t('rescan_chain.text_button_submitting')} (${rescanInfo.progress}%)`
+                    : t('rescan_chain.text_button_submitting')
+                  : t('rescan_chain.text_button_submit')}
             </Button>
 
-            {(isRescanning || showCompletionMessage) && (
+            {isRescanning && (
               <div className="bg-muted/50 mt-4 rounded-lg p-3">
                 <div className="flex items-center gap-2">
-                  <RefreshCw className={`h-4 w-4 ${showCompletionMessage ? 'text-green-600' : 'animate-spin'}`} />
+                  <RefreshCw className="h-4 w-4 animate-spin" />
                   <span className="text-sm">
-                    {showCompletionMessage
-                      ? 'Rescan completed successfully!'
-                      : rescanInfo?.progress
-                        ? `Rescanning... ${rescanInfo.progress}%`
-                        : 'Rescanning...'}
+                    {rescanInfo?.progress ? `Rescanning... ${rescanInfo.progress}%` : 'Rescanning...'}
                   </span>
                 </div>
               </div>
