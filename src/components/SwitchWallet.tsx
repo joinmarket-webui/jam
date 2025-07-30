@@ -64,7 +64,14 @@ const SwitchWallet = ({ walletFileName }: { walletFileName: string }) => {
     }
   }, [listwalletsQuery.error, t])
 
-  const wallets = useMemo(() => listwalletsQuery.data?.wallets || [], [listwalletsQuery.data])
+  const wallets = useMemo(() => {
+    const walletsData = listwalletsQuery.data?.wallets || []
+    return walletsData.sort((a, b) => {
+      if (a === walletFileName) return -1
+      if (b === walletFileName) return 1
+      return 0
+    })
+  }, [listwalletsQuery.data, walletFileName])
 
   const handleLockCurrentWallet = async () => {
     try {
