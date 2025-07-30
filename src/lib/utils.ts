@@ -40,7 +40,7 @@ export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
 
 export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100000000)
 
-declare type SemVer = { major: number; minor: number; patch: number; raw?: string }
+type SemVer = { major: number; minor: number; patch: number; raw?: string }
 
 export const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
 
