@@ -38,7 +38,6 @@ interface SettingProps {
 
 export const Settings = ({ walletFileName }: SettingProps) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
 
