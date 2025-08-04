@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useJamDisplayContext } from '../layout/display-mode-context'
@@ -26,6 +27,7 @@ import { SettingItem } from './SettingsItem'
 
 export const Settings = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
   const [hideBalance, setHideBalance] = useState(false)
@@ -52,11 +54,6 @@ export const Settings = () => {
   const handleRescanChain = () => {
     // TODO: Implement chain rescan
     console.log('Rescan chain')
-  }
-
-  const handleShowLogs = () => {
-    // TODO: Implement logs viewer
-    console.log('Show logs')
   }
 
   const handleAdjustFeeLimits = () => {
@@ -159,9 +156,10 @@ export const Settings = () => {
           <SettingItem
             icon={FileText}
             title={t('settings.show_logs')}
-            action={handleShowLogs}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            action={() => {
+              navigate('/logs')
+            }}
+            clickable={true}
           />
         </CardContent>
       </Card>

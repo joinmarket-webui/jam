@@ -15,6 +15,7 @@ import { token } from '@/lib/jm-api/generated/client'
 import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
+import { Logs } from './components/Logs'
 import { Receive } from './components/receive/Receive'
 import { Settings } from './components/settings/Settings'
 
@@ -61,6 +62,16 @@ function App() {
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/logs"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <Logs />
                   </Layout>
                 </ProtectedRoute>
               }
