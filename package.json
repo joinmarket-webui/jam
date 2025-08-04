@@ -50,7 +50,7 @@
     "dev:start": "echo 'Deprecated command will be removed soon. Please use `npm run dev` instead.'",
     "dev:start:secondary": "echo 'Deprecated command will be removed soon. Please use `npm run dev:secondary` instead.'",
     "dev": "REACT_APP_JAM_DEV_MODE=true npm start",
-    "dev:secondary": "PORT=3001 JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev:start",
+    "dev:secondary": "PORT=3001 JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
