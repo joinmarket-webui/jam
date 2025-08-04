@@ -4,6 +4,7 @@ import { Copy, CopyCheck, RefreshCw, Share } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
+import type { DisplayMode } from '@/hooks/useDisplayMode'
 import { getaddressOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { btcToSats, satsToBtc } from '@/lib/utils'
 import { useJamDisplayContext } from '../layout/display-mode-context'
@@ -24,7 +25,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   const [amount, setAmount] = useState<number | undefined>()
   const [bitcoinAddress, setBitcoinAddress] = useState<string | undefined>()
   const [copied, setCopied] = useState(false)
-  const [amountDisplayMode, setAmountDisplayMode] = useState<'sats' | 'btc'>('sats')
+  const [amountDisplayMode, setAmountDisplayMode] = useState<DisplayMode>('sats')
 
   const { jars } = useJamDisplayContext()
   const client = useApiClient()
@@ -65,7 +66,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     if (bitcoinAddress) {
       navigator.clipboard.writeText(bitcoinAddress)
       setCopied(true)
-      toast.success(t('receive.text_copy_address_confirmed'))
+      toast.success(t('global.button_copy_text_confirmed'))
     } else {
       toast.error(t('receive.error_copy_address_failed'))
     }
@@ -152,7 +153,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
       <h1 className="mb-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
       <p className="text-muted-foreground mb-4 text-sm">{t('receive.subtitle')}</p>
 
-      <div className="flex w-full max-w-xl flex-col items-center justify-center rounded-lg border p-8">
+      <div className="flex w-full max-w-xl flex-col items-center justify-center space-y-2 rounded-lg border p-8">
         {isQrLoading ? (
           <Skeleton className="h-[260px] w-[260px]" />
         ) : bitcoinAddress ? (
@@ -164,7 +165,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
         )}
 
         {isQrLoading ? (
-          <Skeleton className="h-4 w-[50%]" />
+          <Skeleton className="h-4 w-[65%]" />
         ) : (
           <p className="text-center font-mono text-xs break-all select-all">{bitcoinAddress}</p>
         )}
@@ -177,7 +178,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
 
           <Button variant="outline" size="sm" onClick={copyToClipboard}>
             {copied ? <CopyCheck /> : <Copy />}
-            {copied ? t('receive.text_copy_address_confirmed') : t('receive.button_copy_address')}
+            {copied ? t('global.button_copy_text_confirmed') : t('global.button_copy_text')}
           </Button>
 
           {'share' in navigator && (

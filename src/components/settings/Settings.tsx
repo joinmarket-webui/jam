@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import {
   Eye,
   EyeOff,
@@ -19,36 +20,58 @@ import {
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { useApiClient } from '@/hooks/useApiClient'
+import { useSession } from '@/hooks/useSession'
+import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { clearSession } from '@/lib/session'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { LanguageSelector } from './LanguageSelector'
+import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem } from './SettingsItem'
 
-export const Settings = () => {
+interface SettingProps {
+  walletFileName: string
+}
+
+export const Settings = ({ walletFileName }: SettingProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
-  const [hideBalance, setHideBalance] = useState(false)
+
+  const [showSeedDialog, setShowSeedDialog] = useState(false)
+  const navigate = useNavigate()
+  const client = useApiClient()
+  const session = useSession()
+
+  const lockWalletQuery = useQuery({
+    ...lockwalletOptions({
+      client,
+      path: { walletname: walletFileName },
+    }),
+    enabled: false,
+  })
+
+  const handleLockWallet = async () => {
+    try {
+      await lockWalletQuery.refetch()
+      clearSession()
+      toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletFileName }))
+      navigate('/login')
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      toast.error(t('global.errors.error_reloading_wallet_failed', { reason: errorMessage }))
+      console.error('Failed to lock wallet:', error)
+    }
+  }
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
-  const handleHideBalance = () => setHideBalance(!hideBalance)
-
-  const handleShowSeedPhrase = () => {
-    // TODO: Implement seed phrase modal
-    console.log('Show seed phrase')
-  }
-
-  const handleLockWallet = () => {
-    // TODO: Implement wallet lock
-    console.log('Lock wallet')
-  }
-
   const handleSwitchWallet = () => {
-    // TODO: Implement wallet switch
-    console.log('Switch wallet')
+    navigate('/switch-wallet')
   }
 
   const handleRescanChain = () => {
@@ -74,17 +97,17 @@ export const Settings = () => {
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
-            icon={hideBalance ? EyeOff : Eye}
-            title={t('settings.hide_balance')}
-            action={handleHideBalance}
+            icon={displayMode === 'private' ? Eye : EyeOff}
+            title={t(displayMode === 'private' ? 'settings.show_balance' : 'settings.hide_balance')}
+            action={() => toggleDisplayMode(displayMode === 'private' ? 'sats' : 'private')}
             tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={Bitcoin}
             title={t(displayMode === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
-            action={toggleDisplayMode}
+            action={() => toggleDisplayMode(displayMode === 'btc' ? 'sats' : 'btc')}
             clickable={true}
           />
           <Separator className="opacity-50" />
@@ -124,25 +147,25 @@ export const Settings = () => {
           <SettingItem
             icon={Key}
             title={t('settings.show_seed')}
-            action={handleShowSeedPhrase}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            action={() => setShowSeedDialog(true)}
+            clickable={true}
+            disabled={!session?.hashedSecret}
+            tooltip={!session?.hashedSecret ? 'Password verification unavailable.' : undefined}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={Unlock}
             title={t('settings.button_lock_wallet')}
             action={handleLockWallet}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            disabled={lockWalletQuery.isFetching}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={RotateCcw}
             title={t('settings.button_switch_wallet')}
             action={handleSwitchWallet}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
@@ -178,7 +201,7 @@ export const Settings = () => {
           >
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg">
-                <img src="/matrix-logo.png" alt="Matrix" className="h-4 w-4" />
+                <img src="/matrix-logo.png" alt="Matrix" className="light:invert-0 h-4 w-4 invert" />
               </div>
               <div>
                 <p className="text-sm font-medium">{t('settings.matrix')}</p>
@@ -233,6 +256,8 @@ export const Settings = () => {
           />
         </CardContent>
       </Card>
+
+      <SeedPhraseDialog open={showSeedDialog} onOpenChange={setShowSeedDialog} />
     </div>
   )
 }
