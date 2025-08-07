@@ -96,7 +96,7 @@ const serverConfigNative = (): ServerOptions => {
         },
       },
       '/obwatch': {
-        target: `https://127.0.0.1:${JMOBWATCH_PORT}`,
+        target: `http://127.0.0.1:${JMOBWATCH_PORT}`,
         changeOrigin: true,
         secure: false,
         rewrite: (p) => p.replace(/^\/obwatch/, ''),
@@ -121,23 +121,23 @@ const serverConfigStandalone = (): ServerOptions => {
   return {
     proxy: {
       '/api': {
-        target: `https://127.0.0.1:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
       },
       '/obwatch': {
-        target: `https://127.0.0.1:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
       },
       '/jmws': {
-        target: `https://127.0.0.1:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
         ws: true,
       },
       '/jam': {
-        target: `https://127.0.0.1:${JAM_API_PORT}`,
+        target: `http://127.0.0.1:${JAM_API_PORT}`,
         changeOrigin: true,
         secure: false,
       },

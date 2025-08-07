@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useFeatures } from '@/hooks/useFeatures'
 import { useSession } from '@/hooks/useSession'
 import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { clearSession } from '@/lib/session'
@@ -47,6 +48,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const navigate = useNavigate()
   const client = useApiClient()
   const session = useSession()
+  const { isLogsEnabled } = useFeatures()
 
   const lockWalletQuery = useQuery({
     ...lockwalletOptions({
@@ -77,11 +79,6 @@ export const Settings = ({ walletFileName }: SettingProps) => {
 
   const handleRescanChain = () => {
     navigate('/settings/rescan')
-  }
-
-  const handleShowLogs = () => {
-    // TODO: Implement logs viewer
-    console.log('Show logs')
   }
 
   const handleAdjustFeeLimits = () => {
@@ -177,14 +174,19 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             action={handleRescanChain}
             clickable={true}
           />
-          <Separator className="opacity-50" />
-          <SettingItem
-            icon={FileText}
-            title={t('settings.show_logs')}
-            action={handleShowLogs}
-            tooltip="Feature not yet implemented"
-            disabled={true}
-          />
+          {isLogsEnabled && (
+            <>
+              <Separator className="opacity-50" />
+              <SettingItem
+                icon={FileText}
+                title={t('settings.show_logs')}
+                action={() => {
+                  navigate('/logs')
+                }}
+                clickable={true}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
 

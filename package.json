@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:secondary": "JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
