@@ -76,8 +76,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   }
 
   const handleRescanChain = () => {
-    // TODO: Implement chain rescan
-    console.log('Rescan chain')
+    navigate('/settings/rescan')
   }
 
   const handleShowLogs = () => {
@@ -176,8 +175,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={RefreshCw}
             title={t('settings.rescan_chain')}
             action={handleRescanChain}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
