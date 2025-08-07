@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import CreateWallet from '@/components/CreateWallet'
 import JamLanding from '@/components/JamLanding'
 import LoginPage from '@/components/Login'
+import SwitchWallet from '@/components/SwitchWallet'
 import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/ui/sonner'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '@/constants/jm'
@@ -15,7 +16,10 @@ import { token } from '@/lib/jm-api/generated/client'
 import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
+import { Logs } from './components/Logs'
 import { Receive } from './components/receive/Receive'
+import { RescanChain } from './components/settings/RescanChain'
+import { Settings } from './components/settings/Settings'
 
 const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
   return authenticated ? <>{children}</> : <Navigate to="/login" replace />
@@ -35,6 +39,12 @@ function App() {
             <Route path="/login" element={authenticated ? <Navigate to="/" replace /> : <LoginPage />} />
             <Route path="/create-wallet" element={authenticated ? <Navigate to="/" replace /> : <CreateWallet />} />
             <Route
+              path="/switch-wallet"
+              element={
+                authenticated ? <SwitchWallet walletFileName={walletFileName} /> : <Navigate to="/login" replace />
+              }
+            />
+            <Route
               path="/"
               element={
                 <ProtectedRoute authenticated={authenticated}>
@@ -50,6 +60,36 @@ function App() {
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <Receive walletFileName={walletFileName} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <Settings walletFileName={walletFileName} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/logs"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <Logs />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/rescan"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <RescanChain walletFileName={walletFileName} />
                   </Layout>
                 </ProtectedRoute>
               }

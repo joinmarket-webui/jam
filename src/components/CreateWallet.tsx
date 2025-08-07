@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { hashPassword } from '@/lib/hash'
 import { type CreateWalletResponse, createwallet, session } from '@/lib/jm-api/generated/client'
 import { clearSession, setSession } from '@/lib/session'
 import { formatWalletName } from '@/lib/utils'
@@ -104,11 +105,20 @@ const CreateWallet = () => {
 
   const handleConfirmSeed = () => {
     if (createWalletResponse?.seedphrase) {
-      // Save session and navigate to dashboard
+      let hashedSecret: string | undefined
       const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
+
+      try {
+        hashedSecret = hashPassword(password, walletFileName)
+      } catch (hashError) {
+        console.warn('Failed to hash password, continuing without hash verification:', hashError)
+      }
+
+      // Save session and navigate to dashboard
       setSession({
         walletFileName,
         auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
+        hashedSecret,
       })
 
       navigate('/login', {

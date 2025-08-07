@@ -1,11 +1,18 @@
 import type { UnlockWalletResponse } from '@/lib/jm-api/generated/client'
 
+export interface RescanSession {
+  rescanning: boolean
+  progress?: number
+}
+
 interface SessionData {
   walletFileName: string
   auth: {
     token: UnlockWalletResponse['token']
     refresh_token: UnlockWalletResponse['refresh_token']
   }
+  rescan?: RescanSession
+  hashedSecret?: string
 }
 
 export const setSession = (session: Partial<SessionData>) => {
