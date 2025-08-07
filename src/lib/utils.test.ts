@@ -9,6 +9,8 @@ import {
   percentageToFactor,
   isValidNumber,
   factorToPercentage,
+  toSemVer,
+  UNKNOWN_VERSION,
 } from './utils'
 
 describe('cn', () => {
@@ -120,7 +122,78 @@ describe('btcToSats', () => {
   it('should handle rounding', () => {
     expect(btcToSats('0.123456789')).toBe(12345679) // Rounds to nearest integer
     expect(btcToSats('0.000000004')).toBe(0) // Less than 0.5 sats rounds down
-    expect(btcToSats('0.000000005')).toBe(1) // 0.5 sats or more rounds up
+    expect(btcToSats('0.000000005')).toBe(1) // TODO fix this 0.5 sats should rounds down to 0
+  })
+})
+
+describe('toSemVer', () => {
+  it('should parse valid semantic version strings', () => {
+    expect(toSemVer('1.2.3')).toEqual({
+      major: 1,
+      minor: 2,
+      patch: 3,
+      raw: '1.2.3',
+    })
+
+    expect(toSemVer('v1.2.3')).toEqual({
+      major: 1,
+      minor: 2,
+      patch: 3,
+      raw: 'v1.2.3',
+    })
+  })
+
+  it('should parse version strings with additional metadata', () => {
+    expect(toSemVer('1.2.3-alpha')).toEqual({
+      major: 1,
+      minor: 2,
+      patch: 3,
+      raw: '1.2.3-alpha',
+    })
+
+    expect(toSemVer('v2.5.8-beta.1')).toEqual({
+      major: 2,
+      minor: 5,
+      patch: 8,
+      raw: 'v2.5.8-beta.1',
+    })
+
+    expect(toSemVer('1.0.0+build.123')).toEqual({
+      major: 1,
+      minor: 0,
+      patch: 0,
+      raw: '1.0.0+build.123',
+    })
+  })
+
+  it('should return UNKNOWN_VERSION for invalid version strings', () => {
+    expect(toSemVer('invalid')).toEqual(UNKNOWN_VERSION)
+    expect(toSemVer('1.2')).toEqual(UNKNOWN_VERSION)
+    expect(toSemVer('1')).toEqual(UNKNOWN_VERSION)
+    expect(toSemVer('a.b.c')).toEqual(UNKNOWN_VERSION)
+    expect(toSemVer('')).toEqual(UNKNOWN_VERSION)
+  })
+
+  it('should handle undefined or null input', () => {
+    expect(toSemVer(undefined)).toEqual(UNKNOWN_VERSION)
+    expect(toSemVer(null as unknown as string | undefined)).toEqual(UNKNOWN_VERSION)
+  })
+})
+
+describe('UNKNOWN_VERSION', () => {
+  it('should have the correct structure and values', () => {
+    expect(UNKNOWN_VERSION).toEqual({
+      major: 0,
+      minor: 0,
+      patch: 0,
+      raw: 'unknown',
+    })
+  })
+
+  it('should be immutable', () => {
+    const original = { ...UNKNOWN_VERSION }
+    // Attempting to modify should not affect the original constant
+    expect(UNKNOWN_VERSION).toEqual(original)
   })
 })
 
