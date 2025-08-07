@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:storybook": "vitest run --project storybook",
+    "check": "npm run format && npm run test && npm run build",
     "regtest:build": "npm run regtest:clear && docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml build --pull",
     "regtest:rebuild": "rm -rf docker/regtest/.tmp && npm run regtest:build -- --no-cache",
     "regtest:clear": "docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml down --volumes --remove-orphans",

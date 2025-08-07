@@ -40,4 +40,18 @@ export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
 
 export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100000000)
 
+
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
+
+export const percentageToFactor = (val: number, precision = 6) => {
+  return Number((val / 100).toFixed(precision))
+}
+
+export const isValidNumber = (val: number | undefined | null) => typeof val === 'number' && !isNaN(val)
+
+export const factorToPercentage = (val: number, precision = 6) => {
+  // Value cannot just be multiplied
+  // e.g. ✗ 0.000027 * 100 == 0.0026999999999999997
+  // but: ✓ Number((0.000027 * 100).toFixed(6)) = 0.0027
+  return Number((val * 100).toFixed(precision))
+}
