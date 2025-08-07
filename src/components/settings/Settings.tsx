@@ -73,18 +73,6 @@ export const Settings = ({ walletFileName }: SettingProps) => {
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
-  const handleSwitchWallet = () => {
-    navigate('/switch-wallet')
-  }
-
-  const handleRescanChain = () => {
-    navigate('/settings/rescan')
-  }
-
-  const handleAdjustFeeLimits = () => {
-    setShowFeeLimitDialog(true)
-  }
-
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <div>
@@ -101,22 +89,18 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={displayMode === 'private' ? Eye : EyeOff}
             title={t(displayMode === 'private' ? 'settings.show_balance' : 'settings.hide_balance')}
             action={() => toggleDisplayMode(displayMode === 'private' ? 'sats' : 'private')}
-            tooltip="Feature not yet implemented"
-            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={Bitcoin}
             title={t(displayMode === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
             action={() => toggleDisplayMode(displayMode === 'btc' ? 'sats' : 'btc')}
-            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={resolvedTheme === 'dark' ? Sun : Moon}
             title={resolvedTheme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
             action={toggleTheme}
-            clickable={true}
           />
           <Separator className="opacity-50" />
           <LanguageSelector />
@@ -132,8 +116,9 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           <SettingItem
             icon={DollarSign}
             title={t('settings.show_fee_config')}
-            action={handleAdjustFeeLimits}
-            clickable={true}
+            action={() => {
+              setShowFeeLimitDialog(true)
+            }}
           />
         </CardContent>
       </Card>
@@ -148,9 +133,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={Key}
             title={t('settings.show_seed')}
             action={() => setShowSeedDialog(true)}
-            clickable={true}
             disabled={!session?.hashedSecret}
-            tooltip={!session?.hashedSecret ? 'Password verification unavailable.' : undefined}
           />
           <Separator className="opacity-50" />
           <SettingItem
@@ -158,21 +141,22 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             title={t('settings.button_lock_wallet')}
             action={handleLockWallet}
             disabled={lockWalletQuery.isFetching}
-            clickable={true}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={RotateCcw}
             title={t('settings.button_switch_wallet')}
-            action={handleSwitchWallet}
-            clickable={true}
+            action={() => {
+              navigate('/switch-wallet')
+            }}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={RefreshCw}
             title={t('settings.rescan_chain')}
-            action={handleRescanChain}
-            clickable={true}
+            action={() => {
+              navigate('/settings/rescan')
+            }}
           />
           {isLogsEnabled && (
             <>
@@ -183,7 +167,6 @@ export const Settings = ({ walletFileName }: SettingProps) => {
                 action={() => {
                   navigate('/logs')
                 }}
-                clickable={true}
               />
             </>
           )}
@@ -244,7 +227,6 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             action={() => {
               window.open('https://jamdocs.org', '_blank', 'noreferrer,noopener')
             }}
-            clickable={true}
             external={true}
           />
           <Separator className="opacity-50" />
@@ -254,7 +236,6 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             action={() => {
               window.open('https://github.com/joinmarket-webui/jam', '_blank', 'noreferrer,noopener')
             }}
-            clickable={true}
             external={true}
           />
         </CardContent>
