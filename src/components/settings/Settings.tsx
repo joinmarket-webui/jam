@@ -78,8 +78,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   }
 
   const handleRescanChain = () => {
-    // TODO: Implement chain rescan
-    console.log('Rescan chain')
+    navigate('/settings/rescan')
   }
 
   const handleAdjustFeeLimits = () => {
@@ -173,8 +172,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={RefreshCw}
             title={t('settings.rescan_chain')}
             action={handleRescanChain}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
           {isLogsEnabled && (
             <>
