@@ -1,9 +1,9 @@
 import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { Jar } from '@/components/layout/display-mode-context'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { clearSession } from '@/lib/session'
+import { DevBadge } from './ui/DevBadge'
 
 interface NavbarProps {
   theme: string
@@ -29,9 +29,7 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
           <Wallet className="mr-3" strokeWidth={1} />
           <div className="relative flex flex-col">
             <span className="-mb-1 flex font-thin">Satoshi</span>
-            <Badge className={`absolute -top-1 left-20 z-10 -translate-x-1/2`} variant="dev">
-              dev
-            </Badge>
+            <DevBadge className={`absolute -top-1 left-20 z-10 -translate-x-1/2`} />
             <div className="flex min-h-[40px] items-center text-lg font-light tracking-wider">
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
