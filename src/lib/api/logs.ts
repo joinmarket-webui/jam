@@ -1,15 +1,8 @@
-/**
- * Log API functions for fetching server logs
- */
-
 export interface AuthApiRequestContext {
   token: string
   signal?: AbortSignal
 }
 
-/**
- * Build authentication header for requests
- */
 const buildAuthHeader = (token: string) => {
   return { 'x-jm-authorization': `Bearer ${token}` }
 }
@@ -31,13 +24,25 @@ const withExpectedContentTypeOrThrow = async (response: Response, expectedConten
 }
 
 /**
+ * Fetch features configuration from the server
+ * @param token - Authentication token
+ * @param signal - AbortSignal for cancelling requests
+ * @returns Promise<Response>
+ */
+export const fetchFeatures = async ({ token, signal }: AuthApiRequestContext) => {
+  return await fetch(`/features`, {
+    headers: { ...buildAuthHeader(token) },
+    signal,
+  }).then((res) => withExpectedContentTypeOrThrow(res, 'application/json'))
+}
+
+/**
  * Fetch log file content from the server
  * @param token - Authentication token
  * @param signal - AbortSignal for cancelling requests
  * @param fileName - Name of the log file to fetch
  * @returns Promise<Response>
  */
-
 export const fetchLog = async ({
   token,
   signal,
