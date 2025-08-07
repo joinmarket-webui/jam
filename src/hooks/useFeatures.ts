@@ -40,7 +40,6 @@ export const useFeatures = () => {
     },
     enabled: !!session?.auth?.token,
     retry: false,
-    staleTime: 5 * 60 * 1000,
   })
 
   const isLogsEnabled = () => {
