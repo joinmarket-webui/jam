@@ -28,6 +28,7 @@ import { useSession } from '@/hooks/useSession'
 import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { clearSession } from '@/lib/session'
 import { useJamDisplayContext } from '../layout/display-mode-context'
+import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem } from './SettingsItem'
@@ -42,6 +43,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const { displayMode, toggleDisplayMode } = useJamDisplayContext()
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
+  const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
   const navigate = useNavigate()
   const client = useApiClient()
   const session = useSession()
@@ -84,8 +86,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   }
 
   const handleAdjustFeeLimits = () => {
-    // TODO: Implement fee limits adjustment
-    console.log('Adjust fee limits')
+    setShowFeeLimitDialog(true)
   }
 
   return (
@@ -136,8 +137,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={DollarSign}
             title={t('settings.show_fee_config')}
             action={handleAdjustFeeLimits}
-            tooltip="Feature not yet implemented"
-            disabled={true}
+            clickable={true}
           />
         </CardContent>
       </Card>
@@ -261,6 +261,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
       </Card>
 
       <SeedPhraseDialog open={showSeedDialog} onOpenChange={setShowSeedDialog} />
+      <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />
     </div>
   )
 }

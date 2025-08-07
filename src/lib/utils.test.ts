@@ -1,5 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cn, formatWalletName, JM_WALLET_FILE_EXTENSION, setIntervalDebounced, satsToBtc, btcToSats } from './utils'
+import {
+  cn,
+  formatWalletName,
+  JM_WALLET_FILE_EXTENSION,
+  setIntervalDebounced,
+  satsToBtc,
+  btcToSats,
+  percentageToFactor,
+  isValidNumber,
+  factorToPercentage,
+} from './utils'
 
 describe('cn', () => {
   it('should merge class names correctly', () => {
@@ -111,5 +121,70 @@ describe('btcToSats', () => {
     expect(btcToSats('0.123456789')).toBe(12345679) // Rounds to nearest integer
     expect(btcToSats('0.000000004')).toBe(0) // Less than 0.5 sats rounds down
     expect(btcToSats('0.000000005')).toBe(1) // 0.5 sats or more rounds up
+  })
+})
+
+describe('percentageToFactor', () => {
+  it('should correctly convert percentage to factor', () => {
+    expect(percentageToFactor(100)).toBe(1)
+    expect(percentageToFactor(50)).toBe(0.5)
+    expect(percentageToFactor(25)).toBe(0.25)
+    expect(percentageToFactor(0)).toBe(0)
+    expect(percentageToFactor(10.5)).toBe(0.105)
+  })
+
+  it('should handle precision parameter', () => {
+    expect(percentageToFactor(33.333333, 2)).toBe(0.33)
+    expect(percentageToFactor(33.333333, 4)).toBe(0.3333)
+    expect(percentageToFactor(66.666666, 3)).toBe(0.667)
+  })
+
+  it('should use default precision of 6', () => {
+    expect(percentageToFactor(12.345678)).toBe(0.123457)
+    expect(percentageToFactor(0.001)).toBe(0.00001)
+  })
+})
+
+describe('isValidNumber', () => {
+  it('should return true for valid numbers', () => {
+    expect(isValidNumber(0)).toBe(true)
+    expect(isValidNumber(1)).toBe(true)
+    expect(isValidNumber(-1)).toBe(true)
+    expect(isValidNumber(3.14)).toBe(true)
+    expect(isValidNumber(Infinity)).toBe(true)
+    expect(isValidNumber(-Infinity)).toBe(true)
+  })
+
+  it('should return false for invalid values', () => {
+    expect(isValidNumber(NaN)).toBe(false)
+    expect(isValidNumber(undefined)).toBe(false)
+    expect(isValidNumber(null)).toBe(false)
+  })
+})
+
+describe('factorToPercentage', () => {
+  it('should correctly convert factor to percentage', () => {
+    expect(factorToPercentage(1)).toBe(100)
+    expect(factorToPercentage(0.5)).toBe(50)
+    expect(factorToPercentage(0.25)).toBe(25)
+    expect(factorToPercentage(0)).toBe(0)
+    expect(factorToPercentage(0.105)).toBe(10.5)
+  })
+
+  it('should handle precision parameter', () => {
+    expect(factorToPercentage(0.333333, 2)).toBe(33.33)
+    expect(factorToPercentage(0.333333, 4)).toBe(33.3333)
+    expect(factorToPercentage(0.666666, 3)).toBe(66.667)
+  })
+
+  it('should use default precision of 6', () => {
+    expect(factorToPercentage(0.123456789)).toBe(12.345679)
+    expect(factorToPercentage(0.00000001)).toBe(0.000001)
+  })
+
+  it('should handle floating point precision issues', () => {
+    // This test verifies the comment in the function about floating point precision
+    expect(factorToPercentage(0.000027)).toBe(0.0027)
+    expect(factorToPercentage(0.000027, 10)).toBe(0.0027)
   })
 })

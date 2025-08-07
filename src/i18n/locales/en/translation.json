@@ -285,7 +285,9 @@
       "text_button_submit": "Save",
       "text_button_submitting": "Saving...",
       "error_loading_fee_config_failed": "Error while loading fee config values.",
-      "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}"
+      "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}",
+      "success_message": "Fee settings updated successfully.",
+      "error_message": "Failed to update fee settings. Please try again."
     }
   },
   "rescan_chain": {
