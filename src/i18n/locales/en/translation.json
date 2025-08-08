@@ -272,7 +272,13 @@
       "text_button_submitting": "Saving...",
       "error_loading_fee_config_failed": "Error while loading fee config values.",
       "error_saving_fee_config_failed": "Error while saving fee config values. Reason: {{ reason }}"
-    }
+    },
+    "seed_auth_info_text": "For security, please enter your wallet password to view the seed phrase.",
+    "password_label": "Wallet Password",
+    "error_invalid_password": "Invalid password. Please try again.",
+    "error_authentication_failed": "Authentication failed. Please try again.",
+    "authenticating": "Authenticating...",
+    "seed_auto_hide_warning": "For security, the seed phrase will be automatically hidden after 30 seconds."
   },
   "rescan_chain": {
     "title": "Rescan timechain (Experimental)",
