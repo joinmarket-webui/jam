@@ -1,10 +1,11 @@
 {
   "name": "jam",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:secondary": "JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
@@ -16,6 +17,7 @@
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:storybook": "vitest run --project storybook",
+    "check": "npm run format && npm run test && npm run build",
     "regtest:build": "npm run regtest:clear && docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml build --pull",
     "regtest:rebuild": "rm -rf docker/regtest/.tmp && npm run regtest:build -- --no-cache",
     "regtest:clear": "docker compose --env-file docker/regtest/.env.example --file docker/regtest/docker-compose.yml down --volumes --remove-orphans",
@@ -37,8 +39,10 @@
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
+    "@noble/hashes": "^1.8.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-separator": "^1.1.7",
