@@ -17,6 +17,7 @@ import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
 import { Logs } from './components/Logs'
+import { EarnPage } from './components/earn/Earn'
 import { Receive } from './components/receive/Receive'
 import { RescanChain } from './components/settings/RescanChain'
 import { Settings } from './components/settings/Settings'
@@ -65,6 +66,16 @@ function App() {
               }
             />
             <Route
+              path="/earn"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <EarnPage walletFileName={walletFileName} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/settings"
               element={
                 <ProtectedRoute authenticated={authenticated}>
@@ -108,7 +119,7 @@ const API_AUTH_TOKEN_RENEW_INTERVAL = Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75
 function RefreshApiToken() {
   const client = useApiClient()
 
-  // TODO: stop this interval if no wallet if active
+  // TODO: stop this interval if no wallet is active
   useEffect(() => {
     if (import.meta.env.DEV) {
       toast.info(`[DEV] setup refresh interval`)
