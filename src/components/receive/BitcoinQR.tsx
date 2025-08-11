@@ -71,7 +71,7 @@ export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width =
               onClick={downloadQR}
               aria-label="Download QR Code"
             >
-              <Download size={18} />
+              <Download size={18} className="animate-bounce" />
               {t('receive.button_download_qr')}
             </Button>
           )}
