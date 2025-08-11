@@ -75,12 +75,10 @@ export const Settings = ({ walletFileName }: SettingProps) => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <div>
-        <h1 className="m-5 text-2xl font-semibold tracking-tight">{t('navbar.menu_mobile_settings')}</h1>
-      </div>
+      <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('navbar.menu_mobile_settings')}</h1>
 
       {/* Display Settings */}
-      <Card className="border-0 shadow-sm">
+      <Card className="mt-3 border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base font-medium">{t('settings.section_title_display')}</CardTitle>
         </CardHeader>

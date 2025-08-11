@@ -17,8 +17,8 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
     )
   }
   return (
-    <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-      <h1 className="mb-2 text-left text-2xl font-bold">{t('scheduler.title')}</h1>
+    <div className="mx-auto max-w-2xl space-y-3 p-4">
+      <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('scheduler.title')}</h1>
       <p className="text-muted-foreground mb-4 text-sm">{t('scheduler.subtitle')}</p>
 
       <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
