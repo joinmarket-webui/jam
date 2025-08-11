@@ -17,10 +17,11 @@ import { queryClient } from '@/lib/queryClient'
 import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
 import { Logs } from './components/Logs'
-import { EarnPage } from './components/earn/Earn'
+import { EarnPage } from './components/earn/EarnPage'
 import { Receive } from './components/receive/Receive'
 import { RescanChain } from './components/settings/RescanChain'
 import { Settings } from './components/settings/Settings'
+import { SweepPage } from './components/sweep/SweepPage'
 
 const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
   return authenticated ? <>{children}</> : <Navigate to="/login" replace />
@@ -71,6 +72,16 @@ function App() {
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <EarnPage walletFileName={walletFileName} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sweep"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <SweepPage walletFileName={walletFileName} />
                   </Layout>
                 </ProtectedRoute>
               }
