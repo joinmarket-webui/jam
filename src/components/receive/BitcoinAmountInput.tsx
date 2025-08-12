@@ -47,8 +47,13 @@ export const BitcoinAmountInput = ({
             {...inputProps}
           />
         </div>
-        <Button variant="outline" size="sm" className="py-4 whitespace-nowrap" onClick={toggleDisplayMode}>
-          {amountDisplayMode === 'sats' ? 'BTC' : 'Sats'}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex w-18 items-center justify-between py-4.5 whitespace-nowrap"
+          onClick={toggleDisplayMode}
+        >
+          <span>{amountDisplayMode === 'sats' ? 'BTC' : 'Sats'}</span>
           <ArrowUpDown />
         </Button>
       </div>
