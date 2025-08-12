@@ -22,6 +22,7 @@ export interface FeeValues {
   max_cj_fee_abs?: number
   max_cj_fee_rel?: number
   max_sweep_fee_change?: number
+  merge_algorithm?: string
 }
 
 export const useLoadFeeConfigValues = () => {
@@ -41,6 +42,7 @@ export const useLoadFeeConfigValues = () => {
       const parsedMaxFeeAbs = parseInt(policy.max_cj_fee_abs || '', 10)
       const parsedMaxFeeRel = parseFloat(policy.max_cj_fee_rel || '')
       const parsedMaxSweepFeeChange = parseFloat(policy.max_sweep_fee_change || '')
+      const parsedMergeAlgorithm = policy.merge_algorithm || ''
 
       const feeValues: FeeValues = {
         tx_fees: isValidNumber(parsedTxFees)
@@ -53,6 +55,7 @@ export const useLoadFeeConfigValues = () => {
         max_cj_fee_abs: isValidNumber(parsedMaxFeeAbs) ? parsedMaxFeeAbs : undefined,
         max_cj_fee_rel: isValidNumber(parsedMaxFeeRel) ? parsedMaxFeeRel : undefined,
         max_sweep_fee_change: isValidNumber(parsedMaxSweepFeeChange) ? parsedMaxSweepFeeChange : undefined,
+        merge_algorithm: parsedMergeAlgorithm,
       }
       return feeValues
     },

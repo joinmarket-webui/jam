@@ -34,13 +34,15 @@ interface FeeConfigModalProps {
   defaultActiveSectionKey?: FeeConfigSectionKey
 }
 
-export type FeeConfigSectionKey = 'tx_fee' | 'cj_fee'
+export type FeeConfigSectionKey = 'tx_fee' | 'cj_fee' | 'merge_algo'
 const TX_FEE_SECTION_KEY: FeeConfigSectionKey = 'tx_fee'
 const CJ_FEE_SECTION_KEY: FeeConfigSectionKey = 'cj_fee'
+const MERGE_ALGORITHM_SECTION_KEY: FeeConfigSectionKey = 'merge_algo'
 
 type FeeFormValues = Pick<FeeValues, 'tx_fees' | 'tx_fees_factor' | 'max_cj_fee_rel' | 'max_sweep_fee_change'> & {
   max_cj_fee_abs?: AmountValue
   enableValidation?: boolean
+  merge_algorithm?: string
 }
 
 interface FeeConfigFormProps {
@@ -266,6 +268,37 @@ const FeeConfigForm = forwardRef(
                     </rb.Form.Group>
                   </rb.Accordion.Body>
                 </rb.Accordion.Item>
+                <rb.Accordion.Item eventKey={MERGE_ALGORITHM_SECTION_KEY}>
+                  <rb.Accordion.Header>
+                    <span
+                      className={classNames({
+                        'text-danger': !!errors.tx_fees || !!errors.tx_fees_factor || !!errors.max_sweep_fee_change,
+                      })}
+                    >
+                      {t('settings.fees.title_advanced_settings')}
+                    </span>
+                  </rb.Accordion.Header>
+                  <rb.Accordion.Body>
+                    <div className="mb-4 text-secondary">{t('settings.fees.description_advanced_settings')}</div>
+
+                    <rb.Form.Group controlId="merge_algorithm" className="mb-4">
+                      <rb.Form.Label>{t('settings.fees.label_merge_algorithm')}</rb.Form.Label>
+                      <rb.Form.Text>{t('settings.fees.description_merge_algorithm')}</rb.Form.Text>
+                      <rb.Form.Control
+                        as="select"
+                        name="merge_algorithm"
+                        value={values.merge_algorithm}
+                        onChange={(e) => setFieldValue('merge_algorithm', e.target.value, true)}
+                        disabled={isSubmitting}
+                      >
+                        <option value="default">Default</option>
+                        <option value="gradual">Gradual</option>
+                        <option value="greedy">Greedy</option>
+                        <option value="greediest">Greediest</option>
+                      </rb.Form.Control>
+                    </rb.Form.Group>
+                  </rb.Accordion.Body>
+                </rb.Accordion.Item>
               </rb.Accordion>
             </rb.Form>
           )
@@ -408,6 +441,10 @@ export default function FeeConfigModal({
         key: FEE_CONFIG_KEYS.max_sweep_fee_change,
         value: String(values.max_sweep_fee_change ?? ''),
       },
+      {
+        key: FEE_CONFIG_KEYS.merge_algorithm,
+        value: String(values.merge_algorithm ?? ''),
+      },
     ]
 
     setSaveErrorMessage(undefined)
@@ -515,6 +552,7 @@ export default function FeeConfigModal({
                 formRef.current?.setFieldValue('tx_fees', undefined, false)
                 formRef.current?.setFieldValue('tx_fees_factor', undefined, false)
                 formRef.current?.setFieldValue('max_sweep_fee_change', undefined, false)
+                formRef.current?.setFieldValue('merge_algorithm', 'default', false)
                 setTimeout(() => formRef.current?.validateForm(), 4)
               }}
               disabled={isLoading || isSubmitting}

@@ -33,4 +33,5 @@ export const FEE_CONFIG_KEYS: Record<string, ConfigKey> = {
   max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },
   max_cj_fee_rel: { section: 'POLICY', field: 'max_cj_fee_rel' },
   max_sweep_fee_change: { section: 'POLICY', field: 'max_sweep_fee_change' },
+  merge_algorithm: { section: 'POLICY', field: 'merge_algorithm' },
 }
