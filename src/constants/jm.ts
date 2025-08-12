@@ -2,6 +2,11 @@ export const JM_API_AUTH_TOKEN_EXPIRY = parseInt(import.meta.env.VITE_JM_API_AUT
 
 export const JM_MAX_SWEEP_FEE_CHANGE_DEFAULT = 0.8
 
+// only support starting the maker with native segwit offers
+type RelOfferType = 'sw0reloffer'
+type AbsOfferType = 'sw0absoffer'
+export type OfferType = RelOfferType | AbsOfferType | string
+
 type SectionKey = string
 
 interface ConfigKey {

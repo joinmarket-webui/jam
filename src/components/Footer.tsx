@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, File, X } from 'lucide-react'
+import { Check, File, X, BookOpen } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -23,10 +23,16 @@ export function Footer() {
             Read this before using.
           </a>
         </span>
-        <div className="flex flex-1 items-center justify-center hover:underline">
-          <Button variant="ghost" size="sm" onClick={() => setIsCheatsheetOpen(true)}>
+        <div className="flex flex-1 items-center justify-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setIsCheatsheetOpen(true)} className="border">
             <File />
             Cheatsheet
+          </Button>
+          <Button variant="ghost" size="sm" asChild className="border">
+            <Link to="/orderbook">
+              <BookOpen />
+              Orderbook
+            </Link>
           </Button>
         </div>
 
