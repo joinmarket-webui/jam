@@ -3,7 +3,7 @@ import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { Jar } from '@/components/layout/display-mode-context'
 import { Button } from '@/components/ui/button'
-import { clearSession } from '@/lib/session'
+import { authStore } from '@/store/authStore'
 import { DevBadge } from './ui/DevBadge'
 import { Skeleton } from './ui/skeleton'
 
@@ -20,7 +20,7 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    clearSession()
+    authStore.getState().clear()
     await navigate('/login')
   }
 

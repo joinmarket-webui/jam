@@ -1,7 +1,7 @@
 import type { Client } from '@hey-api/client-fetch'
 import { createClient } from '@/lib/jm-api'
 import type { ClientOptions, UnlockWalletResponse } from '@/lib/jm-api/generated/client'
-import { getSession } from '@/lib/session'
+import { authStore } from '@/store/authStore'
 
 type ApiToken = UnlockWalletResponse['token']
 
@@ -20,9 +20,9 @@ async function loggingResponseInterceptor(response: Response) {
 
 const createJamAuthenticationMiddleware = () => {
   return async (request: Request) => {
-    const session = getSession()
-    if (session?.auth?.token) {
-      const authHeader = buildAuthHeader(session?.auth?.token)
+    const authState = authStore.getState().state
+    if (authState?.auth?.token) {
+      const authHeader = buildAuthHeader(authState.auth.token)
       request.headers.set(authHeader[0], authHeader[1])
     }
     return request

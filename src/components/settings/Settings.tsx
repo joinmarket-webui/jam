@@ -21,13 +21,13 @@ import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeatures } from '@/hooks/useFeatures'
-import { useSession } from '@/hooks/useSession'
 import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { clearSession } from '@/lib/session'
+import { authStore } from '@/store/authStore'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
@@ -47,7 +47,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
   const navigate = useNavigate()
   const client = useApiClient()
-  const session = useSession()
+  const hashedSecret = useStore(authStore, (state) => state.state?.hashed_password)
   const { isLogsEnabled } = useFeatures()
 
   const lockWalletQuery = useQuery({
@@ -61,7 +61,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const handleLockWallet = async () => {
     try {
       await lockWalletQuery.refetch()
-      clearSession()
+      authStore.getState().clear()
       toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletFileName }))
       navigate('/login')
     } catch (error: unknown) {
@@ -131,7 +131,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={Key}
             title={t('settings.show_seed')}
             action={() => setShowSeedDialog(true)}
-            disabled={!session?.hashedSecret}
+            disabled={hashedSecret === undefined}
           />
           <Separator className="opacity-50" />
           <SettingItem
@@ -239,7 +239,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
         </CardContent>
       </Card>
 
-      <SeedPhraseDialog open={showSeedDialog} onOpenChange={setShowSeedDialog} />
+      <SeedPhraseDialog walletFileName={walletFileName} open={showSeedDialog} onOpenChange={setShowSeedDialog} />
       <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />
     </div>
   )
