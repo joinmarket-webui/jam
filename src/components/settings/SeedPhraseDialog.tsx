@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Eye, EyeOff, AlertTriangle, Clock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,14 +17,15 @@ import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { getseedOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { getSession } from '@/lib/session'
+import { authStore } from '@/store/authStore'
 
 interface SeedPhraseDialogProps {
+  walletFileName: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export const SeedPhraseDialog = ({ open, onOpenChange }: SeedPhraseDialogProps) => {
+export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhraseDialogProps) => {
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -32,8 +34,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange }: SeedPhraseDialogProps) 
   const [timeLeft, setTimeLeft] = useState(30)
 
   const client = useApiClient()
-  const session = getSession()
-  const walletFileName = session?.walletFileName
+  const authState = useStore(authStore, (state) => state.state)
 
   const {
     data: seedPhraseData,
@@ -44,9 +45,9 @@ export const SeedPhraseDialog = ({ open, onOpenChange }: SeedPhraseDialogProps) 
   } = useQuery({
     ...getseedOptions({
       client,
-      path: { walletname: walletFileName! },
+      path: { walletname: walletFileName },
     }),
-    enabled: isPasswordVerified && !!password && !!walletFileName && open,
+    enabled: isPasswordVerified && !!password && open,
     staleTime: 0,
     retry: false,
     select: (data) => {
@@ -85,20 +86,20 @@ export const SeedPhraseDialog = ({ open, onOpenChange }: SeedPhraseDialogProps) 
 
   const handlePasswordSubmit = () => {
     if (!password) return
-    if (!walletFileName) {
+    if (walletFileName !== authState?.walletFileName) {
       setError('Session error. Please login again.')
       return
     }
 
     // Check if hash verification is available
-    if (!session?.hashedSecret) {
+    if (!authState?.hashed_password) {
       setError('Password verification unavailable. Please login again.')
       return
     }
 
     try {
       const hashed = hashPassword(password, walletFileName)
-      if (hashed === session.hashedSecret) {
+      if (hashed === authState?.hashed_password) {
         setIsPasswordVerified(true)
         setError('')
       } else {

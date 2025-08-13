@@ -1,18 +1,10 @@
-import type { UnlockWalletResponse } from '@/lib/jm-api/generated/client'
-
 export interface RescanSession {
   rescanning: boolean
   progress?: number
 }
 
 interface SessionData {
-  walletFileName: string
-  auth: {
-    token: UnlockWalletResponse['token']
-    refresh_token: UnlockWalletResponse['refresh_token']
-  }
   rescan?: RescanSession
-  hashedSecret?: string
 }
 
 export const setSession = (session: Partial<SessionData>) => {
@@ -30,12 +22,6 @@ export const setSession = (session: Partial<SessionData>) => {
 export const getSession = (): Partial<SessionData> | null => {
   const session = sessionStorage.getItem('joinmarket')
   return session ? JSON.parse(session) : null
-}
-
-export const clearSession = () => {
-  sessionStorage.removeItem('joinmarket')
-
-  dispatchEvent('sessionUpdate')
 }
 
 // Dispatch custom event to notify components of session change

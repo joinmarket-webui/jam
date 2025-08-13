@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import CreateWallet from '@/components/CreateWallet'
 import JamLanding from '@/components/JamLanding'
 import LoginPage from '@/components/Login'
@@ -11,11 +12,10 @@ import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/ui/sonner'
 import { JM_API_AUTH_TOKEN_EXPIRY } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
-import { useSession } from '@/hooks/useSession'
 import { token } from '@/lib/jm-api/generated/client'
 import { queryClient } from '@/lib/queryClient'
-import { clearSession, getSession, setSession } from '@/lib/session'
 import { setIntervalDebounced } from '@/lib/utils'
+import { authStore } from '@/store/authStore'
 import { Logs } from './components/Logs'
 import { Receive } from './components/receive/Receive'
 import { RescanChain } from './components/settings/RescanChain'
@@ -26,9 +26,9 @@ const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode
 }
 
 function App() {
-  const session = useSession()
-  const authenticated = useMemo(() => session?.auth?.token !== undefined, [session])
-  const walletFileName = useMemo(() => session?.walletFileName || '', [session])
+  const authState = useStore(authStore, (state) => state.state)
+  const authenticated = useMemo(() => authState?.auth?.token !== undefined, [authState])
+  const walletFileName = useMemo(() => authState?.walletFileName || '', [authState])
 
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
@@ -117,26 +117,26 @@ function RefreshApiToken() {
     let intervalId: NodeJS.Timeout
     setIntervalDebounced(
       async () => {
-        const session = getSession()
-        if (session?.auth?.refresh_token === undefined) return
+        const currentRefreshToken = authStore.getState().state?.auth?.refresh_token
+        if (currentRefreshToken === undefined) return
 
         const response = await token({
           client,
           body: {
             grant_type: 'refresh_token',
-            refresh_token: session.auth.refresh_token,
+            refresh_token: currentRefreshToken,
           },
         })
 
         if (!response.data) {
-          clearSession()
+          authStore.getState().clear()
 
           if (import.meta.env.DEV) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'
             toast.error(`[DEV] Error while refreshing auth token: ${message}`)
           }
         } else {
-          setSession({
+          authStore.getState().update({
             auth: {
               token: response.data.token,
               refresh_token: response.data.refresh_token,
