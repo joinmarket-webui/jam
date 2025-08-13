@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Wallet } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,11 +10,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { hashPassword } from '@/lib/hash'
 import { type CreateWalletResponse, createwallet, session } from '@/lib/jm-api/generated/client'
-import { clearSession, setSession } from '@/lib/session'
 import { formatWalletName } from '@/lib/utils'
+import { authStore } from '@/store/authStore'
 
 const CreateWallet = () => {
   const navigate = useNavigate()
+  const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [walletName, setWalletName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -45,7 +47,7 @@ const CreateWallet = () => {
       setIsLoading(true)
 
       // Clear any existing local session
-      clearSession()
+      clearAuthState()
 
       // Check if there's an active session on the server
       try {
@@ -115,10 +117,10 @@ const CreateWallet = () => {
       }
 
       // Save session and navigate to dashboard
-      setSession({
+      updateAuthState({
         walletFileName,
         auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
-        hashedSecret,
+        hashed_password: hashedSecret,
       })
 
       navigate('/login', {

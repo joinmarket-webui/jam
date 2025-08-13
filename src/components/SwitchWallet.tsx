@@ -10,8 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApiClient } from '@/hooks/useApiClient'
 import { listwalletsOptions, lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { clearSession } from '@/lib/session'
 import { formatWalletName } from '@/lib/utils'
+import { authStore } from '@/store/authStore'
 
 const SwitchWalletFormSkeleton = () => {
   return (
@@ -76,7 +76,7 @@ const SwitchWallet = ({ walletFileName }: { walletFileName: string }) => {
   const handleLockCurrentWallet = async () => {
     try {
       await lockCurrentWallet.refetch()
-      clearSession()
+      authStore.getState().clear()
       setCurrentWalletLocked(true)
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: formatWalletName(walletFileName) }),

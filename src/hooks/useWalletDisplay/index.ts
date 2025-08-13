@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { useStore } from 'zustand'
 import { jarTemplates } from '@/components/layout/display-mode-context'
 import type { Jar, JarColor } from '@/components/layout/display-mode-context'
 import { useApiClient } from '@/hooks/useApiClient'
 import { listutxosOptions, sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { getSession } from '@/lib/session'
+import { authStore } from '@/store/authStore'
 
 export interface UseWalletDisplayResult {
   jars: Jar[]
@@ -21,13 +22,11 @@ interface AccountBalance {
 
 export function useWalletDisplay(): UseWalletDisplayResult {
   const client = useApiClient()
-
-  const session = getSession()
-  const walletFileName = session?.walletFileName
+  const authState = useStore(authStore, (state) => state.state)
 
   const sessionQuery = useQuery({
     ...sessionOptions({ client }),
-    enabled: !!walletFileName,
+    enabled: !!authState?.walletFileName,
     staleTime: 60000, // Consider session data fresh for 60 seconds
   })
 
@@ -40,14 +39,14 @@ export function useWalletDisplay(): UseWalletDisplayResult {
   } = useQuery({
     ...listutxosOptions({
       client,
-      path: { walletname: walletFileName || '' },
+      path: { walletname: authState?.walletFileName || '' },
     }),
-    enabled: !!walletFileName && !!sessionQuery.data?.session,
+    enabled: !!authState?.walletFileName && !!sessionQuery.data?.session,
     refetchInterval: 30000,
     staleTime: 15000,
     select: (data) => ({
       utxos: data.utxos || [],
-      walletName: walletFileName,
+      walletName: authState?.walletFileName,
     }),
   })
 

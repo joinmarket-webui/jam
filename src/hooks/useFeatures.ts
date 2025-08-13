@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
+import { useStore } from 'zustand'
 import { fetchFeatures } from '@/lib/api/logs'
-import { useSession } from './useSession'
+import { authStore } from '@/store/authStore'
 
 export interface Features {
   logs?: boolean
@@ -12,7 +13,7 @@ export interface FeatureItem {
 }
 
 export const useFeatures = () => {
-  const session = useSession()
+  const authState = useStore(authStore, (state) => state.state)
 
   const {
     data: features,
@@ -22,12 +23,12 @@ export const useFeatures = () => {
   } = useQuery({
     queryKey: ['features'],
     queryFn: async ({ signal }) => {
-      if (!session?.auth?.token) {
+      if (authState?.auth?.token === undefined) {
         throw new Error('No authentication token available')
       }
 
       const response = await fetchFeatures({
-        token: session.auth.token,
+        token: authState.auth.token,
         signal,
       })
 
@@ -38,7 +39,7 @@ export const useFeatures = () => {
       const data = await response.json()
       return data.features as Features
     },
-    enabled: !!session?.auth?.token,
+    enabled: !!authState?.auth?.token,
     retry: false,
   })
 

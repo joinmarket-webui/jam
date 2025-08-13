@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, RefreshCwIcon, Wallet } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,8 +15,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { setSession } from '@/lib/session'
 import { formatWalletName } from '@/lib/utils'
+import { authStore } from '@/store/authStore'
 
 const LoginFormSkeleton = () => {
   return (
@@ -136,6 +137,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
 
   const listwalletsQuery = useQuery({
@@ -185,10 +187,10 @@ const LoginPage = () => {
         },
       })
 
-      setSession({
+      updateAuthState({
         walletFileName: response.walletname,
         auth: { token: response.token, refresh_token: response.refresh_token },
-        hashedSecret,
+        hashed_password: hashedSecret,
       })
 
       await navigate('/')
