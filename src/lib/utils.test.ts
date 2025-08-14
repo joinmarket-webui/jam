@@ -321,6 +321,30 @@ describe('humanReadableDuration', () => {
 
     expect(humanReadableDuration({ to: oneDayAndFiveHoursFromNow })).toBe('1 day')
   })
+
+  it('should format duration in human readable format', () => {
+    const from = Date.now()
+    const to = from + 2 * 24 * 60 * 60 * 1000 // 2 days
+
+    const result = time.humanReadableDuration({ from, to })
+    expect(result).toBe('in 2 days')
+  })
+
+  it('should handle past timestamps', () => {
+    const from = Date.now()
+    const to = from - 3600 * 1000 // 1 hour ago
+
+    const result = time.humanReadableDuration({ from, to })
+    expect(result).toBe('60 minutes ago')
+  })
+
+  it('should support different locales', () => {
+    const from = Date.now()
+    const to = from + 24 * 60 * 60 * 1000 // 1 day
+
+    const result = time.humanReadableDuration({ from, to, locale: 'en' })
+    expect(result).toBe('in 24 hours')
+  })
 })
 
 describe('formatBtc', () => {
@@ -445,32 +469,6 @@ describe('time utility', () => {
       const to = now + 3000
 
       expect(time.timeInterval({ to })).toBe(3000)
-    })
-  })
-
-  describe('humanReadableDuration', () => {
-    it('should format duration in human readable format', () => {
-      const from = Date.now()
-      const to = from + 2 * 24 * 60 * 60 * 1000 // 2 days
-
-      const result = time.humanReadableDuration({ from, to })
-      expect(result).toBe('in 2 days')
-    })
-
-    it('should handle past timestamps', () => {
-      const from = Date.now()
-      const to = from - 3600 * 1000 // 1 hour ago
-
-      const result = time.humanReadableDuration({ from, to })
-      expect(result).toBe('60 minutes ago')
-    })
-
-    it('should support different locales', () => {
-      const from = Date.now()
-      const to = from + 24 * 60 * 60 * 1000 // 1 day
-
-      const result = time.humanReadableDuration({ from, to, locale: 'en' })
-      expect(result).toBe('in 24 hours')
     })
   })
 })

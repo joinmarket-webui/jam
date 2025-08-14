@@ -45,6 +45,7 @@ interface OrderTableEntry {
   }
 }
 
+// TODO: check out libraries
 type SortKey = 'counterparty' | 'type' | 'fee' | 'minimumSize' | 'maximumSize' | 'minerFeeContribution' | 'bondValue'
 
 const offerToTableEntry = (
@@ -121,7 +122,6 @@ export const Orderbook = () => {
   const [sortReverse, setSortReverse] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
