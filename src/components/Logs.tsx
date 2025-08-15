@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { AlertTriangle, Loader2, RefreshCw, Download } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { fetchLog } from '@/lib/api/logs'
-import { getSession } from '@/lib/session'
+import { authStore } from '@/store/authStore'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
 
@@ -90,7 +91,7 @@ function LogContent({ content, refresh }: LogContentProps) {
             className="flex items-center gap-2"
           >
             {isLoadingRefresh ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Refresh
+            {t('global.refresh')}
           </Button>
         </div>
       </CardHeader>
@@ -110,6 +111,7 @@ function LogContent({ content, refresh }: LogContentProps) {
 }
 
 export const Logs = () => {
+  const authState = useStore(authStore, (state) => state.state)
   const { t } = useTranslation()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
@@ -118,8 +120,7 @@ export const Logs = () => {
 
   const refresh = useCallback(
     async (signal: AbortSignal) => {
-      const session = getSession()
-      if (!session?.auth?.token) {
+      if (!authState?.auth?.token) {
         setAlert({
           variant: 'destructive',
           message: 'No authentication token available. Please login again.',
@@ -128,7 +129,7 @@ export const Logs = () => {
       }
 
       return fetchLog({
-        token: session.auth.token,
+        token: authState.auth.token,
         signal,
         fileName: JMWALLETD_LOG_FILE_NAME,
       })
@@ -142,7 +143,7 @@ export const Logs = () => {
           if (signal.aborted) return
 
           // Check if it's a 404 or similar error indicating endpoint doesn't exist
-          const isEndpointNotFound = e.message.includes('HTTP 404') || e.message.includes('Empty reply')
+          const isEndpointNotFound = e.message?.includes('HTTP 404') || e.message?.includes('Empty reply')
 
           setAlert({
             variant: 'default',
@@ -153,12 +154,8 @@ export const Logs = () => {
                 }),
           })
         })
-        .finally(() => {
-          if (signal.aborted) return
-          setIsLoading(false)
-        })
     },
-    [t],
+    [t, authState],
   )
 
   useEffect(() => {
