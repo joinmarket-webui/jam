@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import type { Jar } from '@/components/layout/display-mode-context'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoading = false }: NavbarProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -57,18 +59,18 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
       </div>
       <div className="flex min-w-0 flex-1 items-center justify-center gap-8 text-sm">
         <Link to="/receive" className="cursor-pointer opacity-70 hover:underline">
-          Receive
+          {t('navbar.tab_receive')}
         </Link>
         <Link to="/earn" className="relative cursor-pointer opacity-70 hover:underline">
-          <span>Earn</span>
+          <span>{t('navbar.tab_earn')}</span>
           <span className="absolute -top-1 -right-2 animate-pulse text-[8px] text-[#6ee7b7]">●</span>
         </Link>
         <Link to="/send" className="cursor-pointer opacity-70 hover:underline">
-          Send
+          {t('navbar.tab_send')}
         </Link>
         <span className="text-gray-400 dark:text-gray-600">|</span>
         <Link to="/sweep" className="cursor-pointer opacity-70 hover:underline">
-          Sweep
+          {t('navbar.tab_sweep')}
         </Link>
       </div>
       <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
