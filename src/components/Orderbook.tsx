@@ -101,7 +101,11 @@ const offerToTableEntry = (
   }
 }
 
-export const Orderbook = () => {
+interface OrderbookProps {
+  isModal?: boolean
+}
+
+export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
 
@@ -120,6 +124,7 @@ export const Orderbook = () => {
   const [showRefreshDropdown, setShowRefreshDropdown] = useState(false)
   const [sortKey, setSortKey] = useState<SortKey>('minimumSize')
   const [sortReverse, setSortReverse] = useState(false)
+  const [localLoading, setLocalLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -151,6 +156,9 @@ export const Orderbook = () => {
     queryFn: fetchOrderbook,
     refetchInterval: 30000,
   })
+
+  // Combine both loading states for UI
+  const isLoadingData = isRefetching || localLoading
 
   const tableEntries = useMemo(() => {
     if (!orderbookData?.offers) return []
@@ -238,16 +246,32 @@ export const Orderbook = () => {
     }
   }
 
-  const handleClearAndReload = () => {
+  const handleClearAndReload = async () => {
+    setLocalLoading(true)
     setSearchQuery('')
     setCurrentPage(1)
     setItemsPerPage(ITEMS_PER_PAGE)
 
     setSortKey('minimumSize')
     setSortReverse(false)
-
     setShowRefreshDropdown(false)
-    refetch()
+
+    // Add a small delay to show the loading state
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    await refetch()
+    setLocalLoading(false)
+  }
+
+  const handleReload = async () => {
+    setLocalLoading(true)
+    setShowRefreshDropdown(false)
+
+    // Add a small delay to show the loading state
+    const [refetchResult] = await Promise.all([refetch(), new Promise((resolve) => setTimeout(resolve, 300))])
+
+    setLocalLoading(false)
+    return refetchResult
   }
 
   const handleSort = (key: SortKey) => {
@@ -288,78 +312,147 @@ export const Orderbook = () => {
   }
 
   return (
-    <div className="m-10 space-y-6 p-6">
+    <div className={cn('space-y-6', isModal ? 'flex h-full flex-col p-10' : 'm-10 p-6')}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t('orderbook.title')}</h1>
-          <p className="text-muted-foreground mt-1">
-            {searchQuery === ''
-              ? tableEntries.length === 1
-                ? t('orderbook.text_orderbook_summary_one', {
-                    count: tableEntries.length,
-                    counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                  })
-                : t('orderbook.text_orderbook_summary_other', {
-                    count: tableEntries.length,
-                    counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                  })
-              : t('orderbook.text_orderbook_summary_filtered', summary)}
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <div className="relative" ref={dropdownRef}>
-            <div className="flex">
-              <Button
-                variant="outline"
-                className="rounded-r-none"
-                size="sm"
-                onClick={() => {
-                  setShowRefreshDropdown(false)
-                  refetch()
-                }}
-                disabled={isRefetching}
-              >
-                {t('orderbook.button_reload_title')}
-                <RefreshCw className={cn('ml-2 h-4 w-4', isRefetching && 'animate-spin')} />
-              </Button>
-              <div className="relative">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-l-none border-l-0 px-2"
-                  onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
-                  disabled={isRefetching}
-                >
-                  <ChevronDownIcon className="h-4 w-4" />
-                </Button>
-                {showRefreshDropdown && (
-                  <div className="bg-background absolute top-full right-0 z-10 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start rounded-none"
-                      onClick={handleClearAndReload}
-                      disabled={isRefetching}
-                    >
-                      {t('orderbook.button_refresh_text')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+      {!isModal && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{t('orderbook.title')}</h1>
+            <p className="text-muted-foreground mt-1">
+              {searchQuery === ''
+                ? tableEntries.length === 1
+                  ? t('orderbook.text_orderbook_summary_one', {
+                      count: tableEntries.length,
+                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
+                    })
+                  : t('orderbook.text_orderbook_summary_other', {
+                      count: tableEntries.length,
+                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
+                    })
+                : t('orderbook.text_orderbook_summary_filtered', summary)}
+            </p>
           </div>
 
-          <Input
-            placeholder={t('orderbook.placeholder_search')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64"
-            disabled={isRefetching}
-          />
+          <div className="flex items-center space-x-2">
+            <div className="relative" ref={dropdownRef}>
+              <div className="flex">
+                <Button
+                  variant="outline"
+                  className="rounded-r-none"
+                  size="sm"
+                  onClick={handleReload}
+                  disabled={isLoadingData}
+                >
+                  {t('orderbook.button_reload_title')}
+                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData && 'animate-spin')} />
+                </Button>
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-l-none border-l-0 px-2"
+                    onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
+                    disabled={isLoadingData}
+                  >
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </Button>
+                  {showRefreshDropdown && (
+                    <div className="bg-background absolute top-full right-0 z-10 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start rounded-none"
+                        onClick={handleClearAndReload}
+                        disabled={isLoadingData}
+                      >
+                        {t('orderbook.button_refresh_text')}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <Input
+              placeholder={t('orderbook.placeholder_search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+              disabled={isLoadingData}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Modal Header with controls */}
+      {isModal && (
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-muted-foreground text-sm">
+              {searchQuery === ''
+                ? tableEntries.length === 1
+                  ? t('orderbook.text_orderbook_summary_one', {
+                      count: tableEntries.length,
+                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
+                    })
+                  : t('orderbook.text_orderbook_summary_other', {
+                      count: tableEntries.length,
+                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
+                    })
+                : t('orderbook.text_orderbook_summary_filtered', summary)}
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <div className="relative" ref={dropdownRef}>
+              <div className="flex">
+                <Button
+                  variant="outline"
+                  className="rounded-r-none"
+                  size="sm"
+                  onClick={handleReload}
+                  disabled={isLoadingData}
+                >
+                  {t('orderbook.button_reload_title')}
+                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData && 'animate-spin')} />
+                </Button>
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-l-none border-l-0 px-2"
+                    onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
+                    disabled={isLoadingData}
+                  >
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </Button>
+                  {showRefreshDropdown && (
+                    <div className="bg-background absolute top-full right-0 z-10 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start rounded-none"
+                        onClick={handleClearAndReload}
+                        disabled={isLoadingData}
+                      >
+                        {t('orderbook.button_refresh_text')}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <Input
+              placeholder={t('orderbook.placeholder_search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+              disabled={isLoadingData}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Controls */}
       {nickname && (
@@ -369,7 +462,7 @@ export const Orderbook = () => {
               <Switch
                 checked={highlightMyOffers}
                 onCheckedChange={setHighlightMyOffers}
-                disabled={isRefetching || ownOffers.length === 0}
+                disabled={isLoadingData || ownOffers.length === 0}
               />
               <div>
                 <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
@@ -383,7 +476,7 @@ export const Orderbook = () => {
           {ownOffers.length > 0 && (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Switch checked={pinMyOffers} onCheckedChange={handlePinToggle} disabled={isRefetching} />
+                <Switch checked={pinMyOffers} onCheckedChange={handlePinToggle} disabled={isLoadingData} />
                 <div>
                   <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
                   <div className="text-muted-foreground text-sm">
@@ -406,119 +499,121 @@ export const Orderbook = () => {
           <div className="text-muted-foreground">{t('orderbook.alert_empty_orderbook')}</div>
         </div>
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="cursor-pointer select-none" onClick={() => handleSort('counterparty')}>
-                  <div className="flex items-center">
-                    {t('orderbook.table.heading_counterparty')}
-                    {getSortIcon('counterparty')}
-                  </div>
-                </TableHead>
-                <TableHead>{t('orderbook.table.heading_order_id')}</TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => handleSort('type')}>
-                  <div className="flex items-center">
-                    {t('orderbook.table.heading_type')}
-                    {getSortIcon('type')}
-                  </div>
-                </TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => handleSort('fee')}>
-                  <div className="flex items-center">
-                    {t('orderbook.table.heading_fee')}
-                    {getSortIcon('fee')}
-                  </div>
-                </TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => handleSort('minimumSize')}>
-                  <div className="flex items-center">
-                    {t('orderbook.table.heading_minimum_size')}
-                    {getSortIcon('minimumSize')}
-                  </div>
-                </TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => handleSort('maximumSize')}>
-                  <div className="flex items-center">
-                    {t('orderbook.table.heading_maximum_size')}
-                    {getSortIcon('maximumSize')}
-                  </div>
-                </TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => handleSort('minerFeeContribution')}>
-                  <div className="flex items-center">
-                    {t('orderbook.table.heading_miner_fee_contribution')}
-                    {getSortIcon('minerFeeContribution')}
-                  </div>
-                </TableHead>
-                <TableHead className="cursor-pointer select-none" onClick={() => handleSort('bondValue')}>
-                  <div className="flex items-center">
-                    {t('orderbook.table.heading_bond_value')}
-                    {getSortIcon('bondValue')}
-                  </div>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedOffers.map((offer) => {
-                const isOwn = isUserOffer(offer.counterparty)
-                const shouldHighlight = highlightMyOffers && isOwn
+        <div className={cn('rounded-md border', isModal && 'flex flex-1 flex-col overflow-hidden')}>
+          <div className={cn(isModal && 'flex-1 overflow-auto')}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('counterparty')}>
+                    <div className="flex items-center">
+                      {t('orderbook.table.heading_counterparty')}
+                      {getSortIcon('counterparty')}
+                    </div>
+                  </TableHead>
+                  <TableHead>{t('orderbook.table.heading_order_id')}</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('type')}>
+                    <div className="flex items-center">
+                      {t('orderbook.table.heading_type')}
+                      {getSortIcon('type')}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('fee')}>
+                    <div className="flex items-center">
+                      {t('orderbook.table.heading_fee')}
+                      {getSortIcon('fee')}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('minimumSize')}>
+                    <div className="flex items-center">
+                      {t('orderbook.table.heading_minimum_size')}
+                      {getSortIcon('minimumSize')}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('maximumSize')}>
+                    <div className="flex items-center">
+                      {t('orderbook.table.heading_maximum_size')}
+                      {getSortIcon('maximumSize')}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('minerFeeContribution')}>
+                    <div className="flex items-center">
+                      {t('orderbook.table.heading_miner_fee_contribution')}
+                      {getSortIcon('minerFeeContribution')}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('bondValue')}>
+                    <div className="flex items-center">
+                      {t('orderbook.table.heading_bond_value')}
+                      {getSortIcon('bondValue')}
+                    </div>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedOffers.map((offer) => {
+                  const isOwn = isUserOffer(offer.counterparty)
+                  const shouldHighlight = highlightMyOffers && isOwn
 
-                return (
-                  <TableRow
-                    key={`${offer.counterparty}-${offer.orderId}`}
-                    className={cn(
-                      shouldHighlight && 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950',
-                    )}
-                  >
-                    <TableCell className="font-mono text-sm">{offer.counterparty}</TableCell>
-                    <TableCell>{offer.orderId}</TableCell>
-                    <TableCell>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant={offer.type.badgeColor}>{offer.type.displayValue}</Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{offer.type.tooltip}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell>{renderOrderFee(offer)}</TableCell>
-                    <TableCell>
-                      <Balance colored={false} valueString={offer.minimumSize} />
-                    </TableCell>
-                    <TableCell>
-                      <Balance colored={false} valueString={offer.maximumSize} />
-                    </TableCell>
-                    <TableCell>
-                      <Balance colored={false} valueString={offer.minerFeeContribution} />
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {offer.bondValue.value > 0 ? (
+                  return (
+                    <TableRow
+                      key={`${offer.counterparty}-${offer.orderId}`}
+                      className={cn(
+                        shouldHighlight && 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950',
+                      )}
+                    >
+                      <TableCell className="font-mono text-sm">{offer.counterparty}</TableCell>
+                      <TableCell>{offer.orderId}</TableCell>
+                      <TableCell>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help">{offer.bondValue.displayValue}</span>
+                            <Badge variant={offer.type.badgeColor}>{offer.type.displayValue}</Badge>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <div>
-                              <Balance
-                                valueString={String(offer.bondValue.amount || 0)}
-                                colored={false}
-                                convertToUnit={BTC}
-                              />
-                              {offer.bondValue.displayLocktime && (
-                                <div className="mt-1 text-xs">
-                                  {offer.bondValue.displayLocktime} ({offer.bondValue.displayExpiresIn})
-                                </div>
-                              )}
-                            </div>
+                            <p>{offer.type.tooltip}</p>
                           </TooltipContent>
                         </Tooltip>
-                      ) : (
-                        <>{offer.bondValue.displayValue}</>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      <TableCell>{renderOrderFee(offer)}</TableCell>
+                      <TableCell>
+                        <Balance colored={false} valueString={offer.minimumSize} />
+                      </TableCell>
+                      <TableCell>
+                        <Balance colored={false} valueString={offer.maximumSize} />
+                      </TableCell>
+                      <TableCell>
+                        <Balance colored={false} valueString={offer.minerFeeContribution} />
+                      </TableCell>
+                      <TableCell className="font-mono">
+                        {offer.bondValue.value > 0 ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help">{offer.bondValue.displayValue}</span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div>
+                                <Balance
+                                  valueString={String(offer.bondValue.amount || 0)}
+                                  colored={false}
+                                  convertToUnit={BTC}
+                                />
+                                {offer.bondValue.displayLocktime && (
+                                  <div className="mt-1 text-xs">
+                                    {offer.bondValue.displayLocktime} ({offer.bondValue.displayExpiresIn})
+                                  </div>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <>{offer.bondValue.displayValue}</>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
 
           <Pagination
             currentPage={currentPage}

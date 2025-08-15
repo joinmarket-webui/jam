@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { toSemVer } from '@/lib/utils'
 import packageInfo from '../../package.json'
+import { OrderbookDialog } from './OrderbookDialog'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -13,6 +14,7 @@ const APP_DISPLAY_VERSION = (() => {
 
 export function Footer() {
   const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
+  const [isOrderbookOpen, setIsOrderbookOpen] = useState(false)
 
   return (
     <>
@@ -28,11 +30,9 @@ export function Footer() {
             <File />
             Cheatsheet
           </Button>
-          <Button variant="ghost" size="sm" asChild className="border">
-            <Link to="/orderbook">
-              <BookOpen />
-              Orderbook
-            </Link>
+          <Button variant="ghost" size="sm" onClick={() => setIsOrderbookOpen(true)} className="border">
+            <BookOpen />
+            Orderbook
           </Button>
         </div>
 
@@ -47,6 +47,7 @@ export function Footer() {
       </footer>
 
       {isCheatsheetOpen && <Cheatsheet setIsCheatsheetOpen={setIsCheatsheetOpen} />}
+      <OrderbookDialog open={isOrderbookOpen} onOpenChange={setIsOrderbookOpen} />
     </>
   )
 }
