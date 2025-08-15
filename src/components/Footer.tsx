@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Check, File, X } from 'lucide-react'
+import { BlocksIcon, Check, File, X } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { useStore } from 'zustand'
 import { Button } from '@/components/ui/button'
 import { toSemVer } from '@/lib/utils'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../package.json'
 
 const APP_DISPLAY_VERSION = (() => {
@@ -12,6 +14,7 @@ const APP_DISPLAY_VERSION = (() => {
 })()
 
 export function Footer() {
+  const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
 
   return (
@@ -30,14 +33,23 @@ export function Footer() {
           </Button>
         </div>
 
-        <a
-          href="https://github.com/joinmarket-webui/jam/tags"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 text-right underline opacity-80"
-        >
-          v{APP_DISPLAY_VERSION}
-        </a>
+        <div className="flex flex-1 justify-end">
+          <div className="flex flex-col gap-1">
+            <a
+              href="https://github.com/joinmarket-webui/jam/tags"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-right underline opacity-80"
+            >
+              v{APP_DISPLAY_VERSION}
+            </a>
+            {blockHeight && (
+              <span className="flex items-center gap-1">
+                <BlocksIcon className="h-4 w-4" /> {blockHeight}
+              </span>
+            )}
+          </div>
+        </div>
       </footer>
 
       {isCheatsheetOpen && <Cheatsheet setIsCheatsheetOpen={setIsCheatsheetOpen} />}
