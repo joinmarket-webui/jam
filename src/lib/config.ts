@@ -36,7 +36,6 @@ export const createApiClient = (): Client => {
   console.debug('Setting up JM API client…', clientOptions)
   const client = createClient(clientOptions)
 
-  // TODO: store and load token from session storage with handling refresh token
   const jamAuthMiddleware = createJamAuthenticationMiddleware()
   client.interceptors.request.use(jamAuthMiddleware)
 

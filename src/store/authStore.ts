@@ -19,9 +19,9 @@ interface AuthStoreState {
 
 export const authStore = createStore<AuthStoreState>()(
   persist(
-    (set, get) => ({
-      state: {},
-      update: (val) => set({ state: { ...(get().state || {}), ...val } }),
+    (set) => ({
+      state: undefined,
+      update: (val) => set((state) => ({ state: { ...(state.state || {}), ...val } })),
       clear: () => set({ state: undefined }),
     }),
     {

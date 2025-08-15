@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -10,7 +10,6 @@ import LoginPage from '@/components/Login'
 import SwitchWallet from '@/components/SwitchWallet'
 import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/ui/sonner'
-import { JM_API_AUTH_TOKEN_EXPIRY } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { token } from '@/lib/jm-api/generated/client'
 import { queryClient } from '@/lib/queryClient'
@@ -22,6 +21,9 @@ import { Receive } from './components/receive/Receive'
 import { RescanChain } from './components/settings/RescanChain'
 import { Settings } from './components/settings/Settings'
 import { SweepPage } from './components/sweep/SweepPage'
+import { JAM_API_AUTH_TOKEN_RENEW_INTERVAL, JAM_JM_SESSION_REFRESH_INTERVAL } from './constants/jam'
+import { sessionOptions } from './lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { jmSessionStore } from './store/jmSessionStore'
 
 const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
   return authenticated ? <>{children}</> : <Navigate to="/login" replace />
@@ -36,6 +38,7 @@ function App() {
     <ThemeProvider defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         <RefreshApiToken />
+        <RefreshJmSession />
         <Router>
           <Routes>
             <Route path="/login" element={authenticated ? <Navigate to="/" replace /> : <LoginPage />} />
@@ -125,8 +128,6 @@ function App() {
   )
 }
 
-const API_AUTH_TOKEN_RENEW_INTERVAL = Math.round(JM_API_AUTH_TOKEN_EXPIRY * 0.75)
-
 function RefreshApiToken() {
   const client = useApiClient()
 
@@ -155,7 +156,7 @@ function RefreshApiToken() {
 
           if (import.meta.env.DEV) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'
-            toast.error(`[DEV] Error while refreshing auth token: ${message}`)
+            toast.error(`[DEV] Error while renewing auth token: ${message}`)
           }
         } else {
           authStore.getState().update({
@@ -166,11 +167,13 @@ function RefreshApiToken() {
           })
 
           if (import.meta.env.DEV) {
-            toast.info(`[DEV] Successfully refreshed auth token.`)
+            toast.info(`[DEV] Successfully renewed auth token.`, {
+              id: 'token-renew-success',
+            })
           }
         }
       },
-      API_AUTH_TOKEN_RENEW_INTERVAL,
+      JAM_API_AUTH_TOKEN_RENEW_INTERVAL,
       (timerId) => (intervalId = timerId),
     )
 
@@ -178,6 +181,41 @@ function RefreshApiToken() {
       clearInterval(intervalId)
     }
   }, [client])
+
+  return <></>
+}
+
+function RefreshJmSession() {
+  const client = useApiClient()
+  const authState = useStore(authStore, (state) => state.state)
+
+  const sessionQuery = useQuery({
+    ...sessionOptions({ client }),
+    refetchInterval: JAM_JM_SESSION_REFRESH_INTERVAL,
+    refetchIntervalInBackground: true,
+  })
+
+  useEffect(() => {
+    if (sessionQuery.data) {
+      jmSessionStore.getState().update(sessionQuery.data)
+
+      if (import.meta.env.DEV) {
+        toast.info(`[DEV] Successfully refreshed session data.`, {
+          id: 'jm-session-refresh-success',
+        })
+      }
+    }
+  }, [sessionQuery.data])
+
+  useEffect(() => {
+    if (authState === undefined) {
+      sessionQuery.refetch().catch(() => {
+        if (import.meta.env.DEV) {
+          toast.error(`[DEV] Error while refreshing session data.`)
+        }
+      })
+    }
+  }, [authState, sessionQuery])
 
   return <></>
 }
