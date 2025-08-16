@@ -24,7 +24,7 @@ const feeRange: (txFee: TxFee, txFeeFactor: number) => [number, number] = (txFee
   return [minFeeSatsPerVByte, maxFeeSatsPerVByte]
 }
 
-const useMiningFeeText = ({ tx_fees, tx_fees_factor }: Pick<FeeValues, 'tx_fees' | 'tx_fees_factor'>) => {
+export const useMiningFeeText = ({ tx_fees, tx_fees_factor }: Pick<FeeValues, 'tx_fees' | 'tx_fees_factor'>) => {
   const { t } = useTranslation()
 
   return useMemo(() => {

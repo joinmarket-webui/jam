@@ -27,8 +27,9 @@ import Sprite from './Sprite'
 import PageTitle from './PageTitle'
 import SegmentedTabs from './SegmentedTabs'
 import { CreateFidelityBond } from './fb/CreateFidelityBond'
-import { ExistingFidelityBond } from './fb/ExistingFidelityBond'
-import { RenewFidelityBondModal, SpendFidelityBondModal } from './fb/SpendFidelityBondModal'
+import { CreateFidelityBond2 } from './fb2/CreateFidelityBond'
+import { ExistingFidelityBond, CreatingFidelityBond } from './fb2/ExistingFidelityBond'
+import { RenewFidelityBondModal, SpendFidelityBondModal } from './fb2/SpendFidelityBondModal'
 import { EarnReportOverlay } from './EarnReport'
 import { OrderbookOverlay } from './Orderbook'
 import Balance from './Balance'
@@ -442,6 +443,10 @@ export default function Earn({ wallet }: EarnProps) {
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
   const [isShowReport, setIsShowReport] = useState(false)
   const [isShowOrderbook, setIsShowOrderbook] = useState(false)
+  const [timelockedAddress, setTimelockedAddress] = useState<Api.BitcoinAddress>()
+  const [lockDate, setLockDate] = useState<Api.Lockdate | null>(null)
+  const [amount, setAmount] = useState<Api.AmountSats>(0)
+  const [isCreatingFB, setIsCreatingFB] = useState(false)
 
   const [initialValues, setInitialValues] = useState(initialFormValues())
 
@@ -451,6 +456,11 @@ export default function Earn({ wallet }: EarnProps) {
 
   const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<Api.UtxoId>()
   const [renewFidelityBondId, setRenewFidelityBondId] = useState<Api.UtxoId>()
+
+  const reset = () => {
+    setTimelockedAddress(undefined)
+    setLockDate(null)
+  }
 
   const isSufficientFundsAvailable = useMemo(
     () => (currentWalletInfo?.balanceSummary.calculatedAvailableBalanceInSats ?? 0) > 0,
@@ -707,6 +717,9 @@ export default function Earn({ wallet }: EarnProps) {
                     </ExistingFidelityBond>
                   )
                 })}
+                {isCreatingFB && (
+                  <CreatingFidelityBond timelockedAddress={timelockedAddress} lockDate={lockDate} amount={amount} />
+                )}
                 <>
                   {!serviceInfo?.makerRunning &&
                     !serviceInfo?.coinjoinInProgress &&
@@ -714,12 +727,27 @@ export default function Earn({ wallet }: EarnProps) {
                     !isWaitingMakerStart &&
                     !isWaitingMakerStop &&
                     (!isLoading && currentWalletInfo ? (
-                      <CreateFidelityBond
-                        otherFidelityBondExists={fidelityBonds.length > 0}
-                        wallet={wallet}
-                        walletInfo={currentWalletInfo}
-                        onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
-                      />
+                      <>
+                        <CreateFidelityBond
+                          otherFidelityBondExists={fidelityBonds.length > 0}
+                          wallet={wallet}
+                          walletInfo={currentWalletInfo}
+                          onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                        />
+                        <CreateFidelityBond2
+                          otherFidelityBondExists={fidelityBonds.length > 0}
+                          wallet={wallet}
+                          walletInfo={currentWalletInfo}
+                          onDone={() => reloadFidelityBonds({ delay: RELOAD_FIDELITY_BONDS_DELAY_MS })}
+                          timelockedAddress={timelockedAddress}
+                          setTimelockedAddress={(address) => setTimelockedAddress(address)}
+                          lockDate={lockDate}
+                          setLockDate={(date) => setLockDate(date)}
+                          setAmount={(amount) => setAmount(amount)}
+                          setIsCreatingFB={(input) => setIsCreatingFB(input)}
+                          resetThisAsWell={() => reset()}
+                        />
+                      </>
                     ) : (
                       <rb.Placeholder as="div" animation="wave">
                         <rb.Placeholder xs={12} className={styles.fidelityBondsLoader} />

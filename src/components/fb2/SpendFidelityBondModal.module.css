@@ -1,0 +1,15 @@
+.successCheckmark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  background-color: rgba(39, 174, 96, 1);
+  color: white;
+  border-radius: 50%;
+}
+
+.successSummaryTitle {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
