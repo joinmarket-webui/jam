@@ -152,9 +152,7 @@ const BitcoinAmountInput = forwardRef(
             inputMode={inputType.inputMode}
             className={classNames('slashed-zeroes', className)}
             value={
-              inputType.type === 'text'
-                ? (field.value?.displayValue ?? '')
-                : String(field.value?.userRawInputValue ?? '')
+              inputType.type === 'text' ? field.value?.displayValue ?? '' : String(field.value?.userRawInputValue ?? '')
             }
             placeholder={placeholder}
             min={displayInputUnit === 'BTC' ? '0.00000001' : '1'}
