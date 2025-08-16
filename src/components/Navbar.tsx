@@ -1,9 +1,11 @@
+import { useMemo } from 'react'
 import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { Jar } from '@/components/layout/display-mode-context'
 import { Button } from '@/components/ui/button'
 import { clearSession } from '@/lib/session'
 import { DevBadge } from './ui/DevBadge'
+import { Skeleton } from './ui/skeleton'
 
 interface NavbarProps {
   theme: string
@@ -15,30 +17,38 @@ interface NavbarProps {
 }
 
 export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoading = false }: NavbarProps) {
-  const handleLogout = () => {
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
     clearSession()
-    window.location.href = '/login'
+    await navigate('/login')
   }
 
-  const totalBalance = jars.reduce((acc, jar) => acc + jar.balance, 0)
+  const totalBalance = useMemo(() => jars.reduce((acc, jar) => acc + jar.balance, 0), [jars])
 
   return (
-    <header className="flex items-center justify-between bg-gray-100 px-6 py-4 text-black transition-colors duration-300 dark:bg-[#23262b] dark:text-white">
-      <div className="flex min-w-0 flex-1 items-center">
-        <Link to={'/'} className="flex items-center gap-2 text-lg font-semibold">
-          <Wallet className="mr-3" strokeWidth={1} />
-          <div className="relative flex flex-col">
-            <span className="-mb-1 flex font-thin">Satoshi</span>
-            <DevBadge className={`absolute -top-1 left-20 z-10 -translate-x-1/2`} />
-            <div className="flex min-h-[40px] items-center text-lg font-light tracking-wider">
+    <header className="flex items-center justify-between bg-gray-100 px-4 py-2 text-black transition-colors duration-300 dark:bg-[#23262b] dark:text-white">
+      <div className="flex flex-1 items-center">
+        <Link to={'/'} className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center">
+            {isLoading ? (
+              <Loader2 className="animate-spin text-gray-400" strokeWidth={3} />
+            ) : (
+              <Wallet strokeWidth={1} />
+            )}
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <div className="font-semibold tracking-tight">Satoshi</div>
+              <DevBadge />
+            </div>
+            <div className="flex min-h-6 min-w-[150px] items-center">
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
               ) : (
                 <>
-                  <span className="cursor-pointer text-center tabular-nums select-none">
-                    {formatAmount(totalBalance)}
-                  </span>
-                  <span className="flex min-h-[32px] items-center">{getLogo('sm')}</span>
+                  <div className="tabular-nums">{formatAmount(totalBalance)}</div>
+                  {getLogo('sm')}
                 </>
               )}
             </div>
@@ -51,7 +61,7 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
         </Link>
         <Link to="/earn" className="relative cursor-pointer opacity-70 hover:underline">
           <span>Earn</span>
-          <span className="absolute -top-1 -right-2 text-[8px] text-[#6ee7b7]">●</span>
+          <span className="absolute -top-1 -right-2 animate-pulse text-[8px] text-[#6ee7b7]">●</span>
         </Link>
         <Link to="/send" className="cursor-pointer opacity-70 hover:underline">
           Send
