@@ -1,0 +1,69 @@
+.jamPotG1 {
+  animation: jamPotG1Opacity 600ms linear infinite alternate backwards;
+}
+
+@keyframes jamPotG1Opacity {
+  0% {
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.47, 0, 0.745, 0.715);
+  }
+
+  23.333333% {
+    opacity: 0.25;
+    animation-timing-function: cubic-bezier(0.47, 0, 0.745, 0.715);
+  }
+
+  50% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.47, 0, 0.745, 0.715);
+  }
+
+  78.333333% {
+    opacity: 0.25;
+    animation-timing-function: cubic-bezier(0.47, 0, 0.745, 0.715);
+  }
+
+  100% {
+    opacity: 0.99;
+  }
+}
+
+.jamPotG3Tr {
+  animation: jamPotG3TrRotate 600ms linear infinite alternate backwards;
+}
+
+@keyframes jamPotG3TrRotate {
+  0% {
+    transform: translate(130.297994px, 50.531002px) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+
+  50% {
+    transform: translate(130.297994px, 50.531002px) rotate(-6.125808deg);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+
+  100% {
+    transform: translate(130.297994px, 50.531002px) rotate(0deg);
+  }
+}
+
+.jamPotPath4Tr {
+  animation: jamPotPath4TrRotate 600ms linear infinite alternate backwards;
+}
+
+@keyframes jamPotPath4TrRotate {
+  0% {
+    transform: translate(17.805756px, 38.861973px) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+
+  50% {
+    transform: translate(17.805756px, 38.861973px) rotate(-3.629421deg);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+
+  100% {
+    transform: translate(17.805756px, 38.861973px) rotate(0deg);
+  }
+}
