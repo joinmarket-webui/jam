@@ -1,9 +1,14 @@
 import { useMemo } from 'react'
+import type { PropsWithChildren } from 'react'
 import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
+import { useStore } from 'zustand'
 import type { Jar } from '@/components/layout/display-mode-context'
 import { Button } from '@/components/ui/button'
-import { clearSession } from '@/lib/session'
+import { cn } from '@/lib/utils'
+import { authStore } from '@/store/authStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from './ui/DevBadge'
 import { Skeleton } from './ui/skeleton'
 
@@ -16,11 +21,28 @@ interface NavbarProps {
   isLoading?: boolean
 }
 
+const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
+  return (
+    <span className="relative">
+      {children}
+      <span
+        className={cn('absolute -top-1 -right-2 text-[8px]', {
+          'animate-pulse text-[#6ee7b7]': active,
+        })}
+      >
+        ●
+      </span>
+    </span>
+  )
+}
+
 export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoading = false }: NavbarProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
+  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
 
   const handleLogout = async () => {
-    clearSession()
+    authStore.getState().clear()
     await navigate('/login')
   }
 
@@ -57,18 +79,19 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
       </div>
       <div className="flex min-w-0 flex-1 items-center justify-center gap-8 text-sm">
         <Link to="/receive" className="cursor-pointer opacity-70 hover:underline">
-          Receive
+          {t('navbar.tab_receive')}
         </Link>
         <Link to="/earn" className="relative cursor-pointer opacity-70 hover:underline">
-          <span>Earn</span>
-          <span className="absolute -top-1 -right-2 animate-pulse text-[8px] text-[#6ee7b7]">●</span>
+          <WithActivityIndicator active={jmSessionState?.maker_running || false}>
+            {t('navbar.tab_earn')}
+          </WithActivityIndicator>
         </Link>
         <Link to="/send" className="cursor-pointer opacity-70 hover:underline">
-          Send
+          {t('navbar.tab_send')}
         </Link>
         <span className="text-gray-400 dark:text-gray-600">|</span>
         <Link to="/sweep" className="cursor-pointer opacity-70 hover:underline">
-          Sweep
+          {t('navbar.tab_sweep')}
         </Link>
       </div>
       <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
