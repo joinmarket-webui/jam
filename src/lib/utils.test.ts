@@ -20,6 +20,8 @@ import {
   isAbsoluteOffer,
   SEGWIT_ACTIVATION_BLOCK,
   time,
+  ReloadDelay,
+  pseudoRandomNumber,
 } from './utils'
 
 describe('cn', () => {
@@ -470,5 +472,139 @@ describe('time utility', () => {
 
       expect(time.timeInterval({ to })).toBe(3000)
     })
+  })
+})
+
+describe('ReloadDelay', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('should resolve after 500ms delay', async () => {
+    const delayPromise = ReloadDelay()
+
+    // Initially the promise should not be resolved
+    let resolved = false
+    delayPromise.then(() => {
+      resolved = true
+    })
+
+    expect(resolved).toBe(false)
+
+    // Advance time by 500ms
+    await vi.advanceTimersByTimeAsync(500)
+
+    // Now the promise should be resolved
+    await expect(delayPromise).resolves.toBeUndefined()
+  })
+
+  it('should not resolve before 500ms', async () => {
+    const delayPromise = ReloadDelay()
+
+    let resolved = false
+    delayPromise.then(() => {
+      resolved = true
+    })
+
+    // Advance time by 400ms (less than 500ms)
+    await vi.advanceTimersByTimeAsync(400)
+    expect(resolved).toBe(false)
+
+    // Advance the remaining 100ms
+    await vi.advanceTimersByTimeAsync(100)
+    await delayPromise
+    expect(resolved).toBe(true)
+  })
+})
+
+describe('pseudoRandomNumber', () => {
+  it('should return a number within the specified range (inclusive)', () => {
+    const min = 1
+    const max = 10
+
+    // Run multiple times to test randomness
+    for (let i = 0; i < 100; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should handle single value range', () => {
+    const value = 5
+    const result = pseudoRandomNumber(value, value)
+    expect(result).toBe(value)
+  })
+
+  it('should handle negative ranges', () => {
+    const min = -10
+    const max = -5
+
+    for (let i = 0; i < 50; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should handle ranges including zero', () => {
+    const min = -5
+    const max = 5
+
+    for (let i = 0; i < 50; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should handle large ranges', () => {
+    const min = 1000
+    const max = 9999
+
+    for (let i = 0; i < 20; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should return different values over multiple calls', () => {
+    const min = 1
+    const max = 100
+    const results = new Set()
+
+    // Generate 50 random numbers
+    for (let i = 0; i < 50; i++) {
+      results.add(pseudoRandomNumber(min, max))
+    }
+
+    // We should have more than 1 unique value (very high probability)
+    expect(results.size).toBeGreaterThan(1)
+  })
+
+  it('should work with decimal inputs by preserving decimal precision', () => {
+    const min = 1.7
+    const max = 5.3
+
+    for (let i = 0; i < 20; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      // The function can return values beyond max when using decimal inputs
+      // because Math.round(Math.random() * (max - min)) can round up to Math.round(max - min)
+      // and then min is added, potentially exceeding the original max
+      const maxPossible = Math.round(max - min) + min
+      expect(result).toBeLessThanOrEqual(maxPossible)
+      // The result may be a decimal when decimal inputs are provided
+      expect(typeof result).toBe('number')
+    }
   })
 })

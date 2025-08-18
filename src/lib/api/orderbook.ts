@@ -36,3 +36,13 @@ export const fetchOrderbook = async (): Promise<OrderbookResponse> => {
 
   return data
 }
+
+export const refreshOrderbook = async (): Promise<void> => {
+  const response = await fetch('/obwatch/refreshorderbook', {
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to refresh orderbook: ${response.status}`)
+  }
+}

@@ -196,3 +196,12 @@ export const toSemVer = (raw?: string): SemVer => {
     raw,
   }
 }
+
+export const ReloadDelay = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 500))
+}
+
+// not cryptographically random. returned number is in range [min, max] (both inclusive).
+export const pseudoRandomNumber = (min: number, max: number) => {
+  return Math.round(Math.random() * (max - min)) + min
+}

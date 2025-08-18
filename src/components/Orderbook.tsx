@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Balance } from '@/components/ui/Balance'
 import { Badge } from '@/components/ui/badge'
@@ -10,10 +10,21 @@ import { Pagination } from '@/components/ui/pagination'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
-import { fetchOrderbook, type OrderbookOffer, type FidelityBond } from '@/lib/api/orderbook'
+import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type FidelityBond } from '@/lib/api/orderbook'
 import { sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer, BTC, humanReadableDuration } from '@/lib/utils'
+import {
+  cn,
+  factorToPercentage,
+  isAbsoluteOffer,
+  isRelativeOffer,
+  BTC,
+  humanReadableDuration,
+  ReloadDelay,
+  pseudoRandomNumber,
+} from '@/lib/utils'
+import { DevBadge } from './ui/DevBadge'
 
 const ITEMS_PER_PAGE = 25
 
@@ -125,7 +136,30 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const [sortKey, setSortKey] = useState<SortKey>('minimumSize')
   const [sortReverse, setSortReverse] = useState(false)
   const [localLoading, setLocalLoading] = useState(false)
+  const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
+  const [showDemoButton] = useState(() => {
+    return process.env.NODE_ENV === 'development'
+  })
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const __dev_generateDemoReportEntryButton = () => {
+    const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
+    const randomOrdertype = Math.random() > 0.5 ? 'sw0absoffer' : 'sw0reloffer'
+    const randomCounterparty = `demo_` + pseudoRandomNumber(0, 10)
+
+    const randomOffer: OrderbookOffer = {
+      counterparty: randomCounterparty,
+      oid: demoOffers.filter((e) => e.counterparty === randomCounterparty).length,
+      ordertype: randomOrdertype,
+      minsize: randomMinsize,
+      maxsize: randomMinsize + pseudoRandomNumber(21_000, 21_000_000),
+      txfee: 0,
+      cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomNumber(0, 10_000) : parseFloat(Math.random().toFixed(5)),
+      fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomNumber(1_000, 21_000_000),
+    }
+
+    setDemoOffers((prev) => [...prev, randomOffer])
+  }
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -161,15 +195,18 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const isLoadingData = isRefetching || localLoading
 
   const tableEntries = useMemo(() => {
-    if (!orderbookData?.offers) return []
+    const realOffers = orderbookData?.offers || []
+    const allOffers = [...realOffers, ...demoOffers]
+
+    if (allOffers.length === 0) return []
 
     const fidelityBondsMap = new Map<string, FidelityBond>()
-    orderbookData.fidelitybonds?.forEach((bond) => {
+    orderbookData?.fidelitybonds?.forEach((bond) => {
       fidelityBondsMap.set(bond.counterparty, bond)
     })
 
-    return orderbookData.offers.map((offer) => offerToTableEntry(offer, fidelityBondsMap.get(offer.counterparty), t))
-  }, [orderbookData, t])
+    return allOffers.map((offer) => offerToTableEntry(offer, fidelityBondsMap.get(offer.counterparty), t))
+  }, [orderbookData, demoOffers, t])
 
   const ownOffers = useMemo(() => {
     return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
@@ -203,9 +240,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
       },
       type: (a: OrderTableEntry, b: OrderTableEntry) => a.type.displayValue.localeCompare(b.type.displayValue),
       fee: (a: OrderTableEntry, b: OrderTableEntry) => {
+        // Group absolute and relative offers separately, but sort within each group by fee value
         if (a.type.isAbsolute !== b.type.isAbsolute) {
-          return a.type.isAbsolute === true ? 1 : -1
+          // Put absolute offers first, then relative offers
+          return a.type.isAbsolute ? -1 : 1
         }
+        // Within the same type (absolute or relative), sort by fee value
         return a.fee.value - b.fee.value
       },
       minimumSize: (a: OrderTableEntry, b: OrderTableEntry) => +a.minimumSize - +b.minimumSize,
@@ -241,6 +281,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
   const handlePinToggle = (checked: boolean) => {
     setPinMyOffers(checked)
+    if (!ownOffers.length) return
     if (checked) {
       setHighlightMyOffers(true)
     }
@@ -251,16 +292,28 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setSearchQuery('')
     setCurrentPage(1)
     setItemsPerPage(ITEMS_PER_PAGE)
+    setDemoOffers([]) // Clear demo offers when clearing everything
 
     setSortKey('minimumSize')
     setSortReverse(false)
     setShowRefreshDropdown(false)
 
-    // Add a small delay to show the loading state
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    try {
+      // Add a small delay to show the loading state
+      await ReloadDelay()
 
-    await refetch()
-    setLocalLoading(false)
+      // First refresh the orderbook on the server
+      await refreshOrderbook()
+
+      // Then refetch the data
+      await refetch()
+    } catch (error) {
+      console.error('Failed to refresh orderbook:', error)
+      // Still try to refetch even if refresh fails
+      await refetch()
+    } finally {
+      setLocalLoading(false)
+    }
   }
 
   const handleReload = async () => {
@@ -268,10 +321,10 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setShowRefreshDropdown(false)
 
     // Add a small delay to show the loading state
-    const [refetchResult] = await Promise.all([refetch(), new Promise((resolve) => setTimeout(resolve, 300))])
+    await ReloadDelay()
 
+    await refetch()
     setLocalLoading(false)
-    return refetchResult
   }
 
   const handleSort = (key: SortKey) => {
@@ -334,6 +387,20 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           </div>
 
           <div className="flex items-center space-x-2">
+            {showDemoButton && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={__dev_generateDemoReportEntryButton}
+                disabled={isLoadingData}
+                className="relative"
+              >
+                Generate Demo Entry
+                <Plus className="ml-2 h-4 w-4" />
+                <DevBadge />
+              </Button>
+            )}
+
             <div className="relative" ref={dropdownRef}>
               <div className="flex">
                 <Button
@@ -404,6 +471,20 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           </div>
 
           <div className="flex items-center space-x-2">
+            {showDemoButton && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={__dev_generateDemoReportEntryButton}
+                disabled={isLoadingData}
+                className="relative"
+              >
+                Generate Demo Entry
+                <Plus className="ml-2 h-4 w-4" />
+                <DevBadge />
+              </Button>
+            )}
+
             <div className="relative" ref={dropdownRef}>
               <div className="flex">
                 <Button
@@ -455,39 +536,38 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
       )}
 
       {/* Controls */}
-      {nickname && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={highlightMyOffers}
-                onCheckedChange={setHighlightMyOffers}
-                disabled={isLoadingData || ownOffers.length === 0}
-              />
-              <div>
-                <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
-                <div className="text-muted-foreground text-sm">
-                  {ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
-                </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Switch
+              checked={highlightMyOffers}
+              onCheckedChange={setHighlightMyOffers}
+              disabled={isLoadingData || ownOffers.length === 0}
+            />
+            <div>
+              <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
+              <div className="text-muted-foreground text-sm">
+                {ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
               </div>
             </div>
           </div>
-
-          {ownOffers.length > 0 && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch checked={pinMyOffers} onCheckedChange={handlePinToggle} disabled={isLoadingData} />
-                <div>
-                  <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
-                  <div className="text-muted-foreground text-sm">
-                    {t('orderbook.text_pin_to_top_own_orders_subtitle')}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-      )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Switch
+              checked={pinMyOffers}
+              onCheckedChange={handlePinToggle}
+              disabled={isLoadingData || ownOffers.length === 0}
+            />
+            <div>
+              <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
+              <div className="text-muted-foreground text-sm">{t('orderbook.text_pin_to_top_own_orders_subtitle')}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Table */}
       {isLoading ? (
