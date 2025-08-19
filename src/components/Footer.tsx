@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BlocksIcon, Check, File, X } from 'lucide-react'
+import { BlocksIcon, BookOpen, Check, File, X } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../package.json'
+import { OrderbookDialog } from './OrderbookDialog'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -16,6 +17,7 @@ const APP_DISPLAY_VERSION = (() => {
 export function Footer() {
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
+  const [isOrderbookOpen, setIsOrderbookOpen] = useState(false)
 
   return (
     <>
@@ -26,10 +28,14 @@ export function Footer() {
             Read this before using.
           </a>
         </span>
-        <div className="flex flex-1 items-center justify-center hover:underline">
-          <Button variant="ghost" size="sm" onClick={() => setIsCheatsheetOpen(true)}>
+        <div className="flex flex-1 items-center justify-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setIsCheatsheetOpen(true)} className="border">
             <File />
             Cheatsheet
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setIsOrderbookOpen(true)} className="border">
+            <BookOpen />
+            Orderbook
           </Button>
         </div>
 
@@ -53,6 +59,7 @@ export function Footer() {
       </footer>
 
       {isCheatsheetOpen && <Cheatsheet setIsCheatsheetOpen={setIsCheatsheetOpen} />}
+      <OrderbookDialog open={isOrderbookOpen} onOpenChange={setIsOrderbookOpen} />
     </>
   )
 }
