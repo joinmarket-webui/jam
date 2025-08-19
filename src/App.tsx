@@ -16,6 +16,7 @@ import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { Logs } from './components/Logs'
+import { Orderbook } from './components/Orderbook'
 import { EarnPage } from './components/earn/EarnPage'
 import { Receive } from './components/receive/Receive'
 import { RescanChain } from './components/settings/RescanChain'
@@ -70,6 +71,16 @@ function App() {
               }
             />
             <Route
+              path="/settings/rescan"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <RescanChain walletFileName={walletFileName} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/earn"
               element={
                 <ProtectedRoute authenticated={authenticated}>
@@ -100,21 +111,21 @@ function App() {
               }
             />
             <Route
-              path="/logs"
+              path="/orderbook"
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <Logs />
+                    <Orderbook />
                   </Layout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/settings/rescan"
+              path="/logs"
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <RescanChain walletFileName={walletFileName} />
+                    <Logs />
                   </Layout>
                 </ProtectedRoute>
               }

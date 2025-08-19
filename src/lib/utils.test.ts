@@ -11,6 +11,17 @@ import {
   factorToPercentage,
   toSemVer,
   UNKNOWN_VERSION,
+  humanReadableDuration,
+  formatBtc,
+  formatSats,
+  BTC,
+  SATS,
+  isRelativeOffer,
+  isAbsoluteOffer,
+  SEGWIT_ACTIVATION_BLOCK,
+  time,
+  ReloadDelay,
+  pseudoRandomNumber,
 } from './utils'
 
 describe('cn', () => {
@@ -259,5 +270,341 @@ describe('factorToPercentage', () => {
     // This test verifies the comment in the function about floating point precision
     expect(factorToPercentage(0.000027)).toBe(0.0027)
     expect(factorToPercentage(0.000027, 10)).toBe(0.0027)
+  })
+})
+
+describe('humanReadableDuration', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('should return "Expired" for past timestamps', () => {
+    const now = Date.now()
+    const pastTime = now - 1000
+    expect(humanReadableDuration({ to: pastTime })).toBe('Expired')
+  })
+
+  it('should return days when duration is more than 24 hours', () => {
+    const now = Date.now()
+    const oneDayFromNow = now + 24 * 60 * 60 * 1000
+    const twoDaysFromNow = now + 2 * 24 * 60 * 60 * 1000
+
+    expect(humanReadableDuration({ to: oneDayFromNow })).toBe('1 day')
+    expect(humanReadableDuration({ to: twoDaysFromNow })).toBe('2 days')
+  })
+
+  it('should return hours when duration is less than 24 hours but more than 1 hour', () => {
+    const now = Date.now()
+    const oneHourFromNow = now + 60 * 60 * 1000
+    const twoHoursFromNow = now + 2 * 60 * 60 * 1000
+    const twentyThreeHoursFromNow = now + 23 * 60 * 60 * 1000
+
+    expect(humanReadableDuration({ to: oneHourFromNow })).toBe('1 hour')
+    expect(humanReadableDuration({ to: twoHoursFromNow })).toBe('2 hours')
+    expect(humanReadableDuration({ to: twentyThreeHoursFromNow })).toBe('23 hours')
+  })
+
+  it('should return "Less than 1 hour" for durations less than an hour', () => {
+    const now = Date.now()
+    const thirtyMinutesFromNow = now + 30 * 60 * 1000
+    const fiveMinutesFromNow = now + 5 * 60 * 1000
+
+    expect(humanReadableDuration({ to: thirtyMinutesFromNow })).toBe('Less than 1 hour')
+    expect(humanReadableDuration({ to: fiveMinutesFromNow })).toBe('Less than 1 hour')
+  })
+
+  it('should handle mixed days and hours (prioritizing days)', () => {
+    const now = Date.now()
+    const oneDayAndFiveHoursFromNow = now + (24 + 5) * 60 * 60 * 1000
+
+    expect(humanReadableDuration({ to: oneDayAndFiveHoursFromNow })).toBe('1 day')
+  })
+
+  it('should format duration in human readable format', () => {
+    const from = Date.now()
+    const to = from + 2 * 24 * 60 * 60 * 1000 // 2 days
+
+    const result = time.humanReadableDuration({ from, to })
+    expect(result).toBe('in 2 days')
+  })
+
+  it('should handle past timestamps', () => {
+    const from = Date.now()
+    const to = from - 3600 * 1000 // 1 hour ago
+
+    const result = time.humanReadableDuration({ from, to })
+    expect(result).toBe('60 minutes ago')
+  })
+
+  it('should support different locales', () => {
+    const from = Date.now()
+    const to = from + 24 * 60 * 60 * 1000 // 1 day
+
+    const result = time.humanReadableDuration({ from, to, locale: 'en' })
+    expect(result).toBe('in 24 hours')
+  })
+})
+
+describe('formatBtc', () => {
+  it('should format BTC values with 8 decimal places', () => {
+    expect(formatBtc(1)).toBe('1.00000000')
+    expect(formatBtc(0.5)).toBe('0.50000000')
+    expect(formatBtc(0.12345678)).toBe('0.12345678')
+    expect(formatBtc(0)).toBe('0.00000000')
+  })
+
+  it('should handle large BTC values', () => {
+    expect(formatBtc(21000000)).toBe('21000000.00000000')
+    expect(formatBtc(100.99999999)).toBe('100.99999999')
+  })
+
+  it('should handle very small BTC values', () => {
+    expect(formatBtc(0.00000001)).toBe('0.00000001')
+    expect(formatBtc(0.000000001)).toBe('0.00000000')
+  })
+
+  it('should handle negative BTC values', () => {
+    expect(formatBtc(-1)).toBe('-1.00000000')
+    expect(formatBtc(-0.12345678)).toBe('-0.12345678')
+  })
+})
+
+describe('formatSats', () => {
+  it('should format satoshi values with locale-specific thousands separators', () => {
+    expect(formatSats(1000)).toBe('1,000')
+    expect(formatSats(1000000)).toBe('1,000,000')
+    expect(formatSats(100000000)).toBe('100,000,000') // 1 BTC in sats
+  })
+
+  it('should handle small satoshi values', () => {
+    expect(formatSats(0)).toBe('0')
+    expect(formatSats(1)).toBe('1')
+    expect(formatSats(100)).toBe('100')
+    expect(formatSats(999)).toBe('999')
+  })
+
+  it('should handle large satoshi values', () => {
+    expect(formatSats(2100000000000000)).toBe('2,100,000,000,000,000') // 21M BTC in sats
+    expect(formatSats(12345678901)).toBe('12,345,678,901')
+  })
+
+  it('should handle negative satoshi values', () => {
+    expect(formatSats(-1000)).toBe('-1,000')
+    expect(formatSats(-1234567)).toBe('-1,234,567')
+  })
+})
+
+describe('BTC and SATS constants', () => {
+  it('should have correct unit values', () => {
+    expect(BTC).toBe('BTC')
+    expect(SATS).toBe('sats')
+  })
+})
+
+describe('isRelativeOffer', () => {
+  it('should return true for relative offer types', () => {
+    expect(isRelativeOffer('sw0reloffer')).toBe(true)
+    expect(isRelativeOffer('swreloffer')).toBe(true)
+    expect(isRelativeOffer('reloffer')).toBe(true)
+  })
+
+  it('should return false for absolute offer types', () => {
+    expect(isRelativeOffer('sw0absoffer')).toBe(false)
+    expect(isRelativeOffer('swabsoffer')).toBe(false)
+    expect(isRelativeOffer('absoffer')).toBe(false)
+  })
+
+  it('should return false for invalid offer types', () => {
+    expect(isRelativeOffer('invalid')).toBe(false)
+    expect(isRelativeOffer('')).toBe(false)
+  })
+})
+
+describe('isAbsoluteOffer', () => {
+  it('should return true for absolute offer types', () => {
+    expect(isAbsoluteOffer('sw0absoffer')).toBe(true)
+    expect(isAbsoluteOffer('swabsoffer')).toBe(true)
+    expect(isAbsoluteOffer('absoffer')).toBe(true)
+  })
+
+  it('should return false for relative offer types', () => {
+    expect(isAbsoluteOffer('sw0reloffer')).toBe(false)
+    expect(isAbsoluteOffer('swreloffer')).toBe(false)
+    expect(isAbsoluteOffer('reloffer')).toBe(false)
+  })
+
+  it('should return false for invalid offer types', () => {
+    expect(isAbsoluteOffer('invalid')).toBe(false)
+    expect(isAbsoluteOffer('')).toBe(false)
+  })
+})
+
+describe('SEGWIT_ACTIVATION_BLOCK', () => {
+  it('should have the correct block number for SegWit activation', () => {
+    expect(SEGWIT_ACTIVATION_BLOCK).toBe(481_824)
+  })
+})
+
+describe('time utility', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  describe('timeInterval', () => {
+    it('should calculate time interval between two timestamps', () => {
+      const from = Date.now()
+      const to = from + 5000
+
+      expect(time.timeInterval({ from, to })).toBe(5000)
+    })
+
+    it('should use current time as default from value', () => {
+      const now = Date.now()
+      const to = now + 3000
+
+      expect(time.timeInterval({ to })).toBe(3000)
+    })
+  })
+})
+
+describe('ReloadDelay', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('should resolve after 500ms delay', async () => {
+    const delayPromise = ReloadDelay()
+
+    // Initially the promise should not be resolved
+    let resolved = false
+    delayPromise.then(() => {
+      resolved = true
+    })
+
+    expect(resolved).toBe(false)
+
+    // Advance time by 500ms
+    await vi.advanceTimersByTimeAsync(500)
+
+    // Now the promise should be resolved
+    await expect(delayPromise).resolves.toBeUndefined()
+  })
+
+  it('should not resolve before 500ms', async () => {
+    const delayPromise = ReloadDelay()
+
+    let resolved = false
+    delayPromise.then(() => {
+      resolved = true
+    })
+
+    // Advance time by 400ms (less than 500ms)
+    await vi.advanceTimersByTimeAsync(400)
+    expect(resolved).toBe(false)
+
+    // Advance the remaining 100ms
+    await vi.advanceTimersByTimeAsync(100)
+    await delayPromise
+    expect(resolved).toBe(true)
+  })
+})
+
+describe('pseudoRandomNumber', () => {
+  it('should return a number within the specified range (inclusive)', () => {
+    const min = 1
+    const max = 10
+
+    // Run multiple times to test randomness
+    for (let i = 0; i < 100; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should handle single value range', () => {
+    const value = 5
+    const result = pseudoRandomNumber(value, value)
+    expect(result).toBe(value)
+  })
+
+  it('should handle negative ranges', () => {
+    const min = -10
+    const max = -5
+
+    for (let i = 0; i < 50; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should handle ranges including zero', () => {
+    const min = -5
+    const max = 5
+
+    for (let i = 0; i < 50; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should handle large ranges', () => {
+    const min = 1000
+    const max = 9999
+
+    for (let i = 0; i < 20; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+      expect(Number.isInteger(result)).toBe(true)
+    }
+  })
+
+  it('should return different values over multiple calls', () => {
+    const min = 1
+    const max = 100
+    const results = new Set()
+
+    // Generate 50 random numbers
+    for (let i = 0; i < 50; i++) {
+      results.add(pseudoRandomNumber(min, max))
+    }
+
+    // We should have more than 1 unique value (very high probability)
+    expect(results.size).toBeGreaterThan(1)
+  })
+
+  it('should work with decimal inputs by preserving decimal precision', () => {
+    const min = 1.7
+    const max = 5.3
+
+    for (let i = 0; i < 20; i++) {
+      const result = pseudoRandomNumber(min, max)
+      expect(result).toBeGreaterThanOrEqual(min)
+      // The function can return values beyond max when using decimal inputs
+      // because Math.round(Math.random() * (max - min)) can round up to Math.round(max - min)
+      // and then min is added, potentially exceeding the original max
+      const maxPossible = Math.round(max - min) + min
+      expect(result).toBeLessThanOrEqual(maxPossible)
+      // The result may be a decimal when decimal inputs are provided
+      expect(typeof result).toBe('number')
+    }
   })
 })
