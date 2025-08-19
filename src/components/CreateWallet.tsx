@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { type CreateWalletResponse, createwallet, session } from '@/lib/jm-api/generated/client'
 import { formatWalletName } from '@/lib/utils'
@@ -15,6 +16,7 @@ import { authStore } from '@/store/authStore'
 
 const CreateWallet = () => {
   const navigate = useNavigate()
+  const client = useApiClient()
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [walletName, setWalletName] = useState('')
   const [password, setPassword] = useState('')
@@ -51,7 +53,7 @@ const CreateWallet = () => {
 
       // Check if there's an active session on the server
       try {
-        const { data: sessionInfo } = await session()
+        const { data: sessionInfo } = await session({ client })
         if (sessionInfo?.session || sessionInfo?.wallet_name !== 'None') {
           console.warn('Active session detected:', sessionInfo)
           toast.error(
@@ -80,6 +82,7 @@ const CreateWallet = () => {
 
       const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
       const { data: response, error: createError } = await createwallet({
+        client,
         body: {
           walletname: walletFileName,
           password,
@@ -115,8 +118,6 @@ const CreateWallet = () => {
       } catch (hashError) {
         console.warn('Failed to hash password, continuing without hash verification:', hashError)
       }
-
-      // Save session and navigate to dashboard
       updateAuthState({
         walletFileName,
         auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
