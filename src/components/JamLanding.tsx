@@ -1,14 +1,25 @@
+import { useState } from 'react'
 import { Info, Loader2, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { Jar } from '@/components/layout/Jar'
 import { useJamDisplayContext } from '@/components/layout/display-mode-context'
+import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
+import { FeeConfigTestComponent } from '@/components/ui/FeeConfigTestComponent'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { authStore } from '@/store/authStore'
 
 export default function JamLanding() {
   const { t } = useTranslation()
+  const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
+  const authState = useStore(authStore, (state) => state.state)
+  const { maxFeesConfigMissing } = useFeeConfigValidation()
+
   const {
     displayMode,
     toggleDisplayMode,
@@ -49,6 +60,12 @@ export default function JamLanding() {
           </Button>
         </div>
       </div>
+
+      {/* Fee Config Error Alert */}
+      {maxFeesConfigMissing && (
+        <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4 max-w-2xl" />
+      )}
+
       {error && (
         <Alert variant="destructive" className="mb-4 max-w-2xl">
           <AlertDescription>
@@ -111,6 +128,18 @@ export default function JamLanding() {
           {t('global.refresh')}
         </Button>
       </div>
+
+      {import.meta.env.DEV && (
+        <div className="mt-8">
+          <FeeConfigTestComponent />
+        </div>
+      )}
+
+      <FeeLimitDialog
+        open={showFeeConfigDialog}
+        onOpenChange={setShowFeeConfigDialog}
+        walletFileName={authState?.walletFileName || ''}
+      />
     </div>
   )
 }
