@@ -19,6 +19,7 @@ import { Logs } from './components/Logs'
 import { Orderbook } from './components/Orderbook'
 import { EarnPage } from './components/earn/EarnPage'
 import { Receive } from './components/receive/Receive'
+import { SendPage } from './components/send/SendPage'
 import { RescanChain } from './components/settings/RescanChain'
 import { Settings } from './components/settings/Settings'
 import { SweepPage } from './components/sweep/SweepPage'
@@ -66,6 +67,16 @@ function App() {
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
                     <Receive walletFileName={walletFileName} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/send"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <SendPage walletFileName={walletFileName} />
                   </Layout>
                 </ProtectedRoute>
               }
