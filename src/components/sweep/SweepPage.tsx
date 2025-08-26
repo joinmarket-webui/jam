@@ -1,8 +1,9 @@
 import { AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import type { WalletFileName } from '@/lib/utils'
 
 interface SweepPageProps {
-  walletFileName: string
+  walletFileName: WalletFileName
 }
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {

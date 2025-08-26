@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   cn,
-  formatWalletName,
+  walletDisplayName,
   JM_WALLET_FILE_EXTENSION,
   setIntervalDebounced,
   satsToBtc,
@@ -23,6 +23,7 @@ import {
   ReloadDelay,
   pseudoRandomNumber,
 } from './utils'
+import type { WalletFileName } from './utils'
 
 describe('cn', () => {
   it('should merge class names correctly', () => {
@@ -37,20 +38,19 @@ describe('cn', () => {
   })
 })
 
-describe('formatWalletName', () => {
+describe('walletDisplayName', () => {
   it('should remove .jmdat extension from wallet names', () => {
-    expect(formatWalletName('mywallet.jmdat')).toBe('mywallet')
-    expect(formatWalletName('test_wallet.jmdat')).toBe('test_wallet')
+    expect(walletDisplayName('mywallet.jmdat')).toBe('mywallet')
+    expect(walletDisplayName('test_wallet.jmdat')).toBe('test_wallet')
   })
 
   it('should return the same string if no .jmdat extension is present', () => {
-    expect(formatWalletName('mywallet')).toBe('mywallet')
-    expect(formatWalletName('wallet.txt')).toBe('wallet.txt')
+    expect(walletDisplayName('mywallet' as WalletFileName)).toBe('mywallet')
+    expect(walletDisplayName('wallet.txt' as WalletFileName)).toBe('wallet.txt')
   })
 
   it('should use the correct wallet file extension', () => {
     expect(JM_WALLET_FILE_EXTENSION).toBe('.jmdat')
-    expect('wallet' + JM_WALLET_FILE_EXTENSION).toBe('wallet.jmdat')
   })
 })
 

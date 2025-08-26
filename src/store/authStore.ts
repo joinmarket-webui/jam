@@ -1,9 +1,10 @@
 import { createStore } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
+import type { WalletFileName } from '@/lib/utils'
 import type { UnlockWalletResponse } from '../lib/jm-api/generated/client'
 
 type AuthState = {
-  walletFileName?: string
+  walletFileName?: WalletFileName
   hashed_password?: string
   auth?: {
     token: UnlockWalletResponse['token']

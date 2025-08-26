@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApiClient } from '@/hooks/useApiClient'
 import { listwalletsOptions, lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { formatWalletName } from '@/lib/utils'
+import { sortWallets, walletDisplayName } from '@/lib/utils'
+import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 
 const SwitchWalletFormSkeleton = () => {
@@ -36,7 +37,11 @@ const SwitchWalletFormSkeleton = () => {
   )
 }
 
-const SwitchWallet = ({ walletFileName }: { walletFileName: string }) => {
+interface SwitchWalletProps {
+  walletFileName: WalletFileName
+}
+
+const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
@@ -65,12 +70,8 @@ const SwitchWallet = ({ walletFileName }: { walletFileName: string }) => {
   }, [listwalletsQuery.error, t])
 
   const wallets = useMemo(() => {
-    const walletsData = listwalletsQuery.data?.wallets || []
-    return walletsData.sort((a, b) => {
-      if (a === walletFileName) return -1
-      if (b === walletFileName) return 1
-      return 0
-    })
+    const values = (listwalletsQuery.data?.wallets || []) as WalletFileName[]
+    return sortWallets(values, walletFileName)
   }, [listwalletsQuery.data, walletFileName])
 
   const handleLockCurrentWallet = async () => {
@@ -79,7 +80,7 @@ const SwitchWallet = ({ walletFileName }: { walletFileName: string }) => {
       authStore.getState().clear()
       setCurrentWalletLocked(true)
       toast.success(
-        t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: formatWalletName(walletFileName) }),
+        t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : t('global.errors.reason_unknown')
@@ -105,7 +106,7 @@ const SwitchWallet = ({ walletFileName }: { walletFileName: string }) => {
               {currentWalletLocked
                 ? 'Current wallet is locked. Select a different wallet to continue.'
                 : t('wallets.alert_wallet_open', {
-                    currentWalletName: formatWalletName(walletFileName),
+                    currentWalletName: walletDisplayName(walletFileName),
                   })}
             </CardDescription>
           </CardHeader>
@@ -150,7 +151,7 @@ const SwitchWallet = ({ walletFileName }: { walletFileName: string }) => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <Wallet className="h-4 w-4" />
-                                <span className="text-sm font-medium">{formatWalletName(wallet)}</span>
+                                <span className="text-sm font-medium">{walletDisplayName(wallet)}</span>
                               </div>
                               {wallet === walletFileName && (
                                 <span className="text-muted-foreground text-xs">

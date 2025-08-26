@@ -15,7 +15,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { formatWalletName } from '@/lib/utils'
+import { walletDisplayName } from '@/lib/utils'
+import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { Badge } from './ui/badge'
 
@@ -43,14 +44,14 @@ const LoginFormSkeleton = () => {
 }
 
 interface LoginFormProps {
-  wallets: string[]
+  wallets: WalletFileName[]
   isSubmitting: boolean
-  onSubmit: (val: { walletFileName: string; password: string }) => Promise<void>
+  onSubmit: (val: { walletFileName: WalletFileName; password: string }) => Promise<void>
 }
 
 const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
   const { t } = useTranslation()
-  const [selectedWallet, setSelectedWallet] = useState<string | undefined>(
+  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>(
     wallets.length !== 1 ? undefined : wallets[0],
   )
   const [password, setPassword] = useState<string>('')
@@ -70,7 +71,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
         onSubmit={(e: React.FormEvent) => {
           e.preventDefault()
 
-          if (selectedWallet === undefined) return
+          if (!selectedWallet) return
 
           onSubmit({ walletFileName: selectedWallet, password })
         }}
@@ -80,7 +81,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
           <Label htmlFor="wallet-select">Wallet</Label>
           <Select
             value={selectedWallet ?? ''}
-            onValueChange={setSelectedWallet}
+            onValueChange={(it) => setSelectedWallet(it as WalletFileName)}
             disabled={isSubmitting || wallets.length === 0}
             required
           >
@@ -90,7 +91,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
             <SelectContent>
               {wallets?.map((wallet, index) => (
                 <SelectItem key={index} value={wallet}>
-                  {formatWalletName(wallet)}
+                  {walletDisplayName(wallet)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -157,7 +158,7 @@ const LoginPage = () => {
     }
   }, [t, listwalletsQuery.error])
 
-  const wallets = useMemo(() => listwalletsQuery.data?.wallets, [listwalletsQuery.data])
+  const wallets = useMemo(() => listwalletsQuery.data?.wallets as WalletFileName[], [listwalletsQuery.data])
 
   const unlockWallet = useMutation({
     ...unlockwalletMutation({ client }),
@@ -170,7 +171,7 @@ const LoginPage = () => {
     },
   })
 
-  const handleSubmit = async (data: { walletFileName: string; password: string }) => {
+  const handleSubmit = async (data: { walletFileName: WalletFileName; password: string }) => {
     try {
       let hashedSecret: string | undefined
       try {
@@ -189,7 +190,7 @@ const LoginPage = () => {
       })
 
       updateAuthState({
-        walletFileName: response.walletname,
+        walletFileName: response.walletname as WalletFileName,
         auth: { token: response.token, refresh_token: response.refresh_token },
         hashed_password: hashedSecret,
       })

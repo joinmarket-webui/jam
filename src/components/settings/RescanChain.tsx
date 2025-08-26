@@ -12,9 +12,13 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useRescanStatus } from '@/hooks/useRescanStatus'
 import { rescanblockchain } from '@/lib/jm-api/generated/client/sdk.gen'
 import { setSession } from '@/lib/session'
-import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
+import { SEGWIT_ACTIVATION_BLOCK, type WalletFileName } from '@/lib/utils'
 
-export const RescanChain = ({ walletFileName }: { walletFileName: string }) => {
+interface RescanChainProps {
+  walletFileName: WalletFileName
+}
+
+export const RescanChain = ({ walletFileName }: RescanChainProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
