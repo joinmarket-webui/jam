@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -15,6 +16,7 @@ import { formatWalletName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 
 const CreateWallet = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
@@ -136,21 +138,20 @@ const CreateWallet = () => {
   const renderCreateForm = () => (
     <form onSubmit={handleCreateWallet} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="wallet-name">Wallet Name</Label>
+        <Label htmlFor="wallet-name">{t('create_wallet.label_wallet_name')}</Label>
         <Input
           id="wallet-name"
           type="text"
           value={walletName}
           onChange={(e) => setWalletName(e.target.value)}
           disabled={isLoading}
-          placeholder="Enter wallet name"
+          placeholder={t('create_wallet.placeholder_wallet_name')}
           required
         />
-        <p className="text-muted-foreground text-xs">Will be saved as {walletName || 'wallet-name'}.jmdat</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t('create_wallet.label_password')}</Label>
         <div className="relative">
           <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
@@ -159,7 +160,7 @@ const CreateWallet = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
-            placeholder="Enter password"
+            placeholder={t('create_wallet.placeholder_password')}
             className="pr-10 pl-10"
             required
           />
@@ -170,7 +171,7 @@ const CreateWallet = () => {
             className="absolute top-1/2 right-1 -translate-y-1/2 transform"
             onClick={() => {
               setShowConfirmPassword(false)
-              setShowPassword(!showPassword)
+              setShowPassword((val) => !val)
             }}
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -179,7 +180,7 @@ const CreateWallet = () => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirm Password</Label>
+        <Label htmlFor="confirm-password">{t('create_wallet.label_password_confirm')}</Label>
         <div className="relative">
           <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
@@ -188,7 +189,7 @@ const CreateWallet = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={isLoading}
-            placeholder="Confirm password"
+            placeholder={t('create_wallet.placeholder_password_confirm')}
             className="pr-10 pl-10"
             required
           />
@@ -199,7 +200,7 @@ const CreateWallet = () => {
             className="absolute top-1/2 right-1 -translate-y-1/2 transform"
             onClick={() => {
               setShowPassword(false)
-              setShowConfirmPassword(!showConfirmPassword)
+              setShowConfirmPassword((val) => !val)
             }}
           >
             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -211,10 +212,10 @@ const CreateWallet = () => {
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Creating Wallet...
+            {t('create_wallet.button_creating')}
           </>
         ) : (
-          'Create Wallet'
+          <>{t('create_wallet.button_create')}</>
         )}
       </Button>
     </form>
@@ -256,13 +257,10 @@ const CreateWallet = () => {
               <Wallet className="text-primary h-6 w-6" />
             </div>
             <CardTitle className="text-2xl font-bold">
-              {step === 'create' && 'Create New Wallet'}
+              {step === 'create' && <>{t('create_wallet.title')}</>}
               {step === 'seed' && 'Save Your Seed Phrase'}
             </CardTitle>
-            <CardDescription>
-              {step === 'create' && 'Set up a new Joinmarket wallet for CoinJoin privacy'}
-              {step === 'seed' && "This is your wallet's recovery phrase"}
-            </CardDescription>
+            <CardDescription>{step === 'seed' && "This is your wallet's recovery phrase"}</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
