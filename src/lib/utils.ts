@@ -24,13 +24,28 @@ export const isRelativeOffer = (offertype: OfferType) => offertype.includes('rel
 // can be any of ['sw0absoffer', 'swabsoffer', 'absoffer']
 export const isAbsoluteOffer = (offertype: OfferType) => offertype.includes('absoffer')
 
+export type WalletFileName = `${string}.jmdat`
+
 /**
- * Formats a wallet name by removing the .jmdat extension for UI display
- * @param walletName - The full wallet name with .jmdat extension
+ * Formats a wallet name by removing the .jmdat extension
+ * @param name The full wallet name with .jmdat extension
  * @returns The wallet name without the .jmdat extension
  */
-export function formatWalletName(walletName: string): string {
-  return walletName.replace(JM_WALLET_FILE_EXTENSION, '')
+export const sanitizeWalletName = (name: WalletFileName) => name.replace(JM_WALLET_FILE_EXTENSION, '')
+
+export const walletDisplayNameToFileName = (name: string) => (name + JM_WALLET_FILE_EXTENSION) as WalletFileName
+
+export const walletDisplayName = (fileName: WalletFileName) => sanitizeWalletName(fileName)
+
+export const sortWallets = (
+  wallets: WalletFileName[],
+  activeWalletFileName: WalletFileName | null = null,
+): WalletFileName[] => {
+  if (activeWalletFileName && wallets.indexOf(activeWalletFileName) >= 0) {
+    return [activeWalletFileName, ...sortWallets(wallets.filter((a) => a !== activeWalletFileName))]
+  } else {
+    return [...wallets].sort((a, b) => a.localeCompare(b))
+  }
 }
 
 export const setIntervalDebounced = (

@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
 import type { DisplayMode } from '@/hooks/useDisplayMode'
 import { getaddressOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { btcToSats, satsToBtc } from '@/lib/utils'
+import { btcToSats, satsToBtc, type WalletFileName } from '@/lib/utils'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { SelectableJar } from '../ui/SelectableJar'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -16,7 +16,7 @@ import { BitcoinAmountInput } from './BitcoinAmountInput'
 import { BitcoinQR } from './BitcoinQR'
 
 interface ReceiveProps {
-  walletFileName: string
+  walletFileName: WalletFileName
 }
 
 export const Receive = ({ walletFileName }: ReceiveProps) => {
