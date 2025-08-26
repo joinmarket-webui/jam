@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, RefreshCwIcon, Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -11,12 +12,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { formatWalletName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { Badge } from './ui/badge'
 
 const LoginFormSkeleton = () => {
   return (
@@ -48,6 +49,7 @@ interface LoginFormProps {
 }
 
 const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
+  const { t } = useTranslation()
   const [selectedWallet, setSelectedWallet] = useState<string | undefined>(
     wallets.length !== 1 ? undefined : wallets[0],
   )
@@ -105,7 +107,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
-              placeholder="Enter your password"
+              placeholder={t('wallets.wallet_preview.placeholder_password')}
               className="pr-10 pl-10"
             />
             <Button
@@ -113,7 +115,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
               variant="ghost"
               size="sm"
               className="absolute top-1/2 right-1 -translate-y-1/2 transform"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((val) => !val)}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
@@ -124,10 +126,10 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Unlocking...
+              {t('wallets.wallet_preview.button_unlocking')}
             </>
           ) : (
-            'Unlock'
+            <>{t('wallets.wallet_preview.button_unlock')}</>
           )}
         </Button>
       </form>
@@ -136,6 +138,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
 }
 
 const LoginPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
@@ -149,10 +152,10 @@ const LoginPage = () => {
   const listwalletsError = useMemo(() => {
     if (!listwalletsQuery.error) return undefined
     return {
-      message: `Failed to load wallets`,
+      message: t('wallets.error_loading_failed'),
       error_description: listwalletsQuery.error.message || 'Unknown reason.',
     }
-  }, [listwalletsQuery.error])
+  }, [t, listwalletsQuery.error])
 
   const wallets = useMemo(() => listwalletsQuery.data?.wallets, [listwalletsQuery.data])
 
@@ -166,8 +169,6 @@ const LoginPage = () => {
       toast.error(`Failed to unlock wallet: ${error.message || 'Unknown reason.'}`)
     },
   })
-
-  const isUnlockingWallet = useMemo(() => unlockWallet.isPending, [unlockWallet.isPending])
 
   const handleSubmit = async (data: { walletFileName: string; password: string }) => {
     try {
@@ -231,33 +232,34 @@ const LoginPage = () => {
                     <AlertDescription>{listwalletsError.error_description}</AlertDescription>
                   </Alert>
                   <Button variant="ghost" size="sm" onClick={async () => await listwalletsQuery.refetch()}>
-                    <RefreshCwIcon className="h-4 w-4" /> Retry
+                    <RefreshCwIcon className="h-4 w-4" />
+                    {t('global.retry')}
                   </Button>
                 </CardContent>
               ) : (
                 <CardContent className="space-y-6">
-                  {wallets!.length === 0 ? (
+                  {wallets !== undefined && wallets.length === 0 ? (
                     <>
                       <div className="text-center">
-                        <p className="text-muted-foreground text-sm">It looks like you do not have a wallet, yet.</p>
+                        <p className="text-muted-foreground text-sm">{t('wallets.subtitle_no_wallets')}</p>
                       </div>
-                      <div className="space-y-4">
-                        <Button className="w-full" size="lg" onClick={async () => await navigate('/create-wallet')}>
-                          Create new wallet
+                      <div className="flex flex-col gap-4">
+                        <Button size="lg" onClick={async () => await navigate('/create-wallet')}>
+                          {t('wallets.button_new_wallet')}
                         </Button>
-                        <Tooltip>
-                          <TooltipTrigger className="w-full">
-                            <Button variant="secondary" className="w-full" size="lg" disabled>
-                              Import existing wallet
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Not yet implemented.</TooltipContent>
-                        </Tooltip>
+                        <Button variant="secondary" size="lg" disabled>
+                          {t('wallets.button_import_wallet')}
+                          <Badge variant="destructive">Not yet implemented.</Badge>
+                        </Button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <LoginForm wallets={wallets || []} isSubmitting={isUnlockingWallet} onSubmit={handleSubmit} />
+                      <LoginForm
+                        wallets={wallets || []}
+                        isSubmitting={unlockWallet.isPending}
+                        onSubmit={handleSubmit}
+                      />
 
                       <div className="flex flex-col gap-2">
                         <Button
@@ -266,21 +268,17 @@ const LoginPage = () => {
                           onClick={async () => await navigate('/create-wallet')}
                           className="cursor-pointer"
                         >
-                          Create a new wallet
+                          {t('wallets.button_new_wallet')}
                         </Button>
-                        <Tooltip>
-                          <TooltipTrigger className="w-full">
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={async () => await navigate('/create-wallet')}
-                              disabled
-                            >
-                              Import an existing wallet
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Not yet implemented.</TooltipContent>
-                        </Tooltip>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={async () => await navigate('/create-wallet')}
+                          disabled
+                        >
+                          {t('wallets.button_import_wallet')}
+                          <Badge variant="destructive">Not yet implemented.</Badge>
+                        </Button>
                       </div>
                     </>
                   )}
