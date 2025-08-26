@@ -6,9 +6,10 @@ import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import type { WalletFileName } from '@/lib/utils'
 
 interface SendPageProps {
-  walletFileName: string
+  walletFileName: WalletFileName
 }
 
 export const SendPage = ({ walletFileName }: SendPageProps) => {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import type { PropsWithChildren } from 'react'
 import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
@@ -27,14 +28,17 @@ import { JAM_API_AUTH_TOKEN_RENEW_INTERVAL, JAM_JM_SESSION_REFRESH_INTERVAL } fr
 import { sessionOptions } from './lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { jmSessionStore } from './store/jmSessionStore'
 
-const ProtectedRoute = ({ children, authenticated }: { children: React.ReactNode; authenticated: boolean }) => {
+const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authenticated: boolean }>) => {
   return authenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function App() {
   const authState = useStore(authStore, (state) => state.state)
-  const authenticated = useMemo(() => authState?.auth?.token !== undefined, [authState])
-  const walletFileName = useMemo(() => authState?.walletFileName || '', [authState])
+  const walletFileName = useMemo(() => authState?.walletFileName, [authState])
+  const authenticated = useMemo(
+    () => walletFileName !== undefined && authState?.auth?.token !== undefined,
+    [authState, walletFileName],
+  )
 
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
@@ -48,7 +52,9 @@ function App() {
             <Route
               path="/switch-wallet"
               element={
-                authenticated ? <SwitchWallet walletFileName={walletFileName} /> : <Navigate to="/login" replace />
+                <ProtectedRoute authenticated={authenticated}>
+                  <SwitchWallet walletFileName={walletFileName!} />
+                </ProtectedRoute>
               }
             />
             <Route
@@ -66,7 +72,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <Receive walletFileName={walletFileName} />
+                    <Receive walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -76,7 +82,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <SendPage walletFileName={walletFileName} />
+                    <SendPage walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -86,7 +92,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <RescanChain walletFileName={walletFileName} />
+                    <RescanChain walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -96,7 +102,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <EarnPage walletFileName={walletFileName} />
+                    <EarnPage walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -106,7 +112,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <SweepPage walletFileName={walletFileName} />
+                    <SweepPage walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -116,7 +122,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <Settings walletFileName={walletFileName} />
+                    <Settings walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }

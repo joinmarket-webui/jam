@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import type { WalletFileName } from '@/lib/utils'
 
 interface EarnPageProps {
-  walletFileName: string
+  walletFileName: WalletFileName
 }
 
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {

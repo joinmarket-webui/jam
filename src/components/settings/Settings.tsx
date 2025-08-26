@@ -27,6 +27,7 @@ import { Separator } from '@/components/ui/separator'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeatures } from '@/hooks/useFeatures'
 import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { useJamDisplayContext } from '../layout/display-mode-context'
 import { FeeLimitDialog } from './FeeLimitDialog'
@@ -35,7 +36,7 @@ import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem } from './SettingsItem'
 
 interface SettingProps {
-  walletFileName: string
+  walletFileName: WalletFileName
 }
 
 export const Settings = ({ walletFileName }: SettingProps) => {

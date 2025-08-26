@@ -12,8 +12,13 @@ import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { type CreateWalletResponse, createwallet, session } from '@/lib/jm-api/generated/client'
-import { formatWalletName } from '@/lib/utils'
+import { walletDisplayName, JM_WALLET_FILE_EXTENSION, walletDisplayNameToFileName } from '@/lib/utils'
+import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+
+const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
+const validateWalletName = (input: string) =>
+  input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
 const CreateWallet = () => {
   const { t } = useTranslation()
@@ -32,18 +37,19 @@ const CreateWallet = () => {
   const handleCreateWallet = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!walletName.trim()) {
-      toast.error('Wallet name is required')
+    const sanitizedWalletName = walletName.trim()
+    if (!validateWalletName(sanitizedWalletName)) {
+      toast.error(t('create_wallet.feedback_invalid_wallet_name'))
       return
     }
 
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters long')
+    if (password.length < 1) {
+      toast.error(t('create_wallet.feedback_invalid_password'))
       return
     }
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match')
+      toast.error(t('create_wallet.feedback_invalid_password_confirm'))
       return
     }
 
@@ -59,8 +65,8 @@ const CreateWallet = () => {
         if (sessionInfo?.session || sessionInfo?.wallet_name !== 'None') {
           console.warn('Active session detected:', sessionInfo)
           toast.error(
-            `Cannot create wallet as "${formatWalletName(
-              sessionInfo?.wallet_name || 'Unknown',
+            `Cannot create wallet as "${walletDisplayName(
+              (sessionInfo?.wallet_name || 'Unknown') as WalletFileName,
             )}" wallet is currently active.`,
             {
               description: (
@@ -82,7 +88,7 @@ const CreateWallet = () => {
         // Continue anyway, wallet creation might still work
       }
 
-      const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
+      const walletFileName = walletDisplayNameToFileName(walletName)
       const { data: response, error: createError } = await createwallet({
         client,
         body: {
@@ -113,7 +119,7 @@ const CreateWallet = () => {
   const handleConfirmSeed = () => {
     if (createWalletResponse?.seedphrase) {
       let hashedSecret: string | undefined
-      const walletFileName = walletName.endsWith('.jmdat') ? walletName : `${walletName}.jmdat`
+      const walletFileName = walletDisplayNameToFileName(walletName)
 
       try {
         hashedSecret = hashPassword(password, walletFileName)
@@ -136,7 +142,7 @@ const CreateWallet = () => {
   }
 
   const renderCreateForm = () => (
-    <form onSubmit={handleCreateWallet} className="space-y-4">
+    <form onSubmit={handleCreateWallet} className="space-y-4" noValidate>
       <div className="space-y-2">
         <Label htmlFor="wallet-name">{t('create_wallet.label_wallet_name')}</Label>
         <Input
@@ -161,6 +167,7 @@ const CreateWallet = () => {
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
             placeholder={t('create_wallet.placeholder_password')}
+            maxLength={MAX_WALLET_NAME_LENGTH}
             className="pr-10 pl-10"
             required
           />
