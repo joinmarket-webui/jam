@@ -35,13 +35,13 @@ services:
       APP_USER: joinmarket
       APP_PASSWORD: joinmarket
       jm_rpc_wallet_file: jm_secondary
-      jm_rpc_user: joinmarket2
-      jm_rpc_password: joinmarket2
+      jm_rpc_cookie_file: /root/.bitcoin_data/regtest/.cookie
     ports:
       - "29080:80"
       - "29183:28183" # exposed for "init setup" routine
     volumes:
       - "joinmarket2_datadir:/root/.joinmarket"
+      - "bitcoin_datadir:/root/.bitcoin_data" # mount bitcoind dir to access .cookie file
     depends_on:
       bitcoind:
         condition: service_healthy
