@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
@@ -15,7 +15,8 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { FEE_CONFIG_KEYS } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
-import { configsettingMutation, configgetOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { configsettingMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { factorToPercentage } from '@/lib/utils'
 import { DevBadge } from '../ui/DevBadge'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
@@ -33,8 +34,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
   const [collaboratorFeesExpanded, setCollaboratorFeesExpanded] = useState(false)
   const [miningFeesExpanded, setMiningFeesExpanded] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoadingConfig, setIsLoadingConfig] = useState(false)
   const [saveErrorMessage, setSaveErrorMessage] = useState<string>()
+  const { feeConfigValues, refetchAll: refetchFeeConfigValues, isLoading: isLoadingConfig } = useFeeConfigValidation()
 
   useEffect(() => {
     if (open) {
@@ -47,55 +48,14 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
   const collaboratorFormRef = useRef<CollaboratorFeesFormRef>(null)
   const miningFormRef = useRef<MiningFeesFormRef>(null)
 
-  const configMutation = useMutation(configsettingMutation({ client }))
-
-  const commonQueryOptions = {
-    enabled: open && !!walletFileName,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-  }
-
-  const createConfigQuery = (configKey: keyof typeof FEE_CONFIG_KEYS) => ({
-    ...configgetOptions({
-      client,
-      path: { walletname: walletFileName },
-      body: FEE_CONFIG_KEYS[configKey],
-    }),
-    ...commonQueryOptions,
-  })
-
-  const maxCjFeeAbsQuery = useQuery(createConfigQuery('max_cj_fee_abs'))
-  const maxCjFeeRelQuery = useQuery(createConfigQuery('max_cj_fee_rel'))
-  const txFeesQuery = useQuery(createConfigQuery('tx_fees'))
-  const txFeesFactorQuery = useQuery(createConfigQuery('tx_fees_factor'))
-  const maxSweepFeeChangeQuery = useQuery(createConfigQuery('max_sweep_fee_change'))
+  const setconfigMutation = useMutation(configsettingMutation({ client }))
 
   useEffect(() => {
     if (!open || !walletFileName) {
-      setIsLoadingConfig(false)
       setSaveErrorMessage(undefined)
       return
     }
-
-    const isLoading =
-      maxCjFeeAbsQuery.isLoading ||
-      maxCjFeeRelQuery.isLoading ||
-      txFeesQuery.isLoading ||
-      txFeesFactorQuery.isLoading ||
-      maxSweepFeeChangeQuery.isLoading
-
-    setIsLoadingConfig(isLoading)
-  }, [
-    open,
-    walletFileName,
-    maxCjFeeAbsQuery.isLoading,
-    maxCjFeeRelQuery.isLoading,
-    txFeesQuery.isLoading,
-    txFeesFactorQuery.isLoading,
-    maxSweepFeeChangeQuery.isLoading,
-  ])
+  }, [open, walletFileName])
 
   const handleSubmit = async () => {
     if (!walletFileName) {
@@ -134,7 +94,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
 
       for (const { key, value } of configUpdates) {
         if (value) {
-          await configMutation.mutateAsync({
+          await setconfigMutation.mutateAsync({
             path: { walletname: walletFileName },
             body: {
               ...FEE_CONFIG_KEYS[key],
@@ -144,13 +104,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
         }
       }
 
-      await Promise.all([
-        maxCjFeeAbsQuery.refetch(),
-        maxCjFeeRelQuery.refetch(),
-        txFeesQuery.refetch(),
-        txFeesFactorQuery.refetch(),
-        maxSweepFeeChangeQuery.refetch(),
-      ])
+      await refetchFeeConfigValues()
 
       toast.success(t('settings.fees.success_message'))
       onOpenChange(false)
@@ -254,9 +208,9 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                   key={`collaborator-${walletFileName}-${open}`}
                   ref={collaboratorFormRef}
                   initialValues={{
-                    maxCjFeeAbs: maxCjFeeAbsQuery.data?.configvalue || '',
-                    maxCjFeeRel: maxCjFeeRelQuery.data?.configvalue
-                      ? String(factorToPercentage(Number(maxCjFeeRelQuery.data.configvalue)))
+                    maxCjFeeAbs: feeConfigValues?.max_cj_fee_abs || '',
+                    maxCjFeeRel: feeConfigValues?.max_cj_fee_rel
+                      ? String(factorToPercentage(Number(feeConfigValues.max_cj_fee_rel)))
                       : '',
                   }}
                   enableValidation={enableFormValidation}
@@ -293,12 +247,12 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                   key={`mining-${walletFileName}-${open}`}
                   ref={miningFormRef}
                   initialValues={{
-                    txFees: txFeesQuery.data?.configvalue ?? '',
-                    txFeesFactor: txFeesFactorQuery.data?.configvalue
-                      ? String(factorToPercentage(Number(txFeesFactorQuery.data.configvalue)))
+                    txFees: feeConfigValues?.tx_fees ?? '',
+                    txFeesFactor: feeConfigValues?.tx_fees_factor
+                      ? String(factorToPercentage(Number(feeConfigValues.tx_fees_factor)))
                       : '',
-                    maxSweepFeeChange: maxSweepFeeChangeQuery.data?.configvalue
-                      ? String(factorToPercentage(Number(maxSweepFeeChangeQuery.data.configvalue)))
+                    maxSweepFeeChange: feeConfigValues?.max_sweep_fee_change
+                      ? String(factorToPercentage(Number(feeConfigValues?.max_sweep_fee_change)))
                       : '',
                   }}
                   enableValidation={enableFormValidation}
