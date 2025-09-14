@@ -1,4 +1,5 @@
 interface DebugFeatures {
+  developerMode: boolean
   insecureScheduleTesting: boolean
   allowCreatingExpiredFidelityBond: boolean
   skipWalletBackupConfirmation: boolean
@@ -14,6 +15,7 @@ interface DebugFeatures {
 const devMode = import.meta.env.DEV && import.meta.env.VITE_JAM_DEV_MODE === 'true'
 
 const debugFeatures: DebugFeatures = {
+  developerMode: devMode,
   allowCreatingExpiredFidelityBond: devMode,
   insecureScheduleTesting: devMode,
   skipWalletBackupConfirmation: devMode,
