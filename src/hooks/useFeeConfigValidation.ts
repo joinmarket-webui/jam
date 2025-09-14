@@ -6,6 +6,8 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { configgetMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { authStore } from '@/store/authStore'
 
+//TODO: needs testing!
+
 export interface FeeConfigValues {
   max_cj_fee_abs?: string
   max_cj_fee_rel?: string

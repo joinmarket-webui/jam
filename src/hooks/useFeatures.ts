@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
+import { isDevMode } from '@/constants/debugFeatures'
 import { fetchFeatures } from '@/lib/api/logs'
 import { authStore } from '@/store/authStore'
 
@@ -45,7 +46,8 @@ export const useFeatures = () => {
 
   const isLogsEnabled = () => {
     if (error) {
-      return import.meta.env.DEV
+      // show regardless of error in development mode
+      return isDevMode()
     }
 
     if (features) {

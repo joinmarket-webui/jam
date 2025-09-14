@@ -1,3 +1,4 @@
+import { isDevMode } from '@/constants/debugFeatures'
 import { createClient } from '@/lib/jm-api'
 import type { ClientOptions, UnlockWalletResponse } from '@/lib/jm-api/generated/client'
 import { authStore } from '@/store/authStore'
@@ -39,9 +40,7 @@ export const createApiClient = (): Client => {
   const jamAuthMiddleware = createJamAuthenticationMiddleware()
   client.interceptors.request.use(jamAuthMiddleware)
 
-  const isDevelopment = import.meta.env.DEV
-
-  if (isDevelopment) {
+  if (isDevMode()) {
     client.interceptors.request.use(loggingRequestInterceptor)
     client.interceptors.response.use(loggingResponseInterceptor)
   }
