@@ -1,35 +1,42 @@
-import { useEffect, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo } from 'react'
 import type { PropsWithChildren } from 'react'
 import { QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { Loader2 } from 'lucide-react'
 import { ThemeProvider } from 'next-themes'
+import { useTranslation } from 'react-i18next'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import CreateWallet from '@/components/CreateWallet'
 import JamLanding from '@/components/JamLanding'
 import LoginPage from '@/components/Login'
+import { Logs } from '@/components/Logs'
+import { Orderbook } from '@/components/Orderbook'
 import SwitchWallet from '@/components/SwitchWallet'
+import { EarnPage } from '@/components/earn/EarnPage'
 import { Layout } from '@/components/layout/Layout'
+import { Receive } from '@/components/receive/Receive'
+import { SendPage } from '@/components/send/SendPage'
+import { RescanChain } from '@/components/settings/RescanChain'
+import { Settings } from '@/components/settings/Settings'
+import { SweepPage } from '@/components/sweep/SweepPage'
 import { Toaster } from '@/components/ui/sonner'
+import { JAM_API_AUTH_TOKEN_RENEW_INTERVAL, JAM_JM_SESSION_REFRESH_INTERVAL } from '@/constants/jam'
+import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { token } from '@/lib/jm-api/generated/client'
+import { sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
-import { Logs } from './components/Logs'
-import { Orderbook } from './components/Orderbook'
-import { EarnPage } from './components/earn/EarnPage'
-import { Receive } from './components/receive/Receive'
-import { SendPage } from './components/send/SendPage'
-import { RescanChain } from './components/settings/RescanChain'
-import { Settings } from './components/settings/Settings'
-import { SweepPage } from './components/sweep/SweepPage'
-import { JAM_API_AUTH_TOKEN_RENEW_INTERVAL, JAM_JM_SESSION_REFRESH_INTERVAL } from './constants/jam'
-import { sessionOptions } from './lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { jmSessionStore } from './store/jmSessionStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
+import { isDebugFeatureEnabled, isDevMode } from './constants/debugFeatures'
+
+const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
+const DevPage = lazy(() => import('@/components/dev/DevPage'))
 
 const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authenticated: boolean }>) => {
-  return authenticated ? <>{children}</> : <Navigate to="/login" replace />
+  return authenticated ? <>{children}</> : <Navigate to={routes.login} replace />
 }
 
 function App() {
@@ -47,10 +54,16 @@ function App() {
         <RefreshJmSession />
         <Router>
           <Routes>
-            <Route path="/login" element={authenticated ? <Navigate to="/" replace /> : <LoginPage />} />
-            <Route path="/create-wallet" element={authenticated ? <Navigate to="/" replace /> : <CreateWallet />} />
             <Route
-              path="/switch-wallet"
+              path={routes.login}
+              element={authenticated ? <Navigate to={routes.home} replace /> : <LoginPage />}
+            />
+            <Route
+              path={routes.createWallet}
+              element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWallet />}
+            />
+            <Route
+              path={routes.switchWallet}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <SwitchWallet walletFileName={walletFileName!} />
@@ -58,7 +71,7 @@ function App() {
               }
             />
             <Route
-              path="/"
+              path={routes.home}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -68,7 +81,7 @@ function App() {
               }
             />
             <Route
-              path="/receive"
+              path={routes.receive}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -78,7 +91,7 @@ function App() {
               }
             />
             <Route
-              path="/send"
+              path={routes.send}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -88,17 +101,7 @@ function App() {
               }
             />
             <Route
-              path="/settings/rescan"
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <RescanChain walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/earn"
+              path={routes.earn}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -108,7 +111,7 @@ function App() {
               }
             />
             <Route
-              path="/sweep"
+              path={routes.sweep}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -118,7 +121,7 @@ function App() {
               }
             />
             <Route
-              path="/settings"
+              path={routes.settings}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -128,7 +131,7 @@ function App() {
               }
             />
             <Route
-              path="/orderbook"
+              path={routes.orderbook}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -138,7 +141,7 @@ function App() {
               }
             />
             <Route
-              path="/logs"
+              path={routes.logs}
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
@@ -147,7 +150,40 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route
+              path={routes.rescan}
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Layout>
+                    <RescanChain walletFileName={walletFileName!} />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            {isDebugFeatureEnabled('devPage') && (
+              <Route
+                path={routes.__dev}
+                element={
+                  <Layout>
+                    <DevPage />
+                  </Layout>
+                }
+              />
+            )}
+            {isDebugFeatureEnabled('devSetupPage') && (
+              <Route
+                id="dev-setup"
+                path={routes.__devSetup}
+                element={
+                  <Layout>
+                    <Suspense fallback={<Loading />}>
+                      <DevSetupPage />
+                    </Suspense>
+                  </Layout>
+                }
+              />
+            )}
+            <Route path="*" element={<Navigate to={routes.login} replace />} />
           </Routes>
           <Toaster closeButton />
         </Router>
@@ -156,12 +192,22 @@ function App() {
   )
 }
 
+const Loading = () => {
+  const { t } = useTranslation()
+  return (
+    <div className="m-2 flex items-center justify-center">
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      {t('global.loading')}
+    </div>
+  )
+}
+
 function RefreshApiToken() {
   const client = useApiClient()
 
   // TODO: stop this interval if no wallet is active
   useEffect(() => {
-    if (import.meta.env.DEV) {
+    if (isDevMode()) {
       toast.info(`[DEV] setup refresh interval`)
     }
 
@@ -182,7 +228,7 @@ function RefreshApiToken() {
         if (!response.data) {
           authStore.getState().clear()
 
-          if (import.meta.env.DEV) {
+          if (isDevMode()) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'
             toast.error(`[DEV] Error while renewing auth token: ${message}`)
           }
@@ -194,7 +240,7 @@ function RefreshApiToken() {
             },
           })
 
-          if (import.meta.env.DEV) {
+          if (isDevMode()) {
             toast.info(`[DEV] Successfully renewed auth token.`, {
               id: 'token-renew-success',
             })
@@ -227,7 +273,7 @@ function RefreshJmSession() {
     if (sessionQuery.data) {
       jmSessionStore.getState().update(sessionQuery.data)
 
-      if (import.meta.env.DEV) {
+      if (isDevMode()) {
         toast.info(`[DEV] Successfully refreshed session data.`, {
           id: 'jm-session-refresh-success',
         })
@@ -238,7 +284,7 @@ function RefreshJmSession() {
   useEffect(() => {
     if (authState === undefined) {
       sessionQuery.refetch().catch(() => {
-        if (import.meta.env.DEV) {
+        if (isDevMode()) {
           toast.error(`[DEV] Error while refreshing session data.`)
         }
       })

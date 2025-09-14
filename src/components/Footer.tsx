@@ -3,11 +3,13 @@ import { BlocksIcon, BookOpen, Check, File, X } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
+import { OrderbookDialog } from '@/components/OrderbookDialog'
 import { Button } from '@/components/ui/button'
+import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
+import { routes } from '@/constants/routes'
 import { toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../package.json'
-import { OrderbookDialog } from './OrderbookDialog'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -39,7 +41,16 @@ export function Footer() {
           </Button>
         </div>
 
-        <div className="flex flex-1 justify-end">
+        <div className="flex flex-1 justify-end gap-2">
+          <div className="flex items-center">
+            {isDebugFeatureEnabled('devSetupPage') && (
+              <div className="">
+                <Link className="light:text-yellow-800 text-sm text-yellow-200 underline" to={routes.__devSetup}>
+                  Dev Setup
+                </Link>
+              </div>
+            )}
+          </div>
           <div className="flex flex-col gap-1">
             <a
               href="https://github.com/joinmarket-webui/jam/tags"

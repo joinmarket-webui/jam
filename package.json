@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "VITE_JAM_DEV_MODE=true vite",
     "dev:secondary": "JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

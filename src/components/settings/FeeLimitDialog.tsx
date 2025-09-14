@@ -22,6 +22,8 @@ import { DevBadge } from '../ui/DevBadge'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
 
+//TODO: needs testing!
+
 interface FeeLimitDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
