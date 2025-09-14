@@ -17,7 +17,7 @@ import { hashPassword } from '@/lib/hash'
 import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
+import { authStore, type AuthState } from '@/store/authStore'
 import { Badge } from './ui/badge'
 
 const LoginFormSkeleton = () => {
@@ -43,10 +43,15 @@ const LoginFormSkeleton = () => {
   )
 }
 
+interface LoginFormData {
+  walletFileName: WalletFileName
+  password: string
+}
+
 interface LoginFormProps {
   wallets: WalletFileName[]
   isSubmitting: boolean
-  onSubmit: (val: { walletFileName: WalletFileName; password: string }) => Promise<void>
+  onSubmit: (val: LoginFormData) => Promise<void>
 }
 
 const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
@@ -163,23 +168,10 @@ const LoginPage = () => {
   const unlockWallet = useMutation({
     ...unlockwalletMutation({ client }),
     retry: false,
-    onSuccess: () => {
-      toast.success('Successfully unlocked wallet.')
-    },
-    onError: (error) => {
-      toast.error(`Failed to unlock wallet: ${error.message || 'Unknown reason.'}`)
-    },
   })
 
-  const handleSubmit = async (data: { walletFileName: WalletFileName; password: string }) => {
-    try {
-      let hashedSecret: string | undefined
-      try {
-        hashedSecret = hashPassword(data.password, data.walletFileName)
-      } catch (hashError) {
-        console.warn('Failed to hash password, continuing without hash verification:', hashError)
-      }
-
+  const login = useMutation<AuthState, Error, LoginFormData, unknown>({
+    mutationFn: async (data: LoginFormData) => {
       const response = await unlockWallet.mutateAsync({
         path: {
           walletname: encodeURIComponent(data.walletFileName),
@@ -189,12 +181,30 @@ const LoginPage = () => {
         },
       })
 
-      updateAuthState({
+      let hashedPassword: string | undefined
+      try {
+        hashedPassword = hashPassword(data.password, data.walletFileName)
+      } catch (hashError) {
+        console.warn('Failed to hash password, continuing without hash verification:', hashError)
+      }
+      return {
         walletFileName: response.walletname as WalletFileName,
         auth: { token: response.token, refresh_token: response.refresh_token },
-        hashed_password: hashedSecret,
-      })
+        hashed_password: hashedPassword,
+      }
+    },
+    onSuccess: () => {
+      toast.success('Successfully unlocked wallet.')
+    },
+    onError: (error) => {
+      toast.error(`Failed to unlock wallet: ${error.message || 'Unknown reason.'}`)
+    },
+  })
 
+  const handleSubmit = async (data: LoginFormData) => {
+    try {
+      const authState: AuthState = await login.mutateAsync(data)
+      updateAuthState(authState)
       await navigate('/')
     } catch (error: unknown) {
       console.error('Error unlocking wallet', error)
@@ -256,11 +266,7 @@ const LoginPage = () => {
                     </>
                   ) : (
                     <>
-                      <LoginForm
-                        wallets={wallets || []}
-                        isSubmitting={unlockWallet.isPending}
-                        onSubmit={handleSubmit}
-                      />
+                      <LoginForm wallets={wallets || []} isSubmitting={login.isPending} onSubmit={handleSubmit} />
 
                       <div className="flex flex-col gap-2">
                         <Button
