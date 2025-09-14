@@ -30,7 +30,8 @@ import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { isDebugFeatureEnabled, isDevMode } from './constants/debugFeatures'
+import { isDebugFeatureEnabled } from './constants/debugFeatures'
+import { jamSettingsStore } from './store/jamSettingsStore'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -162,10 +163,13 @@ function App() {
             />
             {isDebugFeatureEnabled('devPage') && (
               <Route
+                id="dev-page"
                 path={routes.__dev}
                 element={
                   <Layout>
-                    <DevPage />
+                    <Suspense fallback={<Loading />}>
+                      <DevPage />
+                    </Suspense>
                   </Layout>
                 }
               />
@@ -207,13 +211,15 @@ function RefreshApiToken() {
 
   // TODO: stop this interval if no wallet is active
   useEffect(() => {
-    if (isDevMode()) {
+    const isDevMode = jamSettingsStore.getState().state.developerMode
+    if (isDevMode) {
       toast.info(`[DEV] setup refresh interval`)
     }
 
     let intervalId: NodeJS.Timeout
     setIntervalDebounced(
       async () => {
+        const isDevMode = jamSettingsStore.getState().state.developerMode
         const currentRefreshToken = authStore.getState().state?.auth?.refresh_token
         if (currentRefreshToken === undefined) return
 
@@ -228,7 +234,7 @@ function RefreshApiToken() {
         if (!response.data) {
           authStore.getState().clear()
 
-          if (isDevMode()) {
+          if (isDevMode) {
             const message = response.error?.message || response.error?.error_description || 'Unknown error.'
             toast.error(`[DEV] Error while renewing auth token: ${message}`)
           }
@@ -240,7 +246,7 @@ function RefreshApiToken() {
             },
           })
 
-          if (isDevMode()) {
+          if (isDevMode) {
             toast.info(`[DEV] Successfully renewed auth token.`, {
               id: 'token-renew-success',
             })
@@ -273,7 +279,8 @@ function RefreshJmSession() {
     if (sessionQuery.data) {
       jmSessionStore.getState().update(sessionQuery.data)
 
-      if (isDevMode()) {
+      const isDevMode = jamSettingsStore.getState().state.developerMode
+      if (isDevMode) {
         toast.info(`[DEV] Successfully refreshed session data.`, {
           id: 'jm-session-refresh-success',
         })
@@ -284,7 +291,8 @@ function RefreshJmSession() {
   useEffect(() => {
     if (authState === undefined) {
       sessionQuery.refetch().catch(() => {
-        if (isDevMode()) {
+        const isDevMode = jamSettingsStore.getState().state.developerMode
+        if (isDevMode) {
           toast.error(`[DEV] Error while refreshing session data.`)
         }
       })

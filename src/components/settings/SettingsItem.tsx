@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from 'react'
 import { ExternalLink, type LucideIcon } from 'lucide-react'
 
 export const SettingItem = ({
@@ -6,13 +7,14 @@ export const SettingItem = ({
   action,
   disabled = false,
   external = false,
-}: {
+  children,
+}: PropsWithChildren<{
   icon: LucideIcon
   title: string
   action: () => void
   disabled?: boolean
   external?: boolean
-}) => {
+}>) => {
   const content = (
     <div
       className={`flex items-center justify-between py-2 ${disabled ? 'opacity-60' : ''} ${
@@ -27,6 +29,7 @@ export const SettingItem = ({
         <div>
           <p className="text-sm font-medium">{title}</p>
         </div>
+        {children}
       </div>
       {external && <ExternalLink className="text-muted-foreground h-3 w-3" />}
     </div>

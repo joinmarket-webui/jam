@@ -1,4 +1,4 @@
-import { BlocksIcon, TerminalIcon } from 'lucide-react'
+import { BlocksIcon, TerminalIcon, WalletIcon } from 'lucide-react'
 import { Badge } from '../ui/badge'
 
 const DEFAULT_BASIC_AUTH = {
@@ -45,7 +45,7 @@ export default function DevSetupPage() {
           <h5 className="text-xl font-bold">Jam Instances</h5>
           <div>
             <div className="flex items-center gap-2">
-              {/*<Sprite symbol="logo" width="24" height="24" className="me-2" />*/}
+              <WalletIcon className="h-4 w-4" />
               <a href={LINK_JM_REGTEST_JOINMARKET2} target="_blank" rel="noopener noreferrer" className="underline">
                 jm_regtest_joinmarket2 ({LINK_JM_REGTEST_JOINMARKET2})
               </a>
@@ -62,7 +62,7 @@ export default function DevSetupPage() {
               </small>
             </div>
             <div className="flex items-center gap-2">
-              {/*<Sprite symbol="logo" width="24" height="24" className="me-2" />*/}
+              <WalletIcon className="h-4 w-4" />
               <a href={LINK_JM_REGTEST_JOINMARKET3} target="_blank" rel="noopener noreferrer" className="underline">
                 jm_regtest_joinmarket3 ({LINK_JM_REGTEST_JOINMARKET3})
               </a>
