@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import type { WalletFileName } from '@/lib/utils'
 import type { UnlockWalletResponse } from '../lib/jm-api/generated/client'
 
-type AuthState = {
+export type AuthState = {
   walletFileName?: WalletFileName
   hashed_password?: string
   auth?: {
