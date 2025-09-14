@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
+import { useJamDisplayContext } from '@/components/layout/display-mode-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
@@ -33,18 +34,16 @@ import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { useJamDisplayContext } from '../layout/display-mode-context'
-import { Switch } from '../ui/switch'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
-import { SettingItem } from './SettingsItem'
+import { SettingItem, SettingsLink, SettingSwitch } from './SettingsItem'
 
-interface SettingProps {
+interface SettingPageProps {
   walletFileName: WalletFileName
 }
 
-export const Settings = ({ walletFileName }: SettingProps) => {
+export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode } = useJamDisplayContext()
@@ -54,7 +53,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
   const navigate = useNavigate()
   const client = useApiClient()
-  const hashedSecret = useStore(authStore, (state) => state.state?.hashed_password)
+  const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isLogsEnabled } = useFeatures()
 
   const lockWalletQuery = useQuery({
@@ -78,8 +77,6 @@ export const Settings = ({ walletFileName }: SettingProps) => {
     }
   }
 
-  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('navbar.menu_mobile_settings')}</h1>
@@ -90,22 +87,28 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           <CardTitle className="text-base font-medium">{t('settings.section_title_display')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
-          <SettingItem
+          <SettingSwitch
             icon={isPrivate ? Eye : EyeOff}
             title={t(isPrivate ? 'settings.show_balance' : 'settings.hide_balance')}
-            action={togglePrivacyMode}
+            checked={isPrivate}
+            onCheckedChange={togglePrivacyMode}
+            displayToggle={false}
           />
           <Separator className="opacity-50" />
-          <SettingItem
+          <SettingSwitch
             icon={Bitcoin}
-            title={t(currency === 'btc' ? 'settings.use_sats' : 'settings.use_btc')}
-            action={toggleCurrencyUnit}
+            title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
+            checked={currency === 'btc'}
+            onCheckedChange={toggleCurrencyUnit}
+            displayToggle={false}
           />
           <Separator className="opacity-50" />
-          <SettingItem
+          <SettingSwitch
             icon={resolvedTheme === 'dark' ? Sun : Moon}
             title={resolvedTheme === 'dark' ? t('settings.use_light_theme') : t('settings.use_dark_theme')}
-            action={toggleTheme}
+            checked={resolvedTheme === 'dark'}
+            onCheckedChange={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            displayToggle={false}
           />
           <Separator className="opacity-50" />
           <LanguageSelector />
@@ -121,7 +124,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           <SettingItem
             icon={DollarSign}
             title={t('settings.show_fee_config')}
-            action={() => {
+            action={async () => {
               setShowFeeLimitDialog(true)
             }}
           />
@@ -137,8 +140,8 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           <SettingItem
             icon={Key}
             title={t('settings.show_seed')}
-            action={() => setShowSeedDialog(true)}
-            disabled={hashedSecret === undefined}
+            action={async () => setShowSeedDialog(true)}
+            disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
           <SettingItem
@@ -148,33 +151,11 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             disabled={lockWalletQuery.isFetching}
           />
           <Separator className="opacity-50" />
-          <SettingItem
-            icon={RotateCcw}
-            title={t('settings.button_switch_wallet')}
-            action={() => {
-              navigate(routes.switchWallet)
-            }}
-          />
+          <SettingsLink icon={RotateCcw} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />
           <Separator className="opacity-50" />
-          <SettingItem
-            icon={RefreshCw}
-            title={t('settings.rescan_chain')}
-            action={() => {
-              navigate(routes.rescan)
-            }}
-          />
-          {isLogsEnabled && (
-            <>
-              <Separator className="opacity-50" />
-              <SettingItem
-                icon={FileText}
-                title={t('settings.show_logs')}
-                action={() => {
-                  navigate(routes.logs)
-                }}
-              />
-            </>
-          )}
+          <SettingsLink icon={RefreshCw} title={t('settings.rescan_chain')} to={routes.rescan} />
+          <Separator className="opacity-50" />
+          <SettingsLink icon={FileText} title={t('settings.show_logs')} to={routes.logs} disabled={isLogsEnabled} />
         </CardContent>
       </Card>
 
@@ -226,38 +207,28 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           <CardTitle className="text-base font-medium">{t('settings.section_title_dev')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
-          {isDevMode() && (
-            <>
-              <SettingItem
-                icon={TerminalIcon}
-                title="Enable developer mode"
-                action={() => {
-                  jamSettings.update({ developerMode: jamSettings.state.developerMode !== true })
-                }}
-              >
-                <Switch checked={jamSettings.state.developerMode} disabled={false} />
-              </SettingItem>
-              <Separator className="opacity-50" />
-            </>
-          )}
+          <SettingsLink icon={Book} title={t('settings.documentation')} to="https://jamdocs.org" external={true} />
           <Separator className="opacity-50" />
-          <SettingItem
-            icon={Book}
-            title={t('settings.documentation')}
-            action={() => {
-              window.open('https://jamdocs.org', '_blank', 'noreferrer,noopener')
-            }}
-            external={true}
-          />
-          <Separator className="opacity-50" />
-          <SettingItem
+          <SettingsLink
             icon={Github}
             title={t('settings.github')}
-            action={() => {
-              window.open('https://github.com/joinmarket-webui/jam', '_blank', 'noreferrer,noopener')
-            }}
+            to="https://github.com/joinmarket-webui/jam"
             external={true}
           />
+          {isDevMode() && (
+            <>
+              <Separator className="opacity-50" />
+              <SettingSwitch
+                icon={TerminalIcon}
+                title="Enable developer mode"
+                disabled={!isDevMode()}
+                checked={jamSettings.state.developerMode}
+                onCheckedChange={(checked) => {
+                  jamSettings.update({ developerMode: checked })
+                }}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -269,18 +240,13 @@ export const Settings = ({ walletFileName }: SettingProps) => {
               <CardTitle className="text-base font-medium">Developer Mode</CardTitle>
             </CardHeader>
             <CardContent className="space-y-0">
-              {isDebugFeatureEnabled('devPage') && (
-                <>
-                  <SettingItem
-                    icon={TerminalIcon}
-                    title="Dev page"
-                    action={() => {
-                      navigate(routes.__dev)
-                    }}
-                  />
-                  <Separator className="opacity-50" />
-                </>
-              )}
+              <SettingsLink
+                icon={TerminalIcon}
+                title="Dev page"
+                to={routes.__dev}
+                disabled={!isDebugFeatureEnabled('devPage')}
+              />
+              <Separator className="opacity-50" />
             </CardContent>
           </Card>
         </>
