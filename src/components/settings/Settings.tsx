@@ -16,6 +16,7 @@ import {
   // TODO: Remove depricated imports(company logos) from lucide react and use https://simpleicons.org directly
   Github,
   ExternalLink,
+  TerminalIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -24,12 +25,16 @@ import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
+import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeatures } from '@/hooks/useFeatures'
 import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { useJamDisplayContext } from '../layout/display-mode-context'
+import { Switch } from '../ui/switch'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
@@ -43,6 +48,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
   const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode } = useJamDisplayContext()
+  const jamSettings = useStore(jamSettingsStore)
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
@@ -64,7 +70,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
       await lockWalletQuery.refetch()
       authStore.getState().clear()
       toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletFileName }))
-      navigate('/login')
+      await navigate(routes.login)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       toast.error(t('global.errors.error_reloading_wallet_failed', { reason: errorMessage }))
@@ -146,7 +152,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={RotateCcw}
             title={t('settings.button_switch_wallet')}
             action={() => {
-              navigate('/switch-wallet')
+              navigate(routes.switchWallet)
             }}
           />
           <Separator className="opacity-50" />
@@ -154,7 +160,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
             icon={RefreshCw}
             title={t('settings.rescan_chain')}
             action={() => {
-              navigate('/settings/rescan')
+              navigate(routes.rescan)
             }}
           />
           {isLogsEnabled && (
@@ -164,7 +170,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
                 icon={FileText}
                 title={t('settings.show_logs')}
                 action={() => {
-                  navigate('/logs')
+                  navigate(routes.logs)
                 }}
               />
             </>
@@ -220,6 +226,21 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           <CardTitle className="text-base font-medium">{t('settings.section_title_dev')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
+          {isDevMode() && (
+            <>
+              <SettingItem
+                icon={TerminalIcon}
+                title="Enable developer mode"
+                action={() => {
+                  jamSettings.update({ developerMode: jamSettings.state.developerMode !== true })
+                }}
+              >
+                <Switch checked={jamSettings.state.developerMode} disabled={false} />
+              </SettingItem>
+              <Separator className="opacity-50" />
+            </>
+          )}
+          <Separator className="opacity-50" />
           <SettingItem
             icon={Book}
             title={t('settings.documentation')}
@@ -239,6 +260,31 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           />
         </CardContent>
       </Card>
+
+      {jamSettings.state.developerMode && (
+        <>
+          {/* Developer Mode */}
+          <Card className="animate-slide-up border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-medium">Developer Mode</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-0">
+              {isDebugFeatureEnabled('devPage') && (
+                <>
+                  <SettingItem
+                    icon={TerminalIcon}
+                    title="Dev page"
+                    action={() => {
+                      navigate(routes.__dev)
+                    }}
+                  />
+                  <Separator className="opacity-50" />
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       <SeedPhraseDialog walletFileName={walletFileName} open={showSeedDialog} onOpenChange={setShowSeedDialog} />
       <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />

@@ -5,7 +5,7 @@ export const routes = {
   switchWallet: '/switch-wallet',
   receive: '/receive',
   send: '/send',
-  rescan: '/rescan',
+  rescan: '/settings/rescan',
   earn: '/earn',
   sweep: '/sweep',
   settings: '/settings',
