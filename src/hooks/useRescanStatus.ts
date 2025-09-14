@@ -1,94 +1,122 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useStore } from 'zustand'
+import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
+import type { RescanInfoResponse } from '@/lib/jm-api/generated/client'
 import { getrescaninfo } from '@/lib/jm-api/generated/client/sdk.gen'
-import { setSession, type RescanSession } from '@/lib/session'
+import { setIntervalDebounced } from '@/lib/utils'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { useApiClient } from './useApiClient'
-import { useSession } from './useSession'
 
-const RESCAN_PROGRESS_INTERVAL = 2000
+interface RescanInfo {
+  rescanning: boolean
+  progress?: number
+}
 
 interface useRescanStatusProps {
   walletFileName: string
 }
 
 export const useRescanStatus = ({ walletFileName }: useRescanStatusProps) => {
-  const session = useSession()
+  const jmSession = useStore(jmSessionStore, (state) => state)
   const client = useApiClient()
-  const [rescanInfo, setRescanInfo] = useState<RescanSession | null>(null)
+  const [rescanInfo, setRescanInfo] = useState<RescanInfo>({
+    rescanning: !!jmSession.state?.rescanning,
+  })
   const [isLoading, setIsLoading] = useState(false)
 
+  /*const getrescaninfoQuery = useQuery({
+    ...getrescaninfoOptions({ 
+      client,
+      path: { walletname: walletFileName },
+    }),
+    refetchInterval: JAM_RESCAN_PROGRESS_INTERVAL,
+    refetchIntervalInBackground: true,
+    enabled: rescanInfo.rescanning,
+  })
+
   useEffect(() => {
-    if (!session?.rescan?.rescanning || !walletFileName) {
-      setRescanInfo(null)
+    console.debug('getrescaninfoQuery.data changed', getrescaninfoQuery.data)
+    if (getrescaninfoQuery.data) {
+      setRescanInfo(getrescaninfoQuery.data)
+    }
+  }, [getrescaninfoQuery.data])*/
+
+  const refetch = useCallback(
+    (signal: AbortSignal) => {
+      const fetchRescanProgress = async (): Promise<RescanInfoResponse | undefined> => {
+        try {
+          setIsLoading(true)
+          const { data } = await getrescaninfo({
+            client,
+            path: { walletname: walletFileName },
+            signal: signal,
+          })
+
+          if (!signal.aborted) {
+            return data
+          }
+        } catch (err) {
+          if (!signal.aborted) {
+            console.warn('Error fetching rescan progress:', err)
+            setIsLoading(false)
+            throw err
+          }
+        }
+      }
+
+      console.debug('Fetching rescan progress...')
+      return fetchRescanProgress().then((data) => {
+        console.debug('Fetched rescan progress', data)
+        if (data) {
+          setRescanInfo(data)
+        }
+        return data
+      })
+    },
+    [walletFileName],
+  )
+
+  useEffect(() => {
+    if (!walletFileName) {
+      setRescanInfo({
+        rescanning: false,
+      })
       return
     }
 
-    setRescanInfo(null)
-    setIsLoading(true)
-
     const abortCtrl = new AbortController()
-
-    const fetchRescanProgress = async (): Promise<void> => {
-      try {
-        const { data } = await getrescaninfo({
-          client,
-          path: { walletname: walletFileName },
-          signal: abortCtrl.signal,
-        })
-
-        if (!abortCtrl.signal.aborted && data) {
-          setRescanInfo(data)
-          setIsLoading(false)
-
-          // If API says rescanning is false but session still has rescanning true,
-          // it means rescan completed
-          if (!data.rescanning && session?.rescan?.rescanning) {
-            setSession({
-              rescan: {
-                rescanning: false,
-                progress: data.progress || 100,
-              },
-            })
-          } else if (data.rescanning && data.progress !== session?.rescan?.progress) {
-            setSession({
-              rescan: {
-                rescanning: session?.rescan?.rescanning || true,
-                progress: data.progress,
-              },
-            })
+    console.debug('Starting rescan progress interval', JAM_RESCAN_PROGRESS_INTERVAL)
+    let interval: NodeJS.Timeout
+    setIntervalDebounced(
+      async () => {
+        refetch(abortCtrl.signal).then((data) => {
+          if (data && data.rescanning !== true) {
+            console.debug('Stopping rescan progress interval')
+            clearInterval(interval)
           }
-        }
-      } catch (err) {
-        if (!abortCtrl.signal.aborted) {
-          console.warn('Error fetching rescan progress:', err)
-          setIsLoading(false)
-          setRescanInfo(null)
-        }
-      }
-    }
-
-    fetchRescanProgress()
-
-    const interval = setInterval(fetchRescanProgress, RESCAN_PROGRESS_INTERVAL)
+        })
+      },
+      JAM_RESCAN_PROGRESS_INTERVAL,
+      (timerId) => (interval = timerId),
+    )
 
     return () => {
       clearInterval(interval)
       abortCtrl.abort()
     }
-  }, [session?.rescan?.rescanning, walletFileName, client, session?.rescan?.progress])
+  }, [rescanInfo.rescanning, jmSession.state?.rescanning, walletFileName, client, refetch])
 
   if (!walletFileName) {
     return {
-      isRescanning: false,
-      progress: 0,
       isLoading: false,
-      rescanInfo: null,
+      rescanInfo,
+      setRescanInfo,
     }
   }
 
   return {
-    isRescanning: session?.rescan?.rescanning || false,
-    progress: session?.rescan?.progress,
     isLoading,
     rescanInfo,
+    setRescanInfo,
   }
 }
