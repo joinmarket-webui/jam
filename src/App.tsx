@@ -18,7 +18,7 @@ import { Layout } from '@/components/layout/Layout'
 import { Receive } from '@/components/receive/Receive'
 import { SendPage } from '@/components/send/SendPage'
 import { RescanChain } from '@/components/settings/RescanChain'
-import { Settings } from '@/components/settings/Settings'
+import { SettingsPage } from '@/components/settings/Settings'
 import { SweepPage } from '@/components/sweep/SweepPage'
 import { Toaster } from '@/components/ui/sonner'
 import { JAM_API_AUTH_TOKEN_RENEW_INTERVAL, JAM_JM_SESSION_REFRESH_INTERVAL } from '@/constants/jam'
@@ -126,7 +126,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <Settings walletFileName={walletFileName!} />
+                    <SettingsPage walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }

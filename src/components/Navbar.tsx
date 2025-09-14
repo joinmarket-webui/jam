@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useStore } from 'zustand'
 import type { Jar } from '@/components/layout/display-mode-context'
 import { Button } from '@/components/ui/button'
+import { isDevMode } from '@/constants/debugFeatures'
 import { cn } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -62,7 +63,7 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <div className="font-semibold tracking-tight">Satoshi</div>
-              <DevBadge />
+              {isDevMode() && <DevBadge />}
             </div>
             <div className="flex min-h-6 min-w-[150px] items-center">
               {isLoading ? (

@@ -14,6 +14,11 @@ export default function DevPage() {
       <p className="text-muted-foreground mb-4 text-sm">Development specific information</p>
 
       <div className="mt-8">
+        <code className="light:text-red-700 text-red-800">import.meta.env:</code>
+        <pre className="text-xs">{JSON.stringify(import.meta.env, null, 2)}</pre>
+      </div>
+
+      <div className="mt-8">
         <FeeConfigTestComponent />
 
         <FeeLimitDialog
