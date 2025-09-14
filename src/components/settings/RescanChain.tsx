@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useRescanStatus } from '@/hooks/useRescanStatus'
 import { rescanblockchain } from '@/lib/jm-api/generated/client/sdk.gen'
-import { setSession } from '@/lib/session'
 import { SEGWIT_ACTIVATION_BLOCK, type WalletFileName } from '@/lib/utils'
 
 interface RescanChainProps {
@@ -22,16 +21,14 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-  const { isRescanning, rescanInfo } = useRescanStatus({ walletFileName })
+  const { rescanInfo, setRescanInfo } = useRescanStatus({ walletFileName })
   const [rescanHeight, setRescanHeight] = useState<number>(SEGWIT_ACTIVATION_BLOCK)
 
   const rescanMutation = useMutation({
     mutationFn: async (blockHeight: number) => {
-      setSession({
-        rescan: {
-          rescanning: true,
-          progress: 0,
-        },
+      setRescanInfo({
+        rescanning: true,
+        progress: 0,
       })
 
       const { data } = await rescanblockchain({
@@ -50,11 +47,9 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
     onError: (error: unknown) => {
       console.error('Rescan error:', error)
 
-      setSession({
-        rescan: {
-          rescanning: false,
-          progress: 0,
-        },
+      setRescanInfo({
+        rescanning: false,
+        progress: 0,
       })
 
       const reason = error instanceof Error ? error.message : String(error)
@@ -120,20 +115,20 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
 
             <Button
               onClick={handleRescan}
-              disabled={isLoading || !rescanHeight || isRescanning}
+              disabled={isLoading || !rescanHeight || rescanInfo.rescanning}
               className="w-full"
               size="lg"
             >
               {isLoading
                 ? t('rescan_chain.text_button_submitting')
-                : isRescanning
+                : rescanInfo.rescanning
                   ? rescanInfo?.progress
                     ? `${t('rescan_chain.text_button_submitting')} (${rescanInfo.progress}%)`
                     : t('rescan_chain.text_button_submitting')
                   : t('rescan_chain.text_button_submit')}
             </Button>
 
-            {isRescanning && (
+            {rescanInfo.rescanning && (
               <div className="bg-muted/50 mt-4 rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <RefreshCw className="h-4 w-4 animate-spin" />
