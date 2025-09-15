@@ -247,7 +247,7 @@
       },
       "title": "Your Seed Phrase",
       "subtitle": "Please write down your seed phrase and password! Without this information you will not be able to access and recover your wallet!",
-      "text_error": "Error while retrieving the seed phrase.",
+      "text_error_title": "Error while retrieving the seed phrase",
       "text_error_no_data": "No seed phrase available.",
       "text_warning_title": "Important Security Warning",
       "text_warning_message": "Never share your seed phrase! Anyone with access to these words can control your wallet and will steal all of your funds."
