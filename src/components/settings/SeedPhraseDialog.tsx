@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { cx } from 'class-variance-authority'
 import { Eye, EyeOff, AlertTriangle, Clock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { getseedOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
@@ -29,10 +31,11 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [isPasswordVerified, setIsPasswordVerified] = useState(false)
+  const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
+  const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string>()
-  const [timeLeft, setTimeLeft] = useState(30)
+  const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
 
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
@@ -42,50 +45,50 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     isLoading: isSeedLoading,
     isError: isSeedError,
     error: seedError,
+    dataUpdatedAt: seedUpadtedAt,
     refetch: refetchSeedPhrase,
   } = useQuery({
     ...getseedOptions({
       client,
       path: { walletname: walletFileName },
     }),
-    enabled: isPasswordVerified && !!password && open,
     staleTime: 0,
+    enabled: false,
     retry: false,
-    select: (data) => {
-      return data.seedphrase
-    },
+    select: (data) => data.seedphrase,
   })
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-
     if (isPasswordVerified && open) {
-      // Reset timer when seed phrase is shown
-      setTimeLeft(30)
       refetchSeedPhrase()
-
-      interval = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
-            setIsPasswordVerified(false)
-            setPassword('')
-            setError(undefined)
-            return 30
-          }
-          return prevTime - 1
-        })
-      }, 1000)
     }
+  }, [isPasswordVerified, open, refetchSeedPhrase])
+
+  useEffect(() => {
+    if (passwordVerifiedAt === undefined) {
+      setTimeLeft(0)
+      return
+    }
+    setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+
+    const interval = setInterval(() => {
+      setTimeLeft(Math.max(0, seedUpadtedAt + JAM_SEED_MODAL_TIMEOUT - Date.now()))
+    }, 333)
 
     return () => {
-      if (interval) {
-        clearInterval(interval)
-      }
+      clearInterval(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPasswordVerified, open])
+  }, [seedUpadtedAt, passwordVerifiedAt])
 
-  const handlePasswordSubmit = () => {
+  useEffect(() => {
+    if (timeLeft < 0) {
+      setPassword('')
+      setPasswordVerifiedAt(undefined)
+      setError(undefined)
+    }
+  }, [timeLeft])
+
+  const handlePasswordSubmit = async () => {
     if (!password) return
     if (walletFileName !== authState?.walletFileName) {
       // TODO: Needs translation?
@@ -105,7 +108,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
       try {
         const hashed = hashPassword(password, walletFileName)
         if (hashed === authState?.hashed_password) {
-          setIsPasswordVerified(true)
+          setPasswordVerifiedAt(Date.now())
           setError(undefined)
         } else {
           setError(t('settings.seed_modal.verification.text_error_password_incorrect'))
@@ -121,10 +124,10 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
 
   const handleClose = () => {
     setPassword('')
-    setIsPasswordVerified(false)
+    setPasswordVerifiedAt(undefined)
     setError(undefined)
     setShowPassword(false)
-    setTimeLeft(30)
+    setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
     onOpenChange(false)
   }
 
@@ -234,8 +237,12 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
             <DialogFooter>
               <div className="w-f flex w-full justify-between">
                 <div className="text-muted-foreground flex items-center gap-1 text-sm">
-                  <Clock className={`h-4 w-4 ${timeLeft <= 10 && 'animate-pulse text-red-600'}`} />
-                  <span>{timeLeft}s</span>
+                  <Clock
+                    className={cx('h-4 w-4', {
+                      'animate-pulse text-red-600': timeLeft <= 10_000,
+                    })}
+                  />
+                  <span>{Math.round(timeLeft / 1_000)}s</span>
                 </div>
                 <Button variant="outline" onClick={handleClose}>
                   {t('global.close')}
