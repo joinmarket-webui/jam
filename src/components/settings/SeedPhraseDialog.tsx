@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
-import { Eye, EyeOff, AlertTriangle, Clock } from 'lucide-react'
+import { Eye, EyeOff, AlertTriangle, Clock, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Button } from '@/components/ui/button'
@@ -36,33 +36,30 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
+  const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
 
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
 
-  const {
-    data: seedPhraseData,
-    isLoading: isSeedLoading,
-    isError: isSeedError,
-    error: seedError,
-    dataUpdatedAt: seedUpadtedAt,
-    refetch: refetchSeedPhrase,
-  } = useQuery({
+  const seedQuery = useQuery({
     ...getseedOptions({
       client,
       path: { walletname: walletFileName },
     }),
-    staleTime: 0,
+    staleTime: 1,
+    gcTime: 1,
     enabled: false,
     retry: false,
     select: (data) => data.seedphrase,
   })
+  const seedQueryData = useMemo(() => seedQuery.data, [seedQuery.data])
+  const seedQueryRefetch = useMemo(() => seedQuery.refetch, [seedQuery.refetch])
 
   useEffect(() => {
-    if (isPasswordVerified && open) {
-      refetchSeedPhrase()
+    if (open && isPasswordVerified && seedQueryData === undefined) {
+      seedQueryRefetch()
     }
-  }, [isPasswordVerified, open, refetchSeedPhrase])
+  }, [open, isPasswordVerified, seedQueryData, seedQueryRefetch])
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) {
@@ -71,17 +68,18 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     }
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
 
+    const seedDisplayedAt = Math.max(seedQuery.dataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
-      setTimeLeft(Math.max(0, seedUpadtedAt + JAM_SEED_MODAL_TIMEOUT - Date.now()))
+      setTimeLeft(Math.max(0, seedDisplayedAt + JAM_SEED_MODAL_TIMEOUT - Date.now()))
     }, 333)
 
     return () => {
       clearInterval(interval)
     }
-  }, [seedUpadtedAt, passwordVerifiedAt])
+  }, [seedQuery.dataUpdatedAt, passwordVerifiedAt])
 
   useEffect(() => {
-    if (timeLeft < 0) {
+    if (timeLeft <= 0) {
       setPassword('')
       setPasswordVerifiedAt(undefined)
       setError(undefined)
@@ -198,51 +196,74 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
             </DialogHeader>
 
             <div className="space-y-4">
-              <div className="bg-muted min-h-[80px] rounded-lg p-4 px-7">
-                {isSeedLoading ? (
-                  <div className="text-muted-foreground text-center">{t('global.loading')}</div>
-                ) : isSeedError ? (
-                  <div className="text-destructive text-center text-sm">
-                    {t('settings.seed_modal.text_error')}
-                    {seedError &&
-                      (typeof seedError === 'object' && 'message' in seedError ? `: ${seedError.message}` : '')}
-                  </div>
-                ) : seedPhraseData ? (
-                  <div className="grid grid-cols-3 gap-2 text-sm">
-                    {seedPhraseData.split(/\s+/).map((word: string, index: number) => (
-                      <div key={index} className="light:bg-white flex items-center gap-2 border bg-zinc-700 p-2">
-                        <span className="text-muted-foreground w-4 text-xs">{index + 1}.</span>
-                        <span className="font-mono">{word}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground text-center">{t('settings.seed_modal.text_error_no_data')}</div>
-                )}
-              </div>
-
-              <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
-                <div className="flex items-start gap-2">
-                  <div className="light:text-yellow-800 text-sm text-yellow-200">
-                    <div className="flex items-center">
-                      <AlertTriangle className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-                      <p className="text-md font-medium">{t('settings.seed_modal.text_warning_title')}</p>
+              {!seedQuery.error && (
+                <div className="bg-muted rounded-lg p-4 px-7">
+                  {seedQuery.isFetching ? (
+                    <div className="text-muted-foreground flex items-center justify-center gap-1">
+                      <Loader2Icon className="h-4 w-4 animate-spin" />
+                      {t('global.loading')}
                     </div>
-                    <p className="p-1 text-xs">{t('settings.seed_modal.text_warning_message')}</p>
+                  ) : seedQuery.data ? (
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      {seedQuery.data.split(/\s+/).map((word: string, index: number) => (
+                        <div key={index} className="light:bg-white flex items-center gap-2 border bg-zinc-700 p-2">
+                          <span className="text-muted-foreground w-4 text-xs">{index + 1}.</span>
+                          <span className="font-mono">{word}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground text-center">
+                      {t('settings.seed_modal.text_error_no_data')}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!seedQuery.isFetching && seedQuery.error && (
+                <div className="light:border-red-800 light:bg-red-50 rounded-lg border border-red-200 bg-red-900/20 p-2">
+                  <div className="flex items-start gap-2">
+                    <div className="light:text-red-800 text-sm text-red-200">
+                      <div className="flex items-center">
+                        <AlertTriangle className="light:text-red-800 m-1 h-4 w-4 shrink-0 text-red-200" />
+                        <p className="text-md font-medium"> {t('settings.seed_modal.text_error_title')}</p>
+                      </div>
+                      <p className="p-1 text-xs">{seedQuery.error.message || t('global.errors.reason_unknown')}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {!seedQuery.isFetching && seedQuery.data && (
+                <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
+                  <div className="flex items-start gap-2">
+                    <div className="light:text-yellow-800 text-sm text-yellow-200">
+                      <div className="flex items-center">
+                        <AlertTriangle className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
+                        <p className="text-md font-medium">{t('settings.seed_modal.text_warning_title')}</p>
+                      </div>
+                      <p className="p-1 text-xs">{t('settings.seed_modal.text_warning_message')}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <DialogFooter>
-              <div className="w-f flex w-full justify-between">
-                <div className="text-muted-foreground flex items-center gap-1 text-sm">
-                  <Clock
-                    className={cx('h-4 w-4', {
-                      'animate-pulse text-red-600': timeLeft <= 10_000,
+              <div className="w-f flex w-full items-center justify-between">
+                <div
+                  className={cx('text-muted-foreground flex items-center gap-1 text-sm', {
+                    'light:text-red-600 animate-pulse text-red-800': secondsLeft <= 10,
+                  })}
+                >
+                  <Clock className="h-4 w-4" />
+                  <span
+                    className={cx('mt-0.5 font-mono', {
+                      hidden: secondsLeft < 1,
                     })}
-                  />
-                  <span>{Math.round(timeLeft / 1_000)}s</span>
+                  >
+                    {secondsLeft}s
+                  </span>
                 </div>
                 <Button variant="outline" onClick={handleClose}>
                   {t('global.close')}
