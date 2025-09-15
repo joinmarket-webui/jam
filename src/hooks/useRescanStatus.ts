@@ -1,121 +1,52 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
-import type { RescanInfoResponse } from '@/lib/jm-api/generated/client'
-import { getrescaninfo } from '@/lib/jm-api/generated/client/sdk.gen'
-import { setIntervalDebounced } from '@/lib/utils'
+import { getrescaninfoOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { useApiClient } from './useApiClient'
 
 interface RescanInfo {
+  updatedAt: number
   rescanning: boolean
   progress?: number
 }
 
-interface useRescanStatusProps {
+interface UseRescanStatusProps {
   walletFileName: string
 }
 
-export const useRescanStatus = ({ walletFileName }: useRescanStatusProps) => {
+export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
   const jmSession = useStore(jmSessionStore, (state) => state)
   const client = useApiClient()
   const [rescanInfo, setRescanInfo] = useState<RescanInfo>({
-    rescanning: !!jmSession.state?.rescanning,
+    updatedAt: 0,
+    rescanning: jmSession.state?.rescanning === true,
   })
-  const [isLoading, setIsLoading] = useState(false)
 
-  /*const getrescaninfoQuery = useQuery({
-    ...getrescaninfoOptions({ 
+  const getrescaninfoQuery = useQuery({
+    ...getrescaninfoOptions({
       client,
       path: { walletname: walletFileName },
     }),
     refetchInterval: JAM_RESCAN_PROGRESS_INTERVAL,
     refetchIntervalInBackground: true,
-    enabled: rescanInfo.rescanning,
+    enabled: rescanInfo.rescanning || jmSession.state?.rescanning === true,
   })
 
   useEffect(() => {
-    console.debug('getrescaninfoQuery.data changed', getrescaninfoQuery.data)
     if (getrescaninfoQuery.data) {
-      setRescanInfo(getrescaninfoQuery.data)
-    }
-  }, [getrescaninfoQuery.data])*/
+      const rescanningFinished = getrescaninfoQuery.data.rescanning === false && jmSession.state?.rescanning === true
 
-  const refetch = useCallback(
-    (signal: AbortSignal) => {
-      const fetchRescanProgress = async (): Promise<RescanInfoResponse | undefined> => {
-        try {
-          setIsLoading(true)
-          const { data } = await getrescaninfo({
-            client,
-            path: { walletname: walletFileName },
-            signal: signal,
-          })
-
-          if (!signal.aborted) {
-            return data
-          }
-        } catch (err) {
-          if (!signal.aborted) {
-            console.warn('Error fetching rescan progress:', err)
-            setIsLoading(false)
-            throw err
-          }
-        }
-      }
-
-      console.debug('Fetching rescan progress...')
-      return fetchRescanProgress().then((data) => {
-        console.debug('Fetched rescan progress', data)
-        if (data) {
-          setRescanInfo(data)
-        }
-        return data
-      })
-    },
-    [walletFileName],
-  )
-
-  useEffect(() => {
-    if (!walletFileName) {
       setRescanInfo({
-        rescanning: false,
+        updatedAt: getrescaninfoQuery.dataUpdatedAt,
+        rescanning: getrescaninfoQuery.data.rescanning || jmSession.state?.rescanning === true,
+        progress: rescanningFinished ? 100 : getrescaninfoQuery.data.progress,
       })
-      return
     }
-
-    const abortCtrl = new AbortController()
-    console.debug('Starting rescan progress interval', JAM_RESCAN_PROGRESS_INTERVAL)
-    let interval: NodeJS.Timeout
-    setIntervalDebounced(
-      async () => {
-        refetch(abortCtrl.signal).then((data) => {
-          if (data && data.rescanning !== true) {
-            console.debug('Stopping rescan progress interval')
-            clearInterval(interval)
-          }
-        })
-      },
-      JAM_RESCAN_PROGRESS_INTERVAL,
-      (timerId) => (interval = timerId),
-    )
-
-    return () => {
-      clearInterval(interval)
-      abortCtrl.abort()
-    }
-  }, [rescanInfo.rescanning, jmSession.state?.rescanning, walletFileName, client, refetch])
-
-  if (!walletFileName) {
-    return {
-      isLoading: false,
-      rescanInfo,
-      setRescanInfo,
-    }
-  }
+  }, [jmSession.state?.rescanning, getrescaninfoQuery.data, getrescaninfoQuery.dataUpdatedAt])
 
   return {
-    isLoading,
     rescanInfo,
     setRescanInfo,
   }
