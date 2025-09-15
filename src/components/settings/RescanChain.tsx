@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useRescanStatus } from '@/hooks/useRescanStatus'
 import { rescanblockchain } from '@/lib/jm-api/generated/client/sdk.gen'
@@ -26,11 +27,6 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
 
   const rescanMutation = useMutation({
     mutationFn: async (blockHeight: number) => {
-      setRescanInfo({
-        rescanning: true,
-        progress: 0,
-      })
-
       const { data } = await rescanblockchain({
         client,
         path: {
@@ -43,13 +39,19 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
     },
     onSuccess: () => {
       toast.success('Rescan started successfully')
+      setRescanInfo({
+        updatedAt: -1,
+        rescanning: true,
+        progress: undefined,
+      })
     },
     onError: (error: unknown) => {
       console.error('Rescan error:', error)
 
       setRescanInfo({
+        updatedAt: -1,
         rescanning: false,
-        progress: 0,
+        progress: undefined,
       })
 
       const reason = error instanceof Error ? error.message : String(error)
@@ -72,15 +74,13 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
     rescanMutation.mutate(blockHeight)
   }
 
-  const isLoading = rescanMutation.isPending
-
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate(routes.settings)}
           className="hover:bg-muted/50 h-8 w-8 p-0"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -109,23 +109,20 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
                   onChange={(e) => setRescanHeight(parseInt(e.target.value))}
                   className="bg-background pl-10"
                   placeholder="Enter block height"
+                  disabled={rescanInfo.rescanning}
                 />
               </div>
             </div>
 
             <Button
               onClick={handleRescan}
-              disabled={isLoading || !rescanHeight || rescanInfo.rescanning}
+              disabled={!rescanHeight || rescanInfo.rescanning || rescanMutation.isPending}
               className="w-full"
               size="lg"
             >
-              {isLoading
+              {rescanMutation.isPending || rescanInfo.rescanning
                 ? t('rescan_chain.text_button_submitting')
-                : rescanInfo.rescanning
-                  ? rescanInfo?.progress
-                    ? `${t('rescan_chain.text_button_submitting')} (${rescanInfo.progress}%)`
-                    : t('rescan_chain.text_button_submitting')
-                  : t('rescan_chain.text_button_submit')}
+                : t('rescan_chain.text_button_submit')}
             </Button>
 
             {rescanInfo.rescanning && (
@@ -133,7 +130,11 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
                 <div className="flex items-center gap-2">
                   <RefreshCw className="h-4 w-4 animate-spin" />
                   <span className="text-sm">
-                    {rescanInfo?.progress ? `Rescanning... ${rescanInfo.progress}%` : 'Rescanning...'}
+                    {rescanInfo?.progress === undefined
+                      ? t('app.alert_rescan_in_progress')
+                      : t('alert_rescan_in_progress_with_progress', {
+                          progress: rescanInfo.progress,
+                        })}
                   </span>
                 </div>
               </div>
