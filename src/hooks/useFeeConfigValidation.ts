@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { FEE_CONFIG_KEYS } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -28,28 +28,20 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
   const createConfigQuery = (configKey: keyof typeof FEE_CONFIG_KEYS) => ({
     ...configgetMutation({
       client,
-      path: { walletname: walletFileName || '' },
+      path: { walletname: walletFileName },
       body: FEE_CONFIG_KEYS[configKey],
     }),
   })
 
-  const maxCjFeeAbsQuery = useMutation(createConfigQuery('max_cj_fee_abs'))
-  const maxCjFeeRelQuery = useMutation(createConfigQuery('max_cj_fee_rel'))
-  const txFeesQuery = useMutation(createConfigQuery('tx_fees'))
-  const txFeesFactorQuery = useMutation(createConfigQuery('tx_fees_factor'))
-  const maxSweepFeeChangeQuery = useMutation(createConfigQuery('max_sweep_fee_change'))
+  const { mutateAsync: fetchMaxCjFeeAbs, ...maxCjFeeAbsQuery } = useMutation(createConfigQuery('max_cj_fee_abs'))
+  const { mutateAsync: fetchMaxCjFeeRel, ...maxCjFeeRelQuery } = useMutation(createConfigQuery('max_cj_fee_rel'))
+  const { mutateAsync: fetchTxFees, ...txFeesQuery } = useMutation(createConfigQuery('tx_fees'))
+  const { mutateAsync: fetchTxFeesFactor, ...txFeesFactorQuery } = useMutation(createConfigQuery('tx_fees_factor'))
+  const { mutateAsync: fetchMaxSweepFeeChange, ...maxSweepFeeChangeQuery } = useMutation(
+    createConfigQuery('max_sweep_fee_change'),
+  )
 
   const feeConfigValues = useMemo<FeeConfigValues | undefined>(() => {
-    if (
-      !maxCjFeeAbsQuery.data &&
-      !maxCjFeeRelQuery.data &&
-      !txFeesQuery.data &&
-      !txFeesFactorQuery.data &&
-      !maxSweepFeeChangeQuery.data
-    ) {
-      return undefined
-    }
-
     return {
       max_cj_fee_abs: maxCjFeeAbsQuery.data?.configvalue,
       max_cj_fee_rel: maxCjFeeRelQuery.data?.configvalue,
@@ -64,17 +56,6 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
     txFeesFactorQuery.data,
     maxSweepFeeChangeQuery.data,
   ])
-
-  const maxFeesConfigMissing = useMemo(() => {
-    // Debug: Force the error for testing
-    if (forceFeeConfigMissing) {
-      return true
-    }
-
-    return (
-      feeConfigValues && (feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined)
-    )
-  }, [feeConfigValues, forceFeeConfigMissing])
 
   const isLoading = useMemo(() => {
     return (
@@ -108,18 +89,29 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
     maxSweepFeeChangeQuery.error,
   ])
 
-  const refetchAll = async () => {
+  const refetchAll = useCallback(async () => {
     const args = {
       path: { walletname: walletFileName },
     }
-    await Promise.all([
-      maxCjFeeAbsQuery.mutateAsync(args),
-      maxCjFeeRelQuery.mutateAsync(args),
-      txFeesQuery.mutateAsync(args),
-      txFeesFactorQuery.mutateAsync(args),
-      maxSweepFeeChangeQuery.mutateAsync(args),
+    return await Promise.all([
+      fetchMaxCjFeeAbs(args),
+      fetchMaxCjFeeRel(args),
+      fetchTxFees(args),
+      fetchTxFeesFactor(args),
+      fetchMaxSweepFeeChange(args),
     ])
-  }
+  }, [walletFileName, fetchMaxCjFeeAbs, fetchMaxCjFeeRel, fetchTxFees, fetchTxFeesFactor, fetchMaxSweepFeeChange])
+
+  const maxFeesConfigMissing = useMemo(() => {
+    // Debug: Force the error for testing
+    if (forceFeeConfigMissing) {
+      return true
+    }
+
+    return (
+      feeConfigValues && (feeConfigValues.max_cj_fee_abs === undefined || feeConfigValues.max_cj_fee_rel === undefined)
+    )
+  }, [feeConfigValues, forceFeeConfigMissing])
 
   return {
     feeConfigValues,
