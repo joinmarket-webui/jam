@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useStore } from 'zustand'
 import { FEE_CONFIG_KEYS } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { configgetMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
-import { authStore } from '@/store/authStore'
+import type { WalletFileName } from '@/lib/utils'
 
 //TODO: needs testing!
 
@@ -16,10 +15,12 @@ export interface FeeConfigValues {
   max_sweep_fee_change?: string
 }
 
-export const useFeeConfigValidation = () => {
+interface UseFeeConfigValidationProps {
+  walletFileName: WalletFileName
+}
+
+export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
   const client = useApiClient()
-  const authState = useStore(authStore, (state) => state.state)
-  const walletFileName = authState?.walletFileName
 
   // Debug flag to force fee config missing error for testing
   const forceFeeConfigMissing = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
@@ -108,21 +109,16 @@ export const useFeeConfigValidation = () => {
   ])
 
   const refetchAll = async () => {
-    await maxCjFeeAbsQuery.mutateAsync({
-      path: { walletname: walletFileName || '' },
-    })
-    await maxCjFeeRelQuery.mutateAsync({
-      path: { walletname: walletFileName || '' },
-    })
-    await txFeesQuery.mutateAsync({
-      path: { walletname: walletFileName || '' },
-    })
-    await txFeesFactorQuery.mutateAsync({
-      path: { walletname: walletFileName || '' },
-    })
-    await maxSweepFeeChangeQuery.mutateAsync({
-      path: { walletname: walletFileName || '' },
-    })
+    const args = {
+      path: { walletname: walletFileName },
+    }
+    await Promise.all([
+      maxCjFeeAbsQuery.mutateAsync(args),
+      maxCjFeeRelQuery.mutateAsync(args),
+      txFeesQuery.mutateAsync(args),
+      txFeesFactorQuery.mutateAsync(args),
+      maxSweepFeeChangeQuery.mutateAsync(args),
+    ])
   }
 
   return {

@@ -19,6 +19,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { configsettingMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { factorToPercentage } from '@/lib/utils'
+import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { DevBadge } from '../ui/DevBadge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -30,7 +31,7 @@ import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
 interface FeeLimitDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  walletFileName: string
+  walletFileName: WalletFileName
 }
 
 export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitDialogProps) => {
@@ -42,7 +43,11 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
   const [miningFeesExpanded, setMiningFeesExpanded] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [saveErrorMessage, setSaveErrorMessage] = useState<string>()
-  const { feeConfigValues, refetchAll: refetchFeeConfigValues, isLoading: isLoadingConfig } = useFeeConfigValidation()
+  const {
+    feeConfigValues,
+    refetchAll: refetchFeeConfigValues,
+    isLoading: isLoadingConfig,
+  } = useFeeConfigValidation({ walletFileName })
 
   useEffect(() => {
     if (open) {
@@ -58,17 +63,13 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
   const setconfigMutation = useMutation(configsettingMutation({ client }))
 
   useEffect(() => {
-    if (!open || !walletFileName) {
+    if (!open) {
       setSaveErrorMessage(undefined)
       return
     }
-  }, [open, walletFileName])
+  }, [open])
 
   const handleSubmit = async () => {
-    if (!walletFileName) {
-      return
-    }
-
     // Trigger validation on both forms before submission
     const collaboratorValid = collaboratorFormRef.current?.validateForm() ?? false
     const miningValid = miningFormRef.current?.validateForm() ?? false

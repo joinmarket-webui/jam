@@ -16,7 +16,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
-  const { maxFeesConfigMissing, isLoading, error } = useFeeConfigValidation()
+  const { maxFeesConfigMissing, isLoading, error } = useFeeConfigValidation({ walletFileName })
 
   if (!walletFileName) {
     return (

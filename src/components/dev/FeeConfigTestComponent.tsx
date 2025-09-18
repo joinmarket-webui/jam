@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import { useStore } from 'zustand'
+import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { authStore } from '@/store/authStore'
-import { FeeLimitDialog } from '../settings/FeeLimitDialog'
-import { FeeConfigErrorAlert } from './FeeConfigErrorAlert'
+import type { WalletFileName } from '@/lib/utils'
 
-export const FeeConfigTestComponent = () => {
+interface FeeConfigTestComponentProps {
+  walletFileName: WalletFileName
+}
+export const FeeConfigTestComponent = ({ walletFileName }: FeeConfigTestComponentProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const [forceError, setForceError] = useState(false)
-  const authState = useStore(authStore, (state) => state.state)
 
   return (
     <Card className="border-2 border-dashed border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
@@ -48,7 +49,7 @@ export const FeeConfigTestComponent = () => {
         <FeeLimitDialog
           open={showFeeConfigDialog}
           onOpenChange={setShowFeeConfigDialog}
-          walletFileName={authState?.walletFileName || ''}
+          walletFileName={walletFileName}
         />
       </CardContent>
     </Card>
