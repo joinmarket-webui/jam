@@ -269,15 +269,17 @@ function RefreshJmSession() {
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
 
-  const sessionQuery = useQuery({
+  const { data: sessionData, refetch: refetchSessionData } = useQuery({
     ...sessionOptions({ client }),
+    retry: 3,
+    staleTime: 0,
     refetchInterval: JAM_JM_SESSION_REFRESH_INTERVAL,
     refetchIntervalInBackground: true,
   })
 
   useEffect(() => {
-    if (sessionQuery.data) {
-      jmSessionStore.getState().update(sessionQuery.data)
+    if (sessionData) {
+      jmSessionStore.getState().update(sessionData)
 
       const isDevMode = jamSettingsStore.getState().state.developerMode
       if (isDevMode) {
@@ -286,18 +288,19 @@ function RefreshJmSession() {
         })
       }
     }
-  }, [sessionQuery.data])
+  }, [sessionData])
 
-  useEffect(() => {
-    if (authState === undefined) {
-      sessionQuery.refetch().catch(() => {
+  useEffect(
+    function refetchOnWalletLockOrUnlock() {
+      refetchSessionData().catch(() => {
         const isDevMode = jamSettingsStore.getState().state.developerMode
         if (isDevMode) {
           toast.error(`[DEV] Error while refreshing session data.`)
         }
       })
-    }
-  }, [authState, sessionQuery])
+    },
+    [authState?.walletFileName, refetchSessionData],
+  )
 
   return <></>
 }
