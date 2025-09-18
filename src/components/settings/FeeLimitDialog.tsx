@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
+import { Loader2Icon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -205,8 +206,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                 <AccordionContent>
                   {isLoadingConfig ? (
                     <div className="text-muted-foreground flex items-center justify-center py-8">
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
-                      {t('global.loading')}...
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                      {t('global.loading')}
                     </div>
                   ) : (
                     <CollaboratorFeesForm
@@ -240,8 +241,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                 <AccordionContent>
                   {isLoadingConfig ? (
                     <div className="text-muted-foreground flex items-center justify-center py-8">
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
-                      {t('global.loading')}...
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                      {t('global.loading')}
                     </div>
                   ) : (
                     <MiningFeesForm
