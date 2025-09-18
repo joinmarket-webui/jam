@@ -147,7 +147,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
       <h1 className="my-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
       <p className="text-muted-foreground mb-4 text-sm">{t('receive.subtitle')}</p>
 
-      <div className="flex w-full max-w-xl flex-col items-center justify-center space-y-2 rounded-lg border p-8">
+      <div className="flex w-full flex-col items-center justify-center space-y-2 rounded-lg border p-8">
         {isQrLoading ? (
           <Skeleton className="h-[260px] w-[260px]" />
         ) : bitcoinAddress ? (
@@ -184,41 +184,37 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
         </div>
       </div>
 
-      <Accordion type="single" collapsible className="w-full max-w-xl">
-        <AccordionItem value="options" className="border-0">
-          <AccordionTrigger className="text-muted-foreground text-md rounded-none border-b p-4">
-            {t('receive.button_settings')}
-          </AccordionTrigger>
+      <Accordion type="single" collapsible>
+        <AccordionItem value="options">
+          <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
           <AccordionContent>
-            <div className="w-full py-4">
-              <p className="mb-2 text-sm">{t('receive.label_source_jar')}</p>
+            <p className="mb-2 text-sm">{t('receive.label_source_jar')}</p>
 
-              <div className="grid grid-cols-5 gap-4">
-                {jars.map((jar, index) => (
-                  <SelectableJar
-                    key={jar.name}
-                    name={jar.name}
-                    color={jar.color}
-                    balance={jar.balance || 0}
-                    isSelected={selectedJarIndex === index}
-                    totalBalance={totalBalance}
-                    onClick={() => selectJar(index)}
-                  />
-                ))}
-              </div>
-
-              <div className="mx-1 mt-4">
-                <BitcoinAmountInput
-                  label={t('receive.label_amount_input')}
-                  placeholder={t('receive.placeholder_amount_input')}
-                  currency={currency}
-                  value={getDisplayAmount()}
-                  onChange={handleAmountChange}
-                  toggleCurrencyUnit={toggleCurrencyUnit}
-                  isPrivate={isPrivate}
-                  disabled={isQrLoading || !bitcoinAddress}
+            <div className="grid grid-cols-5 gap-4">
+              {jars.map((jar, index) => (
+                <SelectableJar
+                  key={jar.name}
+                  name={jar.name}
+                  color={jar.color}
+                  balance={jar.balance || 0}
+                  isSelected={selectedJarIndex === index}
+                  totalBalance={totalBalance}
+                  onClick={() => selectJar(index)}
                 />
-              </div>
+              ))}
+            </div>
+
+            <div className="mx-1 mt-4">
+              <BitcoinAmountInput
+                label={t('receive.label_amount_input')}
+                placeholder={t('receive.placeholder_amount_input')}
+                currency={currency}
+                value={getDisplayAmount()}
+                onChange={handleAmountChange}
+                toggleCurrencyUnit={toggleCurrencyUnit}
+                isPrivate={isPrivate}
+                disabled={isQrLoading || !bitcoinAddress}
+              />
             </div>
           </AccordionContent>
         </AccordionItem>
