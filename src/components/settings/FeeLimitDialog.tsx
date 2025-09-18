@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import { cx } from 'class-variance-authority'
 import { ChevronDown } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
+import { useStore } from 'zustand'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,6 +20,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { configsettingMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { factorToPercentage } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { DevBadge } from '../ui/DevBadge'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
@@ -32,6 +35,8 @@ interface FeeLimitDialogProps {
 
 export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitDialogProps) => {
   const { t } = useTranslation()
+
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [enableFormValidation, setEnableFormValidation] = useState(true)
   const [collaboratorFeesExpanded, setCollaboratorFeesExpanded] = useState(false)
   const [miningFeesExpanded, setMiningFeesExpanded] = useState(false)
@@ -169,37 +174,50 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Switch checked={enableFormValidation} onCheckedChange={setEnableFormValidation} />
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Enable form validation</span>
-                <DevBadge />
+          {isDeveloperMode && (
+            <>
+              <div className="flex items-center gap-3">
+                <Switch checked={enableFormValidation} onCheckedChange={setEnableFormValidation} />
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Enable form validation</span>
+                  <DevBadge />
+                </div>
               </div>
-            </div>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            Ability to reset fee values to test what the UI looks like, when a user does not have these values
-            configured.
-          </p>
+              <p className="text-muted-foreground text-sm">
+                Ability to reset fee values to test what the UI looks like, when a user does not have these values
+                configured.
+              </p>
+            </>
+          )}
 
           <div className="space-y-2">
             <button
               onClick={() => setCollaboratorFeesExpanded(!collaboratorFeesExpanded)}
-              className={`hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between border-b px-4 py-2 text-left ${
-                collaboratorFormRef.current && !collaboratorFormRef.current.getFormData() ? 'border-red-300' : ''
-              }`}
+              className={cx(
+                'hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between border-b px-4 py-2 text-left',
+                {
+                  'border-red-300': collaboratorFormRef.current && !collaboratorFormRef.current.getFormData(),
+                },
+              )}
             >
               <span
-                className={`text-base font-medium ${
-                  collaboratorFormRef.current && !collaboratorFormRef.current.getFormData() ? 'text-red-600' : ''
-                }`}
+                className={cx('text-base font-medium', {
+                  'text-red-600': collaboratorFormRef.current && !collaboratorFormRef.current.getFormData(),
+                })}
               >
                 {t('settings.fees.title_max_cj_fee_settings')}
               </span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${collaboratorFeesExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={cx('h-4 w-4 transition-transform', {
+                  'rotate-180': collaboratorFeesExpanded,
+                })}
+              />
             </button>
-            <div className={`border-muted pl-4 ${collaboratorFeesExpanded ? '' : 'hidden'}`}>
+            <div
+              className={cx('border-muted pl-4', {
+                hidden: collaboratorFeesExpanded,
+              })}
+            >
               {isLoadingConfig ? (
                 <div className="text-muted-foreground flex items-center justify-center py-8">
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
@@ -225,20 +243,31 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           <div className="space-y-2">
             <button
               onClick={() => setMiningFeesExpanded(!miningFeesExpanded)}
-              className={`hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between border-b px-4 py-2 text-left ${
-                miningFormRef.current && !miningFormRef.current.getFormData() ? 'border-red-300' : ''
-              }`}
+              className={cx(
+                'hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between border-b px-4 py-2 text-left',
+                {
+                  'border-red-300': miningFormRef.current && !miningFormRef.current.getFormData(),
+                },
+              )}
             >
               <span
-                className={`text-base font-medium ${
-                  miningFormRef.current && !miningFormRef.current.getFormData() ? 'text-red-600' : ''
-                }`}
+                className={cx('text-base font-medium', {
+                  'text-red-600': miningFormRef.current && !miningFormRef.current.getFormData(),
+                })}
               >
                 {t('settings.fees.title_general_fee_settings')}
               </span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${miningFeesExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={cx('h-4 w-4 transition-transform', {
+                  'rotate-180': miningFeesExpanded,
+                })}
+              />
             </button>
-            <div className={`border-muted pl-4 ${miningFeesExpanded ? '' : 'hidden'}`}>
+            <div
+              className={cx('border-muted pl-4', {
+                hidden: miningFeesExpanded,
+              })}
+            >
               {isLoadingConfig ? (
                 <div className="text-muted-foreground flex items-center justify-center py-8">
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
@@ -270,26 +299,24 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           </div>
         )}
         <DialogFooter
-          className={`bg-background sticky bottom-0 flex gap-2 p-4 ${collaboratorFeesExpanded || miningFeesExpanded ? 'border-t' : ''}`}
+          className={cx('bg-background sticky bottom-0 flex gap-2 p-4', {
+            'border-t': collaboratorFeesExpanded || miningFeesExpanded,
+          })}
         >
-          <Button
-            variant="outline"
-            onClick={() => {
-              onOpenChange(false)
-            }}
-            disabled={isSubmitting || isLoadingConfig}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting || isLoadingConfig}>
             {t('settings.fees.text_button_cancel')}
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleResetFormValues}
-            disabled={isSubmitting || isLoadingConfig}
-            className="border-amber-300 bg-amber-100 hover:bg-amber-200"
-          >
-            Reset form values
-            <DevBadge />
-          </Button>
+          {isDeveloperMode && (
+            <Button
+              variant="outline"
+              onClick={handleResetFormValues}
+              disabled={isSubmitting || isLoadingConfig}
+              className="border-amber-300 bg-amber-100 hover:bg-amber-200"
+            >
+              Reset form values
+              <DevBadge />
+            </Button>
+          )}
           <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingConfig}>
             {isSubmitting ? t('settings.fees.text_button_submitting') : t('settings.fees.text_button_submit')}
           </Button>
