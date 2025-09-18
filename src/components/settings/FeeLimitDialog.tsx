@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
-import { ChevronDown } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -22,6 +21,7 @@ import { configsettingMutation } from '@/lib/jm-api/generated/client/@tanstack/r
 import { factorToPercentage } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { DevBadge } from '../ui/DevBadge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
 
@@ -191,105 +191,76 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           )}
 
           <div className="space-y-2">
-            <button
-              onClick={() => setCollaboratorFeesExpanded(!collaboratorFeesExpanded)}
-              className={cx(
-                'hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between border-b px-4 py-2 text-left',
-                {
-                  'border-red-300': collaboratorFormRef.current && !collaboratorFormRef.current.getFormData(),
-                },
-              )}
-            >
-              <span
-                className={cx('text-base font-medium', {
-                  'text-red-600': collaboratorFormRef.current && !collaboratorFormRef.current.getFormData(),
-                })}
-              >
-                {t('settings.fees.title_max_cj_fee_settings')}
-              </span>
-              <ChevronDown
-                className={cx('h-4 w-4 transition-transform', {
-                  'rotate-180': collaboratorFeesExpanded,
-                })}
-              />
-            </button>
-            <div
-              className={cx('border-muted pl-4', {
-                hidden: collaboratorFeesExpanded,
-              })}
-            >
-              {isLoadingConfig ? (
-                <div className="text-muted-foreground flex items-center justify-center py-8">
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
-                  {t('global.loading')}...
-                </div>
-              ) : (
-                <CollaboratorFeesForm
-                  key={`collaborator-${walletFileName}-${open}`}
-                  ref={collaboratorFormRef}
-                  initialValues={{
-                    maxCjFeeAbs: feeConfigValues?.max_cj_fee_abs || '',
-                    maxCjFeeRel: feeConfigValues?.max_cj_fee_rel
-                      ? String(factorToPercentage(Number(feeConfigValues.max_cj_fee_rel)))
-                      : '',
-                  }}
-                  enableValidation={enableFormValidation}
-                />
-              )}
-            </div>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="collaborator-fees">
+                <AccordionTrigger
+                  className={cx({
+                    'border-red-300 text-red-600':
+                      collaboratorFormRef.current && !collaboratorFormRef.current.getFormData(),
+                  })}
+                >
+                  {t('settings.fees.title_max_cj_fee_settings')}
+                </AccordionTrigger>
+                <AccordionContent>
+                  {isLoadingConfig ? (
+                    <div className="text-muted-foreground flex items-center justify-center py-8">
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
+                      {t('global.loading')}...
+                    </div>
+                  ) : (
+                    <CollaboratorFeesForm
+                      key={`collaborator-${walletFileName}-${open}`}
+                      ref={collaboratorFormRef}
+                      initialValues={{
+                        maxCjFeeAbs: feeConfigValues?.max_cj_fee_abs || '',
+                        maxCjFeeRel: feeConfigValues?.max_cj_fee_rel
+                          ? String(factorToPercentage(Number(feeConfigValues.max_cj_fee_rel)))
+                          : '',
+                      }}
+                      enableValidation={enableFormValidation}
+                    />
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
 
           {/* Mining fees dropdown */}
           <div className="space-y-2">
-            <button
-              onClick={() => setMiningFeesExpanded(!miningFeesExpanded)}
-              className={cx(
-                'hover:bg-muted/50 flex w-full cursor-pointer items-center justify-between border-b px-4 py-2 text-left',
-                {
-                  'border-red-300': miningFormRef.current && !miningFormRef.current.getFormData(),
-                },
-              )}
-            >
-              <span
-                className={cx('text-base font-medium', {
-                  'text-red-600': miningFormRef.current && !miningFormRef.current.getFormData(),
-                })}
-              >
-                {t('settings.fees.title_general_fee_settings')}
-              </span>
-              <ChevronDown
-                className={cx('h-4 w-4 transition-transform', {
-                  'rotate-180': miningFeesExpanded,
-                })}
-              />
-            </button>
-            <div
-              className={cx('border-muted pl-4', {
-                hidden: miningFeesExpanded,
-              })}
-            >
-              {isLoadingConfig ? (
-                <div className="text-muted-foreground flex items-center justify-center py-8">
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
-                  {t('global.loading')}...
-                </div>
-              ) : (
-                <MiningFeesForm
-                  key={`mining-${walletFileName}-${open}`}
-                  ref={miningFormRef}
-                  initialValues={{
-                    txFees: feeConfigValues?.tx_fees ?? '',
-                    txFeesFactor: feeConfigValues?.tx_fees_factor
-                      ? String(factorToPercentage(Number(feeConfigValues.tx_fees_factor)))
-                      : '',
-                    maxSweepFeeChange: feeConfigValues?.max_sweep_fee_change
-                      ? String(factorToPercentage(Number(feeConfigValues?.max_sweep_fee_change)))
-                      : '',
-                  }}
-                  enableValidation={enableFormValidation}
-                />
-              )}
-            </div>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="mining-fees">
+                <AccordionTrigger
+                  className={cx({
+                    'border-red-300 text-red-600': miningFormRef.current && !miningFormRef.current.getFormData(),
+                  })}
+                >
+                  {t('settings.fees.title_general_fee_settings')}
+                </AccordionTrigger>
+                <AccordionContent>
+                  {isLoadingConfig ? (
+                    <div className="text-muted-foreground flex items-center justify-center py-8">
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-b-transparent"></div>
+                      {t('global.loading')}...
+                    </div>
+                  ) : (
+                    <MiningFeesForm
+                      key={`mining-${walletFileName}-${open}`}
+                      ref={miningFormRef}
+                      initialValues={{
+                        txFees: feeConfigValues?.tx_fees ?? '',
+                        txFeesFactor: feeConfigValues?.tx_fees_factor
+                          ? String(factorToPercentage(Number(feeConfigValues.tx_fees_factor)))
+                          : '',
+                        maxSweepFeeChange: feeConfigValues?.max_sweep_fee_change
+                          ? String(factorToPercentage(Number(feeConfigValues?.max_sweep_fee_change)))
+                          : '',
+                      }}
+                      enableValidation={enableFormValidation}
+                    />
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
 
