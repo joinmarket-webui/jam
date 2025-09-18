@@ -47,10 +47,10 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
     useEffect(() => {
       if (initialValues.txFees) {
         const txFeesValue = Number(initialValues.txFees)
-        if (txFeesValue >= 1001) {
+        if (txFeesValue >= 1_001) {
           // This is sats/kilo-vbyte, display as sats/vbyte
           setFeeType(txFeeUnit.SATS_PER_KILO_VBYTE)
-          setTxFeesSatsPerVbyte(String(txFeesValue / 1000))
+          setTxFeesSatsPerVbyte(String(txFeesValue / 1_000))
           setTxFeesBlocks('')
         } else {
           // This is blocks
@@ -70,10 +70,10 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
 
       if (feeType === txFeeUnit.BLOCKS) {
         const val = Number(txFeesBlocks)
-        if (!txFeesBlocks || !isValidNumber(val) || val < 1 || val > 1000) {
+        if (!txFeesBlocks || !isValidNumber(val) || val < 1 || val > 1_000) {
           newErrors.txFees = t('settings.fees.feedback_invalid_tx_fees_blocks', {
             min: 1,
-            max: 1000,
+            max: 1_000,
           })
         }
       } else {
@@ -134,7 +134,7 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
           return null
         }
         return {
-          txFees: feeType === txFeeUnit.BLOCKS ? txFeesBlocks : String(Math.round(Number(txFeesSatsPerVbyte) * 1000)),
+          txFees: feeType === txFeeUnit.BLOCKS ? txFeesBlocks : String(Math.round(Number(txFeesSatsPerVbyte) * 1_000)),
           txFeesFactor: txFeesFactor ? String(percentageToFactor(Number(txFeesFactor))) : '',
           maxSweepFeeChange: maxSweepFeeChange ? String(percentageToFactor(Number(maxSweepFeeChange))) : '',
         }
@@ -144,9 +144,9 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
         // - Blocks: 1-1000
         // - Sats/kilo-vbyte: 1001+ (minimum is 1001 according to JM validation)
         const txFeesValue = Number(data.txFees)
-        if (txFeesValue >= 1001) {
+        if (txFeesValue >= 1_001) {
           setFeeType(txFeeUnit.SATS_PER_KILO_VBYTE)
-          setTxFeesSatsPerVbyte(String(txFeesValue / 1000))
+          setTxFeesSatsPerVbyte(String(txFeesValue / 1_000))
           setTxFeesBlocks('')
         } else {
           setFeeType(txFeeUnit.BLOCKS)
