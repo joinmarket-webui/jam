@@ -13,7 +13,7 @@ interface EarnPageProps {
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
-  const { maxFeesConfigMissing } = useFeeConfigValidation()
+  const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
 
   if (!walletFileName) {
     return (

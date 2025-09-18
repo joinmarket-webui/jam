@@ -168,7 +168,7 @@ function App() {
                 element={
                   <Layout>
                     <Suspense fallback={<Loading />}>
-                      <DevPage />
+                      <DevPage walletFileName={walletFileName} />
                     </Suspense>
                   </Layout>
                 }
