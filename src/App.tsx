@@ -27,10 +27,11 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { token } from '@/lib/jm-api/generated/client'
 import { sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { queryClient } from '@/lib/queryClient'
-import { setIntervalDebounced } from '@/lib/utils'
+import { setIntervalDebounced, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { isDebugFeatureEnabled } from './constants/debugFeatures'
+import { useFeeConfigValidation } from './hooks/useFeeConfigValidation'
 import { jamSettingsStore } from './store/jamSettingsStore'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
@@ -53,6 +54,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <RefreshApiToken />
         <RefreshJmSession />
+        {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
         <Router>
           <Routes>
             <Route
@@ -301,6 +303,21 @@ function RefreshJmSession() {
     },
     [authState?.walletFileName, refetchSessionData],
   )
+
+  return <></>
+}
+
+function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName }) {
+  const { refetchAll } = useFeeConfigValidation({ walletFileName })
+
+  useEffect(() => {
+    refetchAll().catch(() => {
+      const isDevMode = jamSettingsStore.getState().state.developerMode
+      if (isDevMode) {
+        toast.error(`[DEV] Error while loading fee config data.`)
+      }
+    })
+  }, [refetchAll])
 
   return <></>
 }

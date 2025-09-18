@@ -9,11 +9,16 @@ type RelOfferType = 'sw0reloffer'
 type AbsOfferType = 'sw0absoffer'
 export type OfferType = RelOfferType | AbsOfferType | string
 
-type SectionKey = string
+export type SectionKey = string
 
-interface ConfigKey {
+export interface ConfigKey {
   section: SectionKey
   field: string
+}
+
+export interface ConfigValue {
+  key: ConfigKey
+  value: string | null
 }
 
 export const FEE_CONFIG_KEYS: Record<string, ConfigKey> = {
