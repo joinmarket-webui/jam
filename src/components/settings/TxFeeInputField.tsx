@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { cx } from 'class-variance-authority'
+import { BlocksIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { txFeeUnit, type TxFeeUnit } from '@/constants/jm'
@@ -36,12 +38,12 @@ export const TxFeeInputField = ({
       if (!isNaN(numValue)) {
         if (newUnit === txFeeUnit.SATS_PER_KILO_VBYTE && unit === txFeeUnit.BLOCKS) {
           // Convert blocks to sats/vbyte
-          const converted = Math.round(numValue * 1000)
-          onValueChange(String(converted / 1000))
+          const converted = Math.round(numValue * 1_000)
+          onValueChange(String(converted / 1_000))
         } else if (newUnit === txFeeUnit.BLOCKS && unit === txFeeUnit.SATS_PER_KILO_VBYTE) {
           // Convert sats/vbyte to blocks
-          const converted = Math.round(numValue * 1000)
-          onValueChange(String(Math.round(converted / 1000)))
+          const converted = Math.round(numValue * 1_000)
+          onValueChange(String(Math.round(converted / 1_000)))
         }
       }
     }
@@ -56,11 +58,10 @@ export const TxFeeInputField = ({
             key={tab.value}
             type="button"
             onClick={() => handleUnitChange(tab.value as TxFeeUnit)}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              unit === tab.value
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-            }`}
+            className={cx('rounded-md px-4 py-2 text-sm font-medium transition-colors', {
+              'bg-primary text-primary-foreground': unit === tab.value,
+              'bg-muted text-muted-foreground hover:bg-muted/80': unit !== tab.value,
+            })}
             disabled={disabled}
           >
             {tab.label}
@@ -73,23 +74,22 @@ export const TxFeeInputField = ({
           : t('settings.fees.description_tx_fees_satspervbyte')}
       </p>
       <div className="flex max-w-md items-center">
-        {unit === txFeeUnit.BLOCKS ? (
-          <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
-            <span className="text-xl font-medium">📦</span>
-          </div>
-        ) : (
-          <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
-            <div className="font-xs flex items-center text-xs">
-              <DisplayLogo currency="sats" size="sm" /> <span className="text-nowrap">/ vB</span>
-            </div>
-          </div>
-        )}
+        <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
+          {unit === txFeeUnit.BLOCKS ? (
+            <BlocksIcon className="h4 w-4" />
+          ) : (
+            <>
+              <DisplayLogo currency="sats" size="sm" />
+              <span className="text-xs text-nowrap">/&nbsp;vB</span>
+            </>
+          )}
+        </div>
         <Input
           type="text"
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           placeholder={unit === txFeeUnit.BLOCKS ? '3' : '1.0'}
-          className={'rounded-l-none'}
+          className="rounded-l-none"
           disabled={disabled}
         />
       </div>
