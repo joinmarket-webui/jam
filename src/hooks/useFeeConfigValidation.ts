@@ -18,7 +18,12 @@ interface UseFeeConfigValidationProps {
 }
 
 export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
-  const { get: getConfig, refetch: fetchConfig, fetchIfMissing: fetchConfigIfMissing } = useJmConfig({ walletFileName })
+  const {
+    get: getConfig,
+    refetch: fetchConfig,
+    fetchIfMissing: fetchConfigIfMissing,
+    state,
+  } = useJmConfig({ walletFileName })
   const [isLoading, setIsLoading] = useState(false)
 
   // Debug flag to force fee config missing error for testing
@@ -32,7 +37,8 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
       tx_fees_factor: getConfig(FEE_CONFIG_KEYS['tx_fees_factor'])?.value ?? undefined,
       max_sweep_fee_change: getConfig(FEE_CONFIG_KEYS['max_sweep_fee_change'])?.value ?? undefined,
     }
-  }, [getConfig])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, getConfig])
 
   const refetchAll = useCallback(async () => {
     setIsLoading(true)
