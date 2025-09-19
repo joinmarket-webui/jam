@@ -308,16 +308,33 @@ function RefreshJmSession() {
 }
 
 function LoadFeeConfigData({ walletFileName }: { walletFileName: WalletFileName }) {
-  const { refetchAll } = useFeeConfigValidation({ walletFileName })
+  const { fetchMissing } = useFeeConfigValidation({ walletFileName })
 
   useEffect(() => {
-    refetchAll().catch(() => {
-      const isDevMode = jamSettingsStore.getState().state.developerMode
-      if (isDevMode) {
-        toast.error(`[DEV] Error while loading fee config data.`)
-      }
-    })
-  }, [refetchAll])
+    const isDevMode = jamSettingsStore.getState().state.developerMode
+    if (isDevMode) {
+      console.debug('[DEV] Reloading fee values...')
+    }
+
+    fetchMissing()
+      .then((values) => {
+        const consoleInfo = 'Fee values loaded successfully.'
+        console.info(consoleInfo)
+        console.table(values)
+        if (isDevMode) {
+          toast.success(`[DEV] ${consoleInfo}`, {
+            id: 'fee-values-success',
+          })
+        }
+      })
+      .catch((e) => {
+        const consoleError = 'Error while loading fee values.'
+        console.error(consoleError, e)
+        if (isDevMode) {
+          toast.error(`[DEV] ${consoleError}`)
+        }
+      })
+  }, [fetchMissing])
 
   return <></>
 }

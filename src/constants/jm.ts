@@ -21,7 +21,9 @@ export interface ConfigValue {
   value: string | null
 }
 
-export const FEE_CONFIG_KEYS: Record<string, ConfigKey> = {
+export type FeeConfigName = 'tx_fees' | 'tx_fees_factor' | 'max_cj_fee_abs' | 'max_cj_fee_rel' | 'max_sweep_fee_change'
+
+export const FEE_CONFIG_KEYS: Record<FeeConfigName, ConfigKey> = {
   tx_fees: { section: 'POLICY', field: 'tx_fees' },
   tx_fees_factor: { section: 'POLICY', field: 'tx_fees_factor' },
   max_cj_fee_abs: { section: 'POLICY', field: 'max_cj_fee_abs' },

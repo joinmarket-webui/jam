@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
-import { FEE_CONFIG_KEYS } from '@/constants/jm'
+import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { configsettingMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
@@ -93,7 +93,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
         return
       }
 
-      const configUpdates = [
+      const configUpdates: { key: FeeConfigName; value: string }[] = [
         { key: 'max_cj_fee_abs', value: collaboratorData.maxCjFeeAbs },
         { key: 'max_cj_fee_rel', value: collaboratorData.maxCjFeeRel },
         { key: 'tx_fees', value: miningData.txFees },
@@ -155,7 +155,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto pb-0">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('settings.fees.title')}</DialogTitle>
           <DialogDescription>
@@ -175,7 +175,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 space-y-4">
+        <div className="flex-1 space-y-4">
           {isDeveloperMode && (
             <>
               <div className="flex items-center gap-3">
@@ -193,7 +193,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           )}
 
           <div className="space-y-2">
-            <Accordion type="single" collapsible>
+            <Accordion type="single" collapsible onValueChange={(val) => setCollaboratorFeesExpanded(!!val)}>
               <AccordionItem value="collaborator-fees">
                 <AccordionTrigger
                   className={cx({
@@ -229,7 +229,13 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
 
           {/* Mining fees dropdown */}
           <div className="space-y-2">
-            <Accordion type="single" collapsible>
+            <Accordion
+              type="single"
+              collapsible
+              onValueChange={(val) => {
+                setMiningFeesExpanded(!!val)
+              }}
+            >
               <AccordionItem value="mining-fees">
                 <AccordionTrigger
                   className={cx({
@@ -272,8 +278,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           </div>
         )}
         <DialogFooter
-          className={cx('bg-background sticky bottom-0 flex gap-2 p-4', {
-            'border-t': collaboratorFeesExpanded || miningFeesExpanded,
+          className={cx('', {
+            'border-t pt-4': collaboratorFeesExpanded || miningFeesExpanded,
           })}
         >
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting || isLoadingConfig}>

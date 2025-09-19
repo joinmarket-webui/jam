@@ -6,6 +6,7 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { jmConfigStore } from '@/store/jmConfigStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { Button } from '../ui/button'
 
@@ -17,6 +18,7 @@ export default function DevPage({ walletFileName }: DevPageProps) {
   const authState = useStore(authStore, (state) => state.state)
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
   const jamSettingsState = useStore(jamSettingsStore, (state) => state.state)
+  const jmConfigStoreState = useStore(jmConfigStore, (state) => state.state)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
   const feeConfig = useFeeConfigValidation({ walletFileName: walletFileName ?? 'None.jmdat' })
@@ -37,6 +39,10 @@ export default function DevPage({ walletFileName }: DevPageProps) {
       <div className="mt-8 overflow-scroll">
         <code className="light:text-red-700 text-red-800">useStore(jmSessionStore):</code>
         <pre className="text-xs">{JSON.stringify(jmSessionState, null, 2)}</pre>
+      </div>
+      <div className="mt-8 overflow-scroll">
+        <code className="light:text-red-700 text-red-800">useStore(jmConfigStore):</code>
+        <pre className="text-xs">{JSON.stringify(jmConfigStoreState, null, 2)}</pre>
       </div>
       <div className="mt-8 overflow-scroll">
         <code className="light:text-red-700 text-red-800">useStore(jamSettingsStore):</code>
