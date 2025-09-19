@@ -102,15 +102,13 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
       ]
 
       for (const { key, value } of configUpdates) {
-        if (value) {
-          await setconfigMutation.mutateAsync({
-            path: { walletname: walletFileName },
-            body: {
-              ...FEE_CONFIG_KEYS[key],
-              value,
-            },
-          })
-        }
+        await setconfigMutation.mutateAsync({
+          path: { walletname: walletFileName },
+          body: {
+            ...FEE_CONFIG_KEYS[key],
+            value,
+          },
+        })
       }
 
       await refetchFeeConfigValues()
@@ -193,7 +191,11 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           )}
 
           <div className="space-y-2">
-            <Accordion type="single" collapsible onValueChange={(val) => setCollaboratorFeesExpanded(!!val)}>
+            <Accordion
+              defaultValue="collaborator-fees"
+              type="single"
+              onValueChange={(val) => setCollaboratorFeesExpanded(!!val)}
+            >
               <AccordionItem value="collaborator-fees">
                 <AccordionTrigger
                   className={cx({
@@ -231,7 +233,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           <div className="space-y-2">
             <Accordion
               type="single"
-              collapsible
+              defaultValue="mining-fees"
               onValueChange={(val) => {
                 setMiningFeesExpanded(!!val)
               }}
@@ -260,7 +262,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                           ? String(factorToPercentage(Number(feeConfigValues.tx_fees_factor)))
                           : '',
                         maxSweepFeeChange: feeConfigValues?.max_sweep_fee_change
-                          ? String(factorToPercentage(Number(feeConfigValues?.max_sweep_fee_change)))
+                          ? String(factorToPercentage(Number(feeConfigValues.max_sweep_fee_change)))
                           : '',
                       }}
                       enableValidation={enableFormValidation}

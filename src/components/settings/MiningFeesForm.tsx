@@ -174,8 +174,8 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
       <div>
         <p className="text-muted-foreground mb-6 text-sm">{t('settings.fees.description_general_fee_settings')}</p>
 
-        <div className="mb-6 space-y-4">
-          <h3 className="text-base font-medium">{t('settings.fees.label_tx_fees')}</h3>
+        <div className="mb-6 space-y-2">
+          <Label>{t('settings.fees.label_tx_fees')}</Label>
           <TxFeeInputField
             value={feeType === txFeeUnit.BLOCKS ? txFeesBlocks : txFeesSatsPerVbyte}
             unit={feeType}
@@ -192,11 +192,11 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
           />
         </div>
 
-        <div className="mb-6 space-y-4">
+        <div className="mb-6 space-y-2">
           <Label>{t('settings.fees.label_tx_fees_factor')}</Label>
-          <p className="text-muted-foreground text-sm">{t('settings.fees.description_tx_fees_factor_^0.9.10')}</p>
-          <div className="flex max-w-md items-center">
-            <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
+          <p className="text-muted-foreground text-xs">{t('settings.fees.description_tx_fees_factor_^0.9.10')}</p>
+          <div className="flex h-12 items-center">
+            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
               <span className="text-sm font-medium">%</span>
             </div>
             <Input
@@ -204,21 +204,21 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               value={txFeesFactor}
               onChange={(e) => setTxFeesFactor(e.target.value)}
               placeholder="20"
-              className="rounded-l-none"
+              className="h-full rounded-l-none"
             />
           </div>
           {errors.txFeesFactor && <div className="mt-1 text-xs text-red-500">{errors.txFeesFactor}</div>}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           <Label>{t('settings.fees.label_max_sweep_fee_change')}</Label>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             {t('settings.fees.description_max_sweep_fee_change', {
               defaultValue: `${factorToPercentage(JM_MAX_SWEEP_FEE_CHANGE_DEFAULT)}%`,
             })}
           </p>
-          <div className="flex max-w-md items-center">
-            <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
+          <div className="flex h-12 items-center">
+            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
               <span className="text-sm font-medium">%</span>
             </div>
             <Input
@@ -226,7 +226,7 @@ export const MiningFeesForm = forwardRef<MiningFeesFormRef, MiningFeesFormProps>
               value={maxSweepFeeChange}
               onChange={(e) => setMaxSweepFeeChange(e.target.value)}
               placeholder="80"
-              className="rounded-l-none"
+              className="h-full rounded-l-none"
             />
           </div>
           {errors.maxSweepFeeChange && <div className="mt-1 text-xs text-red-500">{errors.maxSweepFeeChange}</div>}

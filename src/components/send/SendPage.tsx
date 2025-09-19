@@ -3,7 +3,6 @@ import { AlertTriangle, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
@@ -16,37 +15,13 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
-  const { maxFeesConfigMissing, isLoading, error } = useFeeConfigValidation({ walletFileName })
-
-  if (!walletFileName) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <h1 className="mb-2 text-left text-2xl font-bold">{t('send.title')}</h1>
-        <p className="text-muted-foreground mb-4">{t('current_wallet.error_loading_failed')}</p>
-      </div>
-    )
-  }
+  const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
 
   if (isLoading) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
         <p className="text-muted-foreground mt-4">{t('send.loading')}</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="mx-auto max-w-2xl space-y-3 p-4">
-        <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('send.title')}</h1>
-        <Alert variant="destructive">
-          <AlertDescription>
-            {t('global.errors.error_loading_wallet_failed', {
-              reason: error.message || t('global.errors.reason_unknown'),
-            })}
-          </AlertDescription>
-        </Alert>
       </div>
     )
   }
