@@ -13,7 +13,7 @@ interface UseJmConfigProps {
 
 export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
   const client = useApiClient()
-  const { get: getConfig, set: setConfig } = useStore(jmConfigStore)
+  const { get: getConfig, set: setConfig, state } = useStore(jmConfigStore)
 
   const { mutateAsync: fetchConfigAsync } = useMutation({
     ...configgetMutation({
@@ -34,7 +34,7 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
       })
       const result: ConfigValue = {
         key,
-        value: configvalue ?? null,
+        value: configvalue || null,
       }
       setConfig(result)
       return result
@@ -51,6 +51,7 @@ export const useJmConfig = ({ walletFileName }: UseJmConfigProps) => {
   )
 
   return {
+    state,
     get: getConfig,
     refetch,
     fetchIfMissing,

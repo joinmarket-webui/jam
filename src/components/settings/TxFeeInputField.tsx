@@ -73,8 +73,8 @@ export const TxFeeInputField = ({
           ? t('settings.fees.description_tx_fees_blocks')
           : t('settings.fees.description_tx_fees_satspervbyte')}
       </p>
-      <div className="flex max-w-md items-center">
-        <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
+      <div className="flex h-12 items-center">
+        <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
           {unit === txFeeUnit.BLOCKS ? (
             <BlocksIcon className="h4 w-4" />
           ) : (
@@ -89,7 +89,7 @@ export const TxFeeInputField = ({
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           placeholder={unit === txFeeUnit.BLOCKS ? '3' : '1.0'}
-          className="rounded-l-none"
+          className="h-full rounded-l-none"
           disabled={disabled}
         />
       </div>

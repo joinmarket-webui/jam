@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CJ_FEE_ABS_MIN, CJ_FEE_ABS_MAX, CJ_FEE_REL_MIN, CJ_FEE_REL_MAX } from '@/constants/jam'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '@/lib/utils'
+import { Alert, AlertDescription } from '../ui/alert'
 
 interface CollaboratorFeesFormProps {
   initialValues: {
@@ -99,17 +100,18 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
     return (
       <div>
         <p className="text-muted-foreground mb-6 text-sm">{t('settings.fees.description_max_cj_fee_settings')}</p>
-        <div className="bg-muted/50 mb-6 flex items-start gap-2 rounded-md p-3">
-          <Info className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
-          <p className="text-muted-foreground text-sm">{t('settings.fees.subtitle_max_cj_fee')}</p>
-        </div>
+
+        <Alert variant="default" className="mb-6">
+          <Info className="text-muted-foreground size-4 shrink-0" />
+          <AlertDescription>{t('settings.fees.subtitle_max_cj_fee')}</AlertDescription>
+        </Alert>
 
         {/* Absolute limit field */}
         <div className="mb-6 space-y-2">
           <Label htmlFor="max-cj-fee-abs">{t('settings.fees.label_max_cj_fee_abs')}</Label>
-          <p className="text-muted-foreground text-sm">{t('settings.fees.description_max_cj_fee_abs')}</p>
-          <div className="flex items-center">
-            <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
+          <p className="text-muted-foreground text-xs">{t('settings.fees.description_max_cj_fee_abs')}</p>
+          <div className="flex h-12 items-center">
+            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
               <span className="text-sm font-medium">₿</span>
             </div>
             <Input
@@ -118,7 +120,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
               value={maxCjFeeAbs}
               onChange={(e) => setMaxCjFeeAbs(e.target.value)}
               placeholder="0.00 007 517"
-              className="rounded-l-none"
+              className="h-full rounded-l-none"
             />
           </div>
           {errors.maxCjFeeAbs && <div className="mt-1 text-xs text-red-500">{errors.maxCjFeeAbs}</div>}
@@ -127,9 +129,9 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
         {/* Relative limit field */}
         <div className="space-y-2">
           <Label htmlFor="max-cj-fee-rel">{t('settings.fees.label_max_cj_fee_rel')}</Label>
-          <p className="text-muted-foreground text-sm">{t('settings.fees.description_max_cj_fee_rel')}</p>
-          <div className="flex items-center">
-            <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
+          <p className="text-muted-foreground text-xs">{t('settings.fees.description_max_cj_fee_rel')}</p>
+          <div className="flex h-12 items-center">
+            <div className="bg-muted flex h-full items-center rounded-l-md border border-r-0 px-3 py-2">
               <span className="text-sm font-medium">%</span>
             </div>
             <Input
@@ -138,7 +140,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
               value={maxCjFeeRel}
               onChange={(e) => setMaxCjFeeRel(e.target.value)}
               placeholder="0.03"
-              className="rounded-l-none"
+              className="h-full rounded-l-none"
             />
           </div>
           {errors.maxCjFeeRel && <div className="mt-1 text-xs text-red-500">{errors.maxCjFeeRel}</div>}
