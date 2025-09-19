@@ -71,7 +71,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletFileName }))
       await navigate(routes.login)
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const errorMessage = (error instanceof Error ? (error.message ?? '') : '') || t('global.errors.reason_unknown')
       toast.error(t('global.errors.error_reloading_wallet_failed', { reason: errorMessage }))
       console.error('Failed to lock wallet:', error)
     }

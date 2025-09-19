@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Balance } from '@/components/ui/Balance'
@@ -26,6 +26,7 @@ import {
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from './ui/DevBadge'
+import { Alert, AlertDescription } from './ui/alert'
 
 const ITEMS_PER_PAGE = 25
 
@@ -183,7 +184,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   } = useQuery({
     queryKey: ['orderbook'],
     queryFn: fetchOrderbook,
-    refetchInterval: 30000,
+    refetchInterval: 30_000,
   })
 
   // Combine both loading states for UI
@@ -316,11 +317,14 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setLocalLoading(true)
     setShowRefreshDropdown(false)
 
-    // Add a small delay to show the loading state
-    await ReloadDelay()
+    try {
+      // Add a small delay to show the loading state
+      await ReloadDelay()
 
-    await refetch()
-    setLocalLoading(false)
+      await refetch()
+    } finally {
+      setLocalLoading(false)
+    }
   }
 
   const handleSort = (key: SortKey) => {
@@ -351,11 +355,20 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="mb-4 text-red-600">
-          {t('orderbook.error_loading_orderbook_failed', { reason: (error as Error).message })}
-        </div>
-        <Button onClick={() => refetch()}>{t('global.retry')}</Button>
+      <div className="space-y-2 p-6">
+        <Alert variant="destructive">
+          <AlertCircleIcon className="size-4" />
+          <AlertDescription>
+            {t('orderbook.error_loading_orderbook_failed', {
+              reason: error?.message || t('global.errors.reason_unknown'),
+            })}
+          </AlertDescription>
+        </Alert>
+
+        <Button onClick={() => handleReload()} disabled={isLoadingData}>
+          <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData ? 'animate-spin' : '')} />
+          {t('global.retry')}
+        </Button>
       </div>
     )
   }
@@ -407,7 +420,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                   disabled={isLoadingData}
                 >
                   {t('orderbook.button_reload_title')}
-                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData && 'animate-spin')} />
+                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData ? 'animate-spin' : '')} />
                 </Button>
                 <div className="relative">
                   <Button
