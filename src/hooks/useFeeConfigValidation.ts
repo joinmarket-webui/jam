@@ -1,9 +1,7 @@
-import { useCallback, useMemo } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useCallback, useMemo, useState } from 'react'
 import { FEE_CONFIG_KEYS } from '@/constants/jm'
-import { useApiClient } from '@/hooks/useApiClient'
-import { configgetMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import type { WalletFileName } from '@/lib/utils'
+import { useJmConfig } from './useJmConfig'
 
 //TODO: needs testing!
 
@@ -20,87 +18,39 @@ interface UseFeeConfigValidationProps {
 }
 
 export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidationProps) => {
-  const client = useApiClient()
+  const { get: getConfig, refetch: fetchConfig, fetchIfMissing: fetchConfigIfMissing } = useJmConfig({ walletFileName })
+  const [isLoading, setIsLoading] = useState(false)
 
   // Debug flag to force fee config missing error for testing
   const forceFeeConfigMissing = import.meta.env.DEV && import.meta.env.VITE_FORCE_FEE_CONFIG_MISSING === 'true'
 
-  const createConfigQuery = (configKey: keyof typeof FEE_CONFIG_KEYS) => ({
-    ...configgetMutation({
-      client,
-      path: { walletname: walletFileName },
-      body: FEE_CONFIG_KEYS[configKey],
-    }),
-  })
-
-  const { mutateAsync: fetchMaxCjFeeAbs, ...maxCjFeeAbsQuery } = useMutation(createConfigQuery('max_cj_fee_abs'))
-  const { mutateAsync: fetchMaxCjFeeRel, ...maxCjFeeRelQuery } = useMutation(createConfigQuery('max_cj_fee_rel'))
-  const { mutateAsync: fetchTxFees, ...txFeesQuery } = useMutation(createConfigQuery('tx_fees'))
-  const { mutateAsync: fetchTxFeesFactor, ...txFeesFactorQuery } = useMutation(createConfigQuery('tx_fees_factor'))
-  const { mutateAsync: fetchMaxSweepFeeChange, ...maxSweepFeeChangeQuery } = useMutation(
-    createConfigQuery('max_sweep_fee_change'),
-  )
-
   const feeConfigValues = useMemo<FeeConfigValues | undefined>(() => {
     return {
-      max_cj_fee_abs: maxCjFeeAbsQuery.data?.configvalue,
-      max_cj_fee_rel: maxCjFeeRelQuery.data?.configvalue,
-      tx_fees: txFeesQuery.data?.configvalue,
-      tx_fees_factor: txFeesFactorQuery.data?.configvalue,
-      max_sweep_fee_change: maxSweepFeeChangeQuery.data?.configvalue,
+      max_cj_fee_abs: getConfig(FEE_CONFIG_KEYS['max_cj_fee_abs'])?.value ?? undefined,
+      max_cj_fee_rel: getConfig(FEE_CONFIG_KEYS['max_cj_fee_rel'])?.value ?? undefined,
+      tx_fees: getConfig(FEE_CONFIG_KEYS['tx_fees'])?.value ?? undefined,
+      tx_fees_factor: getConfig(FEE_CONFIG_KEYS['tx_fees_factor'])?.value ?? undefined,
+      max_sweep_fee_change: getConfig(FEE_CONFIG_KEYS['max_sweep_fee_change'])?.value ?? undefined,
     }
-  }, [
-    maxCjFeeAbsQuery.data,
-    maxCjFeeRelQuery.data,
-    txFeesQuery.data,
-    txFeesFactorQuery.data,
-    maxSweepFeeChangeQuery.data,
-  ])
-
-  const isLoading = useMemo(() => {
-    return (
-      maxCjFeeAbsQuery.isPending ||
-      maxCjFeeRelQuery.isPending ||
-      txFeesQuery.isPending ||
-      txFeesFactorQuery.isPending ||
-      maxSweepFeeChangeQuery.isPending
-    )
-  }, [
-    maxCjFeeAbsQuery.isPending,
-    maxCjFeeRelQuery.isPending,
-    txFeesQuery.isPending,
-    txFeesFactorQuery.isPending,
-    maxSweepFeeChangeQuery.isPending,
-  ])
-
-  const error = useMemo(() => {
-    return (
-      maxCjFeeAbsQuery.error ||
-      maxCjFeeRelQuery.error ||
-      txFeesQuery.error ||
-      txFeesFactorQuery.error ||
-      maxSweepFeeChangeQuery.error
-    )
-  }, [
-    maxCjFeeAbsQuery.error,
-    maxCjFeeRelQuery.error,
-    txFeesQuery.error,
-    txFeesFactorQuery.error,
-    maxSweepFeeChangeQuery.error,
-  ])
+  }, [getConfig])
 
   const refetchAll = useCallback(async () => {
-    const args = {
-      path: { walletname: walletFileName },
+    setIsLoading(true)
+    try {
+      return await Promise.all(Object.values(FEE_CONFIG_KEYS).map(fetchConfig))
+    } finally {
+      setIsLoading(false)
     }
-    return await Promise.all([
-      fetchMaxCjFeeAbs(args),
-      fetchMaxCjFeeRel(args),
-      fetchTxFees(args),
-      fetchTxFeesFactor(args),
-      fetchMaxSweepFeeChange(args),
-    ])
-  }, [walletFileName, fetchMaxCjFeeAbs, fetchMaxCjFeeRel, fetchTxFees, fetchTxFeesFactor, fetchMaxSweepFeeChange])
+  }, [fetchConfig])
+
+  const fetchMissing = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      return await Promise.all(Object.values(FEE_CONFIG_KEYS).map(fetchConfigIfMissing))
+    } finally {
+      setIsLoading(false)
+    }
+  }, [fetchConfigIfMissing])
 
   const maxFeesConfigMissing = useMemo(() => {
     // Debug: Force the error for testing
@@ -116,15 +66,8 @@ export const useFeeConfigValidation = ({ walletFileName }: UseFeeConfigValidatio
   return {
     feeConfigValues,
     maxFeesConfigMissing,
-    isLoading,
-    error,
     refetchAll,
-    queries: {
-      maxCjFeeAbsQuery,
-      maxCjFeeRelQuery,
-      txFeesQuery,
-      txFeesFactorQuery,
-      maxSweepFeeChangeQuery,
-    },
+    fetchMissing,
+    isLoading,
   }
 }
