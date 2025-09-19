@@ -22,6 +22,8 @@ export function hashPassword(password: string, salt: string, iterations = 210_00
       .join('')
   } catch (error) {
     console.error('Password hashing failed:', error)
-    throw new Error(`Failed to hash password: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    throw new Error(
+      `Failed to hash password: ${(error instanceof Error ? (error.message ?? '') : '') || 'Unknown error'}`,
+    )
   }
 }
