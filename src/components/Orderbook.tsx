@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { Balance } from '@/components/ui/Balance'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,9 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
-import { useApiClient } from '@/hooks/useApiClient'
 import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type FidelityBond } from '@/lib/api/orderbook'
-import { sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import {
   cn,
   factorToPercentage,
@@ -24,6 +23,8 @@ import {
   ReloadDelay,
   pseudoRandomNumber,
 } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from './ui/DevBadge'
 
 const ITEMS_PER_PAGE = 25
@@ -118,14 +119,9 @@ interface OrderbookProps {
 
 export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const { t } = useTranslation()
-  const client = useApiClient()
 
-  const sessionQuery = useQuery({
-    ...sessionOptions({ client }),
-    staleTime: 60000,
-  })
-
-  const nickname = sessionQuery.data?.nickname
+  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const nickname = useMemo(() => jmSessionState?.nickname, [jmSessionState])
 
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightMyOffers, setHighlightMyOffers] = useState(false)
@@ -137,9 +133,8 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const [sortReverse, setSortReverse] = useState(false)
   const [localLoading, setLocalLoading] = useState(false)
   const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
-  const [showDemoButton] = useState(() => {
-    return process.env.NODE_ENV === 'development'
-  })
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const __dev_generateDemoReportEntryButton = () => {
@@ -267,9 +262,10 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     return offers
   }, [tableEntries, searchQuery, sortKey, sortReverse, pinMyOffers, ownOffers, userOffers])
 
-  const totalPages = Math.ceil(filteredAndSortedOffers.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedOffers = filteredAndSortedOffers.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = itemsPerPage <= 0 ? 1 : Math.ceil(filteredAndSortedOffers.length / itemsPerPage)
+  const startIndex = itemsPerPage <= 0 ? 0 : (currentPage - 1) * itemsPerPage
+  const paginatedOffers =
+    itemsPerPage <= 0 ? filteredAndSortedOffers : filteredAndSortedOffers.slice(startIndex, startIndex + itemsPerPage)
 
   const summary = useMemo(() => {
     const uniqueCounterparties = new Set(filteredAndSortedOffers.map((offer) => offer.counterparty))
@@ -579,8 +575,8 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           <div className="text-muted-foreground">{t('orderbook.alert_empty_orderbook')}</div>
         </div>
       ) : (
-        <div className={cn('rounded-md border', isModal && 'flex flex-1 flex-col overflow-hidden')}>
-          <div className={cn(isModal && 'flex-1 overflow-auto')}>
+        <div className={cn('rounded-md border', isModal ? 'flex flex-1 flex-col overflow-hidden' : '')}>
+          <div className={cn(isModal ? 'flex-1 overflow-auto' : '')}>
             <Table>
               <TableHeader>
                 <TableRow>
