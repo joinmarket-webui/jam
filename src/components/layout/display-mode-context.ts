@@ -27,6 +27,7 @@ export interface DisplayModeContextType {
   isPrivate: boolean
   toggleCurrencyUnit: () => void
   togglePrivacyMode: () => void
+  toggleDisplayMode: () => void
   formatAmount: (amount: number) => string
   getLogo: (size?: 'sm' | 'lg') => ReactNode
   jars: Jar[]
