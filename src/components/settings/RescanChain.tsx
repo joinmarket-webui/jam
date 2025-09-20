@@ -12,7 +12,8 @@ import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useRescanStatus } from '@/hooks/useRescanStatus'
 import { rescanblockchain } from '@/lib/jm-api/generated/client/sdk.gen'
-import { SEGWIT_ACTIVATION_BLOCK, type WalletFileName } from '@/lib/utils'
+import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
+import type { WalletFileName } from '@/lib/utils'
 
 interface RescanChainProps {
   walletFileName: WalletFileName
@@ -38,6 +39,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
       return data
     },
     onSuccess: () => {
+      // TODO: i18n
       toast.success('Rescan started successfully')
       setRescanInfo({
         updatedAt: -1,
@@ -66,12 +68,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
       return
     }
 
-    if (!walletFileName) {
-      toast.error('No wallet loaded')
-      return
-    }
-
-    rescanMutation.mutate(blockHeight)
+    await rescanMutation.mutateAsync(blockHeight)
   }
 
   return (
@@ -132,7 +129,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
                   <span className="text-sm">
                     {rescanInfo?.progress === undefined
                       ? t('app.alert_rescan_in_progress')
-                      : t('alert_rescan_in_progress_with_progress', {
+                      : t('app.alert_rescan_in_progress_with_progress', {
                           progress: rescanInfo.progress,
                         })}
                   </span>

@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
+import type { QueryFunction, QueryKey } from '@tanstack/react-query'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -12,3 +13,14 @@ export const queryClient = new QueryClient({
     },
   },
 })
+
+export function withQueryDelay<TQueryFnData, TQueryKey extends QueryKey>(
+  queryFn: QueryFunction<TQueryFnData, TQueryKey> | undefined,
+  delayMs: number,
+): QueryFunction<TQueryFnData, TQueryKey> | undefined {
+  if (!queryFn) return undefined
+  return (async (context) => {
+    await new Promise<void>((resolve) => setTimeout(resolve, delayMs))
+    return queryFn(context)
+  }) as QueryFunction<TQueryFnData, TQueryKey>
+}
