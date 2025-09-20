@@ -22,7 +22,7 @@ export default function JamLanding() {
 
   const {
     currency,
-    toggleCurrencyUnit,
+    toggleDisplayMode,
     isPrivate,
     formatAmount,
     getLogo,
@@ -43,7 +43,7 @@ export default function JamLanding() {
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
-            <div onClick={() => toggleCurrencyUnit()} className="flex cursor-pointer items-center gap-2">
+            <div onClick={() => toggleDisplayMode()} className="flex cursor-pointer items-center gap-2">
               <span
                 title={currency === 'btc' ? t('settings.use_sats') : t('settings.use_btc')}
                 className="text-center tabular-nums"

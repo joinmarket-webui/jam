@@ -50,6 +50,17 @@ export function useDisplaySettings() {
     setPrivacyMode(!isPrivate)
   }, [isPrivate, setPrivacyMode])
 
+  const toggleDisplayMode = useCallback(() => {
+    if (isPrivate) {
+      setPrivacyMode(false)
+      setCurrencyUnit('sats')
+    } else if (currency === 'sats') {
+      setCurrencyUnit('btc')
+    } else {
+      setPrivacyMode(true)
+    }
+  }, [isPrivate, currency, setPrivacyMode, setCurrencyUnit])
+
   const formatAmount = useCallback(
     (amount: number): string => {
       if (isPrivate) {
@@ -73,6 +84,7 @@ export function useDisplaySettings() {
     isPrivate,
     toggleCurrencyUnit,
     togglePrivacyMode,
+    toggleDisplayMode,
     formatAmount,
   }
 }

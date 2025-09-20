@@ -8,12 +8,12 @@ type DisplayLogoProps = {
 }
 
 export function DisplayLogo({ currency, isPrivate, size = 'lg' }: DisplayLogoProps) {
-  if (currency === 'btc') {
-    return <span className={`px-1 ${size === 'sm' ? 'text-md' : 'text-4xl'}`}>₿</span>
-  }
-
   if (isPrivate) {
     return <EyeOff size={size === 'sm' ? 16 : 24} className="inline-block align-middle" />
+  }
+
+  if (currency === 'btc') {
+    return <span className={`px-1 ${size === 'sm' ? 'text-md' : 'text-4xl'}`}>₿</span>
   }
 
   return (

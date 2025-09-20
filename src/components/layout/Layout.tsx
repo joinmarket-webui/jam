@@ -12,7 +12,8 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { resolvedTheme, setTheme } = useTheme()
-  const { currency, isPrivate, toggleCurrencyUnit, togglePrivacyMode, formatAmount } = useDisplaySettings()
+  const { currency, isPrivate, toggleCurrencyUnit, togglePrivacyMode, toggleDisplayMode, formatAmount } =
+    useDisplaySettings()
   const { jars, totalBalance, walletName, isLoading, error, refetchWalletData } = useWalletDisplay()
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
@@ -23,6 +24,7 @@ export function Layout({ children }: LayoutProps) {
     isPrivate,
     toggleCurrencyUnit,
     togglePrivacyMode,
+    toggleDisplayMode,
     formatAmount,
     getLogo: (size: 'sm' | 'lg' = 'lg') => <DisplayLogo currency={currency} isPrivate={isPrivate} size={size} />,
     jars,

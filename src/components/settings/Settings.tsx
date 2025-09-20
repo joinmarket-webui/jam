@@ -92,7 +92,7 @@ export const Settings = ({ walletFileName }: SettingProps) => {
           <Separator className="opacity-50" />
           <SettingItem
             icon={Bitcoin}
-            title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
+            title={t(currency === 'btc' ? 'settings.use_sats' : 'settings.use_btc')}
             action={toggleCurrencyUnit}
           />
           <Separator className="opacity-50" />
