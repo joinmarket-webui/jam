@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Jar } from '@/components/layout/Jar'
+import type { Currency } from '@/hooks/useDisplaySettings'
 
 const meta: Meta<typeof Jar> = {
   title: 'Core/Jar',
@@ -10,12 +11,25 @@ export default meta
 
 type Story = StoryObj<typeof Jar>
 
+const formatAmount = (amount: number, currency: Currency): string => {
+  if (currency === 'btc') {
+    return (amount / 100_000_000).toLocaleString(undefined, {
+      minimumFractionDigits: 8,
+      maximumFractionDigits: 8,
+    })
+  }
+
+  return amount.toLocaleString()
+}
+
 export const Sats: Story = {
   args: {
     name: 'Savings Jar',
     amount: 15000000,
     color: '#e2b86a',
-    displayMode: 'sats',
+    currency: 'sats',
+    isPrivate: false,
+    formatAmount: () => formatAmount(15000000, 'sats'),
     totalBalance: 50000000,
   },
 }
@@ -25,7 +39,9 @@ export const BTC: Story = {
     name: 'Main Jar',
     amount: 20000000,
     color: '#3b5ba9',
-    displayMode: 'btc',
+    currency: 'btc',
+    isPrivate: false,
+    formatAmount: () => formatAmount(20000000, 'btc'),
     totalBalance: 50000000,
   },
 }
@@ -35,7 +51,9 @@ export const Empty: Story = {
     name: 'Empty Jar',
     amount: 0,
     color: '#c94f7c',
-    displayMode: 'sats',
+    currency: 'sats',
+    isPrivate: false,
+    formatAmount: () => formatAmount(0, 'sats'),
     totalBalance: 50000000,
   },
 }
@@ -45,7 +63,9 @@ export const Full: Story = {
     name: 'Full Jar',
     amount: 50000000,
     color: '#a67c52',
-    displayMode: 'sats',
+    currency: 'sats',
+    isPrivate: false,
+    formatAmount: () => formatAmount(50000000, 'sats'),
     totalBalance: 100000000,
   },
 }

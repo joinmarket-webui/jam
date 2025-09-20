@@ -1,17 +1,18 @@
 import { EyeOff } from 'lucide-react'
-import type { DisplayMode } from '@/hooks/useDisplayMode'
+import type { Currency } from '@/hooks/useDisplaySettings'
 
 type DisplayLogoProps = {
-  displayMode: DisplayMode
+  currency: Currency
+  isPrivate: boolean
   size?: 'sm' | 'lg'
 }
 
-export function DisplayLogo({ displayMode, size = 'lg' }: DisplayLogoProps) {
-  if (displayMode === 'btc') {
+export function DisplayLogo({ currency, isPrivate, size = 'lg' }: DisplayLogoProps) {
+  if (currency === 'btc') {
     return <span className={`px-1 ${size === 'sm' ? 'text-md' : 'text-4xl'}`}>₿</span>
   }
 
-  if (displayMode === 'private') {
+  if (isPrivate) {
     return <EyeOff size={size === 'sm' ? 16 : 24} className="inline-block align-middle" />
   }
 

@@ -42,7 +42,7 @@ interface SettingProps {
 export const Settings = ({ walletFileName }: SettingProps) => {
   const { t } = useTranslation()
   const { resolvedTheme, setTheme } = useTheme()
-  const { displayMode, toggleDisplayMode } = useJamDisplayContext()
+  const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode } = useJamDisplayContext()
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
@@ -85,15 +85,15 @@ export const Settings = ({ walletFileName }: SettingProps) => {
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
-            icon={displayMode === 'private' ? Eye : EyeOff}
-            title={t(displayMode === 'private' ? 'settings.show_balance' : 'settings.hide_balance')}
-            action={() => toggleDisplayMode(displayMode === 'private' ? 'sats' : 'private')}
+            icon={isPrivate ? Eye : EyeOff}
+            title={t(isPrivate ? 'settings.show_balance' : 'settings.hide_balance')}
+            action={togglePrivacyMode}
           />
           <Separator className="opacity-50" />
           <SettingItem
             icon={Bitcoin}
-            title={t(displayMode === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
-            action={() => toggleDisplayMode(displayMode === 'btc' ? 'sats' : 'btc')}
+            title={t(currency === 'btc' ? 'settings.use_btc' : 'settings.use_sats')}
+            action={toggleCurrencyUnit}
           />
           <Separator className="opacity-50" />
           <SettingItem

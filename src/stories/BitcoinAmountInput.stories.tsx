@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BitcoinAmountInput } from '@/components/receive/BitcoinAmountInput'
-import type { DisplayMode } from '@/hooks/useDisplayMode'
+import type { Currency } from '@/hooks/useDisplaySettings'
 
 const meta: Meta<typeof BitcoinAmountInput> = {
   title: 'Receive/BitcoinAmountInput',
@@ -23,23 +23,25 @@ type Story = StoryObj<typeof BitcoinAmountInput>
 
 // Wrapper component to handle state for the storybook examples
 const BitcoinAmountInputWrapper = ({
-  initialMode = 'sats',
+  initialCurrency = 'sats',
   initialAmount = '',
+  isPrivate = false,
   disabled = false,
   label,
   placeholder,
 }: {
-  initialMode?: DisplayMode
+  initialCurrency?: Currency
   initialAmount?: string
+  isPrivate?: boolean
   disabled?: boolean
   label?: string
   placeholder?: string
 }) => {
-  const [amountDisplayMode, setAmountDisplayMode] = useState<DisplayMode>(initialMode)
+  const [currencyDisplayMode, setCurrencyDisplayMode] = useState<Currency>(initialCurrency)
   const [amount, setAmount] = useState(initialAmount)
 
-  const toggleDisplayMode = () => {
-    setAmountDisplayMode((prev) => (prev === 'sats' ? 'btc' : 'sats'))
+  const toggleCurrencyUnit = () => {
+    setCurrencyDisplayMode((prev) => (prev === 'sats' ? 'btc' : 'sats'))
   }
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,10 +52,11 @@ const BitcoinAmountInputWrapper = ({
     <BitcoinAmountInput
       label={label}
       placeholder={placeholder}
-      amountDisplayMode={amountDisplayMode}
+      currency={currencyDisplayMode}
+      isPrivate={isPrivate}
       value={amount}
       onChange={handleAmountChange}
-      toggleDisplayMode={toggleDisplayMode}
+      toggleCurrencyUnit={toggleCurrencyUnit}
       disabled={disabled}
     />
   )
@@ -64,14 +67,14 @@ export const Default: Story = {
 }
 
 export const BTCMode: Story = {
-  render: () => <BitcoinAmountInputWrapper initialMode="btc" label="Amount in BTC" placeholder="0.00000000" />,
+  render: () => <BitcoinAmountInputWrapper initialCurrency="btc" label="Amount in BTC" placeholder="0.00000000" />,
 }
 
 export const WithInitialAmount: Story = {
   render: () => (
     <BitcoinAmountInputWrapper
       initialAmount="1000"
-      initialMode="sats"
+      initialCurrency="sats"
       label="Amount in Sats"
       placeholder="Enter sats"
     />
