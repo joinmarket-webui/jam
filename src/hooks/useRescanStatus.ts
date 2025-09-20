@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
 import { getrescaninfoOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { withQueryDelay } from '@/lib/queryClient'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { useApiClient } from './useApiClient'
 
@@ -24,11 +25,18 @@ export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
     rescanning: jmSession.state?.rescanning === true,
   })
 
+  const getrescaninfoQueryOptions = useMemo(
+    () =>
+      getrescaninfoOptions({
+        client,
+        path: { walletname: walletFileName },
+      }),
+    [client, walletFileName],
+  )
+
   const getrescaninfoQuery = useQuery({
-    ...getrescaninfoOptions({
-      client,
-      path: { walletname: walletFileName },
-    }),
+    ...getrescaninfoQueryOptions,
+    queryFn: withQueryDelay(getrescaninfoQueryOptions.queryFn, 1_000),
     refetchInterval: JAM_RESCAN_PROGRESS_INTERVAL,
     refetchIntervalInBackground: true,
     enabled: rescanInfo.rescanning || jmSession.state?.rescanning === true,
