@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { ReactNode } from 'react'
-import type { DisplayMode } from '@/hooks/useDisplayMode'
+import type { Currency } from '@/hooks/useDisplaySettings'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 
@@ -23,8 +23,10 @@ export interface Jar {
 }
 
 export interface DisplayModeContextType {
-  displayMode: DisplayMode
-  toggleDisplayMode: (mode?: DisplayMode) => void
+  currency: Currency
+  isPrivate: boolean
+  toggleCurrencyUnit: () => void
+  togglePrivacyMode: () => void
   formatAmount: (amount: number) => string
   getLogo: (size?: 'sm' | 'lg') => ReactNode
   jars: Jar[]

@@ -21,8 +21,9 @@ export default function JamLanding() {
   const { maxFeesConfigMissing } = useFeeConfigValidation()
 
   const {
-    displayMode,
-    toggleDisplayMode,
+    currency,
+    toggleCurrencyUnit,
+    isPrivate,
     formatAmount,
     getLogo,
     jars,
@@ -35,16 +36,16 @@ export default function JamLanding() {
   return (
     <div className="flex flex-col items-center justify-center py-8">
       <div className="mb-8 text-center">
-        <div className="text-lg text-gray-400 opacity-80">{displayMode === 'btc' ? 'Bitcoin' : 'Satoshi'}</div>
+        <div className="text-lg text-gray-400 opacity-80">{currency === 'btc' ? 'Bitcoin' : 'Satoshi'}</div>
         <div className="mb-2 flex min-h-[56px] items-center justify-center text-4xl font-light tracking-wider select-none">
           {isLoading ? (
             <div className="flex min-h-[56px] items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
-            <div onClick={() => toggleDisplayMode()} className="flex cursor-pointer items-center gap-2">
+            <div onClick={() => toggleCurrencyUnit()} className="flex cursor-pointer items-center gap-2">
               <span
-                title={displayMode === 'btc' ? t('settings.use_sats') : t('settings.use_btc')}
+                title={currency === 'btc' ? t('settings.use_sats') : t('settings.use_btc')}
                 className="text-center tabular-nums"
               >
                 {formatAmount(totalBalance)}{' '}
@@ -106,7 +107,9 @@ export default function JamLanding() {
                       name={jar.name}
                       amount={jar.balance}
                       color={jar.color}
-                      displayMode={displayMode}
+                      currency={currency}
+                      isPrivate={isPrivate}
+                      formatAmount={formatAmount}
                       totalBalance={totalBalance}
                     />
                   </div>

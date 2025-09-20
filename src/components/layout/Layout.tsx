@@ -2,7 +2,7 @@ import { useTheme } from 'next-themes'
 import { DisplayLogo } from '@/components/DisplayLogo'
 import { Footer } from '@/components/Footer'
 import { Navbar } from '@/components/Navbar'
-import { useDisplayMode } from '@/hooks/useDisplayMode'
+import { useDisplaySettings } from '@/hooks/useDisplaySettings'
 import { useWalletDisplay } from '@/hooks/useWalletDisplay'
 import { DisplayModeContext } from './display-mode-context'
 
@@ -12,17 +12,19 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { resolvedTheme, setTheme } = useTheme()
-  const { displayMode, toggleDisplayMode, formatAmount } = useDisplayMode()
+  const { currency, isPrivate, toggleCurrencyUnit, togglePrivacyMode, formatAmount } = useDisplaySettings()
   const { jars, totalBalance, walletName, isLoading, error, refetchWalletData } = useWalletDisplay()
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
   // Prepare the context value
   const displayModeValue = {
-    displayMode,
-    toggleDisplayMode,
+    currency,
+    isPrivate,
+    toggleCurrencyUnit,
+    togglePrivacyMode,
     formatAmount,
-    getLogo: (size: 'sm' | 'lg' = 'lg') => <DisplayLogo displayMode={displayMode} size={size} />,
+    getLogo: (size: 'sm' | 'lg' = 'lg') => <DisplayLogo currency={currency} isPrivate={isPrivate} size={size} />,
     jars,
     totalBalance,
     walletName,
@@ -38,7 +40,7 @@ export function Layout({ children }: LayoutProps) {
           theme={resolvedTheme || 'dark'}
           toggleTheme={toggleTheme}
           formatAmount={formatAmount}
-          getLogo={(size) => <DisplayLogo displayMode={displayMode} size={size} />}
+          getLogo={(size) => <DisplayLogo currency={currency} isPrivate={isPrivate} size={size} />}
           jars={jars}
           isLoading={isLoading}
         />

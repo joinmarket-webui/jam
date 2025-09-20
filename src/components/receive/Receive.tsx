@@ -4,7 +4,6 @@ import { Copy, CopyCheck, RefreshCw, Share } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
-import type { DisplayMode } from '@/hooks/useDisplayMode'
 import { getaddressOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { btcToSats, satsToBtc, type WalletFileName } from '@/lib/utils'
 import { useJamDisplayContext } from '../layout/display-mode-context'
@@ -25,9 +24,8 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   const [amount, setAmount] = useState<number | undefined>()
   const [bitcoinAddress, setBitcoinAddress] = useState<string | undefined>()
   const [copied, setCopied] = useState(false)
-  const [amountDisplayMode, setAmountDisplayMode] = useState<DisplayMode>('sats')
 
-  const { jars } = useJamDisplayContext()
+  const { jars, currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
   const client = useApiClient()
 
   const totalBalance = useMemo(() => {
@@ -103,20 +101,16 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     }
 
     const numValue = parseFloat(value)
-    if (amountDisplayMode === 'btc') {
+    if (currency === 'btc') {
       setAmount(btcToSats(numValue.toString()))
     } else {
       setAmount(Math.floor(numValue))
     }
   }
 
-  const toggleDisplayMode = () => {
-    setAmountDisplayMode((prev) => (prev === 'sats' ? 'btc' : 'sats'))
-  }
-
   const getDisplayAmount = () => {
     if (!amount) return ''
-    if (amountDisplayMode === 'btc') {
+    if (currency === 'btc') {
       return satsToBtc(amount.toString()).toFixed(8)
     }
     return amount.toString()
@@ -217,10 +211,11 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
                 <BitcoinAmountInput
                   label={t('receive.label_amount_input')}
                   placeholder={t('receive.placeholder_amount_input')}
-                  amountDisplayMode={amountDisplayMode}
+                  currency={currency}
                   value={getDisplayAmount()}
                   onChange={handleAmountChange}
-                  toggleDisplayMode={toggleDisplayMode}
+                  toggleCurrencyUnit={toggleCurrencyUnit}
+                  isPrivate={isPrivate}
                   disabled={isQrLoading || !bitcoinAddress}
                 />
               </div>
