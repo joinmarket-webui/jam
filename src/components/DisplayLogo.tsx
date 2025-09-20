@@ -3,7 +3,7 @@ import type { Currency } from '@/hooks/useDisplaySettings'
 
 type DisplayLogoProps = {
   currency: Currency
-  isPrivate: boolean
+  isPrivate?: boolean
   size?: 'sm' | 'lg'
 }
 

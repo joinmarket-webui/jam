@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { DisplayLogo } from '@/components/DisplayLogo'
 import { useJamDisplayContext } from '@/components/layout/display-mode-context'
+import type { Currency } from '@/hooks/useDisplaySettings'
 import { cn, satsToBtc, btcToSats, isValidNumber, formatBtc, formatSats, SATS, BTC } from '@/lib/utils'
 
 const DISPLAY_MODE_BTC = 'btc'
@@ -9,22 +10,23 @@ const DISPLAY_MODE_HIDDEN = 'private'
 
 const getDisplayMode = (
   unit: typeof SATS | typeof BTC | undefined,
-  contextDisplayMode: string,
+  currency: Currency,
+  isPrivate: boolean,
   showBalance: boolean,
 ) => {
-  if (!showBalance || contextDisplayMode === 'private') return DISPLAY_MODE_HIDDEN
+  if (!showBalance || isPrivate) return DISPLAY_MODE_HIDDEN
 
   // If convertToUnit is specified, respect it, otherwise use context
   if (unit === BTC) return DISPLAY_MODE_BTC
   if (unit === SATS) return DISPLAY_MODE_SATS
 
   // Use context display mode when no specific unit is requested
-  return contextDisplayMode
+  return currency
 }
 
-const BTC_SYMBOL = <DisplayLogo displayMode="btc" size="sm" />
+const BTC_SYMBOL = <DisplayLogo currency="btc" size="sm" />
 
-const SAT_SYMBOL = <DisplayLogo displayMode="sats" size="sm" />
+const SAT_SYMBOL = <DisplayLogo currency="sats" size="sm" />
 
 const FROZEN_SYMBOL = (
   <span data-testid="frozen-symbol" className="ml-1 text-blue-400">
@@ -32,7 +34,7 @@ const FROZEN_SYMBOL = (
   </span>
 )
 
-const HIDE_SYMBOL = <DisplayLogo displayMode="private" size="sm" />
+const HIDE_SYMBOL = <DisplayLogo currency="sats" isPrivate={true} size="sm" />
 
 interface BalanceComponentProps {
   symbol?: React.ReactNode
@@ -143,10 +145,10 @@ interface BalanceProps extends Omit<BalanceComponentProps, 'symbol' | 'children'
  * Hidden balances are masked with `*****`.
  */
 export const Balance = ({ valueString, convertToUnit, showBalance = true, ...props }: BalanceProps) => {
-  const { displayMode: contextDisplayMode } = useJamDisplayContext()
+  const { currency, isPrivate } = useJamDisplayContext()
   const displayMode = useMemo(
-    () => getDisplayMode(convertToUnit, contextDisplayMode, showBalance),
-    [convertToUnit, contextDisplayMode, showBalance],
+    () => getDisplayMode(convertToUnit, currency, isPrivate, showBalance),
+    [convertToUnit, currency, isPrivate, showBalance],
   )
 
   const balanceComponent = useMemo(() => {

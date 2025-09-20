@@ -80,7 +80,7 @@ export const TxFeeInputField = ({
         ) : (
           <div className="bg-muted flex h-9 items-center rounded-l-md border border-r-0 px-3 py-2">
             <div className="font-xs flex items-center text-xs">
-              <DisplayLogo displayMode="sats" size="sm" /> <span className="text-nowrap">/ vB</span>
+              <DisplayLogo currency="sats" size="sm" /> <span className="text-nowrap">/ vB</span>
             </div>
           </div>
         )}
