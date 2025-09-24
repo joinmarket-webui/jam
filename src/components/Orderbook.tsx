@@ -1,8 +1,18 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus, AlertCircleIcon } from 'lucide-react'
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  type SortingState,
+  type ColumnDef,
+  useReactTable,
+} from '@tanstack/react-table'
+import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
 import { Balance } from '@/components/ui/Balance'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +22,9 @@ import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
+import { useApiClient } from '@/hooks/useApiClient'
 import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type FidelityBond } from '@/lib/api/orderbook'
+import { sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import {
   cn,
   factorToPercentage,
@@ -23,10 +35,7 @@ import {
   ReloadDelay,
   pseudoRandomNumber,
 } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from './ui/DevBadge'
-import { Alert, AlertDescription } from './ui/alert'
 
 const ITEMS_PER_PAGE = 25
 
@@ -59,7 +68,15 @@ interface OrderTableEntry {
 }
 
 // TODO: check out libraries
-type SortKey = 'counterparty' | 'type' | 'fee' | 'minimumSize' | 'maximumSize' | 'minerFeeContribution' | 'bondValue'
+type SortKey =
+  | 'counterparty'
+  | 'orderId'
+  | 'type'
+  | 'fee'
+  | 'minimumSize'
+  | 'maximumSize'
+  | 'minerFeeContribution'
+  | 'bondValue'
 
 const offerToTableEntry = (
   offer: OrderbookOffer,
@@ -120,9 +137,14 @@ interface OrderbookProps {
 
 export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const { t } = useTranslation()
+  const client = useApiClient()
 
-  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
-  const nickname = useMemo(() => jmSessionState?.nickname, [jmSessionState])
+  const sessionQuery = useQuery({
+    ...sessionOptions({ client }),
+    staleTime: 60000,
+  })
+
+  const nickname = sessionQuery.data?.nickname
 
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightMyOffers, setHighlightMyOffers] = useState(false)
@@ -130,12 +152,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE)
   const [showRefreshDropdown, setShowRefreshDropdown] = useState(false)
-  const [sortKey, setSortKey] = useState<SortKey>('minimumSize')
-  const [sortReverse, setSortReverse] = useState(false)
+  const [sorting, setSorting] = useState<SortingState>([])
   const [localLoading, setLocalLoading] = useState(false)
   const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
-  const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
+  const [showDemoButton] = useState(() => {
+    return process.env.NODE_ENV === 'development'
+  })
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const __dev_generateDemoReportEntryButton = () => {
@@ -184,7 +206,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   } = useQuery({
     queryKey: ['orderbook'],
     queryFn: fetchOrderbook,
-    refetchInterval: 30_000,
+    refetchInterval: 30000,
   })
 
   // Combine both loading states for UI
@@ -205,15 +227,14 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   }, [orderbookData, demoOffers, t])
 
   const ownOffers = useMemo(() => {
-    return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
-  }, [nickname, tableEntries])
+    if (!userOffers.length) return []
+    return tableEntries.filter((it) => userOffers.includes(it.counterparty))
+  }, [userOffers, tableEntries])
 
-  const filteredAndSortedOffers = useMemo(() => {
+  const filteredBaseData = useMemo(() => {
     if (!tableEntries) return []
-
-    let offers = [...tableEntries]
-
     const searchVal = searchQuery.replace('.', '').toLowerCase()
+    let offers = [...tableEntries]
     if (searchVal !== '') {
       offers = offers.filter((entry) => {
         return (
@@ -228,53 +249,166 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
         )
       })
     }
-
-    const sortFunctions = {
-      counterparty: (a: OrderTableEntry, b: OrderTableEntry) => {
-        const val = a.counterparty.localeCompare(b.counterparty)
-        return val !== 0 ? val : +a.orderId - +b.orderId
-      },
-      type: (a: OrderTableEntry, b: OrderTableEntry) => a.type.displayValue.localeCompare(b.type.displayValue),
-      fee: (a: OrderTableEntry, b: OrderTableEntry) => {
-        // Group absolute and relative offers separately, but sort within each group by fee value
-        if (a.type.isAbsolute !== b.type.isAbsolute) {
-          // Put absolute offers first, then relative offers
-          return a.type.isAbsolute ? -1 : 1
-        }
-        // Within the same type (absolute or relative), sort by fee value
-        return a.fee.value - b.fee.value
-      },
-      minimumSize: (a: OrderTableEntry, b: OrderTableEntry) => +a.minimumSize - +b.minimumSize,
-      maximumSize: (a: OrderTableEntry, b: OrderTableEntry) => +a.maximumSize - +b.maximumSize,
-      minerFeeContribution: (a: OrderTableEntry, b: OrderTableEntry) =>
-        +a.minerFeeContribution - +b.minerFeeContribution,
-      bondValue: (a: OrderTableEntry, b: OrderTableEntry) => a.bondValue.value - b.bondValue.value,
-    }
-
-    offers.sort(sortFunctions[sortKey])
-    if (sortReverse) offers.reverse()
-
     if (pinMyOffers && ownOffers.length > 0) {
       const userOffersFiltered = offers.filter((offer) => userOffers.includes(offer.counterparty))
       const otherOffers = offers.filter((offer) => !userOffers.includes(offer.counterparty))
       return [...userOffersFiltered, ...otherOffers]
     }
-
     return offers
-  }, [tableEntries, searchQuery, sortKey, sortReverse, pinMyOffers, ownOffers, userOffers])
+  }, [tableEntries, searchQuery, pinMyOffers, ownOffers, userOffers])
 
-  const totalPages = itemsPerPage <= 0 ? 1 : Math.ceil(filteredAndSortedOffers.length / itemsPerPage)
-  const startIndex = itemsPerPage <= 0 ? 0 : (currentPage - 1) * itemsPerPage
-  const paginatedOffers =
-    itemsPerPage <= 0 ? filteredAndSortedOffers : filteredAndSortedOffers.slice(startIndex, startIndex + itemsPerPage)
+  // Define columns with custom cells and sorting
+  const columnHelper = createColumnHelper<OrderTableEntry>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const columns = useMemo<ColumnDef<OrderTableEntry, any>[]>(
+    () => [
+      columnHelper.accessor('counterparty', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_counterparty')}</div>,
+        sortingFn: (a, b) => {
+          const val = a.original.counterparty.localeCompare(b.original.counterparty)
+          if (val !== 0) return val
+          // tie-break using orderId
+          const aid = Number(a.original.orderId)
+          const bid = Number(b.original.orderId)
+          return aid - bid
+        },
+        cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
+      }),
+      columnHelper.accessor('orderId', {
+        header: () => t('orderbook.table.heading_order_id'),
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('type', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
+        sortingFn: (a, b) => a.original.type.displayValue.localeCompare(b.original.type.displayValue),
+        cell: (info) => (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant={info.getValue().badgeColor}>{info.getValue().displayValue}</Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{info.getValue().tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        ),
+      }),
+      columnHelper.accessor('fee', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_fee')}</div>,
+
+        // Custom sorting: absolute before relative, then by fee value
+        sortingFn: (a, b) => {
+          const aAbs = !!a.original.type.isAbsolute
+          const bAbs = !!b.original.type.isAbsolute
+          if (aAbs !== bAbs) return aAbs ? -1 : 1
+          return a.original.fee.value - b.original.fee.value
+        },
+        cell: (info) => {
+          const entry = info.row.original
+          return entry.fee.displayValue.includes('%') ? (
+            <span className="font-mono">{entry.fee.displayValue}</span>
+          ) : (
+            <Balance colored={false} valueString={entry.fee.displayValue} />
+          )
+        },
+      }),
+      columnHelper.accessor('minimumSize', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
+
+        sortingFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
+        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+      }),
+      columnHelper.accessor('maximumSize', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
+
+        sortingFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
+        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+      }),
+      columnHelper.accessor('minerFeeContribution', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
+
+        sortingFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
+        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+      }),
+      columnHelper.accessor('bondValue', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
+
+        sortingFn: (a, b) => a.original.bondValue.value - b.original.bondValue.value,
+        cell: (info) => {
+          const entry = info.row.original
+          return entry.bondValue.value > 0 ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help">{entry.bondValue.displayValue}</span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div>
+                  <Balance valueString={String(entry.bondValue.amount || 0)} colored={false} convertToUnit={BTC} />
+                  {entry.bondValue.displayLocktime && (
+                    <div className="mt-1 text-xs">
+                      {entry.bondValue.displayLocktime} ({entry.bondValue.displayExpiresIn})
+                    </div>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <>{entry.bondValue.displayValue}</>
+          )
+        },
+      }),
+    ],
+    [t, columnHelper],
+  )
+
+  // Create table instance
+  const table = useReactTable({
+    data: filteredBaseData,
+    columns,
+    state: {
+      sorting,
+      pagination: {
+        pageIndex: Math.max(0, currentPage - 1),
+        pageSize: itemsPerPage === -1 ? filteredBaseData.length || 1 : itemsPerPage,
+      },
+    },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    manualFiltering: true, // we filter before passing to table
+  })
+
+  const totalPages = useMemo(() => {
+    if (itemsPerPage === -1) return 1
+    const total = filteredBaseData.length
+    return Math.max(1, Math.ceil(total / itemsPerPage))
+  }, [itemsPerPage, filteredBaseData])
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+      table.setPageIndex(Math.max(0, totalPages - 1))
+    }
+  }, [totalPages, currentPage, table])
+
+  const getRowsToRender = () => {
+    const rows = table.getRowModel().rows
+    if (pinMyOffers && ownOffers.length > 0) {
+      const mine = rows.filter((r) => userOffers.includes(r.original.counterparty))
+      const others = rows.filter((r) => !userOffers.includes(r.original.counterparty))
+      return [...mine, ...others]
+    }
+    return rows
+  }
 
   const summary = useMemo(() => {
-    const uniqueCounterparties = new Set(filteredAndSortedOffers.map((offer) => offer.counterparty))
+    const uniqueCounterparties = new Set(filteredBaseData.map((offer) => offer.counterparty))
     return {
-      count: filteredAndSortedOffers.length,
+      count: filteredBaseData.length,
       counterpartyCount: uniqueCounterparties.size,
     }
-  }, [filteredAndSortedOffers])
+  }, [filteredBaseData])
 
   const handlePinToggle = (checked: boolean) => {
     setPinMyOffers(checked)
@@ -291,8 +425,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setItemsPerPage(ITEMS_PER_PAGE)
     setDemoOffers([]) // Clear demo offers when clearing everything
 
-    setSortKey('minimumSize')
-    setSortReverse(false)
+    setSorting([])
     setShowRefreshDropdown(false)
 
     try {
@@ -317,58 +450,34 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setLocalLoading(true)
     setShowRefreshDropdown(false)
 
-    try {
-      // Add a small delay to show the loading state
-      await ReloadDelay()
+    // Add a small delay to show the loading state
+    await ReloadDelay()
 
-      await refetch()
-    } finally {
-      setLocalLoading(false)
-    }
+    await refetch()
+    setLocalLoading(false)
   }
 
   const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortReverse(!sortReverse)
-    } else {
-      setSortKey(key)
-      setSortReverse(false)
+    const col = table.getColumn(key)
+    if (col) {
+      col.toggleSorting()
     }
   }
 
   const getSortIcon = (columnKey: SortKey) => {
-    if (sortKey !== columnKey) {
-      return <ArrowUpDown className="ml-2 h-4 w-4" />
-    }
-    return sortReverse ? <ChevronDownIcon className="ml-2 h-4 w-4" /> : <ChevronUpIcon className="ml-2 h-4 w-4" />
+    const col = table.getColumn(columnKey)
+    const dir = col?.getIsSorted()
+    if (!dir) return <ArrowUpDown className="ml-2 h-4 w-4" />
+    return dir === 'desc' ? <ChevronDownIcon className="ml-2 h-4 w-4" /> : <ChevronUpIcon className="ml-2 h-4 w-4" />
   }
-
-  const renderOrderFee = (entry: OrderTableEntry) => {
-    return entry.fee.displayValue.includes('%') ? (
-      <span className="font-mono">{entry.fee.displayValue}</span>
-    ) : (
-      <Balance colored={false} valueString={entry.fee.displayValue} />
-    )
-  }
-
-  const isUserOffer = (counterparty: string) => userOffers.includes(counterparty)
 
   if (error) {
     return (
-      <div className="space-y-2 p-6">
-        <Alert variant="destructive">
-          <AlertCircleIcon className="size-4" />
-          <AlertDescription>
-            {t('orderbook.error_loading_orderbook_failed', {
-              reason: error?.message || t('global.errors.reason_unknown'),
-            })}
-          </AlertDescription>
-        </Alert>
-
-        <Button onClick={() => handleReload()} disabled={isLoadingData}>
-          <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData ? 'animate-spin' : '')} />
-          {t('global.retry')}
-        </Button>
+      <div className="p-6">
+        <div className="mb-4 text-red-600">
+          {t('orderbook.error_loading_orderbook_failed', { reason: (error as Error).message })}
+        </div>
+        <Button onClick={() => refetch()}>{t('global.retry')}</Button>
       </div>
     )
   }
@@ -420,7 +529,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                   disabled={isLoadingData}
                 >
                   {t('orderbook.button_reload_title')}
-                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData ? 'animate-spin' : '')} />
+                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData && 'animate-spin')} />
                 </Button>
                 <div className="relative">
                   <Button
@@ -549,11 +658,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Switch
-              checked={highlightMyOffers}
-              onCheckedChange={setHighlightMyOffers}
-              disabled={isLoadingData || ownOffers.length === 0}
-            />
+            <Switch checked={highlightMyOffers} onCheckedChange={setHighlightMyOffers} disabled={isLoadingData} />
             <div>
               <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
               <div className="text-muted-foreground text-sm">
@@ -565,11 +670,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Switch
-              checked={pinMyOffers}
-              onCheckedChange={handlePinToggle}
-              disabled={isLoadingData || ownOffers.length === 0}
-            />
+            <Switch checked={pinMyOffers} onCheckedChange={handlePinToggle} disabled={isLoadingData} />
             <div>
               <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
               <div className="text-muted-foreground text-sm">{t('orderbook.text_pin_to_top_own_orders_subtitle')}</div>
@@ -583,120 +684,60 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
         <div className="py-12 text-center">
           <div className="text-muted-foreground">{t('global.loading')}</div>
         </div>
-      ) : filteredAndSortedOffers.length === 0 ? (
+      ) : filteredBaseData.length === 0 ? (
         <div className="py-12 text-center">
           <div className="text-muted-foreground">{t('orderbook.alert_empty_orderbook')}</div>
         </div>
       ) : (
-        <div className={cn('rounded-md border', isModal ? 'flex flex-1 flex-col overflow-hidden' : '')}>
-          <div className={cn(isModal ? 'flex-1 overflow-auto' : '')}>
+        <div className={cn('rounded-lg border shadow-sm', isModal && 'flex flex-1 flex-col overflow-hidden')}>
+          <div className={cn(isModal && 'flex-1 overflow-auto')}>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('counterparty')}>
-                    <div className="flex items-center">
-                      {t('orderbook.table.heading_counterparty')}
-                      {getSortIcon('counterparty')}
-                    </div>
-                  </TableHead>
-                  <TableHead>{t('orderbook.table.heading_order_id')}</TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('type')}>
-                    <div className="flex items-center">
-                      {t('orderbook.table.heading_type')}
-                      {getSortIcon('type')}
-                    </div>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('fee')}>
-                    <div className="flex items-center">
-                      {t('orderbook.table.heading_fee')}
-                      {getSortIcon('fee')}
-                    </div>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('minimumSize')}>
-                    <div className="flex items-center">
-                      {t('orderbook.table.heading_minimum_size')}
-                      {getSortIcon('minimumSize')}
-                    </div>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('maximumSize')}>
-                    <div className="flex items-center">
-                      {t('orderbook.table.heading_maximum_size')}
-                      {getSortIcon('maximumSize')}
-                    </div>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('minerFeeContribution')}>
-                    <div className="flex items-center">
-                      {t('orderbook.table.heading_miner_fee_contribution')}
-                      {getSortIcon('minerFeeContribution')}
-                    </div>
-                  </TableHead>
-                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort('bondValue')}>
-                    <div className="flex items-center">
-                      {t('orderbook.table.heading_bond_value')}
-                      {getSortIcon('bondValue')}
-                    </div>
-                  </TableHead>
-                </TableRow>
+              <TableHeader className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      const canSort = header.column.getCanSort()
+                      const key = header.column.id as SortKey
+                      const alignRight =
+                        (header.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                      return (
+                        <TableHead
+                          key={header.id}
+                          className={cn(canSort && 'cursor-pointer select-none', alignRight && 'text-right')}
+                          onClick={canSort ? () => handleSort(key) : undefined}
+                        >
+                          <div className="flex items-center">
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {canSort && getSortIcon(key)}
+                          </div>
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
+                ))}
               </TableHeader>
-              <TableBody>
-                {paginatedOffers.map((offer) => {
-                  const isOwn = isUserOffer(offer.counterparty)
+              <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
+                {getRowsToRender().map((row) => {
+                  const offer = row.original
+                  const isOwn = userOffers.includes(offer.counterparty)
                   const shouldHighlight = highlightMyOffers && isOwn
-
                   return (
                     <TableRow
-                      key={`${offer.counterparty}-${offer.orderId}`}
+                      key={row.id}
                       className={cn(
-                        shouldHighlight && 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950',
+                        shouldHighlight &&
+                          '!border-yellow-300 !bg-yellow-50 ring-1 ring-yellow-300/40 dark:!border-yellow-700 dark:!bg-yellow-950 dark:ring-yellow-800/40',
                       )}
                     >
-                      <TableCell className="font-mono text-sm">{offer.counterparty}</TableCell>
-                      <TableCell>{offer.orderId}</TableCell>
-                      <TableCell>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant={offer.type.badgeColor}>{offer.type.displayValue}</Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{offer.type.tooltip}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>{renderOrderFee(offer)}</TableCell>
-                      <TableCell>
-                        <Balance colored={false} valueString={offer.minimumSize} />
-                      </TableCell>
-                      <TableCell>
-                        <Balance colored={false} valueString={offer.maximumSize} />
-                      </TableCell>
-                      <TableCell>
-                        <Balance colored={false} valueString={offer.minerFeeContribution} />
-                      </TableCell>
-                      <TableCell className="font-mono">
-                        {offer.bondValue.value > 0 ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="cursor-help">{offer.bondValue.displayValue}</span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <div>
-                                <Balance
-                                  valueString={String(offer.bondValue.amount || 0)}
-                                  colored={false}
-                                  convertToUnit={BTC}
-                                />
-                                {offer.bondValue.displayLocktime && (
-                                  <div className="mt-1 text-xs">
-                                    {offer.bondValue.displayLocktime} ({offer.bondValue.displayExpiresIn})
-                                  </div>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <>{offer.bondValue.displayValue}</>
-                        )}
-                      </TableCell>
+                      {row.getVisibleCells().map((cell) => {
+                        const alignRight =
+                          (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                        return (
+                          <TableCell key={cell.id} className={cn(alignRight && 'text-right font-mono')}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        )
+                      })}
                     </TableRow>
                   )
                 })}
@@ -708,11 +749,17 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
             currentPage={currentPage}
             totalPages={totalPages}
             itemsPerPage={itemsPerPage}
-            totalItems={filteredAndSortedOffers.length}
-            onPageChange={setCurrentPage}
+            totalItems={filteredBaseData.length}
+            onPageChange={(page) => {
+              setCurrentPage(page)
+              table.setPageIndex(Math.max(0, page - 1))
+            }}
             onItemsPerPageChange={(newItemsPerPage) => {
               setItemsPerPage(newItemsPerPage)
+              const size = newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
+              table.setPageSize(size)
               setCurrentPage(1)
+              table.setPageIndex(0)
             }}
           />
         </div>

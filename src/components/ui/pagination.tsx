@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, ChevronsLeftIcon, ChevronsRightIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -62,16 +62,6 @@ const Pagination = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-              className="hidden lg:flex"
-            >
-              <ChevronsLeftIcon />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
@@ -87,16 +77,6 @@ const Pagination = ({
               disabled={currentPage === totalPages}
             >
               <ChevronRight />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              className="hidden lg:flex"
-            >
-              <ChevronsRightIcon />
             </Button>
           </div>
         )}
