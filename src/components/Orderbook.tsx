@@ -11,8 +11,9 @@ import {
   type ColumnDef,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { Balance } from '@/components/ui/Balance'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,9 +23,7 @@ import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
-import { useApiClient } from '@/hooks/useApiClient'
 import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type FidelityBond } from '@/lib/api/orderbook'
-import { sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import {
   cn,
   factorToPercentage,
@@ -35,7 +34,10 @@ import {
   ReloadDelay,
   pseudoRandomNumber,
 } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from './ui/DevBadge'
+import { Alert, AlertDescription } from './ui/alert'
 
 const ITEMS_PER_PAGE = 25
 
@@ -137,14 +139,9 @@ interface OrderbookProps {
 
 export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const { t } = useTranslation()
-  const client = useApiClient()
 
-  const sessionQuery = useQuery({
-    ...sessionOptions({ client }),
-    staleTime: 60000,
-  })
-
-  const nickname = sessionQuery.data?.nickname
+  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const nickname = useMemo(() => jmSessionState?.nickname, [jmSessionState])
 
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightMyOffers, setHighlightMyOffers] = useState(false)
@@ -155,9 +152,8 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [localLoading, setLocalLoading] = useState(false)
   const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
-  const [showDemoButton] = useState(() => {
-    return process.env.NODE_ENV === 'development'
-  })
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const __dev_generateDemoReportEntryButton = () => {
@@ -473,11 +469,20 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="mb-4 text-red-600">
-          {t('orderbook.error_loading_orderbook_failed', { reason: (error as Error).message })}
-        </div>
-        <Button onClick={() => refetch()}>{t('global.retry')}</Button>
+      <div className="space-y-2 p-6">
+        <Alert variant="destructive">
+          <AlertCircleIcon className="size-4" />
+          <AlertDescription>
+            {t('orderbook.error_loading_orderbook_failed', {
+              reason: (error as Error)?.message || t('global.errors.reason_unknown'),
+            })}
+          </AlertDescription>
+        </Alert>
+
+        <Button onClick={() => refetch()} disabled={isLoadingData}>
+          <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData ? 'animate-spin' : '')} />
+          {t('global.retry')}
+        </Button>
       </div>
     )
   }
