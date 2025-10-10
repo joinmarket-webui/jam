@@ -16,18 +16,8 @@ interface JamLandingProps {
 export default function JamLanding({ walletFileName }: JamLandingProps) {
   const { t } = useTranslation()
 
-  const {
-    currency,
-    toggleDisplayMode,
-    isPrivate,
-    formatAmount,
-    currencySymbol,
-    jars,
-    totalBalance,
-    isLoading,
-    error,
-    refetchWalletData,
-  } = useJamDisplayContext()
+  const { toggleDisplayMode, formatAmount, currencySymbol, jars, totalBalance, isLoading, error, refetchWalletData } =
+    useJamDisplayContext()
 
   return (
     <div className="flex flex-col items-center justify-center py-8">
@@ -39,7 +29,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
-            <div onClick={() => toggleDisplayMode()} className="flex cursor-pointer items-center gap-1">
+            <div onClick={() => toggleDisplayMode()} className="flex cursor-pointer items-center">
               <span className="tabular-nums">{formatAmount(totalBalance)} </span>
               <span className="flex items-center">{currencySymbol('lg')}</span>
             </div>
@@ -93,8 +83,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
                       name={jar.name}
                       amount={jar.balance}
                       color={jar.color}
-                      currency={currency}
-                      isPrivate={isPrivate}
+                      currencySymbol={currencySymbol}
                       formatAmount={formatAmount}
                       totalBalance={totalBalance}
                     />

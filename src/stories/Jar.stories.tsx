@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { CurrencySymbol } from '@/components/CurrencySymbol'
 import { Jar } from '@/components/layout/Jar'
 import type { Currency } from '@/hooks/useDisplaySettings'
 
@@ -27,8 +28,7 @@ export const Sats: Story = {
     name: 'Savings Jar',
     amount: 15000000,
     color: '#e2b86a',
-    currency: 'sats',
-    isPrivate: false,
+    currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="sats" />,
     formatAmount: () => formatAmount(15000000, 'sats'),
     totalBalance: 50000000,
   },
@@ -39,8 +39,7 @@ export const BTC: Story = {
     name: 'Main Jar',
     amount: 20000000,
     color: '#3b5ba9',
-    currency: 'btc',
-    isPrivate: false,
+    currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="btc" />,
     formatAmount: () => formatAmount(20000000, 'btc'),
     totalBalance: 50000000,
   },
@@ -51,8 +50,7 @@ export const Empty: Story = {
     name: 'Empty Jar',
     amount: 0,
     color: '#c94f7c',
-    currency: 'sats',
-    isPrivate: false,
+    currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="sats" />,
     formatAmount: () => formatAmount(0, 'sats'),
     totalBalance: 50000000,
   },
@@ -63,8 +61,7 @@ export const Full: Story = {
     name: 'Full Jar',
     amount: 50000000,
     color: '#a67c52',
-    currency: 'sats',
-    isPrivate: false,
+    currencySymbol: (size: 'sm' | 'lg') => <CurrencySymbol size={size} currency="sats" />,
     formatAmount: () => formatAmount(50000000, 'sats'),
     totalBalance: 100000000,
   },
