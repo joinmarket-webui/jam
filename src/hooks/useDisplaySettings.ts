@@ -64,7 +64,7 @@ export function useDisplaySettings() {
   const formatAmount = useCallback(
     (amount: number): string => {
       if (isPrivate) {
-        return '****'
+        return '■■■■'
       }
 
       if (currency === 'btc') {
