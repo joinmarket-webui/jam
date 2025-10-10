@@ -29,7 +29,7 @@ export interface DisplayModeContextType {
   togglePrivacyMode: () => void
   toggleDisplayMode: () => void
   formatAmount: (amount: number) => string
-  getLogo: (size?: 'sm' | 'lg') => ReactNode
+  currencySymbol: (size?: 'sm' | 'lg') => ReactNode
   jars: Jar[]
   totalBalance: number
   walletName: string | null
