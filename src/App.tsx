@@ -78,7 +78,7 @@ function App() {
               element={
                 <ProtectedRoute authenticated={authenticated}>
                   <Layout>
-                    <JamLanding />
+                    <JamLanding walletFileName={walletFileName!} />
                   </Layout>
                 </ProtectedRoute>
               }
