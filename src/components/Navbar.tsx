@@ -70,7 +70,7 @@ export function Navbar({ theme, toggleTheme, formatAmount, currencySymbol, jars,
                 <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
               ) : (
                 <>
-                  <div className="tabular-nums">{formatAmount(totalBalance)}</div>
+                  <span className="tabular-nums">{formatAmount(totalBalance)}</span>
                   {currencySymbol('sm')}
                 </>
               )}
