@@ -26,7 +26,9 @@ export function Layout({ children }: LayoutProps) {
     togglePrivacyMode,
     toggleDisplayMode,
     formatAmount,
-    getLogo: (size: 'sm' | 'lg' = 'lg') => <CurrencySymbol currency={currency} isPrivate={isPrivate} size={size} />,
+    currencySymbol: (size: 'sm' | 'lg' = 'lg') => (
+      <CurrencySymbol currency={currency} isPrivate={isPrivate} size={size} />
+    ),
     jars,
     totalBalance,
     walletName,
@@ -42,7 +44,7 @@ export function Layout({ children }: LayoutProps) {
           theme={resolvedTheme || 'dark'}
           toggleTheme={toggleTheme}
           formatAmount={formatAmount}
-          getLogo={(size) => <CurrencySymbol currency={currency} isPrivate={isPrivate} size={size} />}
+          currencySymbol={displayModeValue.currencySymbol}
           jars={jars}
           isLoading={isLoading}
         />
