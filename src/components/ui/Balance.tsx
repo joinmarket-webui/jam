@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { DisplayLogo } from '@/components/DisplayLogo'
+import { CurrencySymbol } from '@/components/CurrencySymbol'
 import { useJamDisplayContext } from '@/components/layout/display-mode-context'
 import type { Currency } from '@/hooks/useDisplaySettings'
 import { cn, satsToBtc, btcToSats, isValidNumber, formatBtc, formatSats, SATS, BTC } from '@/lib/utils'
@@ -24,9 +24,9 @@ const getDisplayMode = (
   return currency
 }
 
-const BTC_SYMBOL = <DisplayLogo currency="btc" size="sm" />
+const BTC_SYMBOL = <CurrencySymbol currency="btc" size="sm" />
 
-const SAT_SYMBOL = <DisplayLogo currency="sats" size="sm" />
+const SAT_SYMBOL = <CurrencySymbol currency="sats" size="sm" />
 
 const FROZEN_SYMBOL = (
   <span data-testid="frozen-symbol" className="ml-1 text-blue-400">
@@ -34,7 +34,7 @@ const FROZEN_SYMBOL = (
   </span>
 )
 
-const HIDE_SYMBOL = <DisplayLogo currency="sats" isPrivate={true} size="sm" />
+const HIDE_SYMBOL = <CurrencySymbol currency="sats" isPrivate={true} size="sm" />
 
 interface BalanceComponentProps {
   symbol?: React.ReactNode

@@ -1,19 +1,29 @@
 import { EyeOff } from 'lucide-react'
 import type { Currency } from '@/hooks/useDisplaySettings'
+import { cn } from '@/lib/utils'
 
-type DisplayLogoProps = {
+type CurrencySymbolProps = {
   currency: Currency
   isPrivate?: boolean
   size?: 'sm' | 'lg'
 }
 
-export function DisplayLogo({ currency, isPrivate, size = 'lg' }: DisplayLogoProps) {
+export function CurrencySymbol({ currency, isPrivate, size = 'lg' }: CurrencySymbolProps) {
   if (isPrivate) {
     return <EyeOff size={size === 'sm' ? 16 : 24} className="inline-block align-middle" />
   }
 
   if (currency === 'btc') {
-    return <span className={`px-1 ${size === 'sm' ? 'text-md' : 'text-4xl'}`}>₿</span>
+    return (
+      <span
+        className={cn('px-1', {
+          'text-md': size === 'sm',
+          'text-4xl': size === 'lg',
+        })}
+      >
+        ₿
+      </span>
+    )
   }
 
   return (
