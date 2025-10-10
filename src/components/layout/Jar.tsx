@@ -1,5 +1,5 @@
 import type { Currency } from '@/hooks/useDisplaySettings'
-import { DisplayLogo } from '../DisplayLogo'
+import { CurrencySymbol } from '../CurrencySymbol'
 import { JarIcon } from '../ui/JarIcon'
 
 interface JarProps {
@@ -20,7 +20,7 @@ export function Jar({ name, amount, color, currency, isPrivate, formatAmount, to
       </div>
       <p className="text-center text-sm">{name}</p>
       <p className="min-w-[110px] text-center text-xs tabular-nums">
-        {formatAmount(amount)} <DisplayLogo currency={currency} isPrivate={isPrivate} size="sm" />
+        {formatAmount(amount)} <CurrencySymbol currency={currency} isPrivate={isPrivate} size="sm" />
       </p>
     </div>
   )

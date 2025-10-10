@@ -1,6 +1,6 @@
 import { ArrowUpDown } from 'lucide-react'
 import type { Currency } from '@/hooks/useDisplaySettings'
-import { DisplayLogo } from '../DisplayLogo'
+import { CurrencySymbol } from '../CurrencySymbol'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
@@ -30,7 +30,7 @@ export const BitcoinAmountInput = ({
         <div className="relative flex-1">
           <div onClick={toggleCurrencyUnit} className="absolute inset-y-0 left-0 flex items-center px-1">
             <span className="px-1 text-gray-500">
-              <DisplayLogo currency={currency} isPrivate={isPrivate} size="sm" />
+              <CurrencySymbol currency={currency} isPrivate={isPrivate} size="sm" />
             </span>
           </div>
           <Input

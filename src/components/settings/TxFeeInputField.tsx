@@ -4,7 +4,7 @@ import { BlocksIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { txFeeUnit, type TxFeeUnit } from '@/constants/jm'
-import { DisplayLogo } from '../DisplayLogo'
+import { CurrencySymbol } from '../CurrencySymbol'
 
 export interface TxFeeInputFieldProps {
   value: string
@@ -79,7 +79,7 @@ export const TxFeeInputField = ({
             <BlocksIcon className="h4 w-4" />
           ) : (
             <>
-              <DisplayLogo currency="sats" size="sm" />
+              <CurrencySymbol currency="sats" size="sm" />
               <span className="text-xs text-nowrap">/&nbsp;vB</span>
             </>
           )}
