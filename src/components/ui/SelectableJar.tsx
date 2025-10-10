@@ -1,4 +1,4 @@
-import { DisplayLogo } from '../DisplayLogo'
+import { CurrencySymbol } from '../CurrencySymbol'
 import { JarIcon } from './JarIcon'
 
 interface SelectableJarProps {
@@ -23,7 +23,7 @@ export const SelectableJar = ({ name, color, balance, totalBalance, isSelected, 
 
       <span className="text-xs">{name}</span>
       <div className="flex items-center font-mono text-[10px] text-gray-500">
-        <DisplayLogo currency="sats" size="sm" />
+        <CurrencySymbol currency="sats" size="sm" />
         <span>{balance.toLocaleString()}</span>
       </div>
       <div className="flex items-center">

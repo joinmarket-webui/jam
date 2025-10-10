@@ -1,5 +1,5 @@
 import { useTheme } from 'next-themes'
-import { DisplayLogo } from '@/components/DisplayLogo'
+import { CurrencySymbol } from '@/components/CurrencySymbol'
 import { Footer } from '@/components/Footer'
 import { Navbar } from '@/components/Navbar'
 import { useDisplaySettings } from '@/hooks/useDisplaySettings'
@@ -26,7 +26,7 @@ export function Layout({ children }: LayoutProps) {
     togglePrivacyMode,
     toggleDisplayMode,
     formatAmount,
-    getLogo: (size: 'sm' | 'lg' = 'lg') => <DisplayLogo currency={currency} isPrivate={isPrivate} size={size} />,
+    getLogo: (size: 'sm' | 'lg' = 'lg') => <CurrencySymbol currency={currency} isPrivate={isPrivate} size={size} />,
     jars,
     totalBalance,
     walletName,
@@ -42,7 +42,7 @@ export function Layout({ children }: LayoutProps) {
           theme={resolvedTheme || 'dark'}
           toggleTheme={toggleTheme}
           formatAmount={formatAmount}
-          getLogo={(size) => <DisplayLogo currency={currency} isPrivate={isPrivate} size={size} />}
+          getLogo={(size) => <CurrencySymbol currency={currency} isPrivate={isPrivate} size={size} />}
           jars={jars}
           isLoading={isLoading}
         />
