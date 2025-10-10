@@ -29,8 +29,8 @@ export function CurrencySymbol({ currency, isPrivate, size = 'lg' }: CurrencySym
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width={size === 'sm' ? '16px' : '30px'}
-      height={size === 'sm' ? '18px' : '40px'}
+      width={size === 'sm' ? '16px' : '48px'}
+      height={size === 'sm' ? '18px' : '48px'}
       viewBox="0 0 24 24"
       fill="none"
       style={{
