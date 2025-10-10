@@ -7,7 +7,7 @@ import { useStore } from 'zustand'
 import type { Jar } from '@/components/layout/display-mode-context'
 import { Button } from '@/components/ui/button'
 import { isDevMode } from '@/constants/debugFeatures'
-import { cn } from '@/lib/utils'
+import { cn, walletDisplayName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from './ui/DevBadge'
@@ -41,9 +41,11 @@ export function Navbar({ theme, toggleTheme, formatAmount, currencySymbol, jars,
   const { t } = useTranslation()
   const navigate = useNavigate()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const { state: authState, clear: clearAuth } = useStore(authStore, (state) => state)
+  const walletFileName = useMemo(() => authState?.walletFileName, [authState])
 
   const handleLogout = async () => {
-    authStore.getState().clear()
+    clearAuth()
     await navigate('/login')
   }
 
@@ -62,7 +64,9 @@ export function Navbar({ theme, toggleTheme, formatAmount, currencySymbol, jars,
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <div className="font-semibold tracking-tight">Satoshi</div>
+              <div className="font-semibold tracking-tight">
+                {walletFileName ? walletDisplayName(walletFileName) : '...'}
+              </div>
               {isDevMode() && <DevBadge />}
             </div>
             <div className="flex min-h-6 min-w-[150px] items-center">
