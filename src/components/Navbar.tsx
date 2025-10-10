@@ -17,7 +17,7 @@ interface NavbarProps {
   theme: string
   toggleTheme: () => void
   formatAmount: (amount: number) => string
-  getLogo: (size: 'sm' | 'lg') => React.ReactNode
+  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
   jars: Jar[]
   isLoading?: boolean
 }
@@ -37,7 +37,7 @@ const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active:
   )
 }
 
-export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoading = false }: NavbarProps) {
+export function Navbar({ theme, toggleTheme, formatAmount, currencySymbol, jars, isLoading = false }: NavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
@@ -71,7 +71,7 @@ export function Navbar({ theme, toggleTheme, formatAmount, getLogo, jars, isLoad
               ) : (
                 <>
                   <div className="tabular-nums">{formatAmount(totalBalance)}</div>
-                  {getLogo('sm')}
+                  {currencySymbol('sm')}
                 </>
               )}
             </div>

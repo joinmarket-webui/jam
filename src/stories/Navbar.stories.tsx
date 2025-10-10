@@ -21,7 +21,7 @@ export default meta
 type Story = StoryObj<typeof Navbar>
 
 const mockFormatAmount = (amount: number) => `${amount} sats`
-const mockGetLogo = (size: 'sm' | 'lg') => <Bitcoin size={size === 'sm' ? 18 : 32} />
+const mockCurrencySymbol = (size: 'sm' | 'lg') => <Bitcoin size={size === 'sm' ? 18 : 32} />
 const mockJars = [
   { name: 'Apricot', balance: 12345, color: '#e2b86a' as JarColor },
   { name: 'Blueberry', balance: 67890, color: '#3b5ba9' as JarColor },
@@ -32,7 +32,7 @@ export const Default: Story = {
     theme: 'light',
     toggleTheme: () => alert('Theme toggled!'),
     formatAmount: mockFormatAmount,
-    getLogo: mockGetLogo,
+    currencySymbol: mockCurrencySymbol,
     jars: mockJars,
   },
 }

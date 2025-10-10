@@ -15,7 +15,7 @@ export default function JamLanding() {
     toggleDisplayMode,
     isPrivate,
     formatAmount,
-    getLogo,
+    currencySymbol,
     jars,
     totalBalance,
     isLoading,
@@ -40,7 +40,7 @@ export default function JamLanding() {
               >
                 {formatAmount(totalBalance)}{' '}
               </span>
-              <span className="flex min-h-[48px] items-center">{getLogo('lg')}</span>
+              <span className="flex min-h-[48px] items-center">{currencySymbol('lg')}</span>
             </div>
           )}
         </div>
