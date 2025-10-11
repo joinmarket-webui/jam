@@ -125,7 +125,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
             {rescanInfo.rescanning && (
               <div className="bg-muted/50 mt-4 rounded-lg p-3">
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw className="h-4 w-4 animate-spin motion-reduce:hidden" />
                   <span className="text-sm">
                     {rescanInfo?.progress === undefined
                       ? t('app.alert_rescan_in_progress')

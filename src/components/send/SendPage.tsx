@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, Loader2 } from 'lucide-react'
+import { AlertTriangleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
@@ -20,7 +20,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
         <p className="text-muted-foreground mt-4">{t('send.loading')}</p>
       </div>
     )
@@ -40,7 +40,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base font-medium">
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            <AlertTriangleIcon className="h-4 w-4 text-yellow-500" />
             Send Functionality
           </CardTitle>
         </CardHeader>
@@ -49,7 +49,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
             <div className="flex items-start gap-2">
               <div className="light:text-yellow-800 text-sm text-yellow-200">
                 <div className="flex items-center">
-                  <AlertTriangle className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
+                  <AlertTriangleIcon className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
                   <p className="text-md font-medium">Under construction</p>
                 </div>
                 <p className="p-1 text-xs">

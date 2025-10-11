@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, Wallet } from 'lucide-react'
+import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -159,7 +159,7 @@ const CreateWallet = () => {
       <div className="space-y-2">
         <Label htmlFor="password">{t('create_wallet.label_password')}</Label>
         <div className="relative">
-          <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
             id="password"
             type={showPassword ? 'text' : 'password'}
@@ -181,7 +181,7 @@ const CreateWallet = () => {
               setShowPassword((val) => !val)
             }}
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -189,7 +189,7 @@ const CreateWallet = () => {
       <div className="space-y-2">
         <Label htmlFor="confirm-password">{t('create_wallet.label_password_confirm')}</Label>
         <div className="relative">
-          <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
           <Input
             id="confirm-password"
             type={showConfirmPassword ? 'text' : 'password'}
@@ -210,7 +210,7 @@ const CreateWallet = () => {
               setShowConfirmPassword((val) => !val)
             }}
           >
-            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -218,7 +218,7 @@ const CreateWallet = () => {
       <Button type="submit" className="w-full" disabled={isLoading} size="lg">
         {isLoading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
             {t('create_wallet.button_creating')}
           </>
         ) : (
@@ -242,7 +242,7 @@ const CreateWallet = () => {
       </div>
 
       <Alert>
-        <AlertCircle className="h-4 w-4" />
+        <AlertCircleIcon className="h-4 w-4" />
         <AlertDescription>
           <strong>Important:</strong> Write down this seed phrase and store it safely. It's the only way to recover your
           wallet if you lose access.
@@ -261,7 +261,7 @@ const CreateWallet = () => {
         <Card className="shadow-lg">
           <CardHeader className="space-y-2 text-center">
             <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-              <Wallet className="text-primary h-6 w-6" />
+              <WalletIcon className="text-primary h-6 w-6" />
             </div>
             <CardTitle className="text-2xl font-bold">
               {step === 'create' && <>{t('create_wallet.title')}</>}

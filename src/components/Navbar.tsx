@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import { Loader2, LogOut, Moon, Settings, Sun, Wallet } from 'lucide-react'
+import { Loader2Icon, LogOutIcon, MoonIcon, Settings, SunIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useStore } from 'zustand'
@@ -61,9 +61,9 @@ export function Navbar({
         <Link to={'/'} className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center">
             {isLoading ? (
-              <Loader2 className="animate-spin text-gray-400" strokeWidth={3} />
+              <Loader2Icon className="animate-spin text-gray-400" strokeWidth={3} />
             ) : (
-              <Wallet strokeWidth={1} />
+              <WalletIcon strokeWidth={1} />
             )}
           </div>
           <div className="flex flex-col">
@@ -109,7 +109,7 @@ export function Navbar({
           aria-label="Toggle dark/light mode"
           className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
         >
-          {theme === 'dark' ? <Sun /> : <Moon />}
+          {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </Button>
         <Link to="/settings">
           <Button
@@ -128,7 +128,7 @@ export function Navbar({
           aria-label="Logout"
           className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
         >
-          <LogOut />
+          <LogOutIcon />
         </Button>
       </div>
     </header>

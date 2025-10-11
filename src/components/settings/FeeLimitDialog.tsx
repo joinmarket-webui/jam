@@ -208,7 +208,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                 <AccordionContent>
                   {isLoadingConfig ? (
                     <div className="text-muted-foreground flex items-center justify-center py-8">
-                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : (
@@ -249,7 +249,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                 <AccordionContent>
                   {isLoadingConfig ? (
                     <div className="text-muted-foreground flex items-center justify-center py-8">
-                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : (

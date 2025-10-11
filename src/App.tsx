@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react'
 import type { PropsWithChildren } from 'react'
 import { QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { Loader2 } from 'lucide-react'
+import { Loader2Icon } from 'lucide-react'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
@@ -127,7 +127,7 @@ const Loading = () => {
   const { t } = useTranslation()
   return (
     <div className="m-2 flex items-center justify-center">
-      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
       {t('global.loading')}
     </div>
   )
