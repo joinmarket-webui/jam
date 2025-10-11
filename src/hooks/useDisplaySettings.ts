@@ -22,6 +22,7 @@ export function useDisplaySettings() {
       })
     } else if (currencyUnit === 'sats') {
       update({
+        privateMode: false,
         currencyUnit: 'btc',
       })
     } else {

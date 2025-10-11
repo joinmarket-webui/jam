@@ -4,7 +4,7 @@ import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import { Navigate, Outlet, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import CreateWallet from '@/components/CreateWallet'
@@ -42,12 +42,9 @@ const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authent
 }
 
 function App() {
-  const authState = useStore(authStore, (state) => state.state)
-  const walletFileName = useMemo(() => authState?.walletFileName, [authState])
-  const authenticated = useMemo(
-    () => walletFileName !== undefined && authState?.auth?.token !== undefined,
-    [authState, walletFileName],
-  )
+  const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
+  const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
+  const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
 
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
@@ -65,130 +62,58 @@ function App() {
               path={routes.createWallet}
               element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWallet />}
             />
-            <Route
-              path={routes.switchWallet}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <SwitchWallet walletFileName={walletFileName!} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.home}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <JamLanding walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.receive}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <Receive walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.send}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <SendPage walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.earn}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <EarnPage walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.sweep}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <SweepPage walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.settings}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <SettingsPage walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.orderbook}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <Orderbook />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.logs}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <Logs />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path={routes.rescan}
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Layout>
-                    <RescanChain walletFileName={walletFileName!} />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            {isDebugFeatureEnabled('devPage') && (
-              <Route
-                id="dev-page"
-                path={routes.__dev}
-                element={
-                  <Layout>
-                    <Suspense fallback={<Loading />}>
-                      <DevPage walletFileName={walletFileName} />
-                    </Suspense>
-                  </Layout>
-                }
-              />
-            )}
             {isDebugFeatureEnabled('devSetupPage') && (
               <Route
                 id="dev-setup"
                 path={routes.__devSetup}
                 element={
-                  <Layout>
-                    <Suspense fallback={<Loading />}>
-                      <DevSetupPage />
-                    </Suspense>
-                  </Layout>
+                  <Suspense fallback={<Loading />}>
+                    <DevSetupPage />
+                  </Suspense>
                 }
               />
             )}
+            <Route
+              id="protected"
+              element={
+                <ProtectedRoute authenticated={authenticated}>
+                  <Outlet />
+                </ProtectedRoute>
+              }
+            >
+              <Route id="without-navbar" element={<Outlet />}>
+                <Route path={routes.switchWallet} element={<SwitchWallet walletFileName={walletFileName!} />} />
+              </Route>
+              <Route
+                id="with-navbar"
+                element={
+                  <Layout>
+                    <Outlet />
+                  </Layout>
+                }
+              >
+                <Route path={routes.home} element={<JamLanding walletFileName={walletFileName!} />} />
+                <Route path={routes.receive} element={<Receive walletFileName={walletFileName!} />} />
+                <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
+                <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
+                <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
+                <Route path={routes.settings} element={<SettingsPage walletFileName={walletFileName!} />} />
+                <Route path={routes.orderbook} element={<Orderbook />} />
+                <Route path={routes.logs} element={<Logs />} />
+                <Route path={routes.rescan} element={<RescanChain walletFileName={walletFileName!} />} />
+                {isDebugFeatureEnabled('devPage') && (
+                  <Route
+                    id="dev-page"
+                    path={routes.__dev}
+                    element={
+                      <Suspense fallback={<Loading />}>
+                        <DevPage walletFileName={walletFileName} />
+                      </Suspense>
+                    }
+                  />
+                )}
+              </Route>
+            </Route>
             <Route path="*" element={<Navigate to={routes.login} replace />} />
           </Routes>
           <Toaster closeButton />

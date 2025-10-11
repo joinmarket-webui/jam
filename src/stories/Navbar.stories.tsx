@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Bitcoin } from 'lucide-react'
 import { MemoryRouter } from 'react-router-dom'
 import { Navbar } from '@/components/Navbar'
-import type { JarColor } from '@/components/layout/display-mode-context'
 
 const meta: Meta<typeof Navbar> = {
   title: 'Core/Navbar',
@@ -22,10 +21,6 @@ type Story = StoryObj<typeof Navbar>
 
 const mockFormatAmount = (amount: number) => `${amount} sats`
 const mockCurrencySymbol = (size: 'sm' | 'lg') => <Bitcoin size={size === 'sm' ? 18 : 32} />
-const mockJars = [
-  { name: 'Apricot', balance: 12345, color: '#e2b86a' as JarColor },
-  { name: 'Blueberry', balance: 67890, color: '#3b5ba9' as JarColor },
-]
 
 export const Default: Story = {
   args: {
@@ -33,6 +28,6 @@ export const Default: Story = {
     toggleTheme: () => alert('Theme toggled!'),
     formatAmount: mockFormatAmount,
     currencySymbol: mockCurrencySymbol,
-    jars: mockJars,
+    totalBalance: 21_000_000,
   },
 }
