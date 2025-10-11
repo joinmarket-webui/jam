@@ -105,7 +105,7 @@ export function useWalletDisplay(): UseWalletDisplayResult {
     }
   })
 
-  const totalBalance = jars.reduce((acc, jar) => acc + jar.balance, 0)
+  const totalBalance = jars.reduce((acc, jar) => acc + (jar.balance || 0), 0)
 
   return {
     jars,
