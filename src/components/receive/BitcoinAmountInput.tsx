@@ -1,5 +1,5 @@
 import { ArrowUpDown } from 'lucide-react'
-import type { Currency } from '@/hooks/useDisplaySettings'
+import type { Currency } from '@/types/global'
 import { CurrencySymbol } from '../CurrencySymbol'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'

@@ -1,9 +1,12 @@
 import { createStore } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { isDevMode } from '@/constants/debugFeatures'
+import type { Currency } from '@/types/global'
 
 export type JamSettings = {
   developerMode: boolean
+  privateMode: boolean
+  currencyUnit: Currency
 }
 
 interface JamSettingsStoreState {
@@ -12,8 +15,10 @@ interface JamSettingsStoreState {
   clear: () => void
 }
 
-const initial = {
+const initial: JamSettings = {
   developerMode: isDevMode(),
+  privateMode: false,
+  currencyUnit: 'sats',
 }
 
 export const jamSettingsStore = createStore<JamSettingsStoreState>()(

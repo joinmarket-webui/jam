@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { CurrencySymbol } from '@/components/CurrencySymbol'
 import { Jar } from '@/components/layout/Jar'
-import type { Currency } from '@/hooks/useDisplaySettings'
+import type { Currency } from '@/types/global'
 
 const meta: Meta<typeof Jar> = {
   title: 'Core/Jar',

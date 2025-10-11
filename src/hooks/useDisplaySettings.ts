@@ -1,73 +1,43 @@
-import { useCallback, useState } from 'react'
-
-export type Currency = 'sats' | 'btc'
-
-const CURRENCY_STORAGE_KEY = 'jam-currency-unit'
-const PRIVACY_MODE_STORAGE_KEY = 'jam-privacy-mode'
+import { useCallback } from 'react'
+import { useStore } from 'zustand'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 
 export function useDisplaySettings() {
-  const [currency, setCurrency] = useState<Currency>(() => {
-    try {
-      const stored = localStorage.getItem(CURRENCY_STORAGE_KEY)
-      return (stored as Currency) === 'btc' ? 'btc' : 'sats'
-    } catch {
-      return 'sats'
-    }
-  })
+  const {
+    state: { currencyUnit, privateMode },
+    update,
+  } = useStore(jamSettingsStore, (state) => state)
 
-  const [isPrivate, setIsPrivate] = useState<boolean>(() => {
-    try {
-      const stored = localStorage.getItem(PRIVACY_MODE_STORAGE_KEY)
-      return stored === 'true'
-    } catch {
-      return false
-    }
-  })
-
-  const setCurrencyUnit = useCallback((newCurrency: Currency) => {
-    setCurrency(newCurrency)
-    try {
-      localStorage.setItem(CURRENCY_STORAGE_KEY, newCurrency)
-    } catch (error) {
-      console.error('Failed to save currency unit:', error)
-    }
-  }, [])
-
-  const toggleCurrencyUnit = useCallback(() => {
-    setCurrencyUnit(currency === 'sats' ? 'btc' : 'sats')
-  }, [currency, setCurrencyUnit])
-
-  const setPrivacyMode = useCallback((isPrivateEnabled: boolean) => {
-    setIsPrivate(isPrivateEnabled)
-    try {
-      localStorage.setItem(PRIVACY_MODE_STORAGE_KEY, String(isPrivateEnabled))
-    } catch (error) {
-      console.error('Failed to save privacy mode:', error)
-    }
-  }, [])
-
-  const togglePrivacyMode = useCallback(() => {
-    setPrivacyMode(!isPrivate)
-  }, [isPrivate, setPrivacyMode])
+  const toggleCurrencyUnit = useCallback(
+    () => update({ currencyUnit: currencyUnit === 'sats' ? 'btc' : 'sats' }),
+    [currencyUnit, update],
+  )
+  const togglePrivacyMode = useCallback(() => update({ privateMode: !privateMode }), [privateMode, update])
 
   const toggleDisplayMode = useCallback(() => {
-    if (isPrivate) {
-      setPrivacyMode(false)
-      setCurrencyUnit('sats')
-    } else if (currency === 'sats') {
-      setCurrencyUnit('btc')
+    if (privateMode) {
+      update({
+        privateMode: false,
+        currencyUnit: 'sats',
+      })
+    } else if (currencyUnit === 'sats') {
+      update({
+        currencyUnit: 'btc',
+      })
     } else {
-      setPrivacyMode(true)
+      update({
+        privateMode: true,
+      })
     }
-  }, [isPrivate, currency, setPrivacyMode, setCurrencyUnit])
+  }, [privateMode, currencyUnit, update])
 
   const formatAmount = useCallback(
     (amount: number): string => {
-      if (isPrivate) {
+      if (privateMode) {
         return '■■■■'
       }
 
-      if (currency === 'btc') {
+      if (currencyUnit === 'btc') {
         return (amount / 100_000_000).toLocaleString(undefined, {
           minimumFractionDigits: 8,
           maximumFractionDigits: 8,
@@ -76,12 +46,12 @@ export function useDisplaySettings() {
 
       return amount.toLocaleString()
     },
-    [currency, isPrivate],
+    [currencyUnit, privateMode],
   )
 
   return {
-    currency,
-    isPrivate,
+    currency: currencyUnit,
+    isPrivate: privateMode,
     toggleCurrencyUnit,
     togglePrivacyMode,
     toggleDisplayMode,

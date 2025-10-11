@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BitcoinAmountInput } from '@/components/receive/BitcoinAmountInput'
-import type { Currency } from '@/hooks/useDisplaySettings'
+import type { Currency } from '@/types/global'
 
 const meta: Meta<typeof BitcoinAmountInput> = {
   title: 'Receive/BitcoinAmountInput',

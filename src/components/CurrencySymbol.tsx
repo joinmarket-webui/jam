@@ -1,6 +1,6 @@
 import { EyeOff } from 'lucide-react'
-import type { Currency } from '@/hooks/useDisplaySettings'
 import { cn } from '@/lib/utils'
+import type { Currency } from '@/types/global'
 
 type CurrencySymbolProps = {
   currency: Currency
