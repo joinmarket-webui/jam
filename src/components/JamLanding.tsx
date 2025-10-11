@@ -1,4 +1,4 @@
-import { Info, Loader2, RefreshCw } from 'lucide-react'
+import { InfoIcon, Loader2Icon, RefreshCwIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Jar } from '@/components/layout/Jar'
 import { useJamDisplayContext } from '@/components/layout/display-mode-context'
@@ -26,7 +26,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
         <div className="mb-2 flex min-h-[56px] items-center justify-center text-4xl font-light tracking-wider select-none">
           {isLoading ? (
             <div className="flex min-h-[56px] items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <Loader2Icon className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
             <div onClick={() => toggleDisplayMode()} className="flex cursor-pointer items-center">
@@ -50,7 +50,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
               reason: error.message || t('global.errors.reason_unknown'),
             })}
             <Button variant="outline" size="sm" onClick={() => refetchWalletData()} className="ml-2">
-              <RefreshCw className="mr-2 h-4 w-4" /> {t('global.retry')}
+              <RefreshCwIcon className="mr-2 h-4 w-4" /> {t('global.retry')}
             </Button>
           </AlertDescription>
         </Alert>
@@ -62,7 +62,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
             <div className="mx-3 text-black opacity-80 dark:text-white">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info size={16} />
+                  <InfoIcon size={16} />
                 </TooltipTrigger>
                 <TooltipContent>{t('current_wallet.jars_title_popover')}</TooltipContent>
               </Tooltip>
@@ -72,7 +72,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
         <div className="flex justify-between gap-4">
           {isLoading ? (
             <div className="flex flex-1 justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              <Loader2Icon className="h-8 w-8 animate-spin text-gray-400" />
             </div>
           ) : (
             jars.map((jar) => (
@@ -102,7 +102,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
           onClick={() => refetchWalletData()}
           className="flex items-center gap-2 text-gray-500"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCwIcon className="h-4 w-4" />
           {t('global.refresh')}
         </Button>
       </div>

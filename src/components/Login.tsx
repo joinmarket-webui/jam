@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, RefreshCwIcon, Wallet } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Loader2Icon, Lock, RefreshCwIcon, Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -131,7 +131,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
         <Button type="submit" className="w-full" disabled={isSubmitting || !selectedWallet} size="lg">
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
               {t('wallets.wallet_preview.button_unlocking')}
             </>
           ) : (
@@ -218,7 +218,7 @@ const LoginPage = () => {
           <CardHeader className="space-y-2 text-center">
             <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
               {isLoadingWallets ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
+                <Loader2Icon className="h-6 w-6 animate-spin" />
               ) : (
                 <Wallet className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
               )}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircle, Loader2, Lock, RefreshCwIcon, Unlock, Wallet } from 'lucide-react'
+import { AlertCircleIcon, Loader2Icon, LockIcon, RefreshCwIcon, UnlockIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -96,13 +96,14 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
           <CardHeader className="space-y-2 text-center">
             <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
               {isLoadingWallets ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
+                <Loader2Icon className="h-6 w-6 animate-spin" />
               ) : (
-                <Wallet className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
+                <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
               )}
             </div>
             <CardTitle className="text-2xl font-bold">{t('settings.button_switch_wallet')}</CardTitle>
             <CardDescription>
+              {/*TODO: i18n */}
               {currentWalletLocked
                 ? 'Current wallet is locked. Select a different wallet to continue.'
                 : t('wallets.alert_wallet_open', {
@@ -120,7 +121,7 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
               {listwalletsError ? (
                 <CardContent className="space-y-6">
                   <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircleIcon className="h-4 w-4" />
                     <AlertTitle>{listwalletsError.message}</AlertTitle>
                     <AlertDescription>{listwalletsError.error_description}</AlertDescription>
                   </Alert>
@@ -150,7 +151,7 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <Wallet className="h-4 w-4" />
+                                <WalletIcon className="h-4 w-4" />
                                 <span className="text-sm font-medium">{walletDisplayName(wallet)}</span>
                               </div>
                               {wallet === walletFileName && (
@@ -165,7 +166,7 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
                             {wallet === walletFileName && (
                               <div className="m-4 flex gap-4">
                                 <Button variant="outline" size="sm" onClick={() => navigate('/')} className="flex-1">
-                                  <Wallet className="mr-2 h-4 w-4" />
+                                  <WalletIcon className="mr-2 h-4 w-4" />
                                   {t('wallets.wallet_preview.button_open')}
                                 </Button>
                                 <Button
@@ -177,17 +178,17 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
                                 >
                                   {lockCurrentWallet.isFetching ? (
                                     <>
-                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
                                       {t('settings.button_locking_wallet')}
                                     </>
                                   ) : currentWalletLocked ? (
                                     <>
-                                      <Lock className="mr-2 h-4 w-4" />
+                                      <LockIcon className="h-4 w-4" />
                                       {t('wallets.wallet_preview.wallet_locked')}
                                     </>
                                   ) : (
                                     <>
-                                      <Unlock className="mr-2 h-4 w-4" />
+                                      <UnlockIcon className="h-4 w-4" />
                                       {t('settings.button_lock_wallet')}
                                     </>
                                   )}

@@ -11,6 +11,7 @@
     "abort": "Abort",
     "cancel": "Cancel",
     "done": "Done",
+    "download": "Download",
     "table": {
       "pagination": {
         "items_per_page": {
