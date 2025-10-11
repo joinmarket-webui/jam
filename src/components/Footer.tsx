@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { BlocksIcon, BookOpen, Check, File, X } from 'lucide-react'
+import { DialogTitle } from '@radix-ui/react-dialog'
+import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, CheckIcon, FileIcon, XIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
@@ -7,9 +8,11 @@ import { OrderbookDialog } from '@/components/OrderbookDialog'
 import { Button } from '@/components/ui/button'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
+import { useJmInfo } from '@/hooks/useJmInfo'
 import { toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../package.json'
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from './ui/dialog'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -17,31 +20,36 @@ const APP_DISPLAY_VERSION = (() => {
 })()
 
 export function Footer() {
+  const { t } = useTranslation()
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
+  const [isShowBetaWarning, setShowBetaWarning] = useState(false)
   const [isOrderbookOpen, setIsOrderbookOpen] = useState(false)
 
   return (
     <>
-      <footer className="flex items-center justify-between bg-white p-4 text-xs text-black opacity-60 transition-colors duration-300 dark:bg-[#181b20] dark:text-white">
-        <span className="flex-1">
-          This is pre-alpha software. <br />
-          <a href="#" className="underline">
-            Read this before using.
-          </a>
-        </span>
+      <footer className="flex items-center justify-between bg-white p-4 text-black opacity-80 transition-colors duration-300 dark:bg-[#181b20] dark:text-white">
+        <div className="flex-1 text-xs">
+          <BetaWarningModal open={isShowBetaWarning} onOpenChange={setShowBetaWarning} />
+          <Trans i18nKey="footer.warning">
+            This is pre-alpha software.
+            <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setShowBetaWarning(true)}>
+              Read this before using.
+            </Button>
+          </Trans>
+        </div>
         <div className="flex flex-1 items-center justify-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setIsCheatsheetOpen(true)} className="border">
-            <File />
-            Cheatsheet
+          <Button variant="ghost" size="sm" className="border" onClick={() => setIsCheatsheetOpen(true)}>
+            <FileIcon />
+            {t('footer.cheatsheet')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setIsOrderbookOpen(true)} className="border">
-            <BookOpen />
-            Orderbook
+            <BookOpenIcon />
+            {t('footer.orderbook')}
           </Button>
         </div>
 
-        <div className="flex flex-1 justify-end gap-2">
+        <div className="flex flex-1 justify-end gap-2 text-xs">
           <div className="flex items-center">
             {isDebugFeatureEnabled('devSetupPage') && (
               <div className="">
@@ -75,6 +83,42 @@ export function Footer() {
   )
 }
 
+const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
+  const { t } = useTranslation()
+  const { version } = useJmInfo()
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl" showCloseButton={true}>
+        <DialogHeader>
+          <DialogTitle className="sr-only">{t('footer.warning_alert_title')}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-2">
+          <div className="light:border-yellow-800 light:bg-yellow-50 my-1 rounded-lg border border-yellow-200 bg-yellow-900/20 p-4">
+            <div className="flex items-start gap-2">
+              <div className="light:text-yellow-800 text-md text-yellow-200">
+                <div className="flex items-center">
+                  <AlertTriangleIcon className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
+                  <p className="text-md font-medium">{t('footer.warning_alert_title')}</p>
+                </div>
+                <p className="p-1 text-sm">{t('footer.warning_alert_text')}</p>
+              </div>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            JoinMarket: v{version?.raw || '_unknown'}
+            <br />
+            Jam: v{APP_DISPLAY_VERSION}
+          </p>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)}>{t('footer.warning_alert_button_ok')}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: boolean) => void }) => {
   const { t } = useTranslation()
   const [isAnimating, setIsAnimating] = useState(false)
@@ -101,7 +145,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
               onClick={handleClose}
               className="text-muted-foreground hover:text-foreground ml-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-              <X />
+              <XIcon />
             </button>
           </div>
           <p className="text-muted-foreground mt-2 leading-relaxed">
@@ -228,7 +272,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
 
             <div className="flex gap-4">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black font-bold text-white dark:bg-white dark:text-black">
-                <Check className="p-0.5" />
+                <CheckIcon className="p-0.5" />
               </div>
               <div className="flex-1">
                 <h3 className="text-foreground mb-1">{t('cheatsheet.repeat.title')}</h3>
