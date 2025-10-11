@@ -12,13 +12,12 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { resolvedTheme, setTheme } = useTheme()
+  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+
   const { currency, isPrivate, toggleCurrencyUnit, togglePrivacyMode, toggleDisplayMode, formatAmount } =
     useDisplaySettings()
   const { jars, totalBalance, walletName, isLoading, error, refetchWalletData } = useWalletDisplay()
 
-  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
-
-  // Prepare the context value
   const displayModeValue = {
     currency,
     isPrivate,
@@ -45,7 +44,8 @@ export function Layout({ children }: LayoutProps) {
           toggleTheme={toggleTheme}
           formatAmount={formatAmount}
           currencySymbol={displayModeValue.currencySymbol}
-          jars={jars}
+          totalBalance={totalBalance}
+          walletName={walletName}
           isLoading={isLoading}
         />
         <main className="flex-1">{children}</main>
