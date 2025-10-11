@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Download } from 'lucide-react'
+import { DownloadIcon } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { satsToBtc } from '@/lib/utils'
-import { Button } from '../ui/button'
 
 interface BitcoinQRProps {
   address: string
@@ -17,7 +16,6 @@ export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width =
   const { t } = useTranslation()
   const [data, setData] = useState<string>()
   const [image, setImage] = useState<string>()
-  const [isHovering, setIsHovering] = useState(false)
 
   useEffect(() => {
     const btc = amount ? satsToBtc(String(amount)) || 0 : 0
@@ -46,35 +44,27 @@ export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width =
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    toast.success('QR code downloaded')
   }
 
   return (
-    <div
-      className="relative flex items-center justify-center"
-      style={{ height: width, width: width }}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-    >
+    <div className="group/qrcode relative flex items-center justify-center" style={{ height: width, width: width }}>
       {image && (
         <>
           <img
             src={image}
             alt={data}
             title={data}
-            className={`transition-all duration-100 ${isHovering ? 'blur-[2px]' : ''}`}
+            className="transition-all duration-500 group-hover/qrcode:blur-[2px]"
           />
-          {isHovering && (
-            <Button
-              variant={'secondary'}
-              className="absolute flex cursor-pointer items-center justify-center"
-              onClick={downloadQR}
-              aria-label="Download QR Code"
-            >
-              <Download size={18} className="animate-bounce" />
-              {t('receive.button_download_qr')}
-            </Button>
-          )}
+          <Button
+            variant="secondary"
+            className="absolute hidden items-center justify-center group-hover/qrcode:flex"
+            onClick={downloadQR}
+            aria-label={t('receive.button_download_qr')}
+          >
+            <DownloadIcon size={18} className="animate-bounce" />
+            {t('receive.button_download_qr')}
+          </Button>
         </>
       )}
     </div>
