@@ -25,12 +25,8 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   const [bitcoinAddress, setBitcoinAddress] = useState<string | undefined>()
   const [copied, setCopied] = useState(false)
 
-  const { jars, currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
+  const { jars, currency, isPrivate, totalBalance, toggleCurrencyUnit } = useJamDisplayContext()
   const client = useApiClient()
-
-  const totalBalance = useMemo(() => {
-    return jars.reduce((total, jar) => total + (jar.balance || 0), 0)
-  }, [jars])
 
   const getAddressQuery = useQuery({
     ...getaddressOptions({
@@ -117,10 +113,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   }
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setCopied(false)
-    }, 1_500)
-
+    const timer = setTimeout(() => setCopied(false), 1_500)
     return () => clearTimeout(timer)
   }, [copied])
 
