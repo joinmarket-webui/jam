@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
-import { Eye, EyeOff, AlertTriangle, Clock, Loader2Icon } from 'lucide-react'
+import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Button } from '@/components/ui/button'
@@ -142,7 +142,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <AlertTriangleIcon className="h-5 w-5 text-yellow-500" />
                 {t('settings.seed_modal.verification.title')}
               </DialogTitle>
               <DialogDescription>{t('settings.seed_modal.verification.subtitle')}</DialogDescription>
@@ -168,7 +168,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                     className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                   </Button>
                 </div>
                 {error && <p className="text-destructive text-sm">{error}</p>}
@@ -200,7 +200,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                 <div className="bg-muted rounded-lg p-4 px-7">
                   {seedQuery.isFetching ? (
                     <div className="text-muted-foreground flex items-center justify-center gap-1">
-                      <Loader2Icon className="h-4 w-4 animate-spin" />
+                      <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : seedQuery.data ? (
@@ -225,7 +225,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                   <div className="flex items-start gap-2">
                     <div className="light:text-red-800 text-sm text-red-200">
                       <div className="flex items-center">
-                        <AlertTriangle className="light:text-red-800 m-1 h-4 w-4 shrink-0 text-red-200" />
+                        <AlertTriangleIcon className="light:text-red-800 m-1 h-4 w-4 shrink-0 text-red-200" />
                         <p className="text-md font-medium"> {t('settings.seed_modal.text_error_title')}</p>
                       </div>
                       <p className="p-1 text-xs">{seedQuery.error.message || t('global.errors.reason_unknown')}</p>
@@ -239,7 +239,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                   <div className="flex items-start gap-2">
                     <div className="light:text-yellow-800 text-sm text-yellow-200">
                       <div className="flex items-center">
-                        <AlertTriangle className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
+                        <AlertTriangleIcon className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
                         <p className="text-md font-medium">{t('settings.seed_modal.text_warning_title')}</p>
                       </div>
                       <p className="p-1 text-xs">{t('settings.seed_modal.text_warning_message')}</p>
@@ -256,7 +256,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                     'light:text-red-600 animate-pulse text-red-800': secondsLeft <= 10,
                   })}
                 >
-                  <Clock className="h-4 w-4" />
+                  <ClockIcon className="h-4 w-4" />
                   <span
                     className={cx('mt-0.5 font-mono', {
                       hidden: secondsLeft < 1,

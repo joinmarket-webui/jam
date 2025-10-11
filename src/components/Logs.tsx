@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { AlertTriangle, Loader2, RefreshCw, Download } from 'lucide-react'
+import { AlertTriangleIcon, Loader2Icon, RefreshCwIcon, DownloadIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -80,8 +80,8 @@ function LogContent({ content, refresh }: LogContentProps) {
             disabled={!content}
             className="flex items-center gap-2"
           >
-            <Download className="h-4 w-4" />
-            Download
+            <DownloadIcon className="h-4 w-4" />
+            {t('global.download')}
           </Button>
           <Button
             variant="outline"
@@ -90,7 +90,11 @@ function LogContent({ content, refresh }: LogContentProps) {
             disabled={isLoadingRefresh}
             className="flex items-center gap-2"
           >
-            {isLoadingRefresh ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {isLoadingRefresh ? (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCwIcon className="h-4 w-4" />
+            )}
             {t('global.refresh')}
           </Button>
         </div>
@@ -178,7 +182,7 @@ export const Logs = () => {
       <div className="container mx-auto py-8">
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="flex items-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin" />
+            <Loader2Icon className="h-6 w-6 animate-spin motion-reduce:hidden" />
             <span className="text-lg">{t('global.loading')}...</span>
           </div>
         </div>
@@ -190,7 +194,7 @@ export const Logs = () => {
     <div className="container mx-auto space-y-6 py-8">
       {alert && (
         <Alert variant={alert.variant}>
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangleIcon className="h-4 w-4" />
           <AlertDescription>{alert.message}</AlertDescription>
         </Alert>
       )}
