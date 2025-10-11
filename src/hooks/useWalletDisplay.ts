@@ -1,10 +1,14 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { jarTemplates } from '@/components/layout/display-mode-context'
 import type { Jar, JarColor } from '@/components/layout/display-mode-context'
 import { useApiClient } from '@/hooks/useApiClient'
-import { listutxosOptions, sessionOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { listutxosOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
+import { withQueryDelay } from '@/lib/queryClient'
+import { walletDisplayName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
 
 export interface UseWalletDisplayResult {
   jars: Jar[]
@@ -22,56 +26,54 @@ interface AccountBalance {
 
 export function useWalletDisplay(): UseWalletDisplayResult {
   const client = useApiClient()
-  const authState = useStore(authStore, (state) => state.state)
+  const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
+  const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
 
-  const sessionQuery = useQuery({
-    ...sessionOptions({ client }),
-    enabled: !!authState?.walletFileName,
-    staleTime: 60000, // Consider session data fresh for 60 seconds
-  })
+  const listutxosQueryOptions = useMemo(
+    () =>
+      listutxosOptions({
+        client,
+        path: { walletname: walletFileName || '' },
+      }),
+    [client, walletFileName],
+  )
 
-  // Get wallet UTXOs
   const {
-    data: utxosData,
+    data: utxos,
     isLoading,
+    isPending,
     error,
     refetch: refetchWalletData,
   } = useQuery({
-    ...listutxosOptions({
-      client,
-      path: { walletname: authState?.walletFileName || '' },
-    }),
-    enabled: !!authState?.walletFileName && !!sessionQuery.data?.session,
-    refetchInterval: 30000,
-    staleTime: 15000,
+    ...listutxosQueryOptions,
+    queryFn: withQueryDelay(listutxosQueryOptions.queryFn, 0),
+    enabled: !!walletFileName && !!jmSession,
+    refetchInterval: 30_000,
+    staleTime: 15_000,
     select: (data) => ({
       utxos: data.utxos || [],
-      walletName: authState?.walletFileName,
     }),
   })
 
   // Group UTXOs by account and calculate balances
   const accountBalances: AccountBalance[] = []
 
-  if (utxosData?.utxos) {
-    // Group UTXOs by mixdepth and sum their values
-    utxosData.utxos.forEach((utxo) => {
-      const mixdepth = utxo.mixdepth?.toString() || '0'
+  // Group UTXOs by mixdepth and sum their values
+  utxos?.utxos.forEach((utxo) => {
+    const mixdepth = utxo.mixdepth?.toString() || '0'
 
-      // Find existing account or create new one
-      const existingAccount = accountBalances.find((acc) => acc.account === mixdepth)
+    // Find existing account or create new one
+    const existingAccount = accountBalances.find((acc) => acc.account === mixdepth)
 
-      if (existingAccount) {
-        existingAccount.balance += utxo.value || 0
-      } else {
-        accountBalances.push({
-          account: mixdepth,
-          balance: utxo.value || 0,
-        })
-      }
-    })
-  }
-
+    if (existingAccount) {
+      existingAccount.balance += utxo.value || 0
+    } else {
+      accountBalances.push({
+        account: mixdepth,
+        balance: utxo.value || 0,
+      })
+    }
+  })
   // Sort accounts by mixdepth number
   accountBalances.sort((a, b) => parseInt(a.account) - parseInt(b.account))
 
@@ -110,9 +112,9 @@ export function useWalletDisplay(): UseWalletDisplayResult {
   return {
     jars,
     totalBalance,
-    walletName: utxosData?.walletName || null,
-    isLoading: isLoading || sessionQuery.isLoading,
-    error: error || (sessionQuery.error as Error | null),
+    walletName: walletFileName ? walletDisplayName(walletFileName) : null,
+    isLoading: isLoading || isPending,
+    error,
     refetchWalletData,
   }
 }
