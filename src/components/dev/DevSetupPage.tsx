@@ -1,6 +1,6 @@
 import { BlocksIcon, TerminalIcon, WalletIcon } from 'lucide-react'
-import PageTitle from '../PageTitle'
-import { Badge } from '../ui/badge'
+import PageTitle from '@/components/PageTitle'
+import { Badge } from '@/components/ui/badge'
 
 const DEFAULT_BASIC_AUTH = {
   user: 'joinmarket',
