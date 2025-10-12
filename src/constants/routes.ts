@@ -16,7 +16,7 @@ export const routes = {
   importWallet: '/import-wallet',
   */
   __dev: '/dev',
-  //__devErrorExample: '/dev/error-example',
+  __devErrorExample: '/dev/error-example',
   __devSetup: '/dev/setup',
 }
 
