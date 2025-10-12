@@ -1,4 +1,5 @@
 import { BlocksIcon, TerminalIcon, WalletIcon } from 'lucide-react'
+import PageTitle from '../PageTitle'
 import { Badge } from '../ui/badge'
 
 const DEFAULT_BASIC_AUTH = {
@@ -16,7 +17,7 @@ const LINK_JM_REGTEST_RPC_TERMINAL = `${LINK_JM_REGTEST_EXPLORER}/rpc-terminal`
 export default function DevSetupPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-2xl font-semibold tracking-tight">Development setup</h1>
+      <PageTitle title="Development setup" subtitle="Development setup specific information" />
 
       <div className="flex flex-col gap-3">
         <div className="mb-4">
@@ -25,17 +26,6 @@ export default function DevSetupPage() {
             Name: <span className="font-mono">Satoshi</span>
             <br />
             Password: <span className="font-mono">test</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <div className="mb-4">
-          <h5 className="text-xl font-bold">Links</h5>
-          <div className="my-2">
-            {/*<Link className="link-dark" to={routes.__errorExample}>
-              Error Example Page
-            </Link>*/}
           </div>
         </div>
       </div>
