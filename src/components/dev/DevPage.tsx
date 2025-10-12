@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
+import PageTitle from '@/components/PageTitle'
 import { FeeConfigTestComponent } from '@/components/dev/FeeConfigTestComponent'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { Button } from '@/components/ui/button'
 import { routes } from '@/constants/routes'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
@@ -10,8 +12,6 @@ import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmConfigStore } from '@/store/jmConfigStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import PageTitle from '../PageTitle'
-import { Button } from '../ui/button'
 
 interface DevPageProps {
   walletFileName?: WalletFileName
