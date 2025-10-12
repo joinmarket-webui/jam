@@ -1,13 +1,16 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { FeeConfigTestComponent } from '@/components/dev/FeeConfigTestComponent'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { routes } from '@/constants/routes'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmConfigStore } from '@/store/jmConfigStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import PageTitle from '../PageTitle'
 import { Button } from '../ui/button'
 
 interface DevPageProps {
@@ -25,8 +28,18 @@ export default function DevPage({ walletFileName }: DevPageProps) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-2xl font-semibold tracking-tight">Development</h1>
-      <p className="text-muted-foreground mb-4 text-sm">Development specific information</p>
+      <PageTitle title="Development" subtitle="Development specific information" />
+
+      <div className="my-4 flex flex-col gap-3">
+        <div>
+          <h5 className="text-xl font-bold">Links</h5>
+          <div className="my-2">
+            <Link to={routes.__devErrorExample} className="font-semibold underline hover:no-underline">
+              Error Example Page
+            </Link>
+          </div>
+        </div>
+      </div>
 
       <div className="mt-8 overflow-scroll">
         <code className="light:text-red-700 text-red-800">import.meta.env:</code>

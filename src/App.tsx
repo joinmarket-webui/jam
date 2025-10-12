@@ -4,7 +4,14 @@ import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { Loader2Icon } from 'lucide-react'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
-import { Navigate, Outlet, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Navigate,
+  Outlet,
+  Route,
+  RouterProvider,
+} from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import CreateWallet from '@/components/CreateWallet'
@@ -30,6 +37,7 @@ import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import ErrorPage from './components/error/ErrorPage'
 import { isDebugFeatureEnabled } from './constants/debugFeatures'
 import { useFeeConfigValidation } from './hooks/useFeeConfigValidation'
 import { jamSettingsStore } from './store/jamSettingsStore'
@@ -46,78 +54,81 @@ function App() {
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
 
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route id="base" element={<Outlet />} errorElement={<ErrorPage />}>
+        <Route path={routes.login} element={authenticated ? <Navigate to={routes.home} replace /> : <LoginPage />} />
+        <Route
+          path={routes.createWallet}
+          element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWallet />}
+        />
+        {isDebugFeatureEnabled('devSetupPage') && (
+          <Route
+            id="dev-setup"
+            path={routes.__devSetup}
+            element={
+              <Suspense fallback={<Loading />}>
+                <DevSetupPage />
+              </Suspense>
+            }
+          />
+        )}
+        {isDebugFeatureEnabled('errorExamplePage') && (
+          <Route id="error-example" path={routes.__devErrorExample} element={<ErrorThrowingComponent />} />
+        )}
+        <Route
+          id="protected"
+          element={
+            <ProtectedRoute authenticated={authenticated}>
+              <Outlet />
+            </ProtectedRoute>
+          }
+        >
+          <Route id="without-navbar" element={<Outlet />}>
+            <Route path={routes.switchWallet} element={<SwitchWallet walletFileName={walletFileName!} />} />
+          </Route>
+          <Route
+            id="with-navbar"
+            element={
+              <Layout>
+                <Outlet />
+              </Layout>
+            }
+          >
+            <Route path={routes.home} element={<JamLanding walletFileName={walletFileName!} />} />
+            <Route path={routes.receive} element={<Receive walletFileName={walletFileName!} />} />
+            <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
+            <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
+            <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
+            <Route path={routes.settings} element={<SettingsPage walletFileName={walletFileName!} />} />
+            <Route path={routes.orderbook} element={<Orderbook />} />
+            <Route path={routes.logs} element={<Logs />} />
+            <Route path={routes.rescan} element={<RescanChain walletFileName={walletFileName!} />} />
+            {isDebugFeatureEnabled('devPage') && (
+              <Route
+                id="dev-page"
+                path={routes.__dev}
+                element={
+                  <Suspense fallback={<Loading />}>
+                    <DevPage walletFileName={walletFileName} />
+                  </Suspense>
+                }
+              />
+            )}
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to={routes.login} replace />} />
+      </Route>,
+    ),
+  )
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
         <RefreshApiToken />
         <RefreshJmSession />
         {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
-        <Router>
-          <Routes>
-            <Route
-              path={routes.login}
-              element={authenticated ? <Navigate to={routes.home} replace /> : <LoginPage />}
-            />
-            <Route
-              path={routes.createWallet}
-              element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWallet />}
-            />
-            {isDebugFeatureEnabled('devSetupPage') && (
-              <Route
-                id="dev-setup"
-                path={routes.__devSetup}
-                element={
-                  <Suspense fallback={<Loading />}>
-                    <DevSetupPage />
-                  </Suspense>
-                }
-              />
-            )}
-            <Route
-              id="protected"
-              element={
-                <ProtectedRoute authenticated={authenticated}>
-                  <Outlet />
-                </ProtectedRoute>
-              }
-            >
-              <Route id="without-navbar" element={<Outlet />}>
-                <Route path={routes.switchWallet} element={<SwitchWallet walletFileName={walletFileName!} />} />
-              </Route>
-              <Route
-                id="with-navbar"
-                element={
-                  <Layout>
-                    <Outlet />
-                  </Layout>
-                }
-              >
-                <Route path={routes.home} element={<JamLanding walletFileName={walletFileName!} />} />
-                <Route path={routes.receive} element={<Receive walletFileName={walletFileName!} />} />
-                <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
-                <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
-                <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
-                <Route path={routes.settings} element={<SettingsPage walletFileName={walletFileName!} />} />
-                <Route path={routes.orderbook} element={<Orderbook />} />
-                <Route path={routes.logs} element={<Logs />} />
-                <Route path={routes.rescan} element={<RescanChain walletFileName={walletFileName!} />} />
-                {isDebugFeatureEnabled('devPage') && (
-                  <Route
-                    id="dev-page"
-                    path={routes.__dev}
-                    element={
-                      <Suspense fallback={<Loading />}>
-                        <DevPage walletFileName={walletFileName} />
-                      </Suspense>
-                    }
-                  />
-                )}
-              </Route>
-            </Route>
-            <Route path="*" element={<Navigate to={routes.login} replace />} />
-          </Routes>
-          <Toaster closeButton />
-        </Router>
+        <RouterProvider router={router} />
+        <Toaster closeButton />
       </QueryClientProvider>
     </ThemeProvider>
   )
@@ -131,6 +142,13 @@ const Loading = () => {
       {t('global.loading')}
     </div>
   )
+}
+
+const ErrorThrowingComponent = () => {
+  useEffect(() => {
+    throw new Error('This error is thrown on purpose. Only to be used for testing.')
+  }, [])
+  return <></>
 }
 
 function RefreshApiToken() {
