@@ -69,6 +69,8 @@ interface EarnReportEntry {
   earnedAmount: Api.AmountSats | null
   confirmationDuration: Minutes | null
   notes: string | null
+  // TODO: Add txid field when backend support is available (see issue #386)
+  // txid?: string | null
 }
 
 interface EarnReportTableRow extends EarnReportEntry, TableTypes.TableNode {}
@@ -126,7 +128,7 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
   const pagination = usePagination(data, {
     state: {
       page: 0,
-      size: 25,
+      size: 50,
     },
   })
 
@@ -188,7 +190,9 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
               {tableList.map((item: EarnReportTableRow) => {
                 return (
                   <Row key={item.id} item={item}>
-                    <Cell>{item.timestamp.toLocaleString()}</Cell>
+                    <Cell>
+                      <span title={item.timestamp.toISOString()}>{item.timestamp.toLocaleString()}</span>
+                    </Cell>
                     <Cell>
                       <Balance
                         valueString={item.earnedAmount?.toString() || ''}
@@ -220,7 +224,7 @@ const EarnReportTable = ({ data }: EarnReportTableProps) => {
         )}
       </Table>
       <div className="mt-4 mb-4 mb-lg-0">
-        <TablePagination data={data} pagination={pagination} />
+        <TablePagination data={data} pagination={pagination} pageSizes={[25, 50, 100, 250]} />
       </div>
     </>
   )

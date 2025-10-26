@@ -31,7 +31,7 @@ export default function TablePagination({
         <rb.Form.Select
           aria-label={t('global.table.pagination.items_per_page.label')}
           className={styles.paginationSelect}
-          defaultValue={pageSizes[0]}
+          value={pagination.state.size || pageSizes[0]}
           onChange={(e) => {
             const value = parseInt(e.target.value, 10)
             const pageSize = value > 0 ? value : data.nodes.length
