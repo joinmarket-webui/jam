@@ -13,6 +13,7 @@ import {
   RefreshCw,
   FileText,
   Book,
+  Fingerprint,
   // TODO: Remove depricated imports(company logos) from lucide react and use https://simpleicons.org directly
   Github,
   ExternalLink,
@@ -34,6 +35,7 @@ import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
@@ -50,6 +52,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
   const jamSettings = useStore(jamSettingsStore)
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
+  const [showXpubsDialog, setShowXpubsDialog] = useState(false)
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
   const navigate = useNavigate()
   const client = useApiClient()
@@ -141,6 +144,13 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             icon={Key}
             title={t('settings.show_seed')}
             action={async () => setShowSeedDialog(true)}
+            disabled={hashedPassword === undefined}
+          />
+          <Separator className="opacity-50" />
+          <SettingItem
+            icon={Fingerprint}
+            title={t('settings.show_account_xpubs')}
+            action={async () => setShowXpubsDialog(true)}
             disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
@@ -253,6 +263,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       )}
 
       <SeedPhraseDialog walletFileName={walletFileName} open={showSeedDialog} onOpenChange={setShowSeedDialog} />
+      <AccountXpubsDialog walletFileName={walletFileName} open={showXpubsDialog} onOpenChange={setShowXpubsDialog} />
       <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />
     </div>
   )

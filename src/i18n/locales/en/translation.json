@@ -229,6 +229,7 @@
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "reveal_seed": "Reveal seed phrase",
+    "show_account_xpubs": "Show account xpubs",
     "show_logs": "Show logs",
     "show_fee_config": "Adjust fee limits",
     "button_lock_wallet": "Lock wallet",
@@ -252,6 +253,20 @@
       "text_error_no_data": "No seed phrase available.",
       "text_warning_title": "Important Security Warning",
       "text_warning_message": "Never share your seed phrase! Anyone with access to these words can control your wallet and will steal all of your funds."
+    },
+    "xpubs_modal": {
+      "title": "Account Extended Public Keys",
+      "subtitle": "View extended public keys (xpubs) for each account. These can be used to derive addresses in external wallets for watch-only purposes.",
+      "account_label": "Account",
+      "external_addresses_label": "External Addresses (Receiving)",
+      "internal_addresses_label": "Internal Addresses (CoinJoin outputs)",
+      "no_xpub_available": "No xpub available",
+      "no_accounts_found": "No accounts found",
+      "error_loading_xpubs": "Error loading xpubs",
+      "text_warning_title": "Important Security Notice",
+      "text_warning_message": "Extended public keys (xpubs) can be used to derive all addresses in an account. Share them only with trusted parties. Anyone with an xpub can view all transactions and balances for that account.",
+      "copied_to_clipboard": "Copied to clipboard",
+      "failed_to_copy": "Failed to copy"
     },
     "documentation": "Documentation",
     "github": "GitHub",
