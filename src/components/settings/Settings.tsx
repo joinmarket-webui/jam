@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import {
   EyeIcon,
@@ -28,7 +29,6 @@ import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeatures } from '@/hooks/useFeatures'
-import { lockwalletOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'

@@ -1,5 +1,5 @@
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { createStore } from 'zustand'
-import type { SessionResponse } from '../lib/jm-api/generated/client'
 
 interface JmSessionStoreState {
   state?: SessionResponse

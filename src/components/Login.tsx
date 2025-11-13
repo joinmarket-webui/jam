@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircle, Eye, EyeOff, Loader2Icon, Lock, RefreshCwIcon, Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -14,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
-import { listwalletsOptions, unlockwalletMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'

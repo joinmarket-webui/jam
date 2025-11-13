@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
+import { configgetMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import type { ConfigKey, ConfigValue } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
-import { configgetMutation } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import type { WalletFileName } from '@/lib/utils'
 import { jmConfigStore } from '@/store/jmConfigStore'
 
