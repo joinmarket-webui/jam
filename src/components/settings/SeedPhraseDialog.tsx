@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon } from 'lucide-react'
@@ -18,7 +19,6 @@ import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
-import { getseedOptions } from '@/lib/jm-api/generated/client/@tanstack/react-query.gen'
 import { authStore } from '@/store/authStore'
 
 interface SeedPhraseDialogProps {

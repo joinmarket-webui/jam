@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +12,6 @@ import { Label } from '@/components/ui/label'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useRescanStatus } from '@/hooks/useRescanStatus'
-import { rescanblockchain } from '@/lib/jm-api/generated/client/sdk.gen'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 

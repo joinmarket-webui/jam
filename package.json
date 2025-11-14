@@ -38,6 +38,7 @@
     "*.{json,css,md}": "prettier --write"
   },
   "dependencies": {
+    "@joinmarket-webui/joinmarket-api-ts": "0.1.0",
     "@noble/hashes": "1.8.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-avatar": "1.1.10",
