@@ -1,8 +1,8 @@
+import { createClient } from '@joinmarket-webui/joinmarket-api-ts'
+import type { Client } from '@joinmarket-webui/joinmarket-api-ts/client'
+import type { ClientOptions, UnlockWalletResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { isDevMode } from '@/constants/debugFeatures'
-import { createClient } from '@/lib/jm-api'
-import type { ClientOptions, UnlockWalletResponse } from '@/lib/jm-api/generated/client'
 import { authStore } from '@/store/authStore'
-import type { Client } from './jm-api/generated/client/client'
 
 type ApiToken = UnlockWalletResponse['token']
 

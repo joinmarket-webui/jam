@@ -1,9 +1,6 @@
 # Dist folder
 dist/
 
-# Generated code
-src/lib/jm-api/**
-
 # Other common ignores
 node_modules/
 .DS_Store
