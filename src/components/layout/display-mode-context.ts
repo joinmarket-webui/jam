@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { ReactNode } from 'react'
+import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { Currency } from '@/types/global'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
@@ -34,7 +35,7 @@ export interface DisplayModeContextType {
   totalBalance: number
   walletName: string | null
   isLoading: boolean
-  error: Error | null
+  error: Error | ErrorMessage | null
   refetchWalletData: () => void
 }
 
