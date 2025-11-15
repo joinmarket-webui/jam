@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { jarTemplates } from '@/components/layout/display-mode-context'
@@ -15,7 +16,7 @@ export interface UseWalletDisplayResult {
   totalBalance: number
   walletName: string | null
   isLoading: boolean
-  error: Error | null
+  error: Error | ErrorMessage | null
   refetchWalletData: () => void
 }
 
