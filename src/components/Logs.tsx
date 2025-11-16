@@ -119,7 +119,6 @@ export const Logs = () => {
   const { t } = useTranslation()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const [content, setContent] = useState<string>()
 
   const refresh = useCallback(
@@ -162,22 +161,15 @@ export const Logs = () => {
     [t, authState],
   )
 
-  useEffect(() => {
+  if (!isInitialized) {
     const abortCtrl = new AbortController()
-
-    setIsLoading(true)
     refresh(abortCtrl.signal).finally(() => {
       if (abortCtrl.signal.aborted) return
-      setIsLoading(false)
       setIsInitialized(true)
     })
+  }
 
-    return () => {
-      abortCtrl.abort()
-    }
-  }, [refresh])
-
-  if (!isInitialized && isLoading) {
+  if (!isInitialized) {
     return (
       <div className="container mx-auto py-8">
         <div className="flex min-h-[400px] items-center justify-center">

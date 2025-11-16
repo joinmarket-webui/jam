@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
@@ -42,17 +42,22 @@ export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
     enabled: rescanInfo.rescanning || jmSession.state?.rescanning === true,
   })
 
-  useEffect(() => {
-    if (getrescaninfoQuery.data) {
-      const rescanningFinished = getrescaninfoQuery.data.rescanning === false && jmSession.state?.rescanning === true
+  // only update rescan info if data is available and the current rescan info is younger than the latest data from the query
+  // e.g. this prevents updating with stale data if components manually update it and want the query interval updater to refetch data later
+  const shouldUpdateRescanInfo =
+    getrescaninfoQuery.data &&
+    (rescanInfo.updatedAt === undefined || rescanInfo.updatedAt < getrescaninfoQuery.dataUpdatedAt)
 
-      setRescanInfo({
-        updatedAt: getrescaninfoQuery.dataUpdatedAt,
-        rescanning: getrescaninfoQuery.data.rescanning || jmSession.state?.rescanning === true,
-        progress: rescanningFinished ? 100 : getrescaninfoQuery.data.progress,
-      })
-    }
-  }, [jmSession.state?.rescanning, getrescaninfoQuery.data, getrescaninfoQuery.dataUpdatedAt])
+  if (shouldUpdateRescanInfo) {
+    const isRescanning = getrescaninfoQuery.data.rescanning || jmSession.state?.rescanning === true
+    const rescanningFinished = getrescaninfoQuery.data.rescanning === false && jmSession.state?.rescanning === true
+
+    setRescanInfo({
+      updatedAt: getrescaninfoQuery.dataUpdatedAt,
+      rescanning: isRescanning,
+      progress: rescanningFinished ? 100 : getrescaninfoQuery.data.progress,
+    })
+  }
 
   return {
     rescanInfo,

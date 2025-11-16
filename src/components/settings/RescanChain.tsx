@@ -42,7 +42,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
       // TODO: i18n
       toast.success('Rescan started successfully')
       setRescanInfo({
-        updatedAt: -1,
+        updatedAt: Date.now(),
         rescanning: true,
         progress: undefined,
       })
@@ -51,7 +51,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
       console.error('Rescan error:', error)
 
       setRescanInfo({
-        updatedAt: -1,
+        updatedAt: Date.now(),
         rescanning: false,
         progress: undefined,
       })

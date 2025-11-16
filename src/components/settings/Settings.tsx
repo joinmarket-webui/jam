@@ -155,7 +155,12 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
           <Separator className="opacity-50" />
           <SettingsLink icon={RefreshCwIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
           <Separator className="opacity-50" />
-          <SettingsLink icon={FileTextIcon} title={t('settings.show_logs')} to={routes.logs} disabled={isLogsEnabled} />
+          <SettingsLink
+            icon={FileTextIcon}
+            title={t('settings.show_logs')}
+            to={routes.logs}
+            disabled={!isLogsEnabled}
+          />
         </CardContent>
       </Card>
 
