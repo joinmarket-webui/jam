@@ -1,8 +1,15 @@
 {
   "name": "jam",
-  "private": true,
   "version": "0.1.0",
+  "private": true,
+  "description": "Your sats. Your privacy. Your profit.",
+  "repository": "git@github.com:joinmarket-webui/jam.git",
+  "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=24.11.1",
+    "npm": ">=11.6.2"
+  },
   "scripts": {
     "dev": "VITE_JAM_DEV_MODE=true vite",
     "dev:secondary": "JAM_BACKEND=jam-standalone JAM_API_PORT=29080 npm run dev",
