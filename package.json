@@ -83,12 +83,12 @@
     "@storybook/addon-vitest": "10.0.7",
     "@storybook/react-vite": "10.0.7",
     "@trivago/prettier-plugin-sort-imports": "6.0.0",
-    "@types/node": "22.19.1",
+    "@types/node": "24.10.1",
     "@types/qrcode": "1.5.6",
     "@types/react": "19.2.5",
     "@types/react-dom": "19.2.3",
-    "@vitejs/plugin-react": "4.7.0",
-    "@vitest/browser": "3.2.4",
+    "@vitejs/plugin-react": "5.1.1",
+    "@vitest/browser": "4.0.9",
     "conventional-changelog": "7.1.1",
     "eslint": "9.39.1",
     "eslint-plugin-react-hooks": "7.0.1",
@@ -103,7 +103,9 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "8.46.4",
     "vite": "7.2.2",
-    "vitest": "3.2.4"
+    "vitest": "4.0.9",
+    "@vitest/browser-playwright": "4.0.9",
+    "@vitest/coverage-v8": "4.0.9"
   },
   "overrides": {
     "storybook": "$storybook",
