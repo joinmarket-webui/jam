@@ -1,17 +1,10 @@
 name: Build
 
 on:
-  # Run the build for pushes and pull requests targeting master and devel
   push:
-    branches:
-      - master
-      - devel
-      - v2
+    branches: [master, devel, v2]
   pull_request:
-    branches:
-      - master
-      - devel
-      - v2
+    branches: [master, devel, v2]
 
 jobs:
   build:
@@ -23,16 +16,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      # Setup Node
+
       - name: Setup (Node.js ${{ matrix.node-version }})
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+      
       - name: Install
-        run: npm ci
+        run: npm clean-install --no-audit --no-fund
+      
       - name: Get installed Playwright version
         id: playwright-version
         run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').dependencies['@playwright/test'].version)")" >> $GITHUB_ENV
+      
       - name: Cache Playwright
         uses: actions/cache@v3
         id: playwright-cache
@@ -40,16 +36,18 @@ jobs:
           path: |
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+      
       - run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
+      
       - run: npx playwright install-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-      # Checks
+
       - name: Lint
         run: npm run lint
-      # Test
+
       - name: Test
         run: npm test
-      # Build
+
       - name: Build
         run: npm run build
