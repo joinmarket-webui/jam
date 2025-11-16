@@ -72,6 +72,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
     }, [enableValidation, maxCjFeeAbs, maxCjFeeRel, t])
 
     useEffect(() => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       validate()
     }, [maxCjFeeAbs, maxCjFeeRel, validate, enableValidation])
 

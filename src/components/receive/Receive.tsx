@@ -41,10 +41,9 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     staleTime: 1,
   })
 
-  useEffect(() => {
-    if (getAddressQuery.data === undefined) return
+  if (getAddressQuery.data?.address && bitcoinAddress !== getAddressQuery.data?.address) {
     setBitcoinAddress(getAddressQuery.data.address)
-  }, [getAddressQuery.data])
+  }
 
   useEffect(() => {
     if (getAddressQuery.error) {

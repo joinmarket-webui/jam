@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircle, Eye, EyeOff, Loader2Icon, Lock, RefreshCwIcon, Wallet } from 'lucide-react'
@@ -56,19 +56,13 @@ interface LoginFormProps {
 
 const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
   const { t } = useTranslation()
-  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>(
-    wallets.length !== 1 ? undefined : wallets[0],
-  )
+  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>()
   const [password, setPassword] = useState<string>('')
   const [showPassword, setShowPassword] = useState<boolean>(false)
 
-  useEffect(
-    function preselectWalletIfOnlyOneExists() {
-      if (wallets.length !== 1) return
-      setSelectedWallet(wallets[0])
-    },
-    [wallets],
-  )
+  if (wallets.length === 1 && selectedWallet !== wallets[0]) {
+    setSelectedWallet(wallets[0])
+  }
 
   return (
     <>
