@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@joinmarket-webui/joinmarket-api-ts": "0.3.0",
-    "@noble/hashes": "1.8.0",
+    "@noble/hashes": "2.0.1",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-avatar": "1.1.11",
     "@radix-ui/react-dialog": "1.1.15",

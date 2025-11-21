@@ -1,5 +1,5 @@
-import { pbkdf2 } from '@noble/hashes/pbkdf2'
-import { sha256 } from '@noble/hashes/sha2'
+import { pbkdf2 } from '@noble/hashes/pbkdf2.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 
 /**
  * Securely hashes a password using PBKDF2 with SHA-256.
