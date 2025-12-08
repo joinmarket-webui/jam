@@ -29,6 +29,7 @@ type ImportWalletDetailsFormValues = {
   mnemonicPhrase: MnemonicPhrase
   blockheight: number
   gaplimit: number
+  phraseLength: number
 }
 
 const GAPLIMIT_SUGGESTIONS = {
@@ -69,11 +70,13 @@ const initialImportWalletDetailsFormValues: ImportWalletDetailsFormValues = isDe
       mnemonicPhrase: new Array<string>(12).fill(''),
       blockheight: MIN_BLOCKHEIGHT_VALUE,
       gaplimit: GAPLIMIT_SUGGESTIONS.heavy,
+      phraseLength: 12,
     }
   : {
       mnemonicPhrase: new Array<string>(12).fill(''),
       blockheight: SEGWIT_ACTIVATION_BLOCK,
       gaplimit: GAPLIMIT_SUGGESTIONS.normal,
+      phraseLength: 12,
     }
 
 interface ImportWalletDetailsFormProps {
@@ -100,7 +103,11 @@ const ImportWalletDetailsForm = ({
     (values: ImportWalletDetailsFormValues) => {
       const errors = {} as FormikErrors<ImportWalletDetailsFormValues>
       const isMnemonicPhraseValid = values.mnemonicPhrase.every((it) => it.length > 0)
-      if (!isMnemonicPhraseValid) {
+      if (
+        !values.mnemonicPhrase ||
+        values.mnemonicPhrase.length !== values.phraseLength ||
+        values.mnemonicPhrase.some((w) => !w || w.trim().length === 0)
+      ) {
         errors.mnemonicPhrase = t('import_wallet.import_details.feedback_invalid_menmonic_phrase')
       }
 
@@ -145,6 +152,27 @@ const ImportWalletDetailsForm = ({
         const showGaplimitWarning = !errors.gaplimit && values.gaplimit > GAPLIMIT_WARN_THRESHOLD
         return (
           <rb.Form onSubmit={handleSubmit} noValidate lang={i18n.resolvedLanguage || i18n.language}>
+            <rb.Form.Group className="mb-3">
+              <rb.Form.Label>Seed phrase length</rb.Form.Label>
+              <div>
+                {[12, 24].map((len) => (
+                  <rb.Form.Check
+                    inline
+                    key={len}
+                    type="radio"
+                    id={`phrase-length-${len}`}
+                    name="phraseLength"
+                    label={`${len} words`}
+                    checked={values.phraseLength === len}
+                    onChange={() => {
+                      setFieldValue('phraseLength', len, true)
+                      setFieldValue('mnemonicPhrase', new Array(len).fill(''), true)
+                    }}
+                    disabled={isSubmitting}
+                  />
+                ))}
+              </div>
+            </rb.Form.Group>
             <MnemonicPhraseInput
               mnemonicPhrase={values.mnemonicPhrase}
               onChange={(val) => setFieldValue('mnemonicPhrase', val, true)}
@@ -165,7 +193,12 @@ const ImportWalletDetailsForm = ({
               <rb.Button
                 variant="outline-dark"
                 className="w-100 mb-4 position-relative"
-                onClick={() => setFieldValue('mnemonicPhrase', DUMMY_MNEMONIC_PHRASE, true)}
+                onClick={() => {
+                  const dummy = Array(values.phraseLength)
+                    .fill('')
+                    .map((_, i) => DUMMY_MNEMONIC_PHRASE[i % DUMMY_MNEMONIC_PHRASE.length])
+                  setFieldValue('mnemonicPhrase', dummy, true)
+                }}
                 disabled={isSubmitting}
               >
                 Fill with dummy mnemonic phrase
@@ -457,7 +490,10 @@ export default function ImportWallet({ parentRoute, startWallet }: ImportWalletP
 
       try {
         // Step #1: recover wallet
-        const recoverResponse = await Api.postWalletRecover({ signal }, { walletname, password, seedphrase })
+        const recoverResponse = await Api.postWalletRecover(
+          { signal },
+          { walletname, password, seedphrase, wallettype: 'sw-fb' },
+        )
         const recoverBody = await (recoverResponse.ok ? recoverResponse.json() : Api.Helper.throwError(recoverResponse))
 
         const { walletname: walletFileName } = recoverBody

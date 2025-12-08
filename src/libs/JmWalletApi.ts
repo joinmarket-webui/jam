@@ -263,7 +263,7 @@ const getSession = async ({ token, signal }: ApiRequestContext & { token?: ApiTo
 
 const postToken = async ({ signal, token }: AuthApiRequestContext, req: TokenRequest) => {
   return await fetch(`${basePath()}/v1/token`, {
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     method: 'POST',
     body: JSON.stringify(req),
     signal,
@@ -300,6 +300,7 @@ const postWalletCreate = async ({ signal }: ApiRequestContext, req: CreateWallet
 
   return await fetch(`${basePath()}/v1/wallet/create`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
     signal,
   })
@@ -310,6 +311,7 @@ const postWalletRecover = async ({ signal }: ApiRequestContext, req: RecoverWall
 
   return await fetch(`${basePath()}/v1/wallet/recover`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ...req, walletname, wallettype: req.wallettype || 'sw-fb' }),
     signal,
   })
@@ -348,6 +350,7 @@ const postWalletUnlock = async (
 ) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/unlock`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password }),
     signal,
   })
@@ -363,7 +366,7 @@ const getWalletUtxos = async ({ token, signal, walletFileName }: WalletRequestCo
 const postMakerStart = async ({ token, signal, walletFileName }: WalletRequestContext, req: StartMakerRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/maker/start`, {
     method: 'POST',
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({
       ...req,
       // We enforce type-safety for the following properties, but their values must actually be passed as string!
@@ -391,7 +394,7 @@ const getMakerStop = async ({ token, signal, walletFileName }: WalletRequestCont
 const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestContext, req: DirectSendRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/direct-send`, {
     method: 'POST',
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
     signal,
   })
@@ -400,7 +403,7 @@ const postDirectSend = async ({ token, signal, walletFileName }: WalletRequestCo
 const postCoinjoin = async ({ token, signal, walletFileName }: WalletRequestContext, req: DoCoinjoinRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/coinjoin`, {
     method: 'POST',
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
     signal,
   })
@@ -440,7 +443,7 @@ const postFreeze = async (
 ) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/freeze`, {
     method: 'POST',
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({
       'utxo-string': utxo,
       freeze,
@@ -455,7 +458,7 @@ const postSchedulerStart = async (
 ) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/taker/schedule`, {
     method: 'POST',
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     body: JSON.stringify({ ...req }),
     signal,
   })
@@ -481,7 +484,7 @@ const getSchedule = async ({ token, signal, walletFileName }: WalletRequestConte
 const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigSetRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/configset`, {
     method: 'POST',
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
     signal,
   })
@@ -495,7 +498,7 @@ const postConfigSet = async ({ token, signal, walletFileName }: WalletRequestCon
 const postConfigGet = async ({ token, signal, walletFileName }: WalletRequestContext, req: ConfigGetRequest) => {
   return await fetch(`${basePath()}/v1/wallet/${encodeURIComponent(walletFileName)}/configget`, {
     method: 'POST',
-    headers: { ...Helper.buildAuthHeader(token) },
+    headers: { 'Content-Type': 'application/json', ...Helper.buildAuthHeader(token) },
     body: JSON.stringify(req),
     signal,
   })
