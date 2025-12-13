@@ -213,7 +213,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                 <AlertTriangleIcon className="h-5 w-5 text-yellow-500" />
                 {t('settings.seed_modal.verification.title')}
               </DialogTitle>
-              <DialogDescription>{t('settings.seed_modal.verification.subtitle')}</DialogDescription>
+              <DialogDescription>{t('settings.xpubs_modal.verification_subtitle')}</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">

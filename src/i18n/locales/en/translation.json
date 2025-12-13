@@ -256,7 +256,8 @@
     },
     "xpubs_modal": {
       "title": "Account Extended Public Keys",
-      "subtitle": "View extended public keys (xpubs) for each account. These can be used to derive addresses in external wallets for watch-only purposes.",
+      "subtitle": "Your seed phrase is required internally to derive account xpubs. It will not be displayed or stored.",
+      "verification_subtitle": "Your seed phrase is required internally to derive account xpubs. It will not be displayed or stored.",
       "account_label": "Account",
       "external_addresses_label": "External Addresses (Receiving)",
       "internal_addresses_label": "Internal Addresses (CoinJoin outputs)",
