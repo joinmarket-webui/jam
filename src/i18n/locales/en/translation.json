@@ -226,6 +226,7 @@
     "use_light_theme": "Switch to light theme",
     "label_select_language": "Language",
     "text_help_translate": "Missing your language? Help us out!",
+    "power_user_mode": "Enable power user mode",
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
     "show_xpubs": "Show account xpubs",
