@@ -7,6 +7,7 @@ export type JamSettings = {
   developerMode: boolean
   privateMode: boolean
   currencyUnit: Currency
+  powerUserMode: boolean
 }
 
 interface JamSettingsStoreState {
@@ -19,6 +20,7 @@ const initial: JamSettings = {
   developerMode: isDevMode(),
   privateMode: false,
   currencyUnit: 'sats',
+  powerUserMode: false,
 }
 
 export const jamSettingsStore = createStore<JamSettingsStoreState>()(

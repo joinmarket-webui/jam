@@ -115,6 +115,14 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
           />
           <Separator className="opacity-50" />
           <LanguageSelector />
+          <Separator className="opacity-50" />
+          <SettingSwitch
+            icon={KeyRoundIcon}
+            title={t('settings.power_user_mode')}
+            checked={jamSettings.state.powerUserMode}
+            onCheckedChange={(checked) => jamSettings.update({ powerUserMode: checked })}
+            displayToggle={false}
+          />
         </CardContent>
       </Card>
 
@@ -146,13 +154,17 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             action={async () => setShowSeedDialog(true)}
             disabled={hashedPassword === undefined}
           />
-          <Separator className="opacity-50" />
-          <SettingItem
-            icon={KeyRoundIcon}
-            title={t('settings.show_xpubs')}
-            action={async () => setShowXpubsDialog(true)}
-            disabled={hashedPassword === undefined}
-          />
+          {jamSettings.state.powerUserMode && (
+            <>
+              <Separator className="opacity-50" />
+              <SettingItem
+                icon={KeyRoundIcon}
+                title={t('settings.show_xpubs')}
+                action={async () => setShowXpubsDialog(true)}
+                disabled={hashedPassword === undefined}
+              />
+            </>
+          )}
           <Separator className="opacity-50" />
           <SettingItem
             icon={UnlockIcon}
