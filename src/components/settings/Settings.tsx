@@ -15,6 +15,7 @@ import {
   BookIcon,
   ExternalLinkIcon,
   TerminalIcon,
+  KeyRoundIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -32,6 +33,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { AccountXpubsDialog } from './AccountXpubsDialog'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
@@ -48,6 +50,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
   const jamSettings = useStore(jamSettingsStore)
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
+  const [showXpubsDialog, setShowXpubsDialog] = useState(false)
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
   const navigate = useNavigate()
   const client = useApiClient()
@@ -141,6 +144,13 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             icon={KeyIcon}
             title={t('settings.show_seed')}
             action={async () => setShowSeedDialog(true)}
+            disabled={hashedPassword === undefined}
+          />
+          <Separator className="opacity-50" />
+          <SettingItem
+            icon={KeyRoundIcon}
+            title={t('settings.show_xpubs')}
+            action={async () => setShowXpubsDialog(true)}
             disabled={hashedPassword === undefined}
           />
           <Separator className="opacity-50" />
@@ -258,6 +268,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       )}
 
       <SeedPhraseDialog walletFileName={walletFileName} open={showSeedDialog} onOpenChange={setShowSeedDialog} />
+      <AccountXpubsDialog walletFileName={walletFileName} open={showXpubsDialog} onOpenChange={setShowXpubsDialog} />
       <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />
     </div>
   )
