@@ -228,6 +228,7 @@
     "text_help_translate": "Missing your language? Help us out!",
     "show_seed": "Show seed phrase",
     "hide_seed": "Hide seed phrase",
+    "show_xpubs": "Show account xpubs",
     "reveal_seed": "Reveal seed phrase",
     "show_logs": "Show logs",
     "show_fee_config": "Adjust fee limits",
@@ -252,6 +253,29 @@
       "text_error_no_data": "No seed phrase available.",
       "text_warning_title": "Important Security Warning",
       "text_warning_message": "Never share your seed phrase! Anyone with access to these words can control your wallet and will steal all of your funds."
+    },
+    "xpubs_modal": {
+      "verification": {
+        "title": "Verify Password",
+        "subtitle": "Please enter your wallet password to view account xpubs.",
+        "label_password": "Password",
+        "placeholder_password": "Enter your password",
+        "text_error_password_incorrect": "Incorrect password. Please try again.",
+        "text_error": "Error while verifying given password.",
+        "text_button_submit": "Verify",
+        "text_button_submitting": "Verifying..."
+      },
+      "title": "Account Extended Public Keys",
+      "subtitle": "Extended public keys (xpubs) for your wallet accounts. Use these to monitor addresses without spending ability.",
+      "label_account": "Account",
+      "label_external_addresses": "External addresses (receiving)",
+      "label_internal_addresses": "Internal addresses (change)",
+      "text_error_title": "Error while retrieving account information",
+      "text_no_xpubs": "No extended public keys available for this account.",
+      "text_no_accounts": "No accounts found.",
+      "text_copied": "Copied to clipboard!",
+      "text_copy_failed": "Failed to copy to clipboard.",
+      "text_info": "Extended public keys (xpubs) can be used to generate receiving addresses and monitor your wallet balance without the ability to spend. Share with caution - they reveal all addresses in the derivation path."
     },
     "documentation": "Documentation",
     "github": "GitHub",
