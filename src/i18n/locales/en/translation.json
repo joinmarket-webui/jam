@@ -263,6 +263,8 @@
         "placeholder_password": "Enter your password",
         "text_error_password_incorrect": "Incorrect password. Please try again.",
         "text_error": "Error while verifying given password.",
+        "text_session_error": "Session error. Please login again.",
+        "text_unavailable": "Password verification unavailable. Please login again.",
         "text_button_submit": "Verify",
         "text_button_submitting": "Verifying..."
       },
@@ -276,7 +278,9 @@
       "text_no_accounts": "No accounts found.",
       "text_copied": "Copied to clipboard!",
       "text_copy_failed": "Failed to copy to clipboard.",
-      "text_info": "Extended public keys (xpubs) can be used to generate receiving addresses and monitor your wallet balance without the ability to spend. Share with caution - they reveal all addresses in the derivation path."
+      "text_info": "Extended public keys (xpubs) can be used to generate receiving addresses and monitor your wallet balance without the ability to spend. Share them with caution. They reveal all addresses in the derivation path.",
+      "aria_copy_external": "Copy external address xpub for Account {{account}}",
+      "aria_copy_internal": "Copy internal address xpub for Account {{account}}"
     },
     "documentation": "Documentation",
     "github": "GitHub",

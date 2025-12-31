@@ -1,10 +1,16 @@
 /**
  * Extract xpub/tpub from a branch string
  * Example: "m/84'/1'/0'/0 tpubDCXYZ..." -> "tpubDCXYZ..."
+ * Matches full extended public keys (xpub/ypub/zpub/tpub/vpub) of exactly 111 base58 characters
  */
 export function extractXpubFromBranch(branchStr: string): string | null {
-  const match = branchStr.match(/([xtyvz]pub[a-zA-Z0-9]+)/)
-  return match ? match[1] : null
+  // Match full extended public keys (xpub/ypub/zpub/tpub/vpub) of exactly 111 base58 characters
+  const match = branchStr.match(/\b([xtyvz]pub[1-9A-HJ-NP-Za-km-z]{107})\b/)
+  if (!match) return null
+
+  const xpub = match[1]
+  // Defensive check in case the regex is modified in the future
+  return xpub.length === 111 ? xpub : null
 }
 
 /**
