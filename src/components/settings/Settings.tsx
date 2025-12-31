@@ -121,7 +121,6 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             title={t('settings.power_user_mode')}
             checked={jamSettings.state.powerUserMode}
             onCheckedChange={(checked) => jamSettings.update({ powerUserMode: checked })}
-            displayToggle={false}
           />
         </CardContent>
       </Card>

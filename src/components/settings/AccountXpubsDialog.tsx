@@ -51,24 +51,35 @@ async function parseAccountXpubs(walletDisplay: WalletDisplayResponse): Promise<
     let internalXpub: string | null = null
     let internalPath: string | null = null
 
+    // Collect all xpubs that need conversion
+    const conversions: Array<{ rawXpub: string; isExternal: boolean; path: string | null }> = []
+
     for (const branch of account.branches || []) {
       const branchStr = branch.branch || ''
       const rawXpub = extractXpubFromBranch(branchStr)
       const path = extractDerivationPath(branchStr)
 
       if (rawXpub) {
-        // Convert tpub/xpub to vpub/zpub for BIP84 display
-        const convertedXpub = await toNativeSegwitPub(rawXpub)
-
-        if (branchStr.toLowerCase().includes('external')) {
-          externalXpub = convertedXpub
-          externalPath = path
-        } else if (branchStr.toLowerCase().includes('internal')) {
-          internalXpub = convertedXpub
-          internalPath = path
-        }
+        conversions.push({
+          rawXpub,
+          isExternal: branchStr.toLowerCase().includes('external'),
+          path,
+        })
       }
     }
+
+    // Convert all xpubs in parallel for better performance
+    const converted = await Promise.all(conversions.map((c) => toNativeSegwitPub(c.rawXpub)))
+
+    conversions.forEach((c, i) => {
+      if (c.isExternal) {
+        externalXpub = converted[i]
+        externalPath = c.path
+      } else {
+        internalXpub = converted[i]
+        internalPath = c.path
+      }
+    })
 
     accounts.push({
       accountIndex,
@@ -156,6 +167,8 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
       setPasswordVerifiedAt(undefined)
       setError(undefined)
       setAccountXpubs([])
+      setShowPassword(false)
+      setCopiedXpub(null)
     }
   }, [timeLeft])
 
@@ -176,32 +189,30 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   const handlePasswordSubmit = async () => {
     if (!password) return
     if (walletFileName !== authState?.walletFileName) {
-      setError('Session error. Please login again.')
+      setError(t('settings.xpubs_modal.verification.text_session_error'))
       return
     }
 
     if (!authState?.hashed_password) {
-      setError('Password verification unavailable. Please login again.')
+      setError(t('settings.xpubs_modal.verification.text_unavailable'))
       return
     }
 
     setIsSubmitting(true)
-    setTimeout(() => {
-      try {
-        const hashed = hashPassword(password, walletFileName)
-        if (hashed === authState?.hashed_password) {
-          setPasswordVerifiedAt(Date.now())
-          setError(undefined)
-        } else {
-          setError(t('settings.xpubs_modal.verification.text_error_password_incorrect'))
-        }
-      } catch (error) {
-        setError(t('settings.xpubs_modal.verification.text_error'))
-        console.error('Password verification error:', error)
-      } finally {
-        setIsSubmitting(false)
+    try {
+      const hashed = hashPassword(password, walletFileName)
+      if (hashed === authState?.hashed_password) {
+        setPasswordVerifiedAt(Date.now())
+        setError(undefined)
+      } else {
+        setError(t('settings.xpubs_modal.verification.text_error_password_incorrect'))
       }
-    }, 4)
+    } catch (error) {
+      setError(t('settings.xpubs_modal.verification.text_error'))
+      console.error('Password verification error:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleClose = () => {
@@ -342,6 +353,9 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                                     size="icon"
                                     className="h-6 w-6 shrink-0"
                                     onClick={() => copyToClipboard(account.externalXpub!)}
+                                    aria-label={t('settings.xpubs_modal.aria_copy_external', {
+                                      account: account.accountName,
+                                    })}
                                   >
                                     {copiedXpub === account.externalXpub ? (
                                       <CheckIcon className="h-3 w-3 text-green-500" />
@@ -375,6 +389,9 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                                     size="icon"
                                     className="h-6 w-6 shrink-0"
                                     onClick={() => copyToClipboard(account.internalXpub!)}
+                                    aria-label={t('settings.xpubs_modal.aria_copy_internal', {
+                                      account: account.accountName,
+                                    })}
                                   >
                                     {copiedXpub === account.internalXpub ? (
                                       <CheckIcon className="h-3 w-3 text-green-500" />
