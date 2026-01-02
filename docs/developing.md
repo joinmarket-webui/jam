@@ -120,3 +120,36 @@ git clone https://github.com/joinmarket-webui/jam.git
 cd jam/
 npm install && npm run dev
 ```
+
+### 💻 Download, Install, Jam
+
+#### ⚠️ Important note on supported environments
+
+Running the JAM web UI via `npm run dev` is intended **only for local development**
+on **Linux and macOS** systems.
+
+It is **not recommended** to run the web UI via `npm` on Windows due to
+shell, dependency, and environment differences that cannot be reliably tested
+or supported long-term.
+
+#### Recommended: Docker-based setup (All platforms, especially Windows)
+
+For Windows users — and for anyone looking for a reproducible and supported
+setup — we strongly recommend using the official Docker-based installation.
+
+The Docker image serves **tagged and signed static builds** via a plain web server,
+which is the preferred and supported way to run JAM.
+
+Please follow the Docker-based setup here:
+https://jamdocs.org/software/installation/#manual-installation
+
+#### Development setup (Linux / macOS only)
+
+If you are developing on Linux or macOS and need a local dev server:
+
+```bash
+git clone https://github.com/joinmarket-webui/jam.git
+cd jam/
+npm install
+npm run dev
+```
