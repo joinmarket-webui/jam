@@ -19,11 +19,11 @@ import type { RescanInfo } from '@/hooks/useRescanStatus'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 
+const INPUT_BLOCK_HEIGHT_MIN = 0
+
 type Inputs = {
   blockHeight: number
 }
-
-const INPUT_BLOCK_HEIGHT_MIN = 0
 
 const schema = yup
   .object({
@@ -111,7 +111,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
       const { data } = await rescanblockchain({
         client,
         path: {
-          walletname: walletFileName,
+          walletname: encodeURIComponent(walletFileName),
           blockheight: blockHeight,
         },
         throwOnError: true,
