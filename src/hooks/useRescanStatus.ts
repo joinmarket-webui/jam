@@ -29,7 +29,7 @@ export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
     () =>
       getrescaninfoOptions({
         client,
-        path: { walletname: walletFileName },
+        path: { walletname: encodeURIComponent(walletFileName) },
       }),
     [client, walletFileName],
   )

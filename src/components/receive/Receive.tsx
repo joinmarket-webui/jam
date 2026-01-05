@@ -32,7 +32,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     ...getaddressOptions({
       client,
       path: {
-        walletname: walletFileName!,
+        walletname: encodeURIComponent(walletFileName!),
         mixdepth: String(selectedJarIndex),
       },
     }),

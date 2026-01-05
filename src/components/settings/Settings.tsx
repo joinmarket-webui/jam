@@ -57,7 +57,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
   const lockWalletQuery = useQuery({
     ...lockwalletOptions({
       client,
-      path: { walletname: walletFileName },
+      path: { walletname: encodeURIComponent(walletFileName) },
     }),
     enabled: false,
   })

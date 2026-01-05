@@ -34,7 +34,7 @@ export function useWalletDisplay(): UseWalletDisplayResult {
     () =>
       listutxosOptions({
         client,
-        path: { walletname: walletFileName || '' },
+        path: { walletname: encodeURIComponent(walletFileName || '') },
       }),
     [client, walletFileName],
   )
