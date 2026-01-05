@@ -7,7 +7,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { useApiClient } from './useApiClient'
 
-interface RescanInfo {
+export interface RescanInfo {
   updatedAt: number
   rescanning: boolean
   progress?: number
