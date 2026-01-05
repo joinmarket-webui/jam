@@ -47,7 +47,9 @@ export function useWalletDisplay(): UseWalletDisplayResult {
     refetch: refetchWalletData,
   } = useQuery({
     ...listutxosQueryOptions,
-    queryFn: withQueryDelay(listutxosQueryOptions.queryFn, 0),
+    queryFn: withQueryDelay(listutxosQueryOptions.queryFn, {
+      delayBefore: 0,
+    }),
     enabled: !!walletFileName && !!jmSession,
     refetchInterval: 30_000,
     staleTime: 15_000,
