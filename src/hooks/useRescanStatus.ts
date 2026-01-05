@@ -36,7 +36,9 @@ export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
 
   const getrescaninfoQuery = useQuery({
     ...getrescaninfoQueryOptions,
-    queryFn: withQueryDelay(getrescaninfoQueryOptions.queryFn, 1_000),
+    queryFn: withQueryDelay(getrescaninfoQueryOptions.queryFn, {
+      delayBefore: 1_000,
+    }),
     refetchInterval: JAM_RESCAN_PROGRESS_INTERVAL,
     refetchIntervalInBackground: true,
     enabled: rescanInfo.rescanning || jmSession.state?.rescanning === true,
