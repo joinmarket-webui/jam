@@ -177,6 +177,20 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
             onSubmit={onSubmit}
             disabled={rescanInfo.rescanning || rescanMutation.isPending}
           />
+          {rescanInfo.rescanning && (
+            <div className="bg-muted/50 mt-4 animate-pulse rounded-lg p-3 duration-100">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                <span className="text-sm">
+                  {rescanInfo?.progress === undefined
+                    ? t('app.alert_rescan_in_progress')
+                    : t('app.alert_rescan_in_progress_with_progress', {
+                        progress: rescanInfo.progress,
+                      })}
+                </span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
