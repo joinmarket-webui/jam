@@ -1,3 +1,4 @@
+import { yupResolver } from '@hookform/resolvers/yup'
 import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
@@ -6,6 +7,7 @@ import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -23,6 +25,12 @@ type Inputs = {
 
 const INPUT_BLOCK_HEIGHT_MIN = 0
 
+const schema = yup
+  .object({
+    blockHeight: yup.number().integer().default(SEGWIT_ACTIVATION_BLOCK).min(INPUT_BLOCK_HEIGHT_MIN).required(),
+  })
+  .required()
+
 interface RescanChainFormProps {
   rescanInfo: RescanInfo
   onSubmit: SubmitHandler<Inputs>
@@ -36,9 +44,11 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
   } = useForm<Inputs>({
+    mode: 'all',
     defaultValues: {
       blockHeight: SEGWIT_ACTIVATION_BLOCK,
     },
+    resolver: yupResolver(schema),
   })
 
   return (
@@ -57,8 +67,6 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
 
           <Input
             {...register('blockHeight', {
-              required: true,
-              min: INPUT_BLOCK_HEIGHT_MIN,
               disabled: rescanInfo.rescanning,
             })}
             type="number"
