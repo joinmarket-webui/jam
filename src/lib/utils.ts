@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import type { OfferType } from '@/constants/jm'
+import type { Milliseconds } from '@/types/global'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -13,9 +14,6 @@ export type Unit = 'BTC' | 'sats'
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
-// Time-related types
-export type Milliseconds = number
-export type Seconds = number
 export type TimeInterval = number
 
 // can be any of ['sw0reloffer', 'swreloffer', 'reloffer']

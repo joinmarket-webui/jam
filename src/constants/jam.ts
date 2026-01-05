@@ -1,5 +1,5 @@
 import { percentageToFactor } from '@/lib/utils'
-import { JM_API_AUTH_TOKEN_EXPIRY } from './jm'
+import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD } from './jm'
 
 export const TX_FEES_FACTOR_MIN = 0 // 0%
 
@@ -16,6 +16,14 @@ export const CJ_FEE_REL_MIN = percentageToFactor(0.0001)
 export const CJ_FEE_REL_MAX = percentageToFactor(5) // no enforcement by JM - this should be a "sane" max value
 export const MAX_SWEEP_FEE_CHANGE_MIN = percentageToFactor(50)
 export const MAX_SWEEP_FEE_CHANGE_MAX = percentageToFactor(100)
+
+export const OFFER_FEE_REL_MIN = percentageToFactor(0.0001)
+export const OFFER_FEE_REL_MAX = percentageToFactor(10)
+export const OFFER_FEE_REL_STEP = percentageToFactor(0.0001)
+
+export const OFFER_FEE_ABS_MIN = 0
+
+export const OFFER_MINSIZE_MIN = JM_DUST_THRESHOLD
 
 export const JAM_JM_SESSION_REFRESH_MIN_INTERVAL = 5_000
 export const JAM_JM_SESSION_REFRESH_DEFAULT_INTERVAL = 30_000
