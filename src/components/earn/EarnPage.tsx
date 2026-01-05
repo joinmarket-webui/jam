@@ -1,14 +1,15 @@
 import { useId, useState } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { startmakerMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useMutation } from '@tanstack/react-query'
-import { AlertTriangle, HandshakeIcon, PercentIcon } from 'lucide-react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { AlertTriangle, HandshakeIcon, Loader2Icon, PercentIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import * as yup from 'yup'
+import { useStore } from 'zustand'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer, percentageToFactor } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { SatSymbol } from '../CurrencySymbol'
 
 const FieldPrefixSatSymbol = (
@@ -97,12 +99,14 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
   )
 }
 interface EarnFormProps {
+  isWaitingMakerStart: boolean
   onSubmit: SubmitHandler<Inputs>
   disabled?: boolean
 }
 
-function EarnForm({ onSubmit, disabled }: EarnFormProps) {
+function EarnForm({ isWaitingMakerStart, onSubmit, disabled }: EarnFormProps) {
   const { t } = useTranslation()
+
   const {
     control,
     register,
@@ -122,6 +126,7 @@ function EarnForm({ onSubmit, disabled }: EarnFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <OfferTypeInput
+        disabled={disabled}
         defaultValue={FORM_INPUT_DEFAULT_VALUES.offerType}
         onValueChange={(value) => {
           setValue('offerType', value, {
@@ -214,7 +219,14 @@ function EarnForm({ onSubmit, disabled }: EarnFormProps) {
         )}
       </div>
       <Button type="submit" disabled={disabled || !isValid || isSubmitting} className="w-full" size="lg">
-        {isSubmitting ? t('earn.text_starting') : t('earn.button_start')}
+        {isSubmitting || isWaitingMakerStart ? (
+          <>
+            <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
+            {t('earn.text_starting')}
+          </>
+        ) : (
+          <>{t('earn.button_start')}</>
+        )}
       </Button>
     </form>
   )
@@ -241,23 +253,60 @@ interface EarnPageProps {
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
+  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+
+  const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
+  const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
+
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
+
+  const stopMakerQuery = useQuery({
+    ...stopmakerOptions({
+      client,
+      path: { walletname: encodeURIComponent(walletFileName) },
+    }),
+    staleTime: 1,
+    gcTime: 1,
+    enabled: false,
+    retry: false,
+  })
 
   const startMaker = useMutation({
     ...startmakerMutation({ client }),
     retry: false,
     onSuccess: () => {
-      // TODO: i18n
-      toast.info('Service is starting')
+      setIsWaitingMakerStart(true)
+      toast.info(t('earn.alert_starting'))
     },
     onError: (error: ErrorMessage) => {
+      setIsWaitingMakerStart(false)
       console.error('StartMaker error:', error)
       const reason = error.message ?? error.error_description ?? t('global.errors.reason_unknown')
       // TODO: i18n
       toast.error(`Error while starting the maker process. Reason: ${reason}}`)
     },
   })
+
+  const onStop = async () => {
+    try {
+      toast.info(t('earn.alert_stopping'))
+      await stopMakerService()
+    } catch (e: unknown) {
+      const reason = e instanceof Error ? e.message : undefined
+      toast.error(reason ?? t('global.errors.reason_unknown'))
+    }
+  }
+
+  const stopMakerService = async () => {
+    setIsWaitingMakerStop(true)
+    try {
+      await stopMakerQuery.refetch()
+    } catch (e) {
+      setIsWaitingMakerStop(false)
+      throw e
+    }
+  }
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     return await startMaker.mutateAsync({
@@ -276,6 +325,24 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       </div>
     )
   }
+
+  if (!jmSessionState) {
+    return (
+      <div className="m-2 flex items-center justify-center">
+        <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
+        {t('global.loading')}
+      </div>
+    )
+  }
+
+  const makerRunning = jmSessionState.maker_running === true
+  if (isWaitingMakerStart && makerRunning) {
+    setIsWaitingMakerStart(false)
+  }
+  if (isWaitingMakerStop && !makerRunning) {
+    setIsWaitingMakerStop(false)
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('earn.title')}</h1>
@@ -305,7 +372,38 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </div>
       </div>
 
-      <EarnForm onSubmit={onSubmit} />
+      {
+        <>
+          <Button
+            type="submit"
+            onClick={() => onStop()}
+            disabled={jmSessionState?.maker_running !== true || isWaitingMakerStop || stopMakerQuery.isFetching}
+            className="w-full"
+            size="lg"
+          >
+            {isWaitingMakerStop ? (
+              <>
+                <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
+                {t('earn.text_stopping')}
+              </>
+            ) : (
+              <>{t('earn.button_stop')}</>
+            )}
+          </Button>
+        </>
+      }
+
+      <EarnForm
+        onSubmit={onSubmit}
+        isWaitingMakerStart={startMaker.isPending || isWaitingMakerStart}
+        disabled={
+          startMaker.isPending ||
+          isWaitingMakerStart ||
+          jmSessionState?.maker_running ||
+          jmSessionState?.coinjoin_in_process ||
+          jmSessionState?.rescanning
+        }
+      />
 
       {/* Fee Configuration Dialog */}
       <FeeLimitDialog

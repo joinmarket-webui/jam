@@ -44,7 +44,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
   const seedQuery = useQuery({
     ...getseedOptions({
       client,
-      path: { walletname: walletFileName },
+      path: { walletname: encodeURIComponent(walletFileName) },
     }),
     staleTime: 1,
     gcTime: 1,

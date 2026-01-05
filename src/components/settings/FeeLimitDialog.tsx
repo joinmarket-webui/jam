@@ -103,7 +103,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
 
       for (const { key, value } of configUpdates) {
         await setconfigMutation.mutateAsync({
-          path: { walletname: walletFileName },
+          path: { walletname: encodeURIComponent(walletFileName) },
           body: {
             ...FEE_CONFIG_KEYS[key],
             value,
