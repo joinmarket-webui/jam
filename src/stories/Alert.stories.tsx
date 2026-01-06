@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { AlertCircleIcon, CheckCircle2Icon } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 const meta: Meta<typeof Alert> = {
@@ -21,7 +21,7 @@ type Story = StoryObj<typeof Alert>
 export const Default: Story = {
   render: () => (
     <Alert>
-      <AlertCircle />
+      <AlertCircleIcon />
       <AlertTitle>Alert Title</AlertTitle>
       <AlertDescription>This is a default alert message.</AlertDescription>
     </Alert>
@@ -31,7 +31,7 @@ export const Default: Story = {
 export const Destructive: Story = {
   render: () => (
     <Alert variant="destructive">
-      <AlertCircle />
+      <AlertCircleIcon />
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>Something went wrong. Please try again later.</AlertDescription>
     </Alert>
@@ -49,10 +49,20 @@ export const WithoutIcon: Story = {
 
 export const Success: Story = {
   render: () => (
-    <Alert>
-      <CheckCircle2 />
+    <Alert variant="success">
+      <CheckCircle2Icon />
       <AlertTitle>Success</AlertTitle>
       <AlertDescription>Your action was completed successfully!</AlertDescription>
+    </Alert>
+  ),
+}
+
+export const Warning: Story = {
+  render: () => (
+    <Alert variant="warning">
+      <AlertCircleIcon />
+      <AlertTitle>Warning</AlertTitle>
+      <AlertDescription>Your action was not successfully completed!</AlertDescription>
     </Alert>
   ),
 }
@@ -60,7 +70,7 @@ export const Success: Story = {
 export const LongContent: Story = {
   render: () => (
     <Alert>
-      <AlertCircle />
+      <AlertCircleIcon />
       <AlertTitle>Important Notice</AlertTitle>
       <AlertDescription>
         This is a longer alert message that demonstrates how the component handles multiple lines of text. The content

@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Orderbook } from './Orderbook'
@@ -19,7 +19,7 @@ export function OrderbookDialog({ open, onOpenChange }: OrderbookDialogProps) {
       <div className="flex items-center justify-between border-b px-6 py-4">
         <h1 className="text-lg font-semibold">{t('orderbook.title')}</h1>
         <Button variant="ghost" size="lg" onClick={() => onOpenChange(false)} className="h-8 w-8 p-0">
-          <X className="h-10 w-10" />
+          <XIcon className="h-10 w-10" />
           <span className="sr-only">Close</span>
         </Button>
       </div>

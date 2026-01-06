@@ -10,10 +10,11 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { walletDisplayName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { AmountSats } from '@/types/global'
 
 export interface UseWalletDisplayResult {
   jars: Jar[]
-  totalBalance: number
+  totalBalance: AmountSats
   walletName: string | null
   isLoading: boolean
   error: Error | ErrorMessage | null
@@ -21,7 +22,7 @@ export interface UseWalletDisplayResult {
 }
 
 interface AccountBalance {
-  balance: number
+  balance: AmountSats
   account: string
 }
 
@@ -78,7 +79,7 @@ export function useWalletDisplay(): UseWalletDisplayResult {
     }
   })
   // Sort accounts by mixdepth number
-  accountBalances.sort((a, b) => parseInt(a.account) - parseInt(b.account))
+  accountBalances.sort((a, b) => parseInt(a.account, 10) - parseInt(b.account, 10))
 
   // Create the jars array by starting with all jar templates (with zero balance)
   // and then updating the ones that have UTXOs
@@ -90,7 +91,7 @@ export function useWalletDisplay(): UseWalletDisplayResult {
 
   // Update jars with actual balances from UTXOs
   accountBalances.forEach((account) => {
-    const mixdepthNum = parseInt(account.account)
+    const mixdepthNum = parseInt(account.account, 10)
 
     // Only process accounts that map to our predefined jars
     if (mixdepthNum < jarTemplates.length) {

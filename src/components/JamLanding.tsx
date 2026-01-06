@@ -102,8 +102,17 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
           onClick={() => refetchWalletData()}
           className="flex items-center gap-2 text-gray-500"
         >
-          <RefreshCwIcon className="h-4 w-4" />
-          {t('global.refresh')}
+          {isLoading ? (
+            <>
+              <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
+              {t('global.refresh')}
+            </>
+          ) : (
+            <>
+              <RefreshCwIcon className="motion-reduce:hidden" />
+              {t('global.refresh')}
+            </>
+          )}
         </Button>
       </div>
     </div>

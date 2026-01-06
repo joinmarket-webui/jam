@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, ChevronsLeftIcon, ChevronsRightIcon } from 'lucide-react'
+import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -75,7 +75,7 @@ const Pagination = ({
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              <ChevronLeft />
+              <ChevronLeftIcon />
             </Button>
 
             <div className="flex items-center justify-center text-sm font-medium">{currentPage}</div>
@@ -86,7 +86,7 @@ const Pagination = ({
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
-              <ChevronRight />
+              <ChevronRightIcon />
             </Button>
 
             <Button

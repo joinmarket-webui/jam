@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
-import { ArrowLeft, RefreshCw } from 'lucide-react'
+import { ArrowLeftIcon, RefreshCwIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -62,7 +62,7 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
         <p className="text-muted-foreground text-xs">{t('rescan_chain.description_blockheight')}</p>
         <div className="relative">
           <div className="absolute top-1/2 left-3 -translate-y-1/2">
-            <RefreshCw className="text-muted-foreground h-4 w-4" />
+            <RefreshCwIcon className="text-muted-foreground h-4 w-4" />
           </div>
 
           <Input
@@ -163,7 +163,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
           onClick={() => navigate(routes.settings)}
           className="hover:bg-muted/50 h-8 w-8 p-0"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeftIcon className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-semibold tracking-tight">{t('rescan_chain.title')}</h1>
       </div>
@@ -180,7 +180,7 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
           {rescanInfo.rescanning && (
             <div className="bg-muted/50 mt-4 animate-pulse rounded-lg p-3 duration-100">
               <div className="flex items-center gap-2">
-                <RefreshCw className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                <RefreshCwIcon className="h-4 w-4 animate-spin motion-reduce:hidden" />
                 <span className="text-sm">
                   {rescanInfo?.progress === undefined
                     ? t('app.alert_rescan_in_progress')

@@ -11,7 +11,7 @@ import {
   type ColumnDef,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDownIcon, ChevronUpIcon, RefreshCw, ArrowUpDown, Plus, AlertCircleIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, RefreshCwIcon, ArrowUpDownIcon, PlusIcon, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Balance } from '@/components/ui/Balance'
@@ -463,7 +463,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const getSortIcon = (columnKey: SortKey) => {
     const col = table.getColumn(columnKey)
     const dir = col?.getIsSorted()
-    if (!dir) return <ArrowUpDown className="ml-2 h-4 w-4" />
+    if (!dir) return <ArrowUpDownIcon className="ml-2 h-4 w-4" />
     return dir === 'desc' ? <ChevronDownIcon className="ml-2 h-4 w-4" /> : <ChevronUpIcon className="ml-2 h-4 w-4" />
   }
 
@@ -480,7 +480,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
         </Alert>
 
         <Button onClick={() => refetch()} disabled={isLoadingData}>
-          <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData ? 'animate-spin' : '')} />
+          <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'animate-spin': isLoadingData })} />
           {t('global.retry')}
         </Button>
       </div>
@@ -519,7 +519,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                 className="relative"
               >
                 Generate Demo Entry
-                <Plus className="ml-2 h-4 w-4" />
+                <PlusIcon className="ml-2 h-4 w-4" />
                 <DevBadge />
               </Button>
             )}
@@ -534,7 +534,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                   disabled={isLoadingData}
                 >
                   {t('orderbook.button_reload_title')}
-                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData && 'animate-spin')} />
+                  <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'animate-spin': isLoadingData })} />
                 </Button>
                 <div className="relative">
                   <Button
@@ -603,7 +603,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                 className="relative"
               >
                 Generate Demo Entry
-                <Plus className="ml-2 h-4 w-4" />
+                <PlusIcon className="ml-2 h-4 w-4" />
                 <DevBadge />
               </Button>
             )}
@@ -618,7 +618,11 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                   disabled={isLoadingData}
                 >
                   {t('orderbook.button_reload_title')}
-                  <RefreshCw className={cn('ml-2 h-4 w-4', isLoadingData && 'animate-spin')} />
+                  <RefreshCwIcon
+                    className={cn('ml-2 h-4 w-4', {
+                      'animate-spin': isLoadingData,
+                    })}
+                  />
                 </Button>
                 <div className="relative">
                   <Button
