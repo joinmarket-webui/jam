@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, Loader2Icon } from 'lucide-react'
+import { AlertTriangle, Loader2Icon, ShuffleIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -18,6 +18,7 @@ import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor } from '@/lib/
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { EarnForm, type EarnFormValues } from './EarnForm'
 import { OfferCard } from './OfferCard'
 
@@ -178,36 +179,38 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
       )}
 
-      <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
-        <div className="flex items-start gap-2">
-          <div className="light:text-yellow-800 text-sm text-yellow-200">
-            <div className="flex items-center">
-              <AlertTriangle className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-              <p className="text-md font-medium">Under construction</p>
-            </div>
-            <p className="p-1 text-xs">
-              Not yet implemented.
-              {maxFeesConfigMissing && (
-                <span className="mt-2 block">
-                  <strong>Note:</strong> Fee configuration is required before earning with collaborative transactions.
-                </span>
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
+      <Alert variant="warning">
+        <AlertTriangle />
+        <AlertTitle>Under construction</AlertTitle>
+        <AlertDescription>
+          Not yet completely implemented.
+          {maxFeesConfigMissing && (
+            <span className="mt-2 block">
+              <strong>Note:</strong> Fee configuration is required before earning with collaborative transactions.
+            </span>
+          )}
+        </AlertDescription>
+      </Alert>
 
+      {jmSessionState.maker_running === true && (
+        <Alert variant="success" className="animate-in blur-in my-2">
+          <ShuffleIcon className="animate-pulse motion-reduce:hidden" />
+          <AlertTitle>{t('earn.alert_running')}</AlertTitle>
+        </Alert>
+      )}
       {waitingForOfferUpdate && (
-        <div className="my-2 flex items-center justify-center gap-2">
-          <Loader2Icon className="h-4 w-4 animate-spin text-gray-400 motion-reduce:hidden" />
-          {/* TODO: i18n*/}
-          <span>{t('Loading offer...')}</span>
-        </div>
+        <Alert variant="default" className="animate-in blur-in my-2">
+          <Loader2Icon className="animate-spin motion-reduce:hidden" />
+          <AlertTitle>
+            {}
+            {/* TODO: i18n*/ t('Loading offer...')}
+          </AlertTitle>
+        </Alert>
       )}
 
       {jmSessionState.offer_list && jmSessionState.offer_list.length > 0 && (
         <>
-          <div className="space-y-2">
+          <div className="animate-in blur-in space-y-2">
             <OfferCard value={jmSessionState.offer_list[0]} nickname={jmSessionState.nickname}>
               <Button type="button" onClick={() => onStop()} className="w-full" size="lg">
                 {isWaitingMakerStop ? (
@@ -225,7 +228,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       <EarnForm
-        className={cn('w-full', {
+        className={cn('animate-in blur-in w-full', {
           hidden: jmSessionState.maker_running && !waitingForOfferUpdate,
           'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate,
         })}
