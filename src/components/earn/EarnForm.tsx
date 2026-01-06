@@ -13,6 +13,7 @@ import { Tabs, TabsContent } from '@/components/ui/tabs'
 import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
+import type { AmountSats } from '@/types/global'
 import { SatSymbol } from '../CurrencySymbol'
 
 const FieldPrefixSatSymbol = (
@@ -30,9 +31,9 @@ const OFFERTYPE_REL: OfferType = 'sw0reloffer'
 
 export interface EarnFormValues {
   offerType: OfferType
-  offerAbsoluteFee?: number
+  offerAbsoluteFee?: AmountSats
   offerRelativeFeeInPercent?: number
-  offerMinAmount: number
+  offerMinAmount: AmountSats
 }
 
 const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
@@ -99,7 +100,7 @@ interface EarnFormProps {
   isWaitingMakerStart: boolean
   onSubmit: SubmitHandler<EarnFormValues>
   /* TODO: make offerMinsizeMax mandatory */
-  offerMinsizeMax?: number
+  offerMinsizeMax?: AmountSats
   disabled?: boolean
 }
 
