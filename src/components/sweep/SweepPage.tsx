@@ -1,6 +1,7 @@
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { WalletFileName } from '@/lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface SweepPageProps {
   walletFileName: WalletFileName
@@ -22,17 +23,11 @@ export const SweepPage = ({ walletFileName }: SweepPageProps) => {
       <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('scheduler.title')}</h1>
       <p className="text-muted-foreground mb-4 text-sm">{t('scheduler.subtitle')}</p>
 
-      <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
-        <div className="flex items-start gap-2">
-          <div className="light:text-yellow-800 text-sm text-yellow-200">
-            <div className="flex items-center">
-              <AlertTriangle className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-              <p className="text-md font-medium">Under construction</p>
-            </div>
-            <p className="p-1 text-xs">Not yet implemented.</p>
-          </div>
-        </div>
-      </div>
+      <Alert variant="warning">
+        <AlertTriangleIcon />
+        <AlertTitle>Under construction</AlertTitle>
+        <AlertDescription>Not yet implemented.</AlertDescription>
+      </Alert>
     </div>
   )
 }

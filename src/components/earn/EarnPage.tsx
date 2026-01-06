@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangle, Loader2Icon, ShuffleIcon } from 'lucide-react'
+import { AlertTriangleIcon, Loader2Icon, ShuffleIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -180,7 +180,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       <Alert variant="warning">
-        <AlertTriangle />
+        <AlertTriangleIcon />
         <AlertTitle>Under construction</AlertTitle>
         <AlertDescription>
           Not yet completely implemented.
