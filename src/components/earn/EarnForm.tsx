@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
-import { OFFER_FEE_ABS_MIN, OFFER_FEE_REL_MIN, OFFER_MINSIZE_MIN } from '@/constants/jam'
+import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
 import { SatSymbol } from '../CurrencySymbol'
@@ -31,24 +31,27 @@ const OFFERTYPE_REL: OfferType = 'sw0reloffer'
 export interface EarnFormValues {
   offerType: OfferType
   offerAbsoluteFee?: number
-  offerRelativeFee?: number
+  offerRelativeFeeInPercent?: number
   offerMinAmount: number
 }
 
 const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
   offerType: OFFERTYPE_ABS,
-  offerRelativeFee: 0.03,
-  offerAbsoluteFee: 250,
-  offerMinAmount: 100_000,
+  offerRelativeFeeInPercent: factorToPercentage(JAM.OFFER_FEE_REL_DEFAULT),
+  offerAbsoluteFee: JAM.OFFER_FEE_ABS_DEFAULT,
+  offerMinAmount: JAM.OFFER_MINSIZE_DEFAULT,
 }
 
-const schema = yup
+const baseSchema = yup
   .object()
   .shape({
     offerType: yup.string<OfferType>().default(FORM_INPUT_DEFAULT_VALUES.offerType).required(),
-    offerAbsoluteFee: yup.number().integer().min(OFFER_FEE_ABS_MIN).optional(),
-    offerRelativeFee: yup.number().min(factorToPercentage(OFFER_FEE_REL_MIN)).optional(),
-    offerMinAmount: yup.number().integer().min(OFFER_MINSIZE_MIN).required(),
+    offerAbsoluteFee: yup.number().integer().min(JAM.OFFER_FEE_ABS_MIN).optional(),
+    offerRelativeFeeInPercent: yup
+      .number()
+      .min(factorToPercentage(JAM.OFFER_FEE_REL_MIN))
+      .max(factorToPercentage(JAM.OFFER_FEE_REL_MAX))
+      .optional(),
   })
   .required()
 
@@ -87,15 +90,35 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
     </RadioGroup>
   )
 }
+
+/* TODO: make offerMinsizeMax mandatory and remove this placehodler */
+const OFFER_MINSIZE_MAX_PLACEHODLER = JAM.OFFER_MINSIZE_MIN * 1_000
+
 interface EarnFormProps {
   className?: string
   isWaitingMakerStart: boolean
   onSubmit: SubmitHandler<EarnFormValues>
+  /* TODO: make offerMinsizeMax mandatory */
+  offerMinsizeMax?: number
   disabled?: boolean
 }
 
-export function EarnForm({ className, isWaitingMakerStart, onSubmit, disabled }: EarnFormProps) {
+export function EarnForm({
+  className,
+  isWaitingMakerStart,
+  onSubmit,
+  disabled,
+  offerMinsizeMax = OFFER_MINSIZE_MAX_PLACEHODLER,
+}: EarnFormProps) {
   const { t } = useTranslation()
+
+  const schema = baseSchema.concat(
+    yup.object().shape({
+      offerMinAmount: yup.number().integer().min(JAM.OFFER_MINSIZE_MIN).max(offerMinsizeMax).required(),
+    }),
+  )
+
+  console.log(schema)
 
   const {
     control,
@@ -145,13 +168,10 @@ export function EarnForm({ className, isWaitingMakerStart, onSubmit, disabled }:
                 type="number"
                 step={1}
                 className="bg-background pl-10"
-                placeholder={t('earn.placeholder_min_amount_input')}
               />
             </div>
-            {errors.offerMinAmount && (
-              <div className="text-muted-foreground light:text-red-700 text-xs text-red-500">
-                <span>ERROR</span>
-              </div>
+            {errors.offerAbsoluteFee && (
+              <div className="light:text-red-700 text-xs text-red-500">{t('earn.feedback_invalid_abs_fee')}</div>
             )}
           </div>
         </TabsContent>
@@ -159,7 +179,7 @@ export function EarnForm({ className, isWaitingMakerStart, onSubmit, disabled }:
           <div className="space-y-2">
             <Label htmlFor="rescanHeight" className="text-sm font-medium">
               {t('earn.label_rel_fee', {
-                fee: getValues('offerRelativeFee') ? `(${getValues('offerRelativeFee')!}%)` : '',
+                fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
               })}
             </Label>
             <p className="text-muted-foreground text-xs">{t('earn.description_rel_fee')}</p>
@@ -167,18 +187,20 @@ export function EarnForm({ className, isWaitingMakerStart, onSubmit, disabled }:
               <div className="absolute top-1/2 left-3 -translate-y-1/2">%</div>
 
               <Input
-                {...register('offerRelativeFee', {
+                {...register('offerRelativeFeeInPercent', {
                   disabled,
                 })}
                 type="number"
-                step={0.0001}
+                step={factorToPercentage(JAM.OFFER_FEE_REL_STEP)}
                 className="bg-background pl-10"
-                placeholder={t('earn.placeholder_min_amount_input')}
               />
             </div>
-            {errors.offerMinAmount && (
-              <div className="text-muted-foreground light:text-red-700 text-xs text-red-500">
-                <span>ERROR</span>
+            {errors.offerRelativeFeeInPercent && (
+              <div className="light:text-red-700 text-xs text-red-500">
+                {t('earn.feedback_invalid_rel_fee', {
+                  feeRelPercentageMin: `${factorToPercentage(JAM.OFFER_FEE_REL_MIN)}%`,
+                  feeRelPercentageMax: `${factorToPercentage(JAM.OFFER_FEE_REL_MAX)}%`,
+                })}
               </div>
             )}
           </div>
@@ -188,23 +210,34 @@ export function EarnForm({ className, isWaitingMakerStart, onSubmit, disabled }:
         <Label htmlFor="rescanHeight" className="text-sm font-medium">
           {t('earn.label_min_amount_input')}
         </Label>
-        <p className="text-muted-foreground text-xs">{t('rescan_chain.description_blockheight')}</p>
+        <p className="text-muted-foreground text-xs">{/*TODO: i18n*/ t('rescan_chain.description_blockheight')}</p>
         <div className="relative">
           <div className="absolute top-1/2 left-3 -translate-y-1/2">{FieldPrefixSatSymbol}</div>
 
           <Input
             {...register('offerMinAmount', {
+              required: true,
               disabled,
             })}
             type="number"
+            max={offerMinsizeMax}
             step={1}
             className="bg-background pl-10"
             placeholder={t('earn.placeholder_min_amount_input')}
           />
         </div>
         {errors.offerMinAmount && (
-          <div className="text-muted-foreground light:text-red-700 text-xs text-red-500">
-            <span>ERROR</span>
+          <div className="light:text-red-700 text-xs text-red-500">
+            {errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max' ? (
+              <>
+                {t('earn.feedback_invalid_min_amount_range', {
+                  minAmountMin: JAM.OFFER_MINSIZE_MIN.toLocaleString(),
+                  minAmountMax: offerMinsizeMax.toLocaleString(),
+                })}
+              </>
+            ) : (
+              <>{t('earn.feedback_invalid_min_amount')}</>
+            )}
           </div>
         )}
       </div>

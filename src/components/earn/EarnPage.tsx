@@ -32,7 +32,7 @@ const toStartMakerRequest = (values: EarnFormValues): StartMakerRequest => {
   // both fee properties need to be provided.
   // prevent providing an invalid value by setting the ignored prop to zero
   const cjfee_a = isAbsoluteOffer(values.offerType) ? values.offerAbsoluteFee! : 0
-  const cjfee_r = isRelativeOffer(values.offerType) ? percentageToFactor(values.offerRelativeFee!) : 0
+  const cjfee_r = isRelativeOffer(values.offerType) ? percentageToFactor(values.offerRelativeFeeInPercent!) : 0
   return {
     ordertype: values.offerType,
     minsize: String(values.offerMinAmount),
@@ -201,10 +201,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {waitingForOfferUpdate && (
         <Alert variant="default" className="animate-in blur-in my-2">
           <Loader2Icon className="animate-spin motion-reduce:hidden" />
-          <AlertTitle>
-            {}
-            {/* TODO: i18n*/ t('Loading offer...')}
-          </AlertTitle>
+          <AlertTitle>{/* TODO: i18n*/ t('Loading offer...')}</AlertTitle>
         </Alert>
       )}
 

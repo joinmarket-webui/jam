@@ -5,19 +5,20 @@ import { FingerprintIcon, HandCoinsIcon, Maximize2Icon, Minimize2Icon } from 'lu
 import { useTranslation } from 'react-i18next'
 import { useDisplaySettings } from '@/hooks/useDisplaySettings'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
-import type { Unbox } from '@/types/global'
 import { CurrencySymbol } from '../CurrencySymbol'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
-const OfferTypeBadge = ({ value }: { value: Unbox<SessionResponse['offer_list']> }) => {
+type Offer = NonNullable<SessionResponse['offer_list']>[number]
+
+const OfferTypeBadge = ({ value }: { value: Offer }) => {
   const { t } = useTranslation()
   const text = renderOfferText(value, t)
   return <Badge variant={text ? 'default' : 'outline'}>{text}</Badge>
 }
 
-const renderOfferText = (value: Unbox<SessionResponse['offer_list']>, t: TFunction<'translation', undefined>) => {
+const renderOfferText = (value: Offer, t: TFunction<'translation', undefined>) => {
   if (isAbsoluteOffer(value?.ordertype || '')) {
     return t('earn.current.text_offer_type_absolute')
   }
@@ -28,7 +29,7 @@ const renderOfferText = (value: Unbox<SessionResponse['offer_list']>, t: TFuncti
 }
 
 interface OfferCardProps {
-  value: Unbox<SessionResponse['offer_list']>
+  value: Offer
   nickname: SessionResponse['nickname']
 }
 
