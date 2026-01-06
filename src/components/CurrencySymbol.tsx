@@ -1,5 +1,5 @@
 import type { SVGAttributes } from 'react'
-import { EyeOff } from 'lucide-react'
+import { EyeOffIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Currency } from '@/types/global'
 
@@ -11,7 +11,9 @@ type CurrencySymbolProps = {
 
 export function CurrencySymbol({ currency, isPrivate, size = 'lg' }: CurrencySymbolProps) {
   if (isPrivate) {
-    return <EyeOff size={size === 'sm' ? 14 : 24} className="text-muted-foreground mx-1 inline-block align-middle" />
+    return (
+      <EyeOffIcon size={size === 'sm' ? 14 : 24} className="text-muted-foreground mx-1 inline-block align-middle" />
+    )
   }
 
   if (currency === 'btc') {

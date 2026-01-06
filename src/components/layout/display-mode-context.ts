@@ -16,11 +16,9 @@ export const jarTemplates: Array<{
   { name: 'Elderberry', color: '#7c3fa6' },
 ]
 
-export interface Jar {
-  name: string
-  color: JarColor
+export type Jar = Pick<(typeof jarTemplates)[number], 'name' | 'color'> & {
   balance: AmountSats
-  account?: string
+  account: string
 }
 
 export interface DisplayModeContextType {

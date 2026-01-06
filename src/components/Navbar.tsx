@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import { Loader2Icon, LogOutIcon, MoonIcon, Settings, SunIcon, WalletIcon } from 'lucide-react'
+import { Loader2Icon, LogOutIcon, MoonIcon, SettingsIcon, SunIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useStore } from 'zustand'
@@ -143,7 +143,7 @@ export function Navbar({
             variant="ghost"
             size="icon"
           >
-            <Settings />
+            <SettingsIcon />
           </Button>
         </Link>
         <Button

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getaddressOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
-import { Copy, CopyCheck, RefreshCw, Share } from 'lucide-react'
+import { CopyCheckIcon, CopyIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -171,12 +171,12 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
           <Button variant="outline" size="sm" onClick={getNewAddress} disabled={getAddressQuery.isFetching}>
             {getAddressQuery.isFetching ? (
               <>
-                <RefreshCw className="animate-spin motion-reduce:hidden" />
+                <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
                 {t('receive.text_getting_address')}
               </>
             ) : (
               <>
-                <RefreshCw />
+                <RefreshCwIcon className="motion-reduce:hidden" />
                 {t('receive.button_new_address')}
               </>
             )}
@@ -188,7 +188,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
             onClick={copyToClipboard}
             disabled={getAddressQuery.isFetching || !bitcoinAddress}
           >
-            {copied ? <CopyCheck /> : <Copy />}
+            {copied ? <CopyCheckIcon /> : <CopyIcon />}
             {copied ? t('global.button_copy_text_confirmed') : t('global.button_copy_text')}
           </Button>
 
@@ -199,7 +199,7 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
               onClick={shareAddress}
               disabled={getAddressQuery.isFetching || !bitcoinAddress}
             >
-              <Share />
+              <ShareIcon />
               {t('receive.button_share_address')}
             </Button>
           )}

@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react'
-import { Info } from 'lucide-react'
+import { InfoIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -103,7 +103,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
         <p className="text-muted-foreground mb-6 text-sm">{t('settings.fees.description_max_cj_fee_settings')}</p>
 
         <Alert variant="default" className="mb-6">
-          <Info className="text-muted-foreground size-4 shrink-0" />
+          <InfoIcon className="text-muted-foreground size-4 shrink-0" />
           <AlertDescription>{t('settings.fees.subtitle_max_cj_fee')}</AlertDescription>
         </Alert>
 
