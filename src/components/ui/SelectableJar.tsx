@@ -1,11 +1,12 @@
+import type { AmountSats } from '@/types/global'
 import { CurrencySymbol } from '../CurrencySymbol'
 import { JarIcon } from './JarIcon'
 
 interface SelectableJarProps {
   name: string
   color: string
-  balance: number
-  totalBalance: number
+  balance: AmountSats
+  totalBalance: AmountSats
   isSelected: boolean
   onClick: () => void
 }
