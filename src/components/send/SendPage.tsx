@@ -6,6 +6,7 @@ import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface SendPageProps {
   walletFileName: WalletFileName
@@ -45,24 +46,18 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-4">
-            <div className="flex items-start gap-2">
-              <div className="light:text-yellow-800 text-sm text-yellow-200">
-                <div className="flex items-center">
-                  <AlertTriangleIcon className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-                  <p className="text-md font-medium">Under construction</p>
-                </div>
-                <p className="p-1 text-xs">
-                  The Send functionality is not yet implemented in this version.
-                  {maxFeesConfigMissing && (
-                    <span className="mt-2 block">
-                      <strong>Note:</strong> Fee configuration is required before sending collaborative transactions.
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
+          <Alert variant="warning">
+            <AlertTriangleIcon />
+            <AlertTitle>Under construction</AlertTitle>
+            <AlertDescription>
+              Not yet implemented.
+              {maxFeesConfigMissing && (
+                <span className="mt-2 block">
+                  <strong>Note:</strong> Fee configuration is required before earning with collaborative transactions.
+                </span>
+              )}
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
 
