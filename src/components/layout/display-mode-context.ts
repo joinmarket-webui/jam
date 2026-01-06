@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { ReactNode } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import type { Currency } from '@/types/global'
+import type { AmountSats, Currency } from '@/types/global'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 
@@ -19,7 +19,7 @@ export const jarTemplates: Array<{
 export interface Jar {
   name: string
   color: JarColor
-  balance: number
+  balance: AmountSats
   account?: string
 }
 
@@ -32,7 +32,7 @@ export interface DisplayModeContextType {
   formatAmount: (amount: number) => string
   currencySymbol: (size?: 'sm' | 'lg') => ReactNode
   jars: Jar[]
-  totalBalance: number
+  totalBalance: AmountSats
   walletName: string | null
   isLoading: boolean
   error: Error | ErrorMessage | null
