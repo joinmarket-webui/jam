@@ -20,10 +20,13 @@ export const MAX_SWEEP_FEE_CHANGE_MAX = percentageToFactor(100)
 export const OFFER_FEE_REL_MIN = percentageToFactor(0.0001)
 export const OFFER_FEE_REL_MAX = percentageToFactor(10)
 export const OFFER_FEE_REL_STEP = percentageToFactor(0.0001)
+export const OFFER_FEE_REL_DEFAULT = percentageToFactor(0.0021)
 
 export const OFFER_FEE_ABS_MIN = 0
+export const OFFER_FEE_ABS_DEFAULT = 21
 
 export const OFFER_MINSIZE_MIN = JM_DUST_THRESHOLD
+export const OFFER_MINSIZE_DEFAULT = 100_000
 
 export const JAM_JM_SESSION_REFRESH_MIN_INTERVAL = 5_000
 export const JAM_JM_SESSION_REFRESH_DEFAULT_INTERVAL = 30_000
