@@ -28,21 +28,21 @@ export const Default: Story = {
   ),
 }
 
+export const WithoutIcon: Story = {
+  render: () => (
+    <Alert>
+      <AlertTitle>Simple Alert</AlertTitle>
+      <AlertDescription>This alert doesn't have an icon, just a title and description.</AlertDescription>
+    </Alert>
+  ),
+}
+
 export const Destructive: Story = {
   render: () => (
     <Alert variant="destructive">
       <AlertCircleIcon />
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>Something went wrong. Please try again later.</AlertDescription>
-    </Alert>
-  ),
-}
-
-export const WithoutIcon: Story = {
-  render: () => (
-    <Alert>
-      <AlertTitle>Simple Alert</AlertTitle>
-      <AlertDescription>This alert doesn't have an icon, just a title and description.</AlertDescription>
     </Alert>
   ),
 }
