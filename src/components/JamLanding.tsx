@@ -9,7 +9,7 @@ import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
-import { walletDisplayName } from '@/lib/utils'
+import { cn, walletDisplayName } from '@/lib/utils'
 
 interface JamLandingProps {
   walletFileName: WalletFileName
@@ -61,17 +61,8 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
               reason: error.message || t('global.errors.reason_unknown'),
             })}
             <Button variant="outline" size="sm" onClick={() => refetchWalletData()}>
-              {isLoading ? (
-                <>
-                  <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
-                  {t('global.retry')}
-                </>
-              ) : (
-                <>
-                  <RefreshCwIcon className="motion-reduce:hidden" />
-                  {t('global.retry')}
-                </>
-              )}
+              <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isLoading })} />
+              {t('global.retry')}
             </Button>
           </AlertDescription>
         </Alert>
@@ -124,17 +115,8 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
           onClick={() => refetchWalletData()}
           className="flex items-center gap-2 text-gray-500"
         >
-          {isLoading ? (
-            <>
-              <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
-              {t('global.refresh')}
-            </>
-          ) : (
-            <>
-              <RefreshCwIcon className="motion-reduce:hidden" />
-              {t('global.refresh')}
-            </>
-          )}
+          <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isLoading })} />
+          {t('global.refresh')}
         </Button>
       </div>
     </div>
