@@ -7,12 +7,20 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { MM, YYYY } from '@/types/global'
 
 interface UseUtxosProps {
   walletFileName: WalletFileName
 }
+type UtxoApiObject = NonNullable<ListUtxosResponse['utxos']>[number]
 
-type Utxo = NonNullable<ListUtxosResponse['utxos']>[number]
+type Locktime = `${YYYY}-${MM}-01 00:00:00`
+
+// @apiNote: Although marked as optional, all fields are always present, hence `Required<UtxoApiObject>`
+export type Utxo = Required<UtxoApiObject> & {
+  // @apiNote: locktime is missing from the openapi definitions
+  locktime: Locktime | undefined // in the form of "2009-01-03 00:00:00"
+}
 
 type UseUtxosResult = {
   utxos: Utxo[]
@@ -40,7 +48,7 @@ export function useUtxos({ walletFileName }: UseUtxosProps): UseUtxosResult {
     }),
     enabled: !!walletFileName && !!jmSession,
     select: (data) => ({
-      utxos: data.utxos || [],
+      utxos: (data.utxos || []) as Utxo[],
     }),
   })
 

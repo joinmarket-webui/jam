@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { Utxo } from '@/hooks/useUtxos'
 import type { AmountSats } from '@/types/global'
 
 // Comments for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
@@ -30,9 +31,14 @@ export const jarTemplates: Array<Pick<Jar, 'accountIndex' | 'name' | 'color'>> =
   { accountIndex: 4, name: 'Elderberry', color: '#7c3fa6' },
 ]
 
+export type FidelityBondSummary = {
+  fbOutputs: Utxo[]
+}
+
 interface JamWalletInfoContextType {
   jars: Jar[]
   totalBalance: AmountSats
+  fidelityBondSummary: FidelityBondSummary
   walletName: string | null
   isLoading: boolean
   error: Error | ErrorMessage | null
