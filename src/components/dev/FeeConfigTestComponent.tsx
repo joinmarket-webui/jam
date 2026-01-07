@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
-import { FeeConfigErrorAlert } from '@/components/ui/FeeConfigErrorAlert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import type { WalletFileName } from '@/lib/utils'
 
 interface FeeConfigTestComponentProps {

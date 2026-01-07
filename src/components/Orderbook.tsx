@@ -14,10 +14,10 @@ import {
 import { ChevronDownIcon, ChevronUpIcon, RefreshCwIcon, ArrowUpDownIcon, PlusIcon, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
-import { Balance } from '@/components/ui/Balance'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Balance } from '@/components/ui/jam/Balance'
 import { Pagination } from '@/components/ui/pagination'
 import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -36,7 +36,7 @@ import {
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { DevBadge } from './ui/DevBadge'
+import { DevBadge } from './dev/DevBadge'
 import { Alert, AlertDescription } from './ui/alert'
 
 const ITEMS_PER_PAGE = 25
