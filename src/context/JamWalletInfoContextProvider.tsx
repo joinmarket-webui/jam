@@ -2,11 +2,11 @@ import type { PropsWithChildren } from 'react'
 import { useUtxos } from '@/hooks/useUtxos'
 import { walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { JamWalletInfoContext, jarTemplates, type Jar, type JarColor } from './JamWalletInfoContext'
+import { JamWalletInfoContext, jarTemplates, type Jar } from './JamWalletInfoContext'
 
 interface AccountBalance {
+  accountIndex: number
   balance: AmountSats
-  account: string
 }
 
 interface JamWalletInfoContextProviderProps {
@@ -24,49 +24,50 @@ export const JamWalletInfoContextProvider = ({
 
   // Group UTXOs by mixdepth and sum their values
   utxos?.utxos.forEach((utxo) => {
-    const mixdepth = utxo.mixdepth?.toString() || '0'
+    if (utxo.mixdepth === undefined || utxo.mixdepth === null) {
+      return
+    }
+    if (utxo.value === undefined || utxo.value === null) {
+      return
+    }
 
     // Find existing account or create new one
-    const existingAccount = accountBalances.find((acc) => acc.account === mixdepth)
+    const existingAccount = accountBalances.find((acc) => acc.accountIndex === utxo.mixdepth)
 
     if (existingAccount) {
-      existingAccount.balance += utxo.value || 0
+      existingAccount.balance += utxo.value
     } else {
       accountBalances.push({
-        account: mixdepth,
-        balance: utxo.value || 0,
+        accountIndex: utxo.mixdepth,
+        balance: utxo.value,
       })
     }
   })
   // Sort accounts by mixdepth number
-  accountBalances.sort((a, b) => parseInt(a.account, 10) - parseInt(b.account, 10))
+  accountBalances.sort((a, b) => a.accountIndex - b.accountIndex)
 
   // Create the jars array by starting with all jar templates (with zero balance)
   // and then updating the ones that have UTXOs
-  const jars: Jar[] = jarTemplates.map((template, index) => ({
-    ...template,
+  const jars: Jar[] = jarTemplates.map((it) => ({
+    ...it,
     balance: 0,
-    account: index.toString(),
   }))
 
   // Update jars with actual balances from UTXOs
-  accountBalances.forEach((account) => {
-    const mixdepthNum = parseInt(account.account, 10)
-
+  accountBalances.forEach((it) => {
     // Only process accounts that map to our predefined jars
-    if (mixdepthNum < jarTemplates.length) {
-      jars[mixdepthNum] = {
-        ...jars[mixdepthNum],
-        balance: account.balance,
-        account: account.account,
+    if (it.accountIndex < jarTemplates.length) {
+      jars[it.accountIndex] = {
+        ...jars[it.accountIndex],
+        balance: it.balance,
       }
     } else {
       // For accounts beyond our templates, add them at the end
       jars.push({
-        name: `Account ${account.account}`,
-        color: '#808080' as JarColor, // Default color
-        balance: account.balance,
-        account: account.account,
+        accountIndex: it.accountIndex,
+        name: `Account ${it.accountIndex}`,
+        color: '#808080',
+        balance: it.balance,
       })
     }
   })

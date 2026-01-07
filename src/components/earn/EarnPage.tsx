@@ -225,7 +225,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       <EarnForm
-        className={cn('animate-in blur-in w-full', {
+        className={cn({
           hidden: jmSessionState.maker_running && !waitingForOfferUpdate,
           'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate,
         })}
