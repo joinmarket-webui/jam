@@ -37,6 +37,7 @@ import { setIntervalDebounced, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import ErrorPage from './components/error/ErrorPage'
 import { isDebugFeatureEnabled } from './constants/debugFeatures'
+import { JamDisplayContextProvider } from './context/JamDisplayContextProvider'
 import { useFeeConfigValidation } from './hooks/useFeeConfigValidation'
 import { useRefreshSession } from './hooks/useRefreshSession'
 import { jamSettingsStore } from './store/jamSettingsStore'
@@ -89,9 +90,11 @@ function App() {
           <Route
             id="with-navbar"
             element={
-              <Layout>
-                <Outlet />
-              </Layout>
+              <JamDisplayContextProvider>
+                <Layout>
+                  <Outlet />
+                </Layout>
+              </JamDisplayContextProvider>
             }
           >
             <Route path={routes.home} element={<JamLanding walletFileName={walletFileName!} />} />

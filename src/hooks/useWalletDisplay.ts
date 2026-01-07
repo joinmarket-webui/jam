@@ -3,14 +3,29 @@ import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
-import { jarTemplates } from '@/components/layout/display-mode-context'
-import type { Jar, JarColor } from '@/components/layout/display-mode-context'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import { walletDisplayName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
+
+export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
+
+export type Jar = {
+  name: string
+  color: JarColor
+  balance: AmountSats
+  account: string
+}
+
+export const jarTemplates: Array<Pick<Jar, 'name' | 'color'>> = [
+  { name: 'Apricot', color: '#e2b86a' },
+  { name: 'Blueberry', color: '#3b5ba9' },
+  { name: 'Cherry', color: '#c94f7c' },
+  { name: 'Date', color: '#a67c52' },
+  { name: 'Elderberry', color: '#7c3fa6' },
+]
 
 export interface UseWalletDisplayResult {
   jars: Jar[]

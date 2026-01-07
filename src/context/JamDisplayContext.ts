@@ -1,26 +1,10 @@
 import { createContext, useContext } from 'react'
 import type { ReactNode } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { Jar } from '@/hooks/useWalletDisplay'
 import type { AmountSats, Currency } from '@/types/global'
 
-export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
-
-export type Jar = {
-  name: string
-  color: JarColor
-  balance: AmountSats
-  account: string
-}
-
-export const jarTemplates: Array<Pick<Jar, 'name' | 'color'>> = [
-  { name: 'Apricot', color: '#e2b86a' },
-  { name: 'Blueberry', color: '#3b5ba9' },
-  { name: 'Cherry', color: '#c94f7c' },
-  { name: 'Date', color: '#a67c52' },
-  { name: 'Elderberry', color: '#7c3fa6' },
-]
-
-export interface DisplayModeContextType {
+interface JamDisplayContextType {
   currency: Currency
   isPrivate: boolean
   toggleCurrencyUnit: () => void
@@ -36,12 +20,12 @@ export interface DisplayModeContextType {
   refetchWalletData: () => void
 }
 
-export const DisplayModeContext = createContext<DisplayModeContextType | undefined>(undefined)
+export const JamDisplayContext = createContext<JamDisplayContextType | undefined>(undefined)
 
 export const useJamDisplayContext = () => {
-  const context = useContext(DisplayModeContext)
+  const context = useContext(JamDisplayContext)
   if (context === undefined) {
-    throw new Error('useJamDisplayContext must be used within a Layout')
+    throw new Error('useJamDisplayContext must be used within a JamDisplayContextProvider')
   }
   return context
 }
