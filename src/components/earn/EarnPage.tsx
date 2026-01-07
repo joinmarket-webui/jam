@@ -10,6 +10,7 @@ import { useStore } from 'zustand'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Button } from '@/components/ui/button'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { isDevMode } from '@/constants/debugFeatures'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -19,7 +20,9 @@ import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor } from '@/lib/
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
+import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { EarnForm, type EarnFormValues } from './EarnForm'
 import { FidelityBondCard } from './FidelityBondCard'
 import { OfferCard } from './OfferCard'
@@ -189,19 +192,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
       )}
 
-      <Alert variant="warning">
-        <AlertTriangleIcon />
-        <AlertTitle>Under construction</AlertTitle>
-        <AlertDescription>
-          Not yet completely implemented.
-          {maxFeesConfigMissing && (
-            <span className="mt-2 block">
-              <strong>Note:</strong> Fee configuration is required before earning with collaborative transactions.
-            </span>
-          )}
-        </AlertDescription>
-      </Alert>
-
       {jmSessionState.maker_running === true && (
         <Alert variant="success" className="animate-in blur-in my-2">
           <ShuffleIcon className="animate-pulse motion-reduce:hidden" />
@@ -234,22 +224,57 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </>
       )}
 
-      <h2 className="my-2 text-xl font-semibold tracking-tight">
-        {t('earn.title_fidelity_bonds', { count: walletInfo.fidelityBondSummary.fbOutputs.length })}
-      </h2>
-      <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
+      <div
+        className={cn({
+          hidden:
+            jmSessionState.maker_running &&
+            !waitingForOfferUpdate &&
+            walletInfo.fidelityBondSummary.fbOutputs.length === 0,
+        })}
+      >
+        <h2 className="my-2 text-xl font-semibold tracking-tight">
+          {t('earn.title_fidelity_bonds', { count: walletInfo.fidelityBondSummary.fbOutputs.length })}
+        </h2>
+        <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
 
-      {walletInfo.fidelityBondSummary.fbOutputs.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          {walletInfo.fidelityBondSummary.fbOutputs.map((it, index) => (
-            <>
-              <FidelityBondCard value={it} key={index} />
-            </>
-          ))}
-        </div>
-      ) : (
-        <>{/*No fidelity bonds*/}</>
-      )}
+        {walletInfo.fidelityBondSummary.fbOutputs.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {walletInfo.fidelityBondSummary.fbOutputs.map((it, index) => (
+              <>
+                <FidelityBondCard value={it} key={index} />
+              </>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/*No fidelity bonds*/}
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle>{t('earn.fidelity_bond.title')}</CardTitle>
+                <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
+                <CardAction></CardAction>
+              </CardHeader>
+              <CardContent>
+                <Alert variant="warning">
+                  <AlertTriangleIcon />
+                  <AlertTitle>Under construction</AlertTitle>
+                  <AlertDescription>Not yet completely implemented.</AlertDescription>
+                </Alert>
+              </CardContent>
+              <CardFooter className="gap-2">
+                <Button variant="default" disabled>
+                  {/*TODO: i18n*/}
+                  Create Fidelity Bond
+                </Button>
+                <Button variant="ghost" disabled>
+                  {/*TODO: i18n*/}
+                  Learn more
+                </Button>
+              </CardFooter>
+            </Card>
+          </>
+        )}
+      </div>
 
       <EarnForm
         className={cn({
@@ -273,6 +298,24 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         onOpenChange={setShowFeeConfigDialog}
         walletFileName={walletFileName}
       />
+
+      {isDevMode() && (
+        <Card className="mt-8">
+          <CardHeader className="grid">
+            <DevBadge className="justify-self-end" />
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">walletInfo.fidelityBondSummary.fbOutputs:</code>
+              <pre className="text-xs">{JSON.stringify(walletInfo.fidelityBondSummary.fbOutputs, null, 2)}</pre>
+            </div>
+            <div className="mt-8 overflow-scroll">
+              <code className="light:text-red-700 text-red-800">jmSessionState.offer_list:</code>
+              <pre className="text-xs">{JSON.stringify(jmSessionState.offer_list, null, 2)}</pre>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
