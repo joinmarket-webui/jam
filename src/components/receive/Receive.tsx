@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CopyCheckIcon, CopyIcon, RefreshCwIcon, ShareIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
@@ -28,7 +29,9 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
   const [bitcoinAddress, setBitcoinAddress] = useState<BitcoinAddress | undefined>()
   const [copied, setCopied] = useState(false)
 
-  const { jars, currency, isPrivate, totalBalance, toggleCurrencyUnit } = useJamDisplayContext()
+  const { currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
+  const { jars, totalBalance } = useJamWalletInfoContext()
+
   const client = useApiClient()
 
   const getAddressQuery = useQuery({

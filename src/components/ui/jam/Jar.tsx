@@ -1,4 +1,4 @@
-import type { JarColor } from '@/hooks/useWalletDisplay'
+import type { JarColor } from '@/context/JamWalletInfoContext'
 import type { AmountSats } from '@/types/global'
 import { JarIcon } from './JarIcon'
 
