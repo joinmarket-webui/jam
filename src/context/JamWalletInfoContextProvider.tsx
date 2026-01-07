@@ -1,44 +1,22 @@
-import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { PropsWithChildren } from 'react'
+import { useUtxos } from '@/hooks/useUtxos'
 import { walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { useUtxos } from './useUtxos'
-
-export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
-
-export type Jar = {
-  name: string
-  color: JarColor
-  balance: AmountSats
-  account: string
-}
-
-export const jarTemplates: Array<Pick<Jar, 'name' | 'color'>> = [
-  { name: 'Apricot', color: '#e2b86a' },
-  { name: 'Blueberry', color: '#3b5ba9' },
-  { name: 'Cherry', color: '#c94f7c' },
-  { name: 'Date', color: '#a67c52' },
-  { name: 'Elderberry', color: '#7c3fa6' },
-]
-
-export interface UseWalletDisplayResult {
-  jars: Jar[]
-  totalBalance: AmountSats
-  walletName: string | null
-  isLoading: boolean
-  error: Error | ErrorMessage | null
-  refetchWalletData: () => void
-}
+import { JamWalletInfoContext, jarTemplates, type Jar, type JarColor } from './JamWalletInfoContext'
 
 interface AccountBalance {
   balance: AmountSats
   account: string
 }
 
-interface UseWalletDisplayProps {
+interface JamWalletInfoContextProviderProps {
   walletFileName: WalletFileName
 }
 
-export function useWalletDisplay({ walletFileName }: UseWalletDisplayProps): UseWalletDisplayResult {
+export const JamWalletInfoContextProvider = ({
+  walletFileName,
+  children,
+}: PropsWithChildren<JamWalletInfoContextProviderProps>) => {
   const utxos = useUtxos({ walletFileName })
 
   // Group UTXOs by account and calculate balances
@@ -95,7 +73,7 @@ export function useWalletDisplay({ walletFileName }: UseWalletDisplayProps): Use
 
   const totalBalance = jars.reduce((acc, jar) => acc + (jar.balance || 0), 0)
 
-  return {
+  const value = {
     jars,
     totalBalance,
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
@@ -103,4 +81,6 @@ export function useWalletDisplay({ walletFileName }: UseWalletDisplayProps): Use
     error: utxos.queryResult.error,
     refetchWalletData: utxos.queryResult.refetch,
   }
+
+  return <JamWalletInfoContext.Provider value={value}>{children}</JamWalletInfoContext.Provider>
 }

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Jar } from '@/components/ui/jam/Jar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
+import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
 import { walletDisplayName } from '@/lib/utils'
 
@@ -16,8 +17,8 @@ interface JamLandingProps {
 export default function JamLanding({ walletFileName }: JamLandingProps) {
   const { t } = useTranslation()
 
-  const { toggleDisplayMode, formatAmount, currencySymbol, jars, totalBalance, isLoading, error, refetchWalletData } =
-    useJamDisplayContext()
+  const { toggleDisplayMode, formatAmount, currencySymbol } = useJamDisplayContext()
+  const { jars, totalBalance, isLoading, error, refetchWalletData } = useJamWalletInfoContext()
 
   return (
     <div className="flex flex-col items-center justify-center py-8">

@@ -38,6 +38,7 @@ import { authStore } from '@/store/authStore'
 import ErrorPage from './components/error/ErrorPage'
 import { isDebugFeatureEnabled } from './constants/debugFeatures'
 import { JamDisplayContextProvider } from './context/JamDisplayContextProvider'
+import { JamWalletInfoContextProvider } from './context/JamWalletInfoContextProvider'
 import { useFeeConfigValidation } from './hooks/useFeeConfigValidation'
 import { useRefreshSession } from './hooks/useRefreshSession'
 import { jamSettingsStore } from './store/jamSettingsStore'
@@ -80,7 +81,9 @@ function App() {
           id="protected"
           element={
             <ProtectedRoute authenticated={authenticated}>
-              <Outlet />
+              <JamWalletInfoContextProvider walletFileName={walletFileName!}>
+                <Outlet />
+              </JamWalletInfoContextProvider>
             </ProtectedRoute>
           }
         >
@@ -90,11 +93,9 @@ function App() {
           <Route
             id="with-navbar"
             element={
-              <JamDisplayContextProvider walletFileName={walletFileName!}>
-                <Layout>
-                  <Outlet />
-                </Layout>
-              </JamDisplayContextProvider>
+              <Layout>
+                <Outlet />
+              </Layout>
             }
           >
             <Route path={routes.home} element={<JamLanding walletFileName={walletFileName!} />} />
@@ -125,13 +126,15 @@ function App() {
   )
   return (
     <ThemeProvider defaultTheme="dark" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <RefreshApiToken />
-        <RefreshJmSession />
-        {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
-        <RouterProvider router={router} />
-        <Toaster closeButton />
-      </QueryClientProvider>
+      <JamDisplayContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <RefreshApiToken />
+          <RefreshJmSession />
+          {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
+          <RouterProvider router={router} />
+          <Toaster closeButton />
+        </QueryClientProvider>
+      </JamDisplayContextProvider>
     </ThemeProvider>
   )
 }
