@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { CurrencySymbol } from '@/components/CurrencySymbol'
-import { useJamDisplayContext } from '@/components/layout/display-mode-context'
+import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { cn, satsToBtc, btcToSats, isValidNumber, formatBtc, formatSats, SATS, BTC } from '@/lib/utils'
 import type { Currency } from '@/types/global'
 

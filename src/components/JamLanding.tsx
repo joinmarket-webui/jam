@@ -1,11 +1,11 @@
 import { InfoIcon, Loader2Icon, RefreshCwIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useJamDisplayContext } from '@/components/layout/display-mode-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Jar } from '@/components/ui/jam/Jar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import type { WalletFileName } from '@/lib/utils'
 import { walletDisplayName } from '@/lib/utils'
 

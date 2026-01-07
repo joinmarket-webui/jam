@@ -1,5 +1,5 @@
+import type { JarColor } from '@/hooks/useWalletDisplay'
 import type { AmountSats } from '@/types/global'
-import type { JarColor } from '../../layout/display-mode-context'
 import { JarIcon } from './JarIcon'
 
 interface JarProps {
