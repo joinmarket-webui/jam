@@ -142,8 +142,8 @@ function App() {
 const Loading = () => {
   const { t } = useTranslation()
   return (
-    <div className="m-2 flex items-center justify-center">
-      <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
+    <div className="m-2 flex items-center justify-center gap-2">
+      <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
       {t('global.loading')}
     </div>
   )
