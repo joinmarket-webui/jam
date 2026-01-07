@@ -69,7 +69,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
             </div>
           </div>
         </div>
-        <div className="flex justify-between gap-4">
+        <div className="flex min-h-[128px] justify-between gap-4">
           {isLoading ? (
             <div className="flex flex-1 justify-center py-8">
               <Loader2Icon className="h-8 w-8 animate-spin text-gray-400" />

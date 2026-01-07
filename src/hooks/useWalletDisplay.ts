@@ -1,14 +1,7 @@
-import { useMemo } from 'react'
-import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { useQuery } from '@tanstack/react-query'
-import { useStore } from 'zustand'
-import { useApiClient } from '@/hooks/useApiClient'
-import { withQueryDelay } from '@/lib/queryClient'
-import { walletDisplayName } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
+import { walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { useUtxos } from './useUtxos'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 
@@ -41,38 +34,12 @@ interface AccountBalance {
   account: string
 }
 
-export function useWalletDisplay(): UseWalletDisplayResult {
-  const client = useApiClient()
-  const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
-  const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
+interface UseWalletDisplayProps {
+  walletFileName: WalletFileName
+}
 
-  const listutxosQueryOptions = useMemo(
-    () =>
-      listutxosOptions({
-        client,
-        path: { walletname: encodeURIComponent(walletFileName || '') },
-      }),
-    [client, walletFileName],
-  )
-
-  const {
-    data: utxos,
-    isLoading,
-    isPending,
-    error,
-    refetch: refetchWalletData,
-  } = useQuery({
-    ...listutxosQueryOptions,
-    queryFn: withQueryDelay(listutxosQueryOptions.queryFn, {
-      delayBefore: 0,
-    }),
-    enabled: !!walletFileName && !!jmSession,
-    refetchInterval: 30_000,
-    staleTime: 15_000,
-    select: (data) => ({
-      utxos: data.utxos || [],
-    }),
-  })
+export function useWalletDisplay({ walletFileName }: UseWalletDisplayProps): UseWalletDisplayResult {
+  const utxos = useUtxos({ walletFileName })
 
   // Group UTXOs by account and calculate balances
   const accountBalances: AccountBalance[] = []
@@ -132,8 +99,8 @@ export function useWalletDisplay(): UseWalletDisplayResult {
     jars,
     totalBalance,
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
-    isLoading: isLoading || isPending,
-    error,
-    refetchWalletData,
+    isLoading: utxos.queryResult.isFetching,
+    error: utxos.queryResult.error,
+    refetchWalletData: utxos.queryResult.refetch,
   }
 }

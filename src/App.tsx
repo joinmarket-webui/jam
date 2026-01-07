@@ -90,7 +90,7 @@ function App() {
           <Route
             id="with-navbar"
             element={
-              <JamDisplayContextProvider>
+              <JamDisplayContextProvider walletFileName={walletFileName!}>
                 <Layout>
                   <Outlet />
                 </Layout>
