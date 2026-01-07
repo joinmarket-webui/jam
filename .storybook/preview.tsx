@@ -28,6 +28,12 @@ export const globalTypes = {
   },
 }
 
+type GlobalContext = {
+  globals: {
+    locale: (typeof globalTypes)['locale']['toolbar']['items'][number]['value']
+  }
+}
+
 const preview: Preview = {
   parameters: {
     controls: {
@@ -44,8 +50,7 @@ const preview: Preview = {
     },
   },
 }
-
-const withI18next = (Story, context) => {
+const withI18next = (Story: React.ComponentType, context: GlobalContext) => {
   const { locale } = context.globals
 
   useEffect(() => {
@@ -61,7 +66,7 @@ const withI18next = (Story, context) => {
   )
 }
 
-const withQueryClient = (Story) => {
+const withQueryClient = (Story: React.ComponentType) => {
   const queryClient = new QueryClient()
   return (
     <QueryClientProvider client={queryClient}>
