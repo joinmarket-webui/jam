@@ -10,6 +10,7 @@ import { useStore } from 'zustand'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Button } from '@/components/ui/button'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
@@ -20,6 +21,7 @@ import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { EarnForm, type EarnFormValues } from './EarnForm'
+import { FidelityBondCard } from './FidelityBondCard'
 import { OfferCard } from './OfferCard'
 
 // In order to prevent state mismatch, the 'maker stop' response is delayed shortly.
@@ -50,6 +52,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const walletInfo = useJamWalletInfoContext()
 
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
@@ -173,6 +176,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('earn.title')}</h1>
       <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle')}</p>
+      <p
+        className={cn('text-muted-foreground mb-4 text-xs', {
+          hidden: makerRunning,
+        })}
+      >
+        {t('earn.market_explainer')}
+      </p>
 
       {/* Fee Config Error Alert */}
       {maxFeesConfigMissing && (
@@ -222,6 +232,23 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
             </OfferCard>
           </div>
         </>
+      )}
+
+      <h2 className="my-2 text-xl font-semibold tracking-tight">
+        {t('earn.title_fidelity_bonds', { count: walletInfo.fidelityBondSummary.fbOutputs.length })}
+      </h2>
+      <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
+
+      {walletInfo.fidelityBondSummary.fbOutputs.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          {walletInfo.fidelityBondSummary.fbOutputs.map((it, index) => (
+            <>
+              <FidelityBondCard value={it} key={index} />
+            </>
+          ))}
+        </div>
+      ) : (
+        <>{/*No fidelity bonds*/}</>
       )}
 
       <EarnForm

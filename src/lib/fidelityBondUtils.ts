@@ -1,4 +1,4 @@
-import type { Utxo } from '@/hooks/useUtxos'
+import type { FidelityBondUtxo, Utxo } from '@/hooks/useUtxos'
 import type { Milliseconds, MM, Seconds, YYYY } from '@/types/global'
 
 type TimeInterval = number
@@ -90,7 +90,7 @@ export const utxo = (() => {
 
   const allAreFrozen = (utxos: Array<Utxo>) => utxos.every((utxo) => utxo.frozen)
 
-  const isFidelityBond = (utxo: Utxo) => !!utxo.locktime
+  const isFidelityBond = (utxo: Utxo): utxo is FidelityBondUtxo => !!utxo.locktime
 
   const getLocktime = (utxo: Utxo): Milliseconds | null => {
     if (!isFidelityBond(utxo)) return null

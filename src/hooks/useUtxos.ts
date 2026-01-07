@@ -18,8 +18,11 @@ type Locktime = `${YYYY}-${MM}-01 00:00:00`
 
 // @apiNote: Although marked as optional, all fields are always present, hence `Required<UtxoApiObject>`
 export type Utxo = Required<UtxoApiObject> & {
-  // @apiNote: locktime is missing from the openapi definitions
-  locktime: Locktime | undefined // in the form of "2009-01-03 00:00:00"
+  locktime: Locktime | undefined
+}
+
+export type FidelityBondUtxo = Omit<Utxo, 'locktime'> & {
+  locktime: Locktime
 }
 
 type UseUtxosResult = {

@@ -3,9 +3,8 @@ import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TFunction } from 'i18next'
 import { FingerprintIcon, HandCoinsIcon, Maximize2Icon, Minimize2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useDisplaySettings } from '@/hooks/useDisplaySettings'
+import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
-import { CurrencySymbol } from '../CurrencySymbol'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -35,7 +34,7 @@ interface OfferCardProps {
 
 export function OfferCard({ value, nickname, children }: PropsWithChildren<OfferCardProps>) {
   const { t } = useTranslation()
-  const { currency, formatAmount } = useDisplaySettings()
+  const { formatAmount, currencySymbol } = useJamDisplayContext()
 
   return (
     <Card className="w-full">
@@ -77,7 +76,7 @@ export function OfferCard({ value, nickname, children }: PropsWithChildren<Offer
               ) : (
                 <>
                   <span className="tabular-nums">{formatAmount(parseInt(String(value?.cjfee || '0'), 10))}</span>
-                  <CurrencySymbol currency={currency} isPrivate={false} size="sm" />
+                  {currencySymbol('sm')}
                 </>
               )}
             </span>
@@ -89,7 +88,7 @@ export function OfferCard({ value, nickname, children }: PropsWithChildren<Offer
             <span className="text-muted-foreground text-sm font-semibold">{t('earn.current.text_minsize')}</span>
             <span className="text-sm">
               <span className="tabular-nums">{formatAmount(parseInt(String(value?.minsize || '0'), 10))}</span>
-              <CurrencySymbol currency={currency} isPrivate={false} size="sm" />
+              {currencySymbol('sm')}
             </span>
           </div>
         </div>
@@ -99,7 +98,7 @@ export function OfferCard({ value, nickname, children }: PropsWithChildren<Offer
             <span className="text-muted-foreground text-sm font-semibold">{t('earn.current.text_maxsize')}</span>
             <span className="text-sm">
               <span className="tabular-nums">{formatAmount(parseInt(String(value?.maxsize || '0'), 10))}</span>
-              <CurrencySymbol currency={currency} isPrivate={false} size="sm" />
+              {currencySymbol('sm')}
             </span>
           </div>
         </div>
@@ -109,7 +108,7 @@ export function OfferCard({ value, nickname, children }: PropsWithChildren<Offer
               <span className="text-muted-foreground text-sm font-semibold">{t('earn.current.text_txfee')}</span>
               <span className="text-muted-foreground text-sm">
                 <span className="tabular-nums">{formatAmount(parseInt(String(value?.txfee || '0'), 10))}</span>
-                <CurrencySymbol currency={currency} isPrivate={false} size="sm" />
+                {currencySymbol('sm')}
               </span>
             </div>
           </div>
