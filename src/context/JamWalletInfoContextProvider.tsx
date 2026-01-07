@@ -1,12 +1,31 @@
 import type { PropsWithChildren } from 'react'
-import { useUtxos } from '@/hooks/useUtxos'
+import { useUtxos, type Utxo } from '@/hooks/useUtxos'
+import * as fb from '@/lib/fidelityBondUtils'
 import { walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { JamWalletInfoContext, jarTemplates, type Jar } from './JamWalletInfoContext'
+import { JamWalletInfoContext, jarTemplates, type FidelityBondSummary, type Jar } from './JamWalletInfoContext'
 
 interface AccountBalance {
   accountIndex: number
   balance: AmountSats
+}
+
+const toFidelityBondSummary = (utxos: Utxo[]): FidelityBondSummary => {
+  const fbOutputs = utxos
+    .filter((utxo) => fb.utxo.isFidelityBond(utxo))
+    .sort((a, b) => {
+      const aLocked = fb.utxo.isLocked(a)
+      const bLocked = fb.utxo.isLocked(b)
+
+      if (aLocked && bLocked) {
+        return b.value - a.value
+      } else {
+        return aLocked ? -1 : 1
+      }
+    })
+  return {
+    fbOutputs,
+  }
 }
 
 interface JamWalletInfoContextProviderProps {
@@ -74,9 +93,12 @@ export const JamWalletInfoContextProvider = ({
 
   const totalBalance = jars.reduce((acc, jar) => acc + (jar.balance || 0), 0)
 
+  const fidelityBondSummary = toFidelityBondSummary(utxos.utxos)
+
   const value = {
     jars,
     totalBalance,
+    fidelityBondSummary,
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     isLoading: utxos.queryResult.isFetching,
     error: utxos.queryResult.error,
