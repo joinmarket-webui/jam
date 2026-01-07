@@ -16,8 +16,14 @@ type UtxoApiObject = NonNullable<ListUtxosResponse['utxos']>[number]
 
 type Locktime = `${YYYY}-${MM}-01 00:00:00`
 
+type Vout = number
+type TxId = string
+export type UtxoId = `${TxId}:${Vout}`
+
+type UtxoBase = Required<UtxoApiObject>
 // @apiNote: Although marked as optional, all fields are always present, hence `Required<UtxoApiObject>`
-export type Utxo = Required<UtxoApiObject> & {
+export type Utxo = UtxoBase & {
+  utxo: UtxoId // @implNote: more precise type def than plain `string`
   locktime: Locktime | undefined
 }
 

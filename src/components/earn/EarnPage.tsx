@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { startmakerMutation, stopmakerOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, StartMakerRequest } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertTriangleIcon, Loader2Icon, ShuffleIcon } from 'lucide-react'
+import { AlertTriangleIcon, Loader2Icon, RefreshCwIcon, ShuffleIcon, UnlockIcon } from 'lucide-react'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -15,6 +15,8 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
+import type { UtxoId } from '@/hooks/useUtxos'
+import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
@@ -59,6 +61,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
   const [isWaitingMakerStop, setIsWaitingMakerStop] = useState(false)
+
+  const [moveToJarFidelityBondId, setMoveToJarFidelityBondId] = useState<UtxoId>()
+  const [renewFidelityBondId, setRenewFidelityBondId] = useState<UtxoId>()
 
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
@@ -179,13 +184,6 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('earn.title')}</h1>
       <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle')}</p>
-      <p
-        className={cn('text-muted-foreground mb-4 text-xs', {
-          hidden: makerRunning,
-        })}
-      >
-        {t('earn.market_explainer')}
-      </p>
 
       {/* Fee Config Error Alert */}
       {maxFeesConfigMissing && (
@@ -224,73 +222,119 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </>
       )}
 
-      <div
-        className={cn({
-          hidden:
-            jmSessionState.maker_running &&
-            !waitingForOfferUpdate &&
-            walletInfo.fidelityBondSummary.fbOutputs.length === 0,
-        })}
-      >
-        <h2 className="my-2 text-xl font-semibold tracking-tight">
-          {t('earn.title_fidelity_bonds', { count: walletInfo.fidelityBondSummary.fbOutputs.length })}
-        </h2>
-        <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
-
-        {walletInfo.fidelityBondSummary.fbOutputs.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            {walletInfo.fidelityBondSummary.fbOutputs.map((it, index) => (
-              <>
-                <FidelityBondCard value={it} key={index} />
-              </>
-            ))}
-          </div>
-        ) : (
-          <>
-            {/*No fidelity bonds*/}
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle>{t('earn.fidelity_bond.title')}</CardTitle>
-                <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
-                <CardAction></CardAction>
-              </CardHeader>
-              <CardContent>
-                <Alert variant="warning">
-                  <AlertTriangleIcon />
-                  <AlertTitle>Under construction</AlertTitle>
-                  <AlertDescription>Not yet completely implemented.</AlertDescription>
-                </Alert>
-              </CardContent>
-              <CardFooter className="gap-2">
-                <Button variant="default" disabled>
-                  {/*TODO: i18n*/}
-                  Create Fidelity Bond
-                </Button>
-                <Button variant="ghost" disabled>
-                  {/*TODO: i18n*/}
-                  Learn more
-                </Button>
-              </CardFooter>
-            </Card>
-          </>
-        )}
-      </div>
-
-      <EarnForm
+      {/* Earn Form */}
+      <Card
         className={cn({
           hidden: jmSessionState.maker_running && !waitingForOfferUpdate,
           'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate,
         })}
-        onSubmit={onSubmit}
-        isWaitingMakerStart={isWaitingMakerStart}
-        disabled={
-          isWaitingMakerStart ||
-          isWaitingMakerStop ||
-          jmSessionState.maker_running ||
-          jmSessionState.coinjoin_in_process ||
-          jmSessionState.rescanning
-        }
-      />
+      >
+        <CardContent>
+          <p className="text-muted-foreground mb-4 text-sm">{t('earn.market_explainer')}</p>
+
+          <EarnForm
+            onSubmit={onSubmit}
+            isWaitingMakerStart={isWaitingMakerStart}
+            disabled={
+              isWaitingMakerStart ||
+              isWaitingMakerStop ||
+              jmSessionState.maker_running ||
+              jmSessionState.coinjoin_in_process ||
+              jmSessionState.rescanning
+            }
+          />
+        </CardContent>
+      </Card>
+
+      {/* Fidelity Bonds */}
+      {walletInfo.fidelityBondSummary.fbOutputs.length === 0 ? (
+        <div
+          className={cn({
+            hidden: jmSessionState.maker_running || waitingForMakerUpdate || waitingForOfferUpdate,
+          })}
+        >
+          {/* Fidelity Bonds missing */}
+          <h2 className="my-2 text-xl font-semibold tracking-tight">{t('earn.title_fidelity_bonds', { count: 0 })}</h2>
+          <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>{t('earn.fidelity_bond.title')}</CardTitle>
+              <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>
+              <CardAction></CardAction>
+            </CardHeader>
+            <CardContent>
+              <Alert variant="warning">
+                <AlertTriangleIcon />
+                <AlertTitle>Under construction</AlertTitle>
+                <AlertDescription>Not yet completely implemented.</AlertDescription>
+              </Alert>
+            </CardContent>
+            <CardFooter className="gap-2">
+              <Button variant="default" disabled>
+                {/*TODO: i18n*/}
+                Create Fidelity Bond
+              </Button>
+              <Button variant="ghost" disabled>
+                {/*TODO: i18n*/}
+                Learn more
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      ) : (
+        <>
+          {/* Fidelity Bonds exist */}
+          <h2 className="my-2 text-xl font-semibold tracking-tight">
+            {t('earn.title_fidelity_bonds', { count: walletInfo.fidelityBondSummary.fbOutputs.length })}
+          </h2>
+          <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
+          <div className="flex flex-col gap-2">
+            {walletInfo.fidelityBondSummary.fbOutputs.map((it, index) => {
+              const isExpired = !fb.utxo.isLocked(it)
+              const actionsEnabled =
+                isExpired &&
+                !jmSessionState.rescanning &&
+                !jmSessionState.maker_running &&
+                !waitingForMakerUpdate &&
+                !waitingForOfferUpdate &&
+                !walletInfo.isLoading
+              return (
+                <FidelityBondCard value={it} key={index}>
+                  {actionsEnabled && (
+                    <>
+                      <Alert variant="warning" className="mb-2">
+                        <AlertTriangleIcon />
+                        <AlertTitle>Under construction</AlertTitle>
+                        <AlertDescription>Not yet completely implemented.</AlertDescription>
+                      </Alert>
+                      <div className="flex w-full flex-row gap-2">
+                        <Button
+                          variant="secondary"
+                          className="flex-1"
+                          disabled={moveToJarFidelityBondId !== undefined}
+                          onClick={() => setMoveToJarFidelityBondId(it.utxo)}
+                        >
+                          <UnlockIcon />
+                          {t('earn.fidelity_bond.existing.button_spend')}
+                        </Button>
+                        <Button
+                          variant="default"
+                          className="flex-1"
+                          disabled={renewFidelityBondId !== undefined}
+                          onClick={() => setRenewFidelityBondId(it.utxo)}
+                        >
+                          <RefreshCwIcon />
+                          {t('earn.fidelity_bond.existing.button_renew')}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </FidelityBondCard>
+              )
+            })}
+          </div>
+        </>
+      )}
 
       {/* Fee Configuration Dialog */}
       <FeeLimitDialog

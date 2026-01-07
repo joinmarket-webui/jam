@@ -61,7 +61,7 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
   const id = useId()
 
   return (
-    <RadioGroup className="w-full max-w-96 justify-items-center sm:grid-cols-2" {...props}>
+    <RadioGroup className="flex items-center justify-center" {...props}>
       <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full max-w-50 cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none">
         <RadioGroupItem
           value={OFFERTYPE_ABS}
@@ -138,7 +138,7 @@ export function EarnForm({
   const watchOfferType = useWatch({ control, name: 'offerType' })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={cn('space-y-4', className)}>
+    <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)}>
       <OfferTypeInput
         disabled={disabled}
         defaultValue={FORM_INPUT_DEFAULT_VALUES.offerType}
