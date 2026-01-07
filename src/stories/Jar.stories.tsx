@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { CurrencySymbol } from '@/components/CurrencySymbol'
-import { Jar } from '@/components/layout/Jar'
+import { Jar } from '@/components/ui/jam/Jar'
 import type { Currency } from '@/types/global'
 
 const meta: Meta<typeof Jar> = {

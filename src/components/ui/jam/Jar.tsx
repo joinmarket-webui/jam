@@ -1,12 +1,14 @@
-import { JarIcon } from '../ui/JarIcon'
+import type { AmountSats } from '@/types/global'
+import type { JarColor } from '../../layout/display-mode-context'
+import { JarIcon } from './JarIcon'
 
 interface JarProps {
   name: string
-  amount: number
-  color: '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
+  amount: AmountSats
+  color: JarColor
   formatAmount: (amount: number) => string
   currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
-  totalBalance?: number
+  totalBalance?: AmountSats
 }
 
 export function Jar({ name, amount, color, currencySymbol, formatAmount, totalBalance = 0 }: JarProps) {

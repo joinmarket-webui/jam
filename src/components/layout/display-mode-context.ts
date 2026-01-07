@@ -5,21 +5,20 @@ import type { AmountSats, Currency } from '@/types/global'
 
 export type JarColor = '#e2b86a' | '#3b5ba9' | '#c94f7c' | '#a67c52' | '#7c3fa6'
 
-export const jarTemplates: Array<{
+export type Jar = {
   name: string
   color: JarColor
-}> = [
+  balance: AmountSats
+  account: string
+}
+
+export const jarTemplates: Array<Pick<Jar, 'name' | 'color'>> = [
   { name: 'Apricot', color: '#e2b86a' },
   { name: 'Blueberry', color: '#3b5ba9' },
   { name: 'Cherry', color: '#c94f7c' },
   { name: 'Date', color: '#a67c52' },
   { name: 'Elderberry', color: '#7c3fa6' },
 ]
-
-export type Jar = Pick<(typeof jarTemplates)[number], 'name' | 'color'> & {
-  balance: AmountSats
-  account: string
-}
 
 export interface DisplayModeContextType {
   currency: Currency

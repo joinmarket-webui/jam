@@ -1,5 +1,5 @@
 import type { AmountSats } from '@/types/global'
-import { CurrencySymbol } from '../CurrencySymbol'
+import { CurrencySymbol } from '../../CurrencySymbol'
 import { JarIcon } from './JarIcon'
 
 interface SelectableJarProps {

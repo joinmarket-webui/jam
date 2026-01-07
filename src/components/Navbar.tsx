@@ -9,7 +9,7 @@ import { routes } from '@/constants/routes'
 import { cn } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { DevBadge } from './ui/DevBadge'
+import { DevBadge } from './dev/DevBadge'
 import { Skeleton } from './ui/skeleton'
 
 interface NavbarProps {
