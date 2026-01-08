@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { Label } from '@radix-ui/react-label'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { Loader2Icon } from 'lucide-react'
@@ -177,11 +178,15 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           {isDeveloperMode && (
             <>
               <div className="flex items-center gap-3">
-                <Switch checked={enableFormValidation} onCheckedChange={setEnableFormValidation} />
-                <div className="flex items-center gap-2">
+                <Switch
+                  id="fee-limit-form-validation-switch"
+                  checked={enableFormValidation}
+                  onCheckedChange={setEnableFormValidation}
+                />
+                <Label htmlFor="fee-limit-form-validation-switch" className="flex items-center gap-2">
                   <span className="text-sm font-medium">Enable form validation</span>
                   <DevBadge />
-                </div>
+                </Label>
               </div>
               <p className="text-muted-foreground text-sm">
                 Ability to reset fee values to test what the UI looks like, when a user does not have these values
