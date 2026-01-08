@@ -71,7 +71,7 @@
     "react-dom": "19.2.3",
     "react-hook-form": "7.70.0",
     "react-i18next": "16.5.1",
-    "react-router-dom": "7.11.0",
+    "react-router-dom": "7.12.0",
     "sonner": "2.0.7",
     "tailwind-merge": "3.4.0",
     "tailwindcss": "4.1.18",
