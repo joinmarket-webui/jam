@@ -12,7 +12,7 @@ export interface OrderbookOffer {
   fidelity_bond_value: number | null | undefined
 }
 
-export interface FidelityBond {
+export interface OrderbookFidelityBond {
   counterparty: string
   amount: number
   locktime: number
@@ -20,7 +20,7 @@ export interface FidelityBond {
 
 export interface OrderbookResponse {
   offers: OrderbookOffer[]
-  fidelitybonds: FidelityBond[]
+  fidelitybonds: OrderbookFidelityBond[]
 }
 
 export const fetchOrderbook = async (): Promise<OrderbookResponse> => {
