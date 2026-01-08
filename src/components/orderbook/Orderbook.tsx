@@ -13,16 +13,22 @@ import {
   type RowPinningState,
   type RowSelectionState,
   type VisibilityState,
+  type Column,
 } from '@tanstack/react-table'
 import type { i18n } from 'i18next'
 import {
   ChevronDownIcon,
-  ChevronUpIcon,
   RefreshCwIcon,
   ArrowUpDownIcon,
   PlusIcon,
   AlertCircleIcon,
   Loader2Icon,
+  SortDescIcon,
+  SortAscIcon,
+  ArrowUp01Icon,
+  ArrowDown10Icon,
+  ArrowDownZAIcon,
+  ArrowUpAZIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
@@ -85,15 +91,7 @@ interface OrderTableEntry {
   }
 }
 
-type SortKey =
-  | 'counterparty'
-  | 'orderId'
-  | 'type'
-  | 'fee'
-  | 'minimumSize'
-  | 'maximumSize'
-  | 'minerFeeContribution'
-  | 'bondValue'
+type SortKey = keyof OrderTableEntry
 
 const offerToTableEntry = (
   offer: OrderbookOffer,
@@ -154,6 +152,30 @@ const offerToTableEntry = (
 
 const columnHelper = createColumnHelper<OrderTableEntry>()
 
+interface SortIconProps {
+  className?: string
+  sortKey: SortKey
+  column: Column<OrderTableEntry, unknown>
+}
+const SortIcon = ({ sortKey, column, className }: SortIconProps) => {
+  const dir = column.getIsSorted()
+  if (!dir) return <ArrowUpDownIcon className={className} />
+  const isNumeric =
+    sortKey === 'orderId' ||
+    sortKey === 'bondValue' ||
+    sortKey === 'minimumSize' ||
+    sortKey === 'maximumSize' ||
+    sortKey === 'fee'
+  if (isNumeric) {
+    return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
+  }
+  const isAlphabetic = sortKey === 'counterparty' || sortKey === 'type'
+  if (isAlphabetic) {
+    return dir === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
+  }
+  return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
+}
+
 interface OrderbookTableProps {
   tableEntries: OrderTableEntry[]
   selectedEntries: OrderTableEntry[]
@@ -204,9 +226,7 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
         header: () => <div className="flex items-center">{t('orderbook.table.heading_fee')}</div>,
         // Custom sorting: absolute before relative, then by fee value
         sortingFn: (a, b) => {
-          const aAbs = !!a.original.type.isAbsolute
-          const bAbs = !!b.original.type.isAbsolute
-          if (aAbs !== bAbs) return aAbs ? -1 : 1
+          if (a.original.type.isAbsolute !== b.original.type.isAbsolute) return a.original.type.isAbsolute ? -1 : 1
           return a.original.fee.value - b.original.fee.value
         },
         cell: (info) => {
@@ -330,13 +350,6 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
     }
   }
 
-  const getSortIcon = (columnKey: SortKey) => {
-    const col = table.getColumn(columnKey)
-    const dir = col?.getIsSorted()
-    if (!dir) return <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-    return dir === 'desc' ? <ChevronDownIcon className="ml-2 h-4 w-4" /> : <ChevronUpIcon className="ml-2 h-4 w-4" />
-  }
-
   return (
     <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
       <div className="flex-1 overflow-auto">
@@ -357,9 +370,9 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
                       })}
                       onClick={canSort ? () => handleSort(key) : undefined}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-2">
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {canSort && getSortIcon(key)}
+                        {canSort ? <SortIcon className="size-4" sortKey={key} column={header.column} /> : undefined}
                       </div>
                     </TableHead>
                   )
