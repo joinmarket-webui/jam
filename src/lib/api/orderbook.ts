@@ -1,9 +1,12 @@
+import type { OfferType } from '@/constants/jm'
+import type { AmountSats } from '@/types/global'
+
 export interface OrderbookOffer {
   counterparty: string
   oid: number
-  ordertype: string
-  minsize: number | null | undefined
-  maxsize: number | null | undefined
+  ordertype: OfferType
+  minsize: AmountSats | null | undefined
+  maxsize: AmountSats | null | undefined
   txfee: number | null | undefined
   cjfee: number | null | undefined
   fidelity_bond_value: number | null | undefined
