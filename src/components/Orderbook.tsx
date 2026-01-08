@@ -11,7 +11,15 @@ import {
   type ColumnDef,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDownIcon, ChevronUpIcon, RefreshCwIcon, ArrowUpDownIcon, PlusIcon, AlertCircleIcon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  RefreshCwIcon,
+  ArrowUpDownIcon,
+  PlusIcon,
+  AlertCircleIcon,
+  Loader2Icon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Badge } from '@/components/ui/badge'
@@ -488,7 +496,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   }
 
   return (
-    <div className={cn('space-y-6', isModal ? 'flex h-full flex-col p-10' : 'm-10 p-6')}>
+    <div
+      className={cn('space-y-6', {
+        'flex h-full flex-col p-10': isModal,
+        'm-10 p-6': !isModal,
+      })}
+    >
       {/* Header */}
       {!isModal && (
         <div className="flex items-center justify-between">
@@ -496,15 +509,10 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
             <h1 className="text-2xl font-bold">{t('orderbook.title')}</h1>
             <p className="text-muted-foreground mt-1">
               {searchQuery === ''
-                ? tableEntries.length === 1
-                  ? t('orderbook.text_orderbook_summary_one', {
-                      count: tableEntries.length,
-                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                    })
-                  : t('orderbook.text_orderbook_summary_other', {
-                      count: tableEntries.length,
-                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                    })
+                ? t('orderbook.text_orderbook_summary', {
+                    count: tableEntries.length,
+                    counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
+                  })
                 : t('orderbook.text_orderbook_summary_filtered', summary)}
             </p>
           </div>
@@ -580,15 +588,10 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           <div>
             <p className="text-muted-foreground text-sm">
               {searchQuery === ''
-                ? tableEntries.length === 1
-                  ? t('orderbook.text_orderbook_summary_one', {
-                      count: tableEntries.length,
-                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                    })
-                  : t('orderbook.text_orderbook_summary_other', {
-                      count: tableEntries.length,
-                      counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                    })
+                ? t('orderbook.text_orderbook_summary', {
+                    count: tableEntries.length,
+                    counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
+                  })
                 : t('orderbook.text_orderbook_summary_filtered', summary)}
             </p>
           </div>
@@ -690,16 +693,23 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
       {/* Table */}
       {isLoading ? (
-        <div className="py-12 text-center">
-          <div className="text-muted-foreground">{t('global.loading')}</div>
+        <div className="py-12">
+          <div className="text-muted-foreground m-2 flex items-center justify-center gap-2">
+            <Loader2Icon className="h-5 w-5 animate-spin motion-reduce:hidden" />
+            {t('global.loading')}
+          </div>
         </div>
       ) : filteredBaseData.length === 0 ? (
         <div className="py-12 text-center">
           <div className="text-muted-foreground">{t('orderbook.alert_empty_orderbook')}</div>
         </div>
       ) : (
-        <div className={cn('rounded-lg border shadow-sm', isModal && 'flex flex-1 flex-col overflow-hidden')}>
-          <div className={cn(isModal && 'flex-1 overflow-auto')}>
+        <div className={cn('rounded-lg border shadow-sm', { 'flex flex-1 flex-col overflow-hidden': isModal })}>
+          <div
+            className={cn({
+              'flex-1 overflow-auto': isModal,
+            })}
+          >
             <Table>
               <TableHeader className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
                 {table.getHeaderGroups().map((headerGroup) => (
