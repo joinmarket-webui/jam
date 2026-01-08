@@ -32,8 +32,9 @@ import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
-import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type OrderbookFidelityBond } from '@/lib/api/orderbook'
-//import { withQueryDelay } from '@/lib/queryClient'
+import * as OrderbookApi from '@/lib/api/orderbook'
+import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
+import { withQueryDelay } from '@/lib/queryClient'
 import {
   cn,
   factorToPercentage,
@@ -148,124 +149,22 @@ const offerToTableEntry = (
   }
 }
 
-interface OrderbookProps {
-  isModal?: boolean
+const columnHelper = createColumnHelper<OrderTableEntry>()
+
+interface OrderbookTableProps {
+  tableEntries: OrderTableEntry[]
+  highlightedEntries: OrderTableEntry[]
+  pinnedEntries: OrderTableEntry[]
+  isModal: boolean
 }
 
-export const Orderbook = ({ isModal = false }: OrderbookProps) => {
-  const { t, i18n } = useTranslation()
+const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isModal }: OrderbookTableProps) => {
+  const { t } = useTranslation()
 
-  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
-  const nickname = useMemo(() => jmSessionState?.nickname, [jmSessionState])
-
-  const [searchQuery, setSearchQuery] = useState('')
-  const [highlightMyOffers, setHighlightMyOffers] = useState(false)
-  const [pinMyOffers, setPinMyOffers] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE)
-  const [showRefreshDropdown, setShowRefreshDropdown] = useState(false)
   const [sorting, setSorting] = useState<SortingState>([])
-  const [localLoading, setLocalLoading] = useState(false)
-  const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
-  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
-  const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const __dev_generateDemoReportEntryButton = () => {
-    const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
-    const randomOrdertype = Math.random() > 0.5 ? 'sw0absoffer' : 'sw0reloffer'
-    const randomCounterparty = `demo_` + pseudoRandomNumber(0, 10)
-
-    const randomOffer: OrderbookOffer = {
-      counterparty: randomCounterparty,
-      oid: demoOffers.filter((e) => e.counterparty === randomCounterparty).length,
-      ordertype: randomOrdertype,
-      minsize: randomMinsize,
-      maxsize: randomMinsize + pseudoRandomNumber(21_000, 21_000_000),
-      txfee: 0,
-      cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomNumber(0, 10_000) : parseFloat(Math.random().toFixed(5)),
-      fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomNumber(1_000, 21_000_000),
-    }
-
-    setDemoOffers((prev) => [...prev, randomOffer])
-  }
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowRefreshDropdown(false)
-      }
-    }
-
-    if (showRefreshDropdown) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showRefreshDropdown])
-
-  const {
-    data: orderbookData,
-    isLoading,
-    error,
-    refetch,
-    isRefetching,
-  } = useQuery({
-    queryKey: ['orderbook'],
-    queryFn: fetchOrderbook,
-  })
-
-  // Combine both loading states for UI
-  const isLoadingData = isRefetching || localLoading
-
-  const tableEntries = useMemo(() => {
-    const realOffers = orderbookData?.offers || []
-    const allOffers = [...realOffers, ...demoOffers]
-
-    if (allOffers.length === 0) return []
-
-    const fidelityBondsMap = new Map<string, OrderbookFidelityBond>()
-    orderbookData?.fidelitybonds?.forEach((bond) => {
-      fidelityBondsMap.set(bond.counterparty, bond)
-    })
-
-    return allOffers.map((offer) => offerToTableEntry(offer, fidelityBondsMap.get(offer.counterparty), i18n))
-  }, [orderbookData, demoOffers, i18n])
-
-  const ownOffers = useMemo(() => {
-    return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
-  }, [nickname, tableEntries])
-
-  const filteredBaseData = useMemo(() => {
-    if (!tableEntries) return []
-    const searchVal = searchQuery.replace('.', '').toLowerCase()
-    let offers = [...tableEntries]
-    if (searchVal !== '') {
-      offers = offers.filter((entry) => {
-        return (
-          entry.type.displayValue.toLowerCase().includes(searchVal) ||
-          entry.counterparty.toLowerCase().includes(searchVal) ||
-          entry.fee.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.bondValue.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.orderId.toLowerCase().includes(searchVal)
-        )
-      })
-    }
-    if (pinMyOffers && ownOffers.length > 0) {
-      const userOffersFiltered = offers.filter((offer) => ownOffers.includes(offer))
-      const otherOffers = offers.filter((offer) => !ownOffers.includes(offer))
-      return [...userOffersFiltered, ...otherOffers]
-    }
-    return offers
-  }, [tableEntries, searchQuery, pinMyOffers, ownOffers])
-
-  // Define columns with custom cells and sorting
-  const columnHelper = createColumnHelper<OrderTableEntry>()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const columns = useMemo<ColumnDef<OrderTableEntry, any>[]>(
     () => [
@@ -358,17 +257,17 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
         },
       }),
     ],
-    [t, columnHelper],
+    [t],
   )
 
   const table = useReactTable({
-    data: filteredBaseData,
+    data: tableEntries,
     columns,
     state: {
       sorting,
       pagination: {
         pageIndex: Math.max(0, currentPage - 1),
-        pageSize: itemsPerPage === -1 ? filteredBaseData.length || 1 : itemsPerPage,
+        pageSize: itemsPerPage === -1 ? tableEntries.length || 1 : itemsPerPage,
       },
     },
     onSortingChange: setSorting,
@@ -381,9 +280,9 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
   const totalPages = useMemo(() => {
     if (itemsPerPage === -1) return 1
-    const total = filteredBaseData.length
+    const total = tableEntries.length
     return Math.max(1, Math.ceil(total / itemsPerPage))
-  }, [itemsPerPage, filteredBaseData])
+  }, [itemsPerPage, tableEntries])
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -394,59 +293,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
   const getRowsToRender = () => {
     const rows = table.getRowModel().rows
-    if (pinMyOffers && ownOffers.length > 0) {
-      const mine = rows.filter((r) => ownOffers.includes(r.original))
-      const others = rows.filter((r) => !ownOffers.includes(r.original))
+    if (pinnedEntries.length > 0) {
+      const mine = rows.filter((r) => pinnedEntries.includes(r.original))
+      const others = rows.filter((r) => !pinnedEntries.includes(r.original))
       return [...mine, ...others]
     }
     return rows
-  }
-
-  const summary = useMemo(() => {
-    const uniqueCounterparties = new Set(filteredBaseData.map((offer) => offer.counterparty))
-    return {
-      count: filteredBaseData.length,
-      counterpartyCount: uniqueCounterparties.size,
-    }
-  }, [filteredBaseData])
-
-  const handlePinToggle = (checked: boolean) => {
-    setPinMyOffers(checked)
-    if (!ownOffers.length) return
-    if (checked) {
-      setHighlightMyOffers(true)
-    }
-  }
-
-  const handleClearAndReload = async () => {
-    setLocalLoading(true)
-    setSearchQuery('')
-    setCurrentPage(1)
-    setItemsPerPage(ITEMS_PER_PAGE)
-    setDemoOffers([]) // Clear demo offers when clearing everything
-    setSorting([])
-    setShowRefreshDropdown(false)
-
-    try {
-      await refreshOrderbook()
-        .then(() => refetch())
-        // Add a small delay to avoid flickering
-        .then(() => delayedPromise(200))
-    } finally {
-      setLocalLoading(false)
-    }
-  }
-
-  const handleReload = async () => {
-    setLocalLoading(true)
-    setShowRefreshDropdown(false)
-
-    try {
-      // Add a small delay to avoid flickering
-      await refetch().then(() => delayedPromise(200))
-    } finally {
-      setLocalLoading(false)
-    }
   }
 
   const handleSort = (key: SortKey) => {
@@ -463,6 +315,225 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     return dir === 'desc' ? <ChevronDownIcon className="ml-2 h-4 w-4" /> : <ChevronUpIcon className="ml-2 h-4 w-4" />
   }
 
+  return (
+    <div className={cn('rounded-lg border shadow-sm', { 'flex flex-1 flex-col overflow-hidden': isModal })}>
+      <div className={cn({ 'flex-1 overflow-auto': isModal })}>
+        <Table>
+          <TableHeader className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort()
+                  const key = header.column.id as SortKey
+                  const alignRight = (header.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={cn({
+                        'cursor-pointer select-none': canSort,
+                        'text-right': alignRight,
+                      })}
+                      onClick={canSort ? () => handleSort(key) : undefined}
+                    >
+                      <div className="flex items-center">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {canSort && getSortIcon(key)}
+                      </div>
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
+            {getRowsToRender().map((row) => {
+              const shouldHighlight = highlightedEntries.includes(row.original)
+              return (
+                <TableRow
+                  key={row.id}
+                  className={cn(
+                    shouldHighlight &&
+                      '!border-yellow-300 !bg-yellow-50 ring-1 ring-yellow-300/40 dark:!border-yellow-700 dark:!bg-yellow-950 dark:ring-yellow-800/40',
+                  )}
+                >
+                  {row.getVisibleCells().map((cell) => {
+                    const alignRight = (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                    return (
+                      <TableCell key={cell.id} className={cn(alignRight && 'text-right font-mono')}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    )
+                  })}
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        totalItems={tableEntries.length}
+        onPageChange={(page) => {
+          setCurrentPage(page)
+          table.setPageIndex(Math.max(0, page - 1))
+        }}
+        onItemsPerPageChange={(newItemsPerPage) => {
+          setItemsPerPage(newItemsPerPage)
+          const size = newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
+          table.setPageSize(size)
+          setCurrentPage(1)
+          table.setPageIndex(0)
+        }}
+      />
+    </div>
+  )
+}
+
+interface OrderbookProps {
+  isModal?: boolean
+}
+
+export const Orderbook = ({ isModal = false }: OrderbookProps) => {
+  const { t, i18n } = useTranslation()
+
+  const nickname = useStore(jmSessionStore, (state) => state.state?.nickname)
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isHighlightMyOffers, setHighlightMyOffers] = useState(false)
+  const [isPinMyOffers, setPinMyOffers] = useState(false)
+
+  const [showRefreshDropdown, setShowRefreshDropdown] = useState(false)
+
+  const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+  const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
+
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const __dev_generateDemoReportEntryButton = () => {
+    const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
+    const randomOrdertype = Math.random() > 0.5 ? 'sw0absoffer' : 'sw0reloffer'
+    const randomCounterparty = `demo_` + pseudoRandomNumber(0, 10)
+
+    const randomOffer: OrderbookOffer = {
+      counterparty: randomCounterparty,
+      oid: demoOffers.filter((e) => e.counterparty === randomCounterparty).length,
+      ordertype: randomOrdertype,
+      minsize: randomMinsize,
+      maxsize: randomMinsize + pseudoRandomNumber(21_000, 21_000_000),
+      txfee: 0,
+      cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomNumber(0, 10_000) : parseFloat(Math.random().toFixed(5)),
+      fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomNumber(1_000, 21_000_000),
+    }
+
+    setDemoOffers((prev) => [...prev, randomOffer])
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowRefreshDropdown(false)
+      }
+    }
+
+    if (showRefreshDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showRefreshDropdown])
+
+  const { isFetching: isFetchingOrderbookRefresh, refetch: refetchOrderbookRefresh } = useQuery({
+    queryKey: ['orderbook-refresh'],
+    queryFn: withQueryDelay(OrderbookApi.refreshOrderbook, {
+      delayAfter: 200,
+    }),
+    enabled: false, // invoke manually only!
+  })
+
+  const {
+    data: orderbookData,
+    isLoading: isLoadingInitially,
+    error,
+    refetch: refetchOrderbookData,
+    isFetching: isFetchingOrderbookData,
+  } = useQuery({
+    queryKey: ['orderbook'],
+    queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
+      delayAfter: 200,
+    }),
+  })
+
+  const isFetching = isFetchingOrderbookData || isFetchingOrderbookRefresh
+
+  const tableEntries = useMemo(() => {
+    const realOffers = orderbookData?.offers || []
+    const allOffers = [...realOffers, ...demoOffers]
+
+    if (allOffers.length === 0) {
+      return []
+    }
+
+    const fidelityBondsMap = new Map<string, OrderbookFidelityBond>()
+    orderbookData?.fidelitybonds?.forEach((bond) => {
+      fidelityBondsMap.set(bond.counterparty, bond)
+    })
+
+    return allOffers.map((offer) => offerToTableEntry(offer, fidelityBondsMap.get(offer.counterparty), i18n))
+  }, [orderbookData, demoOffers, i18n])
+
+  const myOffers = useMemo(() => {
+    return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
+  }, [nickname, tableEntries])
+
+  const filteredBaseData = useMemo(() => {
+    if (!tableEntries) return []
+    const searchVal = searchQuery.replace('.', '').toLowerCase()
+    let offers = [...tableEntries]
+    if (searchVal !== '') {
+      offers = offers.filter((entry) => {
+        return (
+          entry.type.displayValue.toLowerCase().includes(searchVal) ||
+          entry.counterparty.toLowerCase().includes(searchVal) ||
+          entry.fee.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
+          entry.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+          entry.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
+          entry.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
+          entry.bondValue.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
+          entry.orderId.toLowerCase().includes(searchVal)
+        )
+      })
+    }
+    return offers
+  }, [tableEntries, searchQuery])
+
+  const summary = useMemo(() => {
+    const uniqueCounterparties = new Set(filteredBaseData.map((offer) => offer.counterparty))
+    return {
+      count: filteredBaseData.length,
+      counterpartyCount: uniqueCounterparties.size,
+    }
+  }, [filteredBaseData])
+
+  const handleClearAndReload = async () => {
+    setShowRefreshDropdown(false)
+
+    await refetchOrderbookRefresh().then(() => refetchOrderbookData())
+  }
+
+  const handleReload = async () => {
+    setShowRefreshDropdown(false)
+    await refetchOrderbookData().then(() => delayedPromise(200))
+  }
+
+  const highlightedOffers: OrderTableEntry[] = isHighlightMyOffers ? myOffers : []
+  const pinnedToTopOffers: OrderTableEntry[] = isPinMyOffers ? myOffers : []
+
   if (error) {
     return (
       <div className="space-y-2 p-6">
@@ -475,8 +546,8 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           </AlertDescription>
         </Alert>
 
-        <Button onClick={() => refetch()} disabled={isLoadingData}>
-          <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'motion-safe:animate-spin': isLoadingData })} />
+        <Button onClick={() => refetchOrderbookData()} disabled={isFetching}>
+          <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'motion-safe:animate-spin': isFetching })} />
           {t('global.retry')}
         </Button>
       </div>
@@ -505,17 +576,17 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
             </p>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             {showDemoButton && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={__dev_generateDemoReportEntryButton}
-                disabled={isLoadingData}
+                disabled={isFetching}
                 className="relative"
               >
-                Generate Demo Entry
                 <PlusIcon className="ml-2 h-4 w-4" />
+                Generate Demo Entry
                 <DevBadge />
               </Button>
             )}
@@ -527,10 +598,10 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                   className="rounded-r-none"
                   size="sm"
                   onClick={handleReload}
-                  disabled={isLoadingData}
+                  disabled={isFetching}
                 >
+                  <RefreshCwIcon className={cn('h-4 w-4', { 'motion-safe:animate-spin': isFetching })} />
                   {t('orderbook.button_reload_title')}
-                  <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'animate-spin': isLoadingData })} />
                 </Button>
                 <div className="relative">
                   <Button
@@ -538,7 +609,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                     size="sm"
                     className="rounded-l-none border-l-0 px-2"
                     onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
-                    disabled={isLoadingData}
+                    disabled={isFetching}
                   >
                     <ChevronDownIcon className="h-4 w-4" />
                   </Button>
@@ -549,7 +620,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                         size="sm"
                         className="w-full justify-start rounded-none"
                         onClick={handleClearAndReload}
-                        disabled={isLoadingData}
+                        disabled={isFetching}
                       >
                         {t('orderbook.button_refresh_text')}
                       </Button>
@@ -564,7 +635,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-64"
-              disabled={isLoadingData}
+              disabled={isFetching}
             />
           </div>
         </div>
@@ -590,7 +661,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                 variant="outline"
                 size="sm"
                 onClick={__dev_generateDemoReportEntryButton}
-                disabled={isLoadingData}
+                disabled={isFetching}
                 className="relative"
               >
                 Generate Demo Entry
@@ -606,12 +677,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                   className="rounded-r-none"
                   size="sm"
                   onClick={handleReload}
-                  disabled={isLoadingData}
+                  disabled={isFetching}
                 >
                   {t('orderbook.button_reload_title')}
                   <RefreshCwIcon
                     className={cn('ml-2 h-4 w-4', {
-                      'animate-spin': isLoadingData,
+                      'motion-safe: animate-spin': isFetching,
                     })}
                   />
                 </Button>
@@ -621,7 +692,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                     size="sm"
                     className="rounded-l-none border-l-0 px-2"
                     onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
-                    disabled={isLoadingData}
+                    disabled={isFetching}
                   >
                     <ChevronDownIcon className="h-4 w-4" />
                   </Button>
@@ -632,7 +703,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                         size="sm"
                         className="w-full justify-start rounded-none"
                         onClick={handleClearAndReload}
-                        disabled={isLoadingData}
+                        disabled={isFetching}
                       >
                         {t('orderbook.button_refresh_text')}
                       </Button>
@@ -647,49 +718,56 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-64"
-              disabled={isLoadingData}
+              disabled={isFetching}
             />
           </div>
         </div>
       )}
 
       {/* Controls */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+      {nickname && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-4">
             <Switch
               id="highlight-my-offers"
-              checked={highlightMyOffers}
-              onCheckedChange={setHighlightMyOffers}
-              disabled={isLoadingData}
+              checked={isHighlightMyOffers}
+              onCheckedChange={(checked) => setHighlightMyOffers(checked)}
+              disabled={isFetching}
             />
             <Label htmlFor="highlight-my-offers" className="flex flex-col items-start gap-0">
               <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
-              <div className="text-muted-foreground text-sm">
-                {ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
-              </div>
+              {myOffers.length === 0 ? (
+                <div className="text-muted-foreground text-sm">{t('orderbook.text_highlight_own_orders_subtitle')}</div>
+              ) : undefined}
             </Label>
           </div>
-        </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="pin-my-offers"
-              checked={pinMyOffers}
-              onCheckedChange={handlePinToggle}
-              disabled={isLoadingData}
-            />
-            <Label htmlFor="pin-my-offers" className="flex flex-col items-start gap-0">
-              <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
-              <div className="text-muted-foreground text-sm">{t('orderbook.text_pin_to_top_own_orders_subtitle')}</div>
-            </Label>
-          </div>
+          {myOffers.length > 0 && (
+            <div className="flex items-center gap-4">
+              <Switch
+                id="pin-my-offers"
+                checked={isPinMyOffers}
+                onCheckedChange={(checked) => {
+                  setPinMyOffers(checked)
+                  if (checked) {
+                    setHighlightMyOffers(true)
+                  }
+                }}
+                disabled={isFetching}
+              />
+              <Label htmlFor="pin-my-offers" className="flex flex-col items-start gap-0">
+                <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
+                <div className="text-muted-foreground text-sm">
+                  {t('orderbook.text_pin_to_top_own_orders_subtitle')}
+                </div>
+              </Label>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Table */}
-      {isLoading ? (
+      {isLoadingInitially ? (
         <div className="py-12">
           <div className="text-muted-foreground m-2 flex items-center justify-center gap-2">
             <Loader2Icon className="h-5 w-5 animate-spin motion-reduce:hidden" />
@@ -701,85 +779,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           <div className="text-muted-foreground">{t('orderbook.alert_empty_orderbook')}</div>
         </div>
       ) : (
-        <div className={cn('rounded-lg border shadow-sm', { 'flex flex-1 flex-col overflow-hidden': isModal })}>
-          <div
-            className={cn({
-              'flex-1 overflow-auto': isModal,
-            })}
-          >
-            <Table>
-              <TableHeader className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      const canSort = header.column.getCanSort()
-                      const key = header.column.id as SortKey
-                      const alignRight =
-                        (header.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
-                      return (
-                        <TableHead
-                          key={header.id}
-                          className={cn({
-                            'cursor-pointer select-none': canSort,
-                            'text-right': alignRight,
-                          })}
-                          onClick={canSort ? () => handleSort(key) : undefined}
-                        >
-                          <div className="flex items-center">
-                            {flexRender(header.column.columnDef.header, header.getContext())}
-                            {canSort && getSortIcon(key)}
-                          </div>
-                        </TableHead>
-                      )
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
-                {getRowsToRender().map((row) => {
-                  const shouldHighlight = highlightMyOffers && ownOffers.includes(row.original)
-                  return (
-                    <TableRow
-                      key={row.id}
-                      className={cn(
-                        shouldHighlight &&
-                          '!border-yellow-300 !bg-yellow-50 ring-1 ring-yellow-300/40 dark:!border-yellow-700 dark:!bg-yellow-950 dark:ring-yellow-800/40',
-                      )}
-                    >
-                      {row.getVisibleCells().map((cell) => {
-                        const alignRight =
-                          (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
-                        return (
-                          <TableCell key={cell.id} className={cn(alignRight && 'text-right font-mono')}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        )
-                      })}
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            itemsPerPage={itemsPerPage}
-            totalItems={filteredBaseData.length}
-            onPageChange={(page) => {
-              setCurrentPage(page)
-              table.setPageIndex(Math.max(0, page - 1))
-            }}
-            onItemsPerPageChange={(newItemsPerPage) => {
-              setItemsPerPage(newItemsPerPage)
-              const size = newItemsPerPage === -1 ? table.getPrePaginationRowModel().rows.length || 1 : newItemsPerPage
-              table.setPageSize(size)
-              setCurrentPage(1)
-              table.setPageIndex(0)
-            }}
-          />
-        </div>
+        <OrderbookTable
+          tableEntries={filteredBaseData}
+          highlightedEntries={highlightedOffers}
+          pinnedEntries={pinnedToTopOffers}
+          isModal={isModal}
+        />
       )}
     </div>
   )
