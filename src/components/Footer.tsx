@@ -4,7 +4,7 @@ import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, CheckIcon, FileIcon, XIcon
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
-import { OrderbookDialog } from '@/components/OrderbookDialog'
+import { OrderbookDialog } from '@/components/orderbook/OrderbookDialog'
 import { Button } from '@/components/ui/button'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
