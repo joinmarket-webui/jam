@@ -158,15 +158,9 @@ interface OrderbookTableProps {
   tableEntries: OrderTableEntry[]
   selectedEntries: OrderTableEntry[]
   pinnedEntries: OrderTableEntry[]
-  isModal: boolean
 }
 
-const OrderbookTable = ({
-  tableEntries,
-  selectedEntries: highlightedEntries,
-  pinnedEntries,
-  isModal,
-}: OrderbookTableProps) => {
+const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pinnedEntries }: OrderbookTableProps) => {
   const { t } = useTranslation()
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -311,7 +305,6 @@ const OrderbookTable = ({
   }, [table, pinnedEntries])
 
   useEffect(() => {
-    table.resetRowSelection(true)
     table.getRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
@@ -345,8 +338,8 @@ const OrderbookTable = ({
   }
 
   return (
-    <div className={cn('rounded-lg border shadow-sm', { 'flex flex-1 flex-col overflow-hidden': isModal })}>
-      <div className={cn({ 'flex-1 overflow-auto': isModal })}>
+    <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
+      <div className="flex-1 overflow-auto">
         <Table>
           <TableHeader className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -817,7 +810,6 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           tableEntries={filteredBaseData}
           selectedEntries={highlightedOffers}
           pinnedEntries={pinnedToTopOffers}
-          isModal={isModal}
         />
       )}
     </div>
