@@ -11,6 +11,7 @@ import {
   type ColumnDef,
   useReactTable,
 } from '@tanstack/react-table'
+import type { i18n } from 'i18next'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -32,6 +33,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type OrderbookFidelityBond } from '@/lib/api/orderbook'
+//import { withQueryDelay } from '@/lib/queryClient'
 import {
   cn,
   factorToPercentage,
@@ -52,26 +54,26 @@ import { Label } from './ui/label'
 const ITEMS_PER_PAGE = 25
 
 interface OrderTableEntry {
-  counterparty: string
-  orderId: string
+  counterparty: string // example: "J5Bv3JSxPFWm2Yjb"
+  orderId: string // example: "0" (not unique!)
   type: {
-    value: string
-    displayValue: string
-    badgeColor: 'default' | 'secondary'
-    tooltip?: string
-    isAbsolute?: boolean
-    isRelative?: boolean
+    value: string // original value, example: 'sw0reloffer', 'swreloffer', 'reloffer', 'sw0absoffer', 'swabsoffer', 'absoffer'
+    displayValue: string // example: "absolute" or "relative" (respecting i18n)
+    badgeColor: Parameters<typeof Badge>[0]['variant']
+    tooltip?: 'Native SW Absolute Fee' | 'Native SW Relative Fee' | string
+    isAbsolute: boolean
+    isRelative: boolean
   }
   fee: {
     value: number
-    displayValue: string
+    displayValue: string // example: "250" (abs offers) or "0.000100%" (rel offers)
   }
-  minerFeeContribution: string
-  minimumSize: string
-  maximumSize: string
+  minerFeeContribution: string // example: "0"
+  minimumSize: string // example: "27300"
+  maximumSize: string // example: "237499972700"
   bondValue: {
     value: number
-    displayValue: string
+    displayValue: string // example: "0" (no fb) or "114557102085.28133"
     locktime?: number
     displayLocktime?: string
     displayExpiresIn?: string
@@ -92,7 +94,7 @@ type SortKey =
 const offerToTableEntry = (
   offer: OrderbookOffer,
   fidelityBond: OrderbookFidelityBond | undefined,
-  t: (key: string, options?: Record<string, unknown>) => string,
+  i18n: i18n,
 ): OrderTableEntry => {
   const isAbs = isAbsoluteOffer(offer.ordertype)
   const isRel = isRelativeOffer(offer.ordertype)
@@ -102,14 +104,18 @@ const offerToTableEntry = (
     orderId: String(offer.oid),
     type: {
       value: offer.ordertype,
-      displayValue: isAbs ? t('orderbook.text_offer_type_absolute') : t('orderbook.text_offer_type_relative'),
-      badgeColor: isAbs ? 'default' : 'secondary',
+      displayValue: isAbs
+        ? i18n.t('orderbook.text_offer_type_absolute')
+        : isRel
+          ? i18n.t('orderbook.text_offer_type_relative')
+          : offer.ordertype,
+      badgeColor: isAbs ? 'default' : isRel ? 'secondary' : 'outline',
       tooltip:
         offer.ordertype === 'sw0absoffer'
           ? 'Native SW Absolute Fee'
           : offer.ordertype === 'sw0reloffer'
             ? 'Native SW Relative Fee'
-            : offer.ordertype,
+            : undefined,
       isAbsolute: isAbs,
       isRelative: isRel,
     },
@@ -135,7 +141,7 @@ const offerToTableEntry = (
       locktime: fidelityBond?.locktime,
       displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
       displayExpiresIn: fidelityBond?.locktime
-        ? humanReadableDuration({ to: fidelityBond.locktime * 1000 })
+        ? humanReadableDuration({ to: fidelityBond.locktime * 1_000, locale: i18n.resolvedLanguage || i18n.language })
         : undefined,
       amount: fidelityBond?.amount,
     },
@@ -147,7 +153,7 @@ interface OrderbookProps {
 }
 
 export const Orderbook = ({ isModal = false }: OrderbookProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
   const nickname = useMemo(() => jmSessionState?.nickname, [jmSessionState])
@@ -225,8 +231,8 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
       fidelityBondsMap.set(bond.counterparty, bond)
     })
 
-    return allOffers.map((offer) => offerToTableEntry(offer, fidelityBondsMap.get(offer.counterparty), t))
-  }, [orderbookData, demoOffers, t])
+    return allOffers.map((offer) => offerToTableEntry(offer, fidelityBondsMap.get(offer.counterparty), i18n))
+  }, [orderbookData, demoOffers, i18n])
 
   const ownOffers = useMemo(() => {
     return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
