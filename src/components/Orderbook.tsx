@@ -39,7 +39,7 @@ import {
   isRelativeOffer,
   BTC,
   humanReadableDuration,
-  ReloadDelay,
+  delayedPromise,
   pseudoRandomNumber,
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -77,7 +77,6 @@ interface OrderTableEntry {
   }
 }
 
-// TODO: check out libraries
 type SortKey =
   | 'counterparty'
   | 'orderId'
@@ -364,7 +363,6 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     [t, columnHelper],
   )
 
-  // Create table instance
   const table = useReactTable({
     data: filteredBaseData,
     columns,
@@ -428,19 +426,14 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setCurrentPage(1)
     setItemsPerPage(ITEMS_PER_PAGE)
     setDemoOffers([]) // Clear demo offers when clearing everything
-
     setSorting([])
     setShowRefreshDropdown(false)
 
     try {
-      // Add a small delay to show the loading state
-      await ReloadDelay()
-
       // First refresh the orderbook on the server
       await refreshOrderbook()
-
-      // Then refetch the data
-      await refetch()
+        .then(() => refetch())
+        .then(() => delayedPromise(200))
     } catch (error) {
       console.error('Failed to refresh orderbook:', error)
       // Still try to refetch even if refresh fails
@@ -454,10 +447,9 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setLocalLoading(true)
     setShowRefreshDropdown(false)
 
-    // Add a small delay to show the loading state
-    await ReloadDelay()
-
-    await refetch()
+    // Add a small delay to avoid dflickering
+    await refetch().then(() => delayedPromise(200))
+    
     setLocalLoading(false)
   }
 
@@ -722,7 +714,10 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                       return (
                         <TableHead
                           key={header.id}
-                          className={cn(canSort && 'cursor-pointer select-none', alignRight && 'text-right')}
+                          className={cn({
+                            'cursor-pointer select-none': canSort, 
+                            'text-right': alignRight 
+                            })}
                           onClick={canSort ? () => handleSort(key) : undefined}
                         >
                           <div className="flex items-center">
@@ -737,9 +732,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
               </TableHeader>
               <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
                 {getRowsToRender().map((row) => {
-                  const offer = row.original
-                  const isOwn = userOffers.includes(offer.counterparty)
-                  const shouldHighlight = highlightMyOffers && isOwn
+                  const shouldHighlight = highlightMyOffers && userOffers.includes(row.original.counterparty)
                   return (
                     <TableRow
                       key={row.id}
