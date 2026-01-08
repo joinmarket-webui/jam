@@ -152,6 +152,8 @@ const offerToTableEntry = (
 
 const columnHelper = createColumnHelper<OrderTableEntry>()
 
+type OrderTableColumnMeta = { align?: string } | undefined
+
 interface SortIconProps {
   className?: string
   sortKey: SortKey
@@ -221,9 +223,12 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
             </TooltipContent>
           </Tooltip>
         ),
+        meta: {
+          align: 'center',
+        } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('fee', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_fee')}</div>,
+        header: () => <div className="flex items-center justify-end">{t('orderbook.table.heading_fee')}</div>,
         // Custom sorting: absolute before relative, then by fee value
         sortingFn: (a, b) => {
           if (a.original.type.isAbsolute !== b.original.type.isAbsolute) return a.original.type.isAbsolute ? -1 : 1
@@ -237,22 +242,34 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
             <Balance colored={false} valueString={entry.fee.displayValue} />
           )
         },
+        meta: {
+          align: 'right',
+        } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('minimumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
         sortingFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+        meta: {
+          align: 'right',
+        } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('maximumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
         sortingFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+        meta: {
+          align: 'right',
+        } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('minerFeeContribution', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
         sortingFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
         enableHiding: true,
+        meta: {
+          align: 'right',
+        } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('bondValue', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
@@ -278,6 +295,9 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
           ) : (
             <>{entry.bondValue.displayValue}</>
           )
+        },
+        meta: {
+          align: 'right',
         },
       }),
     ],
@@ -360,17 +380,25 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
                   const key = header.column.id as SortKey
-                  const alignRight = (header.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                  const alignCenter = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
+                  const alignRight = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
                       className={cn({
                         'cursor-pointer select-none': canSort,
+                        'text-center': alignCenter,
                         'text-right': alignRight,
                       })}
                       onClick={canSort ? () => handleSort(key) : undefined}
                     >
-                      <div className="flex items-center gap-2">
+                      <div
+                        className={cn('flex items-center gap-2', {
+                          'cursor-pointer select-none': canSort,
+                          'justify-center': alignCenter,
+                          'justify-end': alignRight,
+                        })}
+                      >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {canSort ? <SortIcon className="size-4" sortKey={key} column={header.column} /> : undefined}
                       </div>
@@ -384,9 +412,16 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
             {table.getTopRows().map((row) => (
               <TableRow key={row.id} className={cn(row.getIsSelected() && 'light:bg-yellow-500/30! bg-yellow-950!')}>
                 {row.getVisibleCells().map((cell) => {
-                  const alignRight = (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                  const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
+                  const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
                   return (
-                    <TableCell key={cell.id} className={cn(alignRight && 'text-right font-mono')}>
+                    <TableCell
+                      key={cell.id}
+                      className={cn({
+                        'text-center': alignCenter,
+                        'text-right': alignRight,
+                      })}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   )
@@ -397,9 +432,16 @@ const OrderbookTable = ({ tableEntries, selectedEntries: highlightedEntries, pin
               return (
                 <TableRow key={row.id} className={cn(row.getIsSelected() && 'light:bg-yellow-500/30! bg-yellow-950!')}>
                   {row.getVisibleCells().map((cell) => {
-                    const alignRight = (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                    const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
+                    const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
                     return (
-                      <TableCell key={cell.id} className={cn(alignRight && 'text-right font-mono')}>
+                      <TableCell
+                        key={cell.id}
+                        className={cn({
+                          'text-center': alignCenter,
+                          'text-right': alignRight,
+                        })}
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     )
