@@ -51,9 +51,9 @@ import {
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
-import { DevBadge } from './dev/DevBadge'
-import { Alert, AlertDescription } from './ui/alert'
-import { Label } from './ui/label'
+import { DevBadge } from '../dev/DevBadge'
+import { Alert, AlertDescription } from '../ui/alert'
+import { Label } from '../ui/label'
 
 const ITEMS_PER_PAGE = 25
 
