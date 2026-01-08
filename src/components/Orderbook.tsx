@@ -31,7 +31,7 @@ import { Switch } from '@/components/ui/switch'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
-import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type FidelityBond } from '@/lib/api/orderbook'
+import { fetchOrderbook, refreshOrderbook, type OrderbookOffer, type OrderbookFidelityBond } from '@/lib/api/orderbook'
 import {
   cn,
   factorToPercentage,
@@ -44,6 +44,7 @@ import {
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import type { AmountSats } from '@/types/global'
 import { DevBadge } from './dev/DevBadge'
 import { Alert, AlertDescription } from './ui/alert'
 import { Label } from './ui/label'
@@ -74,7 +75,7 @@ interface OrderTableEntry {
     locktime?: number
     displayLocktime?: string
     displayExpiresIn?: string
-    amount?: number
+    amount?: AmountSats
   }
 }
 
@@ -90,7 +91,7 @@ type SortKey =
 
 const offerToTableEntry = (
   offer: OrderbookOffer,
-  fidelityBond: FidelityBond | undefined,
+  fidelityBond: OrderbookFidelityBond | undefined,
   t: (key: string, options?: Record<string, unknown>) => string,
 ): OrderTableEntry => {
   const isAbs = isAbsoluteOffer(offer.ordertype)
@@ -132,7 +133,7 @@ const offerToTableEntry = (
       value: offer.fidelity_bond_value || 0,
       displayValue: String((offer.fidelity_bond_value || 0).toFixed(0)),
       locktime: fidelityBond?.locktime,
-      displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1000).toDateString() : undefined,
+      displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
       displayExpiresIn: fidelityBond?.locktime
         ? humanReadableDuration({ to: fidelityBond.locktime * 1000 })
         : undefined,
@@ -219,7 +220,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
     if (allOffers.length === 0) return []
 
-    const fidelityBondsMap = new Map<string, FidelityBond>()
+    const fidelityBondsMap = new Map<string, OrderbookFidelityBond>()
     orderbookData?.fidelitybonds?.forEach((bond) => {
       fidelityBondsMap.set(bond.counterparty, bond)
     })
@@ -321,12 +322,6 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
 
         sortingFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
-        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
-      }),
-      columnHelper.accessor('minerFeeContribution', {
-        header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
-
-        sortingFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
       }),
       columnHelper.accessor('bondValue', {
