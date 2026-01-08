@@ -10,6 +10,9 @@ import {
   type SortingState,
   type ColumnDef,
   useReactTable,
+  type RowPinningState,
+  type RowSelectionState,
+  type VisibilityState,
 } from '@tanstack/react-table'
 import type { i18n } from 'i18next'
 import {
@@ -153,12 +156,17 @@ const columnHelper = createColumnHelper<OrderTableEntry>()
 
 interface OrderbookTableProps {
   tableEntries: OrderTableEntry[]
-  highlightedEntries: OrderTableEntry[]
+  selectedEntries: OrderTableEntry[]
   pinnedEntries: OrderTableEntry[]
   isModal: boolean
 }
 
-const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isModal }: OrderbookTableProps) => {
+const OrderbookTable = ({
+  tableEntries,
+  selectedEntries: highlightedEntries,
+  pinnedEntries,
+  isModal,
+}: OrderbookTableProps) => {
   const { t } = useTranslation()
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -200,7 +208,6 @@ const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isMod
       }),
       columnHelper.accessor('fee', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_fee')}</div>,
-
         // Custom sorting: absolute before relative, then by fee value
         sortingFn: (a, b) => {
           const aAbs = !!a.original.type.isAbsolute
@@ -219,19 +226,22 @@ const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isMod
       }),
       columnHelper.accessor('minimumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_minimum_size')}</div>,
-
         sortingFn: (a, b) => Number(a.original.minimumSize) - Number(b.original.minimumSize),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
       }),
       columnHelper.accessor('maximumSize', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_maximum_size')}</div>,
-
         sortingFn: (a, b) => Number(a.original.maximumSize) - Number(b.original.maximumSize),
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
       }),
+      columnHelper.accessor('minerFeeContribution', {
+        header: () => <div className="flex items-center">{t('orderbook.table.heading_miner_fee_contribution')}</div>,
+        sortingFn: (a, b) => Number(a.original.minerFeeContribution) - Number(b.original.minerFeeContribution),
+        cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
+        enableHiding: true,
+      }),
       columnHelper.accessor('bondValue', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_bond_value')}</div>,
-
         sortingFn: (a, b) => a.original.bondValue.value - b.original.bondValue.value,
         cell: (info) => {
           const entry = info.row.original
@@ -259,6 +269,14 @@ const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isMod
     ],
     [t],
   )
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    minerFeeContribution: false,
+  })
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [rowPinning, setRowPinning] = useState<RowPinningState>({
+    top: [],
+    bottom: [],
+  })
 
   const table = useReactTable({
     data: tableEntries,
@@ -269,14 +287,35 @@ const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isMod
         pageIndex: Math.max(0, currentPage - 1),
         pageSize: itemsPerPage === -1 ? tableEntries.length || 1 : itemsPerPage,
       },
+      rowPinning,
+      rowSelection,
+      columnVisibility,
     },
+    keepPinnedRows: true,
+    enableRowSelection: true,
     onSortingChange: setSorting,
+    onRowPinningChange: setRowPinning,
+    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     manualFiltering: true, // we filter before passing to table
   })
+
+  useEffect(() => {
+    table.getRowModel().rows.forEach((row) => {
+      row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
+    })
+  }, [table, pinnedEntries])
+
+  useEffect(() => {
+    table.resetRowSelection(true)
+    table.getRowModel().rows.forEach((row) => {
+      row.toggleSelected(highlightedEntries.includes(row.original))
+    })
+  }, [table, highlightedEntries])
 
   const totalPages = useMemo(() => {
     if (itemsPerPage === -1) return 1
@@ -290,16 +329,6 @@ const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isMod
       table.setPageIndex(Math.max(0, totalPages - 1))
     }
   }, [totalPages, currentPage, table])
-
-  const getRowsToRender = () => {
-    const rows = table.getRowModel().rows
-    if (pinnedEntries.length > 0) {
-      const mine = rows.filter((r) => pinnedEntries.includes(r.original))
-      const others = rows.filter((r) => !pinnedEntries.includes(r.original))
-      return [...mine, ...others]
-    }
-    return rows
-  }
 
   const handleSort = (key: SortKey) => {
     const col = table.getColumn(key)
@@ -346,10 +375,21 @@ const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isMod
             ))}
           </TableHeader>
           <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
-            {getRowsToRender().map((row) => {
-              const shouldHighlight = highlightedEntries.includes(row.original)
+            {table.getTopRows().map((row) => (
+              <TableRow key={row.id} className={cn(row.getIsSelected() && 'light:bg-yellow-500/30! bg-yellow-950!')}>
+                {row.getVisibleCells().map((cell) => {
+                  const alignRight = (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
+                  return (
+                    <TableCell key={cell.id} className={cn(alignRight && 'text-right font-mono')}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))}
+            {table.getCenterRows().map((row) => {
               return (
-                <TableRow key={row.id} className={cn(shouldHighlight && 'light:bg-yellow-500/30! bg-yellow-950!')}>
+                <TableRow key={row.id} className={cn(row.getIsSelected() && 'light:bg-yellow-500/30! bg-yellow-950!')}>
                   {row.getVisibleCells().map((cell) => {
                     const alignRight = (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
                     return (
@@ -775,7 +815,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
       ) : (
         <OrderbookTable
           tableEntries={filteredBaseData}
-          highlightedEntries={highlightedOffers}
+          selectedEntries={highlightedOffers}
           pinnedEntries={pinnedToTopOffers}
           isModal={isModal}
         />
