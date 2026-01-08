@@ -46,6 +46,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from './dev/DevBadge'
 import { Alert, AlertDescription } from './ui/alert'
+import { Label } from './ui/label'
 
 const ITEMS_PER_PAGE = 25
 
@@ -198,8 +199,6 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     }
   }, [showRefreshDropdown])
 
-  const userOffers = useMemo<string[]>(() => (nickname ? [nickname] : []), [nickname])
-
   const {
     data: orderbookData,
     isLoading,
@@ -209,7 +208,6 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   } = useQuery({
     queryKey: ['orderbook'],
     queryFn: fetchOrderbook,
-    refetchInterval: 30000,
   })
 
   // Combine both loading states for UI
@@ -230,9 +228,8 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   }, [orderbookData, demoOffers, t])
 
   const ownOffers = useMemo(() => {
-    if (!userOffers.length) return []
-    return tableEntries.filter((it) => userOffers.includes(it.counterparty))
-  }, [userOffers, tableEntries])
+    return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
+  }, [nickname, tableEntries])
 
   const filteredBaseData = useMemo(() => {
     if (!tableEntries) return []
@@ -253,12 +250,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
       })
     }
     if (pinMyOffers && ownOffers.length > 0) {
-      const userOffersFiltered = offers.filter((offer) => userOffers.includes(offer.counterparty))
-      const otherOffers = offers.filter((offer) => !userOffers.includes(offer.counterparty))
+      const userOffersFiltered = offers.filter((offer) => ownOffers.includes(offer))
+      const otherOffers = offers.filter((offer) => !ownOffers.includes(offer))
       return [...userOffersFiltered, ...otherOffers]
     }
     return offers
-  }, [tableEntries, searchQuery, pinMyOffers, ownOffers, userOffers])
+  }, [tableEntries, searchQuery, pinMyOffers, ownOffers])
 
   // Define columns with custom cells and sorting
   const columnHelper = createColumnHelper<OrderTableEntry>()
@@ -397,8 +394,8 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   const getRowsToRender = () => {
     const rows = table.getRowModel().rows
     if (pinMyOffers && ownOffers.length > 0) {
-      const mine = rows.filter((r) => userOffers.includes(r.original.counterparty))
-      const others = rows.filter((r) => !userOffers.includes(r.original.counterparty))
+      const mine = rows.filter((r) => ownOffers.includes(r.original))
+      const others = rows.filter((r) => !ownOffers.includes(r.original))
       return [...mine, ...others]
     }
     return rows
@@ -430,14 +427,10 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setShowRefreshDropdown(false)
 
     try {
-      // First refresh the orderbook on the server
       await refreshOrderbook()
         .then(() => refetch())
+        // Add a small delay to avoid flickering
         .then(() => delayedPromise(200))
-    } catch (error) {
-      console.error('Failed to refresh orderbook:', error)
-      // Still try to refetch even if refresh fails
-      await refetch()
     } finally {
       setLocalLoading(false)
     }
@@ -447,10 +440,12 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
     setLocalLoading(true)
     setShowRefreshDropdown(false)
 
-    // Add a small delay to avoid dflickering
-    await refetch().then(() => delayedPromise(200))
-    
-    setLocalLoading(false)
+    try {
+      // Add a small delay to avoid flickering
+      await refetch().then(() => delayedPromise(200))
+    } finally {
+      setLocalLoading(false)
+    }
   }
 
   const handleSort = (key: SortKey) => {
@@ -474,13 +469,13 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           <AlertCircleIcon className="size-4" />
           <AlertDescription>
             {t('orderbook.error_loading_orderbook_failed', {
-              reason: (error as Error)?.message || t('global.errors.reason_unknown'),
+              reason: error.message || t('global.errors.reason_unknown'),
             })}
           </AlertDescription>
         </Alert>
 
         <Button onClick={() => refetch()} disabled={isLoadingData}>
-          <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'animate-spin': isLoadingData })} />
+          <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'motion-safe:animate-spin': isLoadingData })} />
           {t('global.retry')}
         </Button>
       </div>
@@ -658,27 +653,36 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
       )}
 
       {/* Controls */}
-
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Switch checked={highlightMyOffers} onCheckedChange={setHighlightMyOffers} disabled={isLoadingData} />
-            <div>
+            <Switch
+              id="highlight-my-offers"
+              checked={highlightMyOffers}
+              onCheckedChange={setHighlightMyOffers}
+              disabled={isLoadingData}
+            />
+            <Label htmlFor="highlight-my-offers" className="flex flex-col items-start gap-0">
               <div className="font-medium">{t('orderbook.label_highlight_own_orders')}</div>
               <div className="text-muted-foreground text-sm">
                 {ownOffers.length === 0 ? t('orderbook.text_highlight_own_orders_subtitle') : undefined}
               </div>
-            </div>
+            </Label>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Switch checked={pinMyOffers} onCheckedChange={handlePinToggle} disabled={isLoadingData} />
-            <div>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="pin-my-offers"
+              checked={pinMyOffers}
+              onCheckedChange={handlePinToggle}
+              disabled={isLoadingData}
+            />
+            <Label htmlFor="pin-my-offers" className="flex flex-col items-start gap-0">
               <div className="font-medium">{t('orderbook.label_pin_to_top_own_orders')}</div>
               <div className="text-muted-foreground text-sm">{t('orderbook.text_pin_to_top_own_orders_subtitle')}</div>
-            </div>
+            </Label>
           </div>
         </div>
       </div>
@@ -715,9 +719,9 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
                         <TableHead
                           key={header.id}
                           className={cn({
-                            'cursor-pointer select-none': canSort, 
-                            'text-right': alignRight 
-                            })}
+                            'cursor-pointer select-none': canSort,
+                            'text-right': alignRight,
+                          })}
                           onClick={canSort ? () => handleSort(key) : undefined}
                         >
                           <div className="flex items-center">
@@ -732,7 +736,7 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
               </TableHeader>
               <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
                 {getRowsToRender().map((row) => {
-                  const shouldHighlight = highlightMyOffers && userOffers.includes(row.original.counterparty)
+                  const shouldHighlight = highlightMyOffers && ownOffers.includes(row.original)
                   return (
                     <TableRow
                       key={row.id}
