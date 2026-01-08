@@ -349,13 +349,7 @@ const OrderbookTable = ({ tableEntries, highlightedEntries, pinnedEntries, isMod
             {getRowsToRender().map((row) => {
               const shouldHighlight = highlightedEntries.includes(row.original)
               return (
-                <TableRow
-                  key={row.id}
-                  className={cn(
-                    shouldHighlight &&
-                      '!border-yellow-300 !bg-yellow-50 ring-1 ring-yellow-300/40 dark:!border-yellow-700 dark:!bg-yellow-950 dark:ring-yellow-800/40',
-                  )}
-                >
+                <TableRow key={row.id} className={cn(shouldHighlight && 'light:bg-yellow-500/30! bg-yellow-950!')}>
                   {row.getVisibleCells().map((cell) => {
                     const alignRight = (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right'
                     return (
