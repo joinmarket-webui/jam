@@ -22,6 +22,7 @@ import {
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import PageTitle from '../PageTitle'
 import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription } from '../ui/alert'
 import { Label } from '../ui/label'
@@ -248,16 +249,15 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
 
   return (
     <div
-      className={cn('space-y-6', {
+      className={cn('mx-auto space-y-3 p-4', {
         'flex h-full flex-col p-10': isModal,
-        'm-10 p-6': !isModal,
       })}
     >
       {/* Header */}
       {!isModal && (
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{t('orderbook.title')}</h1>
+            <PageTitle title={t('orderbook.title')} />
             <p className="text-muted-foreground mt-1">
               {searchQuery === ''
                 ? t('orderbook.text_orderbook_summary', {

@@ -18,6 +18,7 @@ import { useRescanStatus } from '@/hooks/useRescanStatus'
 import type { RescanInfo } from '@/hooks/useRescanStatus'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import PageTitle from '../PageTitle'
 
 const INPUT_BLOCK_HEIGHT_MIN = 0
 
@@ -100,7 +101,7 @@ interface RescanChainProps {
   walletFileName: WalletFileName
 }
 
-export const RescanChain = ({ walletFileName }: RescanChainProps) => {
+export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
@@ -156,22 +157,16 @@ export const RescanChain = ({ walletFileName }: RescanChainProps) => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(routes.settings)}
-          className="hover:bg-muted/50 h-8 w-8 p-0"
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" onClick={() => navigate(routes.settings)} title={t('global.back')}>
+          <ArrowLeftIcon />
+          <span className="sr-only">{t('global.back')}</span>
         </Button>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('rescan_chain.title')}</h1>
+        <PageTitle title={t('rescan_chain.title')} subtitle={t('rescan_chain.subtitle')} />
       </div>
 
-      <p className="text-muted-foreground ml-11 text-sm">{t('rescan_chain.subtitle')}</p>
-
-      <Card className="ml-11 border-0 shadow-sm">
-        <CardContent className="px-6">
+      <Card className="border-0 shadow-sm">
+        <CardContent>
           <RescanChainForm
             rescanInfo={rescanInfo}
             onSubmit={onSubmit}

@@ -33,7 +33,7 @@ import { useFeatures } from '@/hooks/useFeatures'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { AccountXpubsDialog } from './AccountXpubsDialog'
+import PageTitle from '../PageTitle'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
@@ -80,7 +80,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('navbar.menu_mobile_settings')}</h1>
+      <PageTitle title={t('navbar.menu_mobile_settings')} />
 
       {/* Display Settings */}
       <Card className="mt-3 border-0 shadow-sm">

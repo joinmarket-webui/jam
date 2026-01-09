@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
+import PageTitle from '../PageTitle'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface SendPageProps {
@@ -20,19 +21,19 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
-        <p className="text-muted-foreground mt-4">{t('send.loading')}</p>
+      <div className="mx-auto max-w-2xl space-y-3 p-4">
+        <div className="m-2 flex items-center justify-center gap-2">
+          <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+          {t('global.loading')}
+        </div>
       </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('send.title')}</h1>
-      <p className="text-muted-foreground mb-4 text-sm">{t('send.subtitle')}</p>
+      <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
-      {/* Fee Config Error Alert */}
       {maxFeesConfigMissing && (
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
       )}
@@ -61,7 +62,6 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         </CardContent>
       </Card>
 
-      {/* Fee Configuration Dialog */}
       <FeeLimitDialog
         open={showFeeConfigDialog}
         onOpenChange={setShowFeeConfigDialog}
