@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { walletDisplayName, JM_WALLET_FILE_EXTENSION, walletDisplayNameToFileName } from '@/lib/utils'
@@ -132,8 +133,9 @@ const CreateWallet = () => {
         hashed_password: hashedSecret,
       })
 
-      navigate('/login', {
+      navigate(routes.login, {
         state: {
+          /* TODO: i18n */
           message: 'Wallet created successfully! Please log in with your credentials.',
           walletName: walletFileName,
         },

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
@@ -13,9 +13,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
-import { walletDisplayName } from '@/lib/utils'
+import { withQueryDelay } from '@/lib/queryClient'
+import { cn, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
 import { Badge } from './ui/badge'
@@ -50,15 +52,16 @@ interface LoginFormData {
 
 interface LoginFormProps {
   wallets: WalletFileName[]
+  disabled: boolean
   isSubmitting: boolean
   onSubmit: (val: LoginFormData) => Promise<void>
 }
 
-const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
+const LoginForm = ({ wallets, isSubmitting, onSubmit, disabled }: LoginFormProps) => {
   const { t } = useTranslation()
-  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>()
-  const [password, setPassword] = useState<string>('')
-  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [selectedWallet, setSelectedWallet] = useState<WalletFileName>()
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   if (wallets.length === 1 && selectedWallet !== wallets[0]) {
     setSelectedWallet(wallets[0])
@@ -66,6 +69,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
 
   return (
     <>
+      {/* TODO: use react-hook-form and yup schema */}
       <form
         onSubmit={(e: React.FormEvent) => {
           e.preventDefault()
@@ -77,15 +81,17 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
         className="space-y-4"
       >
         <div className="space-y-2">
-          <Label htmlFor="wallet-select">Wallet</Label>
+          <Label htmlFor="wallet-select">{/* TODO: i18n */}Wallet</Label>
           <Select
             value={selectedWallet ?? ''}
             onValueChange={(it) => setSelectedWallet(it as WalletFileName)}
-            disabled={isSubmitting || wallets.length === 0}
+            disabled={disabled || isSubmitting || wallets.length === 0}
             required
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'} />
+              <SelectValue
+                placeholder={/* TODO: i18n */ wallets.length > 0 ? 'Select a wallet' : 'No wallets found.'}
+              />
             </SelectTrigger>
             <SelectContent>
               {wallets?.map((wallet, index) => (
@@ -98,15 +104,15 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{/* TODO: i18n */}Password</Label>
           <div className="relative">
-            <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+            <LockIcon className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2 transform" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={isSubmitting}
+              disabled={disabled || isSubmitting}
               placeholder={t('wallets.wallet_preview.placeholder_password')}
               className="pr-10 pl-10"
             />
@@ -114,18 +120,18 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit }: LoginFormProps) => {
               type="button"
               variant="ghost"
               size="sm"
-              className="absolute top-1/2 right-1 -translate-y-1/2 transform"
+              className="absolute top-1/2 right-3 size-4 -translate-y-1/2 transform"
               onClick={() => setShowPassword((val) => !val)}
             >
-              {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+              {showPassword ? <EyeIcon /> : <EyeOffIcon />}
             </Button>
           </div>
         </div>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting || !selectedWallet} size="lg">
+        <Button type="submit" className="w-full" disabled={disabled || isSubmitting || !selectedWallet} size="lg">
           {isSubmitting ? (
             <>
-              <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+              <Loader2Icon className="animate-spin motion-reduce:hidden" />
               {t('wallets.wallet_preview.button_unlocking')}
             </>
           ) : (
@@ -143,21 +149,22 @@ const LoginPage = () => {
   const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
 
-  const listwalletsQuery = useQuery({
-    ...listwalletsOptions({ client }),
-    retry: false,
+  const listwalletsQueryOptions = listwalletsOptions({ client })
+
+  const {
+    data: listWalletsData,
+    error: listWalletsError,
+    isLoading: listWalletsLoading,
+    isFetching: listWalletsFetching,
+    refetch: listWalletsRefetch,
+  } = useQuery({
+    ...listwalletsQueryOptions,
+    queryFn: withQueryDelay(listwalletsQueryOptions.queryFn, {
+      delayAfter: 210,
+    }),
   })
 
-  const isLoadingWallets = useMemo(() => listwalletsQuery.isFetching, [listwalletsQuery.isFetching])
-  const listwalletsError = useMemo(() => {
-    if (!listwalletsQuery.error) return undefined
-    return {
-      message: t('wallets.error_loading_failed'),
-      error_description: listwalletsQuery.error.message || 'Unknown reason.',
-    }
-  }, [t, listwalletsQuery.error])
-
-  const wallets = useMemo(() => listwalletsQuery.data?.wallets as WalletFileName[], [listwalletsQuery.data])
+  const wallets = (listWalletsData?.wallets ?? []) as WalletFileName[]
 
   const unlockWallet = useMutation({
     ...unlockwalletMutation({ client }),
@@ -188,10 +195,12 @@ const LoginPage = () => {
       }
     },
     onSuccess: () => {
+      /* TODO: i18n */
       toast.success('Successfully unlocked wallet.')
     },
     onError: (error) => {
-      toast.error(`Failed to unlock wallet: ${error.message || 'Unknown reason.'}`)
+      /* TODO: i18n */
+      toast.error(`Failed to unlock wallet: ${error.message || t('global.errors.reason_unknown')}`)
     },
   })
 
@@ -199,7 +208,7 @@ const LoginPage = () => {
     try {
       const authState: AuthState = await login.mutateAsync(data)
       updateAuthState(authState)
-      await navigate('/')
+      await navigate(routes.home)
     } catch (error: unknown) {
       console.error('Error unlocking wallet', error)
     }
@@ -211,45 +220,50 @@ const LoginPage = () => {
         <Card className="shadow-lg">
           <CardHeader className="space-y-2 text-center">
             <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-              {isLoadingWallets ? (
+              {listWalletsFetching ? (
                 <Loader2Icon className="h-6 w-6 animate-spin" />
               ) : (
-                <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
+                <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listWalletsRefetch()} />
               )}
             </div>
-            <CardTitle className="text-2xl font-bold">Welcome to Jam</CardTitle>
-            {!isLoadingWallets && wallets !== undefined && wallets.length > 0 && (
-              <CardDescription>Select a wallet and enter your password to continue.</CardDescription>
+            <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
+            {!listWalletsLoading && wallets.length > 0 && (
+              <CardDescription>{/*TODO: i18n */}Select a wallet and enter your password to continue.</CardDescription>
             )}
           </CardHeader>
 
-          {isLoadingWallets ? (
+          {listWalletsLoading ? (
             <CardContent className="space-y-6">
               <LoginFormSkeleton />
             </CardContent>
           ) : (
             <>
-              {listwalletsError ? (
+              {listWalletsError ? (
                 <CardContent className="space-y-6">
                   <Alert variant="destructive">
-                    <AlertCircleIcon className="h-4 w-4" />
-                    <AlertTitle>{listwalletsError.message}</AlertTitle>
-                    <AlertDescription>{listwalletsError.error_description}</AlertDescription>
+                    <AlertCircleIcon />
+                    <AlertTitle>{t('wallets.error_loading_failed')}</AlertTitle>
+                    <AlertDescription>{listWalletsError.message || t('global.errors.reason_unknown')}</AlertDescription>
                   </Alert>
-                  <Button variant="ghost" size="sm" onClick={async () => await listwalletsQuery.refetch()}>
-                    <RefreshCwIcon className="h-4 w-4" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => await listWalletsRefetch()}
+                    disabled={listWalletsFetching}
+                  >
+                    <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
                     {t('global.retry')}
                   </Button>
                 </CardContent>
               ) : (
                 <CardContent className="space-y-6">
-                  {wallets !== undefined && wallets.length === 0 ? (
+                  {wallets.length === 0 ? (
                     <>
                       <div className="text-center">
                         <p className="text-muted-foreground text-sm">{t('wallets.subtitle_no_wallets')}</p>
                       </div>
                       <div className="flex flex-col gap-4">
-                        <Button size="lg" onClick={async () => await navigate('/create-wallet')}>
+                        <Button size="lg" onClick={async () => await navigate(routes.createWallet)}>
                           {t('wallets.button_new_wallet')}
                         </Button>
                         <Button variant="secondary" size="lg" disabled>
@@ -260,23 +274,24 @@ const LoginPage = () => {
                     </>
                   ) : (
                     <>
-                      <LoginForm wallets={wallets || []} isSubmitting={login.isPending} onSubmit={handleSubmit} />
+                      <LoginForm
+                        wallets={wallets || []}
+                        disabled={login.isPending || listWalletsFetching}
+                        isSubmitting={login.isPending}
+                        onSubmit={handleSubmit}
+                      />
 
                       <div className="flex flex-col gap-2">
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={async () => await navigate('/create-wallet')}
-                          className="cursor-pointer"
-                        >
+                        <Button variant="link" size="sm" onClick={async () => await navigate(routes.createWallet)}>
                           {t('wallets.button_new_wallet')}
                         </Button>
                         <Button
                           variant="link"
                           size="sm"
-                          onClick={async () => await navigate('/create-wallet')}
+                          onClick={async () => await navigate('/import-wallet')}
                           disabled
                         >
+                          {/* TODO: implement "import wallet" */}
                           {t('wallets.button_import_wallet')}
                           <Badge variant="destructive">Not yet implemented.</Badge>
                         </Button>
