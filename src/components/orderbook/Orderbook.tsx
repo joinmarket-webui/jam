@@ -85,11 +85,11 @@ const offerToTableEntry = (
   }
 }
 
-interface OrderbookProps {
-  isModal?: boolean
+interface OrderbookContentProps {
+  className?: string
 }
 
-export const Orderbook = ({ isModal = false }: OrderbookProps) => {
+export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   const { t, i18n } = useTranslation()
 
   const nickname = useStore(jmSessionStore, (state) => state.state?.nickname)
@@ -248,173 +248,86 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
   }
 
   return (
-    <div
-      className={cn('mx-auto space-y-3 p-4', {
-        'flex h-full flex-col p-10': isModal,
-      })}
-    >
-      {/* Header */}
-      {!isModal && (
-        <div className="flex items-center justify-between">
-          <div>
-            <PageTitle title={t('orderbook.title')} />
-            <p className="text-muted-foreground mt-1">
-              {searchQuery === ''
-                ? t('orderbook.text_orderbook_summary', {
-                    count: tableEntries.length,
-                    counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                  })
-                : t('orderbook.text_orderbook_summary_filtered', summary)}
-            </p>
-          </div>
+    <div className={cn('mx-auto space-y-3', className)}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-muted-foreground text-sm">
+            {searchQuery === ''
+              ? t('orderbook.text_orderbook_summary', {
+                  count: tableEntries.length,
+                  counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
+                })
+              : t('orderbook.text_orderbook_summary_filtered', summary)}
+          </p>
+        </div>
 
-          <div className="flex items-center gap-2">
-            {showDemoButton && (
+        <div className="flex items-center space-x-2">
+          {showDemoButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={__dev_generateDemoReportEntryButton}
+              disabled={isFetching}
+              className="relative"
+            >
+              Generate Demo Entry
+              <PlusIcon className="ml-2 h-4 w-4" />
+              <DevBadge />
+            </Button>
+          )}
+
+          <div className="relative" ref={dropdownRef}>
+            <div className="flex">
               <Button
                 variant="outline"
+                className="rounded-r-none"
                 size="sm"
-                onClick={__dev_generateDemoReportEntryButton}
+                onClick={handleReload}
                 disabled={isFetching}
-                className="relative"
               >
-                <PlusIcon className="ml-2 h-4 w-4" />
-                Generate Demo Entry
-                <DevBadge />
+                {t('orderbook.button_reload_title')}
+                <RefreshCwIcon
+                  className={cn('ml-2 h-4 w-4', {
+                    'motion-safe: animate-spin': isFetching,
+                  })}
+                />
               </Button>
-            )}
-
-            <div className="relative" ref={dropdownRef}>
-              <div className="flex">
+              <div className="relative">
                 <Button
                   variant="outline"
-                  className="rounded-r-none"
                   size="sm"
-                  onClick={handleReload}
+                  className="rounded-l-none border-l-0 px-2"
+                  onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
                   disabled={isFetching}
                 >
-                  <RefreshCwIcon className={cn('h-4 w-4', { 'motion-safe:animate-spin': isFetching })} />
-                  {t('orderbook.button_reload_title')}
+                  <ChevronDownIcon className="h-4 w-4" />
                 </Button>
-                <div className="relative">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-l-none border-l-0 px-2"
-                    onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
-                    disabled={isFetching}
-                  >
-                    <ChevronDownIcon className="h-4 w-4" />
-                  </Button>
-                  {showRefreshDropdown && (
-                    <div className="bg-background absolute top-full right-0 z-10 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start rounded-none"
-                        onClick={handleClearAndReload}
-                        disabled={isFetching}
-                      >
-                        {t('orderbook.button_refresh_text')}
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                {showRefreshDropdown && (
+                  <div className="bg-background absolute top-full right-0 z-10 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start rounded-none"
+                      onClick={handleClearAndReload}
+                      disabled={isFetching}
+                    >
+                      {t('orderbook.button_refresh_text')}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
-
-            <Input
-              placeholder={t('orderbook.placeholder_search')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64"
-              disabled={isFetching}
-            />
           </div>
+
+          <Input
+            placeholder={t('orderbook.placeholder_search')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-64"
+            disabled={isFetching}
+          />
         </div>
-      )}
-
-      {/* Modal Header with controls */}
-      {isModal && (
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-muted-foreground text-sm">
-              {searchQuery === ''
-                ? t('orderbook.text_orderbook_summary', {
-                    count: tableEntries.length,
-                    counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                  })
-                : t('orderbook.text_orderbook_summary_filtered', summary)}
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {showDemoButton && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={__dev_generateDemoReportEntryButton}
-                disabled={isFetching}
-                className="relative"
-              >
-                Generate Demo Entry
-                <PlusIcon className="ml-2 h-4 w-4" />
-                <DevBadge />
-              </Button>
-            )}
-
-            <div className="relative" ref={dropdownRef}>
-              <div className="flex">
-                <Button
-                  variant="outline"
-                  className="rounded-r-none"
-                  size="sm"
-                  onClick={handleReload}
-                  disabled={isFetching}
-                >
-                  {t('orderbook.button_reload_title')}
-                  <RefreshCwIcon
-                    className={cn('ml-2 h-4 w-4', {
-                      'motion-safe: animate-spin': isFetching,
-                    })}
-                  />
-                </Button>
-                <div className="relative">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-l-none border-l-0 px-2"
-                    onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
-                    disabled={isFetching}
-                  >
-                    <ChevronDownIcon className="h-4 w-4" />
-                  </Button>
-                  {showRefreshDropdown && (
-                    <div className="bg-background absolute top-full right-0 z-10 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start rounded-none"
-                        onClick={handleClearAndReload}
-                        disabled={isFetching}
-                      >
-                        {t('orderbook.button_refresh_text')}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <Input
-              placeholder={t('orderbook.placeholder_search')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64"
-              disabled={isFetching}
-            />
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Controls */}
       {nickname && (
@@ -477,6 +390,17 @@ export const Orderbook = ({ isModal = false }: OrderbookProps) => {
           pinnedEntries={pinnedToTopOffers}
         />
       )}
+    </div>
+  )
+}
+
+export const Orderbook = () => {
+  const { t } = useTranslation()
+
+  return (
+    <div className="mx-auto space-y-3 p-4">
+      <PageTitle title={t('orderbook.title')} />
+      <OrderbookContent />
     </div>
   )
 }
