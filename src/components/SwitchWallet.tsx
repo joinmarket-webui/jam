@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { sortWallets, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
@@ -165,7 +166,12 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
 
                             {wallet === walletFileName && (
                               <div className="m-4 flex gap-4">
-                                <Button variant="outline" size="sm" onClick={() => navigate('/')} className="flex-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(routes.home)}
+                                  className="flex-1"
+                                >
                                   <WalletIcon className="mr-2 h-4 w-4" />
                                   {t('wallets.wallet_preview.button_open')}
                                 </Button>

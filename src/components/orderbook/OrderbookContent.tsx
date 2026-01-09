@@ -228,20 +228,22 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
 
   if (error) {
     return (
-      <div className="space-y-2 p-6">
-        <Alert variant="destructive">
-          <AlertCircleIcon className="size-4" />
-          <AlertDescription>
-            {t('orderbook.error_loading_orderbook_failed', {
-              reason: error.message || t('global.errors.reason_unknown'),
-            })}
-          </AlertDescription>
-        </Alert>
+      <div className={cn('mx-auto space-y-3', className)}>
+        <div className="flex flex-col items-start gap-2">
+          <Alert variant="destructive">
+            <AlertCircleIcon />
+            <AlertDescription>
+              {t('orderbook.error_loading_orderbook_failed', {
+                reason: error.message || t('global.errors.reason_unknown'),
+              })}
+            </AlertDescription>
+          </Alert>
 
-        <Button onClick={() => refetchOrderbookData()} disabled={isFetching}>
-          <RefreshCwIcon className={cn('ml-2 h-4 w-4', { 'motion-safe:animate-spin': isFetching })} />
-          {t('global.retry')}
-        </Button>
+          <Button variant="ghost" onClick={() => refetchOrderbookData()} disabled={isFetching}>
+            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
+            {t('global.retry')}
+          </Button>
+        </div>
       </div>
     )
   }
@@ -269,8 +271,8 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
               disabled={isFetching}
               className="relative"
             >
+              <PlusIcon />
               Generate Demo Entry
-              <PlusIcon className="ml-2 h-4 w-4" />
               <DevBadge />
             </Button>
           )}
@@ -284,25 +286,21 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
                 onClick={handleReload}
                 disabled={isFetching}
               >
+                <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
                 {t('orderbook.button_reload_title')}
-                <RefreshCwIcon
-                  className={cn('ml-2 h-4 w-4', {
-                    'motion-safe: animate-spin': isFetching,
-                  })}
-                />
               </Button>
               <div className="relative">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-l-none border-l-0 px-2"
+                  className="rounded-l-none border-l-0"
                   onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
                   disabled={isFetching}
                 >
-                  <ChevronDownIcon className="h-4 w-4" />
+                  <ChevronDownIcon />
                 </Button>
                 {showRefreshDropdown && (
-                  <div className="bg-background absolute top-full right-0 z-10 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
+                  <div className="bg-background absolute top-full right-0 z-100 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
                     <Button
                       variant="ghost"
                       size="sm"
