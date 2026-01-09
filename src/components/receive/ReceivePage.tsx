@@ -9,6 +9,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress } from '@/types/global'
 import { useJamDisplayContext } from '../../context/JamDisplayContext'
+import PageTitle from '../PageTitle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Button } from '../ui/button'
 import { SelectableJar } from '../ui/jam/SelectableJar'
@@ -18,11 +19,11 @@ import { BitcoinQR } from './BitcoinQR'
 
 const QRCODE_WIDTH = 320 // "h-[320px] w-[320px]" <- Comment for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 
-interface ReceiveProps {
+interface ReceivePageProps {
   walletFileName: WalletFileName
 }
 
-export const Receive = ({ walletFileName }: ReceiveProps) => {
+export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const { t } = useTranslation()
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
   const [amount, setAmount] = useState<AmountSats | undefined>()
@@ -118,28 +119,9 @@ export const Receive = ({ walletFileName }: ReceiveProps) => {
     return () => clearTimeout(timer)
   }, [copied])
 
-  if (!walletFileName) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <h1 className="mb-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
-        <p className="text-muted-foreground mb-4">{t('current_wallet.error_loading_failed')}</p>
-      </div>
-    )
-  }
-
-  if (!jars || jars.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <h1 className="mb-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
-        <p className="text-muted-foreground mb-4">{t('current_wallet.text_loading')}</p>
-      </div>
-    )
-  }
-
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-left text-2xl font-bold">{t('receive.title')}</h1>
-      <p className="text-muted-foreground mb-4 text-sm">{t('receive.subtitle')}</p>
+      <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
 
       <div className="flex w-full flex-col items-center justify-center space-y-2 rounded-lg border p-8">
         {getAddressQuery.isFetching ? (

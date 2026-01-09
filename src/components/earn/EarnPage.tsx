@@ -10,7 +10,6 @@ import { useStore } from 'zustand'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Button } from '@/components/ui/button'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
-import { isDevMode } from '@/constants/debugFeatures'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
@@ -20,8 +19,10 @@ import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
+import PageTitle from '../PageTitle'
 import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
@@ -57,6 +58,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
+
   const walletInfo = useJamWalletInfoContext()
 
   const [isWaitingMakerStart, setIsWaitingMakerStart] = useState(false)
@@ -142,20 +145,13 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     })
   }
 
-  if (!walletFileName) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <h1 className="mb-2 text-left text-2xl font-bold">{t('earn.title')}</h1>
-        <p className="text-muted-foreground mb-4">{t('current_wallet.error_loading_failed')}</p>
-      </div>
-    )
-  }
-
   if (!jmSessionState) {
     return (
-      <div className="m-2 flex items-center justify-center">
-        <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
-        {t('global.loading')}
+      <div className="mx-auto max-w-2xl space-y-3 p-4">
+        <div className="m-2 flex items-center justify-center gap-2">
+          <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+          {t('global.loading')}
+        </div>
       </div>
     )
   }
@@ -182,8 +178,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('earn.title')}</h1>
-      <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle')}</p>
+      <PageTitle title={t('earn.title')} subtitle={t('earn.subtitle')} />
 
       {/* Fee Config Error Alert */}
       {maxFeesConfigMissing && (
@@ -343,7 +338,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         walletFileName={walletFileName}
       />
 
-      {isDevMode() && (
+      {isDeveloperMode && (
         <Card className="mt-8">
           <CardHeader className="grid">
             <DevBadge className="justify-self-end" />

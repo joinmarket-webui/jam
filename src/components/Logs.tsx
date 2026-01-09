@@ -186,7 +186,7 @@ export const Logs = () => {
     <div className="container mx-auto space-y-6 py-8">
       {alert && (
         <Alert variant={alert.variant}>
-          <AlertTriangleIcon className="h-4 w-4" />
+          <AlertTriangleIcon />
           <AlertDescription>{alert.message}</AlertDescription>
         </Alert>
       )}
