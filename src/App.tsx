@@ -22,7 +22,7 @@ import { Logs } from '@/components/Logs'
 import SwitchWallet from '@/components/SwitchWallet'
 import { EarnPage } from '@/components/earn/EarnPage'
 import { Layout } from '@/components/layout/Layout'
-import { Orderbook } from '@/components/orderbook/Orderbook'
+import { OrderbookPage } from '@/components/orderbook/OrderbookPage'
 import { ReceivePage } from '@/components/receive/ReceivePage'
 import { SendPage } from '@/components/send/SendPage'
 import { RescanChainPage } from '@/components/settings/RescanChainPage'
@@ -104,7 +104,7 @@ function App() {
             <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
             <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
             <Route path={routes.settings} element={<SettingsPage walletFileName={walletFileName!} />} />
-            <Route path={routes.orderbook} element={<Orderbook />} />
+            <Route path={routes.orderbook} element={<OrderbookPage />} />
             <Route path={routes.logs} element={<Logs />} />
             <Route path={routes.rescan} element={<RescanChainPage walletFileName={walletFileName!} />} />
             {isDebugFeatureEnabled('devPage') && (

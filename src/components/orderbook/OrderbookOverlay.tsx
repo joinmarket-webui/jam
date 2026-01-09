@@ -2,14 +2,14 @@ import { XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import PageTitle from '../PageTitle'
-import { OrderbookContent } from './Orderbook'
+import { OrderbookContent } from './OrderbookContent'
 
-interface OrderbookDialogProps {
+interface OrderbookOverlayProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function OrderbookDialog({ open, onOpenChange }: OrderbookDialogProps) {
+export function OrderbookOverlay({ open, onOpenChange }: OrderbookOverlayProps) {
   const { t } = useTranslation()
   if (!open) {
     return <></>

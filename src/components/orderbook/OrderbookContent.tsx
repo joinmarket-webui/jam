@@ -22,7 +22,6 @@ import {
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import PageTitle from '../PageTitle'
 import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription } from '../ui/alert'
 import { Label } from '../ui/label'
@@ -390,17 +389,6 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
           pinnedEntries={pinnedToTopOffers}
         />
       )}
-    </div>
-  )
-}
-
-export const Orderbook = () => {
-  const { t } = useTranslation()
-
-  return (
-    <div className="mx-auto space-y-3 p-4">
-      <PageTitle title={t('orderbook.title')} />
-      <OrderbookContent />
     </div>
   )
 }
