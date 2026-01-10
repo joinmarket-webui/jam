@@ -24,6 +24,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription } from '../ui/alert'
+import { ButtonGroup } from '../ui/button-group'
 import { Label } from '../ui/label'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
 
@@ -276,40 +277,33 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
           {/* TODO: replace manual dropdown with shadcn component */}
           <div className="relative" ref={dropdownRef}>
             <div className="flex">
-              <Button
-                variant="outline"
-                className="rounded-r-none"
-                size="sm"
-                onClick={handleReload}
-                disabled={isFetching}
-              >
-                <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
-                {t('orderbook.button_reload_title')}
-              </Button>
-              <div className="relative">
+              <ButtonGroup>
+                <Button
+                  variant="outline"
+                  className="rounded-r-none"
+                  size="sm"
+                  onClick={handleReload}
+                  disabled={isFetching}
+                >
+                  <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
+                  {t('orderbook.button_reload_title')}
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-l-none border-l-0"
                   onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
                   disabled={isFetching}
                 >
                   <ChevronDownIcon />
                 </Button>
-                {showRefreshDropdown && (
-                  <div className="bg-background absolute top-full right-0 z-100 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start rounded-none"
-                      onClick={handleClearAndReload}
-                      disabled={isFetching}
-                    >
-                      {t('orderbook.button_refresh_text')}
-                    </Button>
-                  </div>
-                )}
-              </div>
+              </ButtonGroup>
+              {showRefreshDropdown && (
+                <div className="bg-background absolute top-full right-0 z-100 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
+                  <Button variant="ghost" size="sm" onClick={handleClearAndReload} disabled={isFetching}>
+                    {t('orderbook.button_refresh_text')}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
