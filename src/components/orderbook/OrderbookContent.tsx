@@ -165,6 +165,12 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
     return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
   }, [nickname, tableEntries])
 
+  const highlightedOffers = useMemo<OrderTableEntry[]>(
+    () => (isHighlightMyOffers ? myOffers : []),
+    [isHighlightMyOffers, myOffers],
+  )
+  const pinnedToTopOffers = useMemo<OrderTableEntry[]>(() => (isPinMyOffers ? myOffers : []), [isPinMyOffers, myOffers])
+
   const tableEntriesFiltered = useMemo(() => {
     if (!tableEntries) return []
     const searchVal = searchInputRaw.replace('.', '').toLowerCase()
@@ -201,9 +207,6 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   const handleReload = async () => {
     await refetchOrderbookData()
   }
-
-  const highlightedOffers: OrderTableEntry[] = isHighlightMyOffers ? myOffers : []
-  const pinnedToTopOffers: OrderTableEntry[] = isPinMyOffers ? myOffers : []
 
   if (error) {
     return (
