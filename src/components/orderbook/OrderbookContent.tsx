@@ -250,7 +250,7 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
 
   return (
     <div className={cn('mx-auto space-y-3', className)}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-muted-foreground text-sm">
             {searchQuery === ''
@@ -277,6 +277,7 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
             </Button>
           )}
 
+          {/* TODO: replace manual dropdown with shadcn component */}
           <div className="relative" ref={dropdownRef}>
             <div className="flex">
               <Button
