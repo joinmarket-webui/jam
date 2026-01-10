@@ -17,7 +17,7 @@ import { useRefreshSession } from '@/hooks/useRefreshSession'
 import type { UtxoId } from '@/hooks/useUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { withQueryDelay } from '@/lib/queryClient'
-import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor } from '@/lib/utils'
+import { cn, isAbsoluteOffer, isRelativeOffer, percentageToFactor, scrollToTop } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -164,6 +164,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       toast.dismiss('earn.alert_stopping')
       toast.dismiss('earn.alert_stopped')
       toast.success(t('earn.alert_running'), { id: 'earn.alert_running' })
+      scrollToTop()
     }
   } else {
     if (isWaitingMakerStop && !stopMakerQuery.isFetching) {
