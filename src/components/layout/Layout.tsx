@@ -3,7 +3,10 @@ import { Footer } from '@/components/Footer'
 import { Navbar } from '@/components/Navbar'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useJamDisplayContext } from '../../context/JamDisplayContext'
+import { Sidebar, SidebarProvider, SidebarTrigger } from '../ui/sidebar'
+import { AppSidebar } from './AppSidebar'
 
+const SIDEBAR_SIDE: React.ComponentProps<typeof Sidebar>['side'] = 'right'
 interface LayoutProps {
   children: React.ReactNode
 }
@@ -16,18 +19,22 @@ export function Layout({ children }: LayoutProps) {
   const { totalBalance, walletName, isLoading } = useJamWalletInfoContext()
 
   return (
-    <div className="light:bg-white light:text-black flex min-h-screen flex-col bg-[#181b20] text-white transition-colors duration-300">
-      <Navbar
-        theme={resolvedTheme || 'dark'}
-        toggleTheme={toggleTheme}
-        formatAmount={formatAmount}
-        currencySymbol={currencySymbol}
-        totalBalance={totalBalance}
-        walletName={walletName}
-        isLoading={isLoading}
-      />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
+    <SidebarProvider defaultOpen={false}>
+      <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
+        <Navbar
+          theme={resolvedTheme || 'dark'}
+          toggleTheme={toggleTheme}
+          formatAmount={formatAmount}
+          currencySymbol={currencySymbol}
+          totalBalance={totalBalance}
+          walletName={walletName}
+          isLoading={isLoading}
+          sidebarTrigger={<SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />}
+        />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </div>
+      <AppSidebar side={SIDEBAR_SIDE} />
+    </SidebarProvider>
   )
 }

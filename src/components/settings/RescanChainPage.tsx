@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { rescanblockchain } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation } from '@tanstack/react-query'
-import { ArrowLeftIcon, RefreshCwIcon } from 'lucide-react'
+import { ArrowLeftIcon, PackageSearchIcon, RefreshCwIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -63,7 +63,7 @@ function RescanChainForm({ rescanInfo, onSubmit, disabled }: RescanChainFormProp
         <p className="text-muted-foreground text-xs">{t('rescan_chain.description_blockheight')}</p>
         <div className="relative">
           <div className="absolute top-1/2 left-3 -translate-y-1/2">
-            <RefreshCwIcon className="text-muted-foreground h-4 w-4" />
+            <PackageSearchIcon className="text-muted-foreground h-4 w-4" />
           </div>
 
           <Input

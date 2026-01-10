@@ -11,6 +11,7 @@ import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
 import { DevBadge } from './dev/DevBadge'
+import { useSidebar } from './ui/sidebar'
 import { Skeleton } from './ui/skeleton'
 
 interface NavbarProps {
@@ -21,6 +22,7 @@ interface NavbarProps {
   theme: string
   toggleTheme: () => void
   formatAmount: (AmountSats: number) => string
+  sidebarTrigger: React.ReactNode
 }
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
@@ -98,9 +100,11 @@ export function Navbar({
   theme,
   toggleTheme,
   isLoading = false,
+  sidebarTrigger,
 }: NavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const sidebar = useSidebar()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuth } = useStore(authStore, (state) => state)
 
@@ -130,7 +134,11 @@ export function Navbar({
         formatAmount={formatAmount}
         currencySymbol={currencySymbol}
       />
-      <div className="flex min-w-0 flex-1 items-center justify-center gap-10 font-semibold">
+      <div
+        className={cn('hidden min-w-0 flex-1 items-center justify-center gap-8 font-semibold md:flex lg:gap-10', {
+          'hidden!': sidebar.isMobile ? sidebar.openMobile : sidebar.open,
+        })}
+      >
         <Link to={routes.receive} className="text-muted-foreground hover:text-foreground">
           {t('navbar.tab_receive')}
         </Link>
@@ -159,16 +167,15 @@ export function Navbar({
           </Button>
         )}
         <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
-        <Link to={routes.settings}>
-          <Button
-            aria-label={t('navbar.menu_mobile_settings')}
-            title={t('navbar.menu_mobile_settings')}
-            variant="ghost-navbar"
-            size="icon"
-          >
-            <SettingsIcon />
-          </Button>
-        </Link>
+        <Button
+          aria-label={t('navbar.menu_mobile_settings')}
+          title={t('navbar.menu_mobile_settings')}
+          variant="ghost-navbar"
+          size="icon"
+          onClick={() => navigate(routes.settings)}
+        >
+          <SettingsIcon />
+        </Button>
         <Button
           variant="ghost-navbar"
           size="icon"
@@ -178,6 +185,7 @@ export function Navbar({
         >
           <LogOutIcon />
         </Button>
+        {sidebarTrigger}
       </div>
     </header>
   )

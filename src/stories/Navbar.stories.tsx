@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BitcoinIcon } from 'lucide-react'
 import { MemoryRouter } from 'react-router-dom'
 import { Navbar } from '@/components/Navbar'
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 const meta: Meta<typeof Navbar> = {
   title: 'Core/Navbar',
@@ -10,7 +11,9 @@ const meta: Meta<typeof Navbar> = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <Story />
+        <SidebarProvider>
+          <Story />
+        </SidebarProvider>
       </MemoryRouter>
     ),
   ],
