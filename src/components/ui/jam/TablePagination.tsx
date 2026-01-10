@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { Label } from '../label'
 import {
   Pagination,
   PaginationContent,
@@ -10,6 +11,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '../pagination'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select'
 
 const DEFAULT_PAGE_SIZES = [25, 50, 100]
 const DEFAULT_ALLOW_SHOW_ALL = true
@@ -44,10 +46,6 @@ const TablePagination = ({
     }
   }
 
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onItemsPerPageChange(parseInt(e.target.value, 10))
-  }
-
   const isShowingAll = itemsPerPage === -1
   const startItem = isShowingAll ? 1 : (currentPage - 1) * itemsPerPage + 1
   const endItem = isShowingAll ? totalItems : Math.min(currentPage * itemsPerPage, totalItems)
@@ -59,22 +57,27 @@ const TablePagination = ({
         className,
       )}
     >
-      <div className="text-muted-foreground flex items-center space-x-2 text-sm">
-        <span>{t('global.table.pagination.items_per_page.label')}</span>
-        <select
-          value={itemsPerPage}
-          onChange={handleItemsPerPageChange}
-          className="border-input bg-background rounded border px-2 py-1 text-sm"
-        >
-          {pageSizes.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-          {allowShowAll && (
-            <option value={-1}>{t('global.table.pagination.items_per_page.text_option_show_all')}</option>
-          )}
-        </select>
+      <div className="flex items-center gap-2">
+        <Label className="text-muted-foreground text-sm text-nowrap">
+          {t('global.table.pagination.items_per_page.label')}
+        </Label>
+        <Select value={String(itemsPerPage)} onValueChange={(it) => onItemsPerPageChange(parseInt(it, 10))}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={t('global.table.pagination.items_per_page.label')} />
+          </SelectTrigger>
+          <SelectContent>
+            {pageSizes.map((size) => (
+              <SelectItem key={size} value={String(size)}>
+                {size}
+              </SelectItem>
+            ))}
+            {allowShowAll && (
+              <SelectItem value={String(-1)}>
+                {t('global.table.pagination.items_per_page.text_option_show_all')}
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex items-center gap-2">
@@ -84,38 +87,36 @@ const TablePagination = ({
           </div>
         ) : undefined}
 
-        {!isShowingAll && (
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationFirst onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage - 1 < 1} />
-              </PaginationItem>
-              {[currentPage, currentPage - 1, currentPage + 1, currentPage - 2, currentPage + 2]
-                .filter((it) => it >= 1 && it <= totalPages)
-                .sort()
-                .slice(0, 3)
-                .map((it, index) => (
-                  <PaginationItem key={index}>
-                    <PaginationLink isActive={it === currentPage} onClick={() => handlePageChange(it)}>
-                      {it}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage + 1 > totalPages}
-                />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLast onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        )}
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationFirst onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage - 1 < 1} />
+            </PaginationItem>
+            {[currentPage, currentPage - 1, currentPage + 1, currentPage - 2, currentPage + 2]
+              .filter((it) => it >= 1 && it <= totalPages)
+              .sort()
+              .slice(0, 3)
+              .map((it, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink isActive={it === currentPage} onClick={() => handlePageChange(it)}>
+                    {it}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage + 1 > totalPages}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLast onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   )
