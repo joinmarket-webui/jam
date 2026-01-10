@@ -26,11 +26,11 @@ export function withQueryDelay<TQueryFnData, TQueryKey extends QueryKey>(
 ): QueryFunction<TQueryFnData, TQueryKey> | undefined {
   if (!queryFn) return undefined
   return (async (context) => {
-    if (delayBefore !== undefined && delayBefore > 0) {
+    if (delayBefore !== undefined && delayBefore > 0 && !context.signal.aborted) {
       await delayedPromise(delayBefore)
     }
     const result = queryFn(context)
-    if (delayAfter !== undefined && delayAfter > 0) {
+    if (delayAfter !== undefined && delayAfter > 0 && !context.signal.aborted) {
       await delayedPromise(delayAfter)
     }
     return result
