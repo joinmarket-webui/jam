@@ -56,10 +56,10 @@ export const BitcoinQR = ({ className, address, amount, errorCorrectionLevel = '
       {image && (
         <>
           <img
+            className="transition-all duration-500 group-hover/qrcode:blur-[2px]"
             src={image}
             alt={data}
             title={data}
-            className="transition-all duration-500 group-hover/qrcode:blur-[2px]"
           />
           <Button
             variant="secondary"
@@ -67,7 +67,7 @@ export const BitcoinQR = ({ className, address, amount, errorCorrectionLevel = '
             onClick={downloadQR}
             aria-label={t('receive.button_download_qr')}
           >
-            <DownloadIcon className="animate-bounce" />
+            <DownloadIcon className="motion-safe:animate-bounce" />
             {t('receive.button_download_qr')}
           </Button>
         </>
