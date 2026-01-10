@@ -3,7 +3,8 @@
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { PanelLeftIcon } from 'lucide-react'
+import { PanelLeftCloseIcon, PanelLeftIcon, PanelRightCloseIcon, PanelRightIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
@@ -175,6 +176,7 @@ function Sidebar({
           side={side}
         >
           <SheetHeader className="sr-only">
+            {/* TODO: i18n */}
             <SheetTitle>Sidebar</SheetTitle>
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
@@ -232,8 +234,15 @@ function Sidebar({
   )
 }
 
-function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
+function SidebarTrigger({
+  side,
+  className,
+  onClick,
+  ...props
+}: React.ComponentProps<typeof Button> & Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
+  const { t } = useTranslation()
+  const { isMobile, open, openMobile, toggleSidebar } = useSidebar()
+  const isSidebarOpen = isMobile ? openMobile : open
 
   return (
     <Button
@@ -241,15 +250,21 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      className={cn('size-7', className)}
+      title={
+        isSidebarOpen
+          ? /*TODO: t('sidebar.trigger.title_close')*/ t('global.close')
+          : /*TODO: t('sidebar.trigger.title_open')*/ undefined
+      }
+      className={className}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <PanelLeftIcon />
-      <span className="sr-only">Toggle Sidebar</span>
+      {side === 'left' ? isSidebarOpen ? <PanelLeftCloseIcon /> : <PanelLeftIcon /> : undefined}
+      {side === 'right' ? isSidebarOpen ? <PanelRightCloseIcon /> : <PanelRightIcon /> : undefined}
+      <span className="sr-only">{/*TODO: i18n */}Toggle Sidebar</span>
     </Button>
   )
 }

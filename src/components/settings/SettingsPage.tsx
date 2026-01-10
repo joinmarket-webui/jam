@@ -9,13 +9,12 @@ import {
   DollarSignIcon,
   KeyIcon,
   UnlockIcon,
-  RotateCcwIcon,
-  RefreshCwIcon,
   FileTextIcon,
   BookIcon,
   ExternalLinkIcon,
   TerminalIcon,
-  KeyRoundIcon,
+  PackageSearchIcon,
+  ArrowLeftRightIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -172,9 +171,9 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             disabled={lockWalletQuery.isFetching}
           />
           <Separator className="opacity-50" />
-          <SettingsLink icon={RotateCcwIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />
+          <SettingsLink icon={ArrowLeftRightIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />
           <Separator className="opacity-50" />
-          <SettingsLink icon={RefreshCwIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
+          <SettingsLink icon={PackageSearchIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
           <Separator className="opacity-50" />
           <SettingsLink
             icon={FileTextIcon}
