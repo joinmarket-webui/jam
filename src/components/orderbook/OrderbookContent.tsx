@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo } from 'react'
+import { DropdownMenu } from '@radix-ui/react-dropdown-menu'
 import { useQuery } from '@tanstack/react-query'
 import type { i18n } from 'i18next'
 import { ChevronDownIcon, RefreshCwIcon, PlusIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react'
@@ -17,7 +18,6 @@ import {
   isAbsoluteOffer,
   isRelativeOffer,
   humanReadableDuration,
-  delayedPromise,
   pseudoRandomNumber,
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -25,6 +25,7 @@ import { jmSessionStore } from '@/store/jmSessionStore'
 import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription } from '../ui/alert'
 import { ButtonGroup } from '../ui/button-group'
+import { DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Label } from '../ui/label'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
 
@@ -98,13 +99,9 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   const [isHighlightMyOffers, setHighlightMyOffers] = useState(false)
   const [isPinMyOffers, setPinMyOffers] = useState(false)
 
-  const [showRefreshDropdown, setShowRefreshDropdown] = useState(false)
-
   const [demoOffers, setDemoOffers] = useState<OrderbookOffer[]>([])
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
-
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const __dev_generateDemoReportEntryButton = () => {
     const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
@@ -124,22 +121,6 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
 
     setDemoOffers((prev) => [...prev, randomOffer])
   }
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowRefreshDropdown(false)
-      }
-    }
-
-    if (showRefreshDropdown) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showRefreshDropdown])
 
   const { isFetching: isFetchingOrderbookRefresh, refetch: refetchOrderbookRefresh } = useQuery({
     queryKey: ['orderbook-refresh'],
@@ -214,13 +195,11 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   }, [tableEntriesFiltered])
 
   const handleClearAndReload = async () => {
-    setShowRefreshDropdown(false)
     await refetchOrderbookRefresh().then(() => refetchOrderbookData())
   }
 
   const handleReload = async () => {
-    setShowRefreshDropdown(false)
-    await refetchOrderbookData().then(() => delayedPromise(200))
+    await refetchOrderbookData()
   }
 
   const highlightedOffers: OrderTableEntry[] = isHighlightMyOffers ? myOffers : []
@@ -261,51 +240,34 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
 
         <div className="flex items-center space-x-2">
           {showDemoButton && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={__dev_generateDemoReportEntryButton}
-              disabled={isFetching}
-              className="relative"
-            >
+            <Button variant="outline" size="sm" onClick={__dev_generateDemoReportEntryButton} disabled={isFetching}>
               <PlusIcon />
               Generate Demo Entry
               <DevBadge />
             </Button>
           )}
 
-          {/* TODO: replace manual dropdown with shadcn component */}
-          <div className="relative" ref={dropdownRef}>
-            <div className="flex">
-              <ButtonGroup>
-                <Button
-                  variant="outline"
-                  className="rounded-r-none"
-                  size="sm"
-                  onClick={handleReload}
-                  disabled={isFetching}
-                >
-                  <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
-                  {t('orderbook.button_reload_title')}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowRefreshDropdown(!showRefreshDropdown)}
-                  disabled={isFetching}
-                >
+          <ButtonGroup>
+            <Button variant="outline" className="rounded-r-none" size="sm" onClick={handleReload} disabled={isFetching}>
+              <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
+              {t('orderbook.button_reload_title')}
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={isFetching}>
                   <ChevronDownIcon />
                 </Button>
-              </ButtonGroup>
-              {showRefreshDropdown && (
-                <div className="bg-background absolute top-full right-0 z-100 mt-1 min-w-[200px] rounded-md border py-2 shadow-lg">
-                  <Button variant="ghost" size="sm" onClick={handleClearAndReload} disabled={isFetching}>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-52">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={handleClearAndReload} disabled={isFetching}>
                     {t('orderbook.button_refresh_text')}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </ButtonGroup>
 
           <Input
             placeholder={t('orderbook.placeholder_search')}
