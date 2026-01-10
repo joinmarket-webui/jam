@@ -12,6 +12,7 @@ import { useJamDisplayContext } from '../../context/JamDisplayContext'
 import PageTitle from '../PageTitle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { Button } from '../ui/button'
+import { Card, CardContent } from '../ui/card'
 import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Skeleton } from '../ui/skeleton'
 import { BitcoinAmountInput } from './BitcoinAmountInput'
@@ -129,73 +130,75 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     <div className="mx-auto max-w-2xl space-y-3 p-4">
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
 
-      <div className="flex w-full flex-col items-center justify-center space-y-2 rounded-lg border p-8">
-        {getAddressQuery.isFetching ? (
-          <Skeleton className={`h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`} />
-        ) : bitcoinAddress ? (
-          <BitcoinQR
-            className="animate-in fade-in duration-1000"
-            address={bitcoinAddress}
-            amount={amount}
-            width={QRCODE_WIDTH}
-          />
-        ) : (
-          <div
-            className={cn(
-              'flex animate-pulse items-center justify-center border text-gray-500',
-              `h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`,
-            )}
-          >
-            {t('receive.error_loading_address_failed')}
-          </div>
-        )}
+      <Card>
+        <CardContent className="flex w-full flex-col items-center justify-center gap-2">
+          {getAddressQuery.isFetching ? (
+            <Skeleton className={`h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`} />
+          ) : bitcoinAddress ? (
+            <BitcoinQR
+              className="animate-in fade-in duration-1000"
+              address={bitcoinAddress}
+              amount={amount}
+              width={QRCODE_WIDTH}
+            />
+          ) : (
+            <div
+              className={cn(
+                'flex animate-pulse items-center justify-center border text-gray-500',
+                `h-[${QRCODE_WIDTH}px] w-[${QRCODE_WIDTH}px]`,
+              )}
+            >
+              {t('receive.error_loading_address_failed')}
+            </div>
+          )}
 
-        {getAddressQuery.isFetching ? (
-          <Skeleton className="h-5 w-[65%]" />
-        ) : (
-          <p className="animate-in fade-in text-center font-mono text-sm break-all duration-1000 select-all">
-            {bitcoinAddress}
-          </p>
-        )}
+          {getAddressQuery.isFetching ? (
+            <Skeleton className="h-5 w-[65%]" />
+          ) : (
+            <p className="animate-in fade-in text-center font-mono text-sm break-all duration-1000 select-all">
+              {bitcoinAddress}
+            </p>
+          )}
 
-        <div className="mt-4 flex gap-2">
-          <Button variant="outline" size="sm" onClick={getNewAddress} disabled={getAddressQuery.isFetching}>
-            {getAddressQuery.isFetching ? (
-              <>
-                <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
-                {t('receive.text_getting_address')}
-              </>
-            ) : (
-              <>
-                <RefreshCwIcon className="motion-reduce:hidden" />
-                {t('receive.button_new_address')}
-              </>
-            )}
-          </Button>
+          <div className="mt-4 flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={getNewAddress} disabled={getAddressQuery.isFetching}>
+              {getAddressQuery.isFetching ? (
+                <>
+                  <RefreshCwIcon className="animate-spin motion-reduce:hidden" />
+                  {t('receive.text_getting_address')}
+                </>
+              ) : (
+                <>
+                  <RefreshCwIcon className="motion-reduce:hidden" />
+                  {t('receive.button_new_address')}
+                </>
+              )}
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={copyToClipboard}
-            disabled={getAddressQuery.isFetching || !bitcoinAddress}
-          >
-            {copied ? <CopyCheckIcon /> : <CopyIcon />}
-            {copied ? t('global.button_copy_text_confirmed') : t('global.button_copy_text')}
-          </Button>
-
-          {'share' in navigator && (
             <Button
               variant="outline"
               size="sm"
-              onClick={shareAddress}
+              onClick={copyToClipboard}
               disabled={getAddressQuery.isFetching || !bitcoinAddress}
             >
-              <ShareIcon />
-              {t('receive.button_share_address')}
+              {copied ? <CopyCheckIcon /> : <CopyIcon />}
+              {copied ? t('global.button_copy_text_confirmed') : t('global.button_copy_text')}
             </Button>
-          )}
-        </div>
-      </div>
+
+            {'share' in navigator && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={shareAddress}
+                disabled={getAddressQuery.isFetching || !bitcoinAddress}
+              >
+                <ShareIcon />
+                {t('receive.button_share_address')}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Accordion type="single" collapsible>
         <AccordionItem value="options">

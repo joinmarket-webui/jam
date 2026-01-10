@@ -92,126 +92,124 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
 
   return (
     <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
-      <div className="w-full max-w-xl">
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-2 text-center">
-            <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-              {isLoadingWallets ? (
-                <Loader2Icon className="h-6 w-6 animate-spin" />
-              ) : (
-                <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
-              )}
-            </div>
-            <CardTitle className="text-2xl font-bold">{t('settings.button_switch_wallet')}</CardTitle>
-            <CardDescription>
-              {/*TODO: i18n */}
-              {currentWalletLocked
-                ? 'Current wallet is locked. Select a different wallet to continue.'
-                : t('wallets.alert_wallet_open', {
-                    currentWalletName: walletDisplayName(walletFileName),
-                  })}
-            </CardDescription>
-          </CardHeader>
+      <Card className="w-full max-w-xl shadow-lg">
+        <CardHeader className="space-y-2 text-center">
+          <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+            {isLoadingWallets ? (
+              <Loader2Icon className="h-6 w-6 animate-spin" />
+            ) : (
+              <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
+            )}
+          </div>
+          <CardTitle className="text-2xl font-bold">{t('settings.button_switch_wallet')}</CardTitle>
+          <CardDescription>
+            {/*TODO: i18n */}
+            {currentWalletLocked
+              ? 'Current wallet is locked. Select a different wallet to continue.'
+              : t('wallets.alert_wallet_open', {
+                  currentWalletName: walletDisplayName(walletFileName),
+                })}
+          </CardDescription>
+        </CardHeader>
 
-          {isLoadingWallets ? (
-            <CardContent className="space-y-6">
-              <SwitchWalletFormSkeleton />
-            </CardContent>
-          ) : (
-            <>
-              {listwalletsError ? (
-                <CardContent className="space-y-6">
-                  <Alert variant="destructive">
-                    <AlertCircleIcon className="h-4 w-4" />
-                    <AlertTitle>{listwalletsError.message}</AlertTitle>
-                    <AlertDescription>{listwalletsError.error_description}</AlertDescription>
-                  </Alert>
-                  <Button variant="ghost" size="sm" onClick={async () => await listwalletsQuery.refetch()}>
-                    <RefreshCwIcon className="h-4 w-4" /> {t('global.retry')}
-                  </Button>
-                </CardContent>
-              ) : (
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{t('wallets.title')}</span>
+        {isLoadingWallets ? (
+          <CardContent className="space-y-6">
+            <SwitchWalletFormSkeleton />
+          </CardContent>
+        ) : (
+          <>
+            {listwalletsError ? (
+              <CardContent className="space-y-6">
+                <Alert variant="destructive">
+                  <AlertCircleIcon className="h-4 w-4" />
+                  <AlertTitle>{listwalletsError.message}</AlertTitle>
+                  <AlertDescription>{listwalletsError.error_description}</AlertDescription>
+                </Alert>
+                <Button variant="ghost" size="sm" onClick={async () => await listwalletsQuery.refetch()}>
+                  <RefreshCwIcon className="h-4 w-4" /> {t('global.retry')}
+                </Button>
+              </CardContent>
+            ) : (
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{t('wallets.title')}</span>
+                  </div>
+
+                  {wallets.length === 0 ? (
+                    <div className="py-4 text-center">
+                      <p className="text-muted-foreground text-sm">{t('wallets.subtitle_no_wallets')}</p>
                     </div>
-
-                    {wallets.length === 0 ? (
-                      <div className="py-4 text-center">
-                        <p className="text-muted-foreground text-sm">{t('wallets.subtitle_no_wallets')}</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {wallets.map((wallet, index) => (
-                          <div
-                            key={index}
-                            className={`rounded-lg border p-4 ${
-                              wallet === walletFileName ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <WalletIcon className="h-4 w-4" />
-                                <span className="text-sm font-medium">{walletDisplayName(wallet)}</span>
-                              </div>
-                              {wallet === walletFileName && (
-                                <span className="text-muted-foreground text-xs">
-                                  {currentWalletLocked
-                                    ? t('wallets.wallet_preview.wallet_locked')
-                                    : t('wallets.wallet_preview.wallet_active')}
-                                </span>
-                              )}
+                  ) : (
+                    <div className="space-y-2">
+                      {wallets.map((wallet, index) => (
+                        <div
+                          key={index}
+                          className={`rounded-lg border p-4 ${
+                            wallet === walletFileName ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <WalletIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">{walletDisplayName(wallet)}</span>
                             </div>
-
                             {wallet === walletFileName && (
-                              <div className="m-4 flex gap-4">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => navigate(routes.home)}
-                                  className="flex-1"
-                                >
-                                  <WalletIcon className="mr-2 h-4 w-4" />
-                                  {t('wallets.wallet_preview.button_open')}
-                                </Button>
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  onClick={handleLockCurrentWallet}
-                                  disabled={lockCurrentWallet.isFetching || currentWalletLocked}
-                                  className="flex-1"
-                                >
-                                  {lockCurrentWallet.isFetching ? (
-                                    <>
-                                      <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
-                                      {t('settings.button_locking_wallet')}
-                                    </>
-                                  ) : currentWalletLocked ? (
-                                    <>
-                                      <LockIcon className="h-4 w-4" />
-                                      {t('wallets.wallet_preview.wallet_locked')}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <UnlockIcon className="h-4 w-4" />
-                                      {t('settings.button_lock_wallet')}
-                                    </>
-                                  )}
-                                </Button>
-                              </div>
+                              <span className="text-muted-foreground text-xs">
+                                {currentWalletLocked
+                                  ? t('wallets.wallet_preview.wallet_locked')
+                                  : t('wallets.wallet_preview.wallet_active')}
+                              </span>
                             )}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              )}
-            </>
-          )}
-        </Card>
-      </div>
+
+                          {wallet === walletFileName && (
+                            <div className="m-4 flex gap-4">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(routes.home)}
+                                className="flex-1"
+                              >
+                                <WalletIcon className="mr-2 h-4 w-4" />
+                                {t('wallets.wallet_preview.button_open')}
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleLockCurrentWallet}
+                                disabled={lockCurrentWallet.isFetching || currentWalletLocked}
+                                className="flex-1"
+                              >
+                                {lockCurrentWallet.isFetching ? (
+                                  <>
+                                    <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                                    {t('settings.button_locking_wallet')}
+                                  </>
+                                ) : currentWalletLocked ? (
+                                  <>
+                                    <LockIcon className="h-4 w-4" />
+                                    {t('wallets.wallet_preview.wallet_locked')}
+                                  </>
+                                ) : (
+                                  <>
+                                    <UnlockIcon className="h-4 w-4" />
+                                    {t('settings.button_lock_wallet')}
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            )}
+          </>
+        )}
+      </Card>
     </div>
   )
 }

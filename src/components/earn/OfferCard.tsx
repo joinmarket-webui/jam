@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next'
 import { FingerprintIcon, HandCoinsIcon, Maximize2Icon, Minimize2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
+import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
@@ -28,16 +28,17 @@ const renderOfferText = (value: Offer, t: TFunction<'translation', undefined>) =
 }
 
 interface OfferCardProps {
+  className?: string
   value: Offer
   nickname: SessionResponse['nickname']
 }
 
-export function OfferCard({ value, nickname, children }: PropsWithChildren<OfferCardProps>) {
+export function OfferCard({ className, value, nickname, children }: PropsWithChildren<OfferCardProps>) {
   const { t } = useTranslation()
   const { formatAmount, currencySymbol } = useJamDisplayContext()
 
   return (
-    <Card className="w-full">
+    <Card className={cn('w-full', className)}>
       <CardHeader>
         <CardTitle>{t('earn.current.text_offer')}</CardTitle>
         <CardDescription></CardDescription>

@@ -81,11 +81,11 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       <PageTitle title={t('navbar.menu_mobile_settings')} />
 
       {/* Display Settings */}
-      <Card className="mt-3 border-0 shadow-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base font-medium">{t('settings.section_title_display')}</CardTitle>
+          <CardTitle>{t('settings.section_title_display')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-0">
+        <CardContent>
           <SettingSwitch
             icon={isPrivate ? EyeIcon : EyeOffIcon}
             title={t(isPrivate ? 'settings.show_balance' : 'settings.hide_balance')}
@@ -117,9 +117,9 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       </Card>
 
       {/* Market Settings */}
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base font-medium">{t('settings.section_title_market')}</CardTitle>
+          <CardTitle>{t('settings.section_title_market')}</CardTitle>
         </CardHeader>
         <CardContent>
           <SettingItem
@@ -133,9 +133,9 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       </Card>
 
       {/* Wallet Settings */}
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base font-medium">{t('settings.section_title_wallet')}</CardTitle>
+          <CardTitle>{t('settings.section_title_wallet')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
@@ -166,9 +166,9 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       </Card>
 
       {/* Community Settings */}
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base font-medium">{t('settings.section_title_community')}</CardTitle>
+          <CardTitle>{t('settings.section_title_community')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <a
@@ -208,9 +208,9 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       </Card>
 
       {/* Development & Documentation */}
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base font-medium">{t('settings.section_title_dev')}</CardTitle>
+          <CardTitle>{t('settings.section_title_dev')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingsLink icon={BookIcon} title={t('settings.documentation')} to="https://jamdocs.org" external={true} />
@@ -241,9 +241,9 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
       {jamSettings.state.developerMode && (
         <>
           {/* Developer Mode */}
-          <Card className="animate-slide-up border-0 shadow-sm">
+          <Card className="animate-slide-up">
             <CardHeader>
-              <CardTitle className="text-base font-medium">Developer Mode</CardTitle>
+              <CardTitle>Developer Mode</CardTitle>
             </CardHeader>
             <CardContent className="space-y-0">
               <SettingsLink

@@ -216,94 +216,87 @@ const LoginPage = () => {
 
   return (
     <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-2 text-center">
-            <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-              {listWalletsFetching ? (
-                <Loader2Icon className="h-6 w-6 animate-spin" />
-              ) : (
-                <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listWalletsRefetch()} />
-              )}
-            </div>
-            <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
-            {!listWalletsLoading && wallets.length > 0 && (
-              <CardDescription>{/*TODO: i18n */}Select a wallet and enter your password to continue.</CardDescription>
+      <Card className="w-full max-w-md">
+        <CardHeader className="flex flex-col items-center space-y-2">
+          <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+            {listWalletsFetching ? (
+              <Loader2Icon className="animate-spin" />
+            ) : (
+              <WalletIcon className="text-primary" onClick={async () => await listWalletsRefetch()} />
             )}
-          </CardHeader>
-
-          {listWalletsLoading ? (
-            <CardContent className="space-y-6">
-              <LoginFormSkeleton />
-            </CardContent>
-          ) : (
-            <>
-              {listWalletsError ? (
-                <CardContent className="space-y-6">
-                  <Alert variant="destructive">
-                    <AlertCircleIcon />
-                    <AlertTitle>{t('wallets.error_loading_failed')}</AlertTitle>
-                    <AlertDescription>{listWalletsError.message || t('global.errors.reason_unknown')}</AlertDescription>
-                  </Alert>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={async () => await listWalletsRefetch()}
-                    disabled={listWalletsFetching}
-                  >
-                    <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
-                    {t('global.retry')}
-                  </Button>
-                </CardContent>
-              ) : (
-                <CardContent className="space-y-6">
-                  {wallets.length === 0 ? (
-                    <>
-                      <div className="text-center">
-                        <p className="text-muted-foreground text-sm">{t('wallets.subtitle_no_wallets')}</p>
-                      </div>
-                      <div className="flex flex-col gap-4">
-                        <Button size="lg" onClick={async () => await navigate(routes.createWallet)}>
-                          {t('wallets.button_new_wallet')}
-                        </Button>
-                        <Button variant="secondary" size="lg" disabled>
-                          {t('wallets.button_import_wallet')}
-                          <Badge variant="destructive">Not yet implemented.</Badge>
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <LoginForm
-                        wallets={wallets || []}
-                        disabled={login.isPending || listWalletsFetching}
-                        isSubmitting={login.isPending}
-                        onSubmit={handleSubmit}
-                      />
-
-                      <div className="flex flex-col gap-2">
-                        <Button variant="link" size="sm" onClick={async () => await navigate(routes.createWallet)}>
-                          {t('wallets.button_new_wallet')}
-                        </Button>
-                        <Button
-                          variant="link"
-                          size="sm"
-                          onClick={async () => await navigate('/import-wallet')}
-                          disabled
-                        >
-                          {/* TODO: implement "import wallet" */}
-                          {t('wallets.button_import_wallet')}
-                          <Badge variant="destructive">Not yet implemented.</Badge>
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              )}
-            </>
+          </div>
+          <CardTitle className="text-2xl font-bold">{/*TODO: i18n */}Welcome to Jam</CardTitle>
+          {!listWalletsLoading && wallets.length > 0 && (
+            <CardDescription>{/*TODO: i18n */}Select a wallet and enter your password to continue.</CardDescription>
           )}
-        </Card>
-      </div>
+        </CardHeader>
+
+        {listWalletsLoading ? (
+          <CardContent className="space-y-6">
+            <LoginFormSkeleton />
+          </CardContent>
+        ) : (
+          <>
+            {listWalletsError ? (
+              <CardContent className="space-y-6">
+                <Alert variant="destructive">
+                  <AlertCircleIcon />
+                  <AlertTitle>{t('wallets.error_loading_failed')}</AlertTitle>
+                  <AlertDescription>{listWalletsError.message || t('global.errors.reason_unknown')}</AlertDescription>
+                </Alert>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => await listWalletsRefetch()}
+                  disabled={listWalletsFetching}
+                >
+                  <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': listWalletsFetching })} />
+                  {t('global.retry')}
+                </Button>
+              </CardContent>
+            ) : (
+              <CardContent className="space-y-6">
+                {wallets.length === 0 ? (
+                  <>
+                    <div className="text-center">
+                      <p className="text-muted-foreground text-sm">{t('wallets.subtitle_no_wallets')}</p>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <Button size="lg" onClick={async () => await navigate(routes.createWallet)}>
+                        {t('wallets.button_new_wallet')}
+                      </Button>
+                      <Button variant="secondary" size="lg" disabled>
+                        {t('wallets.button_import_wallet')}
+                        <Badge variant="destructive">Not yet implemented.</Badge>
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <LoginForm
+                      wallets={wallets || []}
+                      disabled={login.isPending || listWalletsFetching}
+                      isSubmitting={login.isPending}
+                      onSubmit={handleSubmit}
+                    />
+
+                    <div className="flex flex-col gap-2">
+                      <Button variant="link" size="sm" onClick={async () => await navigate(routes.createWallet)}>
+                        {t('wallets.button_new_wallet')}
+                      </Button>
+                      <Button variant="link" size="sm" onClick={async () => await navigate('/import-wallet')} disabled>
+                        {/* TODO: implement "import wallet" */}
+                        {t('wallets.button_import_wallet')}
+                        <Badge variant="destructive">Not yet implemented.</Badge>
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            )}
+          </>
+        )}
+      </Card>
     </div>
   )
 }

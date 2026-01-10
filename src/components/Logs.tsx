@@ -3,37 +3,39 @@ import { AlertTriangleIcon, Loader2Icon, RefreshCwIcon, DownloadIcon } from 'luc
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { isDevMode } from '@/constants/debugFeatures'
 import { fetchLog } from '@/lib/api/logs'
+import { cn } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import PageTitle from './PageTitle'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
 
 interface SimpleAlert {
-  variant: 'destructive' | 'default'
+  variant: React.ComponentProps<typeof Alert>['variant']
   message: string
 }
 
 interface LogContentProps {
-  content: string
+  value: string
   refresh: (signal: AbortSignal) => Promise<void>
 }
 
-function LogContent({ content, refresh }: LogContentProps) {
+function LogContent({ value, refresh }: LogContentProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
 
   useEffect(() => {
-    if (!content || !logContentRef.current) return
+    if (!value || !logContentRef.current) return
 
     logContentRef.current.scrollTo({
       top: logContentRef.current.scrollHeight,
       behavior: 'smooth',
     })
-  }, [content])
+  }, [value])
 
   const handleRefresh = useCallback(() => {
     if (isLoadingRefresh) return
@@ -48,7 +50,7 @@ function LogContent({ content, refresh }: LogContentProps) {
   }, [isLoadingRefresh, refresh])
 
   const handleDownload = useCallback(() => {
-    const blob = new Blob([content], { type: 'text/plain' })
+    const blob = new Blob([value], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -59,28 +61,21 @@ function LogContent({ content, refresh }: LogContentProps) {
     setTimeout(() => {
       URL.revokeObjectURL(url)
     }, 0)
-  }, [content])
+  }, [value])
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('logs.title')}</h1>
-          </div>
-          <Badge variant="secondary" className="mx-2 text-sm">
-            {JMWALLETD_LOG_FILE_NAME}
-          </Badge>
-        </div>
-        <div className="flex w-full items-center justify-end gap-2">
+    <Card className="pb-0">
+      <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardTitle className="font-mono">{JMWALLETD_LOG_FILE_NAME}</CardTitle>
+        <div className="flex items-center justify-end gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleDownload}
-            disabled={!content}
-            className="flex items-center gap-2"
+            disabled={!value || isLoadingRefresh}
+            title={t('global.download')}
           >
-            <DownloadIcon className="h-4 w-4" />
+            <DownloadIcon />
             {t('global.download')}
           </Button>
           <Button
@@ -88,27 +83,24 @@ function LogContent({ content, refresh }: LogContentProps) {
             size="sm"
             onClick={handleRefresh}
             disabled={isLoadingRefresh}
-            className="flex items-center gap-2"
+            title={t('global.refresh')}
           >
-            {isLoadingRefresh ? (
-              <Loader2Icon className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCwIcon className="h-4 w-4" />
-            )}
+            <RefreshCwIcon
+              className={cn({
+                'animate-spin': isLoadingRefresh,
+              })}
+            />
             {t('global.refresh')}
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="relative">
-          <pre
-            ref={logContentRef}
-            className="bg-muted/50 max-h-[600px] overflow-auto rounded-md border p-4 font-mono text-sm break-words whitespace-pre-wrap"
-            style={{ minHeight: '300px' }}
-          >
-            {content || 'No logs available'}
-          </pre>
-        </div>
+      <CardContent className="p-0">
+        <pre
+          ref={logContentRef}
+          className="bg-muted/90 max-h-[600px] min-h-[300px] overflow-auto px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap"
+        >
+          {value || 'No logs available'}
+        </pre>
       </CardContent>
     </Card>
   )
@@ -119,11 +111,12 @@ export const Logs = () => {
   const { t } = useTranslation()
   const [alert, setAlert] = useState<SimpleAlert>()
   const [isInitialized, setIsInitialized] = useState(false)
-  const [content, setContent] = useState<string>()
+  const [logFileContent, setLogFileContent] = useState<string>()
 
   const refresh = useCallback(
     async (signal: AbortSignal) => {
       if (!authState?.auth?.token) {
+        // TODO: i18n
         setAlert({
           variant: 'destructive',
           message: 'No authentication token available. Please login again.',
@@ -133,28 +126,32 @@ export const Logs = () => {
 
       return fetchLog({
         token: authState.auth.token,
-        signal,
         fileName: JMWALLETD_LOG_FILE_NAME,
+        signal,
       })
         .then((res) => (res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`))))
         .then((data) => {
           if (signal.aborted) return
           setAlert(undefined)
-          setContent(data)
+          setLogFileContent(data)
         })
         .catch((e) => {
           if (signal.aborted) return
 
-          // Check if it's a 404 or similar error indicating endpoint doesn't exist
-          const isEndpointNotFound = e.message?.includes('HTTP 404') || e.message?.includes('Empty reply')
+          const errorMessage = t('logs.error_loading_logs_failed', {
+            /* TODO: add reason to i18n string */
+            reason: e.message || t('global.errors.reason_unknown'),
+          })
+
+          if (isDevMode()) {
+            // adding content enables manual testing of other component
+            // and functionality (e.g. downloading, refreshing, etc.)
+            setLogFileContent(errorMessage)
+          }
 
           setAlert({
-            variant: 'default',
-            message: isEndpointNotFound
-              ? 'Log endpoint not implemented yet. The logs are available via Docker: `npm run regtest:logs:jmwalletd`'
-              : t('logs.error_loading_logs_failed', {
-                  reason: e.message || t('global.errors.reason_unknown'),
-                }),
+            variant: 'warning',
+            message: errorMessage,
           })
         })
     },
@@ -171,19 +168,19 @@ export const Logs = () => {
 
   if (!isInitialized) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="flex items-center gap-3">
-            <Loader2Icon className="h-6 w-6 animate-spin motion-reduce:hidden" />
-            <span className="text-lg">{t('global.loading')}...</span>
-          </div>
+      <div className="mx-auto max-w-2xl space-y-3 p-4">
+        <div className="m-2 flex items-center justify-center gap-2">
+          <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+          {t('global.loading')}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto space-y-6 py-8">
+    <div className="mx-auto space-y-3 p-4">
+      <PageTitle title={t('logs.title')} />
+
       {alert && (
         <Alert variant={alert.variant}>
           <AlertTriangleIcon />
@@ -191,7 +188,7 @@ export const Logs = () => {
         </Alert>
       )}
 
-      {content && <LogContent content={content} refresh={refresh} />}
+      {logFileContent && <LogContent value={logFileContent} refresh={refresh} />}
     </div>
   )
 }
