@@ -216,7 +216,7 @@ export const OrderbookTable = ({
         },
         meta: {
           align: 'right',
-        },
+        } as OrderTableColumnMeta,
       }),
     ],
     [t],
@@ -257,22 +257,25 @@ export const OrderbookTable = ({
   })
 
   useEffect(() => {
+    table.resetRowPinning(true)
     table.getRowModel().rows.forEach((row) => {
       row.pin(pinnedEntries.includes(row.original) ? 'top' : false)
     })
   }, [table, pinnedEntries])
 
   useEffect(() => {
+    table.resetRowSelection(true)
     table.getRowModel().rows.forEach((row) => {
       row.toggleSelected(highlightedEntries.includes(row.original))
     })
   }, [table, highlightedEntries])
 
   const totalPages = useMemo(() => {
-    if (itemsPerPage === -1) return 1
-    const total = tableEntries.length
-    return Math.max(1, Math.ceil(total / itemsPerPage))
-  }, [itemsPerPage, tableEntries])
+    if (itemsPerPage === -1) {
+      return 1
+    }
+    return Math.max(1, Math.ceil(tableEntries.length / itemsPerPage))
+  }, [itemsPerPage, tableEntries.length])
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -285,6 +288,17 @@ export const OrderbookTable = ({
     const col = table.getColumn(key)
     if (col) {
       col.toggleSorting()
+    }
+  }
+
+  const tableTopRows = () => {
+    try {
+      // pinned offers might not be included in the table data,
+      // and the internal model of the table does not match anymore
+      return table.getTopRows()
+    } catch (e) {
+      console.debug('Error while rendering top table rows', e)
+      return []
     }
   }
 
@@ -327,8 +341,8 @@ export const OrderbookTable = ({
             ))}
           </TableHeader>
           <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
-            {table.getTopRows().map((row) => (
-              <TableRow key={row.id} className={cn(row.getIsSelected() && 'light:bg-yellow-500/30! bg-yellow-950!')}>
+            {tableTopRows().map((row) => (
+              <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                 {row.getVisibleCells().map((cell) => {
                   const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
                   const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
@@ -348,7 +362,7 @@ export const OrderbookTable = ({
             ))}
             {table.getCenterRows().map((row) => {
               return (
-                <TableRow key={row.id} className={cn(row.getIsSelected() && 'light:bg-yellow-500/30! bg-yellow-950!')}>
+                <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                   {row.getVisibleCells().map((cell) => {
                     const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
                     const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
