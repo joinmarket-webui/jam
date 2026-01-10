@@ -93,7 +93,7 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
 
   const nickname = useStore(jmSessionStore, (state) => state.state?.nickname)
 
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchInputRaw, setSearchInputRaw] = useState('')
   const [isHighlightMyOffers, setHighlightMyOffers] = useState(false)
   const [isPinMyOffers, setPinMyOffers] = useState(false)
 
@@ -143,7 +143,7 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   const { isFetching: isFetchingOrderbookRefresh, refetch: refetchOrderbookRefresh } = useQuery({
     queryKey: ['orderbook-refresh'],
     queryFn: withQueryDelay(OrderbookApi.refreshOrderbook, {
-      delayAfter: 200,
+      delayAfter: 210,
     }),
     enabled: false, // invoke manually only!
   })
@@ -157,7 +157,7 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   } = useQuery({
     queryKey: ['orderbook'],
     queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
-      delayAfter: 200,
+      delayAfter: 210,
     }),
   })
 
@@ -183,10 +183,10 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
     return nickname ? tableEntries.filter((it) => it.counterparty === nickname) : []
   }, [nickname, tableEntries])
 
-  const filteredBaseData = useMemo(() => {
+  const tableEntriesFiltered = useMemo(() => {
     if (!tableEntries) return []
-    const searchVal = searchQuery.replace('.', '').toLowerCase()
-    let offers = [...tableEntries]
+    const searchVal = searchInputRaw.replace('.', '').toLowerCase()
+    let offers = tableEntries
     if (searchVal !== '') {
       offers = offers.filter((entry) => {
         return (
@@ -202,19 +202,18 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
       })
     }
     return offers
-  }, [tableEntries, searchQuery])
+  }, [tableEntries, searchInputRaw])
 
   const summary = useMemo(() => {
-    const uniqueCounterparties = new Set(filteredBaseData.map((offer) => offer.counterparty))
+    const uniqueCounterparties = new Set(tableEntriesFiltered.map((it) => it.counterparty))
     return {
-      count: filteredBaseData.length,
+      count: tableEntriesFiltered.length,
       counterpartyCount: uniqueCounterparties.size,
     }
-  }, [filteredBaseData])
+  }, [tableEntriesFiltered])
 
   const handleClearAndReload = async () => {
     setShowRefreshDropdown(false)
-
     await refetchOrderbookRefresh().then(() => refetchOrderbookData())
   }
 
@@ -253,11 +252,8 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
       <div className="flex flex-col items-start justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-muted-foreground text-sm">
-            {searchQuery === ''
-              ? t('orderbook.text_orderbook_summary', {
-                  count: tableEntries.length,
-                  counterpartyCount: new Set(tableEntries.map((e) => e.counterparty)).size,
-                })
+            {searchInputRaw === ''
+              ? t('orderbook.text_orderbook_summary', summary)
               : t('orderbook.text_orderbook_summary_filtered', summary)}
           </p>
         </div>
@@ -319,8 +315,8 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
 
           <Input
             placeholder={t('orderbook.placeholder_search')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchInputRaw}
+            onChange={(e) => setSearchInputRaw(e.target.value)}
             className="w-64"
             disabled={isFetching}
           />
@@ -369,7 +365,6 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
         </div>
       )}
 
-      {/* Table */}
       {isLoadingInitially ? (
         <div className="py-12">
           <div className="text-muted-foreground m-2 flex items-center justify-center gap-2">
@@ -377,13 +372,13 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
             {t('global.loading')}
           </div>
         </div>
-      ) : filteredBaseData.length === 0 ? (
+      ) : tableEntries.length === 0 ? (
         <div className="py-12 text-center">
           <div className="text-muted-foreground">{t('orderbook.alert_empty_orderbook')}</div>
         </div>
       ) : (
         <OrderbookTable
-          tableEntries={filteredBaseData}
+          tableEntries={tableEntriesFiltered}
           selectedEntries={highlightedOffers}
           pinnedEntries={pinnedToTopOffers}
         />
