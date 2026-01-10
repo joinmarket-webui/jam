@@ -11,8 +11,8 @@ import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
 import { DevBadge } from './dev/DevBadge'
-import { useSidebar } from './ui/sidebar'
 import { Skeleton } from './ui/skeleton'
+import { useSidebar } from './ui/use-sidebar'
 
 interface NavbarProps {
   isLoading?: boolean
@@ -22,7 +22,7 @@ interface NavbarProps {
   theme: string
   toggleTheme: () => void
   formatAmount: (AmountSats: number) => string
-  sidebarTrigger: React.ReactNode
+  sidebarTrigger?: React.ReactNode
 }
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
@@ -104,7 +104,9 @@ export function Navbar({
 }: NavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const sidebar = useSidebar()
+
+  const { isMobile, open, openMobile } = useSidebar()
+  const isSidebarOpen = isMobile ? openMobile : open
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuth } = useStore(authStore, (state) => state)
 
@@ -135,9 +137,13 @@ export function Navbar({
         currencySymbol={currencySymbol}
       />
       <div
-        className={cn('hidden min-w-0 flex-1 items-center justify-center gap-8 font-semibold md:flex lg:gap-10', {
-          'hidden!': sidebar.isMobile ? sidebar.openMobile : sidebar.open,
-        })}
+        className={cn(
+          'hidden min-w-0 flex-1 items-center justify-center text-sm font-semibold md:gap-6 lg:gap-12 lg:text-base',
+          {
+            'md:flex': !isSidebarOpen,
+            'lg:flex': isSidebarOpen,
+          },
+        )}
       >
         <Link to={routes.receive} className="text-muted-foreground hover:text-foreground">
           {t('navbar.tab_receive')}

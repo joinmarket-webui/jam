@@ -27,8 +27,8 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  useSidebar,
 } from '@/components/ui/sidebar'
+import { useSidebar } from '@/components/ui/use-sidebar'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
 
@@ -80,15 +80,15 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
         url: routes.rescan,
         icon: PackageSearchIcon,
       },
-      ...(isLogsEnabled
-        ? [
+      ...(!isLogsEnabled
+        ? []
+        : [
             {
               title: /*TODO: i18n t('sidebar.item_settings.label')*/ t('settings.show_logs'),
               url: routes.logs,
               icon: LogsIcon,
             },
-          ]
-        : []),
+          ]),
     ],
     [t, isLogsEnabled],
   )
