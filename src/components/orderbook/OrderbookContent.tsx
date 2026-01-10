@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { DropdownMenu } from '@radix-ui/react-dropdown-menu'
 import { useQuery } from '@tanstack/react-query'
+import type { RowModel } from '@tanstack/react-table'
 import type { i18n } from 'i18next'
 import { ChevronDownIcon, RefreshCwIcon, PlusIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -171,34 +172,15 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   )
   const pinnedToTopOffers = useMemo<OrderTableEntry[]>(() => (isPinMyOffers ? myOffers : []), [isPinMyOffers, myOffers])
 
-  const tableEntriesFiltered = useMemo(() => {
-    if (!tableEntries) return []
-    const searchVal = searchInputRaw.replace('.', '').toLowerCase()
-    let offers = tableEntries
-    if (searchVal !== '') {
-      offers = offers.filter((entry) => {
-        return (
-          entry.type.displayValue.toLowerCase().includes(searchVal) ||
-          entry.counterparty.toLowerCase().includes(searchVal) ||
-          entry.fee.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.minimumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.maximumSize.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.minerFeeContribution.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.bondValue.displayValue.replace('.', '').toLowerCase().includes(searchVal) ||
-          entry.orderId.toLowerCase().includes(searchVal)
-        )
-      })
-    }
-    return offers
-  }, [tableEntries, searchInputRaw])
+  const [tableRowModel, setTableRowModel] = useState<RowModel<OrderTableEntry>>()
 
   const summary = useMemo(() => {
-    const uniqueCounterparties = new Set(tableEntriesFiltered.map((it) => it.counterparty))
+    const uniqueCounterparties = new Set((tableRowModel?.rows ?? []).map((it) => it.original.counterparty))
     return {
-      count: tableEntriesFiltered.length,
+      count: tableRowModel?.rows.length || 0,
       counterpartyCount: uniqueCounterparties.size,
     }
-  }, [tableEntriesFiltered])
+  }, [tableRowModel])
 
   const handleClearAndReload = async () => {
     await refetchOrderbookRefresh().then(() => refetchOrderbookData())
@@ -337,9 +319,13 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
         </div>
       ) : (
         <OrderbookTable
-          tableEntries={tableEntriesFiltered}
+          tableEntries={tableEntries}
           selectedEntries={highlightedOffers}
           pinnedEntries={pinnedToTopOffers}
+          globalFilter={searchInputRaw}
+          onChange={(table) => {
+            setTableRowModel(table.getFilteredRowModel())
+          }}
         />
       )}
     </div>

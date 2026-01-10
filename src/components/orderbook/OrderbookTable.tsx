@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { rankItem } from '@tanstack/match-sorter-utils'
 import {
   createColumnHelper,
   flexRender,
@@ -13,6 +14,9 @@ import {
   type RowSelectionState,
   type VisibilityState,
   type Column,
+  type FilterFn,
+  type FilterFnOption,
+  type Table as TableType,
 } from '@tanstack/react-table'
 import {
   ArrowUpDownIcon,
@@ -26,7 +30,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Balance } from '@/components/ui/jam/Balance'
-import { Pagination } from '@/components/ui/pagination'
+import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn, BTC } from '@/lib/utils'
@@ -92,16 +96,26 @@ const SortIcon = ({ sortKey, column, className }: SortIconProps) => {
   return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
 }
 
+const fuzzyFilter: FilterFn<OrderTableEntry> = (row, columnId, value, addMeta) => {
+  const itemRank = rankItem(row.getValue(columnId), value)
+  addMeta({ itemRank })
+  return itemRank.passed
+}
+
 interface OrderbookTableProps {
+  globalFilter?: string
   tableEntries: OrderTableEntry[]
   selectedEntries: OrderTableEntry[]
   pinnedEntries: OrderTableEntry[]
+  onChange?: (table: TableType<OrderTableEntry>) => void
 }
 
 export const OrderbookTable = ({
+  globalFilter,
   tableEntries,
   selectedEntries: highlightedEntries,
   pinnedEntries,
+  onChange,
 }: OrderbookTableProps) => {
   const { t } = useTranslation()
 
@@ -230,10 +244,14 @@ export const OrderbookTable = ({
     bottom: [],
   })
 
-  const table = useReactTable({
+  const table = useReactTable<OrderTableEntry>({
     data: tableEntries,
     columns,
+    filterFns: {
+      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
+    },
     state: {
+      globalFilter,
       sorting,
       pagination: {
         pageIndex: Math.max(0, currentPage - 1),
@@ -243,6 +261,7 @@ export const OrderbookTable = ({
       rowSelection,
       columnVisibility,
     },
+    globalFilterFn: 'fuzzy' as FilterFnOption<OrderTableEntry>,
     keepPinnedRows: true,
     enableRowSelection: true,
     onSortingChange: setSorting,
@@ -253,7 +272,6 @@ export const OrderbookTable = ({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    manualFiltering: true, // we filter before passing to table
   })
 
   useEffect(() => {
@@ -301,6 +319,12 @@ export const OrderbookTable = ({
       return []
     }
   }
+
+  useEffect(() => {
+    if (onChange) {
+      onChange(table)
+    }
+  }, [table, onChange])
 
   return (
     <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
@@ -385,7 +409,7 @@ export const OrderbookTable = ({
         </Table>
       </div>
 
-      <Pagination
+      <TablePagination
         currentPage={currentPage}
         totalPages={totalPages}
         itemsPerPage={itemsPerPage}
