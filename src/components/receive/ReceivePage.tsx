@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
-import type { AmountSats, BitcoinAddress } from '@/types/global'
+import type { AmountSats, BitcoinAddress, Milliseconds } from '@/types/global'
 import { useJamDisplayContext } from '../../context/JamDisplayContext'
 import PageTitle from '../PageTitle'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -19,6 +19,12 @@ import { BitcoinQR } from './BitcoinQR'
 
 const QRCODE_WIDTH = 320 // "h-[320px] w-[320px]" <- Comment for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 
+// new-address query stale time considerations:
+// - high enough to prevent increasing address gap on accidental page switch
+// - low enough to provide new address on purpose
+// - "too low" is better than "too high"
+const GET_ADDRESS_QUERY_TALE_TIME: Milliseconds = 10_000
+
 interface ReceivePageProps {
   walletFileName: WalletFileName
 }
@@ -26,8 +32,8 @@ interface ReceivePageProps {
 export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const { t } = useTranslation()
   const [selectedJarIndex, setSelectedJarIndex] = useState(0)
-  const [amount, setAmount] = useState<AmountSats | undefined>()
-  const [bitcoinAddress, setBitcoinAddress] = useState<BitcoinAddress | undefined>()
+  const [amount, setAmount] = useState<AmountSats>()
+  const [bitcoinAddress, setBitcoinAddress] = useState<BitcoinAddress>()
   const [copied, setCopied] = useState(false)
 
   const { currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
@@ -43,9 +49,13 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
         mixdepth: String(selectedJarIndex),
       },
     }),
-    retry: false,
     enabled: walletFileName !== undefined && selectedJarIndex !== undefined,
-    staleTime: 1,
+    staleTime: GET_ADDRESS_QUERY_TALE_TIME,
+    retry: false,
+    retryOnMount: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 
   if (getAddressQuery.data?.address && bitcoinAddress !== getAddressQuery.data?.address) {
@@ -83,13 +93,9 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     }
   }
 
-  const getNewAddress = useCallback(() => {
-    getAddressQuery.refetch()
+  const getNewAddress = useCallback(async () => {
+    await getAddressQuery.refetch()
   }, [getAddressQuery])
-
-  const selectJar = (index: number) => {
-    setSelectedJarIndex(index)
-  }
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -200,13 +206,13 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
             <div className="grid grid-cols-5 gap-4">
               {jars.map((jar, index) => (
                 <SelectableJar
-                  key={jar.name}
+                  key={index}
                   name={jar.name}
                   color={jar.color}
-                  balance={jar.balance || 0}
-                  isSelected={selectedJarIndex === index}
+                  balance={jar.balance}
                   totalBalance={totalBalance}
-                  onClick={() => selectJar(index)}
+                  isSelected={selectedJarIndex === index}
+                  onClick={() => setSelectedJarIndex(index)}
                 />
               ))}
             </div>
