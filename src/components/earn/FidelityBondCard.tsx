@@ -33,7 +33,6 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
     <Card className="w-full">
       <CardHeader>
         <CardTitle>
-          {' '}
           {isExpired ? (
             <Trans i18nKey="earn.fidelity_bond.existing.title_expired">
               Fidelity Bond <strong>expired</strong>

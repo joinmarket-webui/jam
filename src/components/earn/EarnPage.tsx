@@ -200,22 +200,22 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       {jmSessionState.offer_list && jmSessionState.offer_list.length > 0 && (
-        <>
-          <div className="animate-in blur-in space-y-2">
-            <OfferCard value={jmSessionState.offer_list[0]} nickname={jmSessionState.nickname}>
-              <Button type="button" onClick={() => onStop()} className="w-full" size="lg">
-                {isWaitingMakerStop ? (
-                  <>
-                    <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
-                    {t('earn.text_stopping')}
-                  </>
-                ) : (
-                  <>{t('earn.button_stop')}</>
-                )}
-              </Button>
-            </OfferCard>
-          </div>
-        </>
+        <OfferCard
+          className="animate-in blur-in"
+          value={jmSessionState.offer_list[0]}
+          nickname={jmSessionState.nickname}
+        >
+          <Button type="button" onClick={() => onStop()} className="w-full" size="lg">
+            {isWaitingMakerStop ? (
+              <>
+                <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
+                {t('earn.text_stopping')}
+              </>
+            ) : (
+              <>{t('earn.button_stop')}</>
+            )}
+          </Button>
+        </OfferCard>
       )}
 
       {/* Earn Form */}
@@ -252,7 +252,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           {/* Fidelity Bonds missing */}
           <h2 className="my-2 text-xl font-semibold tracking-tight">{t('earn.title_fidelity_bonds', { count: 0 })}</h2>
           <p className="text-muted-foreground mb-4 text-sm">{t('earn.subtitle_fidelity_bonds')}</p>
-          <Card className="w-full">
+          <Card>
             <CardHeader>
               <CardTitle>{t('earn.fidelity_bond.title')}</CardTitle>
               <CardDescription>{t('earn.fidelity_bond.subtitle')}</CardDescription>

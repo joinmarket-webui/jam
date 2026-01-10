@@ -35,6 +35,7 @@ const CreateWallet = () => {
   const [createWalletResponse, setCreateWalletResponse] = useState<CreateWalletResponse>()
   const [step, setStep] = useState<'create' | 'seed' | 'confirm'>('create')
 
+  // TODO: use react-hook-form and yup schema
   const handleCreateWallet = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -73,13 +74,13 @@ const CreateWallet = () => {
               description: (
                 <div className="text-black dark:text-white">
                   Alternatively, you can{' '}
-                  <Link to="/login" className="font-medium underline hover:no-underline">
+                  <Link to={routes.login} className="font-medium underline hover:no-underline">
                     log in with the existing wallet
                   </Link>{' '}
                   instead.
                 </div>
               ),
-              duration: 8000,
+              duration: 10_000,
             },
           )
           return
@@ -259,39 +260,38 @@ const CreateWallet = () => {
 
   return (
     <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-lg">
-          <CardHeader className="space-y-2 text-center">
-            <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-              <WalletIcon className="text-primary h-6 w-6" />
+      <Card className="w-full max-w-md">
+        <CardHeader className="flex flex-col items-center space-y-2">
+          <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+            <WalletIcon className="text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold">
+            {step === 'create' && <>{t('create_wallet.title')}</>}
+            {/* TODO: i18n */ step === 'seed' && 'Save Your Seed Phrase'}
+          </CardTitle>
+          <CardDescription>{step === 'seed' && "This is your wallet's recovery phrase"}</CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {step === 'create' && renderCreateForm()}
+          {step === 'seed' && renderSeedPhrase()}
+
+          {step === 'create' && (
+            <div className="text-center">
+              <p className="text-muted-foreground text-sm">
+                {/* TODO: i18n */}
+                Already have a wallet?{' '}
+                <Link
+                  to={routes.login}
+                  className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
+                >
+                  Sign in here
+                </Link>
+              </p>
             </div>
-            <CardTitle className="text-2xl font-bold">
-              {step === 'create' && <>{t('create_wallet.title')}</>}
-              {step === 'seed' && 'Save Your Seed Phrase'}
-            </CardTitle>
-            <CardDescription>{step === 'seed' && "This is your wallet's recovery phrase"}</CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {step === 'create' && renderCreateForm()}
-            {step === 'seed' && renderSeedPhrase()}
-
-            {step === 'create' && (
-              <div className="text-center">
-                <p className="text-muted-foreground text-sm">
-                  Already have a wallet?{' '}
-                  <Link
-                    to="/login"
-                    className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
-                  >
-                    Sign in here
-                  </Link>
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

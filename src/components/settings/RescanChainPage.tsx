@@ -165,7 +165,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
         <PageTitle title={t('rescan_chain.title')} subtitle={t('rescan_chain.subtitle')} />
       </div>
 
-      <Card className="border-0 shadow-sm">
+      <Card>
         <CardContent>
           <RescanChainForm
             rescanInfo={rescanInfo}
