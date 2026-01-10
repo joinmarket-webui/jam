@@ -8,13 +8,13 @@ import {
   MoonIcon,
   DollarSignIcon,
   KeyIcon,
-  UnlockIcon,
   FileTextIcon,
   BookIcon,
   ExternalLinkIcon,
   TerminalIcon,
   PackageSearchIcon,
   ArrowLeftRightIcon,
+  LockKeyholeIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -165,7 +165,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
           )}
           <Separator className="opacity-50" />
           <SettingItem
-            icon={UnlockIcon}
+            icon={LockKeyholeIcon}
             title={t('settings.button_lock_wallet')}
             action={handleLockWallet}
             disabled={lockWalletQuery.isFetching}

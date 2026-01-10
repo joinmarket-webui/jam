@@ -9,6 +9,7 @@ import {
   SettingsIcon,
   UploadIcon,
   WalletIcon,
+  XIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -17,6 +18,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
@@ -25,12 +27,14 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
 
 export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
   const { t } = useTranslation()
+  const { toggleSidebar } = useSidebar()
 
   const { isLogsEnabled } = useFeatures()
   const mainItems = useMemo(
@@ -97,6 +101,10 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
             {/*TODO: i18n t('sidebar.title')*/}
             {t('navbar.title')}
           </SidebarGroupLabel>
+          <SidebarGroupAction className="cursor-pointer" title={t('global.close')} onClick={() => toggleSidebar()}>
+            <XIcon />
+            <span className="sr-only">{t('global.close')}</span>
+          </SidebarGroupAction>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
