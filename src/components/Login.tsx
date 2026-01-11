@@ -117,10 +117,11 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit, disabled }: LoginFormProps
               className="pr-10 pl-10"
             />
             <Button
+              tabIndex={-1}
               type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute top-1/2 right-3 size-4 -translate-y-1/2 transform"
+              variant="link"
+              size="icon"
+              className="absolute top-1/2 right-0 -translate-y-1/2 transform"
               onClick={() => setShowPassword((val) => !val)}
             >
               {showPassword ? <EyeIcon /> : <EyeOffIcon />}

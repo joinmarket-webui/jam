@@ -27,6 +27,7 @@ interface SeedPhraseDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+// TODO: use react-hook-form and yup schema
 export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhraseDialogProps) => {
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
@@ -159,16 +160,17 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={t('settings.seed_modal.verification.placeholder_password')}
-                    className={error ? 'border-destructive' : ''}
+                    className={error ? 'border-destructive' : undefined}
                   />
                   <Button
+                    tabIndex={-1}
                     type="button"
-                    variant="ghost"
+                    variant="link"
                     size="icon"
-                    className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute top-1/2 right-0 -translate-y-1/2 transform"
+                    onClick={() => setShowPassword((val) => !val)}
                   >
-                    {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                    {showPassword ? <EyeIcon /> : <EyeOffIcon />}
                   </Button>
                 </div>
                 {error && <p className="text-destructive text-sm">{error}</p>}
@@ -180,9 +182,14 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                 {t('global.cancel')}
               </Button>
               <Button onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
-                {isSubmitting
-                  ? t('settings.seed_modal.verification.text_button_submitting')
-                  : t('settings.seed_modal.verification.text_button_submit')}
+                {isSubmitting ? (
+                  <>
+                    <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                    {t('settings.seed_modal.verification.text_button_submitting')}
+                  </>
+                ) : (
+                  t('settings.seed_modal.verification.text_button_submit')
+                )}
               </Button>
             </DialogFooter>
           </>
@@ -235,17 +242,11 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
               )}
 
               {!seedQuery.isFetching && seedQuery.data && (
-                <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
-                  <div className="flex items-start gap-2">
-                    <div className="light:text-yellow-800 text-sm text-yellow-200">
-                      <div className="flex items-center">
-                        <AlertTriangleIcon className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-                        <p className="text-md font-medium">{t('settings.seed_modal.text_warning_title')}</p>
-                      </div>
-                      <p className="p-1 text-xs">{t('settings.seed_modal.text_warning_message')}</p>
-                    </div>
-                  </div>
-                </div>
+                <Alert variant="warning">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('settings.seed_modal.text_warning_title')}</AlertTitle>
+                  <AlertDescription>{t('settings.seed_modal.text_warning_message')}</AlertDescription>
+                </Alert>
               )}
             </div>
 

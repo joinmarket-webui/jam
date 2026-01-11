@@ -144,6 +144,7 @@ const CreateWallet = () => {
     }
   }
 
+  // TODO: use react-hook-form and yup schema
   const renderCreateForm = () => (
     <form onSubmit={handleCreateWallet} className="space-y-4" noValidate>
       <div className="space-y-2">
@@ -175,16 +176,17 @@ const CreateWallet = () => {
             required
           />
           <Button
+            tabIndex={-1}
             type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute top-1/2 right-1 -translate-y-1/2 transform"
+            variant="link"
+            size="icon"
+            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
             onClick={() => {
               setShowConfirmPassword(false)
               setShowPassword((val) => !val)
             }}
           >
-            {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+            {showPassword ? <EyeIcon /> : <EyeOffIcon />}
           </Button>
         </div>
       </div>
@@ -204,16 +206,17 @@ const CreateWallet = () => {
             required
           />
           <Button
+            tabIndex={-1}
             type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute top-1/2 right-1 -translate-y-1/2 transform"
+            variant="link"
+            size="icon"
+            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
             onClick={() => {
               setShowPassword(false)
               setShowConfirmPassword((val) => !val)
             }}
           >
-            {showConfirmPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+            {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
           </Button>
         </div>
       </div>
