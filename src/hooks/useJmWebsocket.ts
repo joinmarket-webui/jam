@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import { useStore } from 'zustand'
+import { pseudoRandomFloat } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import type { Milliseconds } from '@/types/global'
 
@@ -14,6 +15,18 @@ const WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION: Milliseconds =
 // specify the time in milliseconds at least one 'keepalive' message is sent
 const WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL: Milliseconds =
   import.meta.env.VITE_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL || 30_000
+
+const WEBSOCKET_RECONNECT_INTERVAL_MIN: Milliseconds = import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN || 5_000
+
+const WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds =
+  import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX || 60_000
+
+const calcReconnectInterval = (attemptNumber: number): Milliseconds => {
+  return Math.max(
+    WEBSOCKET_RECONNECT_INTERVAL_MIN,
+    Math.min(Math.pow(2, attemptNumber) * 1_000, WEBSOCKET_RECONNECT_INTERVAL_MAX),
+  )
+}
 
 const basePath: string = import.meta.env.VITE_JM_WEBSOCKET_ENDPOINT_PATH
 const basePathWithoutLeadingSlash = basePath.replace(/^\//, '') // remove leading slash
@@ -31,12 +44,21 @@ export const useJmWebsocket = () => {
 
   const websocket = useWebSocket(socketUrl, {
     share: true,
+    /**
+     * tl;dr. heartbeat functionality is done manually.
+     * useWebSocket applies a default timeout for heartbeat
+     * messages, but jm either either keeps connection open
+     * after authentication or closes it on error.
+     * therefore heartbeat requests will be done manually
+     * without waiting for a response.
+     */
     heartbeat: false,
     retryOnError: true,
     shouldReconnect: () => true,
     reconnectAttempts: Infinity,
     reconnectInterval: (attemptNumber) => {
-      const value: Milliseconds = Math.max(5_000, Math.min(Math.pow(2, attemptNumber) * 1_000, 60_000))
+      const randomFactor = 1 + pseudoRandomFloat(0.8, 1.2)
+      const value = Math.round(calcReconnectInterval(attemptNumber) * randomFactor)
       console.log(`Websocket reconnect attempt #${attemptNumber} in ${value}ms`)
       return value
     },
@@ -86,20 +108,23 @@ export const useJmWebsocket = () => {
     }
   }, [isOpen, authSentAt])
 
-  useEffect(() => {
-    let timerId: NodeJS.Timeout
-    if (isOpen && authenticated && authToken !== undefined) {
-      timerId = setInterval(() => {
-        console.log('Sending heartbeat message...')
-        websocket.sendMessage(authToken)
-      }, WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL)
-    }
-    return () => {
-      if (timerId) {
-        clearTimeout(timerId)
+  useEffect(
+    function setupHeartbeat() {
+      let timerId: NodeJS.Timeout
+      if (isOpen && authenticated && authToken !== undefined) {
+        timerId = setInterval(() => {
+          console.log('Sending heartbeat message...')
+          websocket.sendMessage(authToken)
+        }, WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL)
       }
-    }
-  }, [websocket.sendMessage, isOpen, authenticated, authToken])
+      return () => {
+        if (timerId) {
+          clearTimeout(timerId)
+        }
+      }
+    },
+    [websocket.sendMessage, isOpen, authenticated, authToken],
+  )
 
   return {
     isOpen,
