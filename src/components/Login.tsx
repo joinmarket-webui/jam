@@ -6,17 +6,7 @@ import {
 } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import {
-  AlertCircle,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Loader2Icon,
-  Lock,
-  RefreshCwIcon,
-  Wallet,
-  WalletIcon,
-} from 'lucide-react'
+import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -137,7 +127,7 @@ const WalletListItem = ({
             {t('wallets.wallet_preview.placeholder_password')}
           </Label>
           <div className="relative">
-            <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+            <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
             <Input
               id={`password-${wallet}`}
               type={showPassword ? 'text' : 'password'}
@@ -159,7 +149,7 @@ const WalletListItem = ({
               className="absolute top-1/2 right-1 -translate-y-1/2 transform"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -336,7 +326,7 @@ const LoginPage = () => {
               {isLoadingWallets ? (
                 <Loader2Icon className="h-6 w-6 animate-spin" />
               ) : (
-                <Wallet className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
+                <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
               )}
             </div>
             <CardTitle className="text-2xl font-bold">Welcome to Jam</CardTitle>
@@ -360,7 +350,7 @@ const LoginPage = () => {
               {listwalletsError ? (
                 <CardContent className="space-y-6">
                   <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircleIcon className="h-4 w-4" />
                     <AlertTitle>{listwalletsError.message}</AlertTitle>
                     <AlertDescription>{listwalletsError.error_description}</AlertDescription>
                   </Alert>

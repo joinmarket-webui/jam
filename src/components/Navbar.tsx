@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import { Loader2Icon, LogOutIcon, MoonIcon, Settings, SunIcon, WalletIcon } from 'lucide-react'
+import { Loader2Icon, LogOutIcon, MoonIcon, SettingsIcon, ShuffleIcon, SunIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { useStore } from 'zustand'
@@ -9,17 +9,18 @@ import { routes } from '@/constants/routes'
 import { cn } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { DevBadge } from './ui/DevBadge'
+import type { AmountSats } from '@/types/global'
+import { DevBadge } from './dev/DevBadge'
 import { Skeleton } from './ui/skeleton'
 
 interface NavbarProps {
   isLoading?: boolean
   walletName: string | null
   currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
-  totalBalance: number
+  totalBalance: AmountSats
   theme: string
   toggleTheme: () => void
-  formatAmount: (amount: number) => string
+  formatAmount: (AmountSats: number) => string
 }
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
@@ -28,7 +29,7 @@ const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active:
       {children}
       <span
         className={cn('absolute -top-1 -right-2 text-[8px]', {
-          'animate-pulse text-[#6ee7b7]': active,
+          'light:text-green-600 text-green-300 motion-safe:animate-pulse': active,
         })}
       >
         ●
@@ -78,11 +79,11 @@ const WalletPreview = ({
 const ThemeToggleButton = ({ theme, toggleTheme }: Pick<NavbarProps, 'theme' | 'toggleTheme'>) => {
   return (
     <Button
-      variant="ghost"
+      variant="ghost-navbar"
       size="icon"
       onClick={toggleTheme}
-      aria-label="Toggle dark/light mode"
-      className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
+      aria-label={/* TODO: i18n */ 'Toggle dark/light mode'}
+      title={/* TODO: i18n */ 'Toggle dark/light mode'}
     >
       {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
     </Button>
@@ -103,13 +104,25 @@ export function Navbar({
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuth } = useStore(authStore, (state) => state)
 
+  const makerRunning = jmSessionState?.maker_running === true
+  const singleCoinJoinRunning = jmSessionState?.coinjoin_in_process === true && !jmSessionState?.schedule
+  const schedulerRunning = jmSessionState?.coinjoin_in_process === true && !!jmSessionState?.schedule
+
+  const joiningRoute = (() => {
+    if (schedulerRunning) return routes.sweep
+    if (singleCoinJoinRunning) return routes.send
+    if (makerRunning) return routes.earn
+
+    return undefined
+  })()
+
   const handleLogout = async () => {
     clearAuth()
-    await navigate('/login')
+    await navigate(routes.login)
   }
 
   return (
-    <header className="flex items-center justify-between bg-gray-100 px-4 py-2 text-black transition-colors duration-300 dark:bg-[#23262b] dark:text-white">
+    <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
       <WalletPreview
         isLoading={isLoading}
         walletName={walletName}
@@ -117,41 +130,51 @@ export function Navbar({
         formatAmount={formatAmount}
         currencySymbol={currencySymbol}
       />
-      <div className="flex min-w-0 flex-1 items-center justify-center gap-8 text-sm">
-        <Link to={routes.receive} className="cursor-pointer opacity-70 hover:underline">
+      <div className="flex min-w-0 flex-1 items-center justify-center gap-10 font-semibold">
+        <Link to={routes.receive} className="text-muted-foreground hover:text-foreground">
           {t('navbar.tab_receive')}
         </Link>
-        <Link to={routes.earn} className="relative cursor-pointer opacity-70 hover:underline">
-          <WithActivityIndicator active={jmSessionState?.maker_running || false}>
-            {t('navbar.tab_earn')}
-          </WithActivityIndicator>
+        <Link to={routes.send} className="text-muted-foreground hover:text-foreground relative">
+          <WithActivityIndicator active={singleCoinJoinRunning}>{t('navbar.tab_send')}</WithActivityIndicator>
         </Link>
-        <Link to={routes.send} className="cursor-pointer opacity-70 hover:underline">
-          {t('navbar.tab_send')}
+        <Link to={routes.earn} className="text-muted-foreground hover:text-foreground relative">
+          <WithActivityIndicator active={makerRunning}>{t('navbar.tab_earn')}</WithActivityIndicator>
         </Link>
         <span className="text-gray-400 dark:text-gray-600">|</span>
-        <Link to={routes.sweep} className="cursor-pointer opacity-70 hover:underline">
-          {t('navbar.tab_sweep')}
+        <Link to={routes.sweep} className="text-muted-foreground hover:text-foreground relative">
+          <WithActivityIndicator active={schedulerRunning}>{t('navbar.tab_sweep')}</WithActivityIndicator>
         </Link>
       </div>
       <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+        {joiningRoute && (
+          <Button
+            variant="ghost-navbar"
+            size="icon"
+            onClick={() => navigate(joiningRoute)}
+            aria-label={t('navbar.joining_in_progress')}
+            title={t('navbar.joining_in_progress')}
+            className="light:text-green-600 text-green-300"
+          >
+            <ShuffleIcon className="motion-safe:animate-pulse" />
+          </Button>
+        )}
         <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
         <Link to={routes.settings}>
           <Button
             aria-label={t('navbar.menu_mobile_settings')}
-            className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
-            variant="ghost"
+            title={t('navbar.menu_mobile_settings')}
+            variant="ghost-navbar"
             size="icon"
           >
-            <Settings />
+            <SettingsIcon />
           </Button>
         </Link>
         <Button
-          variant="ghost"
+          variant="ghost-navbar"
           size="icon"
           onClick={handleLogout}
-          aria-label="Logout"
-          className="text-black hover:bg-zinc-200 dark:text-white dark:hover:bg-zinc-700"
+          aria-label={/* TODO: i18n */ 'Logout'}
+          title={/* TODO: i18n */ 'Logout'}
         >
           <LogOutIcon />
         </Button>

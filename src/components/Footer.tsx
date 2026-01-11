@@ -4,7 +4,7 @@ import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, CheckIcon, FileIcon, XIcon
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useStore } from 'zustand'
-import { OrderbookDialog } from '@/components/OrderbookDialog'
+import { OrderbookOverlay } from '@/components/orderbook/OrderbookOverlay'
 import { Button } from '@/components/ui/button'
 import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
@@ -12,6 +12,7 @@ import { useJmInfo } from '@/hooks/useJmInfo'
 import { toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../package.json'
+import PageTitle from './PageTitle'
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from './ui/dialog'
 
 const APP_DISPLAY_VERSION = (() => {
@@ -24,11 +25,11 @@ export function Footer() {
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
   const [isShowBetaWarning, setShowBetaWarning] = useState(false)
-  const [isOrderbookOpen, setIsOrderbookOpen] = useState(false)
+  const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
 
   return (
     <>
-      <footer className="flex items-center justify-between bg-white p-4 text-black opacity-80 transition-colors duration-300 dark:bg-[#181b20] dark:text-white">
+      <footer className="flex items-center justify-between p-4">
         <div className="flex-1 text-xs">
           <BetaWarningModal open={isShowBetaWarning} onOpenChange={setShowBetaWarning} />
           <Trans i18nKey="footer.warning">
@@ -39,11 +40,11 @@ export function Footer() {
           </Trans>
         </div>
         <div className="flex flex-1 items-center justify-center gap-2">
-          <Button variant="ghost" size="sm" className="border" onClick={() => setIsCheatsheetOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => setIsCheatsheetOpen(true)}>
             <FileIcon />
             {t('footer.cheatsheet')}
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setIsOrderbookOpen(true)} className="border">
+          <Button variant="outline" size="sm" onClick={() => setIsOrderbookOverlayOpen(true)}>
             <BookOpenIcon />
             {t('footer.orderbook')}
           </Button>
@@ -78,7 +79,7 @@ export function Footer() {
       </footer>
 
       {isCheatsheetOpen && <Cheatsheet setIsCheatsheetOpen={setIsCheatsheetOpen} />}
-      <OrderbookDialog open={isOrderbookOpen} onOpenChange={setIsOrderbookOpen} />
+      <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
     </>
   )
 }
@@ -139,16 +140,14 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
         }`}
       >
         <div className="flex-shrink-0 p-6 pb-4">
-          <div className="flex items-center justify-between">
-            <span className="text-foreground text-2xl font-semibold">{t('cheatsheet.title')}</span>
-            <button
-              onClick={handleClose}
-              className="text-muted-foreground hover:text-foreground ml-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
+          <div className="flex items-center justify-between gap-2">
+            <PageTitle title={t('cheatsheet.title')} />
+            <Button onClick={handleClose} variant="ghost" size="lg" title={t('global.close')}>
               <XIcon />
-            </button>
+              <span className="sr-only">{t('global.close')}</span>
+            </Button>
           </div>
-          <p className="text-muted-foreground mt-2 leading-relaxed">
+          <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
             <Trans i18nKey="cheatsheet.description">
               Follow the steps below to increase your financial privacy. It is advisable to switch from{' '}
               <a
@@ -190,7 +189,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
               <div className="flex-1">
                 <h3 className="text-foreground mb-1">
                   <Trans i18nKey="cheatsheet.receive.title">
-                    <Link to={'/receive'} className="font-semibold underline">
+                    <Link to={routes.receive} className="font-semibold underline">
                       <span>Fund</span>
                     </Link>{' '}
                     your wallet.
@@ -207,7 +206,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
               <div className="flex-1">
                 <h3 className="text-foreground mb-1">
                   <Trans i18nKey="cheatsheet.send.title">
-                    <Link to={'/send'} className="font-semibold underline">
+                    <Link to={routes.send} className="font-semibold underline">
                       <span>Send</span>
                     </Link>{' '}
                     a collaborative transaction to another jar.
@@ -225,7 +224,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
                 <h3 className="text-foreground mb-1">
                   <Trans i18nKey="cheatsheet.bond.title">
                     Optional:
-                    <Link to={'/earn'} className="font-semibold underline">
+                    <Link to={routes.earn} className="font-semibold underline">
                       <span>Lock</span>
                     </Link>{' '}
                     funds in a fidelity bond.
@@ -242,7 +241,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
               <div className="flex-1">
                 <h3 className="text-foreground mb-1">
                   <Trans i18nKey="cheatsheet.earn.title">
-                    <Link to={'/earn'} className="font-semibold underline">
+                    <Link to={routes.earn} className="font-semibold underline">
                       <span>Earn</span>
                     </Link>{' '}
                     sats by providing liquidity.
@@ -260,7 +259,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
                 <h3 className="text-foreground mb-1">
                   <Trans i18nKey="cheatsheet.schedule.title">
                     Schedule
-                    <Link to={'/sweep'} className="font-semibold underline">
+                    <Link to={routes.sweep} className="font-semibold underline">
                       sweep
                     </Link>{' '}
                     transactions to empty your wallet.
@@ -272,7 +271,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
 
             <div className="flex gap-4">
               <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-black font-bold text-white dark:bg-white dark:text-black">
-                <CheckIcon className="p-0.5" />
+                <CheckIcon className="size-4" />
               </div>
               <div className="flex-1">
                 <h3 className="text-foreground mb-1">{t('cheatsheet.repeat.title')}</h3>

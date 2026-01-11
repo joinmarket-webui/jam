@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import type { OfferType } from '@/constants/jm'
+import type { Milliseconds } from '@/types/global'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -13,9 +14,6 @@ export type Unit = 'BTC' | 'sats'
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
-// Time-related types
-export type Milliseconds = number
-export type Seconds = number
 export type TimeInterval = number
 
 // can be any of ['sw0reloffer', 'swreloffer', 'reloffer']
@@ -68,9 +66,9 @@ export const setIntervalDebounced = (
   })()
 }
 
-export const satsToBtc = (value: string) => parseInt(value, 10) / 100000000
+export const satsToBtc = (value: string) => parseInt(value, 10) / 100_000_000
 
-export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100000000)
+export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100_000_000)
 
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
 
@@ -212,11 +210,11 @@ export const toSemVer = (raw?: string): SemVer => {
   }
 }
 
-export const ReloadDelay = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 500))
+export const delayedPromise = async (delay: Milliseconds | undefined = 210) => {
+  await new Promise<void>((resolve) => setTimeout(resolve, delay))
 }
 
-// not cryptographically random. returned number is in range [min, max] (both inclusive).
+// not cryptographically random; returned number is in range [min, max] (both inclusive);
 export const pseudoRandomNumber = (min: number, max: number) => {
   return Math.round(Math.random() * (max - min)) + min
 }

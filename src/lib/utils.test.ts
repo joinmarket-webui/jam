@@ -20,7 +20,7 @@ import {
   isAbsoluteOffer,
   SEGWIT_ACTIVATION_BLOCK,
   time,
-  ReloadDelay,
+  delayedPromise,
   pseudoRandomNumber,
 } from './utils'
 import type { WalletFileName } from './utils'
@@ -475,7 +475,7 @@ describe('time utility', () => {
   })
 })
 
-describe('ReloadDelay', () => {
+describe('delayedPromise', () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })
@@ -485,7 +485,7 @@ describe('ReloadDelay', () => {
   })
 
   it('should resolve after 500ms delay', async () => {
-    const delayPromise = ReloadDelay()
+    const delayPromise = delayedPromise(500)
 
     // Initially the promise should not be resolved
     let resolved = false
@@ -503,7 +503,7 @@ describe('ReloadDelay', () => {
   })
 
   it('should not resolve before 500ms', async () => {
-    const delayPromise = ReloadDelay()
+    const delayPromise = delayedPromise(500)
 
     let resolved = false
     delayPromise.then(() => {

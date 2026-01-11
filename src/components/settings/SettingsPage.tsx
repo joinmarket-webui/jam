@@ -22,16 +22,17 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { BtcSymbol, SatSymbol } from '@/components/CurrencySymbol'
-import { useJamDisplayContext } from '@/components/layout/display-mode-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
+import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { useFeatures } from '@/hooks/useFeatures'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import PageTitle from '../PageTitle'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
@@ -57,7 +58,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
   const lockWalletQuery = useQuery({
     ...lockwalletOptions({
       client,
-      path: { walletname: walletFileName },
+      path: { walletname: encodeURIComponent(walletFileName) },
     }),
     enabled: false,
   })
@@ -77,7 +78,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('navbar.menu_mobile_settings')}</h1>
+      <PageTitle title={t('navbar.menu_mobile_settings')} />
 
       {/* Display Settings */}
       <Card className="mt-3 border-0 shadow-sm">

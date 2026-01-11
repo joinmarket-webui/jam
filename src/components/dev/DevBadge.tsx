@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { Badge } from './badge'
+import { Badge } from '../ui/badge'
 
 export const DevBadge = ({ className }: { className?: string }) => {
   return (

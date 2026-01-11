@@ -1,6 +1,12 @@
-import { AlertTriangle } from 'lucide-react'
+import { useState } from 'react'
+import { AlertTriangleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
+import PageTitle from '../PageTitle'
+import { FeeLimitDialog } from '../settings/FeeLimitDialog'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
+import { FeeConfigErrorAlert } from '../ui/jam/FeeConfigErrorAlert'
 
 interface SweepPageProps {
   walletFileName: WalletFileName
@@ -8,31 +14,40 @@ interface SweepPageProps {
 
 export const SweepPage = ({ walletFileName }: SweepPageProps) => {
   const { t } = useTranslation()
+  const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
-  if (!walletFileName) {
+  const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
+
+  if (isLoading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center px-4 pt-6">
-        <h1 className="mb-2 text-left text-2xl font-bold">{t('scheduler.title')}</h1>
-        <p className="text-muted-foreground mb-4">{t('current_wallet.error_loading_failed')}</p>
+      <div className="mx-auto max-w-2xl space-y-3 p-4">
+        <div className="m-2 flex items-center justify-center gap-2">
+          <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+          {t('global.loading')}
+        </div>
       </div>
     )
   }
+
   return (
     <div className="mx-auto max-w-2xl space-y-3 p-4">
-      <h1 className="my-2 text-2xl font-semibold tracking-tight">{t('scheduler.title')}</h1>
-      <p className="text-muted-foreground mb-4 text-sm">{t('scheduler.subtitle')}</p>
+      <PageTitle title={t('scheduler.title')} subtitle={t('scheduler.subtitle')} />
 
-      <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
-        <div className="flex items-start gap-2">
-          <div className="light:text-yellow-800 text-sm text-yellow-200">
-            <div className="flex items-center">
-              <AlertTriangle className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-              <p className="text-md font-medium">Under construction</p>
-            </div>
-            <p className="p-1 text-xs">Not yet implemented.</p>
-          </div>
-        </div>
-      </div>
+      {maxFeesConfigMissing && (
+        <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
+      )}
+
+      <Alert variant="warning">
+        <AlertTriangleIcon />
+        <AlertTitle>Under construction</AlertTitle>
+        <AlertDescription>Not yet implemented.</AlertDescription>
+      </Alert>
+
+      <FeeLimitDialog
+        open={showFeeConfigDialog}
+        onOpenChange={setShowFeeConfigDialog}
+        walletFileName={walletFileName}
+      />
     </div>
   )
 }

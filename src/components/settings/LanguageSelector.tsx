@@ -1,4 +1,4 @@
-import { Globe } from 'lucide-react'
+import { GlobeIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import languages from '@/i18n/languages'
@@ -19,7 +19,7 @@ export const LanguageSelector = () => {
     <div className="flex items-center justify-between py-2">
       <div className="flex items-center gap-2">
         <div className="bg-muted/50 flex h-7 w-7 items-center justify-center rounded-lg border">
-          <Globe className="text-muted-foreground h-3 w-3" />
+          <GlobeIcon className="text-muted-foreground h-3 w-3" />
         </div>
         <div>
           <p className="text-sm font-medium">{t('settings.label_select_language')}</p>

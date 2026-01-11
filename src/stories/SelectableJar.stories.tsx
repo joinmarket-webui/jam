@@ -1,6 +1,6 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { SelectableJar } from '../components/ui/SelectableJar'
+import { SelectableJar } from '../components/ui/jam/SelectableJar'
 
 const meta = {
   title: 'Components/SelectableJar',

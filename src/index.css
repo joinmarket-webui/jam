@@ -238,7 +238,6 @@ html body[data-scroll-locked] {
   margin-right: 0 !important;
 }
 
-/* Cheatsheet animations */
 @keyframes slide-up {
   from {
     transform: translateY(100%);

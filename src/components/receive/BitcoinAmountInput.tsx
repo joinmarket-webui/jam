@@ -1,4 +1,4 @@
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDownIcon } from 'lucide-react'
 import type { Currency } from '@/types/global'
 import { CurrencySymbol } from '../CurrencySymbol'
 import { Button } from '../ui/button'
@@ -51,7 +51,7 @@ export const BitcoinAmountInput = ({
         </div>
         <Button variant="outline" size="sm" className="py-4 whitespace-nowrap" onClick={toggleCurrencyUnit}>
           {currency === 'sats' ? 'BTC' : 'Sats'}
-          <ArrowUpDown />
+          <ArrowUpDownIcon />
         </Button>
       </div>
     </>

@@ -15,8 +15,8 @@ const PageTitle = ({ title, subtitle, variant = 'default', center = false }: Pag
         'text-destructive': variant === 'error',
       })}
     >
-      <h1 className="my-2 text-left text-2xl font-bold">{title}</h1>
-      {subtitle && <p className="text-muted-foreground mb-4 text-sm">{subtitle}</p>}
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      {subtitle && <p className="text-muted-foreground mb-2 text-sm">{subtitle}</p>}
     </div>
   )
 }
