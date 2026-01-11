@@ -36,6 +36,9 @@ import { OfferCard } from './OfferCard'
 // 2022-04-26: With value of 2_000ms, no state corruption could be provoked in a local dev setup.
 const MAKER_STOP_RESPONSE_DELAY: Milliseconds = 2_000
 
+const WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL: Milliseconds = 3_000
+const WAIT_FOR_UPDATE_SESSION_POLLING_DELAY: Milliseconds = 1_000
+
 const toStartMakerRequest = (values: EarnFormValues): StartMakerRequest => {
   // both fee properties need to be provided.
   // prevent providing an invalid value by setting the ignored prop to zero
@@ -76,8 +79,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const waitingForOfferUpdate = jmSessionState?.maker_running === true && !isCurrentOfferAvailable
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
-    refetchInterval: 3_000,
-    refetchDelay: 1_000,
+    refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
+    refetchDelay: WAIT_FOR_UPDATE_SESSION_POLLING_DELAY,
   })
 
   const stopMakerQueryOptions = useMemo(
@@ -187,28 +190,28 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       )}
 
       {jmSessionState.maker_running === true && (
-        <Alert variant="success" className="animate-in blur-in my-2">
-          <ShuffleIcon className="animate-pulse motion-reduce:hidden" />
+        <Alert variant="success" className="motion-safe:animate-in blur-in my-2">
+          <ShuffleIcon className="motion-safe:animate-pulse" />
           <AlertTitle>{t('earn.alert_running')}</AlertTitle>
         </Alert>
       )}
       {waitingForOfferUpdate && (
-        <Alert variant="default" className="animate-in blur-in my-2">
-          <Loader2Icon className="animate-spin motion-reduce:hidden" />
+        <Alert variant="default" className="motion-safe:animate-in blur-in my-2">
+          <Loader2Icon className="motion-safe:animate-pulse" />
           <AlertTitle>{/* TODO: i18n*/ t('Loading offer...')}</AlertTitle>
         </Alert>
       )}
 
       {jmSessionState.offer_list && jmSessionState.offer_list.length > 0 && (
         <OfferCard
-          className="animate-in blur-in"
+          className="motion-safe:animate-in blur-in"
           value={jmSessionState.offer_list[0]}
           nickname={jmSessionState.nickname}
         >
           <Button type="button" onClick={() => onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (
               <>
-                <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
+                <Loader2Icon className="animate-spin motion-reduce:hidden" />
                 {t('earn.text_stopping')}
               </>
             ) : (
