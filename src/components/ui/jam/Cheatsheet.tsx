@@ -7,17 +7,17 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { routes } from '@/constants/routes'
 
 interface CheatsheetProps {
-  setIsCheatsheetOpen: (value: boolean) => void
+  onClose: () => void
 }
 
-export const Cheatsheet = ({ setIsCheatsheetOpen }: CheatsheetProps) => {
+export const Cheatsheet = ({ onClose }: CheatsheetProps) => {
   const { t } = useTranslation()
   const [isAnimating, setIsAnimating] = useState(false)
 
   const handleClose = () => {
     setIsAnimating(true)
     setTimeout(() => {
-      setIsCheatsheetOpen(false)
+      onClose()
       setIsAnimating(false)
     }, 333)
   }

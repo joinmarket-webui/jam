@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 import { useJmInfo } from '@/hooks/useJmInfo'
 import { toSemVer } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../../package.json'
 
@@ -45,10 +46,18 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
 
 export function AppFooter() {
   const { t } = useTranslation()
+
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
-  const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
   const [isShowBetaWarning, setShowBetaWarning] = useState(false)
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
+
+  const cheatsheetLastDisplayTime = useStore(jamSettingsStore, (state) => state.state.cheatsheetLastDisplayTime)
+  const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(!cheatsheetLastDisplayTime)
+
+  const handleCloseCheatsheet = () => {
+    jamSettingsStore.getState().update({ cheatsheetLastDisplayTime: Date.now() })
+    setIsCheatsheetOpen(false)
+  }
 
   return (
     <>
@@ -92,7 +101,7 @@ export function AppFooter() {
         </div>
       </footer>
 
-      {isCheatsheetOpen && <Cheatsheet setIsCheatsheetOpen={setIsCheatsheetOpen} />}
+      {isCheatsheetOpen && <Cheatsheet onClose={handleCloseCheatsheet} />}
       <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
     </>
   )

@@ -1,13 +1,13 @@
 import { createStore } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { isDevMode } from '@/constants/debugFeatures'
-import type { Currency } from '@/types/global'
+import type { Currency, Milliseconds } from '@/types/global'
 
 export type JamSettings = {
   developerMode: boolean
   privateMode: boolean
   currencyUnit: Currency
-  powerUserMode: boolean
+  cheatsheetLastDisplayTime: Milliseconds | undefined
 }
 
 interface JamSettingsStoreState {
@@ -20,7 +20,7 @@ const initial: JamSettings = {
   developerMode: isDevMode(),
   privateMode: false,
   currencyUnit: 'sats',
-  powerUserMode: false,
+  cheatsheetLastDisplayTime: undefined,
 }
 
 export const jamSettingsStore = createStore<JamSettingsStoreState>()(
