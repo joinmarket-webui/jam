@@ -43,7 +43,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
           )}
         </div>
         <div className="mt-2 flex w-full justify-center gap-4">
-          <Button size="lg" className="flex-1" onClick={() => navigate(routes.receive)}>
+          <Button size="lg" className="flex-1" variant="default" onClick={() => navigate(routes.receive)}>
             <DownloadIcon />
             {t('current_wallet.button_deposit')}
           </Button>

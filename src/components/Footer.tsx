@@ -13,6 +13,7 @@ import { toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../package.json'
 import PageTitle from './PageTitle'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from './ui/dialog'
 
 const APP_DISPLAY_VERSION = (() => {
@@ -29,7 +30,7 @@ export function Footer() {
 
   return (
     <>
-      <footer className="flex items-center justify-between p-4">
+      <footer className="flex items-center justify-between gap-2 p-4">
         <div className="flex-1 text-xs">
           <BetaWarningModal open={isShowBetaWarning} onOpenChange={setShowBetaWarning} />
           <Trans i18nKey="footer.warning">
@@ -50,14 +51,12 @@ export function Footer() {
           </Button>
         </div>
 
-        <div className="flex flex-1 justify-end gap-2 text-xs">
+        <div className="flex flex-1 items-center justify-end gap-4 text-xs">
           <div className="flex items-center">
             {isDebugFeatureEnabled('devSetupPage') && (
-              <div className="">
-                <Link className="light:text-yellow-800 text-sm text-yellow-200 underline" to={routes.__devSetup}>
-                  Dev Setup
-                </Link>
-              </div>
+              <Link className="light:text-yellow-800 text-sm text-yellow-200 underline" to={routes.__devSetup}>
+                Dev Setup
+              </Link>
             )}
           </div>
           <div className="flex flex-col gap-1">
@@ -71,7 +70,7 @@ export function Footer() {
             </a>
             {blockHeight && (
               <span className="flex items-center gap-1">
-                <BlocksIcon className="h-4 w-4" /> {blockHeight}
+                <BlocksIcon className="size-4" /> {blockHeight}
               </span>
             )}
           </div>
@@ -95,17 +94,12 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
           <DialogTitle className="sr-only">{t('footer.warning_alert_title')}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-2">
-          <div className="light:border-yellow-800 light:bg-yellow-50 my-1 rounded-lg border border-yellow-200 bg-yellow-900/20 p-4">
-            <div className="flex items-start gap-2">
-              <div className="light:text-yellow-800 text-md text-yellow-200">
-                <div className="flex items-center">
-                  <AlertTriangleIcon className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-                  <p className="text-md font-medium">{t('footer.warning_alert_title')}</p>
-                </div>
-                <p className="p-1 text-sm">{t('footer.warning_alert_text')}</p>
-              </div>
-            </div>
-          </div>
+          <Alert variant="default">
+            <AlertTriangleIcon />
+            <AlertTitle>{t('footer.warning_alert_title')}</AlertTitle>
+            <AlertDescription>{t('footer.warning_alert_text')}</AlertDescription>
+          </Alert>
+
           <p className="text-sm text-gray-600 dark:text-gray-400">
             JoinMarket: v{version?.raw || '_unknown'}
             <br />
@@ -142,7 +136,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
         <div className="flex-shrink-0 p-6 pb-4">
           <div className="flex items-center justify-between gap-2">
             <PageTitle title={t('cheatsheet.title')} />
-            <Button onClick={handleClose} variant="ghost" size="lg" title={t('global.close')}>
+            <Button onClick={handleClose} variant="ghost" size="icon" title={t('global.close')}>
               <XIcon />
               <span className="sr-only">{t('global.close')}</span>
             </Button>

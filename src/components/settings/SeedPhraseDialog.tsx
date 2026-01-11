@@ -20,6 +20,7 @@ import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { authStore } from '@/store/authStore'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface SeedPhraseDialogProps {
   walletFileName: string
@@ -228,17 +229,11 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
               )}
 
               {!seedQuery.isFetching && seedQuery.error && (
-                <div className="light:border-red-800 light:bg-red-50 rounded-lg border border-red-200 bg-red-900/20 p-2">
-                  <div className="flex items-start gap-2">
-                    <div className="light:text-red-800 text-sm text-red-200">
-                      <div className="flex items-center">
-                        <AlertTriangleIcon className="light:text-red-800 m-1 h-4 w-4 shrink-0 text-red-200" />
-                        <p className="text-md font-medium"> {t('settings.seed_modal.text_error_title')}</p>
-                      </div>
-                      <p className="p-1 text-xs">{seedQuery.error.message || t('global.errors.reason_unknown')}</p>
-                    </div>
-                  </div>
-                </div>
+                <Alert variant="destructive">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
+                  <AlertDescription>{seedQuery.error.message || t('global.errors.reason_unknown')}</AlertDescription>
+                </Alert>
               )}
 
               {!seedQuery.isFetching && seedQuery.data && (
