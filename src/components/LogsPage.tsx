@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import { AlertTriangleIcon, Loader2Icon, RefreshCwIcon, DownloadIcon } from 'lucide-react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { AlertTriangleIcon, Loader2Icon, RefreshCwIcon, DownloadIcon, ArrowDownIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { isDevMode } from '@/constants/debugFeatures'
 import { fetchLog } from '@/lib/api/logs'
-import { cn } from '@/lib/utils'
+import { cn, delayedPromise } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import PageTitle from './ui/jam/PageTitle'
 
@@ -27,26 +27,42 @@ function LogContent({ value, refresh }: LogContentProps) {
   const { t } = useTranslation()
   const logContentRef = useRef<HTMLPreElement>(null)
   const [isLoadingRefresh, setIsLoadingRefresh] = useState(false)
+  const [logScrollProgress, setLogScrollProgress] = useState(0)
+  const isScrolledToLogBottom = useMemo(() => logScrollProgress >= 0.995, [logScrollProgress])
 
-  useEffect(() => {
-    if (!value || !logContentRef.current) return
-
-    logContentRef.current.scrollTo({
+  const scrollToLogBottom = () => {
+    logContentRef.current?.scrollTo({
       top: logContentRef.current.scrollHeight,
       behavior: 'smooth',
     })
+  }
+
+  const logScrollHandler = (event: React.UIEvent<HTMLPreElement>) => {
+    const containerHeight = event.currentTarget.clientHeight
+    const scrollHeight = event.currentTarget.scrollHeight
+
+    const scrollTop = event.currentTarget.scrollTop
+    setLogScrollProgress((scrollTop + containerHeight) / scrollHeight)
+  }
+
+  useEffect(() => {
+    if (!value) return
+    scrollToLogBottom()
   }, [value])
 
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
     if (isLoadingRefresh) return
 
     setIsLoadingRefresh(true)
     const abortCtrl = new AbortController()
 
-    refresh(abortCtrl.signal).finally(() => {
-      // Add a short delay to avoid flickering
-      setTimeout(() => setIsLoadingRefresh(false), 250)
-    })
+    try {
+      await refresh(abortCtrl.signal)
+        // Add a short delay to avoid flickering
+        .then(() => delayedPromise(210))
+    } finally {
+      setIsLoadingRefresh(false)
+    }
   }, [isLoadingRefresh, refresh])
 
   const handleDownload = useCallback(() => {
@@ -66,25 +82,19 @@ function LogContent({ value, refresh }: LogContentProps) {
   return (
     <Card className="pb-0">
       <CardHeader className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="font-mono">{JMWALLETD_LOG_FILE_NAME}</CardTitle>
+        <CardTitle className="font-mono break-all">{JMWALLETD_LOG_FILE_NAME}</CardTitle>
         <div className="flex items-center justify-end gap-2">
           <Button
+            className="hover:[&>svg]:motion-safe:animate-bounce"
             variant="outline"
-            size="sm"
             onClick={handleDownload}
             disabled={!value || isLoadingRefresh}
             title={t('global.download')}
           >
-            <DownloadIcon />
+            <DownloadIcon className="group/download" />
             {t('global.download')}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoadingRefresh}
-            title={t('global.refresh')}
-          >
+          <Button variant="outline" onClick={handleRefresh} disabled={isLoadingRefresh} title={t('global.refresh')}>
             <RefreshCwIcon
               className={cn({
                 'animate-spin': isLoadingRefresh,
@@ -94,13 +104,27 @@ function LogContent({ value, refresh }: LogContentProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="relative rounded-b-xl p-0">
         <pre
+          onScrollEnd={logScrollHandler}
           ref={logContentRef}
-          className="bg-muted/90 max-h-[600px] min-h-[300px] overflow-auto px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap"
+          className="bg-muted/90 max-h-[600px] min-h-[300px] overflow-auto rounded-b-xl px-2 py-2 font-mono text-sm break-words whitespace-pre-wrap"
         >
-          {value || 'No logs available'}
+          {value}
         </pre>
+        <Button
+          className={cn('absolute top-2 right-2 size-12', {
+            'opacity-25 hover:opacity-50': !isScrolledToLogBottom,
+            hidden: isScrolledToLogBottom,
+          })}
+          variant={isScrolledToLogBottom ? 'ghost' : 'default'}
+          disabled={isScrolledToLogBottom}
+          size="icon"
+          onClick={scrollToLogBottom}
+          title={/* TODO: i18n */ 'Scroll to bottom'}
+        >
+          <ArrowDownIcon />
+        </Button>
       </CardContent>
     </Card>
   )
@@ -146,7 +170,7 @@ export const LogsPage = () => {
           if (isDevMode()) {
             // adding content enables manual testing of other component
             // and functionality (e.g. downloading, refreshing, etc.)
-            setLogFileContent(errorMessage)
+            setLogFileContent(`${errorMessage}\n`.repeat(1_000))
           }
 
           setAlert({
