@@ -4,7 +4,7 @@ import { BlocksIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/ui/input'
 import { txFeeUnit, type TxFeeUnit } from '@/constants/jm'
-import { CurrencySymbol } from '../CurrencySymbol'
+import { CurrencySymbol } from '../ui/jam/CurrencySymbol'
 
 export interface TxFeeInputFieldProps {
   value: string

@@ -34,7 +34,7 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
-import { isDevMode } from '@/constants/debugFeatures'
+import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -103,31 +103,38 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
   )
 
   const devItems = useMemo(
-    () => [
-      ...(!isDeveloperMode
+    () =>
+      !isDevMode
         ? []
         : [
-            {
-              title: 'Dev Page',
-              url: routes.__dev,
-              icon: TerminalIcon,
-            },
-          ]),
-      ...(!isDevMode()
-        ? []
-        : [
-            {
-              title: 'Dev Setup',
-              url: routes.__devSetup,
-              icon: ServerIcon,
-            },
-            {
-              title: 'Example Error Page',
-              url: routes.__devErrorExample,
-              icon: BugPlayIcon,
-            },
-          ]),
-    ],
+            ...(!(isDeveloperMode && isDebugFeatureEnabled('devPage'))
+              ? []
+              : [
+                  {
+                    title: 'Dev Page',
+                    url: routes.__dev,
+                    icon: TerminalIcon,
+                  },
+                ]),
+            ...(!isDebugFeatureEnabled('devSetupPage')
+              ? []
+              : [
+                  {
+                    title: 'Dev Setup',
+                    url: routes.__devSetup,
+                    icon: ServerIcon,
+                  },
+                ]),
+            ...(!isDebugFeatureEnabled('devErrorExamplePage')
+              ? []
+              : [
+                  {
+                    title: 'Example Error Page',
+                    url: routes.__devErrorExample,
+                    icon: BugPlayIcon,
+                  },
+                ]),
+          ],
     [isDeveloperMode],
   )
 

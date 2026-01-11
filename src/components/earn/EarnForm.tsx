@@ -14,7 +14,7 @@ import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { SatSymbol } from '../CurrencySymbol'
+import { SatSymbol } from '../ui/jam/CurrencySymbol'
 
 const FieldPrefixSatSymbol = (
   <SatSymbol

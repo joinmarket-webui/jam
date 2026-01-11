@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import { CurrencySymbol } from '@/components/CurrencySymbol'
+import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { useDisplaySettings } from '@/hooks/useDisplaySettings'
 import { JamDisplayContext } from './JamDisplayContext'
 

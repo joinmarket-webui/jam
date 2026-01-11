@@ -9,7 +9,7 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { fetchLog } from '@/lib/api/logs'
 import { cn } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
-import PageTitle from './PageTitle'
+import PageTitle from './ui/jam/PageTitle'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
 
@@ -106,7 +106,7 @@ function LogContent({ value, refresh }: LogContentProps) {
   )
 }
 
-export const Logs = () => {
+export const LogsPage = () => {
   const authState = useStore(authStore, (state) => state.state)
   const { t } = useTranslation()
   const [alert, setAlert] = useState<SimpleAlert>()

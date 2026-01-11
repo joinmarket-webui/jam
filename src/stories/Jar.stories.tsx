@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { CurrencySymbol } from '@/components/CurrencySymbol'
+import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 import { Jar } from '@/components/ui/jam/Jar'
 import type { Currency } from '@/types/global'
 

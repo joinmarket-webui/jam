@@ -38,11 +38,11 @@ const SwitchWalletFormSkeleton = () => {
   )
 }
 
-interface SwitchWalletProps {
+interface SwitchWalletPageProps {
   walletFileName: WalletFileName
 }
 
-const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
+const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
@@ -214,4 +214,4 @@ const SwitchWallet = ({ walletFileName }: SwitchWalletProps) => {
   )
 }
 
-export default SwitchWallet
+export default SwitchWalletPage

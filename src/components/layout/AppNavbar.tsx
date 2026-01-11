@@ -10,20 +10,9 @@ import { cn } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
-import { DevBadge } from './dev/DevBadge'
-import { Skeleton } from './ui/skeleton'
-import { useSidebar } from './ui/use-sidebar'
-
-interface NavbarProps {
-  isLoading?: boolean
-  walletName: string | null
-  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
-  totalBalance: AmountSats
-  theme: string
-  toggleTheme: () => void
-  formatAmount: (AmountSats: number) => string
-  sidebarTrigger?: React.ReactNode
-}
+import { DevBadge } from '../dev/DevBadge'
+import { Skeleton } from '../ui/skeleton'
+import { useSidebar } from '../ui/use-sidebar'
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
   return (
@@ -46,7 +35,7 @@ const WalletPreview = ({
   currencySymbol,
   totalBalance,
   isLoading = false,
-}: Pick<NavbarProps, 'isLoading' | 'walletName' | 'formatAmount' | 'currencySymbol' | 'totalBalance'>) => {
+}: Pick<AppNavbarProps, 'isLoading' | 'walletName' | 'formatAmount' | 'currencySymbol' | 'totalBalance'>) => {
   return (
     <div className="flex flex-1 items-center">
       <Link to={'/'} className="flex items-center gap-2">
@@ -78,7 +67,7 @@ const WalletPreview = ({
   )
 }
 
-const ThemeToggleButton = ({ theme, toggleTheme }: Pick<NavbarProps, 'theme' | 'toggleTheme'>) => {
+const ThemeToggleButton = ({ theme, toggleTheme }: Pick<AppNavbarProps, 'theme' | 'toggleTheme'>) => {
   return (
     <Button
       variant="ghost-navbar"
@@ -92,7 +81,18 @@ const ThemeToggleButton = ({ theme, toggleTheme }: Pick<NavbarProps, 'theme' | '
   )
 }
 
-export function Navbar({
+interface AppNavbarProps {
+  isLoading?: boolean
+  walletName: string | null
+  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
+  totalBalance: AmountSats
+  theme: string
+  toggleTheme: () => void
+  formatAmount: (AmountSats: number) => string
+  sidebarTrigger?: React.ReactNode
+}
+
+export function AppNavbar({
   walletName,
   formatAmount,
   currencySymbol,
@@ -101,7 +101,7 @@ export function Navbar({
   toggleTheme,
   isLoading = false,
   sidebarTrigger,
-}: NavbarProps) {
+}: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 

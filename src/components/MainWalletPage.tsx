@@ -11,11 +11,11 @@ import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, walletDisplayName } from '@/lib/utils'
 
-interface JamLandingProps {
+interface MainWalletPageProps {
   walletFileName: WalletFileName
 }
 
-export default function JamLanding({ walletFileName }: JamLandingProps) {
+export default function MainWalletPage({ walletFileName }: MainWalletPageProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -29,7 +29,7 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
         <div className="flex min-h-[56px] items-center justify-center">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <Loader2Icon className="animate-spin motion-reduce:hidden" />
+              <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
               {t('global.loading')}
             </div>
           ) : (
@@ -82,8 +82,9 @@ export default function JamLanding({ walletFileName }: JamLandingProps) {
         </div>
         <div className="flex min-h-[128px] items-center justify-center gap-4">
           {isLoading ? (
-            <div className="flex flex-1 justify-center py-8">
-              <Loader2Icon className="h-8 w-8 animate-spin text-gray-400" />
+            <div className="flex flex-1 items-center justify-center gap-2 py-8">
+              <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
+              {t('global.loading')}
             </div>
           ) : (
             <div className="flex max-w-xl flex-1 flex-col flex-wrap items-center justify-center gap-8 sm:max-w-xl sm:flex-row sm:gap-x-24 lg:max-w-6xl lg:gap-x-8">

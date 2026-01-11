@@ -18,7 +18,7 @@ import { useRescanStatus } from '@/hooks/useRescanStatus'
 import type { RescanInfo } from '@/hooks/useRescanStatus'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import PageTitle from '../PageTitle'
+import PageTitle from '../ui/jam/PageTitle'
 
 const INPUT_BLOCK_HEIGHT_MIN = 0
 

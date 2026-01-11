@@ -3,10 +3,10 @@ import { AlertTriangleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
-import PageTitle from '../PageTitle'
 import { FeeLimitDialog } from '../settings/FeeLimitDialog'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { FeeConfigErrorAlert } from '../ui/jam/FeeConfigErrorAlert'
+import PageTitle from '../ui/jam/PageTitle'
 
 interface SweepPageProps {
   walletFileName: WalletFileName
