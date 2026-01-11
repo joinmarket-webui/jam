@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, MessageCircleQuestionIcon } from 'lucide-react'
+import {
+  AlertTriangleIcon,
+  BlocksIcon,
+  BookOpenIcon,
+  MessageCircleQuestionIcon,
+  MonitorCheckIcon,
+  MonitorUpIcon,
+  MonitorXIcon,
+} from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
 import { OrderbookOverlay } from '@/components/orderbook/OrderbookOverlay'
@@ -9,7 +17,8 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useJmInfo } from '@/hooks/useJmInfo'
-import { toSemVer } from '@/lib/utils'
+import { useJmWebsocket } from '@/hooks/useJmWebsocket'
+import { cn, toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../../package.json'
 
@@ -44,9 +53,24 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
   )
 }
 
+type JmWebsocketIconProps = Pick<ReturnType<typeof useJmWebsocket>, 'isOpen' | 'isAuthenticated'> & {
+  className?: string
+}
+
+export function JmWebsocketIcon({ className, isOpen, isAuthenticated }: JmWebsocketIconProps) {
+  if (isAuthenticated) {
+    return <MonitorCheckIcon className={cn('light:text-green-600 text-green-300', className)} />
+  }
+  if (isOpen) {
+    return <MonitorUpIcon className={cn('text-foreground', className)} />
+  }
+  return <MonitorXIcon className={cn('text-muted-foreground', className)} />
+}
+
 export function AppFooter() {
   const { t } = useTranslation()
   const cheatsheet = useCheatsheet()
+  const websocket = useJmWebsocket()
 
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isShowBetaWarning, setShowBetaWarning] = useState(false)
@@ -76,6 +100,9 @@ export function AppFooter() {
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-4 text-xs">
+          <div className="flex flex-col gap-1">
+            <JmWebsocketIcon isOpen={websocket.isOpen} isAuthenticated={websocket.isAuthenticated} />
+          </div>
           <div className="flex flex-col gap-1">
             <a
               href="https://github.com/joinmarket-webui/jam/tags"
