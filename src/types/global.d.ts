@@ -4,6 +4,7 @@ export type BitcoinAddress = string
 
 export type Milliseconds = number
 export type Seconds = number
+export type Days = number
 
 export type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
 export type YYYY = `2${Digit}${Digit}${Digit}`

@@ -21,7 +21,8 @@ import {
   SEGWIT_ACTIVATION_BLOCK,
   time,
   delayedPromise,
-  pseudoRandomNumber,
+  pseudoRandomInteger,
+  pseudoRandomFloat,
 } from './utils'
 import type { WalletFileName } from './utils'
 
@@ -521,23 +522,36 @@ describe('delayedPromise', () => {
   })
 })
 
-describe('pseudoRandomNumber', () => {
-  it('should return a number within the specified range (inclusive)', () => {
+describe('pseudoRandomNumbers', () => {
+  it('should return a float within the specified range (inclusive)', () => {
+    const min = 0.021
+    const max = 0.079
+
+    // Run multiple times to test randomness
+    for (let i = 0; i < 100; i++) {
+      const result = pseudoRandomFloat(min, max)
+      expect(typeof result).toBe('number')
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+    }
+  })
+
+  it('should return an integer within the specified range (inclusive)', () => {
     const min = 1
     const max = 10
 
     // Run multiple times to test randomness
     for (let i = 0; i < 100; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
+      expect(Number.isInteger(result)).toBe(true)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
-      expect(Number.isInteger(result)).toBe(true)
     }
   })
 
   it('should handle single value range', () => {
     const value = 5
-    const result = pseudoRandomNumber(value, value)
+    const result = pseudoRandomInteger(value, value)
     expect(result).toBe(value)
   })
 
@@ -546,7 +560,7 @@ describe('pseudoRandomNumber', () => {
     const max = -5
 
     for (let i = 0; i < 50; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
       expect(Number.isInteger(result)).toBe(true)
@@ -558,7 +572,7 @@ describe('pseudoRandomNumber', () => {
     const max = 5
 
     for (let i = 0; i < 50; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
       expect(Number.isInteger(result)).toBe(true)
@@ -570,7 +584,7 @@ describe('pseudoRandomNumber', () => {
     const max = 9999
 
     for (let i = 0; i < 20; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
       expect(Number.isInteger(result)).toBe(true)
@@ -584,7 +598,7 @@ describe('pseudoRandomNumber', () => {
 
     // Generate 50 random numbers
     for (let i = 0; i < 50; i++) {
-      results.add(pseudoRandomNumber(min, max))
+      results.add(pseudoRandomInteger(min, max))
     }
 
     // We should have more than 1 unique value (very high probability)
@@ -596,7 +610,7 @@ describe('pseudoRandomNumber', () => {
     const max = 5.3
 
     for (let i = 0; i < 20; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       // The function can return values beyond max when using decimal inputs
       // because Math.round(Math.random() * (max - min)) can round up to Math.round(max - min)

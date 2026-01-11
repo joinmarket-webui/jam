@@ -19,7 +19,7 @@ import {
   isAbsoluteOffer,
   isRelativeOffer,
   humanReadableDuration,
-  pseudoRandomNumber,
+  pseudoRandomInteger,
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -105,19 +105,19 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
   const showDemoButton = useMemo(() => isDeveloperMode, [isDeveloperMode])
 
   const __dev_generateDemoReportEntryButton = () => {
-    const randomMinsize = pseudoRandomNumber(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
+    const randomMinsize = pseudoRandomInteger(JM_DUST_THRESHOLD, JM_DUST_THRESHOLD + 100_000)
     const randomOrdertype = Math.random() > 0.5 ? 'sw0absoffer' : 'sw0reloffer'
-    const randomCounterparty = `demo_` + pseudoRandomNumber(0, 10)
+    const randomCounterparty = `demo_` + pseudoRandomInteger(0, 10)
 
     const randomOffer: OrderbookOffer = {
       counterparty: randomCounterparty,
       oid: demoOffers.filter((e) => e.counterparty === randomCounterparty).length,
       ordertype: randomOrdertype,
       minsize: randomMinsize,
-      maxsize: randomMinsize + pseudoRandomNumber(21_000, 21_000_000),
+      maxsize: randomMinsize + pseudoRandomInteger(21_000, 21_000_000),
       txfee: 0,
-      cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomNumber(0, 10_000) : parseFloat(Math.random().toFixed(5)),
-      fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomNumber(1_000, 21_000_000),
+      cjfee: randomOrdertype === 'sw0absoffer' ? pseudoRandomInteger(0, 10_000) : parseFloat(Math.random().toFixed(5)),
+      fidelity_bond_value: Math.random() > 0.25 ? 0 : pseudoRandomInteger(1_000, 21_000_000),
     }
 
     setDemoOffers((prev) => [...prev, randomOffer])
