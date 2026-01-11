@@ -57,7 +57,7 @@ export const useJmWebsocket = () => {
     shouldReconnect: () => true,
     reconnectAttempts: Infinity,
     reconnectInterval: (attemptNumber) => {
-      const randomFactor = 1 + pseudoRandomFloat(0.8, 1.2)
+      const randomFactor = pseudoRandomFloat(0.8, 1.2)
       const value = Math.round(calcReconnectInterval(attemptNumber) * randomFactor)
       console.log(`Websocket reconnect attempt #${attemptNumber} in ${value}ms`)
       return value
@@ -111,13 +111,26 @@ export const useJmWebsocket = () => {
   useEffect(
     function setupHeartbeat() {
       let timerId: NodeJS.Timeout
+      const abortCtrl = new AbortController()
       if (isOpen && authenticated && authToken !== undefined) {
+        const intervalRandomFactor = pseudoRandomFloat(0.75, 1.25)
+        const interval = Math.round(WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL * intervalRandomFactor)
+        console.log(`Setup heartbeat messages at interval ${interval}ms.`)
         timerId = setInterval(() => {
-          console.log('Sending heartbeat message...')
-          websocket.sendMessage(authToken)
-        }, WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL)
+          const delayRandomFactor = pseudoRandomFloat(0.25, 0.75)
+          const delay = Math.round(interval * delayRandomFactor)
+          console.log(`Scheduled heartbeat message in ${delay}ms.`)
+          setTimeout(() => {
+            if (!abortCtrl.signal.aborted) {
+              console.log('Sending heartbeat message...')
+              websocket.sendMessage(authToken)
+            }
+          }, delay)
+        }, interval)
       }
       return () => {
+        console.log(`Cancelling scheduled heartbeat messages.`)
+        abortCtrl.abort()
         if (timerId) {
           clearTimeout(timerId)
         }
