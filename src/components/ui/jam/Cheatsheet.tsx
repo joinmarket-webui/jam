@@ -7,26 +7,32 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { routes } from '@/constants/routes'
 
 interface CheatsheetProps {
-  onClose: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export const Cheatsheet = ({ onClose }: CheatsheetProps) => {
+export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
   const { t } = useTranslation()
-  const [isAnimating, setIsAnimating] = useState(false)
+  const [onCloseAnimationEnabled, setOnCloseAnimationEnabled] = useState(false)
 
   const handleClose = () => {
-    setIsAnimating(true)
+    setOnCloseAnimationEnabled(true)
     setTimeout(() => {
-      onClose()
-      setIsAnimating(false)
+      setOnCloseAnimationEnabled(false)
+      onOpenChange(false)
     }, 333)
   }
+
+  if (!open) {
+    return <></>
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs">
       <div className="fixed inset-0 z-0" onClick={handleClose} />
       <div
         className={`relative z-10 flex max-h-[80vh] w-full max-w-[90vw] flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-200 ease-out sm:max-w-[550px] dark:bg-[#181b20] ${
-          isAnimating ? 'animate-slide-down' : 'animate-slide-up'
+          onCloseAnimationEnabled ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >
         <div className="flex-shrink-0 p-6 pb-4">

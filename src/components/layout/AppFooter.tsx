@@ -7,9 +7,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
+import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useJmInfo } from '@/hooks/useJmInfo'
 import { toSemVer } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../../package.json'
 
@@ -46,18 +46,11 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
 
 export function AppFooter() {
   const { t } = useTranslation()
+  const cheatsheet = useCheatsheet()
 
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isShowBetaWarning, setShowBetaWarning] = useState(false)
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
-
-  const cheatsheetLastDisplayTime = useStore(jamSettingsStore, (state) => state.state.cheatsheetLastDisplayTime)
-  const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(!cheatsheetLastDisplayTime)
-
-  const handleCloseCheatsheet = () => {
-    jamSettingsStore.getState().update({ cheatsheetLastDisplayTime: Date.now() })
-    setIsCheatsheetOpen(false)
-  }
 
   return (
     <>
@@ -72,7 +65,7 @@ export function AppFooter() {
           </Trans>
         </div>
         <div className="flex flex-1 items-center justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsCheatsheetOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => cheatsheet.onOpenChange(true)}>
             <MessageCircleQuestionIcon />
             {t('footer.cheatsheet')}
           </Button>
@@ -101,7 +94,7 @@ export function AppFooter() {
         </div>
       </footer>
 
-      {isCheatsheetOpen && <Cheatsheet onClose={handleCloseCheatsheet} />}
+      {<Cheatsheet open={cheatsheet.isOpen} onOpenChange={cheatsheet.onOpenChange} />}
       <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
     </>
   )

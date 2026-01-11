@@ -215,8 +215,12 @@ export const delayedPromise = async (delay: Milliseconds | undefined = 210) => {
 }
 
 // not cryptographically random; returned number is in range [min, max] (both inclusive);
-export const pseudoRandomNumber = (min: number, max: number) => {
-  return Math.round(Math.random() * (max - min)) + min
+export const pseudoRandomInteger = (min: number, max: number) => {
+  return Math.round(pseudoRandomFloat(min, max))
+}
+// not cryptographically random; returned number is in range [min, max] (both inclusive);
+export const pseudoRandomFloat = (min: number, max: number) => {
+  return Math.max(min, Math.min(Math.random() * (max - min) + min, max))
 }
 
 /**
