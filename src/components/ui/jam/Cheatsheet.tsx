@@ -1,120 +1,16 @@
 import { useState } from 'react'
-import { DialogTitle } from '@radix-ui/react-dialog'
-import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, CheckIcon, FileIcon, XIcon } from 'lucide-react'
+import { CheckIcon, XIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useStore } from 'zustand'
-import { OrderbookOverlay } from '@/components/orderbook/OrderbookOverlay'
 import { Button } from '@/components/ui/button'
-import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
+import PageTitle from '@/components/ui/jam/PageTitle'
 import { routes } from '@/constants/routes'
-import { useJmInfo } from '@/hooks/useJmInfo'
-import { toSemVer } from '@/lib/utils'
-import { jmSessionStore } from '@/store/jmSessionStore'
-import packageInfo from '../../package.json'
-import PageTitle from './PageTitle'
-import { Alert, AlertDescription, AlertTitle } from './ui/alert'
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from './ui/dialog'
 
-const APP_DISPLAY_VERSION = (() => {
-  const version = toSemVer(packageInfo.version)
-  return version.raw
-})()
-
-export function Footer() {
-  const { t } = useTranslation()
-  const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
-  const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(false)
-  const [isShowBetaWarning, setShowBetaWarning] = useState(false)
-  const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
-
-  return (
-    <>
-      <footer className="flex items-center justify-between gap-2 p-4">
-        <div className="flex-1 text-xs">
-          <BetaWarningModal open={isShowBetaWarning} onOpenChange={setShowBetaWarning} />
-          <Trans i18nKey="footer.warning">
-            This is pre-alpha software.
-            <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setShowBetaWarning(true)}>
-              Read this before using.
-            </Button>
-          </Trans>
-        </div>
-        <div className="flex flex-1 items-center justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setIsCheatsheetOpen(true)}>
-            <FileIcon />
-            {t('footer.cheatsheet')}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setIsOrderbookOverlayOpen(true)}>
-            <BookOpenIcon />
-            {t('footer.orderbook')}
-          </Button>
-        </div>
-
-        <div className="flex flex-1 items-center justify-end gap-4 text-xs">
-          <div className="flex items-center">
-            {isDebugFeatureEnabled('devSetupPage') && (
-              <Link className="light:text-yellow-800 text-sm text-yellow-200 underline" to={routes.__devSetup}>
-                Dev Setup
-              </Link>
-            )}
-          </div>
-          <div className="flex flex-col gap-1">
-            <a
-              href="https://github.com/joinmarket-webui/jam/tags"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-right underline opacity-80"
-            >
-              v{APP_DISPLAY_VERSION}
-            </a>
-            {blockHeight && (
-              <span className="flex items-center gap-1">
-                <BlocksIcon className="size-4" /> {blockHeight}
-              </span>
-            )}
-          </div>
-        </div>
-      </footer>
-
-      {isCheatsheetOpen && <Cheatsheet setIsCheatsheetOpen={setIsCheatsheetOpen} />}
-      <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
-    </>
-  )
+interface CheatsheetProps {
+  setIsCheatsheetOpen: (value: boolean) => void
 }
 
-const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
-  const { t } = useTranslation()
-  const { version } = useJmInfo()
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl" showCloseButton={true}>
-        <DialogHeader>
-          <DialogTitle className="sr-only">{t('footer.warning_alert_title')}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-2">
-          <Alert variant="default">
-            <AlertTriangleIcon />
-            <AlertTitle>{t('footer.warning_alert_title')}</AlertTitle>
-            <AlertDescription>{t('footer.warning_alert_text')}</AlertDescription>
-          </Alert>
-
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            JoinMarket: v{version?.raw || '_unknown'}
-            <br />
-            Jam: v{APP_DISPLAY_VERSION}
-          </p>
-        </div>
-        <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>{t('footer.warning_alert_button_ok')}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: boolean) => void }) => {
+export const Cheatsheet = ({ setIsCheatsheetOpen }: CheatsheetProps) => {
   const { t } = useTranslation()
   const [isAnimating, setIsAnimating] = useState(false)
 
@@ -123,7 +19,7 @@ const Cheatsheet = ({ setIsCheatsheetOpen }: { setIsCheatsheetOpen: (value: bool
     setTimeout(() => {
       setIsCheatsheetOpen(false)
       setIsAnimating(false)
-    }, 300)
+    }, 333)
   }
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs">

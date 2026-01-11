@@ -5,8 +5,8 @@ import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
-import PageTitle from '../PageTitle'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
+import PageTitle from '../ui/jam/PageTitle'
 
 interface SendPageProps {
   walletFileName: WalletFileName

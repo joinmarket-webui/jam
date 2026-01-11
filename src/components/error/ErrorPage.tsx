@@ -1,8 +1,8 @@
 import { t } from 'i18next'
 import { Trans, useTranslation } from 'react-i18next'
 import { useRouteError } from 'react-router-dom'
-import PageTitle from '@/components/PageTitle'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import PageTitle from '@/components/ui/jam/PageTitle'
 
 interface ErrorViewProps {
   title: string

@@ -1,8 +1,8 @@
 import { ArrowUpDownIcon } from 'lucide-react'
 import type { Currency } from '@/types/global'
-import { CurrencySymbol } from '../CurrencySymbol'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
+import { CurrencySymbol } from '../ui/jam/CurrencySymbol'
 
 interface BitcoinAmountInputProps extends Omit<React.ComponentProps<'input'>, 'type'> {
   currency: Currency

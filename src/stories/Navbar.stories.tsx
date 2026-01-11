@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BitcoinIcon } from 'lucide-react'
 import { MemoryRouter } from 'react-router-dom'
-import { Navbar } from '@/components/Navbar'
+import { AppNavbar } from '@/components/layout/AppNavbar'
 import { SidebarProvider } from '@/components/ui/sidebar'
 
-const meta: Meta<typeof Navbar> = {
+const meta: Meta<typeof AppNavbar> = {
   title: 'Core/Navbar',
-  component: Navbar,
+  component: AppNavbar,
   tags: ['autodocs'],
   decorators: [
     (Story) => (
@@ -20,7 +20,7 @@ const meta: Meta<typeof Navbar> = {
 }
 export default meta
 
-type Story = StoryObj<typeof Navbar>
+type Story = StoryObj<typeof AppNavbar>
 
 const mockFormatAmount = (amount: number) => `${amount} sats`
 const mockCurrencySymbol = (size: 'sm' | 'lg') => <BitcoinIcon size={size === 'sm' ? 18 : 32} />

@@ -15,12 +15,13 @@ import {
 } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import CreateWallet from '@/components/CreateWallet'
-import JamLanding from '@/components/JamLanding'
-import LoginPage from '@/components/Login'
-import { Logs } from '@/components/Logs'
-import SwitchWallet from '@/components/SwitchWallet'
+import CreateWalletPage from '@/components/CreateWalletPage'
+import LoginPage from '@/components/LoginPage'
+import { LogsPage } from '@/components/LogsPage'
+import MainWalletPage from '@/components/MainWalletPage'
+import SwitchWalletPage from '@/components/SwitchWalletPage'
 import { EarnPage } from '@/components/earn/EarnPage'
+import ErrorPage from '@/components/error/ErrorPage'
 import { Layout } from '@/components/layout/Layout'
 import { OrderbookPage } from '@/components/orderbook/OrderbookPage'
 import { ReceivePage } from '@/components/receive/ReceivePage'
@@ -29,19 +30,18 @@ import { RescanChainPage } from '@/components/settings/RescanChainPage'
 import { SettingsPage } from '@/components/settings/SettingsPage'
 import { SweepPage } from '@/components/sweep/SweepPage'
 import { Toaster } from '@/components/ui/sonner'
+import { isDebugFeatureEnabled } from '@/constants/debugFeatures'
 import { JAM_API_AUTH_TOKEN_RENEW_INTERVAL, JAM_JM_SESSION_REFRESH_INTERVAL } from '@/constants/jam'
 import { routes } from '@/constants/routes'
+import { JamDisplayContextProvider } from '@/context/JamDisplayContextProvider'
+import { JamWalletInfoContextProvider } from '@/context/JamWalletInfoContextProvider'
 import { useApiClient } from '@/hooks/useApiClient'
+import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
+import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
-import ErrorPage from './components/error/ErrorPage'
-import { isDebugFeatureEnabled } from './constants/debugFeatures'
-import { JamDisplayContextProvider } from './context/JamDisplayContextProvider'
-import { JamWalletInfoContextProvider } from './context/JamWalletInfoContextProvider'
-import { useFeeConfigValidation } from './hooks/useFeeConfigValidation'
-import { useRefreshSession } from './hooks/useRefreshSession'
-import { jamSettingsStore } from './store/jamSettingsStore'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -61,7 +61,7 @@ function App() {
         <Route path={routes.login} element={authenticated ? <Navigate to={routes.home} replace /> : <LoginPage />} />
         <Route
           path={routes.createWallet}
-          element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWallet />}
+          element={authenticated ? <Navigate to={routes.home} replace /> : <CreateWalletPage />}
         />
         {isDebugFeatureEnabled('devSetupPage') && (
           <Route
@@ -74,7 +74,7 @@ function App() {
             }
           />
         )}
-        {isDebugFeatureEnabled('errorExamplePage') && (
+        {isDebugFeatureEnabled('devErrorExamplePage') && (
           <Route id="error-example" path={routes.__devErrorExample} element={<ErrorThrowingComponent />} />
         )}
         <Route
@@ -88,7 +88,7 @@ function App() {
           }
         >
           <Route id="without-navbar" element={<Outlet />}>
-            <Route path={routes.switchWallet} element={<SwitchWallet walletFileName={walletFileName!} />} />
+            <Route path={routes.switchWallet} element={<SwitchWalletPage walletFileName={walletFileName!} />} />
           </Route>
           <Route
             id="with-navbar"
@@ -98,14 +98,14 @@ function App() {
               </Layout>
             }
           >
-            <Route path={routes.home} element={<JamLanding walletFileName={walletFileName!} />} />
+            <Route path={routes.home} element={<MainWalletPage walletFileName={walletFileName!} />} />
             <Route path={routes.receive} element={<ReceivePage walletFileName={walletFileName!} />} />
             <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
             <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
             <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
             <Route path={routes.settings} element={<SettingsPage walletFileName={walletFileName!} />} />
             <Route path={routes.orderbook} element={<OrderbookPage />} />
-            <Route path={routes.logs} element={<Logs />} />
+            <Route path={routes.logs} element={<LogsPage />} />
             <Route path={routes.rescan} element={<RescanChainPage walletFileName={walletFileName!} />} />
             {isDebugFeatureEnabled('devPage') && (
               <Route

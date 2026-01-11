@@ -21,7 +21,7 @@ const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 const validateWalletName = (input: string) =>
   input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
-const CreateWallet = () => {
+const CreateWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
@@ -299,4 +299,4 @@ const CreateWallet = () => {
   )
 }
 
-export default CreateWallet
+export default CreateWalletPage
