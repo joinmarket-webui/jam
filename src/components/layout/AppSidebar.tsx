@@ -2,17 +2,22 @@ import { useMemo } from 'react'
 import {
   BookOpenIcon,
   BrushCleaningIcon,
+  BugPlayIcon,
+  CurlyBracesIcon,
   DownloadIcon,
   HandCoinsIcon,
   LogsIcon,
   PackageSearchIcon,
+  ServerIcon,
   SettingsIcon,
+  TerminalIcon,
   UploadIcon,
   WalletIcon,
   XIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { useStore } from 'zustand'
 import {
   Sidebar,
   SidebarContent,
@@ -29,12 +34,16 @@ import {
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
+import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 
 export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
   const { t } = useTranslation()
   const { toggleSidebar } = useSidebar()
+
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const { isLogsEnabled } = useFeatures()
   const mainItems = useMemo(
@@ -93,6 +102,35 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
     [t, isLogsEnabled],
   )
 
+  const devItems = useMemo(
+    () => [
+      ...(!isDeveloperMode
+        ? []
+        : [
+            {
+              title: 'Dev Page',
+              url: routes.__dev,
+              icon: TerminalIcon,
+            },
+          ]),
+      ...(!isDevMode()
+        ? []
+        : [
+            {
+              title: 'Dev Setup',
+              url: routes.__devSetup,
+              icon: ServerIcon,
+            },
+            {
+              title: 'Example Error Page',
+              url: routes.__devErrorExample,
+              icon: BugPlayIcon,
+            },
+          ]),
+    ],
+    [isDeveloperMode],
+  )
+
   return (
     <Sidebar side={side} variant="sidebar" collapsible="offcanvas">
       <SidebarContent>
@@ -128,6 +166,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                 <SidebarMenuButton asChild>
                   <Link to={routes.settings}>
                     <SettingsIcon />
+                    {/*TODO: i18n t('sidebar.item_settings.label')*/}
                     <span>{t('navbar.menu_mobile_settings')}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -147,6 +186,35 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {devItems.length > 0 ? (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <div>
+                      <CurlyBracesIcon />
+                      <span>Development</span>
+                    </div>
+                  </SidebarMenuButton>
+                  <SidebarMenuSub>
+                    {devItems.map((item) => (
+                      <SidebarMenuSubItem key={item.title}>
+                        <SidebarMenuSubButton asChild title={item.title}>
+                          <Link to={item.url}>
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : undefined}
       </SidebarContent>
 
       <SidebarFooter>

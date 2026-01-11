@@ -248,7 +248,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             <CardContent className="space-y-0">
               <SettingsLink
                 icon={TerminalIcon}
-                title="Dev page"
+                title={'Dev page'}
                 to={routes.__dev}
                 disabled={!isDebugFeatureEnabled('devPage')}
               />
