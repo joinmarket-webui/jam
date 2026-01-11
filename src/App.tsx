@@ -21,7 +21,6 @@ import JamLanding from '@/components/JamLanding'
 import LoginPage from '@/components/Login'
 import { Logs } from '@/components/Logs'
 import { Orderbook } from '@/components/Orderbook'
-import SwitchWallet from '@/components/SwitchWallet'
 import { EarnPage } from '@/components/earn/EarnPage'
 import { Layout } from '@/components/layout/Layout'
 import { Receive } from '@/components/receive/Receive'
@@ -84,9 +83,6 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route id="without-navbar" element={<Outlet />}>
-            <Route path={routes.switchWallet} element={<SwitchWallet walletFileName={walletFileName!} />} />
-          </Route>
           <Route
             id="with-navbar"
             element={

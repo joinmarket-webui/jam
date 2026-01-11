@@ -151,7 +151,14 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             disabled={lockWalletQuery.isFetching}
           />
           <Separator className="opacity-50" />
-          <SettingsLink icon={RotateCcwIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />
+          <SettingsLink
+            icon={RotateCcwIcon}
+            title={t('settings.button_switch_wallet')}
+            to={routes.login}
+            onClick={async () => {
+              authStore.getState().clear()
+            }}
+          />
           <Separator className="opacity-50" />
           <SettingsLink icon={RefreshCwIcon} title={t('settings.rescan_chain')} to={routes.rescan} />
           <Separator className="opacity-50" />

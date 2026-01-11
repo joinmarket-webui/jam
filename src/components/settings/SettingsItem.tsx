@@ -48,15 +48,19 @@ export const SettingItem = ({
 type SettingsLinkProps = Omit<SettingsItemProps, 'action' | 'children'> & {
   to: string
   external?: boolean
+  onClick?: () => Promise<void> | void
 }
 
-export const SettingsLink = ({ to, external = false, ...props }: SettingsLinkProps) => {
+export const SettingsLink = ({ to, external = false, onClick, ...props }: SettingsLinkProps) => {
   const navigate = useNavigate()
 
   return (
     <SettingItem
       {...props}
       action={async () => {
+        if (onClick) {
+          await onClick()
+        }
         if (external) {
           window.open(to, '_blank', 'noreferrer,noopener')
         } else {
