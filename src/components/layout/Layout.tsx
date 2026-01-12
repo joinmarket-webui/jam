@@ -4,6 +4,7 @@ import { AppNavbar } from '@/components/layout/AppNavbar'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { AppSidebar } from './AppSidebar'
 
 const SIDEBAR_SIDE: React.ComponentProps<typeof Sidebar>['side'] = 'right'
@@ -19,6 +20,8 @@ export function Layout({ children }: LayoutProps) {
   const { formatAmount, currencySymbol } = useJamDisplayContext()
   const { totalBalance, walletName, isLoading } = useJamWalletInfoContext()
 
+  const websocket = useJmWebsocket()
+
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
@@ -33,7 +36,7 @@ export function Layout({ children }: LayoutProps) {
           sidebarTrigger={<SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />}
         />
         <main className="flex-1">{children}</main>
-        <AppFooter />
+        <AppFooter websocket={websocket} />
       </div>
       <AppSidebar side={SIDEBAR_SIDE} />
     </SidebarProvider>
