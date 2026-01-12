@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { BitcoinIcon } from 'lucide-react'
 import { MemoryRouter } from 'react-router-dom'
 import { AppNavbar } from '@/components/layout/AppNavbar'
-import { SidebarProvider } from '@/components/ui/sidebar'
 
 const meta: Meta<typeof AppNavbar> = {
   title: 'Layout/AppNavbar',
@@ -11,9 +10,7 @@ const meta: Meta<typeof AppNavbar> = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <SidebarProvider>
-          <Story />
-        </SidebarProvider>
+        <Story />
       </MemoryRouter>
     ),
   ],
@@ -34,7 +31,7 @@ export const Default: Story = {
     walletName: 'Satoshi',
     formatAmount: mockFormatAmount,
     currencySymbol: mockCurrencySymbol,
-    toggleTheme: () => mockToggleTheme,
+    toggleTheme: mockToggleTheme,
     onLogout: mockOnLogout,
   },
 }
