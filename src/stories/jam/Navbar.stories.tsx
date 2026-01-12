@@ -5,7 +5,7 @@ import { AppNavbar } from '@/components/layout/AppNavbar'
 import { SidebarProvider } from '@/components/ui/sidebar'
 
 const meta: Meta<typeof AppNavbar> = {
-  title: 'Core/Navbar',
+  title: 'Layout/Navbar',
   component: AppNavbar,
   tags: ['autodocs'],
   decorators: [
@@ -22,7 +22,7 @@ export default meta
 
 type Story = StoryObj<typeof AppNavbar>
 
-const mockFormatAmount = (amount: number) => `${amount} sats`
+const mockFormatAmount = (amount: number) => `${amount}`
 const mockCurrencySymbol = (size: 'sm' | 'lg') => <BitcoinIcon size={size === 'sm' ? 18 : 32} />
 
 export const Default: Story = {

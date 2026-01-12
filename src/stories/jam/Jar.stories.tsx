@@ -4,7 +4,7 @@ import { Jar } from '@/components/ui/jam/Jar'
 import type { Currency } from '@/types/global'
 
 const meta: Meta<typeof Jar> = {
-  title: 'Core/Jar',
+  title: 'Jam/Jar',
   component: Jar,
   tags: ['autodocs'],
 }

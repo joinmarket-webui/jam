@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { AppFooter } from '@/components/layout/AppFooter'
 
 const meta: Meta<typeof AppFooter> = {
-  title: 'Core/Footer',
+  title: 'Layout/Footer',
   component: AppFooter,
   tags: ['autodocs'],
   decorators: [
