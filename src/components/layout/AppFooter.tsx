@@ -1,13 +1,5 @@
 import { useState } from 'react'
-import {
-  AlertTriangleIcon,
-  BlocksIcon,
-  BookOpenIcon,
-  MessageCircleQuestionIcon,
-  MonitorCheckIcon,
-  MonitorUpIcon,
-  MonitorXIcon,
-} from 'lucide-react'
+import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, MessageCircleQuestionIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
 import { OrderbookOverlay } from '@/components/orderbook/OrderbookOverlay'
@@ -18,10 +10,10 @@ import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useJmInfo } from '@/hooks/useJmInfo'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
-import { cn, toSemVer } from '@/lib/utils'
+import { toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../../package.json'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { JmWebsocketInfo } from '../ui/jam/JmWebsocketInfo'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -51,34 +43,6 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
-
-type JmWebsocketIconProps = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'> & {
-  className?: string
-}
-
-export function JmWebsocketIcon({ className, isOpen, isAuthenticated }: JmWebsocketIconProps) {
-  if (isAuthenticated) {
-    return <MonitorCheckIcon className={cn('light:text-green-600 text-green-300', className)} />
-  }
-  if (isOpen) {
-    return <MonitorUpIcon className={cn('text-foreground', className)} />
-  }
-  return <MonitorXIcon className={cn('text-muted-foreground', className)} />
-}
-
-type JmWebsocketInfoProps = JmWebsocketIconProps
-
-export function JmWebsocketInfo({ className, isOpen, isAuthenticated }: JmWebsocketInfoProps) {
-  const { t } = useTranslation()
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <JmWebsocketIcon isOpen={isOpen} isAuthenticated={isAuthenticated} className={className} />
-      </TooltipTrigger>
-      <TooltipContent>{isOpen ? t('footer.websocket_connected') : t('footer.websocket_disconnected')}</TooltipContent>
-    </Tooltip>
   )
 }
 
