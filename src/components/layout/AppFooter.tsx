@@ -21,6 +21,7 @@ import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import { cn, toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../../package.json'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)
@@ -67,6 +68,20 @@ export function JmWebsocketIcon({ className, isOpen, isAuthenticated }: JmWebsoc
   return <MonitorXIcon className={cn('text-muted-foreground', className)} />
 }
 
+type JmWebsocketInfoProps = JmWebsocketIconProps
+
+export function JmWebsocketInfo({ className, isOpen, isAuthenticated }: JmWebsocketInfoProps) {
+  const { t } = useTranslation()
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <JmWebsocketIcon isOpen={isOpen} isAuthenticated={isAuthenticated} className={className} />
+      </TooltipTrigger>
+      <TooltipContent>{isOpen ? t('footer.websocket_connected') : t('footer.websocket_disconnected')}</TooltipContent>
+    </Tooltip>
+  )
+}
+
 interface AppFooterProps {
   websocket?: Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
 }
@@ -105,7 +120,7 @@ export function AppFooter({ websocket }: AppFooterProps) {
         <div className="flex flex-1 items-center justify-end gap-4 text-xs">
           {websocket !== undefined && (
             <div className="flex flex-col gap-1">
-              <JmWebsocketIcon isOpen={websocket.isOpen} isAuthenticated={websocket.isAuthenticated} />
+              <JmWebsocketInfo isOpen={websocket.isOpen} isAuthenticated={websocket.isAuthenticated} />
             </div>
           )}
           <div className="flex flex-col gap-1">
