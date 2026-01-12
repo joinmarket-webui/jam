@@ -4,7 +4,7 @@ import { BitcoinAmountInput } from '@/components/receive/BitcoinAmountInput'
 import type { Currency } from '@/types/global'
 
 const meta: Meta<typeof BitcoinAmountInput> = {
-  title: 'Receive/BitcoinAmountInput',
+  title: 'Jam/BitcoinAmountInput',
   component: BitcoinAmountInput,
   tags: ['autodocs'],
   parameters: {

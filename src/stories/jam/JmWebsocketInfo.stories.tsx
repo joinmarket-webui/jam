@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
 
 const meta: Meta<typeof JmWebsocketInfo> = {
-  title: 'Core/JmWebsocketInfo',
+  title: 'Jam/JmWebsocketInfo',
   component: JmWebsocketInfo,
   tags: ['autodocs'],
 }
