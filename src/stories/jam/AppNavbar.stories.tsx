@@ -5,7 +5,7 @@ import { AppNavbar } from '@/components/layout/AppNavbar'
 import { SidebarProvider } from '@/components/ui/sidebar'
 
 const meta: Meta<typeof AppNavbar> = {
-  title: 'Layout/Navbar',
+  title: 'Layout/AppNavbar',
   component: AppNavbar,
   tags: ['autodocs'],
   decorators: [
@@ -24,13 +24,17 @@ type Story = StoryObj<typeof AppNavbar>
 
 const mockFormatAmount = (amount: number) => `${amount}`
 const mockCurrencySymbol = (size: 'sm' | 'lg') => <BitcoinIcon size={size === 'sm' ? 18 : 32} />
+const mockToggleTheme = () => alert('Toggled theme!')
+const mockOnLogout = async () => alert('Logged out!')
 
 export const Default: Story = {
   args: {
     theme: 'light',
-    toggleTheme: () => alert('Theme toggled!'),
+    totalBalance: 21_000_000,
+    walletName: 'Satoshi',
     formatAmount: mockFormatAmount,
     currencySymbol: mockCurrencySymbol,
-    totalBalance: 21_000_000,
+    toggleTheme: () => mockToggleTheme,
+    onLogout: mockOnLogout,
   },
 }

@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { AppFooter } from '@/components/layout/AppFooter'
 
 const meta: Meta<typeof AppFooter> = {
-  title: 'Layout/Footer',
+  title: 'Layout/AppFooter',
   component: AppFooter,
   tags: ['autodocs'],
   decorators: [
@@ -19,5 +19,5 @@ export default meta
 type Story = StoryObj<typeof AppFooter>
 
 export const Default: Story = {
-  render: () => <AppFooter />,
+  render: () => <AppFooter websocket={{ isOpen: true, isAuthenticated: true }} />,
 }

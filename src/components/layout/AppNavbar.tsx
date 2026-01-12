@@ -1,14 +1,12 @@
 import type { PropsWithChildren } from 'react'
+import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { Loader2Icon, LogOutIcon, MoonIcon, SettingsIcon, ShuffleIcon, SunIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { useStore } from 'zustand'
 import { Button } from '@/components/ui/button'
 import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import { cn } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
-import { jmSessionStore } from '@/store/jmSessionStore'
 import type { AmountSats } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Skeleton } from '../ui/skeleton'
@@ -29,16 +27,21 @@ const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active:
   )
 }
 
+type WalletPreviewProps = Pick<
+  AppNavbarProps,
+  'isLoading' | 'walletName' | 'formatAmount' | 'currencySymbol' | 'totalBalance'
+>
+
 const WalletPreview = ({
   walletName,
   formatAmount,
   currencySymbol,
   totalBalance,
   isLoading = false,
-}: Pick<AppNavbarProps, 'isLoading' | 'walletName' | 'formatAmount' | 'currencySymbol' | 'totalBalance'>) => {
+}: WalletPreviewProps) => {
   return (
     <div className="flex flex-1 items-center">
-      <Link to={'/'} className="flex items-center gap-2">
+      <Link to={routes.home} className="flex items-center gap-2">
         <div className="flex h-8 w-8 items-center">
           {isLoading ? (
             <Loader2Icon className="animate-spin text-gray-400" strokeWidth={3} />
@@ -81,38 +84,42 @@ const ThemeToggleButton = ({ theme, toggleTheme }: Pick<AppNavbarProps, 'theme' 
   )
 }
 
+type SessionInfo = Pick<SessionResponse, 'maker_running' | 'coinjoin_in_process' | 'schedule'>
+
 interface AppNavbarProps {
   isLoading?: boolean
   walletName: string | null
+  formatAmount: (AmountSats: number) => string
   currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
   totalBalance: AmountSats
   theme: string
   toggleTheme: () => void
-  formatAmount: (AmountSats: number) => string
+  onLogout: () => Promise<void>
   sidebarTrigger?: React.ReactNode
+  sessionInfo?: SessionInfo
 }
 
 export function AppNavbar({
+  isLoading = false,
   walletName,
-  formatAmount,
-  currencySymbol,
   totalBalance,
   theme,
+  formatAmount,
+  currencySymbol,
   toggleTheme,
-  isLoading = false,
+  onLogout,
   sidebarTrigger,
+  sessionInfo,
 }: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const { isMobile, open, openMobile } = useSidebar()
   const isSidebarOpen = isMobile ? openMobile : open
-  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
-  const { clear: clearAuth } = useStore(authStore, (state) => state)
 
-  const makerRunning = jmSessionState?.maker_running === true
-  const singleCoinJoinRunning = jmSessionState?.coinjoin_in_process === true && !jmSessionState?.schedule
-  const schedulerRunning = jmSessionState?.coinjoin_in_process === true && !!jmSessionState?.schedule
+  const makerRunning = sessionInfo?.maker_running === true
+  const singleCoinJoinRunning = sessionInfo?.coinjoin_in_process === true && !sessionInfo?.schedule
+  const schedulerRunning = sessionInfo?.coinjoin_in_process === true && !!sessionInfo?.schedule
 
   const joiningRoute = (() => {
     if (schedulerRunning) return routes.sweep
@@ -121,11 +128,6 @@ export function AppNavbar({
 
     return undefined
   })()
-
-  const handleLogout = async () => {
-    clearAuth()
-    await navigate(routes.login)
-  }
 
   return (
     <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
@@ -185,7 +187,7 @@ export function AppNavbar({
         <Button
           variant="ghost-navbar"
           size="icon"
-          onClick={handleLogout}
+          onClick={onLogout}
           aria-label={/* TODO: i18n */ 'Logout'}
           title={/* TODO: i18n */ 'Logout'}
         >
