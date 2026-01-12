@@ -49,12 +49,12 @@ const WalletPreview = ({
             <WalletIcon strokeWidth={1} />
           )}
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-0.25 leading-none">
           <div className="flex items-center gap-2">
             <div className="font-semibold tracking-tight">{walletName ?? '...'}</div>
             {isDevMode() && <DevBadge />}
           </div>
-          <div className="flex min-h-6 min-w-[150px] items-center">
+          <div className="flex min-h-5 min-w-[150px] items-center">
             {isLoading ? (
               <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
             ) : (
