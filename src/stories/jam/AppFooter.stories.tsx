@@ -19,5 +19,5 @@ export default meta
 type Story = StoryObj<typeof AppFooter>
 
 export const Default: Story = {
-  render: () => <AppFooter websocket={{ isOpen: true, isAuthenticated: true }} />,
+  render: () => <AppFooter websocketInfo={{ isOpen: true, isAuthenticated: true }} />,
 }

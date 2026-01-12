@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Skeleton } from '../ui/skeleton'
-import { useSidebar } from '../ui/use-sidebar'
+import type { SidebarContextProps } from '../ui/use-sidebar'
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
   return (
@@ -85,6 +85,7 @@ const ThemeToggleButton = ({ theme, toggleTheme }: Pick<AppNavbarProps, 'theme' 
 }
 
 type SessionInfo = Pick<SessionResponse, 'maker_running' | 'coinjoin_in_process' | 'schedule'>
+type SidebarInfo = Pick<SidebarContextProps, 'isMobile' | 'open' | 'openMobile'>
 
 interface AppNavbarProps {
   isLoading?: boolean
@@ -97,6 +98,7 @@ interface AppNavbarProps {
   onLogout: () => Promise<void>
   sidebarTrigger?: React.ReactNode
   sessionInfo?: SessionInfo
+  sidebarInfo?: SidebarInfo
 }
 
 export function AppNavbar({
@@ -110,12 +112,13 @@ export function AppNavbar({
   onLogout,
   sidebarTrigger,
   sessionInfo,
+  sidebarInfo,
 }: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const { isMobile, open, openMobile } = useSidebar()
-  const isSidebarOpen = isMobile ? openMobile : open
+  const isSidebarOpen =
+    sidebarInfo === undefined ? false : sidebarInfo.isMobile ? sidebarInfo.openMobile : sidebarInfo.open
 
   const makerRunning = sessionInfo?.maker_running === true
   const singleCoinJoinRunning = sessionInfo?.coinjoin_in_process === true && !sessionInfo?.schedule

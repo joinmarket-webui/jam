@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, MessageCircleQuestionIcon } from 'lucide-react'
+import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, FileQuestionMarkIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
 import { OrderbookOverlay } from '@/components/orderbook/OrderbookOverlay'
@@ -46,11 +46,12 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
   )
 }
 
+type JmWebsocketInfo = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
 interface AppFooterProps {
-  websocket?: Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
+  websocketInfo?: JmWebsocketInfo
 }
 
-export function AppFooter({ websocket }: AppFooterProps) {
+export function AppFooter({ websocketInfo }: AppFooterProps) {
   const { t } = useTranslation()
   const cheatsheet = useCheatsheet()
 
@@ -72,7 +73,7 @@ export function AppFooter({ websocket }: AppFooterProps) {
         </div>
         <div className="flex flex-1 items-center justify-center gap-2">
           <Button variant="outline" size="sm" onClick={() => cheatsheet.onOpenChange(true)}>
-            <MessageCircleQuestionIcon />
+            <FileQuestionMarkIcon />
             {t('footer.cheatsheet')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => setIsOrderbookOverlayOpen(true)}>
@@ -82,9 +83,9 @@ export function AppFooter({ websocket }: AppFooterProps) {
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-4 text-xs">
-          {websocket !== undefined && (
+          {websocketInfo !== undefined && (
             <div className="flex flex-col gap-1">
-              <JmWebsocketInfo isOpen={websocket.isOpen} isAuthenticated={websocket.isAuthenticated} />
+              <JmWebsocketInfo isOpen={websocketInfo.isOpen} isAuthenticated={websocketInfo.isAuthenticated} />
             </div>
           )}
           <div className="flex flex-col gap-1">
