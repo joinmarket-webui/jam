@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useJmInfo } from '@/hooks/useJmInfo'
-import { useJmWebsocket } from '@/hooks/useJmWebsocket'
+import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import { cn, toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../../package.json'
@@ -53,7 +53,7 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
   )
 }
 
-type JmWebsocketIconProps = Pick<ReturnType<typeof useJmWebsocket>, 'isOpen' | 'isAuthenticated'> & {
+type JmWebsocketIconProps = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'> & {
   className?: string
 }
 
@@ -67,10 +67,13 @@ export function JmWebsocketIcon({ className, isOpen, isAuthenticated }: JmWebsoc
   return <MonitorXIcon className={cn('text-muted-foreground', className)} />
 }
 
-export function AppFooter() {
+interface AppFooterProps {
+  websocket?: Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
+}
+
+export function AppFooter({ websocket }: AppFooterProps) {
   const { t } = useTranslation()
   const cheatsheet = useCheatsheet()
-  const websocket = useJmWebsocket()
 
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isShowBetaWarning, setShowBetaWarning] = useState(false)
@@ -100,9 +103,11 @@ export function AppFooter() {
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-4 text-xs">
-          <div className="flex flex-col gap-1">
-            <JmWebsocketIcon isOpen={websocket.isOpen} isAuthenticated={websocket.isAuthenticated} />
-          </div>
+          {websocket !== undefined && (
+            <div className="flex flex-col gap-1">
+              <JmWebsocketIcon isOpen={websocket.isOpen} isAuthenticated={websocket.isAuthenticated} />
+            </div>
+          )}
           <div className="flex flex-col gap-1">
             <a
               href="https://github.com/joinmarket-webui/jam/tags"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
+import type { WebSocketHook } from 'react-use-websocket/dist/lib/types'
 import { useStore } from 'zustand'
 import { pseudoRandomFloat } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -35,7 +36,12 @@ const { protocol, host } = window.location
 const scheme = protocol === 'https:' ? 'wss' : 'ws'
 const url = `${scheme}://${host}/${basePathWithoutLeadingSlash}`
 
-export const useJmWebsocket = () => {
+export type JmWebsocket = Omit<WebSocketHook, 'sendMessage' | 'sendJsonMessage'> & {
+  isOpen: boolean
+  isAuthenticated: boolean
+}
+
+export const useJmWebsocket = (): JmWebsocket => {
   const authToken = useStore(authStore, (state) => state.state?.auth?.token)
 
   const [socketUrl] = useState(url)
@@ -102,9 +108,7 @@ export const useJmWebsocket = () => {
       }, WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION)
     }
     return () => {
-      if (timerId) {
-        clearTimeout(timerId)
-      }
+      clearTimeout(timerId)
     }
   }, [isOpen, authSentAt])
 
@@ -134,9 +138,7 @@ export const useJmWebsocket = () => {
       return () => {
         console.log(`Cancelling scheduled heartbeat messages.`)
         abortCtrl.abort()
-        if (timerId) {
-          clearTimeout(timerId)
-        }
+        clearTimeout(timerId)
       }
     },
     [sendMessage, isOpen, authenticated, authToken],
