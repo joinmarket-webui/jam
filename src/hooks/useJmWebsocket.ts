@@ -42,12 +42,12 @@ export const useJmWebsocket = () => {
   const [authSentAt, setAuthSentAt] = useState<Milliseconds>()
   const [authenticated, setAuthenticated] = useState(false)
 
-  const websocket = useWebSocket(socketUrl, {
+  const { sendMessage, ...websocket } = useWebSocket(socketUrl, {
     share: true,
     /**
-     * tl;dr. heartbeat functionality is done manually.
+     * tl;dr: heartbeat functionality is done manually.
      * useWebSocket applies a default timeout for heartbeat
-     * messages, but jm either either keeps connection open
+     * messages, but jm either keeps connection open
      * after authentication or closes it on error.
      * therefore heartbeat requests will be done manually
      * without waiting for a response.
@@ -79,7 +79,7 @@ export const useJmWebsocket = () => {
       timerId = setTimeout(() => {
         console.log('Renewing websocket authentication...')
         setAuthSentAt(Date.now())
-        websocket.sendMessage(authToken)
+        sendMessage(authToken)
       }, WEBSOCKET_CONNECTION_HEALTHY_DURATION)
     }
     return () => {
@@ -87,7 +87,7 @@ export const useJmWebsocket = () => {
         clearTimeout(timerId)
       }
     }
-  }, [websocket.sendMessage, authToken, isOpen])
+  }, [sendMessage, authToken, isOpen])
 
   useEffect(() => {
     let timerId: NodeJS.Timeout
@@ -110,24 +110,27 @@ export const useJmWebsocket = () => {
 
   useEffect(
     function setupHeartbeat() {
-      let timerId: NodeJS.Timeout
-      const abortCtrl = new AbortController()
-      if (isOpen && authenticated && authToken !== undefined) {
-        const intervalRandomFactor = pseudoRandomFloat(0.75, 1.25)
-        const interval = Math.round(WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL * intervalRandomFactor)
-        console.log(`Setup heartbeat messages at interval ${interval}ms.`)
-        timerId = setInterval(() => {
-          const delayRandomFactor = pseudoRandomFloat(0.25, 0.75)
-          const delay = Math.round(interval * delayRandomFactor)
-          console.log(`Scheduled heartbeat message in ${delay}ms.`)
-          setTimeout(() => {
-            if (!abortCtrl.signal.aborted) {
-              console.log('Sending heartbeat message...')
-              websocket.sendMessage(authToken)
-            }
-          }, delay)
-        }, interval)
+      if (!isOpen || !authenticated || authToken === undefined) {
+        return
       }
+
+      const intervalRandomFactor = pseudoRandomFloat(0.75, 1.25)
+      const interval = Math.round(WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL * intervalRandomFactor)
+      console.log(`Setup heartbeat messages at interval ${interval}ms.`)
+
+      const abortCtrl = new AbortController()
+      const timerId = setInterval(() => {
+        const delayRandomFactor = pseudoRandomFloat(0.25, 0.75)
+        const delay = Math.round(interval * delayRandomFactor)
+        console.log(`Scheduled heartbeat message in ${delay}ms.`)
+        setTimeout(() => {
+          if (abortCtrl.signal.aborted) {
+            return
+          }
+          console.log('Sending heartbeat message...')
+          sendMessage(authToken)
+        }, delay)
+      }, interval)
       return () => {
         console.log(`Cancelling scheduled heartbeat messages.`)
         abortCtrl.abort()
@@ -136,7 +139,7 @@ export const useJmWebsocket = () => {
         }
       }
     },
-    [websocket.sendMessage, isOpen, authenticated, authToken],
+    [sendMessage, isOpen, authenticated, authToken],
   )
 
   return {
