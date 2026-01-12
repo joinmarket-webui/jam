@@ -24,7 +24,7 @@ export const JmWebsocketInfo = ({ className, isOpen, isAuthenticated }: JmWebsoc
   const { t } = useTranslation()
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger>
         <JmWebsocketIcon isOpen={isOpen} isAuthenticated={isAuthenticated} className={className} />
       </TooltipTrigger>
       <TooltipContent>{isOpen ? t('footer.websocket_connected') : t('footer.websocket_disconnected')}</TooltipContent>
