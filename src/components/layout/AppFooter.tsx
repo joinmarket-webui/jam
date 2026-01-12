@@ -121,7 +121,7 @@ export function AppFooter() {
         </div>
       </footer>
 
-      {<Cheatsheet open={cheatsheet.isOpen} onOpenChange={cheatsheet.onOpenChange} />}
+      <Cheatsheet open={cheatsheet.isOpen} onOpenChange={cheatsheet.onOpenChange} />
       <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
     </>
   )

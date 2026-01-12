@@ -13,12 +13,12 @@ interface CheatsheetProps {
 
 export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
   const { t } = useTranslation()
-  const [onCloseAnimationEnabled, setOnCloseAnimationEnabled] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
 
   const handleClose = () => {
-    setOnCloseAnimationEnabled(true)
+    setIsClosing(true)
     setTimeout(() => {
-      setOnCloseAnimationEnabled(false)
+      setIsClosing(false)
       onOpenChange(false)
     }, 333)
   }
@@ -32,7 +32,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
       <div className="fixed inset-0 z-0" onClick={handleClose} />
       <div
         className={`relative z-10 flex max-h-[80vh] w-full max-w-[90vw] flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-200 ease-out sm:max-w-[550px] dark:bg-[#181b20] ${
-          onCloseAnimationEnabled ? 'animate-slide-down' : 'animate-slide-up'
+          isClosing ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >
         <div className="flex-shrink-0 p-6 pb-4">
