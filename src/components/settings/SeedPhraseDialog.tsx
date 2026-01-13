@@ -57,14 +57,12 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     retry: false,
     select: (data) => data.seedphrase,
   })
-  const seedQueryData = useMemo(() => seedQuery.data, [seedQuery.data])
-  const seedQueryRefetch = useMemo(() => seedQuery.refetch, [seedQuery.refetch])
 
   useEffect(() => {
-    if (open && isPasswordVerified && seedQueryData === undefined) {
-      seedQueryRefetch()
+    if (open && isPasswordVerified && seedQuery.data === undefined) {
+      seedQuery.refetch()
     }
-  }, [open, isPasswordVerified, seedQueryData, seedQueryRefetch])
+  }, [open, isPasswordVerified, seedQuery])
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) {
@@ -186,7 +184,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
               <Button variant="outline" onClick={handleClose}>
                 {t('global.cancel')}
               </Button>
-              <Button onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
+              <Button type="submit" onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />

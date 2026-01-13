@@ -1,7 +1,6 @@
-import { XIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
-import PageTitle from '../ui/jam/PageTitle'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import PageTitle from '@/components/ui/jam/PageTitle'
 import { OrderbookContent } from './OrderbookContent'
 
 interface OrderbookOverlayProps {
@@ -11,23 +10,19 @@ interface OrderbookOverlayProps {
 
 export function OrderbookOverlay({ open, onOpenChange }: OrderbookOverlayProps) {
   const { t } = useTranslation()
-  if (!open) {
-    return <></>
-  }
-
   return (
-    <div className="light:bg-white animate-slide-up fixed inset-0 z-50 flex flex-col bg-zinc-900">
-      <div className="flex items-center justify-between border-b px-6 py-4">
-        <PageTitle title={t('orderbook.title')} />
-        <Button variant="ghost" size="lg" onClick={() => onOpenChange(false)} title={t('global.close')}>
-          <XIcon />
-          <span className="sr-only">{t('global.close')}</span>
-        </Button>
-      </div>
+    <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
+      <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PageTitle title={t('orderbook.title')} />
+          </DialogTitle>
+        </DialogHeader>
 
-      <div className="flex-1 overflow-hidden">
-        <OrderbookContent className="flex h-full flex-col p-4" />
-      </div>
-    </div>
+        <div className="overflow-hidden">
+          <OrderbookContent enabled={open} className="flex h-full flex-col" />
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

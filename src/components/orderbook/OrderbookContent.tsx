@@ -1,13 +1,23 @@
 import { useState, useMemo } from 'react'
-import { DropdownMenu } from '@radix-ui/react-dropdown-menu'
 import { useQuery } from '@tanstack/react-query'
 import type { RowModel } from '@tanstack/react-table'
 import type { i18n } from 'i18next'
 import { ChevronDownIcon, RefreshCwIcon, PlusIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
+import { DevBadge } from '@/components/dev/DevBadge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { ButtonGroup } from '@/components/ui/button-group'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import * as OrderbookApi from '@/lib/api/orderbook'
@@ -23,11 +33,6 @@ import {
 } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { DevBadge } from '../dev/DevBadge'
-import { Alert, AlertDescription } from '../ui/alert'
-import { ButtonGroup } from '../ui/button-group'
-import { DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
-import { Label } from '../ui/label'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
 
 const offerToTableEntry = (
@@ -89,9 +94,10 @@ const offerToTableEntry = (
 
 interface OrderbookContentProps {
   className?: string
+  enabled: boolean
 }
 
-export const OrderbookContent = ({ className }: OrderbookContentProps) => {
+export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) => {
   const { t, i18n } = useTranslation()
 
   const nickname = useStore(jmSessionStore, (state) => state.state?.nickname)
@@ -142,6 +148,7 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
     queryFn: withQueryDelay(OrderbookApi.fetchOrderbook, {
       delayAfter: 210,
     }),
+    enabled,
   })
 
   const isFetching = isFetchingOrderbookData || isFetchingOrderbookRefresh
@@ -225,9 +232,15 @@ export const OrderbookContent = ({ className }: OrderbookContentProps) => {
 
         <div className="flex items-center space-x-2">
           {showDemoButton && (
-            <Button variant="outline" size="sm" onClick={__dev_generateDemoReportEntryButton} disabled={isFetching}>
-              <PlusIcon />
-              Generate Demo Entry
+            <Button
+              className="text-xs"
+              variant="outline"
+              size="sm"
+              onClick={__dev_generateDemoReportEntryButton}
+              disabled={isFetching}
+            >
+              <PlusIcon className="size-3" />
+              Add Demo Entry
               <DevBadge />
             </Button>
           )}
