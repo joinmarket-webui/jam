@@ -45,8 +45,42 @@ export const JAM_RESCAN_PROGRESS_INTERVAL: Milliseconds = Math.max(
 )
 
 const JAM_SEED_MODAL_MIN_TIMEOUT: Milliseconds = 5_000
-const JAM_SEED_MODAL_DEFAULT_TIMEOUT: Milliseconds = 21_000
+const JAM_SEED_MODAL_DEFAULT_TIMEOUT: Milliseconds = 30_000
 export const JAM_SEED_MODAL_TIMEOUT: Milliseconds = Math.max(
   import.meta.env.VITE_JAM_SEED_MODAL_TIMEOUT ?? JAM_SEED_MODAL_DEFAULT_TIMEOUT,
   JAM_SEED_MODAL_MIN_TIMEOUT,
+)
+
+// minimum amount of time in milliseconds the connection must stay open to be considered "healthy"
+const JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_MIN_DURATION: Milliseconds = 1_000
+export const JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION: Milliseconds = Math.max(
+  import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION ?? 0,
+  JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_MIN_DURATION,
+)
+
+const JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_MIN_DURATION: Milliseconds = 1_000
+const JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DEFAULT_DURATION: Milliseconds = 3_000
+export const JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION: Milliseconds = Math.max(
+  import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION ??
+    JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DEFAULT_DURATION,
+  JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_MIN_DURATION,
+)
+
+// webservers will close a websocket connection on inactivity (e.g nginx default is 60s)
+// specify the time in milliseconds at least one 'keepalive' message is sent
+const JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_MIN_INTERVAL: Milliseconds = 5_000
+const JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_DEFAULT_INTERVAL: Milliseconds = 30_000
+export const JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL: Milliseconds = Math.max(
+  import.meta.env.VITE_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL ?? JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_DEFAULT_INTERVAL,
+  JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_MIN_INTERVAL,
+)
+
+export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN: Milliseconds = Math.max(
+  import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN ?? 0,
+  5_000,
+)
+
+export const JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds = Math.max(
+  import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX ?? 0,
+  60_000,
 )
