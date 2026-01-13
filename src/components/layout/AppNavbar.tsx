@@ -1,10 +1,11 @@
 import type { PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { Loader2Icon, LogOutIcon, MoonIcon, SettingsIcon, ShuffleIcon, SunIcon, WalletIcon } from 'lucide-react'
+import { Loader2Icon, LogOutIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Button } from '@/components/ui/button'
+import { ThemeToggleButton } from '@/components/ui/jam/ThemeToggleButton'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { SidebarContextProps } from '@/components/ui/use-sidebar'
 import { isDevMode } from '@/constants/debugFeatures'
@@ -67,20 +68,6 @@ const WalletPreview = ({
         </div>
       </Link>
     </div>
-  )
-}
-
-const ThemeToggleButton = ({ theme, toggleTheme }: Pick<AppNavbarProps, 'theme' | 'toggleTheme'>) => {
-  return (
-    <Button
-      variant="ghost-navbar"
-      size="icon"
-      onClick={toggleTheme}
-      aria-label={/* TODO: i18n */ 'Toggle dark/light mode'}
-      title={/* TODO: i18n */ 'Toggle dark/light mode'}
-    >
-      {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-    </Button>
   )
 }
 
@@ -177,7 +164,7 @@ export function AppNavbar({
             <ShuffleIcon className="motion-safe:animate-pulse" />
           </Button>
         )}
-        <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
+        <ThemeToggleButton variant="ghost-navbar" theme={theme} onClick={toggleTheme} />
         <Button
           aria-label={t('navbar.menu_mobile_settings')}
           title={t('navbar.menu_mobile_settings')}
