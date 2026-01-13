@@ -8,7 +8,7 @@ export const OrderbookPage = () => {
   return (
     <div className="mx-auto space-y-3 p-4">
       <PageTitle title={t('orderbook.title')} />
-      <OrderbookContent />
+      <OrderbookContent enabled={true} />
     </div>
   )
 }
