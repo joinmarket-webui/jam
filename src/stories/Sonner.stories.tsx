@@ -32,26 +32,26 @@ const ToastDemo = ({
   const showToast = () => {
     switch (type) {
       case 'success':
-        toast.success(message, { description })
+        toast.success(message, { id: 'demo', description })
         break
       case 'error':
-        toast.error(message, { description })
+        toast.error(message, { id: 'demo', description })
         break
       case 'warning':
-        toast.warning(message, { description })
+        toast.warning(message, { id: 'demo', description })
         break
       case 'info':
-        toast.info(message, { description })
+        toast.info(message, { id: 'demo', description })
         break
       default:
-        toast(message, { description })
+        toast(message, { id: 'demo', description })
     }
   }
 
   return (
-    <div>
+    <div className="my-4">
       <Button onClick={showToast}>Show {type} toast</Button>
-      <Toaster />
+      <Toaster closeButton />
     </div>
   )
 }

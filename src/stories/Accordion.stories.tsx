@@ -72,16 +72,18 @@ export const DefaultOpen: Story = {
 
 export const CustomStyling: Story = {
   render: () => (
-    <Accordion type="single" collapsible className="w-full">
-      <AccordionItem value="item-1" className="mb-2 rounded-md border border-gray-200 px-4">
-        <AccordionTrigger className="font-bold text-blue-500">Custom styled accordion</AccordionTrigger>
-        <AccordionContent className="text-gray-600">
+    <Accordion type="single" collapsible className="my-12 w-full">
+      <AccordionItem value="item-1" className="mb-2 rounded-md border border-gray-200 px-4 last:border-b!">
+        <AccordionTrigger className="font-semibold text-blue-500">Custom styled accordion</AccordionTrigger>
+        <AccordionContent className="text-foreground">
           This accordion has custom styling applied to demonstrate the flexibility of the component.
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem value="item-2" className="rounded-md border border-gray-200 px-4">
-        <AccordionTrigger className="font-bold text-blue-500">Another custom section</AccordionTrigger>
-        <AccordionContent className="text-gray-600">
+      <AccordionItem value="item-2" className="rounded-md border border-gray-200 px-4 last:border-b!">
+        <AccordionTrigger className="inactive:text-muted-foreground font-semibold text-blue-500">
+          Another custom section
+        </AccordionTrigger>
+        <AccordionContent className="text-foreground">
           You can customize each accordion item independently.
         </AccordionContent>
       </AccordionItem>
