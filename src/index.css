@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@import './styles/sonner.css';
+
 @custom-variant dark (&:is([data-theme='dark'] *));
 @custom-variant light (&:is([data-theme='light'] *));
 
@@ -27,11 +29,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -62,11 +59,6 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -96,19 +88,14 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 @layer base {
@@ -118,114 +105,6 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Sonner toast styling */
-[data-sonner-toaster] [data-sonner-toast] {
-  background-color: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-  color: hsl(var(--foreground));
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='success'] {
-  background-color: hsl(142 76% 94%);
-  border-color: hsl(142 72% 29%);
-  color: hsl(142 72% 29%);
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='error'] {
-  background-color: hsl(0 86% 97%);
-  border-color: hsl(0 84% 60%);
-  color: hsl(0 84% 60%);
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='warning'] {
-  background-color: hsl(48 96% 96%);
-  border-color: hsl(32 95% 44%);
-  color: hsl(32 95% 44%);
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='info'] {
-  background-color: hsl(214 95% 93%);
-  border-color: hsl(221 83% 53%);
-  color: hsl(221 83% 53%);
-}
-
-/* Dark mode styles */
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='success'] {
-  background-color: hsl(142 30% 15%);
-  border-color: hsl(142 72% 29%);
-  color: hsl(142 85% 85%);
-}
-
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='error'] {
-  background-color: hsl(0 30% 15%);
-  border-color: hsl(0 84% 60%);
-  color: hsl(0 86% 85%);
-}
-
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='warning'] {
-  background-color: hsl(32 30% 15%);
-  border-color: hsl(32 95% 44%);
-  color: hsl(32 95% 85%);
-}
-
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='info'] {
-  background-color: hsl(221 30% 15%);
-  border-color: hsl(221 83% 53%);
-  color: hsl(221 95% 85%);
-}
-
-/* Fix description text visibility */
-[data-sonner-toaster] [data-sonner-toast] [data-description] {
-  color: hsl(var(--muted-foreground));
-  opacity: 0.9;
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-description] {
-  color: hsl(142 72% 29%);
-  opacity: 0.8;
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='error'] [data-description] {
-  color: hsl(0 84% 60%);
-  opacity: 0.8;
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='warning'] [data-description] {
-  color: hsl(32 95% 44%);
-  opacity: 0.8;
-}
-
-[data-sonner-toaster] [data-sonner-toast][data-type='info'] [data-description] {
-  color: hsl(221 83% 53%);
-  opacity: 0.8;
-}
-
-/* Dark mode description colors */
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast] [data-description] {
-  color: hsl(var(--muted-foreground));
-  opacity: 0.9;
-}
-
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-description] {
-  color: hsl(142 85% 85%);
-  opacity: 0.8;
-}
-
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='error'] [data-description] {
-  color: hsl(0 86% 85%);
-  opacity: 0.8;
-}
-
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='warning'] [data-description] {
-  color: hsl(32 95% 85%);
-  opacity: 0.8;
-}
-
-[data-theme='dark'] [data-sonner-toaster] [data-sonner-toast][data-type='info'] [data-description] {
-  color: hsl(221 95% 85%);
-  opacity: 0.8;
 }
 
 html {
@@ -266,15 +145,4 @@ html body[data-scroll-locked] {
 
 .animate-slide-down {
   animation: slide-down 0.3s ease-in-out forwards;
-}
-
-.dark {
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
