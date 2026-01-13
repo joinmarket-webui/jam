@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -40,14 +40,17 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
 
+  const queryClient = useQueryClient()
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
 
+  const seedQueryOptions = getseedOptions({
+    client,
+    path: { walletname: encodeURIComponent(walletFileName) },
+  })
+
   const seedQuery = useQuery({
-    ...getseedOptions({
-      client,
-      path: { walletname: encodeURIComponent(walletFileName) },
-    }),
+    ...seedQueryOptions,
     staleTime: 1,
     gcTime: 1,
     enabled: false,
@@ -129,6 +132,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     setShowPassword(false)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
     onOpenChange(false)
+    queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
   }
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
