@@ -2,30 +2,21 @@ import { useEffect, useMemo, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 import type { WebSocketHook } from 'react-use-websocket/dist/lib/types'
 import { useStore } from 'zustand'
+import {
+  JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION,
+  JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION,
+  JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL,
+  JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX,
+  JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN,
+} from '@/constants/jam'
 import { pseudoRandomFloat } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import type { Milliseconds } from '@/types/global'
 
-// minimum amount of time in milliseconds the connection must stay open to be considered "healthy"
-const WEBSOCKET_CONNECTION_HEALTHY_DURATION: Milliseconds =
-  import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION || 1_000
-const WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION: Milliseconds =
-  import.meta.env.VITE_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION || 3_000
-
-// webservers will close a websocket connection on inactivity (e.g nginx default is 60s)
-// specify the time in milliseconds at least one 'keepalive' message is sent
-const WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL: Milliseconds =
-  import.meta.env.VITE_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL || 30_000
-
-const WEBSOCKET_RECONNECT_INTERVAL_MIN: Milliseconds = import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN || 5_000
-
-const WEBSOCKET_RECONNECT_INTERVAL_MAX: Milliseconds =
-  import.meta.env.VITE_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX || 60_000
-
 const calcReconnectInterval = (attemptNumber: number): Milliseconds => {
   return Math.max(
-    WEBSOCKET_RECONNECT_INTERVAL_MIN,
-    Math.min(Math.pow(2, attemptNumber) * 1_000, WEBSOCKET_RECONNECT_INTERVAL_MAX),
+    JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MIN,
+    Math.min(Math.pow(2, attemptNumber) * 1_000, JAM_JM_WEBSOCKET_RECONNECT_INTERVAL_MAX),
   )
 }
 
@@ -86,7 +77,7 @@ export const useJmWebsocket = (): JmWebsocket => {
         console.log('Renewing websocket authentication...')
         setAuthSentAt(Date.now())
         sendMessage(authToken)
-      }, WEBSOCKET_CONNECTION_HEALTHY_DURATION)
+      }, JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION)
     }
     return () => {
       if (timerId) {
@@ -105,7 +96,7 @@ export const useJmWebsocket = (): JmWebsocket => {
       timerId = setTimeout(() => {
         console.log('Successfully renewed websocket authentication.')
         setAuthenticated(true)
-      }, WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION)
+      }, JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION)
     }
     return () => {
       clearTimeout(timerId)
@@ -119,7 +110,7 @@ export const useJmWebsocket = (): JmWebsocket => {
       }
 
       const intervalRandomFactor = pseudoRandomFloat(0.75, 1.25)
-      const interval = Math.round(WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL * intervalRandomFactor)
+      const interval = Math.round(JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL * intervalRandomFactor)
       console.log(`Setup heartbeat messages at interval ${interval}ms.`)
 
       const abortCtrl = new AbortController()
