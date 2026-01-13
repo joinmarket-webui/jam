@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 const meta: Meta<typeof Card> = {
   title: 'Core/Card',
@@ -15,9 +15,10 @@ export const Default: Story = {
     <Card {...args}>
       <CardHeader>
         <CardTitle>Card Title</CardTitle>
-        <CardDescription>This is a card description.</CardDescription>
+        <CardDescription>Card Description</CardDescription>
       </CardHeader>
-      <div style={{ padding: 24 }}>Card content goes here.</div>
+      <CardContent>Card Content</CardContent>
+      <CardFooter>Card Footer</CardFooter>
     </Card>
   ),
 }

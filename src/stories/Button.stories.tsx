@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { BitcoinIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const meta: Meta<typeof Button> = {
@@ -9,6 +10,33 @@ const meta: Meta<typeof Button> = {
 export default meta
 
 type Story = StoryObj<typeof Button>
+
+export const Variants: Story = {
+  render: () => (
+    <div className="flex items-center justify-center gap-8">
+      <Button variant="default">default</Button>
+      <Button variant="destructive">destructive</Button>
+      <Button variant="ghost">ghost</Button>
+      <Button variant="ghost-navbar">ghost-navbar</Button>
+      <Button variant="link">link</Button>
+      <Button variant="outline">outline</Button>
+      <Button variant="secondary">secondary</Button>
+    </div>
+  ),
+}
+
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex items-center justify-center gap-8">
+      <Button size="sm">sm</Button>
+      <Button size="default">default</Button>
+      <Button size="lg">lg</Button>
+      <Button size="icon">
+        <BitcoinIcon />
+      </Button>
+    </div>
+  ),
+}
 
 export const Default: Story = {
   args: {
