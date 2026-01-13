@@ -12,6 +12,7 @@ import {
   Outlet,
   Route,
   RouterProvider,
+  type NavigateFunction,
 } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -55,6 +56,13 @@ function App() {
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
 
+  const { clear: clearAuth } = useStore(authStore, (state) => state)
+  const onLogout = async (navigate: NavigateFunction) => {
+    clearAuth()
+    queryClient.clear()
+    await navigate(routes.login)
+  }
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route id="base" element={<Outlet />} errorElement={<ErrorPage />}>
@@ -93,7 +101,7 @@ function App() {
           <Route
             id="with-navbar"
             element={
-              <Layout>
+              <Layout onLogout={onLogout}>
                 <Outlet />
               </Layout>
             }

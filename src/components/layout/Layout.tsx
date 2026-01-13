@@ -1,14 +1,12 @@
 import { useTheme } from 'next-themes'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { AppFooter } from '@/components/layout/AppFooter'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
-import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { useSidebar } from '../ui/use-sidebar'
 import { AppSidebar } from './AppSidebar'
@@ -16,13 +14,12 @@ import { AppSidebar } from './AppSidebar'
 const SIDEBAR_SIDE: React.ComponentProps<typeof Sidebar>['side'] = 'right'
 
 interface LayoutInnerProps {
+  onLogout: (navigate: NavigateFunction) => Promise<void>
   children: React.ReactNode
 }
 
-export function LayoutInner({ children }: LayoutInnerProps) {
+export function LayoutInner({ onLogout, children }: LayoutInnerProps) {
   const navigate = useNavigate()
-
-  const { clear: clearAuth } = useStore(authStore, (state) => state)
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
 
   const { resolvedTheme, setTheme } = useTheme()
@@ -35,11 +32,6 @@ export function LayoutInner({ children }: LayoutInnerProps) {
 
   const websocket = useJmWebsocket()
 
-  const doOnLogout = async () => {
-    clearAuth()
-    await navigate(routes.login)
-  }
-
   return (
     <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
       <AppNavbar
@@ -50,7 +42,7 @@ export function LayoutInner({ children }: LayoutInnerProps) {
         toggleTheme={toggleTheme}
         formatAmount={formatAmount}
         currencySymbol={currencySymbol}
-        onLogout={doOnLogout}
+        onLogout={() => onLogout(navigate)}
         sidebarTrigger={<SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />}
         sessionInfo={jmSessionState}
         sidebarInfo={sidebarContext}
@@ -62,13 +54,14 @@ export function LayoutInner({ children }: LayoutInnerProps) {
 }
 
 interface LayoutProps {
+  onLogout: (navigate: NavigateFunction) => Promise<void>
   children: React.ReactNode
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ onLogout, children }: LayoutProps) {
   return (
     <SidebarProvider defaultOpen={false}>
-      <LayoutInner>{children}</LayoutInner>
+      <LayoutInner onLogout={onLogout}>{children}</LayoutInner>
       <AppSidebar side={SIDEBAR_SIDE} />
     </SidebarProvider>
   )
