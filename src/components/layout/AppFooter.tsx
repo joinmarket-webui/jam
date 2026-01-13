@@ -7,13 +7,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
+import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useJmInfo } from '@/hooks/useJmInfo'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import { toSemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import packageInfo from '../../../package.json'
-import { JmWebsocketInfo } from '../ui/jam/JmWebsocketInfo'
 
 const APP_DISPLAY_VERSION = (() => {
   const version = toSemVer(packageInfo.version)

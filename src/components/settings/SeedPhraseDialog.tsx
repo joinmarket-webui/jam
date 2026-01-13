@@ -5,6 +5,7 @@ import { cx } from 'class-variance-authority'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -20,7 +21,6 @@ import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { authStore } from '@/store/authStore'
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 
 interface SeedPhraseDialogProps {
   walletFileName: string

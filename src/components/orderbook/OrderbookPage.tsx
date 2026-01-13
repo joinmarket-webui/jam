@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import PageTitle from '../ui/jam/PageTitle'
+import PageTitle from '@/components/ui/jam/PageTitle'
 import { OrderbookContent } from './OrderbookContent'
 
 export const OrderbookPage = () => {

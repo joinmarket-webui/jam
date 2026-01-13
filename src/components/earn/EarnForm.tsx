@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SatSymbol } from '@/components/ui/jam/CurrencySymbol'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
@@ -14,7 +15,6 @@ import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { SatSymbol } from '../ui/jam/CurrencySymbol'
 
 const FieldPrefixSatSymbol = (
   <SatSymbol

@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { Label } from '@radix-ui/react-label'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { Loader2Icon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
+import { DevBadge } from '@/components/dev/DevBadge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -23,8 +25,6 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { factorToPercentage } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { DevBadge } from '../dev/DevBadge'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
 

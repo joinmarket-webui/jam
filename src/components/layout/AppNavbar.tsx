@@ -3,14 +3,14 @@ import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { Loader2Icon, LogOutIcon, MoonIcon, SettingsIcon, ShuffleIcon, SunIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
+import { DevBadge } from '@/components/dev/DevBadge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import type { SidebarContextProps } from '@/components/ui/use-sidebar'
 import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import { cn } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
-import { DevBadge } from '../dev/DevBadge'
-import { Skeleton } from '../ui/skeleton'
-import type { SidebarContextProps } from '../ui/use-sidebar'
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
   return (

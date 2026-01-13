@@ -11,6 +11,7 @@ import * as yup from 'yup'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import PageTitle from '@/components/ui/jam/PageTitle'
 import { Label } from '@/components/ui/label'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -18,7 +19,6 @@ import { useRescanStatus } from '@/hooks/useRescanStatus'
 import type { RescanInfo } from '@/hooks/useRescanStatus'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
-import PageTitle from '../ui/jam/PageTitle'
 
 const INPUT_BLOCK_HEIGHT_MIN = 0
 

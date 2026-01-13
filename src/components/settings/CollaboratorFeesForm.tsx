@@ -1,11 +1,11 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react'
 import { InfoIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CJ_FEE_ABS_MIN, CJ_FEE_ABS_MAX, CJ_FEE_REL_MIN, CJ_FEE_REL_MAX } from '@/constants/jam'
 import { isValidNumber, factorToPercentage, percentageToFactor } from '@/lib/utils'
-import { Alert, AlertDescription } from '../ui/alert'
 
 interface CollaboratorFeesFormProps {
   initialValues: {
