@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { cn } from '@/lib/utils'
-import { Label } from '../label'
+import { Label } from '@/components/ui/label'
 import {
   Pagination,
   PaginationContent,
@@ -10,8 +9,9 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '../pagination'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select'
+} from '@/components/ui/pagination'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 
 const DEFAULT_PAGE_SIZES = [25, 50, 100]
 const DEFAULT_ALLOW_SHOW_ALL = true

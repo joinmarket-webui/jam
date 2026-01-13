@@ -4,7 +4,6 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { I18nextProvider } from 'react-i18next'
 import { CoreTypes, GlobalTypes } from 'storybook/internal/csf'
-import { Background } from 'storybook/theming'
 import i18n from '../src/i18n/config'
 import '../src/index.css'
 

@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { AlertTriangleIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
+import PageTitle from '@/components/ui/jam/PageTitle'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
-import PageTitle from '../ui/jam/PageTitle'
 
 interface SendPageProps {
   walletFileName: WalletFileName

@@ -3,11 +3,11 @@ import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TFunction } from 'i18next'
 import { FingerprintIcon, HandCoinsIcon, Maximize2Icon, Minimize2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer } from '@/lib/utils'
-import { Badge } from '../ui/badge'
-import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 
 type Offer = NonNullable<SessionResponse['offer_list']>[number]
 
