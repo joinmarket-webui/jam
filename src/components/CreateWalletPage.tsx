@@ -64,7 +64,7 @@ const CreateWalletPage = () => {
       // Check if there's an active session on the server
       try {
         const { data: sessionInfo } = await session({ client })
-        if (sessionInfo?.session || sessionInfo?.wallet_name !== 'None') {
+        if (sessionInfo?.session === true) {
           console.warn('Active session detected:', sessionInfo)
           toast.error(
             `Cannot create wallet as "${walletDisplayName(
@@ -72,13 +72,13 @@ const CreateWalletPage = () => {
             )}" wallet is currently active.`,
             {
               description: (
-                <div className="text-black dark:text-white">
+                <>
                   Alternatively, you can{' '}
-                  <Link to={routes.login} className="font-medium underline hover:no-underline">
+                  <a href={routes.login} className="font-medium underline hover:no-underline">
                     log in with the existing wallet
-                  </Link>{' '}
+                  </a>{' '}
                   instead.
-                </div>
+                </>
               ),
               duration: 10_000,
             },
@@ -91,7 +91,7 @@ const CreateWalletPage = () => {
       }
 
       const walletFileName = walletDisplayNameToFileName(walletName)
-      const { data: response, error: createError } = await createwallet({
+      const { data: createData, error: createError } = await createwallet({
         client,
         body: {
           walletname: walletFileName,
@@ -104,11 +104,11 @@ const CreateWalletPage = () => {
         throw createError
       }
 
-      if (response?.seedphrase) {
-        setCreateWalletResponse(response)
+      if (createData?.seedphrase) {
+        setCreateWalletResponse(createData)
         setStep('seed')
       } else {
-        throw new Error('No seedphrase returned')
+        throw new Error(/*TODO: i18n*/ 'No seedphrase returned')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet'
