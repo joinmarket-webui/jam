@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { listwalletsOptions, lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
 import { AlertCircleIcon, Loader2Icon, LockIcon, RefreshCwIcon, UnlockIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -48,7 +49,13 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
   const client = useApiClient()
   const [currentWalletLocked, setCurrentWalletLocked] = useState(false)
 
-  const listwalletsQuery = useQuery({
+  const {
+    data: listWalletsData,
+    error: listWalletsError,
+    isLoading: listWalletsLoading,
+    isFetching: listWalletsFetching,
+    refetch: listWalletsRefetch,
+  } = useQuery({
     ...listwalletsOptions({ client }),
     retry: false,
   })
@@ -59,21 +66,20 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
       path: { walletname: walletFileName },
     }),
     enabled: false,
+    staleTime: 1,
+    gcTime: 1,
+    retry: false,
   })
 
-  const isLoadingWallets = useMemo(() => listwalletsQuery.isFetching, [listwalletsQuery.isFetching])
-  const listwalletsError = useMemo(() => {
-    if (!listwalletsQuery.error) return undefined
+  const listWalletsErrorAlert: ErrorMessage | undefined = useMemo(() => {
+    if (!listWalletsError) return undefined
     return {
       message: t('wallets.error_loading_failed'),
-      error_description: listwalletsQuery.error.message || t('global.errors.reason_unknown'),
+      error_description: listWalletsError.message || t('global.errors.reason_unknown'),
     }
-  }, [listwalletsQuery.error, t])
+  }, [listWalletsError, t])
 
-  const wallets = useMemo(() => {
-    const values = (listwalletsQuery.data?.wallets || []) as WalletFileName[]
-    return sortWallets(values, walletFileName)
-  }, [listwalletsQuery.data, walletFileName])
+  const wallets = sortWallets((listWalletsData?.wallets || []) as WalletFileName[], walletFileName)
 
   const handleLockCurrentWallet = async () => {
     try {
@@ -95,10 +101,10 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
       <Card className="w-full max-w-xl shadow-lg">
         <CardHeader className="space-y-2 text-center">
           <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            {isLoadingWallets ? (
+            {listWalletsFetching ? (
               <Loader2Icon className="h-6 w-6 animate-spin" />
             ) : (
-              <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listwalletsQuery.refetch()} />
+              <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listWalletsRefetch()} />
             )}
           </div>
           <CardTitle className="text-2xl font-bold">{t('settings.button_switch_wallet')}</CardTitle>
@@ -112,20 +118,20 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
           </CardDescription>
         </CardHeader>
 
-        {isLoadingWallets ? (
+        {listWalletsLoading ? (
           <CardContent className="space-y-6">
             <SwitchWalletFormSkeleton />
           </CardContent>
         ) : (
           <>
-            {listwalletsError ? (
+            {listWalletsErrorAlert ? (
               <CardContent className="space-y-6">
                 <Alert variant="destructive">
                   <AlertCircleIcon className="h-4 w-4" />
-                  <AlertTitle>{listwalletsError.message}</AlertTitle>
-                  <AlertDescription>{listwalletsError.error_description}</AlertDescription>
+                  <AlertTitle>{listWalletsErrorAlert.message}</AlertTitle>
+                  <AlertDescription>{listWalletsErrorAlert.error_description}</AlertDescription>
                 </Alert>
-                <Button variant="ghost" size="sm" onClick={async () => await listwalletsQuery.refetch()}>
+                <Button variant="ghost" size="sm" onClick={async () => await listWalletsRefetch()}>
                   <RefreshCwIcon className="h-4 w-4" /> {t('global.retry')}
                 </Button>
               </CardContent>

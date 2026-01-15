@@ -43,7 +43,8 @@ export function useRefreshSession({
     }),
     enabled,
     retry: 3,
-    staleTime: 0,
+    staleTime: 1,
+    gcTime: 1,
     refetchInterval,
     refetchIntervalInBackground: true,
   })

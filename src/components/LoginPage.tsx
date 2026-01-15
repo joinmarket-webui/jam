@@ -243,7 +243,10 @@ const LoginPage = () => {
                 <Alert variant="destructive">
                   <AlertCircleIcon />
                   <AlertTitle>{t('wallets.error_loading_failed')}</AlertTitle>
-                  <AlertDescription>{listWalletsError.message || t('global.errors.reason_unknown')}</AlertDescription>
+                  <AlertDescription>
+                    {JSON.stringify(listWalletsError.error_description)}
+                    {listWalletsError.message || t('global.errors.reason_unknown')}
+                  </AlertDescription>
                 </Alert>
                 <Button
                   variant="ghost"
