@@ -63,7 +63,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-3 p-4">
+    <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('navbar.menu_mobile_settings')} />
 
       {/* Display Settings */}
