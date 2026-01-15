@@ -364,7 +364,7 @@ export const OrderbookTable = ({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="[&>tr:nth-child(odd)]:bg-muted/50 [&>tr:nth-child(odd)]:hover:bg-muted/80">
+          <TableBody className=":bg-foreground [&>tr:nth-child(odd)]:bg-foreground/10 [&>tr]:hover:bg-foreground/20!">
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                 {row.getVisibleCells().map((cell) => {
