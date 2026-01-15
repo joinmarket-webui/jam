@@ -31,10 +31,10 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
   return (
     <div className="space-y-6">
       <div className="bg-muted rounded-lg p-4">
-        <div className="grid grid-cols-3 gap-2 font-mono text-sm">
+        <div className="grid grid-cols-2 gap-2 font-mono text-sm">
           {seedphrase.map((word, index) => (
-            <div key={index} className="bg-background rounded border p-2">
-              <span className="text-muted-foreground mr-2">{index + 1}.</span>
+            <div key={index} className="bg-background flex items-center gap-2 rounded-lg border p-2">
+              <span className="text-muted-foreground inline-block min-w-7 text-right">{index + 1}.</span>
               {word}
             </div>
           ))}
