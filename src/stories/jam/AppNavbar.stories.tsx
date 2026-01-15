@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { AppNavbar } from '@/components/layout/AppNavbar'
@@ -23,8 +24,9 @@ const mockFormatAmount = (amount: number) => `${amount.toLocaleString()}`
 const mockCurrencySymbol = (size: 'sm' | 'lg') => <CurrencySymbol currency="btc" isPrivate={false} size={size} />
 const mockToggleTheme = () => alert('Toggled theme!')
 const mockOnLogout = async () => alert('Logged out!')
+const mockOnLockWallet = async () => alert('Locked wallet!')
 
-const defaults = {
+const defaults: ComponentProps<typeof AppNavbar> = {
   theme: 'dark',
   totalBalance: 21_000_000,
   walletName: 'Satoshi',
@@ -32,6 +34,7 @@ const defaults = {
   currencySymbol: mockCurrencySymbol,
   toggleTheme: mockToggleTheme,
   onLogout: mockOnLogout,
+  onLockWallet: mockOnLockWallet,
 }
 
 export const Default: Story = {

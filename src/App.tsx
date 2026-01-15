@@ -1,7 +1,9 @@
 import { lazy, Suspense, useEffect, useMemo } from 'react'
 import type { PropsWithChildren } from 'react'
+import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider, useQuery } from '@tanstack/react-query'
+import type { TFunction } from 'i18next'
 import { Loader2Icon } from 'lucide-react'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -40,7 +42,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { useRefreshSession } from '@/hooks/useRefreshSession'
 import { queryClient } from '@/lib/queryClient'
-import { setIntervalDebounced, type WalletFileName } from '@/lib/utils'
+import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 
@@ -55,12 +57,41 @@ function App() {
   const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
-
   const { clear: clearAuth } = useStore(authStore, (state) => state)
-  const onLogout = async (navigate: NavigateFunction) => {
+  const client = useApiClient()
+
+  const lockWalletQuery = useQuery(
+    {
+      ...lockwalletOptions({
+        client,
+        path: { walletname: encodeURIComponent(walletFileName || '') },
+      }),
+      staleTime: 1,
+      gcTime: 1,
+      enabled: false,
+    },
+    queryClient,
+  )
+
+  const doOnLogout = async (navigate: NavigateFunction) => {
     clearAuth()
     queryClient.clear()
     await navigate(routes.login)
+  }
+
+  const doOnLockWallet = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
+    if (!walletFileName) return
+    try {
+      await lockWalletQuery.refetch()
+      toast.success(
+        t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
+      )
+      await doOnLogout(navigate)
+    } catch (error: unknown) {
+      const errorMessage = (error instanceof Error ? (error.message ?? '') : '') || t('global.errors.reason_unknown')
+      toast.error(t('global.errors.error_reloading_wallet_failed', { reason: errorMessage }))
+      console.error('Failed to lock wallet:', error)
+    }
   }
 
   const router = createBrowserRouter(
@@ -101,7 +132,7 @@ function App() {
           <Route
             id="with-navbar"
             element={
-              <Layout onLogout={onLogout}>
+              <Layout onLogout={doOnLogout} onLockWallet={doOnLockWallet}>
                 <Outlet />
               </Layout>
             }
@@ -111,7 +142,10 @@ function App() {
             <Route path={routes.send} element={<SendPage walletFileName={walletFileName!} />} />
             <Route path={routes.earn} element={<EarnPage walletFileName={walletFileName!} />} />
             <Route path={routes.sweep} element={<SweepPage walletFileName={walletFileName!} />} />
-            <Route path={routes.settings} element={<SettingsPage walletFileName={walletFileName!} />} />
+            <Route
+              path={routes.settings}
+              element={<SettingsPage walletFileName={walletFileName!} onLockWallet={doOnLockWallet} />}
+            />
             <Route path={routes.orderbook} element={<OrderbookPage />} />
             <Route path={routes.logs} element={<LogsPage />} />
             <Route path={routes.rescan} element={<RescanChainPage walletFileName={walletFileName!} />} />

@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { useQuery } from '@tanstack/react-query'
+import type { TFunction } from 'i18next'
 import {
   EyeIcon,
   EyeOffIcon,
@@ -18,8 +17,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BtcSymbol, SatSymbol } from '@/components/ui/jam/CurrencySymbol'
@@ -28,7 +26,6 @@ import { Separator } from '@/components/ui/separator'
 import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { useApiClient } from '@/hooks/useApiClient'
 import { useFeatures } from '@/hooks/useFeatures'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
@@ -40,39 +37,28 @@ import { SettingItem, SettingsLink, SettingSwitch } from './SettingsItem'
 
 interface SettingPageProps {
   walletFileName: WalletFileName
+  onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
 }
 
-export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
+export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { resolvedTheme, setTheme } = useTheme()
   const { currency, toggleCurrencyUnit, isPrivate, togglePrivacyMode } = useJamDisplayContext()
   const jamSettings = useStore(jamSettingsStore)
 
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
-  const navigate = useNavigate()
-  const client = useApiClient()
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isLogsEnabled } = useFeatures()
-
-  const lockWalletQuery = useQuery({
-    ...lockwalletOptions({
-      client,
-      path: { walletname: encodeURIComponent(walletFileName) },
-    }),
-    enabled: false,
-  })
+  const [isLockingWallet, setIsLockingWallet] = useState(false)
 
   const handleLockWallet = async () => {
     try {
-      await lockWalletQuery.refetch()
-      authStore.getState().clear()
-      toast.success(t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletFileName }))
-      await navigate(routes.login)
-    } catch (error: unknown) {
-      const errorMessage = (error instanceof Error ? (error.message ?? '') : '') || t('global.errors.reason_unknown')
-      toast.error(t('global.errors.error_reloading_wallet_failed', { reason: errorMessage }))
-      console.error('Failed to lock wallet:', error)
+      setIsLockingWallet(true)
+      await onLockWallet(navigate, t)
+    } finally {
+      setIsLockingWallet(false)
     }
   }
 
@@ -149,7 +135,7 @@ export const SettingsPage = ({ walletFileName }: SettingPageProps) => {
             icon={LockKeyholeIcon}
             title={t('settings.button_lock_wallet')}
             action={handleLockWallet}
-            disabled={lockWalletQuery.isFetching}
+            disabled={isLockingWallet}
           />
           <Separator className="opacity-50" />
           <SettingsLink icon={ArrowLeftRightIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />

@@ -1,4 +1,6 @@
+import type { TFunction } from 'i18next'
 import { useTheme } from 'next-themes'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, type NavigateFunction } from 'react-router-dom'
 import { useStore } from 'zustand'
 import { AppFooter } from '@/components/layout/AppFooter'
@@ -15,10 +17,12 @@ const SIDEBAR_SIDE: React.ComponentProps<typeof Sidebar>['side'] = 'right'
 
 interface LayoutInnerProps {
   onLogout: (navigate: NavigateFunction) => Promise<void>
+  onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
   children: React.ReactNode
 }
 
-export function LayoutInner({ onLogout, children }: LayoutInnerProps) {
+export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
 
@@ -42,7 +46,8 @@ export function LayoutInner({ onLogout, children }: LayoutInnerProps) {
         toggleTheme={toggleTheme}
         formatAmount={formatAmount}
         currencySymbol={currencySymbol}
-        onLogout={() => onLogout(navigate)}
+        onLogout={async () => await onLogout(navigate)}
+        onLockWallet={async () => await onLockWallet(navigate, t)}
         sidebarTrigger={<SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />}
         sessionInfo={jmSessionState}
         sidebarInfo={sidebarContext}
@@ -55,13 +60,16 @@ export function LayoutInner({ onLogout, children }: LayoutInnerProps) {
 
 interface LayoutProps {
   onLogout: (navigate: NavigateFunction) => Promise<void>
+  onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
   children: React.ReactNode
 }
 
-export function Layout({ onLogout, children }: LayoutProps) {
+export function Layout({ onLogout, onLockWallet, children }: LayoutProps) {
   return (
     <SidebarProvider defaultOpen={false}>
-      <LayoutInner onLogout={onLogout}>{children}</LayoutInner>
+      <LayoutInner onLogout={onLogout} onLockWallet={onLockWallet}>
+        {children}
+      </LayoutInner>
       <AppSidebar side={SIDEBAR_SIDE} />
     </SidebarProvider>
   )
