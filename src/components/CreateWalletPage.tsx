@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, WalletIcon } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -16,6 +16,8 @@ import { hashPassword } from '@/lib/hash'
 import { walletDisplayName, JM_WALLET_FILE_EXTENSION, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
+import PreventLeavingPageByMistake from './utils/PreventLeavingPageByMistake'
 
 const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 const validateWalletName = (input: string) =>
@@ -25,6 +27,7 @@ const CreateWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
+  const jmSessionInfo = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [walletName, setWalletName] = useState('')
   const [password, setPassword] = useState('')
@@ -250,13 +253,14 @@ const CreateWalletPage = () => {
       <Alert>
         <AlertCircleIcon className="h-4 w-4" />
         <AlertDescription>
+          {/* TODO: i18n */}
           <strong>Important:</strong> Write down this seed phrase and store it safely. It's the only way to recover your
           wallet if you lose access.
         </AlertDescription>
       </Alert>
 
       <Button onClick={handleConfirmSeed} className="w-full" size="lg">
-        I have saved my seed phrase
+        {/* TODO: i18n */}I have saved my seed phrase
       </Button>
     </div>
   )
@@ -276,22 +280,48 @@ const CreateWalletPage = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {step === 'create' && renderCreateForm()}
-          {step === 'seed' && renderSeedPhrase()}
-
+          {step === 'seed' && (
+            <>
+              <PreventLeavingPageByMistake />
+              {renderSeedPhrase()}
+            </>
+          )}
           {step === 'create' && (
-            <div className="text-center">
-              <p className="text-muted-foreground text-sm">
-                {/* TODO: i18n */}
-                Already have a wallet?{' '}
-                <Link
-                  to={routes.login}
-                  className="text-primary hover:text-primary/80 font-medium underline underline-offset-4"
-                >
-                  Sign in here
-                </Link>
-              </p>
-            </div>
+            <>
+              {jmSessionInfo?.session === true ? (
+                <Alert variant="warning">
+                  <AlertCircleIcon />
+                  <AlertDescription>
+                    <p>
+                      <Trans
+                        i18nKey="create_wallet.alert_other_wallet_unlocked"
+                        values={{
+                          walletName: walletDisplayName((jmSessionInfo?.wallet_name || 'Unknown') as WalletFileName),
+                        }}
+                      >
+                        Currently <strong>walletName</strong> is active. You need to lock it first.
+                        <Link to={routes.login} className="font-semibold underline">
+                          Go back
+                        </Link>
+                      </Trans>
+                    </p>
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <>
+                  {renderCreateForm()}
+                  <div className="text-center">
+                    <p className="text-muted-foreground text-sm">
+                      {/* TODO: i18n */}
+                      Already have a wallet?{' '}
+                      <Link to={routes.login} className="text-foreground font-semibold underline">
+                        Sign in here
+                      </Link>
+                    </p>
+                  </div>
+                </>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
