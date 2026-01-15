@@ -17,6 +17,7 @@ import { walletDisplayName, JM_WALLET_FILE_EXTENSION, walletDisplayNameToFileNam
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { SeedPhraseGrid } from './ui/jam/SeedPhraseGrid'
 import PreventLeavingPageByMistake from './utils/PreventLeavingPageByMistake'
 
 const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
@@ -31,14 +32,7 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
   return (
     <div className="space-y-6">
       <div className="bg-muted rounded-lg p-4">
-        <div className="grid grid-cols-2 gap-2 font-mono text-sm">
-          {seedphrase.map((word, index) => (
-            <div key={index} className="bg-background flex items-center gap-2 rounded-lg border p-2">
-              <span className="text-muted-foreground inline-block min-w-7 text-right">{index + 1}.</span>
-              {word}
-            </div>
-          ))}
-        </div>
+        <SeedPhraseGrid value={seedphrase} />
       </div>
 
       <Alert>
@@ -57,6 +51,11 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
   )
 }
 
+type CreateWalletResponseWithHashedPassword = {
+  response: CreateWalletResponse
+  hashedPassword?: string
+}
+
 const CreateWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -69,7 +68,7 @@ const CreateWalletPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [createWalletResponse, setCreateWalletResponse] = useState<CreateWalletResponse>()
+  const [createWalletResponse, setCreateWalletResponse] = useState<CreateWalletResponseWithHashedPassword>()
   const [step, setStep] = useState<'create' | 'seed' | 'confirm'>('create')
 
   // TODO: use react-hook-form and yup schema
@@ -141,8 +140,18 @@ const CreateWalletPage = () => {
         throw createError
       }
 
+      let hashedPassword: string | undefined = undefined
+      try {
+        hashedPassword = hashPassword(password, createData?.walletname)
+      } catch (hashError) {
+        console.warn('Failed to hash password, continuing without hash verification:', hashError)
+      }
+
       if (createData?.seedphrase) {
-        setCreateWalletResponse(createData)
+        setCreateWalletResponse({
+          response: createData,
+          hashedPassword,
+        })
         setStep('seed')
       } else {
         throw new Error(/*TODO: i18n*/ 'No seedphrase returned')
@@ -155,19 +164,11 @@ const CreateWalletPage = () => {
     }
   }
 
-  const handleConfirmSeed = async (response: CreateWalletResponse) => {
-    let hashedSecret: string | undefined
-    const walletFileName = response.walletname as WalletFileName
-
-    try {
-      hashedSecret = hashPassword(password, walletFileName)
-    } catch (hashError) {
-      console.warn('Failed to hash password, continuing without hash verification:', hashError)
-    }
+  const handleConfirmSeed = async ({ response, hashedPassword }: CreateWalletResponseWithHashedPassword) => {
     updateAuthState({
-      walletFileName,
+      walletFileName: response.walletname as WalletFileName,
       auth: { token: response.token, refresh_token: response.refresh_token }, // We'll need to unlock it properly later
-      hashed_password: hashedSecret,
+      hashed_password: hashedPassword,
     })
 
     await navigate(routes.home)
@@ -253,7 +254,7 @@ const CreateWalletPage = () => {
       <Button type="submit" className="w-full" disabled={isLoading} size="lg">
         {isLoading ? (
           <>
-            <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
+            <Loader2Icon className="animate-spin motion-reduce:hidden" />
             {t('create_wallet.button_creating')}
           </>
         ) : (
@@ -284,7 +285,7 @@ const CreateWalletPage = () => {
             <>
               <PreventLeavingPageByMistake />
               <SeedPhraseContent
-                seedphrase={createWalletResponse?.seedphrase?.split(' ') || []}
+                seedphrase={createWalletResponse?.response.seedphrase?.split(/\s+/) || []}
                 onConfirm={async () => await handleConfirmSeed(createWalletResponse!)}
               />
             </>
