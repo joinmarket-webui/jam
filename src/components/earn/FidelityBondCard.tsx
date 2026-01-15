@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import type { FidelityBondUtxo } from '@/hooks/useUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
+import { time } from '@/lib/utils'
 
 interface FidelityBondCardProps {
   value: FidelityBondUtxo
@@ -19,7 +20,7 @@ export function FidelityBondCard({ value, children }: PropsWithChildren<Fidelity
   const humanReadableLockDuration = useMemo(() => {
     const locktime = fb.utxo.getLocktime(value)
     if (!locktime) return '-'
-    return fb.time.humanReadableDuration({
+    return time.humanReadableDuration({
       to: locktime,
       locale: i18n.resolvedLanguage || i18n.language,
     })

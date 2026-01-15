@@ -14,7 +14,7 @@ export type Unit = 'BTC' | 'sats'
 export const BTC: Unit = 'BTC'
 export const SATS: Unit = 'sats'
 
-export type TimeInterval = number
+export type TimeInterval = Milliseconds
 
 // can be any of ['sw0reloffer', 'swreloffer', 'reloffer']
 export const isRelativeOffer = (offertype: OfferType) => offertype.includes('reloffer')
@@ -93,103 +93,6 @@ export const factorToPercentage = (val: number, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
-export const time = (() => {
-  type Unit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
-
-  // These values don't need to be exact.
-  // They are only used to approximate a human readable
-  // representation of a time interval--e.g. "in 2 months".
-  const UNIT_MILLIS: { [key in Unit]: Milliseconds } = {
-    year: 24 * 60 * 60 * 1_000 * 365,
-    month: (24 * 60 * 60 * 1_000 * 365) / 12, // ~30.42 days
-    day: 24 * 60 * 60 * 1_000,
-    hour: 60 * 60 * 1_000,
-    minute: 60 * 1_000,
-    second: 1_000,
-  }
-
-  const humanReadableDuration = ({
-    from = Date.now(),
-    to,
-    locale = 'en',
-  }: {
-    from?: Milliseconds
-    to: Milliseconds
-    locale?: string
-  }) => humanReadableTimeInterval(timeInterval({ from, to }), locale)
-
-  const timeInterval = ({ from = Date.now(), to }: { from?: Milliseconds; to: Milliseconds }): TimeInterval => {
-    return to - from
-  }
-
-  const humanReadableTimeInterval = (timeInterval: TimeInterval, locale: string = 'en') => {
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'always', style: 'long' })
-
-    const sortedUnits = (Object.keys(UNIT_MILLIS) as Unit[])
-      .sort((lhs, rhs) => UNIT_MILLIS[lhs] - UNIT_MILLIS[rhs])
-      .reverse()
-
-    for (const unit of sortedUnits) {
-      const limit = UNIT_MILLIS[unit]
-
-      if (Math.abs(timeInterval) > limit) {
-        return rtf.format(Math.round(timeInterval / limit), unit)
-      }
-    }
-
-    return rtf.format(Math.round(timeInterval / UNIT_MILLIS['second']), 'second')
-  }
-
-  return {
-    timeInterval,
-    humanReadableDuration,
-  }
-})()
-
-/**
- * Formats fidelity bond time duration in a human-readable format
- * Enhanced version that supports both new simplified format and old advanced format
- * @param options - Configuration object with to timestamp and optional from timestamp and locale
- * @param options.to - Target timestamp in milliseconds
- * @param options.from - Optional source timestamp in milliseconds (defaults to Date.now())
- * @param options.locale - Optional locale string (defaults to 'en')
- * @param options.useAdvanced - Whether to use advanced formatting with full units (defaults to false for backward compatibility)
- * @returns Human-readable duration string
- */
-export const humanReadableDuration = ({
-  to,
-  from = Date.now(),
-  locale = 'en',
-  useAdvanced = false,
-}: {
-  to: number
-  from?: number
-  locale?: string
-  useAdvanced?: boolean
-}): string => {
-  if (useAdvanced) {
-    // Use the advanced time module for full Intl.RelativeTimeFormat support
-    return time.humanReadableDuration({ from, to, locale })
-  }
-
-  // Use the simplified version for backward compatibility
-  const now = from
-  const diff = to - now
-
-  if (diff <= 0) return 'Expired'
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-
-  if (days > 0) {
-    return `${days} day${days > 1 ? 's' : ''}`
-  }
-  if (hours > 0) {
-    return `${hours} hour${hours > 1 ? 's' : ''}`
-  }
-  return 'Less than 1 hour'
-}
-
 type SemVer = { major: number; minor: number; patch: number; raw?: string }
 
 export const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
@@ -233,3 +136,56 @@ export const pseudoRandomFloat = (min: number, max: number) => {
 export const scrollToTop = (options?: ScrollOptions) => {
   setTimeout(() => window.scrollTo({ behavior: 'smooth', ...options, top: 0, left: 0 }), 21)
 }
+
+export const time = (() => {
+  type Unit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
+
+  // These values don't need to be exact.
+  // They are only used to approximate a human readable
+  // representation of a time interval--e.g. "in 2 months".
+  const UNIT_MILLIS: { [key in Unit]: Milliseconds } = {
+    year: 24 * 60 * 60 * 1_000 * 365,
+    month: (24 * 60 * 60 * 1_000 * 365) / 12, // ~30.42 days
+    day: 24 * 60 * 60 * 1_000,
+    hour: 60 * 60 * 1_000,
+    minute: 60 * 1_000,
+    second: 1_000,
+  }
+
+  const humanReadableDuration = ({
+    from = Date.now(),
+    to,
+    locale,
+  }: {
+    from?: Milliseconds
+    to: Milliseconds
+    locale: string
+  }) => humanReadableTimeInterval(timeInterval({ from, to }), locale || 'en')
+
+  const timeInterval = ({ from = Date.now(), to }: { from?: Milliseconds; to: Milliseconds }): TimeInterval => {
+    return to - from
+  }
+
+  const humanReadableTimeInterval = (timeInterval: TimeInterval, locale: string) => {
+    const rtf = new Intl.RelativeTimeFormat(locale || 'en', { numeric: 'always', style: 'long' })
+
+    const sortedUnits = (Object.keys(UNIT_MILLIS) as Unit[])
+      .sort((lhs, rhs) => UNIT_MILLIS[lhs] - UNIT_MILLIS[rhs])
+      .reverse()
+
+    for (const unit of sortedUnits) {
+      const limit = UNIT_MILLIS[unit]
+
+      if (Math.abs(timeInterval) > limit) {
+        return rtf.format(Math.round(timeInterval / limit), unit)
+      }
+    }
+
+    return rtf.format(Math.round(timeInterval / UNIT_MILLIS['second']), 'second')
+  }
+
+  return {
+    timeInterval,
+    humanReadableDuration,
+  }
+})()
