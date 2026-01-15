@@ -330,7 +330,7 @@ export const OrderbookTable = ({
     <div className="flex flex-1 flex-col gap-2 overflow-hidden rounded-lg border shadow-lg">
       <div className="flex-1 overflow-auto">
         <Table>
-          <TableHeader className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -364,7 +364,7 @@ export const OrderbookTable = ({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="[&>tr:nth-child(odd)]:bg-muted/20">
+          <TableBody className="[&>tr:nth-child(odd)]:bg-muted/50 [&>tr:nth-child(odd)]:hover:bg-muted/80">
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                 {row.getVisibleCells().map((cell) => {

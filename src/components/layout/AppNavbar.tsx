@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { SidebarContextProps } from '@/components/ui/use-sidebar'
 import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
-import { cn } from '@/lib/utils'
+import { cn, shortenStringMiddle } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
@@ -41,6 +41,8 @@ const WalletPreview = ({
   totalBalance,
   isLoading = false,
 }: WalletPreviewProps) => {
+  const walletNameTitle = shortenStringMiddle(walletName ?? '...', 12)
+
   return (
     <div className="flex flex-1 items-center">
       <Link to={routes.home} className="flex items-center gap-2">
@@ -53,7 +55,12 @@ const WalletPreview = ({
         </div>
         <div className="flex flex-col gap-0.25 leading-none">
           <div className="flex items-center gap-2">
-            <div className="font-semibold tracking-tight">{walletName ?? '...'}</div>
+            <div
+              className="font-semibold tracking-tight"
+              title={walletName && walletName.length !== walletNameTitle.length ? walletName : undefined}
+            >
+              {walletNameTitle}
+            </div>
             {isDevMode() && <DevBadge />}
           </div>
           <div className="flex min-h-5 min-w-[150px] items-center">

@@ -3,6 +3,8 @@ import { twMerge } from 'tailwind-merge'
 import type { OfferType } from '@/constants/jm'
 import type { Milliseconds } from '@/types/global'
 
+const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -44,6 +46,14 @@ export const sortWallets = (
   } else {
     return [...wallets].sort((a, b) => a.localeCompare(b))
   }
+}
+
+export const shortenStringMiddle = (value: string, chars = 8, separator = HORIZONTAL_ELLIPSIS) => {
+  const prefixLength = Math.max(Math.floor(chars / 2), 1)
+  if (value.length <= prefixLength * 2) {
+    return `${value}`
+  }
+  return `${value.substring(0, prefixLength)}${separator}${value.substring(value.length - prefixLength)}`
 }
 
 export const setIntervalDebounced = (
