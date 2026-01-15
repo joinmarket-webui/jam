@@ -312,19 +312,19 @@ const CreateWalletPage = () => {
                   </AlertDescription>
                 </Alert>
               ) : (
-                <>
-                  {renderCreateForm()}
-                  <div className="text-center">
-                    <p className="text-muted-foreground text-sm">
-                      {/* TODO: i18n */}
-                      Already have a wallet?{' '}
-                      <Link to={routes.login} className="text-foreground font-semibold underline">
-                        Sign in here
-                      </Link>
-                    </p>
-                  </div>
-                </>
+                <>{renderCreateForm()}</>
               )}
+              <div className="text-center">
+                <p className="text-muted-foreground text-sm">
+                  {/* TODO: i18n */}
+                  Already have a wallet?{' '}
+                  <Button variant="link" asChild>
+                    <Link to={routes.login} className="font-semibold">
+                      Sign in here
+                    </Link>
+                  </Button>
+                </p>
+              </div>
             </>
           )}
         </CardContent>
