@@ -115,7 +115,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       console.error('StartMaker error:', error)
       const reason = error.message ?? error.error_description ?? t('global.errors.reason_unknown')
       // TODO: i18n
-      toast.error(`Error while starting the maker process. Reason: ${reason}}`)
+      toast.error(`Error while starting the earn process. Reason: ${reason}`)
     },
   })
 

@@ -1,8 +1,9 @@
 import type { PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { Loader2Icon, LogOutIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
+import type { TFunction } from 'i18next'
+import { Loader2Icon, LockKeyholeIcon, LogOutIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { DevBadge } from '@/components/dev/DevBadge'
 import { Button } from '@/components/ui/button'
 import { ThemeToggleButton } from '@/components/ui/jam/ThemeToggleButton'
@@ -82,7 +83,8 @@ interface AppNavbarProps {
   totalBalance: AmountSats
   theme: string
   toggleTheme: () => void
-  onLogout: () => Promise<void>
+  onLogout: (navigate: NavigateFunction) => Promise<void>
+  onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
   sidebarTrigger?: React.ReactNode
   sessionInfo?: SessionInfo
   sidebarInfo?: SidebarInfo
@@ -97,6 +99,7 @@ export function AppNavbar({
   currencySymbol,
   toggleTheme,
   onLogout,
+  onLockWallet,
   sidebarTrigger,
   sessionInfo,
   sidebarInfo,
@@ -177,7 +180,16 @@ export function AppNavbar({
         <Button
           variant="ghost-navbar"
           size="icon"
-          onClick={onLogout}
+          onClick={async () => await onLockWallet(navigate, t)}
+          aria-label={t('settings.button_lock_wallet')}
+          title={t('settings.button_lock_wallet')}
+        >
+          <LockKeyholeIcon />
+        </Button>
+        <Button
+          variant="ghost-navbar"
+          size="icon"
+          onClick={async () => await onLogout(navigate)}
           aria-label={/* TODO: i18n */ 'Logout'}
           title={/* TODO: i18n */ 'Logout'}
         >
