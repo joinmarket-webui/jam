@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
+import { withQueryDelay } from '@/lib/queryClient'
 import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress, Milliseconds } from '@/types/global'
 import { BitcoinAmountInput } from './BitcoinAmountInput'
@@ -42,13 +43,18 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
 
   const client = useApiClient()
 
+  const getAddressQueryOptions = getaddressOptions({
+    client,
+    path: {
+      walletname: encodeURIComponent(walletFileName!),
+      mixdepth: String(selectedJarIndex),
+    },
+  })
+
   const getAddressQuery = useQuery({
-    ...getaddressOptions({
-      client,
-      path: {
-        walletname: encodeURIComponent(walletFileName!),
-        mixdepth: String(selectedJarIndex),
-      },
+    ...getAddressQueryOptions,
+    queryFn: withQueryDelay(getAddressQueryOptions.queryFn, {
+      delayAfter: 21,
     }),
     enabled: walletFileName !== undefined && selectedJarIndex !== undefined,
     staleTime: GET_ADDRESS_QUERY_TALE_TIME,

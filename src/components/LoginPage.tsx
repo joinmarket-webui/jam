@@ -17,7 +17,7 @@ import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
-import { cn, walletDisplayName } from '@/lib/utils'
+import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
 import { Badge } from './ui/badge'
@@ -96,7 +96,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit, disabled }: LoginFormProps
             <SelectContent>
               {wallets?.map((wallet, index) => (
                 <SelectItem key={index} value={wallet}>
-                  {walletDisplayName(wallet)}
+                  {shortenStringMiddle(walletDisplayName(wallet), 32)}
                 </SelectItem>
               ))}
             </SelectContent>

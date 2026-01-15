@@ -9,7 +9,7 @@ import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
-import { cn, walletDisplayName } from '@/lib/utils'
+import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 
 interface MainWalletPageProps {
   walletFileName: WalletFileName
@@ -22,10 +22,16 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const { toggleDisplayMode, formatAmount, currencySymbol } = useJamDisplayContext()
   const { jars, totalBalance, isLoading, error, refetchWalletData } = useJamWalletInfoContext()
 
+  const walletName = walletDisplayName(walletFileName)
+  const walletNameTitle = shortenStringMiddle(walletName, 32)
+
   return (
     <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
       <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
-        <div className="text-muted-foreground text-lg opacity-80">{walletDisplayName(walletFileName)}</div>
+        <p className="text-muted-foreground hover:text-foreground text-xl" title={walletName}>
+          {walletNameTitle}
+        </p>
+
         <div className="flex min-h-[56px] items-center justify-center">
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
@@ -102,7 +108,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                       />
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent>{t('current_wallet.jar_tooltip')}</TooltipContent>
+                  <TooltipContent sideOffset={3}>{t('current_wallet.jar_tooltip')}</TooltipContent>
                 </Tooltip>
               ))}
             </div>
