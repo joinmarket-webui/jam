@@ -9,6 +9,7 @@ export const useJmInfo = () => {
   const { data, isPending } = useQuery({
     ...versionOptions({ client }),
     staleTime: Infinity,
+    gcTime: Infinity,
   })
 
   return {
