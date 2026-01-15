@@ -48,6 +48,7 @@ import { jamSettingsStore } from '@/store/jamSettingsStore'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
+const DevErrorThrowingComponent = lazy(() => import('@/components/dev/DevErrorThrowingComponent'))
 
 const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authenticated: boolean }>) => {
   return authenticated ? <>{children}</> : <Navigate to={routes.login} replace />
@@ -114,7 +115,15 @@ function App() {
           />
         )}
         {isDebugFeatureEnabled('devErrorExamplePage') && (
-          <Route id="error-example" path={routes.__devErrorExample} element={<ErrorThrowingComponent />} />
+          <Route
+            id="error-example"
+            path={routes.__devErrorExample}
+            element={
+              <Suspense fallback={<Loading />}>
+                <DevErrorThrowingComponent />
+              </Suspense>
+            }
+          />
         )}
         <Route
           id="protected"
@@ -189,13 +198,6 @@ const Loading = () => {
       {t('global.loading')}
     </div>
   )
-}
-
-const ErrorThrowingComponent = () => {
-  useEffect(() => {
-    throw new Error('This error is thrown on purpose. Only to be used for testing.')
-  }, [])
-  return <></>
 }
 
 function RefreshApiToken() {
