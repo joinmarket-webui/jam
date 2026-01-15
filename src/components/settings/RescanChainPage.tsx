@@ -156,7 +156,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-3 p-4">
+    <div className="mx-auto max-w-4xl space-y-3 p-4">
       <div className="flex items-center gap-4">
         <Button variant="ghost" onClick={() => navigate(routes.settings)} title={t('global.back')}>
           <ArrowLeftIcon />

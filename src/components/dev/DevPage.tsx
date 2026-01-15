@@ -27,7 +27,7 @@ export default function DevPage({ walletFileName }: DevPageProps) {
   const feeConfig = useFeeConfigValidation({ walletFileName: walletFileName ?? 'None.jmdat' })
 
   return (
-    <div className="mx-auto max-w-2xl space-y-3 p-4">
+    <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title="Development" subtitle="Development specific information" />
 
       <div className="my-4 flex flex-col gap-3">

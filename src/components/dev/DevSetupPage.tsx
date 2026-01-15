@@ -16,7 +16,7 @@ const LINK_JM_REGTEST_RPC_TERMINAL = `${LINK_JM_REGTEST_EXPLORER}/rpc-terminal`
 
 export default function DevSetupPage() {
   return (
-    <div className="mx-auto max-w-2xl space-y-3 p-4">
+    <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title="Development setup" subtitle="Development setup specific information" />
 
       <div className="flex flex-col gap-3">

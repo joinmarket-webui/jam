@@ -133,7 +133,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   }, [copied])
 
   return (
-    <div className="mx-auto max-w-2xl space-y-3 p-4">
+    <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('receive.title')} subtitle={t('receive.subtitle')} />
 
       <Card>

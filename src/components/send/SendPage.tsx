@@ -20,7 +20,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-2xl space-y-3 p-4">
+      <div className="mx-auto max-w-4xl space-y-3 p-4">
         <div className="m-2 flex items-center justify-center gap-2">
           <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
           {t('global.loading')}
@@ -30,7 +30,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-3 p-4">
+    <div className="mx-auto max-w-4xl space-y-3 p-4">
       <PageTitle title={t('send.title')} subtitle={t('send.subtitle')} />
 
       {maxFeesConfigMissing && (
