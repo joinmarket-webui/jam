@@ -23,14 +23,7 @@ import { JM_DUST_THRESHOLD } from '@/constants/jm'
 import * as OrderbookApi from '@/lib/api/orderbook'
 import type { OrderbookOffer, OrderbookFidelityBond } from '@/lib/api/orderbook'
 import { withQueryDelay } from '@/lib/queryClient'
-import {
-  cn,
-  factorToPercentage,
-  isAbsoluteOffer,
-  isRelativeOffer,
-  humanReadableDuration,
-  pseudoRandomInteger,
-} from '@/lib/utils'
+import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer, pseudoRandomInteger, time } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
@@ -85,7 +78,10 @@ const offerToTableEntry = (
       locktime: fidelityBond?.locktime,
       displayLocktime: fidelityBond?.locktime ? new Date(fidelityBond.locktime * 1_000).toDateString() : undefined,
       displayExpiresIn: fidelityBond?.locktime
-        ? humanReadableDuration({ to: fidelityBond.locktime * 1_000, locale: i18n.resolvedLanguage || i18n.language })
+        ? time.humanReadableDuration({
+            to: fidelityBond.locktime * 1_000,
+            locale: i18n.resolvedLanguage || i18n.language,
+          })
         : undefined,
       amount: fidelityBond?.amount,
     },
