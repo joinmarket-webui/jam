@@ -21,6 +21,7 @@ import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { authStore } from '@/store/authStore'
+import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 
 interface SeedPhraseDialogProps {
   walletFileName: string
@@ -207,21 +208,14 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
 
             <div className="space-y-4">
               {!seedQuery.error && (
-                <div className="bg-muted rounded-lg p-4 px-7">
+                <div className="bg-muted rounded-lg p-4">
                   {seedQuery.isFetching ? (
                     <div className="text-muted-foreground flex items-center justify-center gap-1">
                       <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : seedQuery.data ? (
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      {seedQuery.data.split(/\s+/).map((word: string, index: number) => (
-                        <div key={index} className="light:bg-white flex items-center gap-2 border bg-zinc-700 p-2">
-                          <span className="text-muted-foreground w-4 text-xs">{index + 1}.</span>
-                          <span className="font-mono">{word}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <SeedPhraseGrid value={seedQuery.data.split(/\s+/)} className="md:grid-cols-3" />
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}
