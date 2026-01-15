@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { AlertCircleIcon, CheckCircle2Icon } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 
 const meta: Meta<typeof Alert> = {
   title: 'Core/Alert',
@@ -23,7 +24,7 @@ export const Default: Story = {
     <Alert>
       <AlertCircleIcon />
       <AlertTitle>Alert Title</AlertTitle>
-      <AlertDescription>This is a default alert message.</AlertDescription>
+      <AlertDescription>This is an alert with icon, title and description.</AlertDescription>
     </Alert>
   ),
 }
@@ -31,8 +32,17 @@ export const Default: Story = {
 export const WithoutIcon: Story = {
   render: () => (
     <Alert>
-      <AlertTitle>Simple Alert</AlertTitle>
+      <AlertTitle>Alert Title</AlertTitle>
       <AlertDescription>This alert doesn't have an icon, just a title and description.</AlertDescription>
+    </Alert>
+  ),
+}
+
+export const WithoutDescription: Story = {
+  render: () => (
+    <Alert>
+      <AlertCircleIcon />
+      <AlertTitle>This Alert has a title and an icon. No description.</AlertTitle>
     </Alert>
   ),
 }
@@ -67,14 +77,69 @@ export const Warning: Story = {
   ),
 }
 
-export const LongContent: Story = {
+export const WithDescriptionLong: Story = {
   render: () => (
     <Alert>
       <AlertCircleIcon />
-      <AlertTitle>Important Notice</AlertTitle>
+      <AlertTitle>Alert Title</AlertTitle>
       <AlertDescription>
         This is a longer alert message that demonstrates how the component handles multiple lines of text. The content
         should wrap naturally and maintain proper spacing and alignment with the icon and title.
+      </AlertDescription>
+    </Alert>
+  ),
+}
+
+export const WithDescriptionList: Story = {
+  render: () => (
+    <Alert>
+      <AlertCircleIcon />
+      <AlertTitle>Alert Title</AlertTitle>
+      <AlertDescription>
+        <p>Please verify your billing information and try again.</p>
+        <ul className="list-inside list-disc text-sm">
+          <li>Check your card details</li>
+          <li>Ensure sufficient funds</li>
+          <li>Verify billing address</li>
+        </ul>
+      </AlertDescription>
+    </Alert>
+  ),
+}
+
+export const WithDescriptionLink: Story = {
+  render: () => (
+    <Alert>
+      <AlertCircleIcon />
+      <AlertTitle>Alert Title</AlertTitle>
+      <AlertDescription>
+        <p>
+          This is an alert with icon, title and a description <strong>with a link</strong>.{' '}
+          <a href="#" className="underline">
+            Follow this link
+          </a>
+          .
+        </p>
+      </AlertDescription>
+    </Alert>
+  ),
+}
+
+export const WithDescriptionButtons: Story = {
+  render: () => (
+    <Alert>
+      <AlertCircleIcon />
+      <AlertTitle>Alert Title</AlertTitle>
+      <AlertDescription>
+        <p>
+          This is an alert with icon, title and description <strong>with buttons</strong>.
+        </p>
+        <div className="flex items-center gap-2">
+          <Button size="sm">Action 1</Button>
+          <Button size="sm" variant="outline">
+            Action 2
+          </Button>
+        </div>
       </AlertDescription>
     </Alert>
   ),
