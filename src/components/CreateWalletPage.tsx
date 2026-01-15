@@ -23,6 +23,40 @@ const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 const validateWalletName = (input: string) =>
   input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
+interface SeedPhraseContentProps {
+  seedphrase: string[]
+  onConfirm: () => Promise<void>
+}
+const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) => {
+  return (
+    <div className="space-y-6">
+      <div className="bg-muted rounded-lg p-4">
+        <div className="grid grid-cols-3 gap-2 font-mono text-sm">
+          {seedphrase.map((word, index) => (
+            <div key={index} className="bg-background rounded border p-2">
+              <span className="text-muted-foreground mr-2">{index + 1}.</span>
+              {word}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Alert>
+        <AlertCircleIcon className="h-4 w-4" />
+        <AlertDescription>
+          {/* TODO: i18n */}
+          <strong>Important:</strong> Write down this seed phrase and store it safely. It's the only way to recover your
+          wallet if you lose access.
+        </AlertDescription>
+      </Alert>
+
+      <Button onClick={async () => await onConfirm()} className="w-full" size="lg">
+        {/* TODO: i18n */}I have saved my seed phrase
+      </Button>
+    </div>
+  )
+}
+
 const CreateWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -121,30 +155,22 @@ const CreateWalletPage = () => {
     }
   }
 
-  const handleConfirmSeed = () => {
-    if (createWalletResponse?.seedphrase) {
-      let hashedSecret: string | undefined
-      const walletFileName = walletDisplayNameToFileName(walletName)
+  const handleConfirmSeed = async (response: CreateWalletResponse) => {
+    let hashedSecret: string | undefined
+    const walletFileName = response.walletname as WalletFileName
 
-      try {
-        hashedSecret = hashPassword(password, walletFileName)
-      } catch (hashError) {
-        console.warn('Failed to hash password, continuing without hash verification:', hashError)
-      }
-      updateAuthState({
-        walletFileName,
-        auth: { token: createWalletResponse.token, refresh_token: createWalletResponse.refresh_token }, // We'll need to unlock it properly later
-        hashed_password: hashedSecret,
-      })
-
-      navigate(routes.login, {
-        state: {
-          /* TODO: i18n */
-          message: 'Wallet created successfully! Please log in with your credentials.',
-          walletName: walletFileName,
-        },
-      })
+    try {
+      hashedSecret = hashPassword(password, walletFileName)
+    } catch (hashError) {
+      console.warn('Failed to hash password, continuing without hash verification:', hashError)
     }
+    updateAuthState({
+      walletFileName,
+      auth: { token: response.token, refresh_token: response.refresh_token }, // We'll need to unlock it properly later
+      hashed_password: hashedSecret,
+    })
+
+    await navigate(routes.home)
   }
 
   // TODO: use react-hook-form and yup schema
@@ -237,34 +263,6 @@ const CreateWalletPage = () => {
     </form>
   )
 
-  const renderSeedPhrase = () => (
-    <div className="space-y-6">
-      <div className="bg-muted rounded-lg p-4">
-        <div className="grid grid-cols-3 gap-2 font-mono text-sm">
-          {createWalletResponse?.seedphrase.split(' ').map((word, index) => (
-            <div key={index} className="bg-background rounded border p-2">
-              <span className="text-muted-foreground mr-2">{index + 1}.</span>
-              {word}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Alert>
-        <AlertCircleIcon className="h-4 w-4" />
-        <AlertDescription>
-          {/* TODO: i18n */}
-          <strong>Important:</strong> Write down this seed phrase and store it safely. It's the only way to recover your
-          wallet if you lose access.
-        </AlertDescription>
-      </Alert>
-
-      <Button onClick={handleConfirmSeed} className="w-full" size="lg">
-        {/* TODO: i18n */}I have saved my seed phrase
-      </Button>
-    </div>
-  )
-
   return (
     <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
       <Card className="w-full max-w-md">
@@ -276,14 +274,19 @@ const CreateWalletPage = () => {
             {step === 'create' && <>{t('create_wallet.title')}</>}
             {/* TODO: i18n */ step === 'seed' && 'Save Your Seed Phrase'}
           </CardTitle>
-          <CardDescription>{step === 'seed' && "This is your wallet's recovery phrase"}</CardDescription>
+          <CardDescription>
+            {/* TODO: i18n */ step === 'seed' && "This is your wallet's recovery phrase"}
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {step === 'seed' && (
             <>
               <PreventLeavingPageByMistake />
-              {renderSeedPhrase()}
+              <SeedPhraseContent
+                seedphrase={createWalletResponse?.seedphrase?.split(' ') || []}
+                onConfirm={async () => await handleConfirmSeed(createWalletResponse!)}
+              />
             </>
           )}
           {step === 'create' && (
