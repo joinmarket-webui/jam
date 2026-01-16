@@ -70,27 +70,28 @@ type SortKey = keyof OrderTableEntry
 
 const columnHelper = createColumnHelper<OrderTableEntry>()
 
-type OrderTableColumnMeta = { align?: string } | undefined
+type OrderTableColumnMeta =
+  | {
+      align?: string
+      numeric?: boolean
+      alphabetic?: boolean
+    }
+  | undefined
 
 interface SortIconProps {
   className?: string
   sortKey: SortKey
   column: Column<OrderTableEntry, unknown>
 }
-const SortIcon = ({ sortKey, column, className }: SortIconProps) => {
+const SortIcon = ({ column, className }: SortIconProps) => {
   const dir = column.getIsSorted()
   if (!dir) return <ArrowUpDownIcon className={className} />
-  const isNumeric =
-    sortKey === 'orderId' ||
-    sortKey === 'bondValue' ||
-    sortKey === 'minimumSize' ||
-    sortKey === 'maximumSize' ||
-    sortKey === 'fee'
-  if (isNumeric) {
+
+  const meta = column.columnDef.meta as OrderTableColumnMeta
+  if (meta?.numeric === true) {
     return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
   }
-  const isAlphabetic = sortKey === 'counterparty' || sortKey === 'type'
-  if (isAlphabetic) {
+  if (meta?.alphabetic === true) {
     return dir === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
   }
   return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
@@ -137,10 +138,16 @@ export const OrderbookTable = ({
           return aid - bid
         },
         cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
+        meta: {
+          alphabetic: true,
+        } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('orderId', {
         header: () => t('orderbook.table.heading_order_id'),
         cell: (info) => info.getValue(),
+        meta: {
+          numeric: true,
+        } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('type', {
         header: () => <div className="flex items-center">{t('orderbook.table.heading_type')}</div>,
@@ -157,6 +164,7 @@ export const OrderbookTable = ({
         ),
         meta: {
           align: 'center',
+          alphabetic: true,
         } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('fee', {
@@ -176,6 +184,7 @@ export const OrderbookTable = ({
         },
         meta: {
           align: 'right',
+          numeric: true,
         } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('minimumSize', {
@@ -184,6 +193,7 @@ export const OrderbookTable = ({
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
         meta: {
           align: 'right',
+          numeric: true,
         } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('maximumSize', {
@@ -192,6 +202,7 @@ export const OrderbookTable = ({
         cell: (info) => <Balance colored={false} valueString={info.getValue()} />,
         meta: {
           align: 'right',
+          numeric: true,
         } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('minerFeeContribution', {
@@ -201,6 +212,7 @@ export const OrderbookTable = ({
         enableHiding: true,
         meta: {
           align: 'right',
+          numeric: true,
         } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('bondValue', {
@@ -229,6 +241,7 @@ export const OrderbookTable = ({
           )
         },
         meta: {
+          numeric: true,
           align: 'right',
         } as OrderTableColumnMeta,
       }),
@@ -353,6 +366,8 @@ export const OrderbookTable = ({
                           'cursor-pointer select-none': canSort,
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
+                          'font-bold': header.column.getIsSorted(),
+                          'text-muted-foreground': table.getState().sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
