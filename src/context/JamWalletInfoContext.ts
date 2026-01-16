@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import type { FidelityBondUtxo } from '@/hooks/useUtxos'
+import type { FidelityBondUtxo, Utxo } from '@/hooks/useUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import type { JarIndex } from '@/types/global'
 
@@ -22,6 +22,7 @@ export type Jar = {
   name: string
   color: JarColor
   balanceSummary: BalanceSummary
+  utxos: Utxo[]
 }
 
 export type FidelityBondSummary = {

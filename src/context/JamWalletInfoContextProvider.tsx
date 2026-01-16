@@ -30,10 +30,11 @@ type ByJarIndex<T> = {
 type UtxosByJarIndex = ByJarIndex<Utxo[]>
 type JarTemplateByJarIndex = ByJarIndex<JarTemplate>
 
-const EMPTY_BALANCE_SUMMARY = toBalanceSummary([])
+const EMPTY_UTXOS: Utxo[] = []
+const EMPTY_BALANCE_SUMMARY = toBalanceSummary(EMPTY_UTXOS)
 
 type JarTemplate = Pick<Jar, 'jarIndex' | 'name' | 'color'>
-export const jarTemplates: JarTemplate[] = [
+const jarTemplates: JarTemplate[] = [
   { jarIndex: 0, name: 'Apricot', color: '#e2b86a' },
   { jarIndex: 1, name: 'Blueberry', color: '#3b5ba9' },
   { jarIndex: 2, name: 'Cherry', color: '#c94f7c' },
@@ -65,20 +66,17 @@ export const JamWalletInfoContextProvider = ({
     return acc
   }, {} as UtxosByJarIndex)
 
-  const balanceSummaryByJarIndex = Object.fromEntries(
-    Object.entries(utxosByJarIndex).map(([jarIndexString, utxos]) => {
-      return [jarIndexString, toBalanceSummary(utxos)]
-    }),
-  )
-
   const jars: Jar[] = []
-  Object.entries(balanceSummaryByJarIndex).forEach(([jarIndexString, balanceSummary]) => {
+  Object.entries(utxosByJarIndex).forEach(([jarIndexString, utxos]) => {
     const jarIndex = parseInt(jarIndexString, 10)
+    const balanceSummary = toBalanceSummary(utxos)
+
     const jarTemplate: JarTemplate | undefined = jarTemplatesByJarIndex[jarIndex]
     if (jarTemplate) {
       jars.push({
         ...jarTemplate,
         balanceSummary,
+        utxos,
       })
     } else {
       jars.push({
@@ -86,17 +84,18 @@ export const JamWalletInfoContextProvider = ({
         name: `Jar #${jarIndexString}`,
         color: '#808080',
         balanceSummary,
+        utxos,
       })
     }
   })
 
-  Object.entries(jarTemplatesByJarIndex).forEach(([jarIndexString, jarTemplate]) => {
-    const jarIndex = parseInt(jarIndexString, 10)
-    const existingJar = jars.find((it) => it.jarIndex === jarIndex)
+  Object.values(jarTemplatesByJarIndex).forEach((jarTemplate) => {
+    const existingJar = jars.find((it) => it.jarIndex === jarTemplate.jarIndex)
     if (!existingJar) {
       jars.push({
         ...jarTemplate,
         balanceSummary: EMPTY_BALANCE_SUMMARY,
+        utxos: EMPTY_UTXOS,
       })
     }
   })
