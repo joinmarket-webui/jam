@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { FidelityBondUtxo } from '@/hooks/useUtxos'
-import type { AmountSats } from '@/types/global'
+import type { BalanceSummary } from '@/lib/balanceSummary'
+import type { JarIndex } from '@/types/global'
 
 // Comments for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 // "text-[#e2b86a]", "group-hover/jar:text-[#e2b86a]"
@@ -17,32 +18,24 @@ type UnknownJarColor = '#808080'
 export type JarColor = MainJarColor | UnknownJarColor
 
 export type Jar = {
-  accountIndex: number
+  jarIndex: JarIndex
   name: string
   color: JarColor
-  balance: AmountSats
+  balanceSummary: BalanceSummary
 }
-
-export const jarTemplates: Array<Pick<Jar, 'accountIndex' | 'name' | 'color'>> = [
-  { accountIndex: 0, name: 'Apricot', color: '#e2b86a' },
-  { accountIndex: 1, name: 'Blueberry', color: '#3b5ba9' },
-  { accountIndex: 2, name: 'Cherry', color: '#c94f7c' },
-  { accountIndex: 3, name: 'Date', color: '#a67c52' },
-  { accountIndex: 4, name: 'Elderberry', color: '#7c3fa6' },
-]
 
 export type FidelityBondSummary = {
   fbOutputs: FidelityBondUtxo[]
 }
 
 interface JamWalletInfoContextType {
-  jars: Jar[]
-  totalBalance: AmountSats
-  fidelityBondSummary: FidelityBondSummary
   walletName: string | null
+  walletBalanceSummary: BalanceSummary
+  fidelityBondSummary: FidelityBondSummary
+  jars: Jar[]
   isLoading: boolean
   error: Error | ErrorMessage | null
-  refetchWalletData: () => void
+  refetch: () => Promise<unknown>
 }
 
 export const JamWalletInfoContext = createContext<JamWalletInfoContextType | undefined>(undefined)

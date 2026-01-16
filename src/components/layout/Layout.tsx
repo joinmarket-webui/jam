@@ -30,7 +30,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
 
   const { formatAmount, currencySymbol } = useJamDisplayContext()
-  const { totalBalance, walletName, isLoading } = useJamWalletInfoContext()
+  const { walletBalanceSummary, walletName, isLoading } = useJamWalletInfoContext()
 
   const sidebarContext = useSidebar()
 
@@ -42,7 +42,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         theme={resolvedTheme || 'dark'}
         isLoading={isLoading}
         walletName={walletName}
-        totalBalance={totalBalance}
+        totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
         toggleTheme={toggleTheme}
         formatAmount={formatAmount}
         currencySymbol={currencySymbol}

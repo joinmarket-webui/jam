@@ -20,7 +20,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const navigate = useNavigate()
 
   const { toggleDisplayMode, formatAmount, currencySymbol } = useJamDisplayContext()
-  const { jars, totalBalance, isLoading, error, refetchWalletData } = useJamWalletInfoContext()
+  const { jars, walletBalanceSummary, isLoading, error, refetch: refetchWalletData } = useJamWalletInfoContext()
 
   const walletName = walletDisplayName(walletFileName)
   const walletNameTitle = shortenStringMiddle(walletName, 32)
@@ -43,7 +43,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
               onClick={() => toggleDisplayMode()}
               className="flex cursor-pointer items-center text-4xl font-light tracking-wider"
             >
-              <span className="tabular-nums">{formatAmount(totalBalance)} </span>
+              <span className="tabular-nums">{formatAmount(walletBalanceSummary.calculatedTotalBalanceInSats)} </span>
               <span className="flex items-center">{currencySymbol('lg')}</span>
             </div>
           )}
@@ -100,11 +100,11 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                     <div className="flex cursor-pointer flex-col items-center transition-all duration-300 hover:scale-105">
                       <Jar
                         name={jar.name}
-                        amount={jar.balance}
+                        amount={jar.balanceSummary.calculatedTotalBalanceInSats}
                         color={jar.color}
                         currencySymbol={currencySymbol}
                         formatAmount={formatAmount}
-                        totalBalance={totalBalance}
+                        totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                       />
                     </div>
                   </TooltipTrigger>
