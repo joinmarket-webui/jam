@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { displaywalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import type { WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon, CopyIcon, CheckIcon } from 'lucide-react'
@@ -23,71 +22,45 @@ import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
-import { extractXpubFromBranch, extractDerivationPath, toNativeSegwitPub } from '@/lib/xpub'
+import { deriveAccountXpubs, detectNetwork } from '@/lib/bip32'
+import { toNativeSegwitPub } from '@/lib/xpub'
 import { authStore } from '@/store/authStore'
 
 interface AccountXpubInfo {
-  accountIndex: string
+  accountIndex: number
   accountName: string
-  externalXpub: string | null
-  externalPath: string | null
-  internalXpub: string | null
-  internalPath: string | null
+  xpub: string
+  path: string
 }
 
 /**
- * Parse wallet display response to extract xpub information for each account
+ * Derive account-level xpubs from seed phrase
+ * This derives the correct BIP84 account-level xpubs: m/84'/coin_type'/account'
+ * not the child xpubs that the API incorrectly returns
  */
-async function parseAccountXpubs(walletDisplay: WalletDisplayResponse): Promise<AccountXpubInfo[]> {
+async function deriveAccountXpubsFromSeed(
+  seedPhrase: string,
+  walletFileName: string,
+  accountCount: number = 5,
+): Promise<AccountXpubInfo[]> {
+  // Detect network from wallet name
+  const network = detectNetwork(walletFileName)
+  const coinType = network === 'mainnet' ? 0 : 1
+
+  // Derive xpubs for all accounts
+  const rawXpubs = deriveAccountXpubs(seedPhrase, accountCount, network)
+
+  // Convert to native segwit format (zpub/vpub) and build account info
   const accounts: AccountXpubInfo[] = []
-
-  for (const account of walletDisplay.walletinfo?.accounts || []) {
-    const accountIndex = account.account || '0'
-    const accountNum = parseInt(accountIndex, 10)
-    const accountName = accountNum < jarTemplates.length ? jarTemplates[accountNum].name : `Account ${accountIndex}`
-
-    let externalXpub: string | null = null
-    let externalPath: string | null = null
-    let internalXpub: string | null = null
-    let internalPath: string | null = null
-
-    // Collect all xpubs that need conversion
-    const conversions: Array<{ rawXpub: string; isExternal: boolean; path: string | null }> = []
-
-    for (const branch of account.branches || []) {
-      const branchStr = branch.branch || ''
-      const rawXpub = extractXpubFromBranch(branchStr)
-      const path = extractDerivationPath(branchStr)
-
-      if (rawXpub) {
-        conversions.push({
-          rawXpub,
-          isExternal: branchStr.toLowerCase().includes('external'),
-          path,
-        })
-      }
-    }
-
-    // Convert all xpubs in parallel for better performance
-    const converted = await Promise.all(conversions.map((c) => toNativeSegwitPub(c.rawXpub)))
-
-    conversions.forEach((c, i) => {
-      if (c.isExternal) {
-        externalXpub = converted[i]
-        externalPath = c.path
-      } else {
-        internalXpub = converted[i]
-        internalPath = c.path
-      }
-    })
+  for (let i = 0; i < rawXpubs.length; i++) {
+    const convertedXpub = await toNativeSegwitPub(rawXpubs[i])
+    const accountName = i < jarTemplates.length ? jarTemplates[i].name : `Account ${i}`
 
     accounts.push({
-      accountIndex,
+      accountIndex: i,
       accountName,
-      externalXpub,
-      externalPath,
-      internalXpub,
-      internalPath,
+      xpub: convertedXpub,
+      path: `m/84'/${coinType}'/${i}'`,
     })
   }
 
@@ -117,8 +90,8 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   const authState = useStore(authStore, (state) => state.state)
   const queryClient = useQueryClient()
 
-  const displayWalletQuery = useQuery({
-    ...displaywalletOptions({
+  const seedQuery = useQuery({
+    ...getseedOptions({
       client,
       path: { walletname: walletFileName },
     }),
@@ -128,21 +101,21 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     retry: false,
   })
 
-  const displayWalletRefetch = useMemo(() => displayWalletQuery.refetch, [displayWalletQuery.refetch])
+  const seedRefetch = useMemo(() => seedQuery.refetch, [seedQuery.refetch])
 
-  // Fetch wallet display data immediately after password verification
+  // Fetch seed phrase immediately after password verification
   useEffect(() => {
     if (open && isPasswordVerified) {
-      displayWalletRefetch()
+      seedRefetch()
     }
-  }, [open, isPasswordVerified, displayWalletRefetch])
+  }, [open, isPasswordVerified, seedRefetch])
 
-  // Parse xpub data when wallet display data is available
+  // Derive xpubs when seed data is available
   useEffect(() => {
-    if (displayWalletQuery.data) {
-      parseAccountXpubs(displayWalletQuery.data).then(setAccountXpubs)
+    if (seedQuery.data?.seedphrase) {
+      deriveAccountXpubsFromSeed(seedQuery.data.seedphrase, walletFileName).then(setAccountXpubs)
     }
-  }, [displayWalletQuery.data])
+  }, [seedQuery.data, walletFileName])
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) {
@@ -151,7 +124,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     }
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
 
-    const xpubsDisplayedAt = Math.max(displayWalletQuery.dataUpdatedAt, passwordVerifiedAt)
+    const xpubsDisplayedAt = Math.max(seedQuery.dataUpdatedAt, passwordVerifiedAt)
     const interval = setInterval(() => {
       setTimeLeft(Math.max(0, xpubsDisplayedAt + JAM_SEED_MODAL_TIMEOUT - Date.now()))
     }, 333)
@@ -159,7 +132,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     return () => {
       clearInterval(interval)
     }
-  }, [displayWalletQuery.dataUpdatedAt, passwordVerifiedAt])
+  }, [seedQuery.dataUpdatedAt, passwordVerifiedAt])
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -225,7 +198,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     setCopiedXpub(null)
     // Clear the cached query data to ensure fresh fetch on next open
     queryClient.removeQueries({
-      queryKey: displaywalletOptions({ client, path: { walletname: walletFileName } }).queryKey,
+      queryKey: getseedOptions({ client, path: { walletname: walletFileName } }).queryKey,
     })
     onOpenChange(false)
   }
@@ -297,12 +270,12 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
             </DialogHeader>
 
             <div className="space-y-4">
-              {displayWalletQuery.isFetching ? (
+              {seedQuery.isFetching ? (
                 <div className="text-muted-foreground flex items-center justify-center gap-1 py-8">
                   <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
                   {t('global.loading')}
                 </div>
-              ) : displayWalletQuery.error ? (
+              ) : seedQuery.error ? (
                 <div className="light:border-red-800 light:bg-red-50 rounded-lg border border-red-200 bg-red-900/20 p-2">
                   <div className="flex items-start gap-2">
                     <div className="light:text-red-800 text-sm text-red-200">
@@ -311,7 +284,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                         <p className="text-md font-medium">{t('settings.xpubs_modal.text_error_title')}</p>
                       </div>
                       <p className="p-1 text-xs">
-                        {displayWalletQuery.error.message || t('global.errors.reason_unknown')}
+                        {seedQuery.error.message || t('global.errors.reason_unknown')}
                       </p>
                     </div>
                   </div>
@@ -320,7 +293,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                 <div className="max-h-[400px] overflow-y-auto">
                   <Accordion type="single" collapsible className="w-full">
                     {accountXpubs.map((account) => (
-                      <AccordionItem key={account.accountIndex} value={account.accountIndex}>
+                      <AccordionItem key={account.accountIndex} value={String(account.accountIndex)}>
                         <AccordionTrigger className="text-sm">
                           <span className="flex items-center gap-2">
                             <span className="font-medium">{account.accountName}</span>
@@ -331,81 +304,35 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="space-y-3">
-                            {/* External addresses xpub */}
-                            {account.externalXpub && (
-                              <div className="space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <Label className="text-muted-foreground text-xs">
-                                    {t('settings.xpubs_modal.label_external_addresses')}
-                                    {account.externalPath && (
-                                      <span className="text-muted-foreground/70 ml-2 font-mono">
-                                        {account.externalPath}
-                                      </span>
-                                    )}
-                                  </Label>
-                                </div>
-                                <div className="bg-muted flex items-center gap-2 rounded-md p-2">
-                                  <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                                    {account.externalXpub}
-                                  </code>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 shrink-0"
-                                    onClick={() => copyToClipboard(account.externalXpub!)}
-                                    aria-label={t('settings.xpubs_modal.aria_copy_external', {
-                                      account: account.accountName,
-                                    })}
-                                  >
-                                    {copiedXpub === account.externalXpub ? (
-                                      <CheckIcon className="h-3 w-3 text-green-500" />
-                                    ) : (
-                                      <CopyIcon className="h-3 w-3" />
-                                    )}
-                                  </Button>
-                                </div>
+                            {/* Account-level xpub */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-muted-foreground text-xs">
+                                  Extended Public Key
+                                  <span className="text-muted-foreground/70 ml-2 font-mono">{account.path}</span>
+                                </Label>
                               </div>
-                            )}
-
-                            {/* Internal addresses xpub */}
-                            {account.internalXpub && (
-                              <div className="space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <Label className="text-muted-foreground text-xs">
-                                    {t('settings.xpubs_modal.label_internal_addresses')}
-                                    {account.internalPath && (
-                                      <span className="text-muted-foreground/70 ml-2 font-mono">
-                                        {account.internalPath}
-                                      </span>
-                                    )}
-                                  </Label>
-                                </div>
-                                <div className="bg-muted flex items-center gap-2 rounded-md p-2">
-                                  <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                                    {account.internalXpub}
-                                  </code>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 shrink-0"
-                                    onClick={() => copyToClipboard(account.internalXpub!)}
-                                    aria-label={t('settings.xpubs_modal.aria_copy_internal', {
-                                      account: account.accountName,
-                                    })}
-                                  >
-                                    {copiedXpub === account.internalXpub ? (
-                                      <CheckIcon className="h-3 w-3 text-green-500" />
-                                    ) : (
-                                      <CopyIcon className="h-3 w-3" />
-                                    )}
-                                  </Button>
-                                </div>
+                              <div className="bg-muted flex items-center gap-2 rounded-md p-2">
+                                <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
+                                  {account.xpub}
+                                </code>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 shrink-0"
+                                  onClick={() => copyToClipboard(account.xpub)}
+                                  aria-label={t('settings.xpubs_modal.aria_copy_external', {
+                                    account: account.accountName,
+                                  })}
+                                >
+                                  {copiedXpub === account.xpub ? (
+                                    <CheckIcon className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <CopyIcon className="h-3 w-3" />
+                                  )}
+                                </Button>
                               </div>
-                            )}
-
-                            {!account.externalXpub && !account.internalXpub && (
-                              <p className="text-muted-foreground text-sm">{t('settings.xpubs_modal.text_no_xpubs')}</p>
-                            )}
+                            </div>
                           </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -419,7 +346,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
               )}
 
               {/* Info message about xpubs */}
-              {!displayWalletQuery.isFetching && !displayWalletQuery.error && accountXpubs.length > 0 && (
+              {!seedQuery.isFetching && !seedQuery.error && accountXpubs.length > 0 && (
                 <div className="light:border-blue-800 light:bg-blue-50 rounded-lg border border-blue-200 bg-blue-900/20 p-2">
                   <p className="light:text-blue-800 text-xs text-blue-200">{t('settings.xpubs_modal.text_info')}</p>
                 </div>

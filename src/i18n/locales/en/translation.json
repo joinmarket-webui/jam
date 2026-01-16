@@ -269,18 +269,14 @@
         "text_button_submitting": "Verifying..."
       },
       "title": "Account Extended Public Keys",
-      "subtitle": "Extended public keys (xpubs) for your wallet accounts. Use these to monitor addresses without spending ability.",
+      "subtitle": "Account-level extended public keys (xpubs/zpubs) for watch-only wallet import. These are BIP84 account keys, not address-level keys.",
       "label_account": "Account",
-      "label_external_addresses": "External addresses (receiving)",
-      "label_internal_addresses": "Internal addresses (change)",
       "text_error_title": "Error while retrieving account information",
-      "text_no_xpubs": "No extended public keys available for this account.",
       "text_no_accounts": "No accounts found.",
       "text_copied": "Copied to clipboard!",
       "text_copy_failed": "Failed to copy to clipboard.",
-      "text_info": "Extended public keys (xpubs) can be used to generate receiving addresses and monitor your wallet balance without the ability to spend. Share them with caution. They reveal all addresses in the derivation path.",
-      "aria_copy_external": "Copy external address xpub for Account {{account}}",
-      "aria_copy_internal": "Copy internal address xpub for Account {{account}}"
+      "text_info": "Account-level extended public keys can be imported into watch-only wallets for monitoring. They reveal all addresses in the derivation path. Share them with caution.",
+      "aria_copy_external": "Copy xpub for {{account}}"
     },
     "documentation": "Documentation",
     "github": "GitHub",
