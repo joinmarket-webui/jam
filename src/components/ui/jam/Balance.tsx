@@ -58,7 +58,7 @@ const BalanceComponent = ({
   return (
     <span
       className={cn(
-        'balance-hook inline-flex items-center font-mono text-sm',
+        'balance-hook inline-flex items-center font-mono',
         frozen && 'opacity-60',
         colored && 'text-green-600',
         className,
