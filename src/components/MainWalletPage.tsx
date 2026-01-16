@@ -7,7 +7,7 @@ import { Jar } from '@/components/ui/jam/Jar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { routes } from '@/constants/routes'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJamWalletInfoContext, useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 
@@ -20,7 +20,9 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const navigate = useNavigate()
 
   const { toggleDisplayMode, formatAmount, currencySymbol } = useJamDisplayContext()
-  const { jars, walletBalanceSummary, isLoading, error, refetch: refetchWalletData } = useJamWalletInfoContext()
+  const { isLoading, error, refetch: refetchWalletData } = useJamWalletInfoContext()
+  const { walletBalanceSummary } = useWalletBalanceSummary()
+  const { jars } = useJars()
 
   const walletName = walletDisplayName(walletFileName)
   const walletNameTitle = shortenStringMiddle(walletName, 32)

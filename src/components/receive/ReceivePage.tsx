@@ -11,7 +11,7 @@ import PageTitle from '@/components/ui/jam/PageTitle'
 import { SelectableJar } from '@/components/ui/jam/SelectableJar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
 import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
@@ -39,7 +39,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const [copied, setCopied] = useState(false)
 
   const { currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
-  const { jars, walletBalanceSummary } = useJamWalletInfoContext()
+  const { walletBalanceSummary } = useWalletBalanceSummary()
+  const { jars } = useJars()
 
   const client = useApiClient()
 
