@@ -28,9 +28,11 @@ export type FidelityBondSummary = {
   fbOutputs: FidelityBondUtxo[]
 }
 
+export type WalletBalanceSummary = BalanceSummary
+
 interface JamWalletInfoContextType {
   walletName: string | null
-  walletBalanceSummary: BalanceSummary
+  walletBalanceSummary: WalletBalanceSummary
   fidelityBondSummary: FidelityBondSummary
   jars: Jar[]
   isLoading: boolean
@@ -46,4 +48,14 @@ export const useJamWalletInfoContext = () => {
     throw new Error('useJamWalletInfoContext must be used within a JamWalletInfoContextProvider')
   }
   return context
+}
+
+export const useWalletBalanceSummary = () => {
+  const { walletBalanceSummary, isLoading } = useJamWalletInfoContext()
+  return { walletBalanceSummary, isLoading }
+}
+
+export const useJars = () => {
+  const { jars, isLoading } = useJamWalletInfoContext()
+  return { jars, isLoading }
 }
