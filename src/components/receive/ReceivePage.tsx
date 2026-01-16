@@ -39,7 +39,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
   const [copied, setCopied] = useState(false)
 
   const { currency, isPrivate, toggleCurrencyUnit } = useJamDisplayContext()
-  const { jars, totalBalance } = useJamWalletInfoContext()
+  const { jars, walletBalanceSummary } = useJamWalletInfoContext()
 
   const client = useApiClient()
 
@@ -218,8 +218,8 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
                   key={index}
                   name={jar.name}
                   color={jar.color}
-                  balance={jar.balance}
-                  totalBalance={totalBalance}
+                  balance={jar.balanceSummary.calculatedTotalBalanceInSats}
+                  totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
                   isSelected={selectedJarIndex === index}
                   onClick={() => setSelectedJarIndex(index)}
                 />

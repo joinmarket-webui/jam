@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { listutxosOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage, ListUtxosResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery, type UseQueryResult } from '@tanstack/react-query'
@@ -9,9 +8,6 @@ import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { MM, YYYY } from '@/types/global'
 
-interface UseUtxosProps {
-  walletFileName: WalletFileName
-}
 type UtxoApiObject = NonNullable<ListUtxosResponse['utxos']>[number]
 
 type Locktime = `${YYYY}-${MM}-01 00:00:00`
@@ -35,34 +31,32 @@ type UseUtxosResult = {
   utxos: Utxo[]
   queryResult: UseQueryResult<ListUtxosResponse, ErrorMessage>
 }
+interface UseUtxosProps {
+  walletFileName: WalletFileName
+}
+
+const EMPTY_UTXOS: Utxo[] = []
 
 export function useUtxos({ walletFileName }: UseUtxosProps): UseUtxosResult {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
 
-  const listutxosQueryOptions = useMemo(
-    () =>
-      listutxosOptions({
-        client,
-        path: { walletname: encodeURIComponent(walletFileName || '') },
-      }),
-    [client, walletFileName],
-  )
+  const listutxosQueryOptions = listutxosOptions({
+    client,
+    path: { walletname: encodeURIComponent(walletFileName || '') },
+  })
 
   const queryResult = useQuery({
     ...listutxosQueryOptions,
     queryFn: withQueryDelay(listutxosQueryOptions.queryFn, {
       delayBefore: 0,
-      delayAfter: 210,
+      delayAfter: 0,
     }),
     enabled: !!walletFileName && !!jmSession,
-    select: (data) => ({
-      utxos: (data.utxos || []) as Utxo[],
-    }),
   })
 
   return {
-    utxos: queryResult.data?.utxos ?? [],
+    utxos: (queryResult.data?.utxos as Utxo[]) ?? EMPTY_UTXOS,
     queryResult,
   }
 }
