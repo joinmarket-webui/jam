@@ -58,10 +58,10 @@ export const Selected: Story = {
   args: {
     name: 'Spending',
     color: '#3498db', // Blue
-    balance: 150000,
-    totalBalance: 500000,
+    balance: 150_000,
+    totalBalance: 500_000,
     isSelected: true,
-    onClick: () => console.log('Selected jar clicked'),
+    onClick: () => alert('Selected jar clicked'),
   },
   parameters: {
     docs: {
@@ -77,10 +77,10 @@ export const Unselected: Story = {
   args: {
     name: 'Savings',
     color: '#27ae60', // Green
-    balance: 250000,
-    totalBalance: 500000,
+    balance: 250_000,
+    totalBalance: 500_000,
     isSelected: false,
-    onClick: () => console.log('Unselected jar clicked'),
+    onClick: () => alert('Unselected jar clicked'),
   },
   parameters: {
     docs: {
@@ -97,9 +97,9 @@ export const EmptyJar: Story = {
     name: 'Empty',
     color: '#e74c3c', // Red
     balance: 0,
-    totalBalance: 500000,
+    totalBalance: 500_000,
     isSelected: false,
-    onClick: () => console.log('Empty jar clicked'),
+    onClick: () => alert('Empty jar clicked'),
   },
   parameters: {
     docs: {
@@ -115,10 +115,10 @@ export const FullJar: Story = {
   args: {
     name: 'Full',
     color: '#f39c12', // Orange
-    balance: 500000,
-    totalBalance: 500000,
+    balance: 500_000,
+    totalBalance: 500_000,
     isSelected: false,
-    onClick: () => console.log('Full jar clicked'),
+    onClick: () => alert('Full jar clicked'),
   },
   parameters: {
     docs: {
@@ -134,10 +134,10 @@ export const JarGrid: Story = {
   args: {
     name: 'Spending',
     color: '#3498db',
-    balance: 150000,
-    totalBalance: 500000,
+    balance: 150_000,
+    totalBalance: 500_000,
     isSelected: true,
-    onClick: () => console.log('Jar clicked'),
+    onClick: () => alert('Jar clicked'),
   },
   parameters: {
     docs: {
@@ -168,7 +168,7 @@ export const JarGrid: Story = {
             balance={jar.balance}
             totalBalance={totalBalance}
             isSelected={jar.isSelected}
-            onClick={() => console.log(`Clicked on ${jar.name}`)}
+            onClick={() => alert(`Clicked on ${jar.name}`)}
           />
         ))}
       </div>
@@ -182,10 +182,10 @@ export const Interactive: Story = {
   args: {
     name: 'Customize Me',
     color: '#2ecc71',
-    balance: 100000,
-    totalBalance: 500000,
+    balance: 100_000,
+    totalBalance: 500_000,
     isSelected: false,
-    onClick: () => console.log('Interactive jar clicked'),
+    onClick: () => alert('Interactive jar clicked'),
   },
   parameters: {
     docs: {

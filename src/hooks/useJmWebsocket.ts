@@ -56,15 +56,15 @@ export const useJmWebsocket = (): JmWebsocket => {
     reconnectInterval: (attemptNumber) => {
       const randomFactor = pseudoRandomFloat(0.8, 1.2)
       const value = Math.round(calcReconnectInterval(attemptNumber) * randomFactor)
-      console.log(`Websocket reconnect attempt #${attemptNumber} in ${value}ms`)
+      console.debug(`Websocket reconnect attempt #${attemptNumber} in ${value}ms`)
       return value
     },
     onClose: () => {
-      console.log('Websocket closed.')
+      console.debug('Websocket closed.')
       setAuthenticated(false)
     },
     onOpen: () => {
-      console.log('Websocket opened.')
+      console.debug('Websocket opened.')
     },
   })
 
@@ -74,15 +74,13 @@ export const useJmWebsocket = (): JmWebsocket => {
     let timerId: NodeJS.Timeout
     if (isOpen && authToken !== undefined) {
       timerId = setTimeout(() => {
-        console.log('Renewing websocket authentication...')
+        console.debug('Renewing websocket authentication...')
         setAuthSentAt(Date.now())
         sendMessage(authToken)
       }, JAM_JM_WEBSOCKET_CONNECTION_HEALTHY_DURATION)
     }
     return () => {
-      if (timerId) {
-        clearTimeout(timerId)
-      }
+      clearTimeout(timerId)
     }
   }, [sendMessage, authToken, isOpen])
 
@@ -94,7 +92,7 @@ export const useJmWebsocket = (): JmWebsocket => {
       }, 4)
     } else {
       timerId = setTimeout(() => {
-        console.log('Successfully renewed websocket authentication.')
+        console.info('Successfully renewed websocket authentication.')
         setAuthenticated(true)
       }, JAM_JM_WEBSOCKET_CONNECTION_AUTHENTICATED_DURATION)
     }
@@ -111,23 +109,23 @@ export const useJmWebsocket = (): JmWebsocket => {
 
       const intervalRandomFactor = pseudoRandomFloat(0.75, 1.25)
       const interval = Math.round(JAM_JM_WEBSOCKET_KEEPALIVE_MESSAGE_INTERVAL * intervalRandomFactor)
-      console.log(`Setup heartbeat messages at interval ${interval}ms.`)
+      console.debug(`Setup heartbeat messages at interval ${interval}ms.`)
 
       const abortCtrl = new AbortController()
       const timerId = setInterval(() => {
         const delayRandomFactor = pseudoRandomFloat(0.25, 0.75)
         const delay = Math.round(interval * delayRandomFactor)
-        console.log(`Scheduled heartbeat message in ${delay}ms.`)
+        console.debug(`Scheduled heartbeat message in ${delay}ms.`)
         setTimeout(() => {
           if (abortCtrl.signal.aborted) {
             return
           }
-          console.log('Sending heartbeat message...')
+          console.debug('Sending heartbeat message...')
           sendMessage(authToken)
         }, delay)
       }, interval)
       return () => {
-        console.log(`Cancelling scheduled heartbeat messages.`)
+        console.debug(`Cancelling scheduled heartbeat messages.`)
         abortCtrl.abort()
         clearTimeout(timerId)
       }
