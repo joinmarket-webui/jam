@@ -45,6 +45,7 @@ import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -158,6 +159,10 @@ function App() {
             <Route path={routes.orderbook} element={<OrderbookPage />} />
             <Route path={routes.logs} element={<LogsPage />} />
             <Route path={routes.rescan} element={<RescanChainPage walletFileName={walletFileName!} />} />
+            <Route
+              path={routes.walletJarsDetails}
+              element={<WalletJarsDetailsPage walletFileName={walletFileName!} />}
+            />
             {isDebugFeatureEnabled('devPage') && (
               <Route
                 id="dev-page"
