@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { RowModel } from '@tanstack/react-table'
 import { AlertTriangleIcon } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useJars, type Jar } from '@/context/JamWalletInfoContext'
+import type { Utxo } from '@/hooks/useUtxos'
 import { cn } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
+import { Balance } from '../ui/jam/Balance'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+import { JarUtxosTable, type UtxoTableEntry } from './JarUtxosTable'
 
 const isKeyEventFromInputElement = (e: KeyboardEvent) => {
   return (
@@ -22,16 +26,51 @@ const isKeyEventFromInputElement = (e: KeyboardEvent) => {
   )
 }
 
+const utxoToTableEntry = (utxo: Utxo): UtxoTableEntry => {
+  return {
+    ...utxo,
+  }
+}
+
 interface UtxosContentProps {
   jar: Jar
   enabled: boolean
 }
 
 export const UtxosContentProps = ({ enabled, jar }: UtxosContentProps) => {
+  const { t } = useTranslation()
+
+  const [_tableRowModel, setTableRowModel] = useState<RowModel<UtxoTableEntry>>()
+
+  const tableEntries = useMemo(() => {
+    return jar.utxos.map((it) => utxoToTableEntry(it))
+  }, [jar])
+
   return (
-    <pre aria-disabled={!enabled} className="text-xs">
-      {JSON.stringify(jar, null, 2)}
-    </pre>
+    <>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-1 gap-2">
+          {t('jar_details.utxo_list.title', { count: jar.utxos.length, jar: jar.name })}
+        </div>
+        <div className="flex items-center gap-1">
+          <Trans i18nKey="jar_details.utxo_list.text_balance_sum_total">
+            <Balance valueString={String(jar.balanceSummary.calculatedTotalBalanceInSats)} />
+          </Trans>
+        </div>
+      </div>
+      <JarUtxosTable
+        tableEntries={tableEntries}
+        selectedEntries={[]}
+        pinnedEntries={[]}
+        globalFilter={''}
+        onChange={(table) => {
+          setTableRowModel(table.getFilteredRowModel())
+        }}
+      />
+      <pre aria-disabled={!enabled} className="text-xs">
+        {JSON.stringify(jar, null, 2)}
+      </pre>
+    </>
   )
 }
 
