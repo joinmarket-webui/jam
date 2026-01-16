@@ -42,28 +42,27 @@ type SortKey = keyof UtxoTableEntry
 
 const columnHelper = createColumnHelper<UtxoTableEntry>()
 
-type OrderTableColumnMeta = { align?: string } | undefined
+type UtxoTableColumnMeta =
+  | {
+      align?: string
+      numeric?: boolean
+      alphabetic?: boolean
+    }
+  | undefined
 
 interface SortIconProps {
   className?: string
   sortKey: SortKey
   column: Column<UtxoTableEntry, unknown>
 }
-const SortIcon = ({ sortKey, column, className }: SortIconProps) => {
+const SortIcon = ({ column, className }: SortIconProps) => {
   const dir = column.getIsSorted()
   if (!dir) return <ArrowUpDownIcon className={className} />
-  const isNumeric =
-    sortKey === 'value' ||
-    sortKey === 'confirmations' ||
-    sortKey === 'mixdepth' ||
-    sortKey === 'locktime' ||
-    sortKey === 'tries' ||
-    sortKey === 'tries_remaining'
-  if (isNumeric) {
+  const meta = column.columnDef.meta as UtxoTableColumnMeta
+  if (meta?.numeric === true) {
     return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
   }
-  const isAlphabetic = sortKey === 'address' || sortKey === 'utxo' || sortKey === 'label' || sortKey === 'path'
-  if (isAlphabetic) {
+  if (meta?.alphabetic === true) {
     return dir === 'desc' ? <ArrowDownZAIcon className={className} /> : <ArrowUpAZIcon className={className} />
   }
   return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
@@ -112,6 +111,7 @@ export const JarUtxosTable = ({
         cell: (info) => <Balance valueString={String(info.getValue())} />,
         meta: {
           align: 'right',
+          numeric: true,
         },
       }),
       columnHelper.accessor('address', {
@@ -125,10 +125,16 @@ export const JarUtxosTable = ({
           return aid - bid
         },
         cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
+        meta: {
+          alphabetic: true,
+        },
       }),
       columnHelper.accessor('confirmations', {
         header: () => t('jar_details.utxo_list.column_title_confirmations'),
         cell: (info) => info.getValue(),
+        meta: {
+          numeric: true,
+        },
       }),
       columnHelper.accessor('label', {
         header: () => t('jar_details.utxo_list.column_title_label_and_status'),
@@ -238,8 +244,8 @@ export const JarUtxosTable = ({
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
                   const key = header.column.id as SortKey
-                  const alignCenter = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
-                  const alignRight = (header.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
+                  const alignCenter = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
+                  const alignRight = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -255,6 +261,8 @@ export const JarUtxosTable = ({
                           'cursor-pointer select-none': canSort,
                           'justify-center': alignCenter,
                           'justify-end': alignRight,
+                          'font-bold': header.column.getIsSorted(),
+                          'text-muted-foreground': table.getState().sorting.length > 0 && !header.column.getIsSorted(),
                         })}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
@@ -270,8 +278,8 @@ export const JarUtxosTable = ({
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                 {row.getVisibleCells().map((cell) => {
-                  const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
-                  const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
+                  const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
+                  const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
                   return (
                     <TableCell
                       key={cell.id}
@@ -290,8 +298,8 @@ export const JarUtxosTable = ({
               return (
                 <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                   {row.getVisibleCells().map((cell) => {
-                    const alignCenter = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'center'
-                    const alignRight = (cell.column.columnDef.meta as OrderTableColumnMeta)?.align === 'right'
+                    const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
+                    const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
                     return (
                       <TableCell
                         key={cell.id}
