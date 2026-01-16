@@ -62,7 +62,7 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
 
   return (
     <RadioGroup className="flex items-center justify-center" {...props}>
-      <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full max-w-50 cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none">
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 cursor-pointer flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
         <RadioGroupItem
           value={OFFERTYPE_ABS}
           id={`${id}-sw0absoffer`}
@@ -75,7 +75,7 @@ const OfferTypeInput = (props: React.ComponentProps<typeof RadioGroup>) => {
           </Label>
         </div>
       </div>
-      <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full max-w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none">
+      <div className="border-input has-data-[state=checked]:border-primary/50 has-data-[state=checked]:ring-primary/20 relative flex w-full max-w-50 flex-col items-center gap-3 rounded-md border p-4 shadow-xs outline-none has-data-[state=checked]:ring-[2px]">
         <RadioGroupItem
           value={OFFERTYPE_REL}
           id={`${id}-sw0reloffer`}
@@ -151,7 +151,7 @@ export function EarnForm({
       <Tabs value={watchOfferType}>
         <TabsContent value={OFFERTYPE_ABS}>
           <div className="space-y-2">
-            <Label htmlFor="rescanHeight" className="text-sm font-medium">
+            <Label htmlFor="offerAbsoluteFee" className="text-sm font-medium">
               {t('earn.label_abs_fee', {
                 fee: '', // empty on purpose
               })}
@@ -176,7 +176,7 @@ export function EarnForm({
         </TabsContent>
         <TabsContent value={OFFERTYPE_REL}>
           <div className="space-y-2">
-            <Label htmlFor="rescanHeight" className="text-sm font-medium">
+            <Label htmlFor="offerRelativeFeeInPercent" className="text-sm font-medium">
               {t('earn.label_rel_fee', {
                 fee: getValues('offerRelativeFeeInPercent') ? `(${getValues('offerRelativeFeeInPercent')!}%)` : '',
               })}
@@ -206,10 +206,10 @@ export function EarnForm({
         </TabsContent>
       </Tabs>
       <div className="space-y-2">
-        <Label htmlFor="rescanHeight" className="text-sm font-medium">
+        <Label htmlFor="offerMinAmount" className="text-sm font-medium">
           {t('earn.label_min_amount_input')}
         </Label>
-        <p className="text-muted-foreground text-xs">{/*TODO: i18n*/ t('rescan_chain.description_blockheight')}</p>
+        <p className="text-muted-foreground text-xs">{/*TODO: i18n t('earn.description_min_amount_input')*/}</p>
         <div className="relative">
           <div className="absolute top-1/2 left-3 -translate-y-1/2">{FieldPrefixSatSymbol}</div>
 

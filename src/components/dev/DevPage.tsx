@@ -113,9 +113,15 @@ export default function DevPage({ walletFileName }: DevPageProps) {
 
       <Tabs defaultValue="config" className="flex flex-col gap-4">
         <TabsList className="flex items-center gap-2">
-          <TabsTrigger value="config">Config</TabsTrigger>
-          <TabsTrigger value="wallet">Wallet</TabsTrigger>
-          <TabsTrigger value="links">Links</TabsTrigger>
+          <TabsTrigger value="config" className="cursor-pointer">
+            Config
+          </TabsTrigger>
+          <TabsTrigger value="wallet" className="cursor-pointer">
+            Wallet
+          </TabsTrigger>
+          <TabsTrigger value="links" className="cursor-pointer">
+            Links
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="config">
           <DevConfigTabContent walletFileName={walletFileName} />

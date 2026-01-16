@@ -7,6 +7,21 @@ import type { JarIndex } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 
+const isKeyEventFromInputElement = (e: KeyboardEvent) => {
+  return (
+    e.target &&
+    (('tagName' in e.target &&
+      (e.target['tagName'] === 'BUTTON' ||
+        e.target['tagName'] === 'AUDIO' ||
+        e.target['tagName'] === 'VIDEO' ||
+        e.target['tagName'] === 'SEARCH' ||
+        e.target['tagName'] === 'SELECT' ||
+        e.target['tagName'] === 'INPUT' ||
+        e.target['tagName'] === 'TEXTAREA')) ||
+      ('isContentEditable' in e.target && e.target.isContentEditable === true))
+  )
+}
+
 interface UtxosContentProps {
   jar: Jar
   enabled: boolean
@@ -50,9 +65,17 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
 
   useEffect(() => {
     if (!enabled) return
+
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'ArrowLeft') previousJar()
-      else if (e.code === 'ArrowRight') nextJar()
+      if (isKeyEventFromInputElement(e)) {
+        return
+      }
+
+      if (e.code === 'ArrowLeft') {
+        previousJar()
+      } else if (e.code === 'ArrowRight') {
+        nextJar()
+      }
     }
     const abortCtrl = new AbortController()
     document.addEventListener('keydown', onKeyDown, { signal: abortCtrl.signal })
@@ -65,11 +88,18 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
 
   return (
     <div className={cn('mx-auto space-y-3', className)}>
-      <Tabs value={activeJar?.jarIndex.toString()} className="flex flex-col gap-4">
+      <Tabs
+        value={activeJar?.jarIndex.toString()}
+        onValueChange={(value) => {
+          const jarIndex = parseInt(value, 10)
+          setActiveJar(jars.find((it) => it.jarIndex === jarIndex) ?? jars[0] ?? undefined)
+        }}
+        className="flex flex-col gap-4"
+      >
         <TabsList className="mx-auto flex items-center gap-2">
           {jars.map((it, index) => {
             return (
-              <TabsTrigger key={index} value={`${it.jarIndex}`} onClick={() => setActiveJar(it)}>
+              <TabsTrigger key={index} value={`${it.jarIndex}`} className="cursor-pointer" disabled={!enabled}>
                 {it.name}
               </TabsTrigger>
             )
@@ -78,9 +108,13 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
       </Tabs>
 
       <Tabs defaultValue="utxos" className="flex flex-col gap-4">
-        <TabsList className="flex items-center gap-2">
-          <TabsTrigger value="utxos">{t('jar_details.title_tab_utxos')}</TabsTrigger>
-          <TabsTrigger value="jar_details">{t('jar_details.title_tab_jar_details')}</TabsTrigger>
+        <TabsList className="mx-auto flex items-center gap-2">
+          <TabsTrigger value="utxos" className="cursor-pointer" disabled={!enabled}>
+            {t('jar_details.title_tab_utxos')}
+          </TabsTrigger>
+          <TabsTrigger value="jar_details" className="cursor-pointer" disabled={!enabled}>
+            {t('jar_details.title_tab_jar_details')}
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="utxos" className="flex flex-col gap-2">
           <Alert variant="warning">
