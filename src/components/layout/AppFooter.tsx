@@ -62,7 +62,7 @@ export function AppFooter({ websocketInfo }: AppFooterProps) {
   return (
     <>
       <footer className="flex items-center justify-between gap-2 p-4">
-        <div className="flex-1 text-xs">
+        <div className="hidden flex-1 text-xs sm:block">
           <BetaWarningModal open={isShowBetaWarning} onOpenChange={setShowBetaWarning} />
           <Trans i18nKey="footer.warning">
             This is pre-alpha software.
@@ -71,14 +71,24 @@ export function AppFooter({ websocketInfo }: AppFooterProps) {
             </Button>
           </Trans>
         </div>
-        <div className="flex flex-1 items-center justify-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => cheatsheet.onOpenChange(true)}>
+        <div className="flex flex-1 items-center justify-start gap-2 sm:justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => cheatsheet.onOpenChange(true)}
+            title={t('footer.cheatsheet')}
+          >
             <FileQuestionMarkIcon />
-            {t('footer.cheatsheet')}
+            <span className="hidden sm:inline-block">{t('footer.cheatsheet')}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setIsOrderbookOverlayOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsOrderbookOverlayOpen(true)}
+            title={t('footer.orderbook')}
+          >
             <BookOpenIcon />
-            {t('footer.orderbook')}
+            <span className="hidden sm:inline-block">{t('footer.orderbook')}</span>
           </Button>
         </div>
 

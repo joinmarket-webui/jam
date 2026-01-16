@@ -6,14 +6,16 @@ type ThemeToggleButtonProps = {
   theme: string
   variant: ComponentProps<typeof Button>['variant']
   onClick: ComponentProps<typeof Button>['onClick']
+  className: ComponentProps<typeof Button>['className']
 }
 
-export const ThemeToggleButton = ({ theme, variant, onClick }: ThemeToggleButtonProps) => {
+export const ThemeToggleButton = ({ theme, variant, onClick, className }: ThemeToggleButtonProps) => {
   return (
     <Button
       size="icon"
       variant={variant}
       onClick={onClick}
+      className={className}
       aria-label={/* TODO: i18n */ 'Toggle dark/light mode'}
       title={/* TODO: i18n */ 'Toggle dark/light mode'}
     >

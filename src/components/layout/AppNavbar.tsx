@@ -161,30 +161,31 @@ export function AppNavbar({
           <WithActivityIndicator active={schedulerRunning}>{t('navbar.tab_sweep')}</WithActivityIndicator>
         </Link>
       </div>
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2">
         {joiningRoute && (
           <Button
+            className="light:text-green-600 text-green-300"
             variant="ghost-navbar"
             size="icon"
             onClick={() => navigate(joiningRoute)}
             aria-label={t('navbar.joining_in_progress')}
             title={t('navbar.joining_in_progress')}
-            className="light:text-green-600 text-green-300"
           >
             <ShuffleIcon className="motion-safe:animate-pulse" />
           </Button>
         )}
-        <ThemeToggleButton variant="ghost-navbar" theme={theme} onClick={toggleTheme} />
+        <ThemeToggleButton className="hidden sm:flex" variant="ghost-navbar" theme={theme} onClick={toggleTheme} />
         <Button
-          aria-label={t('navbar.menu_mobile_settings')}
-          title={t('navbar.menu_mobile_settings')}
           variant="ghost-navbar"
           size="icon"
           onClick={() => navigate(routes.settings)}
+          aria-label={t('navbar.menu_mobile_settings')}
+          title={t('navbar.menu_mobile_settings')}
         >
           <SettingsIcon />
         </Button>
         <Button
+          className="hidden sm:flex"
           variant="ghost-navbar"
           size="icon"
           onClick={async () => await onLockWallet(navigate, t)}
@@ -194,6 +195,7 @@ export function AppNavbar({
           <LockKeyholeIcon />
         </Button>
         <Button
+          className="hidden sm:flex"
           variant="ghost-navbar"
           size="icon"
           onClick={async () => await onLogout(navigate)}
