@@ -31,7 +31,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-xs">
       <div className="fixed inset-0 z-0" onClick={handleClose} />
       <div
-        className={`relative z-10 flex max-h-[80vh] w-full max-w-[90vw] flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-200 ease-out sm:max-w-[550px] dark:bg-[#181b20] ${
+        className={`relative z-10 flex max-h-[95vh] w-full flex-col rounded-t-2xl bg-white shadow-2xl transition-transform duration-200 ease-out sm:max-h-[80vh] sm:max-w-[90vw] sm:max-w-[550px] dark:bg-[#181b20] ${
           isClosing ? 'animate-slide-down' : 'animate-slide-up'
         }`}
       >
@@ -43,7 +43,7 @@ export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
               <span className="sr-only">{t('global.close')}</span>
             </Button>
           </div>
-          <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+          <p className="text-muted-foreground mt-2 text-xs leading-relaxed sm:text-sm">
             <Trans i18nKey="cheatsheet.description">
               Follow the steps below to increase your financial privacy. It is advisable to switch from{' '}
               <a
