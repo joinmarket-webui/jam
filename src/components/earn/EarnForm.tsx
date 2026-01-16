@@ -119,8 +119,6 @@ export function EarnForm({
     }),
   )
 
-  console.log(schema)
-
   const {
     control,
     register,

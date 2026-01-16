@@ -124,7 +124,7 @@ export const WithAction: Story = {
         description: 'Your file has been uploaded successfully.',
         action: {
           label: 'View',
-          onClick: () => console.log('View clicked'),
+          onClick: () => alert('View clicked'),
         },
       })
     }
