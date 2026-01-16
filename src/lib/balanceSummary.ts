@@ -1,6 +1,6 @@
 import type { Utxo } from '@/hooks/useUtxos'
-import * as fb from '@/lib/fidelityBondUtils'
 import type { AmountSats, Milliseconds } from '@/types/global'
+import * as fb from './fidelityBondUtils'
 
 export type BalanceSummary = {
   /**

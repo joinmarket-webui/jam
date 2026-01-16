@@ -6,7 +6,7 @@ type ThemeToggleButtonProps = {
   theme: string
   variant: ComponentProps<typeof Button>['variant']
   onClick: ComponentProps<typeof Button>['onClick']
-  className: ComponentProps<typeof Button>['className']
+  className?: ComponentProps<typeof Button>['className']
 }
 
 export const ThemeToggleButton = ({ theme, variant, onClick, className }: ThemeToggleButtonProps) => {
