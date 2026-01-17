@@ -1,5 +1,6 @@
 import { HDKey } from '@scure/bip32'
 import { mnemonicToSeedSync } from '@scure/bip39'
+import { Network } from 'bitcoin-address-validation'
 
 /**
  * Derive account-level xpub from mnemonic phrase
@@ -12,11 +13,7 @@ import { mnemonicToSeedSync } from '@scure/bip39'
  * @param network - 'mainnet' or 'testnet' (default: 'mainnet')
  * @returns Extended public key (xpub for mainnet, tpub for testnet)
  */
-export function deriveAccountXpub(
-  mnemonic: string,
-  account: number = 0,
-  network: 'mainnet' | 'testnet' = 'mainnet',
-): string {
+export function deriveAccountXpub(mnemonic: string, account: number = 0, network: Network = Network.mainnet): string {
   // Convert mnemonic to seed
   const seed = mnemonicToSeedSync(mnemonic)
 
@@ -46,7 +43,7 @@ export function deriveAccountXpub(
 export function deriveAccountXpubs(
   mnemonic: string,
   accountCount: number = 5,
-  network: 'mainnet' | 'testnet' = 'mainnet',
+  network: Network = Network.mainnet,
 ): string[] {
   const xpubs: string[] = []
 
@@ -65,23 +62,23 @@ export function deriveAccountXpubs(
  * @param xpubSample - Optional sample xpub to detect from prefix
  * @returns 'mainnet' or 'testnet'
  */
-export function detectNetwork(walletFileName: string, xpubSample?: string): 'mainnet' | 'testnet' {
+export function detectNetwork(walletFileName: string, xpubSample?: string): Network {
   // Check xpub prefix if provided
   if (xpubSample) {
     if (xpubSample.startsWith('tpub') || xpubSample.startsWith('vpub')) {
-      return 'testnet'
+      return Network.testnet
     }
     if (xpubSample.startsWith('xpub') || xpubSample.startsWith('zpub')) {
-      return 'mainnet'
+      return Network.mainnet
     }
   }
 
   // Check wallet filename for testnet/regtest indicators
   const lowerName = walletFileName.toLowerCase()
   if (lowerName.includes('testnet') || lowerName.includes('regtest') || lowerName.includes('test')) {
-    return 'testnet'
+    return Network.testnet
   }
 
   // Default to mainnet
-  return 'mainnet'
+  return Network.mainnet
 }
