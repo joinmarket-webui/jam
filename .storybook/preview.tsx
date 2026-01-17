@@ -88,7 +88,9 @@ const withTheme = (Story: React.ComponentType, context: GlobalContext) => {
   )
 }
 
-const withQueryClient = (Story: React.ComponentType) => {
+// Use only when necessary! Try to pass data from queries to
+// components so they can be tested independently from an API.
+export const withQueryClient = (Story: React.ComponentType) => {
   const queryClient = new QueryClient()
   return (
     <QueryClientProvider client={queryClient}>
@@ -98,6 +100,6 @@ const withQueryClient = (Story: React.ComponentType) => {
 }
 
 // export decorators for storybook to wrap your stories in
-export const decorators = [withTheme, withI18next, withQueryClient]
+export const decorators = [withTheme, withI18next]
 
 export default preview

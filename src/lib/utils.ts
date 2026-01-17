@@ -103,7 +103,7 @@ export const factorToPercentage = (val: number, precision = 6) => {
   return Number((val * 100).toFixed(precision))
 }
 
-type SemVer = { major: number; minor: number; patch: number; raw?: string }
+export type SemVer = { major: number; minor: number; patch: number; raw?: string }
 
 export const UNKNOWN_VERSION: SemVer = { major: 0, minor: 0, patch: 0, raw: 'unknown' }
 

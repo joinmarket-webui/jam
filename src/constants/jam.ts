@@ -1,6 +1,11 @@
-import { percentageToFactor } from '@/lib/utils'
+import { percentageToFactor, toSemVer } from '@/lib/utils'
 import type { AmountSats, Milliseconds } from '@/types/global'
+import { version as packageInfoVersion } from '../../package.json'
 import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD } from './jm'
+
+export const APP_DISPLAY_VERSION = (() => {
+  return toSemVer(packageInfoVersion)
+})()
 
 export const TX_FEES_FACTOR_MIN = 0 // 0%
 
