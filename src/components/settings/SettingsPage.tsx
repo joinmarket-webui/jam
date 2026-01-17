@@ -6,7 +6,6 @@ import {
   SunIcon,
   MoonIcon,
   DollarSignIcon,
-  KeyIcon,
   FileTextIcon,
   BookIcon,
   ExternalLinkIcon,
@@ -15,6 +14,7 @@ import {
   PackageSearchIcon,
   ArrowLeftRightIcon,
   LockKeyholeIcon,
+  BookKeyIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -102,13 +102,6 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           />
           <Separator className="opacity-50" />
           <LanguageSelector />
-          <Separator className="opacity-50" />
-          <SettingSwitch
-            icon={KeyRoundIcon}
-            title={t('settings.power_user_mode')}
-            checked={jamSettings.state.powerUserMode}
-            onCheckedChange={(checked) => jamSettings.update({ powerUserMode: checked })}
-          />
         </CardContent>
       </Card>
 
@@ -135,22 +128,18 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </CardHeader>
         <CardContent className="space-y-0">
           <SettingItem
-            icon={KeyIcon}
+            icon={KeyRoundIcon}
             title={t('settings.show_seed')}
             action={async () => setShowSeedDialog(true)}
             disabled={hashedPassword === undefined}
           />
-          {jamSettings.state.powerUserMode && (
-            <>
-              <Separator className="opacity-50" />
-              <SettingItem
-                icon={KeyRoundIcon}
-                title={t('settings.show_xpubs')}
-                action={async () => setShowXpubsDialog(true)}
-                disabled={hashedPassword === undefined}
-              />
-            </>
-          )}
+          <Separator className="opacity-50" />
+          <SettingItem
+            icon={BookKeyIcon}
+            title={t('settings.show_xpubs')}
+            action={async () => setShowXpubsDialog(true)}
+            disabled={hashedPassword === undefined}
+          />
           <Separator className="opacity-50" />
           <SettingItem
             icon={LockKeyholeIcon}

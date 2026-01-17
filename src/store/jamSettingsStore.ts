@@ -7,7 +7,6 @@ export type JamSettings = {
   developerMode: boolean
   privateMode: boolean
   currencyUnit: Currency
-  powerUserMode: boolean
   cheatsheetForceOpenAt?: number
 }
 
@@ -21,7 +20,6 @@ const initial: JamSettings = {
   developerMode: isDevMode(),
   privateMode: false,
   currencyUnit: 'sats',
-  powerUserMode: false,
   cheatsheetForceOpenAt: undefined,
 }
 
