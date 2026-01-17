@@ -1,12 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { cx } from 'class-variance-authority'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon, CopyIcon, CheckIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { jarTemplates } from '@/components/layout/display-mode-context'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,14 +18,17 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
+import { useJars, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import { deriveAccountXpubs, detectNetwork } from '@/lib/bip32'
+import { deriveAccountXpub, detectNetwork } from '@/lib/bip32'
 import { hashPassword } from '@/lib/hash'
+import { cn } from '@/lib/utils'
 import { toNativeSegwitPub } from '@/lib/xpub'
 import { authStore } from '@/store/authStore'
+import type { JarIndex } from '@/types/global'
 
 interface AccountXpubInfo {
-  accountIndex: number
+  accountIndex: JarIndex
   accountName: string
   xpub: string
   path: string
@@ -41,24 +42,27 @@ interface AccountXpubInfo {
 async function deriveAccountXpubsFromSeed(
   seedPhrase: string,
   walletFileName: string,
-  accountCount: number = 5,
+  jars: Jar[],
 ): Promise<AccountXpubInfo[]> {
   // Detect network from wallet name
   const network = detectNetwork(walletFileName)
   const coinType = network === 'mainnet' ? 0 : 1
 
   // Derive xpubs for all accounts
-  const rawXpubs = deriveAccountXpubs(seedPhrase, accountCount, network)
+  const jarsWithXpub = jars.map((jar) => ({
+    jar,
+    xpub: deriveAccountXpub(seedPhrase, jar.jarIndex, network),
+  }))
 
   // Convert to native segwit format (zpub/vpub) and build account info
   const accounts: AccountXpubInfo[] = []
-  for (let i = 0; i < rawXpubs.length; i++) {
-    const convertedXpub = await toNativeSegwitPub(rawXpubs[i])
-    const accountName = i < jarTemplates.length ? jarTemplates[i].name : `Account ${i}`
+  for (let i = 0; i < jarsWithXpub.length; i++) {
+    const jarWithXpub = jarsWithXpub[i]
+    const convertedXpub = await toNativeSegwitPub(jarWithXpub.xpub)
 
     accounts.push({
-      accountIndex: i,
-      accountName,
+      accountIndex: jarWithXpub.jar.jarIndex,
+      accountName: jarWithXpub.jar.name,
       xpub: convertedXpub,
       path: `m/84'/${coinType}'/${i}'`,
     })
@@ -89,6 +93,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
   const queryClient = useQueryClient()
+  const { jars } = useJars()
 
   const seedQuery = useQuery({
     ...getseedOptions({
@@ -112,10 +117,10 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
 
   // Derive xpubs when seed data is available
   useEffect(() => {
-    if (seedQuery.data?.seedphrase) {
-      deriveAccountXpubsFromSeed(seedQuery.data.seedphrase, walletFileName).then(setAccountXpubs)
+    if (seedQuery.data?.seedphrase !== undefined) {
+      deriveAccountXpubsFromSeed(seedQuery.data.seedphrase, walletFileName, jars).then(setAccountXpubs)
     }
-  }, [seedQuery.data, walletFileName])
+  }, [seedQuery.data, walletFileName, jars])
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) {
@@ -354,13 +359,13 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
             <DialogFooter>
               <div className="flex w-full items-center justify-between">
                 <div
-                  className={cx('text-muted-foreground flex items-center gap-1 text-sm', {
+                  className={cn('text-muted-foreground flex items-center gap-1 text-sm', {
                     'light:text-red-600 animate-pulse text-red-800': secondsLeft <= 10,
                   })}
                 >
                   <ClockIcon className="h-4 w-4" />
                   <span
-                    className={cx('mt-0.5 font-mono', {
+                    className={cn('mt-0.5 font-mono', {
                       hidden: secondsLeft < 1,
                     })}
                   >
