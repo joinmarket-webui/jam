@@ -31,11 +31,18 @@ import type { JarIndex } from '@/types/global'
 
 const HD_PATH_PURPOSE: number = 84
 
+type Xpub = {
+  name: string
+  network: Network
+  path: string
+  xpub: string
+}
+
 interface AccountXpubInfo {
   accountIndex: JarIndex
   accountName: string
-  xpub: string
   path: string
+  xpubs: Xpub[]
 }
 
 /**
@@ -45,11 +52,9 @@ interface AccountXpubInfo {
  */
 async function deriveAccountXpubsFromSeed(
   seedPhrase: string,
-  walletFileName: string,
+  network: Network,
   jars: Jar[],
 ): Promise<AccountXpubInfo[]> {
-  // Detect network from wallet name
-  const network = detectNetwork(walletFileName)
   const coinType = network === Network.mainnet ? 0 : 1
 
   const seed = await mnemonicToSeed(seedPhrase)
@@ -58,15 +63,34 @@ async function deriveAccountXpubsFromSeed(
   const accounts: AccountXpubInfo[] = []
   for (let i = 0; i < jars.length; i++) {
     const jar = jars[i]
+
     const path = `m/${HD_PATH_PURPOSE}'/${coinType}'/${jar.jarIndex}'`
     const xpub = deriveAccountXpub(seed, path)
-    const convertedXpub = await toNativeSegwitPub(xpub)
+
+    const xpubs = []
+
+    if (HD_PATH_PURPOSE !== 84) {
+      xpubs.push({
+        name: 'xpub',
+        path,
+        network,
+        xpub: xpub,
+      })
+    } else {
+      const nativeSegwitXpub = await toNativeSegwitPub(xpub)
+      xpubs.push({
+        name: 'zpub',
+        path,
+        network,
+        xpub: nativeSegwitXpub,
+      })
+    }
 
     accounts.push({
       accountIndex: jar.jarIndex,
       accountName: jar.name,
-      xpub: convertedXpub,
       path,
+      xpubs: xpubs,
     })
   }
 
@@ -120,7 +144,9 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   // Derive xpubs when seed data is available
   useEffect(() => {
     if (seedQuery.data?.seedphrase !== undefined) {
-      deriveAccountXpubsFromSeed(seedQuery.data.seedphrase, walletFileName, jars).then(setAccountXpubs)
+      // Detect network from wallet name
+      const network = detectNetwork(walletFileName)
+      deriveAccountXpubsFromSeed(seedQuery.data.seedphrase, network, jars).then(setAccountXpubs)
     }
   }, [seedQuery.data, walletFileName, jars])
 
@@ -317,26 +343,30 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                                   <span className="text-muted-foreground/70 ml-2 font-mono">{account.path}</span>
                                 </Label>
                               </div>
-                              <div className="bg-muted flex items-center gap-2 rounded-md p-2">
-                                <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                                  {account.xpub}
-                                </code>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 shrink-0"
-                                  onClick={() => copyToClipboard(account.xpub)}
-                                  aria-label={t('settings.xpubs_modal.aria_copy_external', {
-                                    account: account.accountName,
-                                  })}
-                                >
-                                  {copiedXpub === account.xpub ? (
-                                    <CheckIcon className="h-3 w-3 text-green-500" />
-                                  ) : (
-                                    <CopyIcon className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </div>
+                              {account.xpubs.map((xpub, index) => (
+                                <>
+                                  <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
+                                    <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
+                                      {xpub.xpub}
+                                    </code>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6 shrink-0"
+                                      onClick={() => copyToClipboard(xpub.xpub)}
+                                      aria-label={t('settings.xpubs_modal.aria_copy_external', {
+                                        account: account.accountName,
+                                      })}
+                                    >
+                                      {copiedXpub === xpub.xpub ? (
+                                        <CheckIcon className="h-3 w-3 text-green-500" />
+                                      ) : (
+                                        <CopyIcon className="h-3 w-3" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </>
+                              ))}
                             </div>
                           </div>
                         </AccordionContent>
