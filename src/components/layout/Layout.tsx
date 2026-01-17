@@ -72,7 +72,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
       />
 
-      <Cheatsheet open={cheatsheet.isOpen} onOpenChange={cheatsheet.onOpenChange} />
+      <Cheatsheet open={cheatsheet.open} onOpenChange={cheatsheet.onOpenChange} />
       <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
     </div>
   )

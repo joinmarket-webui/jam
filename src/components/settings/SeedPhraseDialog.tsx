@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, type ComponentProps } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
@@ -20,14 +20,17 @@ import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
+import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import type { WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Switch } from '../ui/switch'
 
-interface SeedPhraseDialogProps {
-  walletFileName: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
+type SeedPhraseDialogProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+> & {
+  walletFileName: WalletFileName
 }
 
 // TODO: use react-hook-form and yup schema

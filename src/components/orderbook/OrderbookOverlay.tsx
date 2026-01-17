@@ -1,12 +1,14 @@
+import type { ComponentProps } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import type { WithRequiredProperty } from '@/types/global'
 import { OrderbookContent } from './OrderbookContent'
 
-interface OrderbookOverlayProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+type OrderbookOverlayProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+>
 
 export function OrderbookOverlay({ open, onOpenChange }: OrderbookOverlayProps) {
   const { t } = useTranslation()

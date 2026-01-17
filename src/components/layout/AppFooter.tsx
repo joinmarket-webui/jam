@@ -9,10 +9,7 @@ import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import type { SemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
-
-type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
-  [Property in Key]-?: Type[Property]
-}
+import type { WithRequiredProperty } from '@/types/global'
 
 type BetaWarningModalProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
