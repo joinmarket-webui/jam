@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
+import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon, CopyIcon, CheckIcon } from 'lucide-react'
@@ -28,6 +29,8 @@ import { toNativeSegwitPub } from '@/lib/xpub'
 import { authStore } from '@/store/authStore'
 import type { JarIndex } from '@/types/global'
 
+const HD_PATH_PURPOSE: number = 84
+
 interface AccountXpubInfo {
   accountIndex: JarIndex
   accountName: string
@@ -49,23 +52,21 @@ async function deriveAccountXpubsFromSeed(
   const network = detectNetwork(walletFileName)
   const coinType = network === Network.mainnet ? 0 : 1
 
-  // Derive xpubs for all accounts
-  const jarsWithXpub = jars.map((jar) => ({
-    jar,
-    xpub: deriveAccountXpub(seedPhrase, jar.jarIndex, network),
-  }))
+  const seed = await mnemonicToSeed(seedPhrase)
 
   // Convert to native segwit format (zpub/vpub) and build account info
   const accounts: AccountXpubInfo[] = []
-  for (let i = 0; i < jarsWithXpub.length; i++) {
-    const jarWithXpub = jarsWithXpub[i]
-    const convertedXpub = await toNativeSegwitPub(jarWithXpub.xpub)
+  for (let i = 0; i < jars.length; i++) {
+    const jar = jars[i]
+    const path = `m/${HD_PATH_PURPOSE}'/${coinType}'/${jar.jarIndex}'`
+    const xpub = deriveAccountXpub(seed, path)
+    const convertedXpub = await toNativeSegwitPub(xpub)
 
     accounts.push({
-      accountIndex: jarWithXpub.jar.jarIndex,
-      accountName: jarWithXpub.jar.name,
+      accountIndex: jar.jarIndex,
+      accountName: jar.name,
       xpub: convertedXpub,
-      path: `m/84'/${coinType}'/${i}'`,
+      path,
     })
   }
 

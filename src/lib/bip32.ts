@@ -1,4 +1,4 @@
-import { mnemonicToSeedSync } from '@scure/bip39'
+import { HDKey } from '@scure/bip32'
 import { Network } from 'bitcoin-address-validation'
 
 /**
@@ -7,21 +7,12 @@ import { Network } from 'bitcoin-address-validation'
  * - Mainnet: m/84'/0'/account'
  * - Testnet: m/84'/1'/account'
  *
- * @param mnemonic - BIP39 mnemonic phrase (12 or 24 words)
- * @param account - Account index (default: 0)
- * @param network - 'mainnet' or 'testnet' (default: 'mainnet')
+ * @param seed BIP39 mnemonic phrase (12 or 24 words)
+ * @param path HD key path (m / purpose' / coin_type' / account' / change / address_index), e.g. `m/84'/0'/0'`
  * @returns Extended public key (xpub for mainnet, tpub for testnet)
  */
-export function deriveAccountXpub(mnemonic: string, account: number = 0, network: Network = Network.mainnet): string {
-  // Convert mnemonic to seed
-  const seed = mnemonicToSeedSync(mnemonic)
-
-  // Create HD key from seed
+export function deriveAccountXpub(seed: Uint8Array, path: string): string {
   const root = HDKey.fromMasterSeed(seed)
-
-  // Derive account level key: m/84'/coin_type'/account'
-  const coinType = network === 'mainnet' ? 0 : 1
-  const path = `m/84'/${coinType}'/${account}'`
   const accountKey = root.derive(path)
 
   if (!accountKey.publicExtendedKey) {
@@ -29,28 +20,6 @@ export function deriveAccountXpub(mnemonic: string, account: number = 0, network
   }
 
   return accountKey.publicExtendedKey
-}
-
-/**
- * Derive xpubs for multiple accounts
- *
- * @param mnemonic - BIP39 mnemonic phrase
- * @param accountCount - Number of accounts to derive (default: 5, JoinMarket's default mixdepths)
- * @param network - 'mainnet' or 'testnet'
- * @returns Array of xpubs, one for each account
- */
-export function deriveAccountXpubs(
-  mnemonic: string,
-  accountCount: number = 5,
-  network: Network = Network.mainnet,
-): string[] {
-  const xpubs: string[] = []
-
-  for (let i = 0; i < accountCount; i++) {
-    xpubs.push(deriveAccountXpub(mnemonic, i, network))
-  }
-
-  return xpubs
 }
 
 /**
