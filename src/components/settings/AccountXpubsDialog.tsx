@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Network } from 'bitcoin-address-validation'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon, CopyIcon, CheckIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -46,7 +47,7 @@ async function deriveAccountXpubsFromSeed(
 ): Promise<AccountXpubInfo[]> {
   // Detect network from wallet name
   const network = detectNetwork(walletFileName)
-  const coinType = network === 'mainnet' ? 0 : 1
+  const coinType = network === Network.mainnet ? 0 : 1
 
   // Derive xpubs for all accounts
   const jarsWithXpub = jars.map((jar) => ({
