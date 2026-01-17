@@ -22,6 +22,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { authStore } from '@/store/authStore'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
+import { Switch } from '../ui/switch'
 
 interface SeedPhraseDialogProps {
   walletFileName: string
@@ -40,6 +41,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
   const [error, setError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
+  const [revealSeed, setRevealSeed] = useState(false)
 
   const queryClient = useQueryClient()
   const client = useApiClient()
@@ -52,8 +54,8 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
 
   const seedQuery = useQuery({
     ...seedQueryOptions,
-    staleTime: 1,
-    gcTime: 1,
+    staleTime: Infinity,
+    gcTime: Infinity,
     enabled: false,
     retry: false,
     select: (data) => data.seedphrase,
@@ -86,6 +88,8 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     if (timeLeft <= 0) {
       setPassword('')
       setPasswordVerifiedAt(undefined)
+      setShowPassword(false)
+      setRevealSeed(false)
       setError(undefined)
     }
   }, [timeLeft])
@@ -110,6 +114,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
       try {
         const hashed = hashPassword(password, walletFileName)
         if (hashed === authState?.hashed_password) {
+          setPassword('')
           setPasswordVerifiedAt(Date.now())
           setError(undefined)
         } else {
@@ -130,6 +135,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     setError(undefined)
     setShowPassword(false)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+    setRevealSeed(false)
     onOpenChange(false)
     queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
   }
@@ -211,11 +217,15 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                 <div className="bg-muted rounded-lg p-4">
                   {seedQuery.isFetching ? (
                     <div className="text-muted-foreground flex items-center justify-center gap-1">
-                      <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                      <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : seedQuery.data ? (
-                    <SeedPhraseGrid value={seedQuery.data.split(/\s+/)} className="md:grid-cols-3" />
+                    <SeedPhraseGrid
+                      className="md:grid-cols-3"
+                      value={seedQuery.data.split(/\s+/)}
+                      blurred={!revealSeed}
+                    />
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}
@@ -238,6 +248,17 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                   <AlertTitle>{t('settings.seed_modal.text_warning_title')}</AlertTitle>
                   <AlertDescription>{t('settings.seed_modal.text_warning_message')}</AlertDescription>
                 </Alert>
+              )}
+              {!seedQuery.error && (
+                <div className="flex justify-center gap-2">
+                  <Switch
+                    id="switch-reveal-seed"
+                    checked={revealSeed}
+                    onCheckedChange={(checked) => setRevealSeed(checked)}
+                    disabled={seedQuery.isFetching}
+                  />
+                  <Label htmlFor="switch-reveal-seed">{t('settings.reveal_seed')}</Label>
+                </div>
               )}
             </div>
 
