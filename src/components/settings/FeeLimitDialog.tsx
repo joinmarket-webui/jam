@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ComponentProps } from 'react'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
@@ -6,6 +6,8 @@ import { Loader2Icon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
+import { DevBadge } from '@/components/dev/DevBadge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -15,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { FEE_CONFIG_KEYS, type FeeConfigName } from '@/constants/jm'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -22,16 +25,16 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { factorToPercentage } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
-import { DevBadge } from '../ui/DevBadge'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
+import type { WithRequiredProperty } from '@/types/global'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
 
 //TODO: needs testing!
 
-interface FeeLimitDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+type FeeLimitDialogProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+> & {
   walletFileName: WalletFileName
 }
 
@@ -103,7 +106,7 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
 
       for (const { key, value } of configUpdates) {
         await setconfigMutation.mutateAsync({
-          path: { walletname: walletFileName },
+          path: { walletname: encodeURIComponent(walletFileName) },
           body: {
             ...FEE_CONFIG_KEYS[key],
             value,
@@ -177,11 +180,15 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
           {isDeveloperMode && (
             <>
               <div className="flex items-center gap-3">
-                <Switch checked={enableFormValidation} onCheckedChange={setEnableFormValidation} />
-                <div className="flex items-center gap-2">
+                <Switch
+                  id="fee-limit-form-validation-switch"
+                  checked={enableFormValidation}
+                  onCheckedChange={setEnableFormValidation}
+                />
+                <Label htmlFor="fee-limit-form-validation-switch" className="flex items-center gap-2">
                   <span className="text-sm font-medium">Enable form validation</span>
                   <DevBadge />
-                </div>
+                </Label>
               </div>
               <p className="text-muted-foreground text-sm">
                 Ability to reset fee values to test what the UI looks like, when a user does not have these values

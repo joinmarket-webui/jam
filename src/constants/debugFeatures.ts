@@ -3,7 +3,7 @@ interface DebugFeatures {
   insecureScheduleTesting: boolean
   allowCreatingExpiredFidelityBond: boolean
   skipWalletBackupConfirmation: boolean
-  errorExamplePage: boolean
+  devErrorExamplePage: boolean
   devPage: boolean
   devSetupPage: boolean
   importDummyMnemonicPhrase: boolean
@@ -19,7 +19,7 @@ const debugFeatures: DebugFeatures = {
   allowCreatingExpiredFidelityBond: devMode,
   insecureScheduleTesting: devMode,
   skipWalletBackupConfirmation: devMode,
-  errorExamplePage: devMode,
+  devErrorExamplePage: devMode,
   devPage: devMode,
   devSetupPage: devMode,
   importDummyMnemonicPhrase: devMode,

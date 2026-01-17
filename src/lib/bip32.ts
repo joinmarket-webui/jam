@@ -1,5 +1,5 @@
-import { mnemonicToSeedSync } from '@scure/bip39'
 import { HDKey } from '@scure/bip32'
+import { mnemonicToSeedSync } from '@scure/bip39'
 
 /**
  * Derive account-level xpub from mnemonic phrase
@@ -12,7 +12,11 @@ import { HDKey } from '@scure/bip32'
  * @param network - 'mainnet' or 'testnet' (default: 'mainnet')
  * @returns Extended public key (xpub for mainnet, tpub for testnet)
  */
-export function deriveAccountXpub(mnemonic: string, account: number = 0, network: 'mainnet' | 'testnet' = 'mainnet'): string {
+export function deriveAccountXpub(
+  mnemonic: string,
+  account: number = 0,
+  network: 'mainnet' | 'testnet' = 'mainnet',
+): string {
   // Convert mnemonic to seed
   const seed = mnemonicToSeedSync(mnemonic)
 
@@ -39,7 +43,11 @@ export function deriveAccountXpub(mnemonic: string, account: number = 0, network
  * @param network - 'mainnet' or 'testnet'
  * @returns Array of xpubs, one for each account
  */
-export function deriveAccountXpubs(mnemonic: string, accountCount: number = 5, network: 'mainnet' | 'testnet' = 'mainnet'): string[] {
+export function deriveAccountXpubs(
+  mnemonic: string,
+  accountCount: number = 5,
+  network: 'mainnet' | 'testnet' = 'mainnet',
+): string[] {
   const xpubs: string[] = []
 
   for (let i = 0; i < accountCount; i++) {

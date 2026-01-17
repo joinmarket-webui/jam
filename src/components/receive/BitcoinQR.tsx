@@ -3,16 +3,18 @@ import { DownloadIcon } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { satsToBtc } from '@/lib/utils'
+import { cn, satsToBtc } from '@/lib/utils'
+import type { AmountSats, BitcoinAddress } from '@/types/global'
 
 interface BitcoinQRProps {
-  address: string
-  amount?: number
+  className?: string
+  address: BitcoinAddress
+  amount?: AmountSats
   errorCorrectionLevel?: QRCode.QRCodeErrorCorrectionLevel
   width?: number
 }
 
-export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width = 260 }: BitcoinQRProps) => {
+export const BitcoinQR = ({ className, address, amount, errorCorrectionLevel = 'H', width = 260 }: BitcoinQRProps) => {
   const { t } = useTranslation()
   const [data, setData] = useState<string>()
   const [image, setImage] = useState<string>()
@@ -47,14 +49,17 @@ export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width =
   }
 
   return (
-    <div className="group/qrcode relative flex items-center justify-center" style={{ height: width, width: width }}>
+    <div
+      className={cn('group/qrcode relative flex items-center justify-center', className)}
+      style={{ height: width, width: width }}
+    >
       {image && (
         <>
           <img
+            className="transition-all duration-500 group-hover/qrcode:blur-[2px]"
             src={image}
             alt={data}
             title={data}
-            className="transition-all duration-500 group-hover/qrcode:blur-[2px]"
           />
           <Button
             variant="secondary"
@@ -62,7 +67,7 @@ export const BitcoinQR = ({ address, amount, errorCorrectionLevel = 'H', width =
             onClick={downloadQR}
             aria-label={t('receive.button_download_qr')}
           >
-            <DownloadIcon size={18} className="animate-bounce" />
+            <DownloadIcon className="motion-safe:animate-bounce" />
             {t('receive.button_download_qr')}
           </Button>
         </>

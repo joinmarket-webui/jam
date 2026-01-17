@@ -11,7 +11,6 @@ import {
   factorToPercentage,
   toSemVer,
   UNKNOWN_VERSION,
-  humanReadableDuration,
   formatBtc,
   formatSats,
   BTC,
@@ -19,9 +18,11 @@ import {
   isRelativeOffer,
   isAbsoluteOffer,
   SEGWIT_ACTIVATION_BLOCK,
+  delayedPromise,
+  pseudoRandomInteger,
+  pseudoRandomFloat,
   time,
-  ReloadDelay,
-  pseudoRandomNumber,
+  shortenStringMiddle,
 } from './utils'
 import type { WalletFileName } from './utils'
 
@@ -51,6 +52,24 @@ describe('walletDisplayName', () => {
 
   it('should use the correct wallet file extension', () => {
     expect(JM_WALLET_FILE_EXTENSION).toBe('.jmdat')
+  })
+})
+
+describe('shortenStringMiddle', () => {
+  it('should shorten string in the middle', () => {
+    expect(shortenStringMiddle('0')).toBe('0')
+    expect(shortenStringMiddle('01')).toBe('01')
+    expect(shortenStringMiddle('01', -1)).toBe('01')
+    expect(shortenStringMiddle('01', 0)).toBe('01')
+    expect(shortenStringMiddle('01', 1)).toBe('01')
+    expect(shortenStringMiddle('01', 2)).toBe('01')
+    expect(shortenStringMiddle('0123456789abcdef', 2)).toBe('0…f')
+    expect(shortenStringMiddle('0123456789abcdef', 8)).toBe('0123…cdef')
+    expect(shortenStringMiddle('0123456789abcdef', 8, '...')).toBe('0123...cdef')
+    expect(shortenStringMiddle('0123456789abcdef', 14)).toBe('0123456…9abcdef')
+    expect(shortenStringMiddle('0123456789abcdef', 15)).toBe('0123456…9abcdef')
+    expect(shortenStringMiddle('0123456789abcdef', 16)).toBe('0123456789abcdef')
+    expect(shortenStringMiddle('0123456789abcdef', 32)).toBe('0123456789abcdef')
   })
 })
 
@@ -273,82 +292,6 @@ describe('factorToPercentage', () => {
   })
 })
 
-describe('humanReadableDuration', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  it('should return "Expired" for past timestamps', () => {
-    const now = Date.now()
-    const pastTime = now - 1000
-    expect(humanReadableDuration({ to: pastTime })).toBe('Expired')
-  })
-
-  it('should return days when duration is more than 24 hours', () => {
-    const now = Date.now()
-    const oneDayFromNow = now + 24 * 60 * 60 * 1000
-    const twoDaysFromNow = now + 2 * 24 * 60 * 60 * 1000
-
-    expect(humanReadableDuration({ to: oneDayFromNow })).toBe('1 day')
-    expect(humanReadableDuration({ to: twoDaysFromNow })).toBe('2 days')
-  })
-
-  it('should return hours when duration is less than 24 hours but more than 1 hour', () => {
-    const now = Date.now()
-    const oneHourFromNow = now + 60 * 60 * 1000
-    const twoHoursFromNow = now + 2 * 60 * 60 * 1000
-    const twentyThreeHoursFromNow = now + 23 * 60 * 60 * 1000
-
-    expect(humanReadableDuration({ to: oneHourFromNow })).toBe('1 hour')
-    expect(humanReadableDuration({ to: twoHoursFromNow })).toBe('2 hours')
-    expect(humanReadableDuration({ to: twentyThreeHoursFromNow })).toBe('23 hours')
-  })
-
-  it('should return "Less than 1 hour" for durations less than an hour', () => {
-    const now = Date.now()
-    const thirtyMinutesFromNow = now + 30 * 60 * 1000
-    const fiveMinutesFromNow = now + 5 * 60 * 1000
-
-    expect(humanReadableDuration({ to: thirtyMinutesFromNow })).toBe('Less than 1 hour')
-    expect(humanReadableDuration({ to: fiveMinutesFromNow })).toBe('Less than 1 hour')
-  })
-
-  it('should handle mixed days and hours (prioritizing days)', () => {
-    const now = Date.now()
-    const oneDayAndFiveHoursFromNow = now + (24 + 5) * 60 * 60 * 1000
-
-    expect(humanReadableDuration({ to: oneDayAndFiveHoursFromNow })).toBe('1 day')
-  })
-
-  it('should format duration in human readable format', () => {
-    const from = Date.now()
-    const to = from + 2 * 24 * 60 * 60 * 1000 // 2 days
-
-    const result = time.humanReadableDuration({ from, to })
-    expect(result).toBe('in 2 days')
-  })
-
-  it('should handle past timestamps', () => {
-    const from = Date.now()
-    const to = from - 3600 * 1000 // 1 hour ago
-
-    const result = time.humanReadableDuration({ from, to })
-    expect(result).toBe('60 minutes ago')
-  })
-
-  it('should support different locales', () => {
-    const from = Date.now()
-    const to = from + 24 * 60 * 60 * 1000 // 1 day
-
-    const result = time.humanReadableDuration({ from, to, locale: 'en' })
-    expect(result).toBe('in 24 hours')
-  })
-})
-
 describe('formatBtc', () => {
   it('should format BTC values with 8 decimal places', () => {
     expect(formatBtc(1)).toBe('1.00000000')
@@ -449,33 +392,7 @@ describe('SEGWIT_ACTIVATION_BLOCK', () => {
   })
 })
 
-describe('time utility', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  describe('timeInterval', () => {
-    it('should calculate time interval between two timestamps', () => {
-      const from = Date.now()
-      const to = from + 5000
-
-      expect(time.timeInterval({ from, to })).toBe(5000)
-    })
-
-    it('should use current time as default from value', () => {
-      const now = Date.now()
-      const to = now + 3000
-
-      expect(time.timeInterval({ to })).toBe(3000)
-    })
-  })
-})
-
-describe('ReloadDelay', () => {
+describe('delayedPromise', () => {
   beforeEach(() => {
     vi.useFakeTimers()
   })
@@ -485,7 +402,7 @@ describe('ReloadDelay', () => {
   })
 
   it('should resolve after 500ms delay', async () => {
-    const delayPromise = ReloadDelay()
+    const delayPromise = delayedPromise(500)
 
     // Initially the promise should not be resolved
     let resolved = false
@@ -503,7 +420,7 @@ describe('ReloadDelay', () => {
   })
 
   it('should not resolve before 500ms', async () => {
-    const delayPromise = ReloadDelay()
+    const delayPromise = delayedPromise(500)
 
     let resolved = false
     delayPromise.then(() => {
@@ -521,23 +438,36 @@ describe('ReloadDelay', () => {
   })
 })
 
-describe('pseudoRandomNumber', () => {
-  it('should return a number within the specified range (inclusive)', () => {
+describe('pseudoRandomNumbers', () => {
+  it('should return a float within the specified range (inclusive)', () => {
+    const min = 0.021
+    const max = 0.079
+
+    // Run multiple times to test randomness
+    for (let i = 0; i < 100; i++) {
+      const result = pseudoRandomFloat(min, max)
+      expect(typeof result).toBe('number')
+      expect(result).toBeGreaterThanOrEqual(min)
+      expect(result).toBeLessThanOrEqual(max)
+    }
+  })
+
+  it('should return an integer within the specified range (inclusive)', () => {
     const min = 1
     const max = 10
 
     // Run multiple times to test randomness
     for (let i = 0; i < 100; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
+      expect(Number.isInteger(result)).toBe(true)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
-      expect(Number.isInteger(result)).toBe(true)
     }
   })
 
   it('should handle single value range', () => {
     const value = 5
-    const result = pseudoRandomNumber(value, value)
+    const result = pseudoRandomInteger(value, value)
     expect(result).toBe(value)
   })
 
@@ -546,7 +476,7 @@ describe('pseudoRandomNumber', () => {
     const max = -5
 
     for (let i = 0; i < 50; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
       expect(Number.isInteger(result)).toBe(true)
@@ -558,7 +488,7 @@ describe('pseudoRandomNumber', () => {
     const max = 5
 
     for (let i = 0; i < 50; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
       expect(Number.isInteger(result)).toBe(true)
@@ -570,7 +500,7 @@ describe('pseudoRandomNumber', () => {
     const max = 9999
 
     for (let i = 0; i < 20; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
       expect(Number.isInteger(result)).toBe(true)
@@ -584,7 +514,7 @@ describe('pseudoRandomNumber', () => {
 
     // Generate 50 random numbers
     for (let i = 0; i < 50; i++) {
-      results.add(pseudoRandomNumber(min, max))
+      results.add(pseudoRandomInteger(min, max))
     }
 
     // We should have more than 1 unique value (very high probability)
@@ -596,7 +526,7 @@ describe('pseudoRandomNumber', () => {
     const max = 5.3
 
     for (let i = 0; i < 20; i++) {
-      const result = pseudoRandomNumber(min, max)
+      const result = pseudoRandomInteger(min, max)
       expect(result).toBeGreaterThanOrEqual(min)
       // The function can return values beyond max when using decimal inputs
       // because Math.round(Math.random() * (max - min)) can round up to Math.round(max - min)
@@ -606,5 +536,126 @@ describe('pseudoRandomNumber', () => {
       // The result may be a decimal when decimal inputs are provided
       expect(typeof result).toBe('number')
     }
+  })
+})
+
+describe('time', () => {
+  const locale = 'en'
+  const now = Date.UTC(2009, 0, 3)
+
+  const oneWeek = Date.UTC(1970, 0, 8)
+  const oneDay = Date.UTC(1970, 0, 2)
+
+  const oneDayFromNow = now + oneDay
+  const oneWeekFromNow = now + oneWeek
+  const fourWeeksFromNow = now + 4 * oneWeek
+  const oneMonthFromNow = now + Date.UTC(1970, 1)
+  const twoMonthsFromNow = now + Date.UTC(1970, 2)
+  const oneAndAHalfYearFromNow = now + Date.UTC(1971, 6)
+  const twoYearsFromNow = now + Date.UTC(1972, 0)
+
+  describe('timeInterval', () => {
+    it('should work for dates in the future', () => {
+      expect(time.timeInterval({ from: now, to: oneDayFromNow })).toBe(oneDay)
+      expect(time.timeInterval({ from: now, to: oneWeekFromNow })).toBe(oneWeek)
+      expect(time.timeInterval({ from: now, to: fourWeeksFromNow })).toBe(4 * oneWeek)
+    })
+
+    it('should work for dates in the past', () => {
+      expect(time.timeInterval({ from: oneDayFromNow, to: now })).toBe(-oneDay)
+      expect(time.timeInterval({ from: oneWeekFromNow, to: now })).toBe(-oneWeek)
+      expect(time.timeInterval({ from: fourWeeksFromNow, to: now })).toBe(-4 * oneWeek)
+    })
+
+    it('should work for equal dates', () => {
+      expect(time.timeInterval({ from: now, to: now })).toBe(0)
+    })
+  })
+
+  it('humanReadableDuration', () => {
+    expect(time.humanReadableDuration({ locale, to: now, from: now - 1 })).toBe('in 0 seconds')
+    expect(time.humanReadableDuration({ locale, to: now, from: now })).toBe('in 0 seconds')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 1 })).toBe('0 seconds ago')
+
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 499 })).toBe('0 seconds ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 500 })).toBe('0 seconds ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 501 })).toBe('1 second ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 1_000 })).toBe('1 second ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 59_499 })).toBe('59 seconds ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 59_500 })).toBe('59 seconds ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 59_501 })).toBe('60 seconds ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 89_999 })).toBe('1 minute ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 90_000 })).toBe('1 minute ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: now + 90_001 })).toBe('2 minutes ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: oneDayFromNow - 1 })).toBe('24 hours ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: oneDayFromNow })).toBe('24 hours ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: oneDayFromNow + 1 })).toBe('1 day ago')
+
+    expect(time.humanReadableDuration({ locale, to: now, from: oneWeekFromNow })).toBe('7 days ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: fourWeeksFromNow })).toBe('28 days ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: oneMonthFromNow })).toBe('1 month ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: twoMonthsFromNow })).toBe('2 months ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: oneAndAHalfYearFromNow })).toBe('1 year ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: twoYearsFromNow })).toBe('2 years ago')
+    expect(time.humanReadableDuration({ locale, to: now, from: Date.UTC(2022, 1, 18) })).toBe('13 years ago')
+
+    expect(time.humanReadableDuration({ locale, to: now - 1, from: now })).toBe('0 seconds ago')
+    expect(time.humanReadableDuration({ locale, to: now + 1, from: now })).toBe('in 0 seconds')
+
+    expect(time.humanReadableDuration({ locale, to: now + 499, from: now })).toBe('in 0 seconds')
+    expect(time.humanReadableDuration({ locale, to: now + 500, from: now })).toBe('in 1 second')
+    expect(time.humanReadableDuration({ locale, to: now + 501, from: now })).toBe('in 1 second')
+    expect(time.humanReadableDuration({ locale, to: now + 1000, from: now })).toBe('in 1 second')
+    expect(time.humanReadableDuration({ locale, to: now + 59_499, from: now })).toBe('in 59 seconds')
+    expect(time.humanReadableDuration({ locale, to: now + 59_500, from: now })).toBe('in 60 seconds')
+    expect(time.humanReadableDuration({ locale, to: now + 59_501, from: now })).toBe('in 60 seconds')
+    expect(time.humanReadableDuration({ locale, to: now + 89_999, from: now })).toBe('in 1 minute')
+    expect(time.humanReadableDuration({ locale, to: now + 90_000, from: now })).toBe('in 2 minutes')
+    expect(time.humanReadableDuration({ locale, to: now + 90_001, from: now })).toBe('in 2 minutes')
+    expect(time.humanReadableDuration({ locale, to: oneDayFromNow - 1, from: now })).toBe('in 24 hours')
+    expect(time.humanReadableDuration({ locale, to: oneDayFromNow, from: now })).toBe('in 24 hours')
+    expect(time.humanReadableDuration({ locale, to: oneDayFromNow + 1, from: now })).toBe('in 1 day')
+
+    expect(time.humanReadableDuration({ locale, to: oneWeekFromNow, from: now })).toBe('in 7 days')
+    expect(time.humanReadableDuration({ locale, to: fourWeeksFromNow, from: now })).toBe('in 28 days')
+    expect(time.humanReadableDuration({ locale, to: oneMonthFromNow, from: now })).toBe('in 1 month')
+    expect(time.humanReadableDuration({ locale, to: twoMonthsFromNow, from: now })).toBe('in 2 months')
+    expect(time.humanReadableDuration({ locale, to: oneAndAHalfYearFromNow, from: now })).toBe('in 1 year')
+    expect(time.humanReadableDuration({ locale, to: twoYearsFromNow, from: now })).toBe('in 2 years')
+    expect(time.humanReadableDuration({ locale, to: Date.UTC(2022, 1, 18), from: now })).toBe('in 13 years')
+  })
+
+  // Not every month of the year has the same amount of days:
+  // Demonstrate and verify that month handling is sane.
+  // Also show the edge cases for month having 30 or less days.
+  it('should display elapsed time for month values in a sane way', () => {
+    const feb01 = Date.UTC(2009, 1, 1)
+    expect(time.humanReadableDuration({ locale, to: feb01, from: feb01 + Date.UTC(1970, 0, 31) })).toBe('30 days ago')
+    expect(time.humanReadableDuration({ locale, to: feb01, from: feb01 + Date.UTC(1970, 1, 1) })).toBe('1 month ago')
+    expect(time.humanReadableDuration({ locale, to: feb01, from: feb01 + Date.UTC(1971, 0, 1) })).toBe('12 months ago')
+    expect(time.humanReadableDuration({ locale, to: feb01, from: feb01 + Date.UTC(1971, 0, 2) })).toBe('1 year ago')
+
+    expect(time.humanReadableDuration({ locale, to: feb01 + Date.UTC(1970, 0, 31), from: feb01 })).toBe('in 30 days')
+    expect(time.humanReadableDuration({ locale, to: feb01 + Date.UTC(1970, 1, 1), from: feb01 })).toBe('in 1 month')
+    expect(time.humanReadableDuration({ locale, to: feb01 + Date.UTC(1971, 0, 1), from: feb01 })).toBe('in 12 months')
+    expect(time.humanReadableDuration({ locale, to: feb01 + Date.UTC(1971, 0, 2), from: feb01 })).toBe('in 1 year')
+
+    const mar03 = Date.UTC(2009, 2, 3)
+    expect(time.humanReadableDuration({ locale, to: feb01, from: mar03 })).toBe('30 days ago')
+    expect(time.humanReadableDuration({ locale, to: mar03, from: feb01 })).toBe('in 30 days')
+
+    const mar04 = Date.UTC(2009, 2, 4)
+    expect(time.humanReadableDuration({ locale, to: feb01, from: mar04 })).toBe('1 month ago')
+    expect(time.humanReadableDuration({ locale, to: mar04, from: feb01 })).toBe('in 1 month')
+  })
+
+  it('should be able to display localized versions', () => {
+    expect(time.humanReadableDuration({ locale: 'es', to: now, from: now })).toBe('dentro de 0 segundos')
+    expect(time.humanReadableDuration({ locale: 'fr', to: now, from: now })).toBe('dans 0 seconde')
+    expect(time.humanReadableDuration({ locale: 'hi', to: now, from: now })).toBe('0 सेकंड में')
+    expect(time.humanReadableDuration({ locale: 'it', to: now, from: now })).toBe('tra 0 secondi')
+    expect(time.humanReadableDuration({ locale: 'zh', to: now, from: now })).toBe('0秒钟后')
+    // fallback to english
+    expect(time.humanReadableDuration({ locale: 'xx', to: now, from: now })).toBe('in 0 seconds')
   })
 })

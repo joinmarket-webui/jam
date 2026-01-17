@@ -21,8 +21,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
-import { hashPassword } from '@/lib/hash'
 import { deriveAccountXpubs, detectNetwork } from '@/lib/bip32'
+import { hashPassword } from '@/lib/hash'
 import { toNativeSegwitPub } from '@/lib/xpub'
 import { authStore } from '@/store/authStore'
 
@@ -283,9 +283,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                         <AlertTriangleIcon className="light:text-red-800 m-1 h-4 w-4 shrink-0 text-red-200" />
                         <p className="text-md font-medium">{t('settings.xpubs_modal.text_error_title')}</p>
                       </div>
-                      <p className="p-1 text-xs">
-                        {seedQuery.error.message || t('global.errors.reason_unknown')}
-                      </p>
+                      <p className="p-1 text-xs">{seedQuery.error.message || t('global.errors.reason_unknown')}</p>
                     </div>
                   </div>
                 </div>

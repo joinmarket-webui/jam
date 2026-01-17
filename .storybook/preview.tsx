@@ -1,16 +1,19 @@
 import { Suspense, useEffect } from 'react'
 import type { Preview } from '@storybook/react-vite'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { ThemeProvider } from 'next-themes'
 import { I18nextProvider } from 'react-i18next'
+import { CoreTypes, GlobalTypes } from 'storybook/internal/csf'
 import i18n from '../src/i18n/config'
 import '../src/index.css'
 
 // Create a global variable called locale in storybook
 // and add a menu in the toolbar to change your locale
-export const globalTypes = {
+export const globalTypes: GlobalTypes = {
   locale: {
     name: 'Locale',
     description: 'Internationalization locale',
+    defaultValue: 'en',
     toolbar: {
       icon: 'globe',
       items: [
@@ -28,8 +31,24 @@ export const globalTypes = {
   },
 }
 
+type GlobalContext = {
+  globals: {
+    locale: (typeof globalTypes)['locale']['toolbar']['items'][number]['value']
+    backgrounds: NonNullable<NonNullable<CoreTypes['parameters']['backgrounds']>['options']>[string]
+  }
+}
+
 const preview: Preview = {
+  initialGlobals: {
+    backgrounds: { value: 'dark' },
+  },
   parameters: {
+    backgrounds: {
+      options: {
+        dark: { name: 'Dark', value: '#181b20' },
+        light: { name: 'Light', value: '#ffffff' },
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -44,8 +63,7 @@ const preview: Preview = {
     },
   },
 }
-
-const withI18next = (Story, context) => {
+const withI18next = (Story: React.ComponentType, context: GlobalContext) => {
   const { locale } = context.globals
 
   useEffect(() => {
@@ -61,7 +79,18 @@ const withI18next = (Story, context) => {
   )
 }
 
-const withQueryClient = (Story) => {
+const withTheme = (Story: React.ComponentType, context: GlobalContext) => {
+  const { backgrounds } = context.globals
+  return (
+    <ThemeProvider forcedTheme={backgrounds.value}>
+      <Story />
+    </ThemeProvider>
+  )
+}
+
+// Use only when necessary! Try to pass data from queries to
+// components so they can be tested independently from an API.
+export const withQueryClient = (Story: React.ComponentType) => {
   const queryClient = new QueryClient()
   return (
     <QueryClientProvider client={queryClient}>
@@ -71,6 +100,6 @@ const withQueryClient = (Story) => {
 }
 
 // export decorators for storybook to wrap your stories in
-export const decorators = [withI18next, withQueryClient]
+export const decorators = [withTheme, withI18next]
 
 export default preview

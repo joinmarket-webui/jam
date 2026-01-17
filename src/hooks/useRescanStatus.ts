@@ -7,7 +7,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { useApiClient } from './useApiClient'
 
-interface RescanInfo {
+export interface RescanInfo {
   updatedAt: number
   rescanning: boolean
   progress?: number
@@ -29,14 +29,16 @@ export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
     () =>
       getrescaninfoOptions({
         client,
-        path: { walletname: walletFileName },
+        path: { walletname: encodeURIComponent(walletFileName) },
       }),
     [client, walletFileName],
   )
 
   const getrescaninfoQuery = useQuery({
     ...getrescaninfoQueryOptions,
-    queryFn: withQueryDelay(getrescaninfoQueryOptions.queryFn, 1_000),
+    queryFn: withQueryDelay(getrescaninfoQueryOptions.queryFn, {
+      delayBefore: 1_000,
+    }),
     refetchInterval: JAM_RESCAN_PROGRESS_INTERVAL,
     refetchIntervalInBackground: true,
     enabled: rescanInfo.rescanning || jmSession.state?.rescanning === true,

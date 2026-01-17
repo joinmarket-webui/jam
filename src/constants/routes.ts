@@ -11,6 +11,7 @@ export const routes = {
   settings: '/settings',
   orderbook: '/orderbook',
   logs: '/logs',
+  walletJarsDetails: '/wallet/jars',
   /* walletList: '/',
   wallet: '/wallet',
   importWallet: '/import-wallet',

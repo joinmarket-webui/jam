@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, type ComponentProps } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -19,14 +20,20 @@ import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
+import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import type { WithRequiredProperty } from '@/types/global'
+import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
+import { Switch } from '../ui/switch'
 
-interface SeedPhraseDialogProps {
-  walletFileName: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
+type SeedPhraseDialogProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+> & {
+  walletFileName: WalletFileName
 }
 
+// TODO: use react-hook-form and yup schema
 export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhraseDialogProps) => {
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
@@ -37,29 +44,31 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
   const [error, setError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
+  const [revealSeed, setRevealSeed] = useState(false)
 
+  const queryClient = useQueryClient()
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
 
+  const seedQueryOptions = getseedOptions({
+    client,
+    path: { walletname: encodeURIComponent(walletFileName) },
+  })
+
   const seedQuery = useQuery({
-    ...getseedOptions({
-      client,
-      path: { walletname: walletFileName },
-    }),
-    staleTime: 1,
-    gcTime: 1,
+    ...seedQueryOptions,
+    staleTime: Infinity,
+    gcTime: Infinity,
     enabled: false,
     retry: false,
     select: (data) => data.seedphrase,
   })
-  const seedQueryData = useMemo(() => seedQuery.data, [seedQuery.data])
-  const seedQueryRefetch = useMemo(() => seedQuery.refetch, [seedQuery.refetch])
 
   useEffect(() => {
-    if (open && isPasswordVerified && seedQueryData === undefined) {
-      seedQueryRefetch()
+    if (open && isPasswordVerified && seedQuery.data === undefined) {
+      seedQuery.refetch()
     }
-  }, [open, isPasswordVerified, seedQueryData, seedQueryRefetch])
+  }, [open, isPasswordVerified, seedQuery])
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) {
@@ -82,6 +91,8 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     if (timeLeft <= 0) {
       setPassword('')
       setPasswordVerifiedAt(undefined)
+      setShowPassword(false)
+      setRevealSeed(false)
       setError(undefined)
     }
   }, [timeLeft])
@@ -106,6 +117,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
       try {
         const hashed = hashPassword(password, walletFileName)
         if (hashed === authState?.hashed_password) {
+          setPassword('')
           setPasswordVerifiedAt(Date.now())
           setError(undefined)
         } else {
@@ -126,7 +138,9 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     setError(undefined)
     setShowPassword(false)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
+    setRevealSeed(false)
     onOpenChange(false)
+    queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
   }
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
@@ -159,16 +173,17 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={t('settings.seed_modal.verification.placeholder_password')}
-                    className={error ? 'border-destructive' : ''}
+                    className={error ? 'border-destructive' : undefined}
                   />
                   <Button
+                    tabIndex={-1}
                     type="button"
-                    variant="ghost"
+                    variant="link"
                     size="icon"
-                    className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute top-1/2 right-0 -translate-y-1/2 transform"
+                    onClick={() => setShowPassword((val) => !val)}
                   >
-                    {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                    {showPassword ? <EyeIcon /> : <EyeOffIcon />}
                   </Button>
                 </div>
                 {error && <p className="text-destructive text-sm">{error}</p>}
@@ -179,10 +194,15 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
               <Button variant="outline" onClick={handleClose}>
                 {t('global.cancel')}
               </Button>
-              <Button onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
-                {isSubmitting
-                  ? t('settings.seed_modal.verification.text_button_submitting')
-                  : t('settings.seed_modal.verification.text_button_submit')}
+              <Button type="submit" onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                    {t('settings.seed_modal.verification.text_button_submitting')}
+                  </>
+                ) : (
+                  t('settings.seed_modal.verification.text_button_submit')
+                )}
               </Button>
             </DialogFooter>
           </>
@@ -197,21 +217,18 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
 
             <div className="space-y-4">
               {!seedQuery.error && (
-                <div className="bg-muted rounded-lg p-4 px-7">
+                <div className="bg-muted rounded-lg p-4">
                   {seedQuery.isFetching ? (
                     <div className="text-muted-foreground flex items-center justify-center gap-1">
-                      <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                      <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : seedQuery.data ? (
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                      {seedQuery.data.split(/\s+/).map((word: string, index: number) => (
-                        <div key={index} className="light:bg-white flex items-center gap-2 border bg-zinc-700 p-2">
-                          <span className="text-muted-foreground w-4 text-xs">{index + 1}.</span>
-                          <span className="font-mono">{word}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <SeedPhraseGrid
+                      className="md:grid-cols-3"
+                      value={seedQuery.data.split(/\s+/)}
+                      blurred={!revealSeed}
+                    />
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}
@@ -221,30 +238,29 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
               )}
 
               {!seedQuery.isFetching && seedQuery.error && (
-                <div className="light:border-red-800 light:bg-red-50 rounded-lg border border-red-200 bg-red-900/20 p-2">
-                  <div className="flex items-start gap-2">
-                    <div className="light:text-red-800 text-sm text-red-200">
-                      <div className="flex items-center">
-                        <AlertTriangleIcon className="light:text-red-800 m-1 h-4 w-4 shrink-0 text-red-200" />
-                        <p className="text-md font-medium"> {t('settings.seed_modal.text_error_title')}</p>
-                      </div>
-                      <p className="p-1 text-xs">{seedQuery.error.message || t('global.errors.reason_unknown')}</p>
-                    </div>
-                  </div>
-                </div>
+                <Alert variant="destructive">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
+                  <AlertDescription>{seedQuery.error.message || t('global.errors.reason_unknown')}</AlertDescription>
+                </Alert>
               )}
 
               {!seedQuery.isFetching && seedQuery.data && (
-                <div className="light:border-yellow-800 light:bg-yellow-50 rounded-lg border border-yellow-200 bg-yellow-900/20 p-2">
-                  <div className="flex items-start gap-2">
-                    <div className="light:text-yellow-800 text-sm text-yellow-200">
-                      <div className="flex items-center">
-                        <AlertTriangleIcon className="light:text-yellow-500 m-1 h-4 w-4 shrink-0 text-yellow-200" />
-                        <p className="text-md font-medium">{t('settings.seed_modal.text_warning_title')}</p>
-                      </div>
-                      <p className="p-1 text-xs">{t('settings.seed_modal.text_warning_message')}</p>
-                    </div>
-                  </div>
+                <Alert variant="warning">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('settings.seed_modal.text_warning_title')}</AlertTitle>
+                  <AlertDescription>{t('settings.seed_modal.text_warning_message')}</AlertDescription>
+                </Alert>
+              )}
+              {!seedQuery.error && (
+                <div className="flex justify-center gap-2">
+                  <Switch
+                    id="switch-reveal-seed"
+                    checked={revealSeed}
+                    onCheckedChange={(checked) => setRevealSeed(checked)}
+                    disabled={seedQuery.isFetching}
+                  />
+                  <Label htmlFor="switch-reveal-seed">{t('settings.reveal_seed')}</Label>
                 </div>
               )}
             </div>

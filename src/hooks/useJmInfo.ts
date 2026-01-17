@@ -1,18 +1,25 @@
 import { versionOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
-import { useQuery } from '@tanstack/react-query'
+import type { ErrorMessage, VersionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useApiClient } from '@/hooks/useApiClient'
-import { toSemVer } from '@/lib/utils'
+import { toSemVer, type SemVer } from '@/lib/utils'
 
-export const useJmInfo = () => {
+type UseJmInfoResult = {
+  version: SemVer | undefined
+  queryResult: UseQueryResult<VersionResponse, ErrorMessage>
+}
+
+export function useJmInfo(): UseJmInfoResult {
   const client = useApiClient()
 
-  const { data, isPending } = useQuery({
+  const queryResult = useQuery({
     ...versionOptions({ client }),
     staleTime: Infinity,
+    gcTime: Infinity,
   })
 
   return {
-    version: data ? toSemVer(data.version) : undefined,
-    isLoading: isPending,
+    version: queryResult.data ? toSemVer(queryResult.data.version) : undefined,
+    queryResult,
   }
 }
