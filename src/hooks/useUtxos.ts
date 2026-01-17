@@ -31,6 +31,7 @@ type UseUtxosResult = {
   utxos: Utxo[]
   queryResult: UseQueryResult<ListUtxosResponse, ErrorMessage>
 }
+
 interface UseUtxosProps {
   walletFileName: WalletFileName
 }

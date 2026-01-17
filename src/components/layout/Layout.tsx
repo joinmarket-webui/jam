@@ -7,8 +7,10 @@ import { AppFooter } from '@/components/layout/AppFooter'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { useSidebar } from '@/components/ui/use-sidebar'
+import { APP_DISPLAY_VERSION } from '@/constants/jam'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useJmInfo } from '@/hooks/useJmInfo'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { AppSidebar } from './AppSidebar'
@@ -25,6 +27,8 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const { t } = useTranslation()
   const navigate = useNavigate()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+
+  const { version: joinmarketVersion } = useJmInfo()
 
   const { resolvedTheme, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
@@ -53,7 +57,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         sidebarInfo={sidebarContext}
       />
       <main className="flex-1">{children}</main>
-      <AppFooter websocketInfo={websocket} />
+      <AppFooter websocketInfo={websocket} jamVersion={APP_DISPLAY_VERSION} joinmarketVersion={joinmarketVersion} />
     </div>
   )
 }

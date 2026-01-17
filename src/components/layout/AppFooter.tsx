@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
 import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, FileQuestionMarkIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
@@ -9,23 +9,27 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
-import { useJmInfo } from '@/hooks/useJmInfo'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
-import { toSemVer } from '@/lib/utils'
+import type { SemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import packageInfo from '../../../package.json'
 
-const APP_DISPLAY_VERSION = (() => {
-  const version = toSemVer(packageInfo.version)
-  return version.raw
-})()
+type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
+  [Property in Key]-?: Type[Property]
+}
 
-const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
+type BetaWarningModalProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+> & {
+  jamVersion: SemVer
+  joinmarketVersion?: SemVer
+}
+
+const BetaWarningModal = ({ jamVersion, joinmarketVersion, ...dialogProps }: BetaWarningModalProps) => {
   const { t } = useTranslation()
-  const { version } = useJmInfo()
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog {...dialogProps}>
       <DialogContent className="pt-12" showCloseButton={true}>
         <Alert variant="default">
           <AlertTriangleIcon />
@@ -34,12 +38,12 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
         </Alert>
 
         <p className="text-muted-foreground text-sm">
-          JoinMarket: v{version?.raw || '_unknown'}
+          JoinMarket: v{joinmarketVersion?.raw || '_unknown'}
           <br />
-          Jam: v{APP_DISPLAY_VERSION}
+          Jam: v{jamVersion.raw || '_unknown'}
         </p>
         <DialogFooter>
-          <Button onClick={() => onOpenChange(false)}>{t('footer.warning_alert_button_ok')}</Button>
+          <Button onClick={() => dialogProps.onOpenChange(false)}>{t('footer.warning_alert_button_ok')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -47,11 +51,12 @@ const BetaWarningModal = ({ open, onOpenChange }: { open: boolean; onOpenChange:
 }
 
 type JmWebsocketInfo = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
-interface AppFooterProps {
+
+type AppFooterProps = Pick<BetaWarningModalProps, 'jamVersion' | 'joinmarketVersion'> & {
   websocketInfo?: JmWebsocketInfo
 }
 
-export function AppFooter({ websocketInfo }: AppFooterProps) {
+export function AppFooter({ websocketInfo, jamVersion, joinmarketVersion }: AppFooterProps) {
   const { t } = useTranslation()
   const cheatsheet = useCheatsheet()
 
@@ -63,7 +68,12 @@ export function AppFooter({ websocketInfo }: AppFooterProps) {
     <>
       <footer className="flex items-center justify-between gap-2 p-4">
         <div className="hidden flex-1 text-xs sm:block">
-          <BetaWarningModal open={isShowBetaWarning} onOpenChange={setShowBetaWarning} />
+          <BetaWarningModal
+            open={isShowBetaWarning}
+            onOpenChange={setShowBetaWarning}
+            joinmarketVersion={joinmarketVersion}
+            jamVersion={jamVersion}
+          />
           <Trans i18nKey="footer.warning">
             This is pre-alpha software.
             <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => setShowBetaWarning(true)}>
@@ -105,7 +115,7 @@ export function AppFooter({ websocketInfo }: AppFooterProps) {
               rel="noopener noreferrer"
               className="text-right underline opacity-80"
             >
-              v{APP_DISPLAY_VERSION}
+              v{jamVersion?.raw}
             </a>
             {blockHeight && (
               <span className="flex items-center gap-1">
