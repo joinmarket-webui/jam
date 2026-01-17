@@ -26,6 +26,8 @@ export const Default: Story = {
       websocketInfo={{ isOpen: true, isAuthenticated: true }}
       jamVersion={APP_DISPLAY_VERSION}
       joinmarketVersion={toSemVer('0.9.12')}
+      onClickCheatsheet={() => alert('Cheatsheet clicked!')}
+      onClickOrderbook={() => alert('Orderbook clicked!')}
     />
   ),
 }
