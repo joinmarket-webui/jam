@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -10,9 +11,12 @@ import { useSidebar } from '@/components/ui/use-sidebar'
 import { APP_DISPLAY_VERSION } from '@/constants/jam'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
+import { useCheatsheet } from '@/hooks/useCheatsheet'
 import { useJmInfo } from '@/hooks/useJmInfo'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
+import { Cheatsheet } from '../ui/jam/Cheatsheet'
 import { AppSidebar } from './AppSidebar'
 
 const SIDEBAR_SIDE: React.ComponentProps<typeof Sidebar>['side'] = 'right'
@@ -40,6 +44,9 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
 
   const websocket = useJmWebsocket()
 
+  const cheatsheet = useCheatsheet()
+  const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
+
   return (
     <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
       <AppNavbar
@@ -57,7 +64,16 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         sidebarInfo={sidebarContext}
       />
       <main className="flex-1">{children}</main>
-      <AppFooter websocketInfo={websocket} jamVersion={APP_DISPLAY_VERSION} joinmarketVersion={joinmarketVersion} />
+      <AppFooter
+        websocketInfo={websocket}
+        jamVersion={APP_DISPLAY_VERSION}
+        joinmarketVersion={joinmarketVersion}
+        onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
+        onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
+      />
+
+      <Cheatsheet open={cheatsheet.isOpen} onOpenChange={cheatsheet.onOpenChange} />
+      <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
     </div>
   )
 }

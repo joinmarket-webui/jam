@@ -2,13 +2,10 @@ import { useState, type ComponentProps } from 'react'
 import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, FileQuestionMarkIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
-import { OrderbookOverlay } from '@/components/orderbook/OrderbookOverlay'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
-import { Cheatsheet } from '@/components/ui/jam/Cheatsheet'
 import { JmWebsocketInfo } from '@/components/ui/jam/JmWebsocketInfo'
-import { useCheatsheet } from '@/hooks/useCheatsheet'
 import type { JmWebsocket } from '@/hooks/useJmWebsocket'
 import type { SemVer } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -54,15 +51,21 @@ type JmWebsocketInfo = Pick<JmWebsocket, 'isOpen' | 'isAuthenticated'>
 
 type AppFooterProps = Pick<BetaWarningModalProps, 'jamVersion' | 'joinmarketVersion'> & {
   websocketInfo?: JmWebsocketInfo
+  onClickCheatsheet: () => void
+  onClickOrderbook: () => void
 }
 
-export function AppFooter({ websocketInfo, jamVersion, joinmarketVersion }: AppFooterProps) {
+export function AppFooter({
+  websocketInfo,
+  jamVersion,
+  joinmarketVersion,
+  onClickCheatsheet,
+  onClickOrderbook,
+}: AppFooterProps) {
   const { t } = useTranslation()
-  const cheatsheet = useCheatsheet()
 
   const blockHeight = useStore(jmSessionStore, (state) => state.state?.block_height)
   const [isShowBetaWarning, setShowBetaWarning] = useState(false)
-  const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
 
   return (
     <>
@@ -82,21 +85,11 @@ export function AppFooter({ websocketInfo, jamVersion, joinmarketVersion }: AppF
           </Trans>
         </div>
         <div className="flex flex-1 items-center justify-start gap-2 sm:justify-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => cheatsheet.onOpenChange(true)}
-            title={t('footer.cheatsheet')}
-          >
+          <Button variant="outline" size="sm" onClick={onClickCheatsheet} title={t('footer.cheatsheet')}>
             <FileQuestionMarkIcon />
             <span className="hidden sm:inline-block">{t('footer.cheatsheet')}</span>
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsOrderbookOverlayOpen(true)}
-            title={t('footer.orderbook')}
-          >
+          <Button variant="outline" size="sm" onClick={onClickOrderbook} title={t('footer.orderbook')}>
             <BookOpenIcon />
             <span className="hidden sm:inline-block">{t('footer.orderbook')}</span>
           </Button>
@@ -125,9 +118,6 @@ export function AppFooter({ websocketInfo, jamVersion, joinmarketVersion }: AppF
           </div>
         </div>
       </footer>
-
-      <Cheatsheet open={cheatsheet.isOpen} onOpenChange={cheatsheet.onOpenChange} />
-      <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
     </>
   )
 }
