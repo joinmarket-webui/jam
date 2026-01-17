@@ -37,7 +37,7 @@ interface UtxosContentProps {
   enabled: boolean
 }
 
-export const UtxosContentProps = ({ enabled, jar }: UtxosContentProps) => {
+export const UtxosContent = ({ enabled, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
 
   const [_tableRowModel, setTableRowModel] = useState<RowModel<UtxoTableEntry>>()
@@ -162,7 +162,7 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
             <AlertDescription>Not yet implemented.</AlertDescription>
           </Alert>
 
-          <UtxosContentProps enabled={enabled} jar={activeJar} />
+          <UtxosContent enabled={enabled} jar={activeJar} />
         </TabsContent>
         <TabsContent value="jar_details">
           <Alert variant="warning">
