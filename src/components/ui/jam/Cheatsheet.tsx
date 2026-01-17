@@ -1,15 +1,14 @@
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
 import { CheckIcon, XIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { routes } from '@/constants/routes'
+import type { WithRequiredProperty } from '@/types/global'
+import type { Dialog } from '../dialog'
 
-interface CheatsheetProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+type CheatsheetProps = WithRequiredProperty<Omit<ComponentProps<typeof Dialog>, 'children'>, 'open' | 'onOpenChange'>
 
 export const Cheatsheet = ({ open, onOpenChange }: CheatsheetProps) => {
   const { t } = useTranslation()

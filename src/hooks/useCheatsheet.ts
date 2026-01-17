@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, type ComponentProps } from 'react'
+import type { Dialog } from '@/components/ui/dialog'
 import { pseudoRandomFloat } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { Days, Milliseconds } from '@/types/global'
@@ -17,32 +18,29 @@ const randomNextCheatsheetOpenTime = (): Milliseconds => {
   return Math.round(Date.now() + MILLISECONDS_IN_A_DAY * randomAmountOfDays)
 }
 
-export const useCheatsheet = () => {
-  const [isCheatsheetOpen, setIsCheatsheetOpen] = useState(
+type UseCheatsheetResult = Required<Pick<ComponentProps<typeof Dialog>, 'open' | 'onOpenChange'>>
+
+export function useCheatsheet(): UseCheatsheetResult {
+  const [open, setOpen] = useState(
     (() => {
       const targetTime = jamSettingsStore.getState().state.cheatsheetForceOpenAt ?? 0
       return INIT_RENDER_TIME >= targetTime
     })(),
   )
 
-  const updateCheatsheetLastDisplayTime = () => {
+  const updateLastDisplayTime = () => {
     setTimeout(() => {
       jamSettingsStore.getState().update({ cheatsheetForceOpenAt: randomNextCheatsheetOpenTime() })
     }, 4)
   }
 
-  const handleOpenCheatsheet = () => {
-    setIsCheatsheetOpen(true)
-    updateCheatsheetLastDisplayTime()
-  }
-
-  const handleCloseCheatsheet = () => {
-    setIsCheatsheetOpen(false)
-    updateCheatsheetLastDisplayTime()
+  const onOpenChange = (value: boolean) => {
+    setOpen(value)
+    updateLastDisplayTime()
   }
 
   return {
-    isOpen: isCheatsheetOpen,
-    onOpenChange: (value: boolean) => (value ? handleOpenCheatsheet() : handleCloseCheatsheet()),
+    open: open,
+    onOpenChange,
   }
 }

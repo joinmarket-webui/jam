@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, type ComponentProps } from 'react'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
@@ -25,14 +25,16 @@ import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import { factorToPercentage } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import type { WithRequiredProperty } from '@/types/global'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
 
 //TODO: needs testing!
 
-interface FeeLimitDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+type FeeLimitDialogProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+> & {
   walletFileName: WalletFileName
 }
 
