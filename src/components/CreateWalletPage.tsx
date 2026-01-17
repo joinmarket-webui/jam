@@ -32,7 +32,7 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
   return (
     <div className="space-y-6">
       <div className="bg-muted rounded-lg p-4">
-        <SeedPhraseGrid value={seedphrase} />
+        <SeedPhraseGrid value={seedphrase} blurred={false} />
       </div>
 
       <Alert>
