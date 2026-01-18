@@ -30,6 +30,7 @@
     "errors": {
       "error_loading_wallet_failed": "Loading wallet failed. {{ reason }}",
       "error_reloading_wallet_failed": "Reloading wallet failed. {{ reason }}",
+      "error_copy_to_clipboard_failed": "Failed to copy to clipboard. {{ reason }}",
       "reason_unknown": "Unknown reason."
     }
   },
@@ -269,13 +270,13 @@
       },
       "title": "Account Extended Public Keys",
       "subtitle": "Account-level extended public keys (xpubs/zpubs) for watch-only wallet import. These are BIP84 account keys, not address-level keys.",
-      "label_account": "Account",
+      "label_account": "Account {{accountIndex}}",
       "text_error_title": "Error while retrieving account information",
-      "text_no_accounts": "No accounts found.",
-      "text_copied": "Copied to clipboard!",
-      "text_copy_failed": "Failed to copy to clipboard.",
-      "text_info": "Account-level extended public keys can be imported into watch-only wallets for monitoring. They reveal all addresses in the derivation path. Share them with caution.",
-      "aria_copy_external": "Copy xpub for {{account}}"
+      "text_error_no_data": "No accounts found.",
+      "alert_success_account_xpub_copied_message": "Copied Extended Public Key of {{account}} to clipboard!",
+      "text_info_title": "Keep in mind",
+      "text_info_message": "Account-level extended public keys can be imported into watch-only wallets for monitoring. They reveal all addresses in the derivation path. Share them with caution.",
+      "button_copy_title": "Copy Extended Public Key for {{account}}"
     },
     "documentation": "Documentation",
     "github": "GitHub",

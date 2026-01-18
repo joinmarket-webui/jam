@@ -90,8 +90,8 @@ function App() {
       )
       await doOnLogout(navigate)
     } catch (error: unknown) {
-      const errorMessage = (error instanceof Error ? (error.message ?? '') : '') || t('global.errors.reason_unknown')
-      toast.error(t('global.errors.error_reloading_wallet_failed', { reason: errorMessage }))
+      const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
+      toast.error(t('global.errors.error_reloading_wallet_failed', { reason }))
       console.error('Failed to lock wallet:', error)
     }
   }
