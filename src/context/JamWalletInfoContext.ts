@@ -4,7 +4,7 @@ import type { AddressInfo } from 'bitcoin-address-validation'
 import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
 import type { FidelityBondUtxo, UseQueryUtxosResult, Utxo } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
-import type { BitcoinAddress, JarIndex } from '@/types/global'
+import type { BitcoinAddress, HdPath, JarIndex } from '@/types/global'
 
 // Comments for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 // "text-[#e2b86a]", "group-hover/jar:text-[#e2b86a]"
@@ -55,8 +55,6 @@ export type AddressSummary = {
 export type AccountBranchType = 'external addresses' | 'internal addresses'
 
 type AccountAbiObj = NonNullable<NonNullable<WalletDisplayResponse['walletinfo']>['accounts']>[number]
-
-type HdPath = `m/${string}`
 
 export type AccountBranch = {
   type: AccountBranchType | string

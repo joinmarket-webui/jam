@@ -171,7 +171,9 @@ export const OrderbookTable = ({
         header: () => <div className="flex items-center justify-end">{t('orderbook.table.heading_fee')}</div>,
         // Custom sorting: absolute before relative, then by fee value
         sortingFn: (a, b) => {
-          if (a.original.type.isAbsolute !== b.original.type.isAbsolute) return a.original.type.isAbsolute ? -1 : 1
+          if (a.original.type.isAbsolute !== b.original.type.isAbsolute) {
+            return a.original.type.isAbsolute ? -1 : 1
+          }
           return a.original.fee.value - b.original.fee.value
         },
         cell: (info) => {
