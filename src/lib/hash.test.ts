@@ -7,18 +7,15 @@ describe('hash', () => {
   })
 
   it('hashPassword', async () => {
+    expect(await hashPassword('', '', 1)).toBe('6d2ecbbbfb2e6dcd7056faf9af6aa06eae594391db983279a6bf27e0eb228614')
     expect(await hashPassword('password', 'salt', 1)).toBe(
-      '120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b',
-    )
-    expect(await hashPassword('test', 'Satoshi.jmdat', 1)).toBe(
-      '6785848abc7bd4d99f0c39f6c731094bea9b1090c59b4009f466b455aa15a2c1',
+      '867f70cf1ade02cff3752599a3a53dc4af34c7a669815ae5d513554e1c8cf252',
     )
     expect(await hashPassword('test', 'Satoshi.jmdat', 21)).toBe(
-      'a89fbf06eeab7c4a147203cc69eb064c0221f9cf16c293af8dc7e382307b3774',
+      '1acb29f6e7c841823a9a2369d2f2cc7e9ee19c78621c4d7194d1f45eb0d5e8ed',
     )
-
     expect(await hashPassword('test', 'Satoshi.jmdat', DEFAULT_PBKDF_ITERATIONS)).toBe(
-      '60e35c0b8567402c1d8b804e986e3f2c0648f46f68171c8a3e7eb9e98bfb5d4d',
+      'da41454ecc40c48499decbca7b1df4595f0a856caada3f182d47293fbad03004',
     )
   })
 })
