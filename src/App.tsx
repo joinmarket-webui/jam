@@ -46,6 +46,7 @@ import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
+import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -130,19 +131,21 @@ function App() {
           id="protected"
           element={
             <ProtectedRoute authenticated={authenticated}>
-              <JamWalletInfoContextProvider walletFileName={walletFileName!}>
-                <Outlet />
-              </JamWalletInfoContextProvider>
+              <JamSessionInfoContextProvider walletFileName={walletFileName!}>
+                <JamWalletInfoContextProvider walletFileName={walletFileName!}>
+                  <Outlet />
+                </JamWalletInfoContextProvider>
+              </JamSessionInfoContextProvider>
             </ProtectedRoute>
           }
         >
-          <Route id="without-navbar" element={<Outlet />}>
+          <Route id="protected-without-navbar" element={<Outlet />}>
             <Route path={routes.switchWallet} element={<SwitchWalletPage walletFileName={walletFileName!} />} />
           </Route>
           <Route
-            id="with-navbar"
+            id="protected-with-navbar"
             element={
-              <Layout onLogout={doOnLogout} onLockWallet={doOnLockWallet}>
+              <Layout onLogout={doOnLogout} onLockWallet={doOnLockWallet} walletFileName={walletFileName!}>
                 <Outlet />
               </Layout>
             }

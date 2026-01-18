@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { SidebarContextProps } from '@/components/ui/use-sidebar'
 import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
+import type { RescanInfo } from '@/context/JamSessionInfoContext'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
 
@@ -29,10 +30,14 @@ const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active:
   )
 }
 
-type WalletPreviewProps = Pick<
-  AppNavbarProps,
-  'isLoading' | 'walletName' | 'formatAmount' | 'currencySymbol' | 'totalBalance'
->
+type WalletPreviewProps = {
+  isLoading?: boolean
+  walletName: string | null
+  formatAmount: (AmountSats: number) => string
+  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
+  totalBalance: AmountSats
+  rescanInfo?: RescanInfo
+}
 
 const WalletPreview = ({
   walletName,
@@ -40,7 +45,9 @@ const WalletPreview = ({
   currencySymbol,
   totalBalance,
   isLoading = false,
+  rescanInfo,
 }: WalletPreviewProps) => {
+  const { t } = useTranslation()
   const walletNameTitle = shortenStringMiddle(walletName ?? '...', 12)
 
   return (
@@ -64,12 +71,24 @@ const WalletPreview = ({
             {isDevMode() && <DevBadge />}
           </div>
           <div className="flex min-h-5 min-w-[150px] items-center">
-            {isLoading ? (
-              <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
+            {rescanInfo?.rescanning === true ? (
+              <div className="cursor-wait">
+                {rescanInfo.progress !== undefined
+                  ? t('navbar.text_rescan_in_progress_with_progress', {
+                      progress: Math.floor(rescanInfo.progress * 100),
+                    })
+                  : t('navbar.text_rescan_in_progress')}
+              </div>
             ) : (
               <>
-                <span className="tabular-nums">{formatAmount(totalBalance)}</span>
-                {currencySymbol('sm')}
+                {isLoading ? (
+                  <Skeleton className="h-4 w-full bg-neutral-200 dark:bg-neutral-600" />
+                ) : (
+                  <>
+                    <span className="tabular-nums">{formatAmount(totalBalance)}</span>
+                    {currencySymbol('sm')}
+                  </>
+                )}
               </>
             )}
           </div>
@@ -82,12 +101,7 @@ const WalletPreview = ({
 type SessionInfo = Pick<SessionResponse, 'maker_running' | 'coinjoin_in_process' | 'schedule'>
 type SidebarInfo = Pick<SidebarContextProps, 'isMobile' | 'open' | 'openMobile'>
 
-interface AppNavbarProps {
-  isLoading?: boolean
-  walletName: string | null
-  formatAmount: (AmountSats: number) => string
-  currencySymbol: (size: 'sm' | 'lg') => React.ReactNode
-  totalBalance: AmountSats
+type AppNavbarProps = WalletPreviewProps & {
   theme: string
   toggleTheme: () => void
   onLogout: (navigate: NavigateFunction) => Promise<void>
@@ -95,6 +109,7 @@ interface AppNavbarProps {
   sidebarTrigger?: React.ReactNode
   sessionInfo?: SessionInfo
   sidebarInfo?: SidebarInfo
+  rescanInfo?: RescanInfo
 }
 
 export function AppNavbar({
@@ -110,6 +125,7 @@ export function AppNavbar({
   sidebarTrigger,
   sessionInfo,
   sidebarInfo,
+  rescanInfo,
 }: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -137,6 +153,7 @@ export function AppNavbar({
         totalBalance={totalBalance}
         formatAmount={formatAmount}
         currencySymbol={currencySymbol}
+        rescanInfo={rescanInfo}
       />
       <div
         className={cn(

@@ -1,23 +1,24 @@
+import type { PropsWithChildren } from 'react'
 import { useMemo, useState } from 'react'
 import { getrescaninfoOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { useStore } from 'zustand'
 import { JAM_RESCAN_PROGRESS_INTERVAL } from '@/constants/jam'
+import { useApiClient } from '@/hooks/useApiClient'
 import { withQueryDelay } from '@/lib/queryClient'
+import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { useApiClient } from './useApiClient'
+import { JamSessionInfoContext } from './JamSessionInfoContext'
+import type { RescanInfo } from './JamSessionInfoContext'
 
-export interface RescanInfo {
-  updatedAt: number
-  rescanning: boolean
-  progress?: number
+interface JamSessionInfoContextProviderProps {
+  walletFileName: WalletFileName
 }
 
-interface UseRescanStatusProps {
-  walletFileName: string
-}
-
-export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
+export const JamSessionInfoContextProvider = ({
+  walletFileName,
+  children,
+}: PropsWithChildren<JamSessionInfoContextProviderProps>) => {
   const jmSession = useStore(jmSessionStore, (state) => state)
   const client = useApiClient()
   const [rescanInfo, setRescanInfo] = useState<RescanInfo>({
@@ -61,8 +62,10 @@ export const useRescanStatus = ({ walletFileName }: UseRescanStatusProps) => {
     })
   }
 
-  return {
+  const value = {
     rescanInfo,
     setRescanInfo,
   }
+
+  return <JamSessionInfoContext.Provider value={value}>{children}</JamSessionInfoContext.Provider>
 }

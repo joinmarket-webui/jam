@@ -10,10 +10,12 @@ import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sideba
 import { useSidebar } from '@/components/ui/use-sidebar'
 import { APP_DISPLAY_VERSION } from '@/constants/jam'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
+import { useRescanStatus } from '@/context/JamSessionInfoContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
-import { useQueryJmInfo } from '@/hooks/useJmInfo'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
+import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
+import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
 import { Cheatsheet } from '../ui/jam/Cheatsheet'
@@ -21,7 +23,7 @@ import { AppSidebar } from './AppSidebar'
 
 const SIDEBAR_SIDE: React.ComponentProps<typeof Sidebar>['side'] = 'right'
 
-interface LayoutInnerProps {
+type LayoutInnerProps = {
   onLogout: (navigate: NavigateFunction) => Promise<void>
   onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
   children: React.ReactNode
@@ -31,6 +33,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const { t } = useTranslation()
   const navigate = useNavigate()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const rescanStatus = useRescanStatus()
 
   const { version: joinmarketVersion } = useQueryJmInfo()
 
@@ -52,6 +55,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
       <AppNavbar
         theme={resolvedTheme || 'dark'}
         isLoading={isFetching}
+        rescanInfo={rescanStatus.rescanInfo}
         walletName={walletName}
         totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
         toggleTheme={toggleTheme}
@@ -78,13 +82,11 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   )
 }
 
-interface LayoutProps {
-  onLogout: (navigate: NavigateFunction) => Promise<void>
-  onLockWallet: (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => Promise<void>
-  children: React.ReactNode
+type LayoutProps = LayoutInnerProps & {
+  walletFileName: WalletFileName
 }
 
-export function Layout({ onLogout, onLockWallet, children }: LayoutProps) {
+export function Layout({ walletFileName: _ignoredOnPurpose, onLogout, onLockWallet, children }: LayoutProps) {
   return (
     <SidebarProvider defaultOpen={false}>
       <LayoutInner onLogout={onLogout} onLockWallet={onLockWallet}>
