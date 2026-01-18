@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { RowModel } from '@tanstack/react-table'
+import type { TFunction } from 'i18next'
 import { AlertTriangleIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
-import { useAddressSummary, useJars, type Jar } from '@/context/JamWalletInfoContext'
+import { useAddressSummary, useJars, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn } from '@/lib/utils'
+import { utxoTags } from '@/lib/utxo'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
@@ -29,9 +31,10 @@ const isKeyEventFromInputElement = (e: KeyboardEvent) => {
   )
 }
 
-const utxoToTableEntry = (utxo: Utxo): UtxoTableEntry => {
+const utxoToTableEntry = (utxo: Utxo, addressSummary: AddressSummary, t: TFunction): UtxoTableEntry => {
   return {
     ...utxo,
+    tags: utxoTags(utxo, addressSummary, t),
   }
 }
 
@@ -42,12 +45,13 @@ interface UtxosContentProps {
 
 export const UtxosContent = ({ enabled: _enabled, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
+  const { addressSummary } = useAddressSummary()
 
   const [_tableRowModel, setTableRowModel] = useState<RowModel<UtxoTableEntry>>()
 
   const tableEntries = useMemo(() => {
-    return jar.utxos.map((it) => utxoToTableEntry(it))
-  }, [jar])
+    return jar.utxos.map((it) => utxoToTableEntry(it, addressSummary, t))
+  }, [addressSummary, t, jar])
 
   return (
     <>
