@@ -95,13 +95,13 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
     }
   }, [timeLeft])
 
-  const handlePasswordSubmit = async () => {
+  const handlePasswordSubmit = () => {
     if (!password) return
 
     setIsSubmitting(true)
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
-        const hashed = hashPassword(password, walletFileName)
+        const hashed = await hashPassword(password, walletFileName)
         if (hashed === hashedPassword) {
           setPassword('')
           setPasswordVerifiedAt(Date.now())
@@ -110,7 +110,8 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
           setPasswordVerificationError(t('settings.seed_modal.verification.text_error_password_incorrect'))
         }
       } catch (error) {
-        setPasswordVerificationError(t('settings.seed_modal.verification.text_error'))
+        const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
+        setPasswordVerificationError(t('settings.seed_modal.verification.text_error', { reason }))
         console.error('Password verification error:', error)
       } finally {
         setIsSubmitting(false)

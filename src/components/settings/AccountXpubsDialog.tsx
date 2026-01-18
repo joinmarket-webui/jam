@@ -281,24 +281,27 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
     }
   }, [timeLeft])
 
-  const handlePasswordSubmit = async () => {
+  const handlePasswordSubmit = () => {
     if (!password) return
 
     setIsSubmitting(true)
-    try {
-      const hashed = hashPassword(password, walletFileName)
-      if (hashed === hashedPassword) {
-        setPasswordVerifiedAt(Date.now())
-        setPasswordVerificationError(undefined)
-      } else {
-        setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error_password_incorrect'))
+    setTimeout(async () => {
+      try {
+        const hashed = await hashPassword(password, walletFileName)
+        if (hashed === hashedPassword) {
+          setPasswordVerifiedAt(Date.now())
+          setPasswordVerificationError(undefined)
+        } else {
+          setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error_password_incorrect'))
+        }
+      } catch (error) {
+        const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
+        setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error', { reason }))
+        console.error('Password verification error:', error)
+      } finally {
+        setIsSubmitting(false)
       }
-    } catch (error) {
-      setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error'))
-      console.error('Password verification error:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
+    }, 4)
   }
 
   const handleClose = () => {
