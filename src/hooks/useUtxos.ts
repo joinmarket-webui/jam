@@ -27,7 +27,7 @@ export type FidelityBondUtxo = Omit<Utxo, 'locktime'> & {
   locktime: Locktime
 }
 
-type UseUtxosResult = {
+export type UseUtxosResult = {
   utxos: Utxo[]
   queryResult: UseQueryResult<ListUtxosResponse, ErrorMessage>
 }

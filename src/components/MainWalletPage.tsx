@@ -29,7 +29,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
   const [isWalletJarsDetailsOpen, setIsWalletJarsDetailsOpen] = useState(false)
 
   const { toggleDisplayMode, formatAmount, currencySymbol } = useJamDisplayContext()
-  const { isLoading, error, refetch: refetchWalletData } = useJamWalletInfoContext()
+  const { isLoading, isFetching, error, refetch: refetchWalletData } = useJamWalletInfoContext()
   const { walletBalanceSummary } = useWalletBalanceSummary()
   const { jars } = useJars()
 
@@ -89,7 +89,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                 reason: error.message || t('global.errors.reason_unknown'),
               })}
               <Button variant="outline" size="sm" onClick={() => refetchWalletData()}>
-                <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isLoading })} />
+                <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
                 {t('global.retry')}
               </Button>
             </AlertDescription>
@@ -109,7 +109,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             </Tooltip>
           </div>
           <div className="flex min-h-[128px] items-center justify-center gap-4">
-            {isLoading ? (
+            {isFetching ? (
               <div className="flex flex-1 items-center justify-center gap-2 py-8">
                 <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
                 {t('global.loading')}
@@ -145,7 +145,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
             onClick={() => refetchWalletData()}
             className="flex items-center gap-2 text-gray-500"
           >
-            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isLoading })} />
+            <RefreshCwIcon className={cn({ 'motion-safe:animate-spin': isFetching })} />
             {t('global.refresh')}
           </Button>
         </div>
