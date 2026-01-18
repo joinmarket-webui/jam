@@ -45,40 +45,51 @@ export const Default: Story = {
 
 export const Loading: Story = {
   args: {
-    isLoading: true,
     ...defaults,
+    isLoading: true,
+  },
+}
+
+export const RescanInProgress: Story = {
+  args: {
+    ...defaults,
+    rescanInfo: {
+      rescanning: true,
+      progress: 0.21,
+      updatedAt: Date.now(),
+    },
   },
 }
 
 export const SendActive: Story = {
   args: {
+    ...defaults,
     sessionInfo: {
       maker_running: false,
       coinjoin_in_process: true,
       schedule: undefined,
     },
-    ...defaults,
   },
 }
 
 export const EarnActive: Story = {
   args: {
+    ...defaults,
     sessionInfo: {
       maker_running: true,
       coinjoin_in_process: false,
       schedule: undefined,
     },
-    ...defaults,
   },
 }
 
 export const SweepActive: Story = {
   args: {
+    ...defaults,
     sessionInfo: {
       maker_running: false,
       coinjoin_in_process: true,
       schedule: [],
     },
-    ...defaults,
   },
 }
