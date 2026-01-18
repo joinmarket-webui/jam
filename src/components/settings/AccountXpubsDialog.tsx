@@ -25,7 +25,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { deriveAccountXpub, detectNetwork } from '@/lib/bip32'
 import { hashPassword } from '@/lib/hash'
 import { cn } from '@/lib/utils'
-import { toNativeSegwitPub } from '@/lib/xpub'
+import { convertExtendedPublicKey } from '@/lib/xpubs'
 import { authStore } from '@/store/authStore'
 import type { JarIndex } from '@/types/global'
 
@@ -77,12 +77,11 @@ async function deriveAccountXpubsFromSeed(
         xpub: xpub,
       })
     } else {
-      const nativeSegwitXpub = await toNativeSegwitPub(xpub)
       xpubs.push({
         name: 'zpub',
         path,
         network,
-        xpub: nativeSegwitXpub,
+        xpub: convertExtendedPublicKey(xpub, 'zpub'),
       })
     }
 

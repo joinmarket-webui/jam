@@ -2,24 +2,21 @@ import { HDKey } from '@scure/bip32'
 import { Network } from 'bitcoin-address-validation'
 
 /**
- * Derive account-level xpub from mnemonic phrase
- * JoinMarket uses BIP84 (Native SegWit) with paths:
- * - Mainnet: m/84'/0'/account'
- * - Testnet: m/84'/1'/account'
+ * Derive account-level xpub from seed
  *
- * @param seed BIP39 mnemonic phrase (12 or 24 words)
+ * @param seed BIP32 seed
  * @param path HD key path (m / purpose' / coin_type' / account' / change / address_index), e.g. `m/84'/0'/0'`
- * @returns Extended public key (xpub for mainnet, tpub for testnet)
+ * @returns Extended public key (xpub)
  */
 export function deriveAccountXpub(seed: Uint8Array, path: string): string {
   const root = HDKey.fromMasterSeed(seed)
-  const accountKey = root.derive(path)
+  const key = root.derive(path)
 
-  if (!accountKey.publicExtendedKey) {
-    throw new Error(`Failed to derive extended public key for path ${path}`)
+  if (!key.publicExtendedKey) {
+    throw new Error(`Failed to derive extended public key for path ${path}.`)
   }
 
-  return accountKey.publicExtendedKey
+  return key.publicExtendedKey
 }
 
 /**
