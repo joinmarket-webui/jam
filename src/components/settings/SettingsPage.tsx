@@ -252,9 +252,23 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
         </>
       )}
 
-      <SeedPhraseDialog walletFileName={walletFileName} open={showSeedDialog} onOpenChange={setShowSeedDialog} />
-      <AccountXpubsDialog walletFileName={walletFileName} open={showXpubsDialog} onOpenChange={setShowXpubsDialog} />
       <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />
+      {hashedPassword && (
+        <>
+          <SeedPhraseDialog
+            hashedPassword={hashedPassword}
+            walletFileName={walletFileName}
+            open={showSeedDialog}
+            onOpenChange={setShowSeedDialog}
+          />
+          <AccountXpubsDialog
+            hashedPassword={hashedPassword}
+            walletFileName={walletFileName}
+            open={showXpubsDialog}
+            onOpenChange={setShowXpubsDialog}
+          />
+        </>
+      )}
     </div>
   )
 }

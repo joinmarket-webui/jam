@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
 import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useStore } from 'zustand'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +20,6 @@ import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import type { WalletFileName } from '@/lib/utils'
-import { authStore } from '@/store/authStore'
 import type { SeedPhrase, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Switch } from '../ui/switch'
@@ -31,24 +29,24 @@ type SeedPhraseDialogProps = WithRequiredProperty<
   'open' | 'onOpenChange'
 > & {
   walletFileName: WalletFileName
+  hashedPassword: string
 }
 
 // TODO: use react-hook-form and yup schema
-export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhraseDialogProps) => {
+export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPassword }: SeedPhraseDialogProps) => {
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
   const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string>()
+  const [passwordVerificationError, setPasswordVerificationError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
   const [revealSeed, setRevealSeed] = useState(false)
 
   const queryClient = useQueryClient()
   const client = useApiClient()
-  const authState = useStore(authStore, (state) => state.state)
 
   const seedQueryOptions = getseedOptions({
     client,
@@ -93,38 +91,26 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
       setPasswordVerifiedAt(undefined)
       setShowPassword(false)
       setRevealSeed(false)
-      setError(undefined)
+      setPasswordVerificationError(undefined)
     }
   }, [timeLeft])
 
   const handlePasswordSubmit = async () => {
     if (!password) return
-    if (walletFileName !== authState?.walletFileName) {
-      // TODO: Needs translation?
-      setError('Session error. Please login again.')
-      return
-    }
-
-    // Check if hash verification is available
-    if (!authState?.hashed_password) {
-      // TODO: Needs translation?
-      setError('Password verification unavailable. Please login again.')
-      return
-    }
 
     setIsSubmitting(true)
     setTimeout(() => {
       try {
         const hashed = hashPassword(password, walletFileName)
-        if (hashed === authState?.hashed_password) {
+        if (hashed === hashedPassword) {
           setPassword('')
           setPasswordVerifiedAt(Date.now())
-          setError(undefined)
+          setPasswordVerificationError(undefined)
         } else {
-          setError(t('settings.seed_modal.verification.text_error_password_incorrect'))
+          setPasswordVerificationError(t('settings.seed_modal.verification.text_error_password_incorrect'))
         }
       } catch (error) {
-        setError(t('settings.seed_modal.verification.text_error'))
+        setPasswordVerificationError(t('settings.seed_modal.verification.text_error'))
         console.error('Password verification error:', error)
       } finally {
         setIsSubmitting(false)
@@ -136,7 +122,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     onOpenChange(false)
     setPassword('')
     setPasswordVerifiedAt(undefined)
-    setError(undefined)
+    setPasswordVerificationError(undefined)
     setShowPassword(false)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
     setRevealSeed(false)
@@ -173,7 +159,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={t('settings.seed_modal.verification.placeholder_password')}
-                    className={error ? 'border-destructive' : undefined}
+                    className={passwordVerificationError ? 'border-destructive' : undefined}
                   />
                   <Button
                     tabIndex={-1}
@@ -186,7 +172,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                     {showPassword ? <EyeIcon /> : <EyeOffIcon />}
                   </Button>
                 </div>
-                {error && <p className="text-destructive text-sm">{error}</p>}
+                {passwordVerificationError && <p className="text-destructive text-sm">{passwordVerificationError}</p>}
               </div>
             </div>
 
