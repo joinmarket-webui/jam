@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -28,6 +28,8 @@ import { cn } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
 import { authStore } from '@/store/authStore'
 import type { JarIndex, SeedPhrase } from '@/types/global'
+import { buttonVariants } from '../ui/button-variants'
+import { CopyButton } from '../ui/jam/CopyButton'
 
 const HD_PATH_PURPOSE: number = 84
 
@@ -113,7 +115,6 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
   const [accountXpubs, setAccountXpubs] = useState<AccountXpubInfo[]>([])
-  const [copiedXpub, setCopiedXpub] = useState<string | null>(null)
 
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
@@ -176,23 +177,8 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
       setError(undefined)
       setAccountXpubs([])
       setShowPassword(false)
-      setCopiedXpub(null)
     }
   }, [timeLeft])
-
-  const copyToClipboard = useCallback(
-    async (text: string) => {
-      try {
-        await navigator.clipboard.writeText(text)
-        setCopiedXpub(text)
-        toast.success(t('settings.xpubs_modal.text_copied'))
-        setTimeout(() => setCopiedXpub(null), 2000)
-      } catch {
-        toast.error(t('settings.xpubs_modal.text_copy_failed'))
-      }
-    },
-    [t],
-  )
 
   const handlePasswordSubmit = async () => {
     if (!password) return
@@ -231,7 +217,6 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     setShowPassword(false)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
     setAccountXpubs([])
-    setCopiedXpub(null)
     // Clear the cached query data to ensure fresh fetch on next open
     queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
   }
@@ -348,21 +333,21 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                                   <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
                                     {xpub.xpub}
                                   </code>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 shrink-0"
-                                    onClick={() => copyToClipboard(xpub.xpub)}
+                                  <CopyButton
+                                    className={buttonVariants({
+                                      size: 'icon',
+                                      variant: 'ghost',
+                                      className: 'shrink-0',
+                                    })}
+                                    value={xpub.xpub}
+                                    text={<CopyIcon className="h-3 w-3" />}
+                                    successText={<CheckIcon className="h-3 w-3 text-green-500" />}
+                                    onSuccess={() => toast.success(t('settings.xpubs_modal.text_copied'))}
+                                    onError={() => toast.error(t('settings.xpubs_modal.text_copy_failed'))}
                                     aria-label={t('settings.xpubs_modal.aria_copy_external', {
                                       account: account.accountName,
                                     })}
-                                  >
-                                    {copiedXpub === xpub.xpub ? (
-                                      <CheckIcon className="h-3 w-3 text-green-500" />
-                                    ) : (
-                                      <CopyIcon className="h-3 w-3" />
-                                    )}
-                                  </Button>
+                                  />
                                 </div>
                               ))}
                             </div>
