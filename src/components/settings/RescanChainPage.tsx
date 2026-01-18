@@ -14,9 +14,8 @@ import { Input } from '@/components/ui/input'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { Label } from '@/components/ui/label'
 import { routes } from '@/constants/routes'
+import { useRescanStatus, type RescanInfo } from '@/context/JamSessionInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import { useRescanStatus } from '@/hooks/useRescanStatus'
-import type { RescanInfo } from '@/hooks/useRescanStatus'
 import { SEGWIT_ACTIVATION_BLOCK } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 
@@ -105,7 +104,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-  const { rescanInfo, setRescanInfo } = useRescanStatus({ walletFileName })
+  const { rescanInfo, setRescanInfo } = useRescanStatus()
 
   const rescanMutation = useMutation({
     mutationFn: async (blockHeight: number) => {
