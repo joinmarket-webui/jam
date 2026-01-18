@@ -29,6 +29,15 @@ export const Default: Story = {
   ),
 }
 
+export const WithoutDescription: Story = {
+  render: () => (
+    <Alert>
+      <AlertCircleIcon />
+      <AlertTitle>This Alert has a title and an icon. No description.</AlertTitle>
+    </Alert>
+  ),
+}
+
 export const WithoutIcon: Story = {
   render: () => (
     <Alert>
@@ -38,11 +47,26 @@ export const WithoutIcon: Story = {
   ),
 }
 
-export const WithoutDescription: Story = {
+export const WithoutTitle: Story = {
   render: () => (
     <Alert>
       <AlertCircleIcon />
-      <AlertTitle>This Alert has a title and an icon. No description.</AlertTitle>
+      <AlertDescription>This alert doesn't have a title, just an icon and description.</AlertDescription>
+    </Alert>
+  ),
+}
+
+export const WithoutIconAndTitle: Story = {
+  render: () => (
+    <Alert>
+      <AlertDescription>This alert doesn't have a title or icon, just a description.</AlertDescription>
+    </Alert>
+  ),
+}
+export const WithoutIconAndDescription: Story = {
+  render: () => (
+    <Alert>
+      <AlertTitle>Alert Title</AlertTitle>
     </Alert>
   ),
 }

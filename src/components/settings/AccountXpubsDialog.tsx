@@ -3,7 +3,16 @@ import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/re
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'
-import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon, CopyIcon, CheckIcon } from 'lucide-react'
+import {
+  EyeIcon,
+  EyeOffIcon,
+  AlertTriangleIcon,
+  ClockIcon,
+  Loader2Icon,
+  CopyIcon,
+  CheckIcon,
+  AlertCircleIcon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -110,9 +119,11 @@ const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
     <Accordion type="single" collapsible className="w-full">
       {values.map((account, index) => (
         <AccordionItem key={index} value={String(account.accountIndex)}>
-          <AccordionTrigger>
+          <AccordionTrigger className="group/xpub-accordion-trigger no-underline!">
             <span className="flex items-center gap-2">
-              <span className="font-medium">{account.accountName}</span>
+              <span className="text-base font-medium group-hover/xpub-accordion-trigger:underline">
+                {account.accountName}
+              </span>
               <span className="text-muted-foreground text-xs">
                 ({t('settings.xpubs_modal.label_account')} {account.accountIndex})
               </span>
@@ -367,9 +378,15 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                       {t('global.loading')}
                     </div>
                   ) : accountXpubs.data && accountXpubs.data.length > 0 ? (
-                    <div className="max-h-[400px] overflow-y-auto">
-                      <AccountXpubsAccordion values={accountXpubs.data} />
-                    </div>
+                    <>
+                      <Alert variant="default">
+                        <AlertCircleIcon />
+                        <AlertDescription>{t('settings.xpubs_modal.text_info')}</AlertDescription>
+                      </Alert>
+                      <div className="bg-card my-2 rounded-lg px-4">
+                        <AccountXpubsAccordion values={accountXpubs.data} />
+                      </div>
+                    </>
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}
@@ -390,13 +407,6 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                   <AlertTitle>{t('settings.xpubs_modal.text_error_title')}</AlertTitle>
                   <AlertDescription>{accountXpubs.error.message || t('global.errors.reason_unknown')}</AlertDescription>
                 </Alert>
-              )}
-
-              {/* Info message about xpubs */}
-              {!isFetching && !accountXpubs.error && accountXpubs.data && accountXpubs.data.length > 0 && (
-                <div className="light:border-blue-800 light:bg-blue-50 rounded-lg border border-blue-200 bg-blue-900/20 p-2">
-                  <p className="light:text-blue-800 text-xs text-blue-200">{t('settings.xpubs_modal.text_info')}</p>
-                </div>
               )}
             </div>
 
