@@ -30,23 +30,27 @@ import {
 import { useTranslation } from 'react-i18next'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import type { Utxo } from '@/hooks/useQueryUtxos'
+import type { AccountBranch } from '@/context/JamWalletInfoContext'
 import { cn } from '@/lib/utils'
-import type { UtxoTag } from '@/lib/utxo'
+import type { AmountSats, BitcoinAddress, HdPath } from '@/types/global'
 import { Balance } from '../ui/jam/Balance'
-import { UtxoTag as UtxoTagComponent } from '../ui/jam/UtxoTag'
 
 const ITEMS_PER_PAGE = 25
 
-export type UtxoTableEntry = Utxo & {
-  tags: UtxoTag[]
+export type BranchEntryApiObject = NonNullable<AccountBranch['__raw']['entries']>[number]
+
+export type BranchEntryTableRow = BranchEntryApiObject & {
+  derivationIndex: number
+  derivationPath: HdPath
+  address: BitcoinAddress
+  balance: AmountSats
 }
 
-type SortKey = keyof UtxoTableEntry
+type SortKey = keyof BranchEntryTableRow
 
-const columnHelper = createColumnHelper<UtxoTableEntry>()
+const columnHelper = createColumnHelper<BranchEntryTableRow>()
 
-type UtxoTableColumnMeta =
+type BranchEntryTableColumnMeta =
   | {
       align?: string
       numeric?: boolean
@@ -57,12 +61,12 @@ type UtxoTableColumnMeta =
 interface SortIconProps {
   className?: string
   sortKey: SortKey
-  column: Column<UtxoTableEntry, unknown>
+  column: Column<BranchEntryTableRow, unknown>
 }
 const SortIcon = ({ column, className }: SortIconProps) => {
   const dir = column.getIsSorted()
   if (!dir) return <ArrowUpDownIcon className={className} />
-  const meta = column.columnDef.meta as UtxoTableColumnMeta
+  const meta = column.columnDef.meta as BranchEntryTableColumnMeta
   if (meta?.numeric === true) {
     return dir === 'desc' ? <ArrowDown10Icon className={className} /> : <ArrowUp01Icon className={className} />
   }
@@ -72,27 +76,27 @@ const SortIcon = ({ column, className }: SortIconProps) => {
   return dir === 'desc' ? <SortDescIcon className={className} /> : <SortAscIcon className={className} />
 }
 
-const fuzzyFilter: FilterFn<UtxoTableEntry> = (row, columnId, value, addMeta) => {
+const fuzzyFilter: FilterFn<BranchEntryTableRow> = (row, columnId, value, addMeta) => {
   const itemRank = rankItem(row.getValue(columnId), value)
   addMeta({ itemRank })
   return itemRank.passed
 }
 
-interface JarUtxosTableProps {
+interface BranchEntryTableProps {
   globalFilter?: string
-  tableEntries: UtxoTableEntry[]
-  selectedEntries: UtxoTableEntry[]
-  pinnedEntries: UtxoTableEntry[]
-  onChange?: (table: TableType<UtxoTableEntry>) => void
+  tableEntries: BranchEntryTableRow[]
+  selectedEntries: BranchEntryTableRow[]
+  pinnedEntries: BranchEntryTableRow[]
+  onChange?: (table: TableType<BranchEntryTableRow>) => void
 }
 
-export const JarUtxosTable = ({
+export const BranchEntryTable = ({
   globalFilter,
   tableEntries,
   selectedEntries: highlightedEntries,
   pinnedEntries,
   onChange,
-}: JarUtxosTableProps) => {
+}: BranchEntryTableProps) => {
   const { t } = useTranslation()
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -100,19 +104,19 @@ export const JarUtxosTable = ({
   const [sorting, setSorting] = useState<SortingState>([])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const columns = useMemo<ColumnDef<UtxoTableEntry, any>[]>(
+  const columns = useMemo<ColumnDef<BranchEntryTableRow, any>[]>(
     () => [
-      columnHelper.accessor('value', {
-        header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
+      columnHelper.accessor('derivationIndex', {
+        header: () => <div className="flex items-center"></div>,
         sortingFn: (a, b) => {
-          const val = a.original.value - b.original.value
-          if (val !== 0) return val
-          // tie-break using confirmations
-          const aid = Number(a.original.confirmations)
-          const bid = Number(b.original.confirmations)
-          return aid - bid
+          return a.original.derivationIndex - b.original.derivationIndex
         },
-        cell: (info) => <Balance colored={false} valueString={String(info.getValue())} />,
+        cell: (info) => (
+          <code className="text-break">
+            <span className="text-muted-foreground">…/</span>
+            {info.getValue()}
+          </code>
+        ),
         meta: {
           align: 'right',
           numeric: true,
@@ -123,35 +127,27 @@ export const JarUtxosTable = ({
         sortingFn: (a, b) => {
           const val = a.original.address.localeCompare(b.original.address)
           if (val !== 0) return val
-          // tie-break using confirmations
-          const aid = Number(a.original.confirmations)
-          const bid = Number(b.original.confirmations)
-          return aid - bid
+          // tie-break using derivationIndex
+          return a.original.derivationIndex - b.original.derivationIndex
         },
         cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
         meta: {
           alphabetic: true,
         },
       }),
-      columnHelper.accessor('confirmations', {
-        header: () => t('jar_details.utxo_list.column_title_confirmations'),
-        cell: (info) => info.getValue(),
+      columnHelper.accessor('balance', {
+        header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
+        sortingFn: (a, b) => {
+          const val = a.original.balance - b.original.balance
+          if (val !== 0) return val
+          // tie-break using derivationIndex
+          return a.original.derivationIndex - b.original.derivationIndex
+        },
+        cell: (info) => <Balance colored={false} valueString={String(info.getValue())} />,
         meta: {
+          align: 'right',
           numeric: true,
         },
-      }),
-      columnHelper.accessor('tags', {
-        header: () => t('jar_details.utxo_list.column_title_label_and_status'),
-        cell: (info) => (
-          <div className="flex items-center gap-2">
-            {info.row.original.tags.map((it, index) => (
-              <div key={index}>
-                <UtxoTagComponent variant={it.variant}>{it.displayValue}</UtxoTagComponent>
-              </div>
-            ))}
-          </div>
-        ),
-        enableSorting: false,
       }),
     ],
     [t],
@@ -165,7 +161,7 @@ export const JarUtxosTable = ({
     bottom: [],
   })
 
-  const table = useReactTable<UtxoTableEntry>({
+  const table = useReactTable<BranchEntryTableRow>({
     data: tableEntries,
     columns,
     filterFns: {
@@ -182,7 +178,7 @@ export const JarUtxosTable = ({
       rowSelection,
       columnVisibility,
     },
-    globalFilterFn: 'fuzzy' as FilterFnOption<UtxoTableEntry>,
+    globalFilterFn: 'fuzzy' as FilterFnOption<BranchEntryTableRow>,
     keepPinnedRows: true,
     enableRowSelection: true,
     onSortingChange: setSorting,
@@ -257,8 +253,8 @@ export const JarUtxosTable = ({
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort()
                   const key = header.column.id as SortKey
-                  const alignCenter = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                  const alignRight = (header.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
+                  const alignCenter = (header.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'center'
+                  const alignRight = (header.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'right'
                   return (
                     <TableHead
                       key={header.id}
@@ -291,8 +287,8 @@ export const JarUtxosTable = ({
             {tableTopRows().map((row) => (
               <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                 {row.getVisibleCells().map((cell) => {
-                  const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                  const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
+                  const alignCenter = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'center'
+                  const alignRight = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'right'
                   return (
                     <TableCell
                       key={cell.id}
@@ -311,8 +307,8 @@ export const JarUtxosTable = ({
               return (
                 <TableRow key={row.id} className={row.getIsSelected() ? 'light:bg-yellow-500/30! bg-yellow-950!' : ''}>
                   {row.getVisibleCells().map((cell) => {
-                    const alignCenter = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'center'
-                    const alignRight = (cell.column.columnDef.meta as UtxoTableColumnMeta)?.align === 'right'
+                    const alignCenter = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'center'
+                    const alignRight = (cell.column.columnDef.meta as BranchEntryTableColumnMeta)?.align === 'right'
                     return (
                       <TableCell
                         key={cell.id}

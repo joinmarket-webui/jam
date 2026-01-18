@@ -5,6 +5,13 @@ export type JarIndex = number
 
 export type SeedPhrase = string[]
 
+export type HdPath =
+  | `m/${number}'/${number}'/${number}'` // used internally
+  | `m/${number}'/${number}'/${number}'/${number}` // used by jm
+  | `m/${number}'/${number}'/${number}'/${number}/${number}` // used by jm
+  | `m/${number}'/${number}'/${number}'/${number}/${number}:${number}` // used by jm for Fidelity Bonds
+  | `m/${string}` // catch all
+
 export type Milliseconds = number
 export type Seconds = number
 export type Days = number
