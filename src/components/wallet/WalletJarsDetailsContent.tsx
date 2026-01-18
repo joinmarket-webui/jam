@@ -21,6 +21,7 @@ import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Balance } from '../ui/jam/Balance'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+import { AccountDetailsTabContent } from './AccountDetailsTabContent'
 import { JarUtxosTable, type UtxoTableEntry } from './JarUtxosTable'
 
 const isKeyEventFromInputElement = (e: KeyboardEvent) => {
@@ -93,10 +94,7 @@ interface DetailsContentProps {
 export const DetailsContent = ({ enabled: _enabled, account }: DetailsContentProps) => {
   return (
     <>
-      <div className="overflow-scroll">
-        <code className="light:text-red-700 text-red-800">account:</code>
-        <pre className="text-xs">{JSON.stringify(account, null, 2)}</pre>
-      </div>
+      <AccountDetailsTabContent value={account} />
     </>
   )
 }
