@@ -24,6 +24,7 @@ import { useJars, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { deriveAccountXpub, detectNetwork } from '@/lib/bip32'
 import { hashPassword } from '@/lib/hash'
+import { withQueryDelay } from '@/lib/queryClient'
 import { cn } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
 import { authStore } from '@/store/authStore'
@@ -114,7 +115,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   const [error, setError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
-  const [accountXpubs, setAccountXpubs] = useState<AccountXpubInfo[]>([])
+  //const [accountXpubs, setAccountXpubs] = useState<AccountXpubInfo[]>()
 
   const client = useApiClient()
   const authState = useStore(authStore, (state) => state.state)
@@ -135,20 +136,41 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
   })
 
+  const accountXpubsQueryKey = [walletFileName, 'xpubs']
+
+  const accountXpubs = useQuery({
+    queryKey: accountXpubsQueryKey,
+    queryFn: withQueryDelay(
+      async () => {
+        if (!seedQuery.data) {
+          return undefined
+        }
+        // Detect network from wallet name
+        const network = detectNetwork(walletFileName)
+        return await deriveAccountXpubsFromSeed(seedQuery.data, network, jars)
+      },
+      {
+        delayAfter: 210,
+      },
+    ),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    enabled: !!seedQuery.data,
+  })
+
   useEffect(() => {
     if (open && isPasswordVerified && seedQuery.data === undefined) {
       seedQuery.refetch()
     }
   }, [open, isPasswordVerified, seedQuery])
 
-  // Derive xpubs when seed data is available
-  useEffect(() => {
-    if (seedQuery.data !== undefined) {
+  /*useEffect(() => {
+    if (accountXpubs === undefined && seedQuery.data !== undefined) {
       // Detect network from wallet name
       const network = detectNetwork(walletFileName)
       deriveAccountXpubsFromSeed(seedQuery.data, network, jars).then(setAccountXpubs)
     }
-  }, [seedQuery.data, walletFileName, jars])
+  }, [accountXpubs, seedQuery.data, walletFileName, jars])*/
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) {
@@ -169,11 +191,10 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
 
   useEffect(() => {
     if (timeLeft <= 0) {
+      setShowPassword(false)
       setPassword('')
       setPasswordVerifiedAt(undefined)
       setError(undefined)
-      setAccountXpubs([])
-      setShowPassword(false)
     }
   }, [timeLeft])
 
@@ -208,14 +229,16 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
 
   const handleClose = () => {
     onOpenChange(false)
+    setShowPassword(false)
     setPassword('')
     setPasswordVerifiedAt(undefined)
     setError(undefined)
-    setShowPassword(false)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
-    setAccountXpubs([])
-    // Clear the cached query data to ensure fresh fetch on next open
+
+    // Remove sensitive data from query cache on close: If a user verifies the
+    // password again without closing the dialog, no re-fetching takes place.
     queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
+    queryClient.removeQueries({ queryKey: accountXpubsQueryKey })
   }
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
@@ -302,11 +325,11 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                     </div>
                   </div>
                 </div>
-              ) : accountXpubs.length > 0 ? (
+              ) : accountXpubs.data && accountXpubs.data.length > 0 ? (
                 <div className="max-h-[400px] overflow-y-auto">
                   <Accordion type="single" collapsible className="w-full">
-                    {accountXpubs.map((account) => (
-                      <AccordionItem key={account.accountIndex} value={String(account.accountIndex)}>
+                    {accountXpubs.data.map((account, index) => (
+                      <AccordionItem key={index} value={String(account.accountIndex)}>
                         <AccordionTrigger className="text-sm">
                           <span className="flex items-center gap-2">
                             <span className="font-medium">{account.accountName}</span>
@@ -361,7 +384,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
               )}
 
               {/* Info message about xpubs */}
-              {!seedQuery.isFetching && !seedQuery.error && accountXpubs.length > 0 && (
+              {!seedQuery.isFetching && !seedQuery.error && accountXpubs.data && accountXpubs.data.length > 0 && (
                 <div className="light:border-blue-800 light:bg-blue-50 rounded-lg border border-blue-200 bg-blue-900/20 p-2">
                   <p className="light:text-blue-800 text-xs text-blue-200">{t('settings.xpubs_modal.text_info')}</p>
                 </div>
