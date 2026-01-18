@@ -32,11 +32,15 @@ import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn } from '@/lib/utils'
+import type { UtxoTag } from '@/lib/utxo'
 import { Balance } from '../ui/jam/Balance'
+import { UtxoTag as UtxoTagComponent } from '../ui/jam/UtxoTag'
 
 const ITEMS_PER_PAGE = 25
 
-export type UtxoTableEntry = Utxo
+export type UtxoTableEntry = Utxo & {
+  tags: UtxoTag[]
+}
 
 type SortKey = keyof UtxoTableEntry
 
@@ -136,9 +140,18 @@ export const JarUtxosTable = ({
           numeric: true,
         },
       }),
-      columnHelper.accessor('label', {
+      columnHelper.accessor('tags', {
         header: () => t('jar_details.utxo_list.column_title_label_and_status'),
-        cell: (info) => info.getValue(),
+        cell: (info) => (
+          <div className="flex items-center gap-2">
+            {info.row.original.tags.map((it, index) => (
+              <div key={index}>
+                <UtxoTagComponent variant={it.variant}>{it.displayValue}</UtxoTagComponent>
+              </div>
+            ))}
+          </div>
+        ),
+        enableSorting: false,
       }),
     ],
     [t],
