@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import type { OfferType } from '@/constants/jm'
-import type { Milliseconds } from '@/types/global'
+import type { Milliseconds, SeedPhrase } from '@/types/global'
 
 const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
 
@@ -81,6 +81,9 @@ export const satsToBtc = (value: string) => parseInt(value, 10) / 100_000_000
 export const btcToSats = (value: string) => Math.round(parseFloat(value) * 100_000_000)
 
 export const SEGWIT_ACTIVATION_BLOCK = 481_824 // https://github.com/bitcoin/bitcoin/blob/v25.0/src/kernel/chainparams.cpp#L86
+
+export const DUMMY_SEED_PHRASE: SeedPhrase =
+  'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'.split(' ')
 
 export const percentageToFactor = (val: number, precision = 6) => {
   return Number((val / 100).toFixed(precision))
