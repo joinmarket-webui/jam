@@ -135,14 +135,11 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
   })
 
-  const seedRefetch = useMemo(() => seedQuery.refetch, [seedQuery.refetch])
-
-  // Fetch seed phrase immediately after password verification
   useEffect(() => {
-    if (open && isPasswordVerified) {
-      seedRefetch()
+    if (open && isPasswordVerified && seedQuery.data === undefined) {
+      seedQuery.refetch()
     }
-  }, [open, isPasswordVerified, seedRefetch])
+  }, [open, isPasswordVerified, seedQuery])
 
   // Derive xpubs when seed data is available
   useEffect(() => {
