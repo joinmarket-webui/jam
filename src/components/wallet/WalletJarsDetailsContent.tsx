@@ -4,7 +4,14 @@ import type { TFunction } from 'i18next'
 import { AlertTriangleIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
-import { useAddressSummary, useJars, type AddressSummary, type Jar } from '@/context/JamWalletInfoContext'
+import {
+  useAccountSummary,
+  useAddressSummary,
+  useJars,
+  type AccountMeta,
+  type AddressSummary,
+  type Jar,
+} from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn } from '@/lib/utils'
 import { utxoTags } from '@/lib/utxo'
@@ -39,13 +46,13 @@ const utxoToTableEntry = (utxo: Utxo, addressSummary: AddressSummary, t: TFuncti
 }
 
 interface UtxosContentProps {
-  jar: Jar
   enabled: boolean
+  jar: Jar
+  addressSummary: AddressSummary
 }
 
-export const UtxosContent = ({ enabled: _enabled, jar }: UtxosContentProps) => {
+export const UtxosContent = ({ enabled: _enabled, addressSummary, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
-  const { addressSummary } = useAddressSummary()
 
   const [_tableRowModel, setTableRowModel] = useState<RowModel<UtxoTableEntry>>()
 
@@ -78,6 +85,22 @@ export const UtxosContent = ({ enabled: _enabled, jar }: UtxosContentProps) => {
   )
 }
 
+interface DetailsContentProps {
+  enabled: boolean
+  account: AccountMeta
+}
+
+export const DetailsContent = ({ enabled: _enabled, account }: DetailsContentProps) => {
+  return (
+    <>
+      <div className="overflow-scroll">
+        <code className="light:text-red-700 text-red-800">account:</code>
+        <pre className="text-xs">{JSON.stringify(account, null, 2)}</pre>
+      </div>
+    </>
+  )
+}
+
 interface WalletJarsDetailsContentProps {
   enabled: boolean
   selectJarIndex?: JarIndex
@@ -88,12 +111,17 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
   const { t } = useTranslation()
   const { jars } = useJars()
   const { addressSummary } = useAddressSummary()
+  const { accountSummary } = useAccountSummary()
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const [activeJar, setActiveJar] = useState<Jar | undefined>(() => {
     const jar = jars.find((it) => it.jarIndex === selectJarIndex)
     return jar ?? jars[0] ?? undefined
   })
+  const activeAccountMeta = useMemo(
+    () => (activeJar ? accountSummary[activeJar.jarIndex] : undefined),
+    [accountSummary, activeJar],
+  )
 
   const nextJar = useCallback(() => {
     setActiveJar((current) =>
@@ -173,20 +201,28 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
         </TabsList>
 
         <TabsContent value="utxos" className="flex flex-col gap-2">
-          <UtxosContent enabled={enabled} jar={activeJar} />
+          <UtxosContent enabled={enabled} jar={activeJar} addressSummary={addressSummary} />
         </TabsContent>
         <TabsContent value="jar_details">
-          <Alert variant="warning">
-            <AlertTriangleIcon />
-            <AlertTitle>Under construction</AlertTitle>
-            <AlertDescription>Not yet implemented.</AlertDescription>
-          </Alert>
+          {activeAccountMeta !== undefined ? (
+            <DetailsContent enabled={enabled} account={activeAccountMeta}></DetailsContent>
+          ) : (
+            <Alert variant="warning">
+              <AlertTriangleIcon />
+              <AlertTitle>{/* TODO: i18n */}No account information present</AlertTitle>
+              <AlertDescription>Account information is not yet loaded or not present.</AlertDescription>
+            </Alert>
+          )}
         </TabsContent>
         {isDeveloperMode && (
           <TabsContent value="dev">
             <div className="overflow-scroll">
               <code className="light:text-red-700 text-red-800">activeJar:</code>
               <pre className="text-xs">{JSON.stringify(activeJar, null, 2)}</pre>
+            </div>
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">activeAccountMeta:</code>
+              <pre className="text-xs">{JSON.stringify(activeAccountMeta, null, 2)}</pre>
             </div>
             <div className="overflow-scroll">
               <code className="light:text-red-700 text-red-800">addressSummary:</code>

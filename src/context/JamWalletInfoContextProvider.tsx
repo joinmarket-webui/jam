@@ -8,14 +8,32 @@ import { walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import {
   JamWalletInfoContext,
+  type AccountMeta,
+  type AccountSummary,
+  type AddressMeta,
   type AddressStatus,
   type AddressSummary,
   type FidelityBondSummary,
   type Jar,
 } from './JamWalletInfoContext'
 
-const toAddressSummary = (walletInfo: WalletInfoApiObject): AddressSummary => {
-  return walletInfo.accounts
+const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
+  return walletInfo.accounts.reduce((acc, __raw) => {
+    if (__raw.account === undefined) {
+      return acc
+    }
+    const meta: AccountMeta = {
+      jarIndex: parseInt(String(__raw.account), 10) as JarIndex,
+      __raw,
+    }
+    acc[meta.jarIndex] = meta
+    return acc
+  }, {} as AccountSummary)
+}
+
+const toAddressSummary = (accountSummary: AccountSummary): AddressSummary => {
+  return Object.values(accountSummary)
+    .flatMap((it) => it.__raw)
     .flatMap((it) => it.branches || [])
     .flatMap((it) => it.entries || [])
     .reduce((acc, __raw) => {
@@ -23,13 +41,19 @@ const toAddressSummary = (walletInfo: WalletInfoApiObject): AddressSummary => {
         return acc
       }
 
-      const addressMeta = {
+      const info = getAddressInfo(__raw.address)
+
+      const meta: AddressMeta = {
         address: __raw.address,
-        info: getAddressInfo(__raw.address),
         status: __raw.status as AddressStatus,
+        info: {
+          bech32: info.bech32,
+          network: info.network,
+          type: info.type,
+        },
         __raw,
       }
-      acc[addressMeta.address] = addressMeta
+      acc[meta.address] = meta
       return acc
     }, {} as AddressSummary)
 }
@@ -76,6 +100,7 @@ const jarTemplatesByJarIndex = jarTemplates.reduce((acc, jar) => {
 }, {} as JarTemplateByJarIndex)
 
 const EMPTY_ADDRESS_SUMMARY = {} as AddressSummary
+const EMPTY_ACCOUNT_SUMMARY = {} as AccountSummary
 
 interface JamWalletInfoContextProviderProps {
   walletFileName: WalletFileName
@@ -136,16 +161,19 @@ export const JamWalletInfoContextProvider = ({
   jars.sort((a, b) => a.jarIndex - b.jarIndex)
 
   const fidelityBondSummary = toFidelityBondSummary(utxos)
-  const addressSummary =
+  const accountSummary =
     displayWalletQuery.walletInfo === undefined
-      ? EMPTY_ADDRESS_SUMMARY
-      : toAddressSummary(displayWalletQuery.walletInfo)
+      ? EMPTY_ACCOUNT_SUMMARY
+      : toAccountSummary(displayWalletQuery.walletInfo)
+  const addressSummary =
+    displayWalletQuery.walletInfo === undefined ? EMPTY_ADDRESS_SUMMARY : toAddressSummary(accountSummary)
 
   const value = {
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     walletBalanceSummary: walletBalanceSummary,
     fidelityBondSummary,
     addressSummary,
+    accountSummary,
     jars,
 
     isLoading: utxosQueryResult.isLoading || displayWalletQueryResult.isLoading,

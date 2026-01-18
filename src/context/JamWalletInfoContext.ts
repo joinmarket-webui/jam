@@ -52,11 +52,20 @@ export type AddressSummary = {
   [key: AddressMeta['address']]: AddressMeta
 }
 
+export type AccountMeta = {
+  jarIndex: JarIndex
+  __raw: NonNullable<NonNullable<WalletDisplayResponse['walletinfo']>['accounts']>[number]
+}
+export type AccountSummary = {
+  [key: AccountMeta['jarIndex']]: AccountMeta
+}
+
 interface JamWalletInfoContextType {
   walletName: string | null
   walletBalanceSummary: WalletBalanceSummary
   fidelityBondSummary: FidelityBondSummary
   addressSummary: AddressSummary
+  accountSummary: AccountSummary
   jars: Jar[]
 
   isLoading: boolean
@@ -91,4 +100,9 @@ export const useJars = () => {
 export const useAddressSummary = () => {
   const { addressSummary } = useJamWalletInfoContext()
   return { addressSummary }
+}
+
+export const useAccountSummary = () => {
+  const { accountSummary } = useJamWalletInfoContext()
+  return { accountSummary }
 }
