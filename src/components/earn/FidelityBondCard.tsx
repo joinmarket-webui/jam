@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Card, CardContent, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
-import type { FidelityBondUtxo } from '@/hooks/useUtxos'
+import type { FidelityBondUtxo } from '@/hooks/useQueryUtxos'
 import * as fb from '@/lib/fidelityBondUtils'
 import { time } from '@/lib/utils'
 

@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
-import type { FidelityBondUtxo, UseUtxosResult, Utxo } from '@/hooks/useUtxos'
+import type { FidelityBondUtxo, UseQueryUtxosResult, Utxo } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import type { JarIndex } from '@/types/global'
 
@@ -43,7 +43,7 @@ interface JamWalletInfoContextType {
   error: Error | ErrorMessage | null
   refetch: () => Promise<unknown>
 
-  utxosQueryResult: UseUtxosResult['queryResult']
+  utxosQueryResult: UseQueryUtxosResult['queryResult']
   displayWalletQueryResult: UseQueryDisplayWalletResult['queryResult']
 }
 

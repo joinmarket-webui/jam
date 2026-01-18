@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from 'react'
 import { useQueryDisplayWallet } from '@/hooks/useQueryDisplayWallet'
-import { useUtxos, type Utxo } from '@/hooks/useUtxos'
+import { useQueryUtxos, type Utxo } from '@/hooks/useQueryUtxos'
 import { toBalanceSummary } from '@/lib/balanceSummary'
 import * as fb from '@/lib/fidelityBondUtils'
 import { walletDisplayName, type WalletFileName } from '@/lib/utils'
@@ -59,7 +59,7 @@ export const JamWalletInfoContextProvider = ({
   const { walletInfo: _displayWallet, queryResult: displayWalletQueryResult } = useQueryDisplayWallet({
     walletFileName,
   })
-  const { utxos, queryResult: utxosQueryResult } = useUtxos({ walletFileName })
+  const { utxos, queryResult: utxosQueryResult } = useQueryUtxos({ walletFileName })
 
   const walletBalanceSummary = toBalanceSummary(utxos)
 

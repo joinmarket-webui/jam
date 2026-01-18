@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Utxo } from '@/hooks/useUtxos'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import { toBalanceSummary } from './balanceSummary'
 
 const now = Date.UTC(2009, 0, 3)
