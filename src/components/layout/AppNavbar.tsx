@@ -1,7 +1,15 @@
 import type { PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TFunction } from 'i18next'
-import { Loader2Icon, LockKeyholeIcon, LogOutIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
+import {
+  Loader2Icon,
+  LockKeyholeIcon,
+  LogOutIcon,
+  PackageSearchIcon,
+  SettingsIcon,
+  ShuffleIcon,
+  WalletIcon,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { DevBadge } from '@/components/dev/DevBadge'
@@ -72,7 +80,7 @@ const WalletPreview = ({
           </div>
           <div className="flex min-h-5 min-w-[150px] items-center">
             {rescanInfo?.rescanning === true ? (
-              <div className="cursor-wait">
+              <div className="cursor-wait motion-safe:animate-pulse">
                 {rescanInfo.progress !== undefined
                   ? t('navbar.text_rescan_in_progress_with_progress', {
                       progress: Math.floor(rescanInfo.progress * 100),
@@ -145,6 +153,8 @@ export function AppNavbar({
     return undefined
   })()
 
+  const rescanningRoute = rescanInfo?.rescanning !== true ? undefined : routes.rescan
+
   return (
     <header className="light:bg-gray-100 light:text-black flex items-center justify-between bg-[#23262b] px-4 py-2 text-white transition-colors duration-300">
       <WalletPreview
@@ -161,6 +171,7 @@ export function AppNavbar({
           {
             'md:flex': !isSidebarOpen,
             'lg:flex': isSidebarOpen,
+            'blur-[1px]': rescanInfo?.rescanning === true,
           },
         )}
       >
@@ -179,6 +190,18 @@ export function AppNavbar({
         </Link>
       </div>
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2">
+        {rescanningRoute && (
+          <Button
+            className="light:text-green-600 text-green-300"
+            variant="ghost-navbar"
+            size="icon"
+            onClick={() => navigate(rescanningRoute)}
+            aria-label={t('navbar.text_rescan_in_progress')}
+            title={t('navbar.text_rescan_in_progress')}
+          >
+            <PackageSearchIcon className="motion-safe:animate-pulse" />
+          </Button>
+        )}
         {joiningRoute && (
           <Button
             className="light:text-green-600 text-green-300"
