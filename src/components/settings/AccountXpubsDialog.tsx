@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
 import { authStore } from '@/store/authStore'
 import type { JarIndex, SeedPhrase } from '@/types/global'
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
 
@@ -99,6 +100,62 @@ async function deriveAccountXpubsFromSeed(
   return accounts
 }
 
+interface AccountXpubsAccordionProps {
+  values: AccountXpubInfo[]
+}
+
+const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
+  const { t } = useTranslation()
+  return (
+    <Accordion type="single" collapsible className="w-full">
+      {values.map((account, index) => (
+        <AccordionItem key={index} value={String(account.accountIndex)}>
+          <AccordionTrigger>
+            <span className="flex items-center gap-2">
+              <span className="font-medium">{account.accountName}</span>
+              <span className="text-muted-foreground text-xs">
+                ({t('settings.xpubs_modal.label_account')} {account.accountIndex})
+              </span>
+            </span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-muted-foreground items-end text-sm">
+                  {/* TODO: i18n */}Extended Public Key
+                  <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
+                </Label>
+                {account.xpubs.map((xpub, index) => (
+                  <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
+                    <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
+                      {xpub.xpub}
+                    </code>
+                    <CopyButton
+                      className={buttonVariants({
+                        size: 'icon',
+                        variant: 'ghost',
+                        className: 'shrink-0',
+                      })}
+                      value={xpub.xpub}
+                      text={<CopyIcon className="h-3 w-3" />}
+                      successText={<CheckIcon className="h-3 w-3 text-green-500" />}
+                      onSuccess={() => toast.success(t('settings.xpubs_modal.text_copied'))}
+                      onError={() => toast.error(t('settings.xpubs_modal.text_copy_failed'))}
+                      aria-label={t('settings.xpubs_modal.aria_copy_external', {
+                        account: account.accountName,
+                      })}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  )
+}
+
 interface AccountXpubsDialogProps {
   walletFileName: string
   open: boolean
@@ -158,19 +215,13 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     enabled: !!seedQuery.data,
   })
 
+  const isFetching = seedQuery.isFetching || accountXpubs.isFetching
+
   useEffect(() => {
     if (open && isPasswordVerified && seedQuery.data === undefined) {
       seedQuery.refetch()
     }
   }, [open, isPasswordVerified, seedQuery])
-
-  /*useEffect(() => {
-    if (accountXpubs === undefined && seedQuery.data !== undefined) {
-      // Detect network from wallet name
-      const network = detectNetwork(walletFileName)
-      deriveAccountXpubsFromSeed(seedQuery.data, network, jars).then(setAccountXpubs)
-    }
-  }, [accountXpubs, seedQuery.data, walletFileName, jars])*/
 
   useEffect(() => {
     if (passwordVerifiedAt === undefined) {
@@ -308,85 +359,41 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
             </DialogHeader>
 
             <div className="space-y-4">
-              {seedQuery.isFetching ? (
-                <div className="text-muted-foreground flex items-center justify-center gap-1 py-8">
-                  <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
-                  {t('global.loading')}
-                </div>
-              ) : seedQuery.error ? (
-                <div className="light:border-red-800 light:bg-red-50 rounded-lg border border-red-200 bg-red-900/20 p-2">
-                  <div className="flex items-start gap-2">
-                    <div className="light:text-red-800 text-sm text-red-200">
-                      <div className="flex items-center">
-                        <AlertTriangleIcon className="light:text-red-800 m-1 h-4 w-4 shrink-0 text-red-200" />
-                        <p className="text-md font-medium">{t('settings.xpubs_modal.text_error_title')}</p>
-                      </div>
-                      <p className="p-1 text-xs">
-                        {seedQuery.error.message || t('global.errors.reason_unknown')}
-                      </p>
+              {!accountXpubs.error && (
+                <div className="">
+                  {isFetching ? (
+                    <div className="text-muted-foreground flex items-center justify-center gap-1">
+                      <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
+                      {t('global.loading')}
                     </div>
-                  </div>
+                  ) : accountXpubs.data && accountXpubs.data.length > 0 ? (
+                    <div className="max-h-[400px] overflow-y-auto">
+                      <AccountXpubsAccordion values={accountXpubs.data} />
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground text-center">
+                      {t('settings.seed_modal.text_error_no_data')}
+                    </div>
+                  )}
                 </div>
-              ) : accountXpubs.data && accountXpubs.data.length > 0 ? (
-                <div className="max-h-[400px] overflow-y-auto">
-                  <Accordion type="single" collapsible className="w-full">
-                    {accountXpubs.data.map((account, index) => (
-                      <AccordionItem key={index} value={String(account.accountIndex)}>
-                        <AccordionTrigger className="text-sm">
-                          <span className="flex items-center gap-2">
-                            <span className="font-medium">{account.accountName}</span>
-                            <span className="text-muted-foreground text-xs">
-                              ({t('settings.xpubs_modal.label_account')} {account.accountIndex})
-                            </span>
-                          </span>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-3">
-                            {/* Account-level xpub */}
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-muted-foreground text-xs">
-                                  Extended Public Key
-                                  <span className="text-muted-foreground/70 ml-2 font-mono">{account.path}</span>
-                                </Label>
-                              </div>
-                              {account.xpubs.map((xpub, index) => (
-                                <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
-                                  <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                                    {xpub.xpub}
-                                  </code>
-                                  <CopyButton
-                                    className={buttonVariants({
-                                      size: 'icon',
-                                      variant: 'ghost',
-                                      className: 'shrink-0',
-                                    })}
-                                    value={xpub.xpub}
-                                    text={<CopyIcon className="h-3 w-3" />}
-                                    successText={<CheckIcon className="h-3 w-3 text-green-500" />}
-                                    onSuccess={() => toast.success(t('settings.xpubs_modal.text_copied'))}
-                                    onError={() => toast.error(t('settings.xpubs_modal.text_copy_failed'))}
-                                    aria-label={t('settings.xpubs_modal.aria_copy_external', {
-                                      account: account.accountName,
-                                    })}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              ) : (
-                <div className="text-muted-foreground py-8 text-center">
-                  {t('settings.xpubs_modal.text_no_accounts')}
-                </div>
+              )}
+              {!seedQuery.isFetching && seedQuery.error && (
+                <Alert variant="destructive">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('settings.seed_modal.text_error_title')}</AlertTitle>
+                  <AlertDescription>{seedQuery.error.message || t('global.errors.reason_unknown')}</AlertDescription>
+                </Alert>
+              )}
+              {!accountXpubs.isFetching && accountXpubs.error && (
+                <Alert variant="destructive">
+                  <AlertTriangleIcon />
+                  <AlertTitle>{t('settings.xpubs_modal.text_error_title')}</AlertTitle>
+                  <AlertDescription>{accountXpubs.error.message || t('global.errors.reason_unknown')}</AlertDescription>
+                </Alert>
               )}
 
               {/* Info message about xpubs */}
-              {!seedQuery.isFetching && !seedQuery.error && accountXpubs.data && accountXpubs.data.length > 0 && (
+              {!isFetching && !accountXpubs.error && accountXpubs.data && accountXpubs.data.length > 0 && (
                 <div className="light:border-blue-800 light:bg-blue-50 rounded-lg border border-blue-200 bg-blue-900/20 p-2">
                   <p className="light:text-blue-800 text-xs text-blue-200">{t('settings.xpubs_modal.text_info')}</p>
                 </div>
