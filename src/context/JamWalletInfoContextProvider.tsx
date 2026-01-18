@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react'
+import { useQueryDisplayWallet } from '@/hooks/useQueryDisplayWallet'
 import { useUtxos, type Utxo } from '@/hooks/useUtxos'
 import { toBalanceSummary } from '@/lib/balanceSummary'
 import * as fb from '@/lib/fidelityBondUtils'
@@ -55,6 +56,9 @@ export const JamWalletInfoContextProvider = ({
   walletFileName,
   children,
 }: PropsWithChildren<JamWalletInfoContextProviderProps>) => {
+  const { walletInfo: _displayWallet, queryResult: displayWalletQueryResult } = useQueryDisplayWallet({
+    walletFileName,
+  })
   const { utxos, queryResult: utxosQueryResult } = useUtxos({ walletFileName })
 
   const walletBalanceSummary = toBalanceSummary(utxos)
@@ -109,9 +113,18 @@ export const JamWalletInfoContextProvider = ({
     walletBalanceSummary: walletBalanceSummary,
     fidelityBondSummary,
     jars,
-    isLoading: utxosQueryResult.isFetching,
-    error: utxosQueryResult.error,
-    refetch: utxosQueryResult.refetch,
+
+    isLoading: utxosQueryResult.isLoading || displayWalletQueryResult.isLoading,
+    isFetching: utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,
+    error: utxosQueryResult.error || displayWalletQueryResult.error,
+    refetch: () =>
+      utxosQueryResult
+        .refetch()
+        .then(() => displayWalletQueryResult.refetch())
+        .then(() => undefined),
+
+    utxosQueryResult: utxosQueryResult,
+    displayWalletQueryResult: displayWalletQueryResult,
   }
 
   return <JamWalletInfoContext.Provider value={value}>{children}</JamWalletInfoContext.Provider>

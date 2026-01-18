@@ -296,7 +296,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
                 !jmSessionState.maker_running &&
                 !waitingForMakerUpdate &&
                 !waitingForOfferUpdate &&
-                !walletInfo.isLoading
+                !walletInfo.isFetching
               return (
                 <FidelityBondCard value={it} key={index}>
                   {actionsEnabled && (

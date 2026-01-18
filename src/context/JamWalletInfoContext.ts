@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import type { FidelityBondUtxo, Utxo } from '@/hooks/useUtxos'
+import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
+import type { FidelityBondUtxo, UseUtxosResult, Utxo } from '@/hooks/useUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
 import type { JarIndex } from '@/types/global'
 
@@ -36,9 +37,14 @@ interface JamWalletInfoContextType {
   walletBalanceSummary: WalletBalanceSummary
   fidelityBondSummary: FidelityBondSummary
   jars: Jar[]
+
   isLoading: boolean
+  isFetching: boolean
   error: Error | ErrorMessage | null
   refetch: () => Promise<unknown>
+
+  utxosQueryResult: UseUtxosResult['queryResult']
+  displayWalletQueryResult: UseQueryDisplayWalletResult['queryResult']
 }
 
 export const JamWalletInfoContext = createContext<JamWalletInfoContextType | undefined>(undefined)
@@ -52,11 +58,11 @@ export const useJamWalletInfoContext = () => {
 }
 
 export const useWalletBalanceSummary = () => {
-  const { walletBalanceSummary, isLoading } = useJamWalletInfoContext()
+  const { walletBalanceSummary, isFetching: isLoading } = useJamWalletInfoContext()
   return { walletBalanceSummary, isLoading }
 }
 
 export const useJars = () => {
-  const { jars, isLoading } = useJamWalletInfoContext()
+  const { jars, isFetching: isLoading } = useJamWalletInfoContext()
   return { jars, isLoading }
 }
