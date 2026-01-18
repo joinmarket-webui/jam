@@ -263,8 +263,6 @@
         "placeholder_password": "Enter your password",
         "text_error_password_incorrect": "Incorrect password. Please try again.",
         "text_error": "Error while verifying given password.",
-        "text_session_error": "Session error. Please login again.",
-        "text_unavailable": "Password verification unavailable. Please login again.",
         "text_button_submit": "Verify",
         "text_button_submitting": "Verifying..."
       },

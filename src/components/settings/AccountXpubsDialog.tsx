@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, type ComponentProps } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -15,7 +15,6 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { useStore } from 'zustand'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,10 +33,9 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { deriveAccountXpub, detectNetwork } from '@/lib/bip32'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
-import { cn } from '@/lib/utils'
+import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
-import { authStore } from '@/store/authStore'
-import type { JarIndex, SeedPhrase } from '@/types/global'
+import type { JarIndex, SeedPhrase, WithRequiredProperty } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
@@ -189,26 +187,27 @@ const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
   )
 }
 
-interface AccountXpubsDialogProps {
-  walletFileName: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
+type AccountXpubsDialogProps = WithRequiredProperty<
+  Omit<ComponentProps<typeof Dialog>, 'children'>,
+  'open' | 'onOpenChange'
+> & {
+  walletFileName: WalletFileName
+  hashedPassword: string
 }
 
-export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: AccountXpubsDialogProps) => {
+export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedPassword }: AccountXpubsDialogProps) => {
   const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [passwordVerifiedAt, setPasswordVerifiedAt] = useState<number>()
   const isPasswordVerified = useMemo(() => passwordVerifiedAt !== undefined, [passwordVerifiedAt])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string>()
+  const [passwordVerificationError, setPasswordVerificationError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
   //const [accountXpubs, setAccountXpubs] = useState<AccountXpubInfo[]>()
 
   const client = useApiClient()
-  const authState = useStore(authStore, (state) => state.state)
   const queryClient = useQueryClient()
   const { jars } = useJars()
 
@@ -278,33 +277,24 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
       setShowPassword(false)
       setPassword('')
       setPasswordVerifiedAt(undefined)
-      setError(undefined)
+      setPasswordVerificationError(undefined)
     }
   }, [timeLeft])
 
   const handlePasswordSubmit = async () => {
     if (!password) return
-    if (walletFileName !== authState?.walletFileName) {
-      setError(t('settings.xpubs_modal.verification.text_session_error'))
-      return
-    }
-
-    if (!authState?.hashed_password) {
-      setError(t('settings.xpubs_modal.verification.text_unavailable'))
-      return
-    }
 
     setIsSubmitting(true)
     try {
       const hashed = hashPassword(password, walletFileName)
-      if (hashed === authState?.hashed_password) {
+      if (hashed === hashedPassword) {
         setPasswordVerifiedAt(Date.now())
-        setError(undefined)
+        setPasswordVerificationError(undefined)
       } else {
-        setError(t('settings.xpubs_modal.verification.text_error_password_incorrect'))
+        setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error_password_incorrect'))
       }
     } catch (error) {
-      setError(t('settings.xpubs_modal.verification.text_error'))
+      setPasswordVerificationError(t('settings.xpubs_modal.verification.text_error'))
       console.error('Password verification error:', error)
     } finally {
       setIsSubmitting(false)
@@ -316,7 +306,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     setShowPassword(false)
     setPassword('')
     setPasswordVerifiedAt(undefined)
-    setError(undefined)
+    setPasswordVerificationError(undefined)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
 
     // Remove sensitive data from query cache on close: If a user verifies the
@@ -355,7 +345,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={t('settings.xpubs_modal.verification.placeholder_password')}
-                    className={error ? 'border-destructive' : ''}
+                    className={passwordVerificationError ? 'border-destructive' : ''}
                   />
                   <Button
                     type="button"
@@ -367,7 +357,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                     {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                   </Button>
                 </div>
-                {error && <p className="text-destructive text-sm">{error}</p>}
+                {passwordVerificationError && <p className="text-destructive text-sm">{passwordVerificationError}</p>}
               </div>
             </div>
 
