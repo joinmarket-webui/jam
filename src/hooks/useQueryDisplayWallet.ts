@@ -12,18 +12,18 @@ import type { Milliseconds } from '@/types/global'
 // simulate slow mainnet responses in dev mode
 const QUERY_DELAY_AFTER: Milliseconds = isDevMode() ? 2_100 : 0
 
-type WalletInfoApiObject = NonNullable<WalletDisplayResponse['walletinfo']>
+export type WalletInfoApiObject = NonNullable<WalletDisplayResponse['walletinfo']>
 
 export type UseQueryDisplayWalletResult = {
   walletInfo: WalletInfoApiObject | undefined
   queryResult: UseQueryResult<DisplaywalletResponse, ErrorMessage>
 }
 
-interface UseUtxosProps {
+interface UseQueryDisplayWalletProps {
   walletFileName: WalletFileName
 }
 
-export function useQueryDisplayWallet({ walletFileName }: UseUtxosProps): UseQueryDisplayWalletResult {
+export function useQueryDisplayWallet({ walletFileName }: UseQueryDisplayWalletProps): UseQueryDisplayWalletResult {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
 

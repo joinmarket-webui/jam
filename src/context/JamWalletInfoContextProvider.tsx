@@ -1,11 +1,38 @@
 import type { PropsWithChildren } from 'react'
-import { useQueryDisplayWallet } from '@/hooks/useQueryDisplayWallet'
+import { getAddressInfo } from 'bitcoin-address-validation'
+import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
 import { useQueryUtxos, type Utxo } from '@/hooks/useQueryUtxos'
 import { toBalanceSummary } from '@/lib/balanceSummary'
 import * as fb from '@/lib/fidelityBondUtils'
 import { walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
-import { JamWalletInfoContext, type FidelityBondSummary, type Jar } from './JamWalletInfoContext'
+import {
+  JamWalletInfoContext,
+  type AddressStatus,
+  type AddressSummary,
+  type FidelityBondSummary,
+  type Jar,
+} from './JamWalletInfoContext'
+
+const toAddressSummary = (walletInfo: WalletInfoApiObject): AddressSummary => {
+  return walletInfo.accounts
+    .flatMap((it) => it.branches || [])
+    .flatMap((it) => it.entries || [])
+    .reduce((acc, __raw) => {
+      if (!__raw.address || !__raw.status) {
+        return acc
+      }
+
+      const addressMeta = {
+        address: __raw.address,
+        info: getAddressInfo(__raw.address),
+        status: __raw.status as AddressStatus,
+        __raw,
+      }
+      acc[addressMeta.address] = addressMeta
+      return acc
+    }, {} as AddressSummary)
+}
 
 const toFidelityBondSummary = (utxos: Utxo[]): FidelityBondSummary => {
   const fbOutputs = utxos
@@ -48,6 +75,8 @@ const jarTemplatesByJarIndex = jarTemplates.reduce((acc, jar) => {
   return acc
 }, {} as JarTemplateByJarIndex)
 
+const EMPTY_ADDRESS_SUMMARY = {} as AddressSummary
+
 interface JamWalletInfoContextProviderProps {
   walletFileName: WalletFileName
 }
@@ -56,7 +85,7 @@ export const JamWalletInfoContextProvider = ({
   walletFileName,
   children,
 }: PropsWithChildren<JamWalletInfoContextProviderProps>) => {
-  const { walletInfo: _displayWallet, queryResult: displayWalletQueryResult } = useQueryDisplayWallet({
+  const { queryResult: displayWalletQueryResult, ...displayWalletQuery } = useQueryDisplayWallet({
     walletFileName,
   })
   const { utxos, queryResult: utxosQueryResult } = useQueryUtxos({ walletFileName })
@@ -107,11 +136,16 @@ export const JamWalletInfoContextProvider = ({
   jars.sort((a, b) => a.jarIndex - b.jarIndex)
 
   const fidelityBondSummary = toFidelityBondSummary(utxos)
+  const addressSummary =
+    displayWalletQuery.walletInfo === undefined
+      ? EMPTY_ADDRESS_SUMMARY
+      : toAddressSummary(displayWalletQuery.walletInfo)
 
   const value = {
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     walletBalanceSummary: walletBalanceSummary,
     fidelityBondSummary,
+    addressSummary,
     jars,
 
     isLoading: utxosQueryResult.isLoading || displayWalletQueryResult.isLoading,
