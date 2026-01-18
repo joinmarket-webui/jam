@@ -1,9 +1,10 @@
 import { createContext, useContext } from 'react'
-import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { ErrorMessage, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
+import type { AddressInfo } from 'bitcoin-address-validation'
 import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
 import type { FidelityBondUtxo, UseQueryUtxosResult, Utxo } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
-import type { JarIndex } from '@/types/global'
+import type { BitcoinAddress, JarIndex } from '@/types/global'
 
 // Comments for tailwind importer (ADAPT THE COMMENT IF YOU CHANGE THE VALUE)
 // "text-[#e2b86a]", "group-hover/jar:text-[#e2b86a]"
@@ -32,10 +33,30 @@ export type FidelityBondSummary = {
 
 export type WalletBalanceSummary = BalanceSummary
 
+export type AddressStatus = 'new' | 'used' | 'reused' | 'cj-out' | 'change-out' | 'non-cj-change' | 'deposit'
+
+export type AddressMeta = {
+  address: BitcoinAddress
+  status: AddressStatus
+  info: Omit<AddressInfo, 'address'>
+  __raw: NonNullable<
+    NonNullable<
+      NonNullable<
+        NonNullable<NonNullable<WalletDisplayResponse['walletinfo']>['accounts']>[number]['branches']
+      >[number]['entries']
+    >
+  >[number]
+}
+
+export type AddressSummary = {
+  [key: AddressMeta['address']]: AddressMeta
+}
+
 interface JamWalletInfoContextType {
   walletName: string | null
   walletBalanceSummary: WalletBalanceSummary
   fidelityBondSummary: FidelityBondSummary
+  addressSummary: AddressSummary
   jars: Jar[]
 
   isLoading: boolean
@@ -65,4 +86,9 @@ export const useWalletBalanceSummary = () => {
 export const useJars = () => {
   const { jars, isFetching: isLoading } = useJamWalletInfoContext()
   return { jars, isLoading }
+}
+
+export const useAddressSummary = () => {
+  const { addressSummary } = useJamWalletInfoContext()
+  return { addressSummary }
 }

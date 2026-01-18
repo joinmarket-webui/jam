@@ -3,7 +3,7 @@ import type { RowModel } from '@tanstack/react-table'
 import { AlertTriangleIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
-import { useJars, type Jar } from '@/context/JamWalletInfoContext'
+import { useAddressSummary, useJars, type Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -83,6 +83,7 @@ interface WalletJarsDetailsContentProps {
 export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }: WalletJarsDetailsContentProps) => {
   const { t } = useTranslation()
   const { jars } = useJars()
+  const { addressSummary } = useAddressSummary()
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const [activeJar, setActiveJar] = useState<Jar | undefined>(() => {
@@ -182,6 +183,10 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
             <div className="overflow-scroll">
               <code className="light:text-red-700 text-red-800">activeJar:</code>
               <pre className="text-xs">{JSON.stringify(activeJar, null, 2)}</pre>
+            </div>
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">addressSummary:</code>
+              <pre className="text-xs">{JSON.stringify(addressSummary, null, 2)}</pre>
             </div>
           </TabsContent>
         )}
