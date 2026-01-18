@@ -14,6 +14,7 @@ import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmConfigStore } from '@/store/jmConfigStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { DevBadge } from './DevBadge'
 
 interface DevConfigTabContentProps {
   walletFileName?: WalletFileName
@@ -109,7 +110,14 @@ interface DevPageProps {
 export default function DevPage({ walletFileName }: DevPageProps) {
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <PageTitle title="Development" subtitle="Development specific information" />
+      <PageTitle
+        title={
+          <>
+            Development <DevBadge />
+          </>
+        }
+        subtitle="Development specific information"
+      />
 
       <Tabs defaultValue="config" className="flex flex-col gap-4">
         <TabsList className="flex items-center gap-2">

@@ -39,6 +39,7 @@ import { isDebugFeatureEnabled, isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import { useFeatures } from '@/hooks/useFeatures'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { DevBadge } from '../dev/DevBadge'
 
 export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 'side'>) {
   const { t } = useTranslation()
@@ -209,6 +210,7 @@ export function AppSidebar({ side }: Pick<React.ComponentProps<typeof Sidebar>, 
                     <div>
                       <CurlyBracesIcon />
                       <span>Development</span>
+                      <DevBadge />
                     </div>
                   </SidebarMenuButton>
                   <SidebarMenuSub>
