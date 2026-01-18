@@ -142,7 +142,7 @@ const CreateWalletPage = () => {
 
       let hashedPassword: string | undefined = undefined
       try {
-        hashedPassword = hashPassword(password, createData?.walletname)
+        hashedPassword = await hashPassword(password, createData?.walletname)
       } catch (hashError) {
         console.warn('Failed to hash password, continuing without hash verification:', hashError)
       }

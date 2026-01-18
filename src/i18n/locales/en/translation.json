@@ -244,7 +244,7 @@
         "label_password": "Password",
         "placeholder_password": "Enter your password",
         "text_error_password_incorrect": "Incorrect password. Please try again.",
-        "text_error": "Error while verifying given password.",
+        "text_error": "Error while verifying given password. {{ reason }}",
         "text_button_submit": "Verify",
         "text_button_submitting": "Verifying..."
       },
@@ -262,7 +262,7 @@
         "label_password": "Password",
         "placeholder_password": "Enter your password",
         "text_error_password_incorrect": "Incorrect password. Please try again.",
-        "text_error": "Error while verifying given password.",
+        "text_error": "Error while verifying given password. {{ reason }}",
         "text_button_submit": "Verify",
         "text_button_submitting": "Verifying..."
       },

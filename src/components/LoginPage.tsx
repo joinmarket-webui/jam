@@ -185,7 +185,7 @@ const LoginPage = () => {
 
       let hashedPassword: string | undefined
       try {
-        hashedPassword = hashPassword(data.password, data.walletFileName)
+        hashedPassword = await hashPassword(data.password, data.walletFileName)
       } catch (hashError) {
         console.warn('Failed to hash password, continuing without hash verification:', hashError)
       }
