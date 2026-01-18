@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { RowModel } from '@tanstack/react-table'
 import { AlertTriangleIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { useJars, type Jar } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useUtxos'
 import { cn } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
+import { DevBadge } from '../dev/DevBadge'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Balance } from '../ui/jam/Balance'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -37,7 +40,7 @@ interface UtxosContentProps {
   enabled: boolean
 }
 
-export const UtxosContent = ({ enabled, jar }: UtxosContentProps) => {
+export const UtxosContent = ({ enabled: _enabled, jar }: UtxosContentProps) => {
   const { t } = useTranslation()
 
   const [_tableRowModel, setTableRowModel] = useState<RowModel<UtxoTableEntry>>()
@@ -67,9 +70,6 @@ export const UtxosContent = ({ enabled, jar }: UtxosContentProps) => {
           setTableRowModel(table.getFilteredRowModel())
         }}
       />
-      <pre aria-disabled={!enabled} className="text-xs">
-        {JSON.stringify(jar, null, 2)}
-      </pre>
     </>
   )
 }
@@ -83,6 +83,7 @@ interface WalletJarsDetailsContentProps {
 export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }: WalletJarsDetailsContentProps) => {
   const { t } = useTranslation()
   const { jars } = useJars()
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const [activeJar, setActiveJar] = useState<Jar | undefined>(() => {
     const jar = jars.find((it) => it.jarIndex === selectJarIndex)
@@ -146,6 +147,11 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
         </TabsList>
       </Tabs>
 
+      <Alert variant="warning">
+        <AlertTriangleIcon />
+        <AlertTitle>Under construction</AlertTitle>
+        <AlertDescription>Not yet implemented.</AlertDescription>
+      </Alert>
       <Tabs defaultValue="utxos" className="flex flex-col gap-4">
         <TabsList className="mx-auto flex items-center gap-2">
           <TabsTrigger value="utxos" className="cursor-pointer" disabled={!enabled}>
@@ -154,14 +160,14 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
           <TabsTrigger value="jar_details" className="cursor-pointer" disabled={!enabled}>
             {t('jar_details.title_tab_jar_details')}
           </TabsTrigger>
+          {isDeveloperMode && (
+            <TabsTrigger value="dev" className="cursor-pointer" disabled={!enabled}>
+              Dev <DevBadge />
+            </TabsTrigger>
+          )}
         </TabsList>
-        <TabsContent value="utxos" className="flex flex-col gap-2">
-          <Alert variant="warning">
-            <AlertTriangleIcon />
-            <AlertTitle>Under construction</AlertTitle>
-            <AlertDescription>Not yet implemented.</AlertDescription>
-          </Alert>
 
+        <TabsContent value="utxos" className="flex flex-col gap-2">
           <UtxosContent enabled={enabled} jar={activeJar} />
         </TabsContent>
         <TabsContent value="jar_details">
@@ -171,6 +177,14 @@ export const WalletJarsDetailsContent = ({ enabled, className, selectJarIndex }:
             <AlertDescription>Not yet implemented.</AlertDescription>
           </Alert>
         </TabsContent>
+        {isDeveloperMode && (
+          <TabsContent value="dev">
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">activeJar:</code>
+              <pre className="text-xs">{JSON.stringify(activeJar, null, 2)}</pre>
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
