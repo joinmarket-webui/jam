@@ -1,9 +1,8 @@
 import { cn } from '@/lib/utils'
-
-type MnemonicPhrase = string[]
+import type { SeedPhrase } from '@/types/global'
 
 interface SeedPhraseGridProps {
-  value: MnemonicPhrase
+  value: SeedPhrase
   className?: string
   blurred: boolean
   blurredText?: string

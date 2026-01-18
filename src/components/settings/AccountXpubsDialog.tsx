@@ -27,7 +27,7 @@ import { hashPassword } from '@/lib/hash'
 import { cn } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
 import { authStore } from '@/store/authStore'
-import type { JarIndex } from '@/types/global'
+import type { JarIndex, SeedPhrase } from '@/types/global'
 
 const HD_PATH_PURPOSE: number = 84
 
@@ -51,13 +51,13 @@ interface AccountXpubInfo {
  * not the child xpubs that the API incorrectly returns
  */
 async function deriveAccountXpubsFromSeed(
-  seedPhrase: string,
+  seedPhrase: SeedPhrase,
   network: Network,
   jars: Jar[],
 ): Promise<AccountXpubInfo[]> {
   const coinType = network === Network.mainnet ? 0 : 1
 
-  const seed = await mnemonicToSeed(seedPhrase)
+  const seed = await mnemonicToSeed(seedPhrase.join(' '))
 
   // Convert to native segwit format (zpub/vpub) and build account info
   const accounts: AccountXpubInfo[] = []
@@ -120,15 +120,18 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   const queryClient = useQueryClient()
   const { jars } = useJars()
 
+  const seedQueryOptions = getseedOptions({
+    client,
+    path: { walletname: encodeURIComponent(walletFileName) },
+  })
+
   const seedQuery = useQuery({
-    ...getseedOptions({
-      client,
-      path: { walletname: walletFileName },
-    }),
-    staleTime: 1,
-    gcTime: 1,
+    ...seedQueryOptions,
+    staleTime: Infinity,
+    gcTime: Infinity,
     enabled: false,
     retry: false,
+    select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
   })
 
   const seedRefetch = useMemo(() => seedQuery.refetch, [seedQuery.refetch])
@@ -142,10 +145,10 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
 
   // Derive xpubs when seed data is available
   useEffect(() => {
-    if (seedQuery.data?.seedphrase !== undefined) {
+    if (seedQuery.data !== undefined) {
       // Detect network from wallet name
       const network = detectNetwork(walletFileName)
-      deriveAccountXpubsFromSeed(seedQuery.data.seedphrase, network, jars).then(setAccountXpubs)
+      deriveAccountXpubsFromSeed(seedQuery.data, network, jars).then(setAccountXpubs)
     }
   }, [seedQuery.data, walletFileName, jars])
 
@@ -221,6 +224,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
   }
 
   const handleClose = () => {
+    onOpenChange(false)
     setPassword('')
     setPasswordVerifiedAt(undefined)
     setError(undefined)
@@ -229,10 +233,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
     setAccountXpubs([])
     setCopiedXpub(null)
     // Clear the cached query data to ensure fresh fetch on next open
-    queryClient.removeQueries({
-      queryKey: getseedOptions({ client, path: { walletname: walletFileName } }).queryKey,
-    })
-    onOpenChange(false)
+    queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
   }
 
   const handleKeyDown = async (e: React.KeyboardEvent) => {
@@ -343,28 +344,26 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                                 </Label>
                               </div>
                               {account.xpubs.map((xpub, index) => (
-                                <>
-                                  <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
-                                    <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                                      {xpub.xpub}
-                                    </code>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-6 w-6 shrink-0"
-                                      onClick={() => copyToClipboard(xpub.xpub)}
-                                      aria-label={t('settings.xpubs_modal.aria_copy_external', {
-                                        account: account.accountName,
-                                      })}
-                                    >
-                                      {copiedXpub === xpub.xpub ? (
-                                        <CheckIcon className="h-3 w-3 text-green-500" />
-                                      ) : (
-                                        <CopyIcon className="h-3 w-3" />
-                                      )}
-                                    </Button>
-                                  </div>
-                                </>
+                                <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
+                                  <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
+                                    {xpub.xpub}
+                                  </code>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 shrink-0"
+                                    onClick={() => copyToClipboard(xpub.xpub)}
+                                    aria-label={t('settings.xpubs_modal.aria_copy_external', {
+                                      account: account.accountName,
+                                    })}
+                                  >
+                                    {copiedXpub === xpub.xpub ? (
+                                      <CheckIcon className="h-3 w-3 text-green-500" />
+                                    ) : (
+                                      <CopyIcon className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                </div>
                               ))}
                             </div>
                           </div>

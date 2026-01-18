@@ -22,7 +22,7 @@ import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
-import type { WithRequiredProperty } from '@/types/global'
+import type { SeedPhrase, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Switch } from '../ui/switch'
 
@@ -61,7 +61,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
     gcTime: Infinity,
     enabled: false,
     retry: false,
-    select: (data) => data.seedphrase,
+    select: (data) => data.seedphrase.split(/\s+/) as SeedPhrase,
   })
 
   useEffect(() => {
@@ -133,13 +133,13 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
   }
 
   const handleClose = () => {
+    onOpenChange(false)
     setPassword('')
     setPasswordVerifiedAt(undefined)
     setError(undefined)
     setShowPassword(false)
     setTimeLeft(JAM_SEED_MODAL_TIMEOUT)
     setRevealSeed(false)
-    onOpenChange(false)
     queryClient.removeQueries({ queryKey: seedQueryOptions.queryKey })
   }
 
@@ -224,11 +224,7 @@ export const SeedPhraseDialog = ({ walletFileName, open, onOpenChange }: SeedPhr
                       {t('global.loading')}
                     </div>
                   ) : seedQuery.data ? (
-                    <SeedPhraseGrid
-                      className="md:grid-cols-3"
-                      value={seedQuery.data.split(/\s+/)}
-                      blurred={!revealSeed}
-                    />
+                    <SeedPhraseGrid className="md:grid-cols-3" value={seedQuery.data} blurred={!revealSeed} />
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}
