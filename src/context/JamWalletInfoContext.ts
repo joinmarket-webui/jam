@@ -52,8 +52,21 @@ export type AddressSummary = {
   [key: AddressMeta['address']]: AddressMeta
 }
 
+export type AccountBranchType = 'external addresses' | 'internal addresses'
+
+type AccountAbiObj = NonNullable<NonNullable<WalletDisplayResponse['walletinfo']>['accounts']>[number]
+
+type HdPath = `m/${string}`
+
+export type AccountBranch = {
+  type: AccountBranchType | string
+  derivation: HdPath
+  __raw: NonNullable<AccountAbiObj['branches']>[number]
+}
+
 export type AccountMeta = {
   jarIndex: JarIndex
+  branches: AccountBranch[]
   __raw: NonNullable<NonNullable<WalletDisplayResponse['walletinfo']>['accounts']>[number]
 }
 export type AccountSummary = {

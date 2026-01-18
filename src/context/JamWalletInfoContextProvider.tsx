@@ -8,6 +8,7 @@ import { walletDisplayName, type WalletFileName } from '@/lib/utils'
 import type { JarIndex } from '@/types/global'
 import {
   JamWalletInfoContext,
+  type AccountBranch,
   type AccountMeta,
   type AccountSummary,
   type AddressMeta,
@@ -22,8 +23,20 @@ const toAccountSummary = (walletInfo: WalletInfoApiObject): AccountSummary => {
     if (__raw.account === undefined) {
       return acc
     }
+    const branches = (__raw.branches || [])
+      .filter((it) => it.branch !== undefined)
+      .map((it) => {
+        const [type, derivation] = it.branch!.split('\t')
+        return {
+          type,
+          derivation,
+          __raw: it,
+        } as AccountBranch
+      })
+
     const meta: AccountMeta = {
       jarIndex: parseInt(String(__raw.account), 10) as JarIndex,
+      branches,
       __raw,
     }
     acc[meta.jarIndex] = meta
