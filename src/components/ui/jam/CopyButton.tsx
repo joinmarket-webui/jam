@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type PropsWithChildren, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type PropsWithChildren, type ReactNode, type ComponentProps } from 'react'
 import type { Milliseconds } from '@/types/global'
 
 const copyToClipboardFallback = (
@@ -29,7 +29,7 @@ const copyToClipboard = async (
   try {
     await navigator.clipboard.writeText(text)
     return true
-  } catch (e) {
+  } catch (e: unknown) {
     if (fallbackInputField) {
       return copyToClipboardFallback(fallbackInputField, errorMessage)
     } else {
@@ -38,12 +38,10 @@ const copyToClipboard = async (
   }
 }
 
-interface CopyableProps {
+interface CopyableProps extends Omit<ComponentProps<'button'>, 'onClick' | 'type'> {
   value: string
   onSuccess?: () => void
-  onError?: (e: Error) => void
-  className?: string
-  disabled?: boolean
+  onError?: (e: unknown) => void
 }
 
 function Copyable({
@@ -51,8 +49,8 @@ function Copyable({
   onSuccess,
   onError,
   className,
-  children,
   disabled,
+  children,
   ...props
 }: PropsWithChildren<CopyableProps>) {
   const valueFallbackInputRef = useRef(null)
@@ -62,8 +60,8 @@ function Copyable({
       <button
         {...props}
         type="button"
-        disabled={disabled}
         className={className}
+        disabled={disabled}
         onClick={() => copyToClipboard(value, valueFallbackInputRef.current!).then(onSuccess, onError)}
       >
         {children}
@@ -87,20 +85,9 @@ interface CopyButtonProps extends CopyableProps {
   text: ReactNode
   successText?: ReactNode
   successTextTimeout?: Milliseconds
-  disabled?: boolean
 }
 
-export function CopyButton({
-  value,
-  onSuccess,
-  onError,
-  text,
-  successText = text,
-  successTextTimeout = 1_500,
-  className,
-  disabled,
-  ...props
-}: CopyButtonProps) {
+export function CopyButton({ text, successText = text, successTextTimeout = 1_500, ...buttonProps }: CopyButtonProps) {
   const [showValueCopiedConfirmation, setShowValueCopiedConfirmation] = useState(false)
   const [valueCopiedFlag, setValueCopiedFlag] = useState(0)
 
@@ -119,15 +106,11 @@ export function CopyButton({
 
   return (
     <Copyable
-      {...props}
-      disabled={disabled}
-      className={className}
-      value={value}
-      onError={onError}
+      {...buttonProps}
       onSuccess={() => {
         setValueCopiedFlag((current) => current + 1)
-        if (onSuccess !== undefined) {
-          onSuccess()
+        if (buttonProps.onSuccess !== undefined) {
+          buttonProps.onSuccess()
         }
       }}
     >

@@ -90,8 +90,8 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : t('global.errors.reason_unknown')
-      toast.error(/* TODO: i18n*/ `Failed to lock current wallet: ${errorMessage}`)
+      const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
+      toast.error(/* TODO: i18n*/ `Failed to lock current wallet: ${reason}`)
       console.error('Failed to lock wallet:', error)
     }
   }

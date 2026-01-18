@@ -117,52 +117,74 @@ const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
   const { t } = useTranslation()
   return (
     <Accordion type="single" collapsible className="w-full">
-      {values.map((account, index) => (
-        <AccordionItem key={index} value={String(account.accountIndex)}>
-          <AccordionTrigger className="group/xpub-accordion-trigger no-underline!">
-            <span className="flex items-center gap-2">
-              <span className="text-base font-medium group-hover/xpub-accordion-trigger:underline">
-                {account.accountName}
+      {values.map((account, index) => {
+        const accountLabel = t('settings.xpubs_modal.label_account', {
+          accountIndex: account.accountIndex,
+        })
+        return (
+          <AccordionItem key={index} value={String(account.accountIndex)}>
+            <AccordionTrigger className="group/xpub-accordion-trigger no-underline!">
+              <span className="flex items-center gap-2">
+                <span className="text-base font-medium group-hover/xpub-accordion-trigger:underline">
+                  {account.accountName}
+                </span>
+                <span className="text-muted-foreground text-xs">({accountLabel})</span>
               </span>
-              <span className="text-muted-foreground text-xs">
-                ({t('settings.xpubs_modal.label_account')} {account.accountIndex})
-              </span>
-            </span>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-muted-foreground items-end text-sm">
-                  {/* TODO: i18n */}Extended Public Key
-                  <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
-                </Label>
-                {account.xpubs.map((xpub, index) => (
-                  <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
-                    <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                      {xpub.xpub}
-                    </code>
-                    <CopyButton
-                      className={buttonVariants({
-                        size: 'icon',
-                        variant: 'ghost',
-                        className: 'shrink-0',
-                      })}
-                      value={xpub.xpub}
-                      text={<CopyIcon className="h-3 w-3" />}
-                      successText={<CheckIcon className="h-3 w-3 text-green-500" />}
-                      onSuccess={() => toast.success(t('settings.xpubs_modal.text_copied'))}
-                      onError={() => toast.error(t('settings.xpubs_modal.text_copy_failed'))}
-                      aria-label={t('settings.xpubs_modal.aria_copy_external', {
-                        account: account.accountName,
-                      })}
-                    />
-                  </div>
-                ))}
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground items-end text-sm">
+                    {/* TODO: i18n */}Extended Public Key
+                    <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
+                  </Label>
+                  {account.xpubs.map((xpub, index) => {
+                    const accountNameAndLabel = `${account.accountName} (${accountLabel})`
+                    return (
+                      <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
+                        <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
+                          {xpub.xpub}
+                        </code>
+                        <CopyButton
+                          className={buttonVariants({
+                            size: 'icon',
+                            variant: 'ghost',
+                            className: 'shrink-0',
+                          })}
+                          value={xpub.xpub}
+                          text={<CopyIcon className="h-3 w-3" />}
+                          successText={<CheckIcon className="h-3 w-3 text-green-500" />}
+                          title={t('settings.xpubs_modal.button_copy_title', {
+                            account: accountNameAndLabel,
+                          })}
+                          aria-label={t('settings.xpubs_modal.button_copy_title', {
+                            account: accountNameAndLabel,
+                          })}
+                          onSuccess={() =>
+                            toast.success(
+                              t('settings.xpubs_modal.alert_success_account_xpub_copied_message', {
+                                account: accountNameAndLabel,
+                              }),
+                            )
+                          }
+                          onError={(e) =>
+                            toast.error(
+                              t('global.errors.error_copy_to_clipboard_failed', {
+                                reason:
+                                  (e instanceof Error ? e.message : undefined) || t('global.errors.reason_unknown'),
+                              }),
+                            )
+                          }
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      ))}
+            </AccordionContent>
+          </AccordionItem>
+        )
+      })}
     </Accordion>
   )
 }
@@ -381,7 +403,8 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                     <>
                       <Alert variant="default">
                         <AlertCircleIcon />
-                        <AlertDescription>{t('settings.xpubs_modal.text_info')}</AlertDescription>
+                        <AlertTitle>{t('settings.xpubs_modal.text_info_title')}</AlertTitle>
+                        <AlertDescription>{t('settings.xpubs_modal.text_info_message')}</AlertDescription>
                       </Alert>
                       <div className="bg-card my-2 rounded-lg px-4">
                         <AccountXpubsAccordion values={accountXpubs.data} />
@@ -389,7 +412,7 @@ export const AccountXpubsDialog = ({ walletFileName, open, onOpenChange }: Accou
                     </>
                   ) : (
                     <div className="text-muted-foreground text-center">
-                      {t('settings.seed_modal.text_error_no_data')}
+                      {t('settings.xpubs_modal.text_error_no_data')}
                     </div>
                   )}
                 </div>
