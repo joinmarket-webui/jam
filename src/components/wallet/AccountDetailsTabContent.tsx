@@ -30,11 +30,11 @@ export const AccountDetailsTabContent = ({ value }: AccountDetailsTabContentProp
       !HIDE_EMPTY_BRANCHES ? true : branch.__raw.entries !== undefined && branch.__raw.entries.length > 0,
     )
 
-  const defaultValue = displayBranches.length > 0 ? String(displayBranches[0].index) : undefined
+  const defaultValue = displayBranches.length > 0 ? [String(displayBranches[0].index)] : undefined
 
   return (
-    <div className="bg-muted rounded-lg p-4">
-      <Accordion type="single" collapsible className="bg-background w-full rounded-lg" defaultValue={defaultValue}>
+    <div>
+      <Accordion type="multiple" className="bg-card w-full rounded-lg" defaultValue={defaultValue}>
         {displayBranches.map(({ branch, index }) => {
           const typeTitle = toTypeHeading(branch.type, t)
           return (
