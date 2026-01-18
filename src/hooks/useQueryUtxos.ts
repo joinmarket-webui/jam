@@ -27,18 +27,18 @@ export type FidelityBondUtxo = Omit<Utxo, 'locktime'> & {
   locktime: Locktime
 }
 
-export type UseUtxosResult = {
+export type UseQueryUtxosResult = {
   utxos: Utxo[]
   queryResult: UseQueryResult<ListUtxosResponse, ErrorMessage>
 }
 
-interface UseUtxosProps {
+interface UseQueryUtxosProps {
   walletFileName: WalletFileName
 }
 
 const EMPTY_UTXOS: Utxo[] = []
 
-export function useUtxos({ walletFileName }: UseUtxosProps): UseUtxosResult {
+export function useQueryUtxos({ walletFileName }: UseQueryUtxosProps): UseQueryUtxosResult {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state?.session)
 

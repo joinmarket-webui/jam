@@ -30,7 +30,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import type { Utxo } from '@/hooks/useUtxos'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import { cn } from '@/lib/utils'
 import { Balance } from '../ui/jam/Balance'
 

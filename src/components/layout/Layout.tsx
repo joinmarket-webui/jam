@@ -12,7 +12,7 @@ import { APP_DISPLAY_VERSION } from '@/constants/jam'
 import { useJamDisplayContext } from '@/context/JamDisplayContext'
 import { useJamWalletInfoContext } from '@/context/JamWalletInfoContext'
 import { useCheatsheet } from '@/hooks/useCheatsheet'
-import { useJmInfo } from '@/hooks/useJmInfo'
+import { useQueryJmInfo } from '@/hooks/useJmInfo'
 import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
@@ -32,7 +32,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const navigate = useNavigate()
   const jmSessionState = useStore(jmSessionStore, (state) => state.state)
 
-  const { version: joinmarketVersion } = useJmInfo()
+  const { version: joinmarketVersion } = useQueryJmInfo()
 
   const { resolvedTheme, setTheme } = useTheme()
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')

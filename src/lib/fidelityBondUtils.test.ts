@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Utxo } from '@/hooks/useUtxos'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import * as fb from './fidelityBondUtils'
 
 const makeUtxo = (id: string, address = '', frozen = false) =>

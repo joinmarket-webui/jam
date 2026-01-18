@@ -4,12 +4,12 @@ import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 import { useApiClient } from '@/hooks/useApiClient'
 import { toSemVer, type SemVer } from '@/lib/utils'
 
-type UseJmInfoResult = {
+type UseQueryJmInfoResult = {
   version: SemVer | undefined
   queryResult: UseQueryResult<VersionResponse, ErrorMessage>
 }
 
-export function useJmInfo(): UseJmInfoResult {
+export function useQueryJmInfo(): UseQueryJmInfoResult {
   const client = useApiClient()
 
   const queryResult = useQuery({

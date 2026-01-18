@@ -1,4 +1,4 @@
-import type { FidelityBondUtxo, Utxo } from '@/hooks/useUtxos'
+import type { FidelityBondUtxo, Utxo } from '@/hooks/useQueryUtxos'
 import type { Milliseconds, MM, Seconds, YYYY } from '@/types/global'
 
 export type Lockdate = `${YYYY}-${MM}`

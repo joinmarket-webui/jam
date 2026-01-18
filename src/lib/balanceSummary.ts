@@ -1,4 +1,4 @@
-import type { Utxo } from '@/hooks/useUtxos'
+import type { Utxo } from '@/hooks/useQueryUtxos'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import * as fb from './fidelityBondUtils'
 
