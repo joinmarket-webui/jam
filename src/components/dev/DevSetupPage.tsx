@@ -1,6 +1,7 @@
 import { BlocksIcon, TerminalIcon, WalletIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { DevBadge } from './DevBadge'
 
 const DEFAULT_BASIC_AUTH = {
   user: 'joinmarket',
@@ -17,7 +18,14 @@ const LINK_JM_REGTEST_RPC_TERMINAL = `${LINK_JM_REGTEST_EXPLORER}/rpc-terminal`
 export default function DevSetupPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-3 p-4">
-      <PageTitle title="Development setup" subtitle="Development setup specific information" />
+      <PageTitle
+        title={
+          <>
+            Development setup <DevBadge />
+          </>
+        }
+        subtitle="Development setup specific information"
+      />
 
       <div className="flex flex-col gap-3">
         <div className="mb-4">
