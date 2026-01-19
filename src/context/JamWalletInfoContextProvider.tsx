@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from 'react'
+import { useMemo, type PropsWithChildren } from 'react'
 import { getAddressInfo } from 'bitcoin-address-validation'
 import { useQueryDisplayWallet, type WalletInfoApiObject } from '@/hooks/useQueryDisplayWallet'
 import { useQueryUtxos, type Utxo } from '@/hooks/useQueryUtxos'
@@ -181,6 +181,11 @@ export const JamWalletInfoContextProvider = ({
   const addressSummary =
     displayWalletQuery.walletInfo === undefined ? EMPTY_ADDRESS_SUMMARY : toAddressSummary(accountSummary)
 
+  const network = useMemo(() => {
+    const addresses = Object.values(addressSummary)
+    return addresses.length > 0 ? addresses[0].info.network : null
+  }, [addressSummary])
+
   const value = {
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
     walletBalanceSummary: walletBalanceSummary,
@@ -188,6 +193,7 @@ export const JamWalletInfoContextProvider = ({
     addressSummary,
     accountSummary,
     jars,
+    network,
 
     isLoading: utxosQueryResult.isLoading || displayWalletQueryResult.isLoading,
     isFetching: utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,

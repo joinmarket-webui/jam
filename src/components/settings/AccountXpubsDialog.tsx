@@ -28,15 +28,16 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
-import { useJars, type Jar } from '@/context/JamWalletInfoContext'
+import { useJars, useNetwork, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
-import { deriveAccountXpub, detectNetwork } from '@/lib/bip32'
+import { deriveAccountXpub } from '@/lib/bip32'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
 import { cn, type WalletFileName } from '@/lib/utils'
 import { convertExtendedPublicKey } from '@/lib/xpubs'
 import type { JarIndex, SeedPhrase, WithRequiredProperty } from '@/types/global'
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
+import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
 
@@ -81,18 +82,20 @@ async function deriveAccountXpubsFromSeed(
     const xpubs = []
 
     if (HD_PATH_PURPOSE !== 84) {
+      const targetFormat = network === Network.mainnet ? 'xpub' : 'tpub'
       xpubs.push({
-        name: 'xpub',
+        name: targetFormat,
         path,
         network,
-        xpub: xpub,
+        xpub: convertExtendedPublicKey(xpub, targetFormat),
       })
     } else {
+      const targetFormat = network === Network.mainnet ? 'zpub' : 'vpub'
       xpubs.push({
-        name: 'zpub',
+        name: targetFormat,
         path,
         network,
-        xpub: convertExtendedPublicKey(xpub, 'zpub'),
+        xpub: convertExtendedPublicKey(xpub, targetFormat),
       })
     }
 
@@ -132,9 +135,16 @@ const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
             <AccordionContent>
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground items-end text-sm">
-                    {/* TODO: i18n */}Extended Public Key
-                    <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
+                  <Label className="text-muted-foreground text-sm">
+                    <div className="flex flex-1 items-end gap-2">
+                      {/* TODO: i18n */}Extended Public Key
+                      <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
+                    </div>
+                    <div>
+                      {account.xpubs.length === 0 ? undefined : (
+                        <Badge variant="default">{account.xpubs[0].network}</Badge>
+                      )}
+                    </div>
                   </Label>
                   {account.xpubs.map((xpub, index) => {
                     const accountNameAndLabel = `${account.accountName} (${accountLabel})`
@@ -205,7 +215,8 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
   const [passwordVerificationError, setPasswordVerificationError] = useState<string>()
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
-  //const [accountXpubs, setAccountXpubs] = useState<AccountXpubInfo[]>()
+
+  const { network } = useNetwork()
 
   const client = useApiClient()
   const queryClient = useQueryClient()
@@ -234,8 +245,6 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
         if (!seedQuery.data) {
           return undefined
         }
-        // Detect network from wallet name
-        const network = detectNetwork(walletFileName)
         return await deriveAccountXpubsFromSeed(seedQuery.data, network, jars)
       },
       {
