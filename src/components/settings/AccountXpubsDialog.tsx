@@ -28,7 +28,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { JAM_SEED_MODAL_TIMEOUT } from '@/constants/jam'
-import { useJars, useNetwork, type Jar } from '@/context/JamWalletInfoContext'
+import { useJars, useDetectNetwork, type Jar } from '@/context/JamWalletInfoContext'
 import { useApiClient } from '@/hooks/useApiClient'
 import { deriveAccountXpub } from '@/lib/bip32'
 import { hashPassword } from '@/lib/hash'
@@ -216,7 +216,7 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
   const [timeLeft, setTimeLeft] = useState(JAM_SEED_MODAL_TIMEOUT)
   const secondsLeft = useMemo(() => Math.max(0, Math.round(timeLeft / 1_000)), [timeLeft])
 
-  const { network } = useNetwork()
+  const { network } = useDetectNetwork()
 
   const client = useApiClient()
   const queryClient = useQueryClient()

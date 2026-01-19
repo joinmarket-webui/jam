@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from 'react'
+import { createContext, useContext } from 'react'
 import type { ErrorMessage, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { Network, type AddressInfo } from 'bitcoin-address-validation'
 import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
@@ -42,7 +42,7 @@ export type AddressStatus = AddressStaticStatus | AddressStatusDynamic
 export type AddressMeta = {
   address: BitcoinAddress
   status: AddressStatus
-  info: Omit<AddressInfo, 'address'>
+  info?: Omit<AddressInfo, 'address'>
   __raw: NonNullable<
     NonNullable<
       NonNullable<
@@ -83,6 +83,8 @@ interface JamWalletInfoContextType {
   accountSummary: AccountSummary
   jars: Jar[]
 
+  detectedNetwork: Network | null
+
   isLoading: boolean
   isFetching: boolean
   error: Error | ErrorMessage | null
@@ -122,14 +124,8 @@ export const useAccountSummary = () => {
   return { accountSummary }
 }
 
-export const useNetwork = () => {
-  const { addressSummary } = useAddressSummary()
-
-  const fallbackNetwork = Network.mainnet
-  const network = useMemo(() => {
-    const addresses = Object.values(addressSummary)
-    return addresses.length > 0 ? addresses[0].info.network : null
-  }, [addressSummary])
-
-  return { detectedNetwork: network, fallbackNetwork: fallbackNetwork, network: network ?? fallbackNetwork }
+const FALLBACK_NETWORK = Network.mainnet
+export const useDetectNetwork = () => {
+  const { detectedNetwork } = useJamWalletInfoContext()
+  return { detectedNetwork, fallbackNetwork: FALLBACK_NETWORK, network: detectedNetwork ?? FALLBACK_NETWORK }
 }
