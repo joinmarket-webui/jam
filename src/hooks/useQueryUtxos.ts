@@ -10,7 +10,8 @@ import type { MM, YYYY } from '@/types/global'
 
 type UtxoApiObject = NonNullable<ListUtxosResponse['utxos']>[number]
 
-type Locktime = `${YYYY}-${MM}-01 00:00:00`
+type Lockdate = `${YYYY}-${MM}-01`
+type Locktime = `${Lockdate} 00:00:00`
 
 type Vout = number
 type TxId = string

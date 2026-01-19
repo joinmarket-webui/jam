@@ -31,10 +31,10 @@ import { useTranslation } from 'react-i18next'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
-import type { UtxoTag } from '@/lib/utxo'
 import { Balance } from '../ui/jam/Balance'
-import { UtxoTag as UtxoTagComponent } from '../ui/jam/UtxoTag'
+import { StatusBadge } from '../ui/jam/StatusBadge'
 
 const ITEMS_PER_PAGE = 25
 
@@ -116,7 +116,7 @@ export const JarUtxosTable = ({
         meta: {
           align: 'right',
           numeric: true,
-        },
+        } as UtxoTableColumnMeta,
       }),
       columnHelper.accessor('address', {
         header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
@@ -131,23 +131,24 @@ export const JarUtxosTable = ({
         cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
         meta: {
           alphabetic: true,
-        },
+        } as UtxoTableColumnMeta,
       }),
       columnHelper.accessor('confirmations', {
         header: () => t('jar_details.utxo_list.column_title_confirmations'),
         cell: (info) => info.getValue(),
         meta: {
           numeric: true,
-        },
+          align: 'center',
+        } as UtxoTableColumnMeta,
       }),
       columnHelper.accessor('tags', {
         header: () => t('jar_details.utxo_list.column_title_label_and_status'),
         cell: (info) => (
           <div className="flex items-center gap-2">
             {info.row.original.tags.map((it, index) => (
-              <div key={index}>
-                <UtxoTagComponent variant={it.variant}>{it.displayValue}</UtxoTagComponent>
-              </div>
+              <StatusBadge key={index} variant={it.variant}>
+                {it.displayValue}
+              </StatusBadge>
             ))}
           </div>
         ),

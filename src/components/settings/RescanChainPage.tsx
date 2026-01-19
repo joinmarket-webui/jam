@@ -142,7 +142,7 @@ export const RescanChainPage = ({ walletFileName }: RescanChainProps) => {
   })
 
   const handleRescan = async (blockHeight: number) => {
-    if (isNaN(blockHeight) || blockHeight < INPUT_BLOCK_HEIGHT_MIN) {
+    if (Number.isNaN(blockHeight) || blockHeight < INPUT_BLOCK_HEIGHT_MIN) {
       toast.error(t('rescan_chain.feedback_invalid_blockheight', { min: INPUT_BLOCK_HEIGHT_MIN }))
       return
     }

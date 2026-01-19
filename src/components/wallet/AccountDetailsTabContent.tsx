@@ -3,6 +3,7 @@ import type { RowModel } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import type { AccountBranch, AccountMeta } from '@/context/JamWalletInfoContext'
+import { statusTags } from '@/lib/tags'
 import { btcToSats, isValidNumber } from '@/lib/utils'
 import type { HdPath } from '@/types/global'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion'
@@ -40,6 +41,7 @@ const branchToTableEntry = (value: BranchEntryApiObject): BranchEntryTableRow =>
     derivationPath: (value.hd_path !== undefined ? value.hd_path : 'm/-1') as HdPath,
     address: value.address || '',
     balance: btcToSats(value.amount || '0'),
+    tags: statusTags(value.status || ''),
   }
 }
 
