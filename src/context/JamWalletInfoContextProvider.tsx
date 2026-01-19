@@ -181,10 +181,22 @@ export const JamWalletInfoContextProvider = ({
   const addressSummary =
     displayWalletQuery.walletInfo === undefined ? EMPTY_ADDRESS_SUMMARY : toAddressSummary(accountSummary)
 
-  const network = useMemo(() => {
-    const addresses = Object.values(addressSummary)
-    return addresses.length > 0 ? addresses[0].info.network : null
-  }, [addressSummary])
+  const detectedNetwork = useMemo(() => {
+    const eligibleAddress = Object.values(addressSummary).find((it) => it.info !== undefined)
+    if (eligibleAddress?.info !== undefined) {
+      return eligibleAddress.info.network
+    }
+    const firstEligibleUtxo = utxos.find((it) => it.external !== true)
+    if (firstEligibleUtxo) {
+      try {
+        return getAddressInfo(firstEligibleUtxo.address).network
+      } catch (_ignoredOnPurpose: unknown) {
+        console.warn(`Cannot detect network by utxo sample.`)
+      }
+    }
+
+    return null
+  }, [utxos, addressSummary])
 
   const value = {
     walletName: walletFileName ? walletDisplayName(walletFileName) : null,
@@ -193,7 +205,8 @@ export const JamWalletInfoContextProvider = ({
     addressSummary,
     accountSummary,
     jars,
-    network,
+
+    detectedNetwork: detectedNetwork ?? null,
 
     isLoading: utxosQueryResult.isLoading || displayWalletQueryResult.isLoading,
     isFetching: utxosQueryResult.isFetching || displayWalletQueryResult.isFetching,
