@@ -3,12 +3,17 @@ import { createBase58check } from '@scure/base'
 
 const base58check = createBase58check(sha256)
 
-const uint8ArrayfromHex = (hex: string) => {
-  const match = hex.match(/.{1,2}/g)
-  if (match === null) {
+const uint8ArrayfromHex = (hexString: string) => {
+  const hex = hexString.trim()
+  if (hex.length % 2 !== 0) {
+    throw new Error('Cannot convert hex to Uint8Array: Invalid hex length.')
+  }
+
+  const match = hex.match(/([0-9a-fA-F][0-9a-fA-F])/g)
+  if (match === null || match.length !== hex.length / 2) {
     throw new Error('Cannot convert hex to Uint8Array: Invalid hex string.')
   }
-  return Uint8Array.from(hex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || [])
+  return Uint8Array.from(match.map((byte) => parseInt(byte, 16)) || [])
 }
 
 // version bytes for extended serialization of public and private keys.
