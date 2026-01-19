@@ -1,6 +1,6 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 import type { ErrorMessage, WalletDisplayResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import type { AddressInfo } from 'bitcoin-address-validation'
+import { Network, type AddressInfo } from 'bitcoin-address-validation'
 import type { UseQueryDisplayWalletResult } from '@/hooks/useQueryDisplayWallet'
 import type { FidelityBondUtxo, UseQueryUtxosResult, Utxo } from '@/hooks/useQueryUtxos'
 import type { BalanceSummary } from '@/lib/balanceSummary'
@@ -120,4 +120,16 @@ export const useAddressSummary = () => {
 export const useAccountSummary = () => {
   const { accountSummary } = useJamWalletInfoContext()
   return { accountSummary }
+}
+
+export const useNetwork = () => {
+  const { addressSummary } = useAddressSummary()
+
+  const fallbackNetwork = Network.mainnet
+  const network = useMemo(() => {
+    const addresses = Object.values(addressSummary)
+    return addresses.length > 0 ? addresses[0].info.network : null
+  }, [addressSummary])
+
+  return { detectedNetwork: network, fallbackNetwork: fallbackNetwork, network: network ?? fallbackNetwork }
 }

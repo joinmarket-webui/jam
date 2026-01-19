@@ -1,5 +1,4 @@
 import { HDKey } from '@scure/bip32'
-import { Network } from 'bitcoin-address-validation'
 
 /**
  * Derive account-level xpub from seed
@@ -17,33 +16,4 @@ export function deriveAccountXpub(seed: Uint8Array, path: string): string {
   }
 
   return key.publicExtendedKey
-}
-
-/**
- * Detect network type from wallet name or xpub prefix
- * JoinMarket testnet wallets typically use regtest for development
- *
- * @param walletFileName - Wallet file name
- * @param xpubSample - Optional sample xpub to detect from prefix
- * @returns 'mainnet' or 'testnet'
- */
-export function detectNetwork(walletFileName: string, xpubSample?: string): Network {
-  // Check xpub prefix if provided
-  if (xpubSample) {
-    if (xpubSample.startsWith('tpub') || xpubSample.startsWith('vpub')) {
-      return Network.testnet
-    }
-    if (xpubSample.startsWith('xpub') || xpubSample.startsWith('zpub')) {
-      return Network.mainnet
-    }
-  }
-
-  // Check wallet filename for testnet/regtest indicators
-  const lowerName = walletFileName.toLowerCase()
-  if (lowerName.includes('testnet') || lowerName.includes('regtest') || lowerName.includes('test')) {
-    return Network.testnet
-  }
-
-  // Default to mainnet
-  return Network.mainnet
 }
