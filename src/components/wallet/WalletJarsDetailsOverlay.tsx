@@ -16,7 +16,7 @@ export function WalletJarsDetailsOverlay({ open, onOpenChange, selectJarIndex }:
   return (
     <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
-        <DialogHeader>
+        <DialogHeader className="px-2">
           <DialogTitle className="sr-only flex items-center gap-2">
             <PageTitle title={/* todo: i18n */ t('Wallet Jars Details')} />
           </DialogTitle>
@@ -25,7 +25,7 @@ export function WalletJarsDetailsOverlay({ open, onOpenChange, selectJarIndex }:
         <div className="overflow-hidden">
           <WalletJarsDetailsContent
             enabled={open}
-            className="flex h-full flex-col overflow-auto"
+            className="flex h-full flex-col overflow-auto p-2 pt-0"
             selectJarIndex={selectJarIndex}
           />
         </div>
