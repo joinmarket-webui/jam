@@ -20,3 +20,9 @@ export const Default: Story = {
 export const Revealed: Story = {
   render: () => <SeedPhraseGrid value={DUMMY_SEED_PHRASE} blurred={false} />,
 }
+
+export const Responsive: Story = {
+  render: () => (
+    <SeedPhraseGrid className="grid-cols-1 sm:grid-cols-2 md:grid-cols-3" value={DUMMY_SEED_PHRASE} blurred={false} />
+  ),
+}

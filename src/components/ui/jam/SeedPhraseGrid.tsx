@@ -15,7 +15,9 @@ export const SeedPhraseGrid = ({ value, className, blurred, blurredText = 'rando
         .map((it) => (!blurred ? it : blurredText))
         .map((word, index) => (
           <div key={index} className="bg-background flex min-w-32 items-center gap-2 rounded-lg border p-2">
-            <span className="text-muted-foreground inline-block min-w-7 text-right">{index + 1}.</span>
+            <span className="text-muted-foreground/60 inline-block min-w-8 ps-1 text-right tabular-nums">
+              {index + 1}.
+            </span>
             <span className={!blurred ? undefined : 'blur-[4px]'}>{word}</span>
           </div>
         ))}
