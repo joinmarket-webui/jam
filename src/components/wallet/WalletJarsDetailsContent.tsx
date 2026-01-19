@@ -13,8 +13,8 @@ import {
   type Jar,
 } from '@/context/JamWalletInfoContext'
 import type { Utxo } from '@/hooks/useQueryUtxos'
+import { utxoTags } from '@/lib/tags'
 import { cn } from '@/lib/utils'
-import { utxoTags } from '@/lib/utxo'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'

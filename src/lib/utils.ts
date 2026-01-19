@@ -89,7 +89,7 @@ export const percentageToFactor = (val: number, precision = 6) => {
   return Number((val / 100).toFixed(precision))
 }
 
-export const isValidNumber = (val: number | undefined | null) => typeof val === 'number' && !isNaN(val)
+export const isValidNumber = (val: number | undefined | null) => typeof val === 'number' && !Number.isNaN(val)
 
 export const formatBtc = (value: number) => {
   return value.toFixed(8)

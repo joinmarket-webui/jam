@@ -31,9 +31,11 @@ import { useTranslation } from 'react-i18next'
 import { TablePagination } from '@/components/ui/jam/TablePagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { AccountBranch } from '@/context/JamWalletInfoContext'
+import type { UtxoTag } from '@/lib/tags'
 import { cn } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress, HdPath } from '@/types/global'
 import { Balance } from '../ui/jam/Balance'
+import { StatusBadge } from '../ui/jam/StatusBadge'
 
 const ITEMS_PER_PAGE = 25
 
@@ -44,6 +46,7 @@ export type BranchEntryTableRow = BranchEntryApiObject & {
   derivationPath: HdPath
   address: BitcoinAddress
   balance: AmountSats
+  tags: UtxoTag[]
 }
 
 type SortKey = keyof BranchEntryTableRow
@@ -107,7 +110,7 @@ export const BranchEntryTable = ({
   const columns = useMemo<ColumnDef<BranchEntryTableRow, any>[]>(
     () => [
       columnHelper.accessor('derivationIndex', {
-        header: () => <div className="flex items-center"></div>,
+        header: () => <div className="flex items-center">{/* TODO: i18n */}</div>,
         sortingFn: (a, b) => {
           return a.original.derivationIndex - b.original.derivationIndex
         },
@@ -123,7 +126,11 @@ export const BranchEntryTable = ({
         },
       }),
       columnHelper.accessor('address', {
-        header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_address')}</div>,
+        header: () => (
+          <div className="flex items-center">
+            {t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_address')}
+          </div>
+        ),
         sortingFn: (a, b) => {
           const val = a.original.address.localeCompare(b.original.address)
           if (val !== 0) return val
@@ -136,7 +143,11 @@ export const BranchEntryTable = ({
         },
       }),
       columnHelper.accessor('balance', {
-        header: () => <div className="flex items-center">{t('jar_details.utxo_list.column_title_balance')}</div>,
+        header: () => (
+          <div className="flex items-center">
+            {t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_balance')}
+          </div>
+        ),
         sortingFn: (a, b) => {
           const val = a.original.balance - b.original.balance
           if (val !== 0) return val
@@ -148,6 +159,19 @@ export const BranchEntryTable = ({
           align: 'right',
           numeric: true,
         },
+      }),
+      columnHelper.accessor('tags', {
+        header: () => t(/* TODO: i18n keys */ 'jar_details.utxo_list.column_title_label_and_status'),
+        cell: (info) => (
+          <div className="flex items-center gap-2">
+            {info.row.original.tags.map((it, index) => (
+              <StatusBadge key={index} variant={it.variant}>
+                {it.displayValue}
+              </StatusBadge>
+            ))}
+          </div>
+        ),
+        enableSorting: false,
       }),
     ],
     [t],
