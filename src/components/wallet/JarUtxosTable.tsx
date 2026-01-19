@@ -128,7 +128,7 @@ export const JarUtxosTable = ({
           const bid = Number(b.original.confirmations)
           return aid - bid
         },
-        cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
+        cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
         meta: {
           alphabetic: true,
         } as UtxoTableColumnMeta,

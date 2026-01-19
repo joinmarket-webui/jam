@@ -10,7 +10,7 @@ interface SeedPhraseGridProps {
 
 export const SeedPhraseGrid = ({ value, className, blurred, blurredText = 'random' }: SeedPhraseGridProps) => {
   return (
-    <div className={cn('grid grid-cols-2 gap-2 font-mono', className)}>
+    <div className={cn('grid grid-cols-2 gap-2 font-mono', className, 'select-none')}>
       {value
         .map((it) => (!blurred ? it : blurredText))
         .map((word, index) => (

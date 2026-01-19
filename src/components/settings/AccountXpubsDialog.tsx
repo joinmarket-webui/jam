@@ -144,9 +144,7 @@ const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
                 const accountNameAndLabel = `${account.accountName} (${accountLabel})`
                 return (
                   <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
-                    <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                      {xpub.xpub}
-                    </code>
+                    <div className="flex-1 font-mono text-xs break-all select-all">{xpub.xpub}</div>
                     <CopyButton
                       className={buttonVariants({
                         size: 'icon',

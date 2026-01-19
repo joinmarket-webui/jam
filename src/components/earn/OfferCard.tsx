@@ -61,7 +61,7 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
                 t('Offer Id')
               }
             </span>
-            <span className="text-md font-mono">
+            <span className="text-md font-mono select-all">
               {nickname}:{value?.oid}
             </span>
           </div>
@@ -73,10 +73,12 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             <span className="text-muted-foreground text-sm font-semibold">{t('earn.current.text_cjfee')}</span>
             <span className="text-sm">
               {isRelativeOffer(value?.ordertype || '') ? (
-                <>{factorToPercentage(parseFloat(value?.cjfee || '') || 0)}%</>
+                <span className="select-all">{factorToPercentage(parseFloat(value?.cjfee || '') || 0)}%</span>
               ) : (
                 <>
-                  <span className="tabular-nums">{formatAmount(parseInt(String(value?.cjfee || '0'), 10))}</span>
+                  <span className="tabular-nums select-all">
+                    {formatAmount(parseInt(String(value?.cjfee || '0'), 10))}
+                  </span>
                   {currencySymbol('sm')}
                 </>
               )}
@@ -88,7 +90,9 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
           <div className="flex flex-col">
             <span className="text-muted-foreground text-sm font-semibold">{t('earn.current.text_minsize')}</span>
             <span className="text-sm">
-              <span className="tabular-nums">{formatAmount(parseInt(String(value?.minsize || '0'), 10))}</span>
+              <span className="tabular-nums select-all">
+                {formatAmount(parseInt(String(value?.minsize || '0'), 10))}
+              </span>
               {currencySymbol('sm')}
             </span>
           </div>
@@ -98,7 +102,9 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
           <div className="flex flex-col">
             <span className="text-muted-foreground text-sm font-semibold">{t('earn.current.text_maxsize')}</span>
             <span className="text-sm">
-              <span className="tabular-nums">{formatAmount(parseInt(String(value?.maxsize || '0'), 10))}</span>
+              <span className="tabular-nums select-all">
+                {formatAmount(parseInt(String(value?.maxsize || '0'), 10))}
+              </span>
               {currencySymbol('sm')}
             </span>
           </div>
@@ -108,7 +114,9 @@ export function OfferCard({ className, value, nickname, children }: PropsWithChi
             <div className="flex flex-col">
               <span className="text-muted-foreground text-sm font-semibold">{t('earn.current.text_txfee')}</span>
               <span className="text-muted-foreground text-sm">
-                <span className="tabular-nums">{formatAmount(parseInt(String(value?.txfee || '0'), 10))}</span>
+                <span className="tabular-nums select-all">
+                  {formatAmount(parseInt(String(value?.txfee || '0'), 10))}
+                </span>
                 {currencySymbol('sm')}
               </span>
             </div>
