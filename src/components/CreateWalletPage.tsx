@@ -1,11 +1,19 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, WalletIcon } from 'lucide-react'
+import {
+  AlertCircleIcon,
+  CircleCheckBigIcon,
+  EyeIcon,
+  EyeOffIcon,
+  Loader2Icon,
+  LockIcon,
+  WalletIcon,
+} from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -18,9 +26,11 @@ import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { SeedPhraseGrid } from './ui/jam/SeedPhraseGrid'
+import { Switch } from './ui/switch'
 import PreventLeavingPageByMistake from './utils/PreventLeavingPageByMistake'
 
 const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
+
 const validateWalletName = (input: string) =>
   input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
@@ -28,24 +38,70 @@ interface SeedPhraseContentProps {
   seedphrase: string[]
   onConfirm: () => Promise<void>
 }
+
 const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) => {
+  const [revealSeed, setRevealSeed] = useState({ checked: false, dirty: false })
+  const [backupConfirmed, setBackupConfirmed] = useState(false)
+  const { t } = useTranslation()
+
+  useEffect(() => {
+    if (backupConfirmed) return
+
+    const toastId = toast.message(
+      <Alert>
+        <AlertCircleIcon />
+        <AlertTitle>Important</AlertTitle>
+        <AlertDescription>
+          {/* TODO: i18n */}
+          Write down this seed phrase and store it safely. It's the only way to recover your wallet if you lose access.
+        </AlertDescription>
+      </Alert>,
+      {
+        id: 'alert-write-down-seed',
+        duration: Infinity,
+        position: 'top-center',
+      },
+    )
+
+    return () => {
+      toast.dismiss(toastId)
+    }
+  }, [backupConfirmed])
+
   return (
     <div className="space-y-6">
       <div className="bg-muted rounded-lg p-4">
-        <SeedPhraseGrid value={seedphrase} blurred={false} />
+        <SeedPhraseGrid value={seedphrase} blurred={!revealSeed.checked} />
       </div>
 
-      <Alert>
-        <AlertCircleIcon className="h-4 w-4" />
-        <AlertDescription>
-          {/* TODO: i18n */}
-          <strong>Important:</strong> Write down this seed phrase and store it safely. It's the only way to recover your
-          wallet if you lose access.
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-4">
+        <div className="flex justify-start gap-2">
+          <Switch
+            id="switch-reveal-seed"
+            checked={revealSeed.checked}
+            onCheckedChange={(checked) => setRevealSeed((it) => ({ ...it, checked, dirty: true }))}
+          />
+          <Label htmlFor="switch-reveal-seed">{t('create_wallet.confirmation_toggle_reveal_info')}</Label>
+        </div>
 
-      <Button onClick={async () => await onConfirm()} className="w-full" size="lg">
-        {/* TODO: i18n */}I have saved my seed phrase
+        <div className="flex justify-start gap-2">
+          <Switch
+            id="switch-confirm-backup"
+            checked={backupConfirmed}
+            onCheckedChange={(checked) => setBackupConfirmed(checked)}
+            disabled={!revealSeed.dirty}
+          />
+          <Label htmlFor="switch-confirm-backup">{t('create_wallet.confirmation_toggle_info_written_down')}</Label>
+        </div>
+      </div>
+
+      <Button
+        onClick={async () => await onConfirm()}
+        className="w-full"
+        size="lg"
+        disabled={!backupConfirmed || !revealSeed.dirty}
+      >
+        {t('create_wallet.next_button')}
       </Button>
     </div>
   )
@@ -269,14 +325,15 @@ const CreateWalletPage = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-col items-center space-y-2">
           <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-            <WalletIcon className="text-primary" />
+            {step === 'create' && <WalletIcon className="text-primary" />}
+            {step === 'seed' && <CircleCheckBigIcon className="text-primary" />}
           </div>
           <CardTitle className="text-2xl font-bold">
-            {step === 'create' && <>{t('create_wallet.title')}</>}
-            {/* TODO: i18n */ step === 'seed' && 'Save Your Seed Phrase'}
+            {step === 'create' && t('create_wallet.title')}
+            {step === 'seed' && t('create_wallet.title_wallet_created')}
           </CardTitle>
           <CardDescription>
-            {/* TODO: i18n */ step === 'seed' && "This is your wallet's recovery phrase"}
+            {/* TODO: i18n */ step === 'seed' && t('create_wallet.subtitle_wallet_created')}
           </CardDescription>
         </CardHeader>
 
