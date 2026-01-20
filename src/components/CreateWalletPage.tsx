@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import {
-  AlertCircleIcon,
-  CircleCheckBigIcon,
-  EyeIcon,
-  EyeOffIcon,
-  Loader2Icon,
-  LockIcon,
-  WalletIcon,
-} from 'lucide-react'
+import { AlertCircleIcon, CircleCheckBigIcon, EyeIcon, EyeOffIcon, LockIcon, WalletIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -27,6 +19,7 @@ import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import { MaskedText } from './ui/jam/MaskedText'
 import { SeedPhraseGrid } from './ui/jam/SeedPhraseGrid'
+import { Spinner } from './ui/spinner'
 import { Switch } from './ui/switch'
 import PreventLeavingPageByMistake from './utils/PreventLeavingPageByMistake'
 
@@ -71,7 +64,7 @@ const SeedPhraseContent = ({ walletFileName, password, seedphrase, onConfirm }: 
     return () => {
       toast.dismiss(toastId)
     }
-  }, [backupConfirmed])
+  }, [backupConfirmed, t])
 
   return (
     <div className="space-y-6">
@@ -340,7 +333,7 @@ const CreateWalletPage = () => {
       <Button type="submit" className="w-full" disabled={isLoading} size="lg">
         {isLoading ? (
           <>
-            <Loader2Icon className="animate-spin motion-reduce:hidden" />
+            <Spinner className="motion-reduce:hidden" />
             {t('create_wallet.button_creating')}
           </>
         ) : (

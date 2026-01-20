@@ -3,16 +3,7 @@ import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/re
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'
-import {
-  EyeIcon,
-  EyeOffIcon,
-  AlertTriangleIcon,
-  ClockIcon,
-  Loader2Icon,
-  CopyIcon,
-  CheckIcon,
-  AlertCircleIcon,
-} from 'lucide-react'
+import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, CopyIcon, CheckIcon, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -40,6 +31,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
+import { Spinner } from '../ui/spinner'
 
 const HD_PATH_PURPOSE: number = 84
 
@@ -367,9 +359,14 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
                 {t('global.cancel')}
               </Button>
               <Button onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
-                {isSubmitting
-                  ? t('settings.xpubs_modal.verification.text_button_submitting')
-                  : t('settings.xpubs_modal.verification.text_button_submit')}
+                {isSubmitting ? (
+                  <>
+                    <Spinner className="motion-reduce:hidden" />
+                    {t('settings.xpubs_modal.verification.text_button_submitting')}
+                  </>
+                ) : (
+                  t('settings.xpubs_modal.verification.text_button_submit')
+                )}
               </Button>
             </DialogFooter>
           </>
@@ -384,10 +381,10 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
 
             <div className="space-y-4">
               {!accountXpubs.error && (
-                <div className="">
+                <div>
                   {isFetching ? (
                     <div className="text-muted-foreground flex items-center justify-center gap-1">
-                      <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
+                      <Spinner className="motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : accountXpubs.data && accountXpubs.data.length > 0 ? (

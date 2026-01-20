@@ -4,7 +4,6 @@ import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import type { TFunction } from 'i18next'
-import { Loader2Icon } from 'lucide-react'
 import { ThemeProvider } from 'next-themes'
 import { useTranslation } from 'react-i18next'
 import {
@@ -45,6 +44,7 @@ import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
 
@@ -202,7 +202,7 @@ const Loading = () => {
   const { t } = useTranslation()
   return (
     <div className="m-2 flex items-center justify-center gap-2">
-      <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+      <Spinner className="motion-reduce:hidden" />
       {t('global.loading')}
     </div>
   )
