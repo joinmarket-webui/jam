@@ -15,7 +15,7 @@ import { toast } from 'sonner'
 import { useStore } from 'zustand'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { routes } from '@/constants/routes'
@@ -50,14 +50,17 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
     const toastId = toast.message(
       <Alert>
         <AlertCircleIcon />
-        <AlertTitle>Important</AlertTitle>
-        <AlertDescription>
+        <AlertTitle>
           {/* TODO: i18n */}
-          Write down this seed phrase and store it safely. It's the only way to recover your wallet if you lose access.
+          Save Your Seed Phrase
+        </AlertTitle>
+        <AlertDescription>
+          {/* TODO: change i18n key ("alert_description") */}
+          {t('create_wallet.subtitle_wallet_created')}
         </AlertDescription>
       </Alert>,
       {
-        id: 'alert-write-down-seed',
+        //id: 'alert-wallet-create-write-down-seed',
         duration: Infinity,
         position: 'top-center',
       },
@@ -147,6 +150,11 @@ const CreateWalletPage = () => {
       return
     }
 
+    const durationHintToastId = toast.loading(t('create_wallet.hint_duration_text'), {
+      id: 'alert-wallet-create-creating-duration-hint',
+      duration: Infinity,
+      position: 'top-center',
+    })
     try {
       setIsLoading(true)
 
@@ -217,6 +225,7 @@ const CreateWalletPage = () => {
       toast.error(errorMessage)
     } finally {
       setIsLoading(false)
+      toast.dismiss(durationHintToastId)
     }
   }
 
@@ -332,9 +341,6 @@ const CreateWalletPage = () => {
             {step === 'create' && t('create_wallet.title')}
             {step === 'seed' && t('create_wallet.title_wallet_created')}
           </CardTitle>
-          <CardDescription>
-            {/* TODO: i18n */ step === 'seed' && t('create_wallet.subtitle_wallet_created')}
-          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
