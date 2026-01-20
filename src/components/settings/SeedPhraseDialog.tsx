@@ -211,7 +211,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
                       {t('global.loading')}
                     </div>
                   ) : seedQuery.data ? (
-                    <SeedPhraseGrid className="md:grid-cols-3" value={seedQuery.data} blurred={!revealSeed} />
+                    <SeedPhraseGrid className="md:grid-cols-3" value={seedQuery.data} masked={!revealSeed} />
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}

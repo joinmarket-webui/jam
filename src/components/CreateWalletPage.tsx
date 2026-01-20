@@ -25,6 +25,7 @@ import { walletDisplayName, JM_WALLET_FILE_EXTENSION, walletDisplayNameToFileNam
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { MaskedText } from './ui/jam/MaskedText'
 import { SeedPhraseGrid } from './ui/jam/SeedPhraseGrid'
 import { Switch } from './ui/switch'
 import PreventLeavingPageByMistake from './utils/PreventLeavingPageByMistake'
@@ -35,12 +36,14 @@ const validateWalletName = (input: string) =>
   input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
 interface SeedPhraseContentProps {
+  walletFileName: WalletFileName
+  password: string
   seedphrase: string[]
   onConfirm: () => Promise<void>
 }
 
-const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) => {
-  const [revealSeed, setRevealSeed] = useState({ checked: false, dirty: false })
+const SeedPhraseContent = ({ walletFileName, password, seedphrase, onConfirm }: SeedPhraseContentProps) => {
+  const [revealSensitiveInfo, setRevealSensitiveInfo] = useState({ checked: false, dirty: false })
   const [backupConfirmed, setBackupConfirmed] = useState(false)
   const { t } = useTranslation()
 
@@ -60,9 +63,8 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
         </AlertDescription>
       </Alert>,
       {
-        //id: 'alert-wallet-create-write-down-seed',
         duration: Infinity,
-        position: 'top-center',
+        unstyled: true,
       },
     )
 
@@ -73,16 +75,35 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
 
   return (
     <div className="space-y-6">
-      <div className="bg-muted rounded-lg p-4">
-        <SeedPhraseGrid value={seedphrase} blurred={!revealSeed.checked} />
+      <div className="space-y-2">
+        <div>
+          <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
+          <span className="text-sm font-semibold break-all select-all">{walletFileName}</span>
+        </div>
+        <div>
+          <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_password')}</Label>
+          <MaskedText
+            className="font-mono text-sm font-semibold break-all slashed-zero select-none"
+            masked={!revealSensitiveInfo.checked}
+            maskedText="maskedmaskedmaskedmasked"
+          >
+            {password}
+          </MaskedText>
+        </div>
+        <div>
+          <Label className="text-muted-foreground text-xs">{/* i18n confirmation_label_seedphrase */}Seed Phrase</Label>
+          <div className="bg-muted rounded-lg py-2">
+            <SeedPhraseGrid value={seedphrase} masked={!revealSensitiveInfo.checked} />
+          </div>
+        </div>
       </div>
 
       <div className="space-y-4">
         <div className="flex justify-start gap-2">
           <Switch
             id="switch-reveal-seed"
-            checked={revealSeed.checked}
-            onCheckedChange={(checked) => setRevealSeed((it) => ({ ...it, checked, dirty: true }))}
+            checked={revealSensitiveInfo.checked}
+            onCheckedChange={(checked) => setRevealSensitiveInfo((it) => ({ ...it, checked, dirty: true }))}
           />
           <Label htmlFor="switch-reveal-seed">{t('create_wallet.confirmation_toggle_reveal_info')}</Label>
         </div>
@@ -92,7 +113,7 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
             id="switch-confirm-backup"
             checked={backupConfirmed}
             onCheckedChange={(checked) => setBackupConfirmed(checked)}
-            disabled={!revealSeed.dirty}
+            disabled={!revealSensitiveInfo.dirty}
           />
           <Label htmlFor="switch-confirm-backup">{t('create_wallet.confirmation_toggle_info_written_down')}</Label>
         </div>
@@ -102,7 +123,7 @@ const SeedPhraseContent = ({ seedphrase, onConfirm }: SeedPhraseContentProps) =>
         onClick={async () => await onConfirm()}
         className="w-full"
         size="lg"
-        disabled={!backupConfirmed || !revealSeed.dirty}
+        disabled={!backupConfirmed || !revealSensitiveInfo.dirty}
       >
         {t('create_wallet.next_button')}
       </Button>
@@ -348,7 +369,9 @@ const CreateWalletPage = () => {
             <>
               <PreventLeavingPageByMistake />
               <SeedPhraseContent
-                seedphrase={createWalletResponse?.response.seedphrase?.split(/\s+/) || []}
+                walletFileName={(createWalletResponse?.response.walletname ?? '<empty>') as WalletFileName}
+                password={password}
+                seedphrase={createWalletResponse?.response.seedphrase?.split(/\s+/) ?? []}
                 onConfirm={async () => await handleConfirmSeed(createWalletResponse!)}
               />
             </>

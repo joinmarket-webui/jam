@@ -50,7 +50,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
       />
       <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
-          <p className="text-muted-foreground hover:text-foreground text-xl" title={walletName}>
+          <p className="text-muted-foreground hover:text-foreground text-xl select-all" title={walletName}>
             {walletNameTitle}
           </p>
 
