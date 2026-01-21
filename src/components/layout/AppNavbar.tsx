@@ -4,9 +4,7 @@ import type { TFunction } from 'i18next'
 import { LockKeyholeIcon, LogOutIcon, PackageSearchIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, type NavigateFunction } from 'react-router-dom'
-import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
-import { LockWalletConfirmDialog } from '@/components/settings/LockWalletConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { ThemeToggleButton } from '@/components/ui/jam/ThemeToggleButton'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,7 +13,6 @@ import { isDevMode } from '@/constants/debugFeatures'
 import { routes } from '@/constants/routes'
 import type { RescanInfo } from '@/context/JamSessionInfoContext'
 import { cn, shortenStringMiddle } from '@/lib/utils'
-import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { AmountSats } from '@/types/global'
 import { Spinner } from '../ui/spinner'
 
@@ -133,9 +130,6 @@ export function AppNavbar({
 }: AppNavbarProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const showLockWalletConfirmation = useStore(jamSettingsStore, (state) => state.state.showLockWalletConfirmation)
-  const [showLockWalletDialog, setShowLockWalletDialog] = useState(false)
-  const [isLockingWallet, setIsLockingWallet] = useState(false)
 
   const isSidebarOpen =
     sidebarInfo === undefined ? false : sidebarInfo.isMobile ? sidebarInfo.openMobile : sidebarInfo.open
@@ -154,21 +148,13 @@ export function AppNavbar({
 
   const rescanningRoute = rescanInfo?.rescanning !== true ? undefined : routes.rescan
 
-  const handleLockWallet = async () => {
+  const [isLockingWallet, setIsLockingWallet] = useState(false)
+  const doOnLockWallet = async () => {
     try {
       setIsLockingWallet(true)
       await onLockWallet(navigate, t)
     } finally {
       setIsLockingWallet(false)
-      setShowLockWalletDialog(false)
-    }
-  }
-
-  const onClickLockWallet = () => {
-    if (showLockWalletConfirmation) {
-      setShowLockWalletDialog(true)
-    } else {
-      handleLockWallet()
     }
   }
 
@@ -245,9 +231,10 @@ export function AppNavbar({
           className="hidden sm:flex"
           variant="ghost-navbar"
           size="icon"
-          onClick={onClickLockWallet}
+          onClick={doOnLockWallet}
           aria-label={t('settings.button_lock_wallet')}
           title={t('settings.button_lock_wallet')}
+          disabled={isLockingWallet}
         >
           <LockKeyholeIcon />
         </Button>
@@ -263,12 +250,6 @@ export function AppNavbar({
         </Button>
         {sidebarTrigger}
       </div>
-      <LockWalletConfirmDialog
-        open={showLockWalletDialog}
-        onOpenChange={setShowLockWalletDialog}
-        onConfirm={handleLockWallet}
-        isLocking={isLockingWallet}
-      />
     </header>
   )
 }

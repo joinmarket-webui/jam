@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { PropsWithChildren } from 'react'
 import { lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { token } from '@joinmarket-webui/joinmarket-api-ts/jm'
@@ -44,9 +44,11 @@ import { queryClient } from '@/lib/queryClient'
 import { setIntervalDebounced, walletDisplayName, type WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { LockWalletConfirmDialog } from './components/settings/LockWalletConfirmDialog'
 import { Spinner } from './components/ui/spinner'
 import { WalletJarsDetailsPage } from './components/wallet/WalletJarsDetailsPage'
 import { JamSessionInfoContextProvider } from './context/JamSessionInfoContextProvider'
+import { jmSessionStore } from './store/jmSessionStore'
 
 const DevSetupPage = lazy(() => import('@/components/dev/DevSetupPage'))
 const DevPage = lazy(() => import('@/components/dev/DevPage'))
@@ -56,11 +58,23 @@ const ProtectedRoute = ({ authenticated, children }: PropsWithChildren<{ authent
   return authenticated ? <>{children}</> : <Navigate to={routes.login} replace />
 }
 
+type LockWalletDialogContext = {
+  open: true // always true - otherwise object is `undefined`
+  navigate: NavigateFunction
+  t: TFunction<'translation', undefined>
+}
+
 function App() {
   const walletFileName = useStore(authStore, (state) => state.state?.walletFileName)
   const hasAuthToken = useStore(authStore, (state) => state.state?.auth?.token !== undefined)
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
   const { clear: clearAuth } = useStore(authStore, (state) => state)
+
+  const session = useStore(jmSessionStore, (state) => state.state)
+
+  const makerRunning = session?.maker_running === true
+  const coinjoinInProgress = session?.coinjoin_in_process === true || (session?.schedule?.length || 0) > 0
+
   const client = useApiClient()
 
   const lockWalletQuery = useQuery(
@@ -75,6 +89,7 @@ function App() {
     },
     queryClient,
   )
+  const [lockWalletDialogContext, setLockWalletDialogContext] = useState<LockWalletDialogContext>()
 
   const doOnLogout = async (navigate: NavigateFunction) => {
     clearAuth()
@@ -84,11 +99,26 @@ function App() {
 
   const doOnLockWallet = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
     if (!walletFileName) return
+
+    if (makerRunning || coinjoinInProgress) {
+      setLockWalletDialogContext({
+        open: true,
+        navigate,
+        t,
+      })
+    } else {
+      await doOnLockWalletConfirm(navigate, t)
+    }
+  }
+
+  const doOnLockWalletConfirm = async (navigate: NavigateFunction, t: TFunction<'translation', undefined>) => {
+    if (!walletFileName) return
     try {
       await lockWalletQuery.refetch()
       toast.success(
         t('wallets.wallet_preview.alert_wallet_locked_successfully', { walletName: walletDisplayName(walletFileName) }),
       )
+      setLockWalletDialogContext(undefined)
       await doOnLogout(navigate)
     } catch (error: unknown) {
       const reason = (error instanceof Error ? error.message : undefined) || t('global.errors.reason_unknown')
@@ -190,6 +220,16 @@ function App() {
           <RefreshApiToken />
           <RefreshJmSession />
           {walletFileName && <LoadFeeConfigData walletFileName={walletFileName} />}
+          {lockWalletDialogContext && (
+            <LockWalletConfirmDialog
+              open={lockWalletDialogContext?.open}
+              onOpenChange={() => setLockWalletDialogContext(undefined)}
+              onConfirm={() => doOnLockWalletConfirm(lockWalletDialogContext?.navigate, lockWalletDialogContext?.t)}
+              isLocking={lockWalletQuery.isFetching}
+              makerRunning={makerRunning}
+              coinjoinInProgress={coinjoinInProgress}
+            />
+          )}
           <RouterProvider router={router} />
           <Toaster closeButton />
         </QueryClientProvider>
