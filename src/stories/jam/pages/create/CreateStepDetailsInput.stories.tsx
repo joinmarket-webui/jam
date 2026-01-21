@@ -1,18 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { MemoryRouter } from 'react-router-dom'
 import { CreateStepDetailsInput } from '@/components/create/CreateStepDetailsInput'
 
 const meta: Meta<typeof CreateStepDetailsInput> = {
   title: 'Page/Create/CreateStepDetailsInput',
   component: CreateStepDetailsInput,
   tags: ['autodocs'],
-  decorators: [
-    (Story) => (
-      <MemoryRouter>
-        <Story />
-      </MemoryRouter>
-    ),
-  ],
 }
 export default meta
 
