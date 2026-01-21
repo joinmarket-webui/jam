@@ -14,6 +14,7 @@ import {
   ArrowLeftRightIcon,
   LockKeyholeIcon,
   BookKeyIcon,
+  ShieldAlertIcon,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -32,6 +33,7 @@ import { authStore } from '@/store/authStore'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { FeeLimitDialog } from './FeeLimitDialog'
 import { LanguageSelector } from './LanguageSelector'
+import { LockWalletConfirmDialog } from './LockWalletConfirmDialog'
 import { SeedPhraseDialog } from './SeedPhraseDialog'
 import { SettingItem, SettingsLink, SettingSwitch } from './SettingsItem'
 
@@ -50,6 +52,7 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
   const [showSeedDialog, setShowSeedDialog] = useState(false)
   const [showXpubsDialog, setShowXpubsDialog] = useState(false)
   const [showFeeLimitDialog, setShowFeeLimitDialog] = useState(false)
+  const [showLockWalletDialog, setShowLockWalletDialog] = useState(false)
   const hashedPassword = useStore(authStore, (state) => state.state?.hashed_password)
   const { isLogsEnabled } = useFeatures()
   const [isLockingWallet, setIsLockingWallet] = useState(false)
@@ -60,6 +63,15 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
       await onLockWallet(navigate, t)
     } finally {
       setIsLockingWallet(false)
+      setShowLockWalletDialog(false)
+    }
+  }
+
+  const onClickLockWallet = async () => {
+    if (jamSettings.state.showLockWalletConfirmation) {
+      setShowLockWalletDialog(true)
+    } else {
+      await handleLockWallet()
     }
   }
 
@@ -142,8 +154,15 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
           <SettingItem
             icon={LockKeyholeIcon}
             title={t('settings.button_lock_wallet')}
-            action={handleLockWallet}
+            action={onClickLockWallet}
             disabled={isLockingWallet}
+          />
+          <Separator className="opacity-50" />
+          <SettingSwitch
+            icon={ShieldAlertIcon}
+            title={t('settings.show_lock_confirmation')}
+            checked={jamSettings.state.showLockWalletConfirmation}
+            onCheckedChange={(checked) => jamSettings.update({ showLockWalletConfirmation: checked })}
           />
           <Separator className="opacity-50" />
           <SettingsLink icon={ArrowLeftRightIcon} title={t('settings.button_switch_wallet')} to={routes.switchWallet} />
@@ -253,6 +272,12 @@ export const SettingsPage = ({ walletFileName, onLockWallet }: SettingPageProps)
       )}
 
       <FeeLimitDialog walletFileName={walletFileName} open={showFeeLimitDialog} onOpenChange={setShowFeeLimitDialog} />
+      <LockWalletConfirmDialog
+        open={showLockWalletDialog}
+        onOpenChange={setShowLockWalletDialog}
+        onConfirm={handleLockWallet}
+        isLocking={isLockingWallet}
+      />
       {hashedPassword && (
         <>
           <SeedPhraseDialog

@@ -233,6 +233,7 @@
     "reveal_seed": "Reveal seed phrase",
     "show_logs": "Show logs",
     "show_fee_config": "Adjust fee limits",
+    "show_lock_confirmation": "Ask confirmation before locking",
     "button_lock_wallet": "Lock wallet",
     "button_locking_wallet": "Locking...",
     "button_switch_wallet": "Switch wallet",
