@@ -1,15 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
-import { AlertCircleIcon, CircleCheckBigIcon, EyeIcon, EyeOffIcon, LockIcon, WalletIcon } from 'lucide-react'
-import { Trans, useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { CircleCheckBigIcon, WalletIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
@@ -18,14 +14,17 @@ import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { Spinner } from '../ui/spinner'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 import { CreateStepConfirm } from './CreateStepConfirm'
+import { CreateStepDetailsInput } from './CreateStepDetailsInput'
 
 const validateWalletName = (input: string) =>
   input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
 
-type CreateWalletResponseWithHashedPassword = {
+type WalletFormValues = { walletName: string; password: string; confirmPassword: string }
+
+type CreateWalletSuccessInfo = {
+  values: WalletFormValues
   response: CreateWalletResponse
   hashedPassword?: string
 }
@@ -36,19 +35,12 @@ const CreateWalletPage = () => {
   const client = useApiClient()
   const jmSessionInfo = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
-  const [walletName, setWalletName] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [createWalletResponse, setCreateWalletResponse] = useState<CreateWalletResponseWithHashedPassword>()
+  const [isCreating, setIsCreating] = useState(false)
+  const [createWalletSuccessInfo, setCreateWalletSuccessInfo] = useState<CreateWalletSuccessInfo>()
   const [step, setStep] = useState<'create' | 'seed' | 'confirm'>('create')
 
   // TODO: use react-hook-form and yup schema
-  const handleCreateWallet = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+  const handleCreateWallet = async ({ walletName, password, confirmPassword }: WalletFormValues) => {
     const sanitizedWalletName = walletName.trim()
     if (!validateWalletName(sanitizedWalletName)) {
       toast.error(t('create_wallet.feedback_invalid_wallet_name'))
@@ -71,7 +63,7 @@ const CreateWalletPage = () => {
       position: 'top-center',
     })
     try {
-      setIsLoading(true)
+      setIsCreating(true)
 
       // Clear any existing local session
       clearAuthState()
@@ -121,30 +113,27 @@ const CreateWalletPage = () => {
 
       let hashedPassword: string | undefined = undefined
       try {
-        hashedPassword = await hashPassword(password, createData?.walletname)
+        hashedPassword = await hashPassword(password, createData.walletname)
       } catch (hashError) {
         console.warn('Failed to hash password, continuing without hash verification:', hashError)
       }
 
-      if (createData?.seedphrase) {
-        setCreateWalletResponse({
-          response: createData,
-          hashedPassword,
-        })
-        setStep('seed')
-      } else {
-        throw new Error(/*TODO: i18n*/ 'No seedphrase returned')
-      }
+      setCreateWalletSuccessInfo({
+        values: { walletName, password, confirmPassword },
+        response: createData,
+        hashedPassword,
+      })
+      setStep('seed')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create wallet'
       toast.error(errorMessage)
     } finally {
-      setIsLoading(false)
+      setIsCreating(false)
       toast.dismiss(durationHintToastId)
     }
   }
 
-  const handleConfirmSeed = async ({ response, hashedPassword }: CreateWalletResponseWithHashedPassword) => {
+  const handleConfirmSeed = async ({ response, hashedPassword }: CreateWalletSuccessInfo) => {
     updateAuthState({
       walletFileName: response.walletname as WalletFileName,
       auth: { token: response.token, refresh_token: response.refresh_token }, // We'll need to unlock it properly later
@@ -153,96 +142,6 @@ const CreateWalletPage = () => {
 
     await navigate(routes.home)
   }
-
-  // TODO: use react-hook-form and yup schema
-  const renderCreateForm = () => (
-    <form onSubmit={handleCreateWallet} className="space-y-4" noValidate>
-      <div className="space-y-2">
-        <Label htmlFor="wallet-name">{t('create_wallet.label_wallet_name')}</Label>
-        <Input
-          id="wallet-name"
-          type="text"
-          value={walletName}
-          onChange={(e) => setWalletName(e.target.value)}
-          disabled={isLoading}
-          placeholder={t('create_wallet.placeholder_wallet_name')}
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">{t('create_wallet.label_password')}</Label>
-        <div className="relative">
-          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-          <Input
-            id="password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            placeholder={t('create_wallet.placeholder_password')}
-            maxLength={MAX_WALLET_NAME_LENGTH}
-            className="pr-10 pl-10"
-            required
-          />
-          <Button
-            tabIndex={-1}
-            type="button"
-            variant="link"
-            size="icon"
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
-            onClick={() => {
-              setShowConfirmPassword(false)
-              setShowPassword((val) => !val)
-            }}
-          >
-            {showPassword ? <EyeIcon /> : <EyeOffIcon />}
-          </Button>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">{t('create_wallet.label_password_confirm')}</Label>
-        <div className="relative">
-          <LockIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-          <Input
-            id="confirm-password"
-            type={showConfirmPassword ? 'text' : 'password'}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={isLoading}
-            placeholder={t('create_wallet.placeholder_password_confirm')}
-            className="pr-10 pl-10"
-            required
-          />
-          <Button
-            tabIndex={-1}
-            type="button"
-            variant="link"
-            size="icon"
-            className="absolute top-1/2 right-0 -translate-y-1/2 transform"
-            onClick={() => {
-              setShowPassword(false)
-              setShowConfirmPassword((val) => !val)
-            }}
-          >
-            {showConfirmPassword ? <EyeIcon /> : <EyeOffIcon />}
-          </Button>
-        </div>
-      </div>
-
-      <Button type="submit" className="w-full" disabled={isLoading} size="lg">
-        {isLoading ? (
-          <>
-            <Spinner className="motion-reduce:hidden" />
-            {t('create_wallet.button_creating')}
-          </>
-        ) : (
-          <>{t('create_wallet.button_create')}</>
-        )}
-      </Button>
-    </form>
-  )
 
   return (
     <div className="from-background to-muted flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
@@ -263,49 +162,19 @@ const CreateWalletPage = () => {
             <>
               <PreventLeavingPageByMistake />
               <CreateStepConfirm
-                walletFileName={(createWalletResponse?.response.walletname ?? '<empty>') as WalletFileName}
-                password={password}
-                seedphrase={createWalletResponse?.response.seedphrase?.split(/\s+/) ?? []}
-                onConfirm={async () => await handleConfirmSeed(createWalletResponse!)}
+                walletFileName={createWalletSuccessInfo!.response.walletname as WalletFileName}
+                password={createWalletSuccessInfo!.values.password}
+                seedphrase={createWalletSuccessInfo!.response.seedphrase?.split(/\s+/)}
+                onConfirm={async () => await handleConfirmSeed(createWalletSuccessInfo!)}
               />
             </>
           )}
           {step === 'create' && (
-            <>
-              {jmSessionInfo?.session === true ? (
-                <Alert variant="warning">
-                  <AlertCircleIcon />
-                  <AlertDescription>
-                    <p>
-                      <Trans
-                        i18nKey="create_wallet.alert_other_wallet_unlocked"
-                        values={{
-                          walletName: walletDisplayName((jmSessionInfo?.wallet_name || 'Unknown') as WalletFileName),
-                        }}
-                      >
-                        Currently <strong>walletName</strong> is active. You need to lock it first.
-                        <Link to={routes.login} className="font-semibold underline">
-                          Go back
-                        </Link>
-                      </Trans>
-                    </p>
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <>{renderCreateForm()}</>
-              )}
-              <div className="text-center">
-                <p className="text-muted-foreground text-sm">
-                  {/* TODO: i18n */}
-                  Already have a wallet?{' '}
-                  <Button variant="link" asChild>
-                    <Link to={routes.login} className="font-semibold">
-                      Sign in here
-                    </Link>
-                  </Button>
-                </p>
-              </div>
-            </>
+            <CreateStepDetailsInput
+              onSubmit={handleCreateWallet}
+              isSubmitting={isCreating}
+              sessionInfo={jmSessionInfo}
+            />
           )}
         </CardContent>
       </Card>
