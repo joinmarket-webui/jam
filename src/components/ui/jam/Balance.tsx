@@ -88,7 +88,7 @@ const BitcoinBalance = ({ value, colored = true, ...props }: BitcoinBalanceProps
   return (
     <BalanceComponent symbol={BTC_SYMBOL} colored={colored} {...props}>
       <span
-        className={cn('slashed-zeroes', colored && 'text-green-600')}
+        className={cn('slashed-zeroes select-all', colored && 'text-green-600')}
         data-testid="bitcoin-amount"
         data-integer-part-is-zero={integerPartIsZero}
         data-fractional-part-starts-with-zero={fractionalPartStartsWithZero}
@@ -117,7 +117,7 @@ const SatsBalance = ({ value, colored = true, ...props }: SatsBalanceProps) => {
   return (
     <BalanceComponent symbol={SAT_SYMBOL} colored={colored} {...props}>
       <span
-        className={cn('slashed-zeroes', colored && 'text-green-600')}
+        className={cn('slashed-zeroes select-all', colored && 'text-green-600')}
         data-testid="sats-amount"
         data-raw-value={value}
       >

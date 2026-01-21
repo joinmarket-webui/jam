@@ -67,15 +67,16 @@ function Copyable({
         {children}
       </button>
       <input
-        readOnly
-        aria-hidden
         ref={valueFallbackInputRef}
+        tabIndex={-1}
         value={value}
         style={{
           position: 'absolute',
           left: '-9999px',
           top: '-9999px',
         }}
+        aria-hidden
+        readOnly
       />
     </>
   )

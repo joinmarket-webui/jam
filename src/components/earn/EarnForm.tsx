@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { HandshakeIcon, Loader2Icon, PercentIcon } from 'lucide-react'
+import { HandshakeIcon, PercentIcon } from 'lucide-react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -15,6 +15,7 @@ import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { Spinner } from '../ui/spinner'
 
 const FieldPrefixSatSymbol = (
   <SatSymbol
@@ -249,7 +250,7 @@ export function EarnForm({
       >
         {isSubmitting || isWaitingMakerStart ? (
           <>
-            <Loader2Icon className="h-8 w-8 animate-spin text-gray-400 motion-reduce:hidden" />
+            <Spinner className="motion-reduce:hidden" />
             {t('earn.text_starting')}
           </>
         ) : (

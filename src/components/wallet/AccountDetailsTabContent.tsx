@@ -88,27 +88,23 @@ export const AccountDetailsTabContent = ({ value }: AccountDetailsTabContentProp
   const defaultValue = displayBranches.length > 0 ? [String(displayBranches[0].index)] : undefined
 
   return (
-    <div>
-      <Accordion type="multiple" className="bg-card w-full rounded-lg" defaultValue={defaultValue}>
-        {displayBranches.map(({ branch, index }) => {
-          const typeTitle = toTypeHeading(branch.type, t)
-          return (
-            <AccordionItem key={index} value={String(index)} className="px-6">
-              <AccordionTrigger className="group/account-branch-accordion-trigger items-center no-underline!">
-                <div className="flex flex-col gap-0.25">
-                  <span className="text-base font-medium group-hover/account-branch-accordion-trigger:underline">
-                    {typeTitle}
-                  </span>
-                  <code className="text-muted-foreground text-xs">{branch.derivation}</code>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <BranchAccordionContent value={branch} />
-              </AccordionContent>
-            </AccordionItem>
-          )
-        })}
-      </Accordion>
-    </div>
+    <Accordion type="multiple" className="bg-card w-full rounded-lg" defaultValue={defaultValue}>
+      {displayBranches.map(({ branch, index }) => {
+        const typeTitle = toTypeHeading(branch.type, t)
+        return (
+          <AccordionItem key={index} value={String(index)}>
+            <AccordionTrigger className="group/account-branch-accordion-trigger items-center px-4 no-underline!">
+              <div className="flex flex-col gap-0.25">
+                <span className="group-hover/account-branch-accordion-trigger:underline">{typeTitle}</span>
+                <span className="text-muted-foreground font-mono select-all">{branch.derivation}</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="p-4 pt-2">
+              <BranchAccordionContent value={branch} />
+            </AccordionContent>
+          </AccordionItem>
+        )
+      })}
+    </Accordion>
   )
 }

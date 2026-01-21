@@ -70,21 +70,29 @@ export const DefaultOpen: Story = {
   ),
 }
 
-export const CustomStyling: Story = {
+export const CustomStyling1: Story = {
   render: () => (
-    <Accordion type="single" collapsible className="my-12 w-full">
-      <AccordionItem value="item-1" className="mb-2 rounded-md border border-gray-200 px-4 last:border-b!">
-        <AccordionTrigger className="font-semibold text-blue-500">Custom styled accordion</AccordionTrigger>
-        <AccordionContent className="text-foreground">
+    <Accordion type="single" collapsible className="my-12 w-full space-y-2">
+      <AccordionItem value="item-1" className="rounded-md border border-gray-200 last:border-b!">
+        <AccordionTrigger className="group/CustomStyling-accordion-trigger px-4 no-underline!">
+          <div className="flex flex-col gap-0.25">
+            <span className="text-base group-hover/CustomStyling-accordion-trigger:underline">Apricot</span>
+            <code className="text-muted-foreground text-sm">Account #0</code>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="text-foreground p-4 pt-2">
           This accordion has custom styling applied to demonstrate the flexibility of the component.
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem value="item-2" className="rounded-md border border-gray-200 px-4 last:border-b!">
-        <AccordionTrigger className="inactive:text-muted-foreground font-semibold text-blue-500">
-          Another custom section
+      <AccordionItem value="item-2" className="rounded-md border border-gray-200 last:border-b!">
+        <AccordionTrigger className="group/CustomStyling-accordion-trigger px-4 no-underline!">
+          <div className="flex flex-col gap-0.25">
+            <span className="text-base group-hover/CustomStyling-accordion-trigger:underline">Blueberry</span>
+            <code className="text-muted-foreground text-sm">Account #1</code>
+          </div>
         </AccordionTrigger>
-        <AccordionContent className="text-foreground">
-          You can customize each accordion item independently.
+        <AccordionContent className="text-foreground p-4 pt-2">
+          This accordion has custom styling applied to demonstrate the flexibility of the component.
         </AccordionContent>
       </AccordionItem>
     </Accordion>

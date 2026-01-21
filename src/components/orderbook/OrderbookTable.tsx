@@ -137,14 +137,14 @@ export const OrderbookTable = ({
           const bid = Number(b.original.orderId)
           return aid - bid
         },
-        cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
+        cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
         meta: {
           alphabetic: true,
         } as OrderTableColumnMeta,
       }),
       columnHelper.accessor('orderId', {
         header: () => t('orderbook.table.heading_order_id'),
-        cell: (info) => info.getValue(),
+        cell: (info) => <span>{info.getValue()}</span>,
         meta: {
           numeric: true,
         } as OrderTableColumnMeta,

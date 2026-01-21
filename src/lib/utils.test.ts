@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { JM_WALLET_FILE_EXTENSION } from '@/constants/jm'
 import {
   cn,
   walletDisplayName,
-  JM_WALLET_FILE_EXTENSION,
   setIntervalDebounced,
   satsToBtc,
   btcToSats,

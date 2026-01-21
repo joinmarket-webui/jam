@@ -68,6 +68,11 @@ export default defineConfig((): UserConfig => {
             include: ['**/*.test.{ts,tsx}'],
             exclude: ['node_modules', '.storybook'],
           },
+          resolve: {
+            alias: {
+              '@': path.resolve(__dirname, './src'),
+            },
+          },
         },
       ],
     },

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { listwalletsOptions, lockwalletOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import type { ErrorMessage } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, Loader2Icon, LockIcon, RefreshCwIcon, UnlockIcon, WalletIcon } from 'lucide-react'
+import { AlertCircleIcon, LockIcon, RefreshCwIcon, UnlockIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -12,9 +12,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
-import { sortWallets, walletDisplayName } from '@/lib/utils'
+import { shortenStringMiddle, sortWallets, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
+import { Spinner } from './ui/spinner'
 
 const SwitchWalletFormSkeleton = () => {
   return (
@@ -102,7 +103,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
         <CardHeader className="space-y-2 text-center">
           <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
             {listWalletsFetching ? (
-              <Loader2Icon className="h-6 w-6 animate-spin" />
+              <Spinner className="size-6" />
             ) : (
               <WalletIcon className="text-primary h-6 w-6" onClick={async () => await listWalletsRefetch()} />
             )}
@@ -155,10 +156,12 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
                             wallet === walletFileName ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between truncate">
                             <div className="flex items-center gap-2">
                               <WalletIcon className="h-4 w-4" />
-                              <span className="text-sm font-medium">{walletDisplayName(wallet)}</span>
+                              <span className="text-sm font-medium">
+                                {shortenStringMiddle(walletDisplayName(wallet) ?? '...', 63)}
+                              </span>
                             </div>
                             {wallet === walletFileName && (
                               <span className="text-muted-foreground text-xs">
@@ -189,7 +192,7 @@ const SwitchWalletPage = ({ walletFileName }: SwitchWalletPageProps) => {
                               >
                                 {lockCurrentWallet.isFetching ? (
                                   <>
-                                    <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                                    <Spinner className="motion-reduce:hidden" />
                                     {t('settings.button_locking_wallet')}
                                   </>
                                 ) : currentWalletLocked ? (

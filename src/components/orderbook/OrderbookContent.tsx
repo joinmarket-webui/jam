@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { RowModel } from '@tanstack/react-table'
 import type { i18n } from 'i18next'
-import { ChevronDownIcon, RefreshCwIcon, PlusIcon, AlertCircleIcon, Loader2Icon } from 'lucide-react'
+import { ChevronDownIcon, RefreshCwIcon, PlusIcon, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { DevBadge } from '@/components/dev/DevBadge'
@@ -26,6 +26,7 @@ import { withQueryDelay } from '@/lib/queryClient'
 import { cn, factorToPercentage, isAbsoluteOffer, isRelativeOffer, pseudoRandomInteger, time } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { Spinner } from '../ui/spinner'
 import { OrderbookTable, type OrderTableEntry } from './OrderbookTable'
 
 const offerToTableEntry = (
@@ -318,7 +319,7 @@ export const OrderbookContent = ({ enabled, className }: OrderbookContentProps) 
       {isLoadingInitially ? (
         <div className="py-12">
           <div className="text-muted-foreground m-2 flex items-center justify-center gap-2">
-            <Loader2Icon className="h-5 w-5 animate-spin motion-reduce:hidden" />
+            <Spinner className="motion-reduce:hidden" />
             {t('global.loading')}
           </div>
         </div>

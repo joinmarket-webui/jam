@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DownloadIcon, InfoIcon, Loader2Icon, RefreshCwIcon, UploadIcon } from 'lucide-react'
+import { DownloadIcon, InfoIcon, RefreshCwIcon, UploadIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -16,6 +16,7 @@ import {
 } from '@/context/JamWalletInfoContext'
 import type { WalletFileName } from '@/lib/utils'
 import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
+import { Spinner } from './ui/spinner'
 import { WalletJarsDetailsOverlay } from './wallet/WalletJarsDetailsOverlay'
 
 interface MainWalletPageProps {
@@ -50,14 +51,14 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
       />
       <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
-          <p className="text-muted-foreground hover:text-foreground text-xl" title={walletName}>
+          <p className="text-muted-foreground hover:text-foreground text-xl select-all" title={walletName}>
             {walletNameTitle}
           </p>
 
           <div className="flex min-h-[56px] items-center justify-center">
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
-                <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
+                <Spinner className="motion-reduce:hidden" />
                 {t('global.loading')}
               </div>
             ) : (
@@ -111,7 +112,7 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
           <div className="flex min-h-[128px] items-center justify-center gap-4">
             {isFetching ? (
               <div className="flex flex-1 items-center justify-center gap-2 py-8">
-                <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
+                <Spinner className="motion-reduce:hidden" />
                 {t('global.loading')}
               </div>
             ) : (

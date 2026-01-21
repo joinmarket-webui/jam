@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, type ComponentProps } from 'react'
 import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
-import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, Loader2Icon } from 'lucide-react'
+import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import { hashPassword } from '@/lib/hash'
 import type { WalletFileName } from '@/lib/utils'
 import type { SeedPhrase, WithRequiredProperty } from '@/types/global'
 import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
+import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 
 type SeedPhraseDialogProps = WithRequiredProperty<
@@ -184,7 +185,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
               <Button type="submit" onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+                    <Spinner className="motion-reduce:hidden" />
                     {t('settings.seed_modal.verification.text_button_submitting')}
                   </>
                 ) : (
@@ -206,12 +207,12 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
               {!seedQuery.error && (
                 <div className="bg-muted rounded-lg p-4">
                   {seedQuery.isFetching ? (
-                    <div className="text-muted-foreground flex items-center justify-center gap-1">
-                      <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
+                    <div className="text-muted-foreground flex items-center justify-center gap-2">
+                      <Spinner className="motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : seedQuery.data ? (
-                    <SeedPhraseGrid className="md:grid-cols-3" value={seedQuery.data} blurred={!revealSeed} />
+                    <SeedPhraseGrid className="md:grid-cols-3" value={seedQuery.data} masked={!revealSeed} />
                   ) : (
                     <div className="text-muted-foreground text-center">
                       {t('settings.seed_modal.text_error_no_data')}
@@ -241,7 +242,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
                     id="switch-reveal-seed"
                     checked={revealSeed}
                     onCheckedChange={(checked) => setRevealSeed(checked)}
-                    disabled={seedQuery.isFetching}
+                    disabled={!seedQuery.data || !seedQuery.isFetching}
                   />
                   <Label htmlFor="switch-reveal-seed">{t('settings.reveal_seed')}</Label>
                 </div>

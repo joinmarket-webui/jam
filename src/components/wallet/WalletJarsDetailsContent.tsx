@@ -92,11 +92,7 @@ interface DetailsContentProps {
 }
 
 export const DetailsContent = ({ enabled: _enabled, account }: DetailsContentProps) => {
-  return (
-    <>
-      <AccountDetailsTabContent value={account} />
-    </>
-  )
+  return <AccountDetailsTabContent value={account} />
 }
 
 interface WalletJarsDetailsContentProps {

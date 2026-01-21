@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, type ComponentProps } from 'react'
 import { configsettingMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { cx } from 'class-variance-authority'
-import { Loader2Icon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
@@ -26,6 +25,7 @@ import { factorToPercentage } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import type { WithRequiredProperty } from '@/types/global'
+import { Spinner } from '../ui/spinner'
 import { CollaboratorFeesForm, type CollaboratorFeesFormRef } from './CollaboratorFeesForm'
 import { MiningFeesForm, type MiningFeesFormRef } from './MiningFeesForm'
 
@@ -214,8 +214,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                 </AccordionTrigger>
                 <AccordionContent>
                   {isLoadingConfig ? (
-                    <div className="text-muted-foreground flex items-center justify-center py-8">
-                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
+                    <div className="m-2 flex items-center justify-center gap-2">
+                      <Spinner className="motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : (
@@ -255,8 +255,8 @@ export const FeeLimitDialog = ({ open, onOpenChange, walletFileName }: FeeLimitD
                 </AccordionTrigger>
                 <AccordionContent>
                   {isLoadingConfig ? (
-                    <div className="text-muted-foreground flex items-center justify-center py-8">
-                      <Loader2Icon className="mr-2 h-4 w-4 animate-spin motion-reduce:hidden" />
+                    <div className="m-2 flex items-center justify-center gap-2">
+                      <Spinner className="motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : (
