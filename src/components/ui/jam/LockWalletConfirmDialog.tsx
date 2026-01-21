@@ -33,22 +33,20 @@ export const LockWalletConfirmDialog = ({
         <DialogHeader>
           <DialogTitle>{t('wallets.wallet_preview.modal_lock_wallet_title')}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-2">
-          {makerRunning && (
-            <Alert variant="warning">
-              <AlertTriangleIcon />
-              <AlertDescription>{t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')}</AlertDescription>
-            </Alert>
-          )}
-          {coinjoinInProgress && (
-            <Alert variant="warning">
-              <AlertTriangleIcon />
-              <AlertDescription>
-                {t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')}
-              </AlertDescription>
-            </Alert>
-          )}
-        </div>
+        {makerRunning && (
+          <Alert variant="warning">
+            <AlertTriangleIcon />
+            <AlertDescription>{t('wallets.wallet_preview.modal_lock_wallet_maker_running_text')}</AlertDescription>
+          </Alert>
+        )}
+        {coinjoinInProgress && (
+          <Alert variant="warning">
+            <AlertTriangleIcon />
+            <AlertDescription>
+              {t('wallets.wallet_preview.modal_lock_wallet_coinjoin_in_progress_text')}
+            </AlertDescription>
+          </Alert>
+        )}
         <p className="text-muted-foreground">{t('wallets.wallet_preview.modal_lock_wallet_alternative_action_text')}</p>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLocking}>
