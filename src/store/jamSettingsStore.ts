@@ -8,7 +8,6 @@ export type JamSettings = {
   privateMode: boolean
   currencyUnit: Currency
   cheatsheetForceOpenAt?: number
-  showLockWalletConfirmation: boolean
 }
 
 interface JamSettingsStoreState {
@@ -22,7 +21,6 @@ const initial: JamSettings = {
   privateMode: false,
   currencyUnit: 'sats',
   cheatsheetForceOpenAt: undefined,
-  showLockWalletConfirmation: true,
 }
 
 export const jamSettingsStore = createStore<JamSettingsStoreState>()(
