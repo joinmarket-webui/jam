@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import type { OfferType } from '@/constants/jm'
+import { JM_WALLET_FILE_EXTENSION, type OfferType } from '@/constants/jm'
 import type { Milliseconds, SeedPhrase } from '@/types/global'
 
 const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
@@ -8,8 +8,6 @@ const HORIZONTAL_ELLIPSIS = '\u2026' // Horizontal Ellipsis `…`
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-
-export const JM_WALLET_FILE_EXTENSION = '.jmdat'
 
 export type Unit = 'BTC' | 'sats'
 

@@ -10,10 +10,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { MAX_WALLET_NAME_LENGTH } from '@/constants/jam'
 import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
-import { walletDisplayName, JM_WALLET_FILE_EXTENSION, walletDisplayNameToFileName } from '@/lib/utils'
+import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
@@ -22,8 +23,6 @@ import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
 import { Switch } from '../ui/switch'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
-
-const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 
 const validateWalletName = (input: string) =>
   input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)

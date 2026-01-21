@@ -1,11 +1,13 @@
 import { percentageToFactor, toSemVer } from '@/lib/utils'
 import type { AmountSats, Milliseconds } from '@/types/global'
 import { version as packageInfoVersion } from '../../package.json'
-import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD } from './jm'
+import { JM_API_AUTH_TOKEN_EXPIRY, JM_DUST_THRESHOLD, JM_WALLET_FILE_EXTENSION } from './jm'
 
 export const APP_DISPLAY_VERSION = (() => {
   return toSemVer(packageInfoVersion)
 })()
+
+export const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 
 export const TX_FEES_FACTOR_MIN = 0 // 0%
 
