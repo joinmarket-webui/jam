@@ -5,7 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { WithRequiredProperty } from '@/types/global'
-import { Spinner } from '../ui/spinner'
+import { Spinner } from '../spinner'
 
 type LockWalletConfirmDialogProps = WithRequiredProperty<
   Omit<ComponentProps<typeof Dialog>, 'children'>,
