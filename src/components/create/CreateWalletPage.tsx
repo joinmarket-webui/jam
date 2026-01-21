@@ -17,11 +17,11 @@ import { walletDisplayName, JM_WALLET_FILE_EXTENSION, walletDisplayNameToFileNam
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { MaskedText } from './ui/jam/MaskedText'
-import { SeedPhraseGrid } from './ui/jam/SeedPhraseGrid'
-import { Spinner } from './ui/spinner'
-import { Switch } from './ui/switch'
-import PreventLeavingPageByMistake from './utils/PreventLeavingPageByMistake'
+import { MaskedText } from '../ui/jam/MaskedText'
+import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
+import { Spinner } from '../ui/spinner'
+import { Switch } from '../ui/switch'
+import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
 
 const MAX_WALLET_NAME_LENGTH = 240 - JM_WALLET_FILE_EXTENSION.length
 
