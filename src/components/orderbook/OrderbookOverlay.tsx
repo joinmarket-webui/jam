@@ -15,14 +15,14 @@ export function OrderbookOverlay({ open, onOpenChange }: OrderbookOverlayProps) 
   return (
     <Dialog open={open} onOpenChange={() => onOpenChange(false)}>
       <DialogContent className="data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom flex h-screen max-w-screen! flex-col rounded-none border-none">
-        <DialogHeader>
+        <DialogHeader className="px-2">
           <DialogTitle className="flex items-center gap-2">
             <PageTitle title={t('orderbook.title')} />
           </DialogTitle>
         </DialogHeader>
 
         <div className="overflow-hidden">
-          <OrderbookContent enabled={open} className="flex h-full flex-col" />
+          <OrderbookContent enabled={open} className="flex h-full flex-col p-2 pt-0" />
         </div>
       </DialogContent>
     </Dialog>

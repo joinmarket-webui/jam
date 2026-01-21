@@ -26,6 +26,7 @@ import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
 import type { Milliseconds } from '@/types/global'
+import { Spinner } from '../ui/spinner'
 import { EarnForm, type EarnFormValues } from './EarnForm'
 import { FidelityBondCard } from './FidelityBondCard'
 import { OfferCard } from './OfferCard'
@@ -152,7 +153,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     return (
       <div className="mx-auto max-w-4xl space-y-3 p-4">
         <div className="m-2 flex items-center justify-center gap-2">
-          <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+          <Spinner className="motion-reduce:hidden" />
           {t('global.loading')}
         </div>
       </div>
@@ -211,7 +212,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
           <Button type="button" onClick={() => onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (
               <>
-                <Loader2Icon className="animate-spin motion-reduce:hidden" />
+                <Spinner className="motion-reduce:hidden" />
                 {t('earn.text_stopping')}
               </>
             ) : (

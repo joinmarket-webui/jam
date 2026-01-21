@@ -1,3 +1,5 @@
+export const JM_WALLET_FILE_EXTENSION = '.jmdat'
+
 export const JM_API_AUTH_TOKEN_EXPIRY = parseInt(import.meta.env.VITE_JM_API_AUTH_TOKEN_EXPIRY_SECONDS, 10) * 1_000
 
 export const JM_MAX_SWEEP_FEE_CHANGE_DEFAULT = 0.8

@@ -3,16 +3,7 @@ import { getseedOptions } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/re
 import { mnemonicToSeed } from '@scure/bip39'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Network } from 'bitcoin-address-validation'
-import {
-  EyeIcon,
-  EyeOffIcon,
-  AlertTriangleIcon,
-  ClockIcon,
-  Loader2Icon,
-  CopyIcon,
-  CheckIcon,
-  AlertCircleIcon,
-} from 'lucide-react'
+import { EyeIcon, EyeOffIcon, AlertTriangleIcon, ClockIcon, CopyIcon, CheckIcon, AlertCircleIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -40,6 +31,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
+import { Spinner } from '../ui/spinner'
 
 const HD_PATH_PURPOSE: number = 84
 
@@ -120,75 +112,64 @@ const AccountXpubsAccordion = ({ values }: AccountXpubsAccordionProps) => {
     <Accordion type="single" collapsible className="w-full">
       {values.map((account, index) => {
         const accountLabel = t('settings.xpubs_modal.label_account', {
-          accountIndex: account.accountIndex,
+          accountIndex: `#${account.accountIndex}`,
         })
         return (
           <AccordionItem key={index} value={String(account.accountIndex)}>
-            <AccordionTrigger className="group/xpub-accordion-trigger no-underline!">
-              <span className="flex items-center gap-2">
-                <span className="text-base font-medium group-hover/xpub-accordion-trigger:underline">
-                  {account.accountName}
-                </span>
-                <span className="text-muted-foreground text-xs">({accountLabel})</span>
+            <AccordionTrigger className="group/xpub-accordion-trigger px-4 no-underline!">
+              <span className="flex-1 flex-col group-hover/xpub-accordion-trigger:underline">
+                {account.accountName}
               </span>
+              <span className="text-muted-foreground font-mono">{accountLabel}</span>
             </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-muted-foreground text-sm">
-                    <div className="flex flex-1 items-end gap-2">
-                      {/* TODO: i18n */}Extended Public Key
-                      <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
-                    </div>
-                    <div>
-                      {account.xpubs.length === 0 ? undefined : (
-                        <Badge variant="default">{account.xpubs[0].network}</Badge>
-                      )}
-                    </div>
-                  </Label>
-                  {account.xpubs.map((xpub, index) => {
-                    const accountNameAndLabel = `${account.accountName} (${accountLabel})`
-                    return (
-                      <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
-                        <code className="flex-1 overflow-hidden font-mono text-xs break-all text-ellipsis">
-                          {xpub.xpub}
-                        </code>
-                        <CopyButton
-                          className={buttonVariants({
-                            size: 'icon',
-                            variant: 'ghost',
-                            className: 'shrink-0',
-                          })}
-                          value={xpub.xpub}
-                          text={<CopyIcon className="h-3 w-3" />}
-                          successText={<CheckIcon className="h-3 w-3 text-green-500" />}
-                          title={t('settings.xpubs_modal.button_copy_title', {
-                            account: accountNameAndLabel,
-                          })}
-                          aria-label={t('settings.xpubs_modal.button_copy_title', {
-                            account: accountNameAndLabel,
-                          })}
-                          onSuccess={() =>
-                            toast.success(
-                              t('settings.xpubs_modal.alert_success_account_xpub_copied_message', {
-                                account: accountNameAndLabel,
-                              }),
-                            )
-                          }
-                          onError={(e) =>
-                            toast.error(
-                              t('global.errors.error_copy_to_clipboard_failed', {
-                                reason:
-                                  (e instanceof Error ? e.message : undefined) || t('global.errors.reason_unknown'),
-                              }),
-                            )
-                          }
-                        />
-                      </div>
-                    )
-                  })}
+            <AccordionContent className="flex flex-col gap-1 p-4 pt-2">
+              <Label className="text-muted-foreground text-sm">
+                <div className="flex flex-1 items-end gap-2">
+                  {/* TODO: i18n */}Extended Public Key
+                  <span className="text-muted-foreground/70 font-mono text-xs">{account.path}</span>
                 </div>
-              </div>
+                <div>
+                  {account.xpubs.length === 0 ? undefined : <Badge variant="default">{account.xpubs[0].network}</Badge>}
+                </div>
+              </Label>
+              {account.xpubs.map((xpub, index) => {
+                const accountNameAndLabel = `${account.accountName} (${accountLabel})`
+                return (
+                  <div key={index} className="bg-muted flex items-center gap-2 rounded-md p-2">
+                    <div className="flex-1 font-mono text-xs break-all select-all">{xpub.xpub}</div>
+                    <CopyButton
+                      className={buttonVariants({
+                        size: 'icon',
+                        variant: 'ghost',
+                        className: 'shrink-0',
+                      })}
+                      value={xpub.xpub}
+                      text={<CopyIcon className="h-3 w-3" />}
+                      successText={<CheckIcon className="h-3 w-3 text-green-500" />}
+                      title={t('settings.xpubs_modal.button_copy_title', {
+                        account: accountNameAndLabel,
+                      })}
+                      aria-label={t('settings.xpubs_modal.button_copy_title', {
+                        account: accountNameAndLabel,
+                      })}
+                      onSuccess={() =>
+                        toast.success(
+                          t('settings.xpubs_modal.alert_success_account_xpub_copied_message', {
+                            account: accountNameAndLabel,
+                          }),
+                        )
+                      }
+                      onError={(e) =>
+                        toast.error(
+                          t('global.errors.error_copy_to_clipboard_failed', {
+                            reason: (e instanceof Error ? e.message : undefined) || t('global.errors.reason_unknown'),
+                          }),
+                        )
+                      }
+                    />
+                  </div>
+                )
+              })}
             </AccordionContent>
           </AccordionItem>
         )
@@ -378,9 +359,14 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
                 {t('global.cancel')}
               </Button>
               <Button onClick={handlePasswordSubmit} disabled={!password || isSubmitting}>
-                {isSubmitting
-                  ? t('settings.xpubs_modal.verification.text_button_submitting')
-                  : t('settings.xpubs_modal.verification.text_button_submit')}
+                {isSubmitting ? (
+                  <>
+                    <Spinner className="motion-reduce:hidden" />
+                    {t('settings.xpubs_modal.verification.text_button_submitting')}
+                  </>
+                ) : (
+                  t('settings.xpubs_modal.verification.text_button_submit')
+                )}
               </Button>
             </DialogFooter>
           </>
@@ -395,10 +381,10 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
 
             <div className="space-y-4">
               {!accountXpubs.error && (
-                <div className="">
+                <div>
                   {isFetching ? (
                     <div className="text-muted-foreground flex items-center justify-center gap-1">
-                      <Loader2Icon className="size-4 animate-spin motion-reduce:hidden" />
+                      <Spinner className="motion-reduce:hidden" />
                       {t('global.loading')}
                     </div>
                   ) : accountXpubs.data && accountXpubs.data.length > 0 ? (
@@ -408,7 +394,7 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
                         <AlertTitle>{t('settings.xpubs_modal.text_info_title')}</AlertTitle>
                         <AlertDescription>{t('settings.xpubs_modal.text_info_message')}</AlertDescription>
                       </Alert>
-                      <div className="bg-card my-2 rounded-lg px-4">
+                      <div className="bg-card my-2 rounded-lg">
                         <AccountXpubsAccordion values={accountXpubs.data} />
                       </div>
                     </>

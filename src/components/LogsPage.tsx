@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import { AlertTriangleIcon, Loader2Icon, RefreshCwIcon, DownloadIcon, ArrowDownIcon } from 'lucide-react'
+import { AlertTriangleIcon, RefreshCwIcon, DownloadIcon, ArrowDownIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -10,6 +10,7 @@ import { fetchLog } from '@/lib/api/logs'
 import { cn, delayedPromise } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import PageTitle from './ui/jam/PageTitle'
+import { Spinner } from './ui/spinner'
 
 const JMWALLETD_LOG_FILE_NAME = 'jmwalletd_stdout.log'
 
@@ -95,11 +96,7 @@ function LogContent({ value, refresh }: LogContentProps) {
             {t('global.download')}
           </Button>
           <Button variant="outline" onClick={handleRefresh} disabled={isLoadingRefresh} title={t('global.refresh')}>
-            <RefreshCwIcon
-              className={cn({
-                'animate-spin': isLoadingRefresh,
-              })}
-            />
+            <RefreshCwIcon className={cn({ 'animate-spin': isLoadingRefresh })} />
             {t('global.refresh')}
           </Button>
         </div>
@@ -194,7 +191,7 @@ export const LogsPage = () => {
     return (
       <div className="mx-auto max-w-4xl space-y-3 p-4">
         <div className="m-2 flex items-center justify-center gap-2">
-          <Loader2Icon className="h-4 w-4 animate-spin motion-reduce:hidden" />
+          <Spinner className="motion-reduce:hidden" />
           {t('global.loading')}
         </div>
       </div>

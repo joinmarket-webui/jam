@@ -1,15 +1,7 @@
 import type { PropsWithChildren } from 'react'
 import type { SessionResponse } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import type { TFunction } from 'i18next'
-import {
-  Loader2Icon,
-  LockKeyholeIcon,
-  LogOutIcon,
-  PackageSearchIcon,
-  SettingsIcon,
-  ShuffleIcon,
-  WalletIcon,
-} from 'lucide-react'
+import { LockKeyholeIcon, LogOutIcon, PackageSearchIcon, SettingsIcon, ShuffleIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { DevBadge } from '@/components/dev/DevBadge'
@@ -22,6 +14,7 @@ import { routes } from '@/constants/routes'
 import type { RescanInfo } from '@/context/JamSessionInfoContext'
 import { cn, shortenStringMiddle } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { Spinner } from '../ui/spinner'
 
 const WithActivityIndicator = ({ active, children }: PropsWithChildren<{ active: boolean }>) => {
   return (
@@ -63,7 +56,7 @@ const WalletPreview = ({
       <Link to={routes.home} className="flex items-center gap-2">
         <div className="flex h-8 w-8 items-center">
           {isLoading ? (
-            <Loader2Icon className="animate-spin text-gray-400" strokeWidth={3} />
+            <Spinner className="text-muted-foreground size-6 motion-reduce:hidden" strokeWidth={3} />
           ) : (
             <WalletIcon strokeWidth={1} />
           )}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { listwalletsOptions, unlockwalletMutation } from '@joinmarket-webui/joinmarket-api-ts/@tanstack/react-query'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { AlertCircleIcon, EyeIcon, EyeOffIcon, Loader2Icon, LockIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
+import { AlertCircleIcon, EyeIcon, EyeOffIcon, LockIcon, RefreshCwIcon, WalletIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -21,6 +21,7 @@ import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
 import { Badge } from './ui/badge'
+import { Spinner } from './ui/spinner'
 
 const LoginFormSkeleton = () => {
   return (
@@ -132,7 +133,7 @@ const LoginForm = ({ wallets, isSubmitting, onSubmit, disabled }: LoginFormProps
         <Button type="submit" className="w-full" disabled={disabled || isSubmitting || !selectedWallet} size="lg">
           {isSubmitting ? (
             <>
-              <Loader2Icon className="animate-spin motion-reduce:hidden" />
+              <Spinner className="motion-reduce:hidden" />
               {t('wallets.wallet_preview.button_unlocking')}
             </>
           ) : (
@@ -221,7 +222,7 @@ const LoginPage = () => {
         <CardHeader className="flex flex-col items-center space-y-2">
           <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-full">
             {listWalletsFetching ? (
-              <Loader2Icon className="animate-spin" />
+              <Spinner className="size-6" />
             ) : (
               <WalletIcon className="text-primary" onClick={async () => await listWalletsRefetch()} />
             )}

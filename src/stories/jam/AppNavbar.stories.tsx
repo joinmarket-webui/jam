@@ -1,6 +1,5 @@
 import type { ComponentProps } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { MemoryRouter } from 'react-router-dom'
 import { AppNavbar } from '@/components/layout/AppNavbar'
 import { CurrencySymbol } from '@/components/ui/jam/CurrencySymbol'
 
@@ -8,13 +7,6 @@ const meta: Meta<typeof AppNavbar> = {
   title: 'Layout/AppNavbar',
   component: AppNavbar,
   tags: ['autodocs'],
-  decorators: [
-    (Story) => (
-      <MemoryRouter>
-        <Story />
-      </MemoryRouter>
-    ),
-  ],
 }
 export default meta
 

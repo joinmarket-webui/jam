@@ -137,7 +137,7 @@ export const BranchEntryTable = ({
           // tie-break using derivationIndex
           return a.original.derivationIndex - b.original.derivationIndex
         },
-        cell: (info) => <span className="font-mono text-sm">{info.getValue()}</span>,
+        cell: (info) => <span className="font-mono text-sm select-all">{info.getValue()}</span>,
         meta: {
           alphabetic: true,
         },
