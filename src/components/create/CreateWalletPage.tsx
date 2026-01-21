@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { type CreateWalletResponse, createwallet, session } from '@joinmarket-webui/joinmarket-api-ts/jm'
 import { AlertCircleIcon, CircleCheckBigIcon, EyeIcon, EyeOffIcon, LockIcon, WalletIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -18,110 +18,12 @@ import { walletDisplayName, walletDisplayNameToFileName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore } from '@/store/authStore'
 import { jmSessionStore } from '@/store/jmSessionStore'
-import { MaskedText } from '../ui/jam/MaskedText'
-import { SeedPhraseGrid } from '../ui/jam/SeedPhraseGrid'
 import { Spinner } from '../ui/spinner'
-import { Switch } from '../ui/switch'
 import PreventLeavingPageByMistake from '../utils/PreventLeavingPageByMistake'
+import { CreateStepConfirm } from './CreateStepConfirm'
 
 const validateWalletName = (input: string) =>
   input.length > 0 && input.length <= MAX_WALLET_NAME_LENGTH && /^[\w-]+$/.test(input)
-
-interface SeedPhraseContentProps {
-  walletFileName: WalletFileName
-  password: string
-  seedphrase: string[]
-  onConfirm: () => Promise<void>
-}
-
-const SeedPhraseContent = ({ walletFileName, password, seedphrase, onConfirm }: SeedPhraseContentProps) => {
-  const [revealSensitiveInfo, setRevealSensitiveInfo] = useState({ checked: false, dirty: false })
-  const [backupConfirmed, setBackupConfirmed] = useState(false)
-  const { t } = useTranslation()
-
-  useEffect(() => {
-    if (backupConfirmed) return
-
-    const toastId = toast.message(
-      <Alert>
-        <AlertCircleIcon />
-        <AlertTitle>
-          {/* TODO: i18n */}
-          Save Your Seed Phrase
-        </AlertTitle>
-        <AlertDescription>
-          {/* TODO: change i18n key ("alert_description") */}
-          {t('create_wallet.subtitle_wallet_created')}
-        </AlertDescription>
-      </Alert>,
-      {
-        duration: Infinity,
-        unstyled: true,
-      },
-    )
-
-    return () => {
-      toast.dismiss(toastId)
-    }
-  }, [backupConfirmed, t])
-
-  return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <div>
-          <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_wallet_name')}</Label>
-          <span className="text-sm font-semibold break-all select-all">{walletFileName}</span>
-        </div>
-        <div>
-          <Label className="text-muted-foreground text-xs">{t('create_wallet.confirmation_label_password')}</Label>
-          <MaskedText
-            className="font-mono text-sm font-semibold break-all slashed-zero select-none"
-            masked={!revealSensitiveInfo.checked}
-            maskedText="maskedmaskedmaskedmasked"
-          >
-            {password}
-          </MaskedText>
-        </div>
-        <div>
-          <Label className="text-muted-foreground text-xs">{/* i18n confirmation_label_seedphrase */}Seed Phrase</Label>
-          <div className="bg-muted rounded-lg py-2">
-            <SeedPhraseGrid value={seedphrase} masked={!revealSensitiveInfo.checked} />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex justify-start gap-2">
-          <Switch
-            id="switch-reveal-seed"
-            checked={revealSensitiveInfo.checked}
-            onCheckedChange={(checked) => setRevealSensitiveInfo((it) => ({ ...it, checked, dirty: true }))}
-          />
-          <Label htmlFor="switch-reveal-seed">{t('create_wallet.confirmation_toggle_reveal_info')}</Label>
-        </div>
-
-        <div className="flex justify-start gap-2">
-          <Switch
-            id="switch-confirm-backup"
-            checked={backupConfirmed}
-            onCheckedChange={(checked) => setBackupConfirmed(checked)}
-            disabled={!revealSensitiveInfo.dirty}
-          />
-          <Label htmlFor="switch-confirm-backup">{t('create_wallet.confirmation_toggle_info_written_down')}</Label>
-        </div>
-      </div>
-
-      <Button
-        onClick={async () => await onConfirm()}
-        className="w-full"
-        size="lg"
-        disabled={!backupConfirmed || !revealSensitiveInfo.dirty}
-      >
-        {t('create_wallet.next_button')}
-      </Button>
-    </div>
-  )
-}
 
 type CreateWalletResponseWithHashedPassword = {
   response: CreateWalletResponse
@@ -360,7 +262,7 @@ const CreateWalletPage = () => {
           {step === 'seed' && (
             <>
               <PreventLeavingPageByMistake />
-              <SeedPhraseContent
+              <CreateStepConfirm
                 walletFileName={(createWalletResponse?.response.walletname ?? '<empty>') as WalletFileName}
                 password={password}
                 seedphrase={createWalletResponse?.response.seedphrase?.split(/\s+/) ?? []}
