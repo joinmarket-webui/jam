@@ -12,33 +12,25 @@ import type { WalletFileName } from '@/lib/utils'
 
 const LoginFormSkeleton = () => {
   return (
-    <>
-      <div className="flex flex-col space-y-6">
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <Skeleton className="h-4 w-[75px]" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="space-y-1">
-            <Skeleton className="h-4 w-[75px]" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <Skeleton className="h-12 w-full" />
+    <div className="flex flex-col space-y-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[75px]" />
+          <Skeleton className="h-8 w-full" />
         </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[75px]" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+        <Skeleton className="h-10 w-full" />
       </div>
-      <div>&nbsp;</div>
-      <div>&nbsp;</div>
-    </>
+    </div>
   )
 }
 
 interface LoginFormData {
   walletFileName: WalletFileName
   password: string
-}
-
-type LoginFormLoadingProps = {
-  loading: true
 }
 
 type LoginFormComponentProps = {
@@ -131,7 +123,15 @@ export const LoginFormComponent = ({ wallets, isSubmitting, onSubmit, disabled }
   )
 }
 
-type LoginFormProps = LoginFormLoadingProps | LoginFormComponentProps
+type LoginFormLoadingProps = {
+  loading: true
+}
+
+type LoginFormProps =
+  | LoginFormLoadingProps
+  | LoginFormComponentProps
+  | (LoginFormLoadingProps & Partial<LoginFormComponentProps>)
+  | ({ loading?: false } & LoginFormComponentProps)
 
 function isLoginFormLoadingGuard(val: LoginFormProps): val is LoginFormLoadingProps {
   return (val as LoginFormLoadingProps).loading === true
