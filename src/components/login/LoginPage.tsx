@@ -140,6 +140,10 @@ const LoginPage = () => {
               {listWalletsLoading ? (
                 <>
                   <LoginForm loading />
+                  <div className="flex flex-col gap-2">
+                    <div>&nbsp;</div>
+                    <div>&nbsp;</div>
+                  </div>
                 </>
               ) : (
                 <>
