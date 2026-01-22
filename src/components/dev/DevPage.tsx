@@ -22,7 +22,7 @@ interface DevConfigTabContentProps {
 
 function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
   const authState = useStore(authStore, (state) => state.state)
-  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
   const jamSettingsState = useStore(jamSettingsStore, (state) => state.state)
   const jmConfigStoreState = useStore(jmConfigStore, (state) => state.state)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
@@ -42,7 +42,7 @@ function DevConfigTabContent({ walletFileName }: DevConfigTabContentProps) {
       </div>
       <div className="overflow-scroll">
         <code className="light:text-red-700 text-red-800">useStore(jmSessionStore):</code>
-        <pre className="text-xs">{JSON.stringify(jmSessionState, null, 2)}</pre>
+        <pre className="text-xs">{JSON.stringify(jmSession, null, 2)}</pre>
       </div>
       <div className="overflow-scroll">
         <code className="light:text-red-700 text-red-800">useStore(jmConfigStore):</code>

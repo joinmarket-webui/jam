@@ -33,7 +33,7 @@ type LayoutInnerProps = {
 export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
   const rescanStatus = useRescanStatus()
 
   const { version: joinmarketVersion } = useQueryJmInfo()
@@ -66,7 +66,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         onLogout={async () => await onLogout(navigate)}
         onLockWallet={async () => await onLockWallet(navigate, t)}
         sidebarTrigger={<SidebarTrigger side={SIDEBAR_SIDE} size="icon" variant="ghost-navbar" />}
-        sessionInfo={jmSessionState}
+        sessionInfo={jmSession}
         sidebarInfo={sidebarContext}
       />
       <main className="flex-1">{children}</main>

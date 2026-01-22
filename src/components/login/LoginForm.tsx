@@ -65,7 +65,7 @@ export const LoginFormComponent = ({ wallets, isSubmitting, onSubmit, disabled }
       <div className="space-y-2">
         <Label htmlFor="wallet-select">{/* TODO: i18n */}Wallet</Label>
         <Select
-          value={selectedWallet ?? ''}
+          value={selectedWallet ?? undefined}
           onValueChange={(it) => setSelectedWallet(it as WalletFileName)}
           disabled={disabled || isSubmitting || wallets.length === 0}
           required

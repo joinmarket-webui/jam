@@ -70,10 +70,10 @@ function App() {
   const authenticated = useMemo(() => walletFileName !== undefined && hasAuthToken, [walletFileName, hasAuthToken])
   const { clear: clearAuth } = useStore(authStore, (state) => state)
 
-  const session = useStore(jmSessionStore, (state) => state.state)
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
 
-  const makerRunning = session?.maker_running === true
-  const coinjoinInProgress = session?.coinjoin_in_process === true || (session?.schedule?.length || 0) > 0
+  const makerRunning = jmSession?.maker_running === true
+  const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
 
   const client = useApiClient()
 

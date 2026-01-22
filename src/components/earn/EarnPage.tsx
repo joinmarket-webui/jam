@@ -61,7 +61,7 @@ interface EarnPageProps {
 export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const { t } = useTranslation()
   const client = useApiClient()
-  const jmSessionState = useStore(jmSessionStore, (state) => state.state)
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
 
   const walletInfo = useJamWalletInfoContext()
@@ -75,9 +75,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
   const { maxFeesConfigMissing } = useFeeConfigValidation({ walletFileName })
 
-  const isCurrentOfferAvailable = jmSessionState?.offer_list && jmSessionState.offer_list.length > 0
+  const isCurrentOfferAvailable = jmSession?.offer_list && jmSession.offer_list.length > 0
   const waitingForMakerUpdate = isWaitingMakerStart || isWaitingMakerStop
-  const waitingForOfferUpdate = jmSessionState?.maker_running === true && !isCurrentOfferAvailable
+  const waitingForOfferUpdate = jmSession?.maker_running === true && !isCurrentOfferAvailable
   useRefreshSession({
     enabled: waitingForMakerUpdate || waitingForOfferUpdate,
     refetchInterval: WAIT_FOR_UPDATE_SESSION_POLLING_INTERVAL,
@@ -149,7 +149,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     })
   }
 
-  if (!jmSessionState) {
+  if (!jmSession) {
     return (
       <div className="mx-auto max-w-4xl space-y-3 p-4">
         <div className="m-2 flex items-center justify-center gap-2">
@@ -160,7 +160,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
     )
   }
 
-  const makerRunning = jmSessionState.maker_running === true
+  const makerRunning = jmSession.maker_running === true
   if (makerRunning) {
     if (isWaitingMakerStart && !startMaker.isPending) {
       setIsWaitingMakerStart(false)
@@ -190,7 +190,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         <FeeConfigErrorAlert onOpenFeeConfig={() => setShowFeeConfigDialog(true)} className="mb-4" />
       )}
 
-      {jmSessionState.maker_running === true && (
+      {jmSession.maker_running === true && (
         <Alert variant="success" className="motion-safe:animate-in blur-in my-2">
           <ShuffleIcon className="motion-safe:animate-pulse" />
           <AlertTitle>{t('earn.alert_running')}</AlertTitle>
@@ -203,11 +203,11 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
         </Alert>
       )}
 
-      {jmSessionState.offer_list && jmSessionState.offer_list.length > 0 && (
+      {jmSession.offer_list && jmSession.offer_list.length > 0 && (
         <OfferCard
           className="motion-safe:animate-in blur-in"
-          value={jmSessionState.offer_list[0]}
-          nickname={jmSessionState.nickname}
+          value={jmSession.offer_list[0]}
+          nickname={jmSession.nickname}
         >
           <Button type="button" onClick={() => onStop()} className="w-full" size="lg">
             {isWaitingMakerStop ? (
@@ -225,7 +225,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {/* Earn Form */}
       <Card
         className={cn({
-          hidden: jmSessionState.maker_running && !waitingForOfferUpdate,
+          hidden: jmSession.maker_running && !waitingForOfferUpdate,
           'blur-[2px]': isWaitingMakerStop || waitingForOfferUpdate,
         })}
       >
@@ -238,9 +238,9 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
             disabled={
               isWaitingMakerStart ||
               isWaitingMakerStop ||
-              jmSessionState.maker_running ||
-              jmSessionState.coinjoin_in_process ||
-              jmSessionState.rescanning
+              jmSession.maker_running ||
+              jmSession.coinjoin_in_process ||
+              jmSession.rescanning
             }
           />
         </CardContent>
@@ -250,7 +250,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
       {walletInfo.fidelityBondSummary.fbOutputs.length === 0 ? (
         <div
           className={cn({
-            hidden: jmSessionState.maker_running || waitingForMakerUpdate || waitingForOfferUpdate,
+            hidden: jmSession.maker_running || waitingForMakerUpdate || waitingForOfferUpdate,
           })}
         >
           {/* Fidelity Bonds missing */}
@@ -293,8 +293,8 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
               const isExpired = !fb.utxo.isLocked(it)
               const actionsEnabled =
                 isExpired &&
-                !jmSessionState.rescanning &&
-                !jmSessionState.maker_running &&
+                !jmSession.rescanning &&
+                !jmSession.maker_running &&
                 !waitingForMakerUpdate &&
                 !waitingForOfferUpdate &&
                 !walletInfo.isFetching
@@ -355,7 +355,7 @@ export const EarnPage = ({ walletFileName }: EarnPageProps) => {
             </div>
             <div className="mt-8 overflow-scroll">
               <code className="light:text-red-700 text-red-800">jmSessionState.offer_list:</code>
-              <pre className="text-xs">{JSON.stringify(jmSessionState.offer_list, null, 2)}</pre>
+              <pre className="text-xs">{JSON.stringify(jmSession.offer_list, null, 2)}</pre>
             </div>
           </CardContent>
         </Card>
