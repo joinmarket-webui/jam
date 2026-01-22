@@ -46,6 +46,8 @@ export const sortWallets = (
   }
 }
 
+export const noop: () => Promise<void> = async () => {}
+
 export const shortenStringMiddle = (value: string, chars = 8, separator = HORIZONTAL_ELLIPSIS) => {
   const prefixLength = Math.max(Math.floor(chars / 2), 1)
   if (value.length <= prefixLength * 2) {
