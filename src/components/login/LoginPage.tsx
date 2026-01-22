@@ -15,9 +15,10 @@ import { routes } from '@/constants/routes'
 import { useApiClient } from '@/hooks/useApiClient'
 import { hashPassword } from '@/lib/hash'
 import { withQueryDelay } from '@/lib/queryClient'
-import { cn } from '@/lib/utils'
+import { cn, sortWallets } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 import { authStore, type AuthState } from '@/store/authStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
 import { LoginForm } from './LoginForm'
 
 interface LoginFormData {
@@ -30,6 +31,7 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const updateAuthState = useStore(authStore, (state) => state.update)
   const client = useApiClient()
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
 
   const listwalletsQueryOptions = listwalletsOptions({ client })
 
@@ -46,7 +48,8 @@ const LoginPage = () => {
     }),
   })
 
-  const wallets = (listWalletsData?.wallets ?? []) as WalletFileName[]
+  const activeWalletOrNull = jmSession?.wallet_name !== undefined ? (jmSession?.wallet_name as WalletFileName) : null
+  const wallets = sortWallets((listWalletsData?.wallets || []) as WalletFileName[], activeWalletOrNull)
 
   const unlockWallet = useMutation({
     ...unlockwalletMutation({ client }),

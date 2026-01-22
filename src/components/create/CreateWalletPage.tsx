@@ -33,7 +33,7 @@ const CreateWalletPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const client = useApiClient()
-  const jmSessionInfo = useStore(jmSessionStore, (state) => state.state)
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
   const { clear: clearAuthState, update: updateAuthState } = useStore(authStore, (state) => state)
   const [isCreating, setIsCreating] = useState(false)
   const [createWalletSuccessInfo, setCreateWalletSuccessInfo] = useState<CreateWalletSuccessInfo>()
@@ -170,11 +170,7 @@ const CreateWalletPage = () => {
             </>
           )}
           {step === 'create' && (
-            <CreateStepDetailsInput
-              onSubmit={handleCreateWallet}
-              isSubmitting={isCreating}
-              sessionInfo={jmSessionInfo}
-            />
+            <CreateStepDetailsInput onSubmit={handleCreateWallet} isSubmitting={isCreating} sessionInfo={jmSession} />
           )}
         </CardContent>
       </Card>
