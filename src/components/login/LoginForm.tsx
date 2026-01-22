@@ -35,6 +35,7 @@ interface LoginFormData {
 
 type LoginFormComponentProps = {
   wallets: WalletFileName[]
+  activeWallet?: WalletFileName
   preselectedWallet?: WalletFileName
   disabled: boolean
   isSubmitting: boolean
@@ -44,7 +45,8 @@ type LoginFormComponentProps = {
 /* TODO: use react-hook-form and yup schema */
 export const LoginFormComponent = ({
   wallets,
-  preselectedWallet,
+  activeWallet,
+  preselectedWallet = activeWallet,
   isSubmitting,
   onSubmit,
   disabled,
@@ -82,8 +84,15 @@ export const LoginFormComponent = ({
           </SelectTrigger>
           <SelectContent>
             {wallets?.map((wallet, index) => (
-              <SelectItem key={index} value={wallet}>
+              <SelectItem key={index} value={wallet} className="text-base">
                 {shortenStringMiddle(walletDisplayName(wallet), 32)}
+                {activeWallet === wallet ? (
+                  <>
+                    <span className="text-muted-foreground/50 py-1 text-xs">
+                      {t('wallets.wallet_preview.wallet_active')}
+                    </span>
+                  </>
+                ) : undefined}
               </SelectItem>
             ))}
           </SelectContent>
