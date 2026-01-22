@@ -17,6 +17,7 @@ import { useJmWebsocket } from '@/hooks/useJmWebsocket'
 import { useQueryJmInfo } from '@/hooks/useQueryJmInfo'
 import type { WalletFileName } from '@/lib/utils'
 import { jmSessionStore } from '@/store/jmSessionStore'
+import { LogsOverlay } from '../LogsOverlay'
 import { OrderbookOverlay } from '../orderbook/OrderbookOverlay'
 import { Cheatsheet } from '../ui/jam/Cheatsheet'
 import { AppSidebar } from './AppSidebar'
@@ -49,6 +50,7 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
 
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
+  const [isLogsOverlayOpen, setIsLogsOverlayOpen] = useState(false)
 
   return (
     <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
@@ -74,10 +76,12 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
         joinmarketVersion={joinmarketVersion}
         onClickCheatsheet={() => cheatsheet.onOpenChange(true)}
         onClickOrderbook={() => setIsOrderbookOverlayOpen(true)}
+        onClickLogs={() => setIsLogsOverlayOpen(true)}
       />
 
       <Cheatsheet open={cheatsheet.open} onOpenChange={cheatsheet.onOpenChange} />
       <OrderbookOverlay open={isOrderbookOverlayOpen} onOpenChange={setIsOrderbookOverlayOpen} />
+      <LogsOverlay open={isLogsOverlayOpen} onOpenChange={setIsLogsOverlayOpen} />
     </div>
   )
 }

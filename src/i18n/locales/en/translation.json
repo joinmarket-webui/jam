@@ -62,7 +62,8 @@
     "cheatsheet": "Cheatsheet",
     "websocket_connected": "Websocket connected",
     "websocket_disconnected": "Websocket disconnected",
-    "orderbook": "Orderbook"
+    "orderbook": "Orderbook",
+    "logs": "Logs"
   },
   "onboarding": {
     "splashscreen_title": "Jam",
