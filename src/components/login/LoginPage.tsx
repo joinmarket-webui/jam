@@ -157,6 +157,7 @@ const LoginPage = () => {
                   ) : (
                     <LoginForm
                       wallets={wallets}
+                      preselectedWallet={activeWalletOrNull ?? undefined}
                       disabled={login.isPending || listWalletsFetching}
                       isSubmitting={login.isPending}
                       onSubmit={handleSubmit}

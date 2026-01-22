@@ -35,19 +35,26 @@ interface LoginFormData {
 
 type LoginFormComponentProps = {
   wallets: WalletFileName[]
+  preselectedWallet?: WalletFileName
   disabled: boolean
   isSubmitting: boolean
   onSubmit: (val: LoginFormData) => Promise<void>
 }
 
 /* TODO: use react-hook-form and yup schema */
-export const LoginFormComponent = ({ wallets, isSubmitting, onSubmit, disabled }: LoginFormComponentProps) => {
+export const LoginFormComponent = ({
+  wallets,
+  preselectedWallet,
+  isSubmitting,
+  onSubmit,
+  disabled,
+}: LoginFormComponentProps) => {
   const { t } = useTranslation()
-  const [selectedWallet, setSelectedWallet] = useState<WalletFileName>()
+  const [selectedWallet, setSelectedWallet] = useState<WalletFileName | undefined>(preselectedWallet)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
-  if (wallets.length === 1 && selectedWallet !== wallets[0]) {
+  if (wallets.length === 1 && selectedWallet === undefined) {
     setSelectedWallet(wallets[0])
   }
 
