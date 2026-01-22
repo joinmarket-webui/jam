@@ -178,17 +178,20 @@ export function AppNavbar({
           },
         )}
       >
-        <Link to={routes.receive} className="text-muted-foreground hover:text-foreground">
+        <Link to={rescanningRoute ? '#' : routes.receive} className="text-muted-foreground hover:text-foreground">
           {t('navbar.tab_receive')}
         </Link>
-        <Link to={routes.send} className="text-muted-foreground hover:text-foreground relative">
+        <Link to={rescanningRoute ? '#' : routes.send} className="text-muted-foreground hover:text-foreground relative">
           <WithActivityIndicator active={singleCoinJoinRunning}>{t('navbar.tab_send')}</WithActivityIndicator>
         </Link>
-        <Link to={routes.earn} className="text-muted-foreground hover:text-foreground relative">
+        <Link to={rescanningRoute ? '#' : routes.earn} className="text-muted-foreground hover:text-foreground relative">
           <WithActivityIndicator active={makerRunning}>{t('navbar.tab_earn')}</WithActivityIndicator>
         </Link>
         <span className="text-gray-400 dark:text-gray-600">|</span>
-        <Link to={routes.sweep} className="text-muted-foreground hover:text-foreground relative">
+        <Link
+          to={rescanningRoute ? '#' : routes.sweep}
+          className="text-muted-foreground hover:text-foreground relative"
+        >
           <WithActivityIndicator active={schedulerRunning}>{t('navbar.tab_sweep')}</WithActivityIndicator>
         </Link>
       </div>
