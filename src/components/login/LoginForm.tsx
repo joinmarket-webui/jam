@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import { shortenStringMiddle, walletDisplayName } from '@/lib/utils'
+import { cn, shortenStringMiddle, walletDisplayName } from '@/lib/utils'
 import type { WalletFileName } from '@/lib/utils'
 
 const LoginFormSkeleton = () => {
@@ -37,6 +37,8 @@ type LoginFormComponentProps = {
   wallets: WalletFileName[]
   activeWallet?: WalletFileName
   preselectedWallet?: WalletFileName
+  makerRunning: boolean
+  coinjoinInProgress: boolean
   disabled: boolean
   isSubmitting: boolean
   onSubmit: (val: LoginFormData) => Promise<void>
@@ -47,6 +49,8 @@ export const LoginFormComponent = ({
   wallets,
   activeWallet,
   preselectedWallet = activeWallet,
+  makerRunning,
+  coinjoinInProgress,
   isSubmitting,
   onSubmit,
   disabled,
@@ -88,7 +92,12 @@ export const LoginFormComponent = ({
                 {shortenStringMiddle(walletDisplayName(wallet), 32)}
                 {activeWallet === wallet ? (
                   <>
-                    <span className="text-muted-foreground/50 py-1 text-xs">
+                    <span
+                      className={cn('py-1 text-xs', {
+                        'text-muted-foreground/50': !(makerRunning || coinjoinInProgress),
+                        'light:text-green-600 animate-pulse text-green-300/90': makerRunning || coinjoinInProgress,
+                      })}
+                    >
                       {t('wallets.wallet_preview.wallet_active')}
                     </span>
                   </>

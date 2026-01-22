@@ -33,6 +33,9 @@ const LoginPage = () => {
   const client = useApiClient()
   const jmSession = useStore(jmSessionStore, (state) => state.state)
 
+  const makerRunning = jmSession?.maker_running === true
+  const coinjoinInProgress = jmSession?.coinjoin_in_process === true || (jmSession?.schedule?.length || 0) > 0
+
   const listwalletsQueryOptions = listwalletsOptions({ client })
 
   const {
@@ -158,6 +161,8 @@ const LoginPage = () => {
                     <LoginForm
                       wallets={wallets}
                       activeWallet={activeWalletOrNull ?? undefined}
+                      makerRunning={makerRunning}
+                      coinjoinInProgress={coinjoinInProgress}
                       disabled={login.isPending || listWalletsFetching}
                       isSubmitting={login.isPending}
                       onSubmit={handleSubmit}

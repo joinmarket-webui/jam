@@ -23,6 +23,8 @@ export const Default: Story = {
     loading: false,
     wallets: WALLETS,
     activeWallet: undefined,
+    makerRunning: false,
+    coinjoinInProgress: false,
     isSubmitting: false,
     disabled: false,
     onSubmit: async () => alert('Submit clicked!'),
@@ -59,6 +61,40 @@ export const ActiveWallet: Story = {
     activeWallet: WALLETS[0],
     isSubmitting: false,
     disabled: false,
+    onSubmit: async () => alert('Submit clicked!'),
+  },
+}
+
+export const ActiveWalletWithMakerRunning: Story = {
+  args: {
+    loading: false,
+    wallets: WALLETS,
+    activeWallet: WALLETS[0],
+    makerRunning: true,
+    isSubmitting: false,
+    disabled: false,
+    onSubmit: async () => alert('Submit clicked!'),
+  },
+}
+
+export const Submitting: Story = {
+  args: {
+    loading: false,
+    wallets: ['Satoshi.jmdat'],
+    activeWallet: undefined,
+    isSubmitting: true,
+    disabled: false,
+    onSubmit: async () => alert('Submit clicked!'),
+  },
+}
+
+export const Disabled: Story = {
+  args: {
+    loading: false,
+    wallets: ['Satoshi.jmdat'],
+    activeWallet: undefined,
+    isSubmitting: false,
+    disabled: true,
     onSubmit: async () => alert('Submit clicked!'),
   },
 }
