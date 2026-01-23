@@ -1,13 +1,20 @@
 import { useState } from 'react'
 import { AlertTriangleIcon } from 'lucide-react'
+import type { SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useStore } from 'zustand'
 import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import PageTitle from '@/components/ui/jam/PageTitle'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
+import { jamSettingsStore } from '@/store/jamSettingsStore'
+import { jmSessionStore } from '@/store/jmSessionStore'
+import { Card, CardContent } from '../ui/card'
 import { Spinner } from '../ui/spinner'
+import { SendForm } from './SendForm'
+import type { SendFormValues } from './types'
 
 interface SendPageProps {
   walletFileName: WalletFileName
@@ -15,9 +22,15 @@ interface SendPageProps {
 
 export const SendPage = ({ walletFileName }: SendPageProps) => {
   const { t } = useTranslation()
+  const jmSession = useStore(jmSessionStore, (state) => state.state)
+  const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
 
   const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
+
+  const onSubmit: SubmitHandler<SendFormValues> = async (data) => {
+    console.table(data)
+  }
 
   if (isLoading) {
     return (
@@ -57,6 +70,18 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         onOpenChange={setShowFeeConfigDialog}
         walletFileName={walletFileName}
       />
+
+      {/* Earn Form */}
+      <Card>
+        <CardContent>
+          <SendForm
+            onSubmit={onSubmit}
+            minNumCollaborators={undefined}
+            disabled={jmSession?.maker_running || jmSession?.coinjoin_in_process || jmSession?.rescanning}
+            debug={isDeveloperMode}
+          />
+        </CardContent>
+      </Card>
     </div>
   )
 }
