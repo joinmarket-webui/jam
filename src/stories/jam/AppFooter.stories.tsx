@@ -20,6 +20,7 @@ export const Default: Story = {
       joinmarketVersion={toSemVer('0.9.12')}
       onClickCheatsheet={() => alert('Cheatsheet clicked!')}
       onClickOrderbook={() => alert('Orderbook clicked!')}
+      onClickLogs={() => alert('Logs clicked!')}
     />
   ),
 }

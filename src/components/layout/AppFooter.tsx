@@ -1,5 +1,5 @@
 import { useState, type ComponentProps } from 'react'
-import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, FileQuestionMarkIcon } from 'lucide-react'
+import { AlertTriangleIcon, BlocksIcon, BookOpenIcon, FileQuestionMarkIcon, ScrollTextIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useStore } from 'zustand'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -50,6 +50,7 @@ type AppFooterProps = Pick<BetaWarningModalProps, 'jamVersion' | 'joinmarketVers
   websocketInfo?: JmWebsocketInfo
   onClickCheatsheet: () => void
   onClickOrderbook: () => void
+  onClickLogs: () => void
 }
 
 export function AppFooter({
@@ -58,6 +59,7 @@ export function AppFooter({
   joinmarketVersion,
   onClickCheatsheet,
   onClickOrderbook,
+  onClickLogs,
 }: AppFooterProps) {
   const { t } = useTranslation()
 
@@ -89,6 +91,10 @@ export function AppFooter({
           <Button variant="outline" size="sm" onClick={onClickOrderbook} title={t('footer.orderbook')}>
             <BookOpenIcon />
             <span className="hidden sm:inline-block">{t('footer.orderbook')}</span>
+          </Button>
+          <Button variant="outline" size="sm" onClick={onClickLogs} title={t('footer.logs')}>
+            <ScrollTextIcon />
+            <span className="hidden sm:inline-block">{t('footer.logs')}</span>
           </Button>
         </div>
 
