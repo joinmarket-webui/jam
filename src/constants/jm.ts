@@ -1,10 +1,22 @@
+import type { AmountSats, Milliseconds } from '@/types/global'
+
 export const JM_WALLET_FILE_EXTENSION = '.jmdat'
 
-export const JM_API_AUTH_TOKEN_EXPIRY = parseInt(import.meta.env.VITE_JM_API_AUTH_TOKEN_EXPIRY_SECONDS, 10) * 1_000
+export const JM_API_AUTH_TOKEN_EXPIRY_DEFAULT: Milliseconds = Math.round(0.5 * 60 * 60 * 1_000)
+export const JM_API_AUTH_TOKEN_EXPIRY_MIN: Milliseconds = 10 * 1_000
+export const JM_API_AUTH_TOKEN_EXPIRY_MAX: Milliseconds = Math.round(JM_API_AUTH_TOKEN_EXPIRY_DEFAULT * 0.75)
+
+export const JM_API_AUTH_TOKEN_EXPIRY: Milliseconds = Math.max(
+  JM_API_AUTH_TOKEN_EXPIRY_MIN,
+  Math.min(parseInt(import.meta.env.VITE_JM_API_AUTH_TOKEN_EXPIRY_SECONDS, 10) * 1_000, JM_API_AUTH_TOKEN_EXPIRY_MAX),
+)
 
 export const JM_MAX_SWEEP_FEE_CHANGE_DEFAULT = 0.8
 
-export const JM_DUST_THRESHOLD = 27_300
+export const JM_DUST_THRESHOLD: AmountSats = 27_300
+
+// initial value for `minimum_makers` from the default joinmarket.cfg (last check on 2022-02-20 of v0.9.5)
+export const JM_MINIMUM_MAKERS_DEFAULT = 4
 
 // only support starting the maker with native segwit offers
 type RelOfferType = 'sw0reloffer'
