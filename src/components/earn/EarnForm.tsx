@@ -15,6 +15,8 @@ import * as JAM from '@/constants/jam'
 import type { OfferType } from '@/constants/jm'
 import { cn, factorToPercentage } from '@/lib/utils'
 import type { AmountSats } from '@/types/global'
+import { DevBadge } from '../dev/DevBadge'
+import { Card, CardContent, CardHeader } from '../ui/card'
 import { Spinner } from '../ui/spinner'
 
 const FieldPrefixSatSymbol = (
@@ -45,15 +47,30 @@ const FORM_INPUT_DEFAULT_VALUES: Required<EarnFormValues> = {
 }
 
 const baseSchema = yup
-  .object()
-  .shape({
+  .object({
     offerType: yup.string<OfferType>().default(FORM_INPUT_DEFAULT_VALUES.offerType).required(),
-    offerAbsoluteFee: yup.number().integer().min(JAM.OFFER_FEE_ABS_MIN).optional(),
-    offerRelativeFeeInPercent: yup
+    offerAbsoluteFee: yup
       .number()
-      .min(factorToPercentage(JAM.OFFER_FEE_REL_MIN))
-      .max(factorToPercentage(JAM.OFFER_FEE_REL_MAX))
-      .optional(),
+      .integer()
+      .when('offerType', {
+        is: (val: OfferType) => val === OFFERTYPE_ABS,
+        then: (schema) => schema.min(JAM.OFFER_FEE_ABS_MIN).required(),
+        otherwise: (schema) =>
+          schema
+            .transform((value) => (Number.isNaN(value) ? null : value))
+            .nullable()
+            .optional(),
+      }),
+    offerRelativeFeeInPercent: yup.number().when('offerType', {
+      is: (val: OfferType) => val === OFFERTYPE_REL,
+      then: (schema) =>
+        schema.min(factorToPercentage(JAM.OFFER_FEE_REL_MIN)).max(factorToPercentage(JAM.OFFER_FEE_REL_MAX)).required(),
+      otherwise: (schema) =>
+        schema
+          .transform((value) => (Number.isNaN(value) ? null : value))
+          .nullable()
+          .optional(),
+    }),
   })
   .required()
 
@@ -103,6 +120,7 @@ interface EarnFormProps {
   /* TODO: make offerMinsizeMax mandatory */
   offerMinsizeMax?: AmountSats
   disabled?: boolean
+  debug?: boolean
 }
 
 export function EarnForm({
@@ -111,11 +129,12 @@ export function EarnForm({
   onSubmit,
   disabled,
   offerMinsizeMax = OFFER_MINSIZE_MAX_PLACEHODLER,
+  debug = false,
 }: EarnFormProps) {
   const { t } = useTranslation()
 
   const schema = baseSchema.concat(
-    yup.object().shape({
+    yup.object({
       offerMinAmount: yup.number().integer().min(JAM.OFFER_MINSIZE_MIN).max(offerMinsizeMax).required(),
     }),
   )
@@ -134,6 +153,7 @@ export function EarnForm({
     resolver: yupResolver(schema) as Resolver<EarnFormValues, unknown, EarnFormValues>,
   })
 
+  const values = useWatch({ control })
   const watchOfferType = useWatch({ control, name: 'offerType' })
 
   return (
@@ -167,7 +187,7 @@ export function EarnForm({
                 })}
                 type="number"
                 step={1}
-                className="bg-background pl-10"
+                className="pl-10"
               />
             </div>
             {errors.offerAbsoluteFee && (
@@ -192,7 +212,7 @@ export function EarnForm({
                 })}
                 type="number"
                 step={factorToPercentage(JAM.OFFER_FEE_REL_STEP)}
-                className="bg-background pl-10"
+                className="pl-10"
               />
             </div>
             {errors.offerRelativeFeeInPercent && (
@@ -222,7 +242,7 @@ export function EarnForm({
             type="number"
             max={offerMinsizeMax}
             step={1}
-            className="bg-background pl-10"
+            className="pl-10"
             placeholder={t('earn.placeholder_min_amount_input')}
           />
         </div>
@@ -257,6 +277,24 @@ export function EarnForm({
           <>{t('earn.button_start')}</>
         )}
       </Button>
+
+      {debug && (
+        <Card className="mt-8">
+          <CardHeader className="grid">
+            <DevBadge className="justify-self-end" />
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">isValid:</code>
+              <pre className="text-xs">{JSON.stringify(isValid, null, 2)}</pre>
+            </div>
+            <div className="overflow-scroll">
+              <code className="light:text-red-700 text-red-800">values:</code>
+              <pre className="text-xs">{JSON.stringify(values, null, 2)}</pre>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </form>
   )
 }
