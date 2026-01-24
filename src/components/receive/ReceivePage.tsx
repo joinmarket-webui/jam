@@ -18,6 +18,7 @@ import { btcToSats, cn, satsToBtc, type WalletFileName } from '@/lib/utils'
 import type { AmountSats, BitcoinAddress, Milliseconds } from '@/types/global'
 import { buttonVariants } from '../ui/button-variants'
 import { CopyButton } from '../ui/jam/CopyButton'
+import { Label } from '../ui/label'
 import { BitcoinAmountInput } from './BitcoinAmountInput'
 import { BitcoinQR } from './BitcoinQR'
 
@@ -209,24 +210,26 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
       <Accordion type="single" collapsible>
         <AccordionItem value="options">
           <AccordionTrigger>{t('receive.button_settings')}</AccordionTrigger>
-          <AccordionContent>
-            <p className="mb-2 text-sm">{t('receive.label_source_jar')}</p>
+          <AccordionContent className="flex flex-col gap-4">
+            <div className="space-y-4">
+              <Label>{t('receive.label_source_jar')}</Label>
 
-            <div className="grid grid-cols-5 gap-4">
-              {jars.map((jar, index) => (
-                <SelectableJar
-                  key={index}
-                  name={jar.name}
-                  color={jar.color}
-                  balance={jar.balanceSummary.calculatedTotalBalanceInSats}
-                  totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
-                  isSelected={selectedJarIndex === index}
-                  onClick={() => setSelectedJarIndex(index)}
-                />
-              ))}
+              <div className="grid grid-cols-5 gap-4">
+                {jars.map((jar, index) => (
+                  <SelectableJar
+                    key={index}
+                    name={jar.name}
+                    color={jar.color}
+                    balance={jar.balanceSummary.calculatedTotalBalanceInSats}
+                    totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+                    isSelected={selectedJarIndex === index}
+                    onClick={() => setSelectedJarIndex(index)}
+                  />
+                ))}
+              </div>
             </div>
 
-            <div className="mx-1 mt-4">
+            <div className={'mx-1' /* add x-spacing for focus state*/}>
               <BitcoinAmountInput
                 label={t('receive.label_amount_input')}
                 placeholder={t('receive.placeholder_amount_input')}

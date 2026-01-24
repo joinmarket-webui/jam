@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
+import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { cn, pseudoRandomInteger } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Badge } from '../ui/badge'
@@ -14,18 +15,10 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import { Input } from '../ui/input'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
+import { SelectableJar } from '../ui/jam/SelectableJar'
 import { Label } from '../ui/label'
 import { Spinner } from '../ui/spinner'
 import type { SendFormValues } from './types'
-
-const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
-  sourceJarIndex: undefined,
-  destination: undefined,
-  amount: undefined,
-  txFee: undefined,
-  isCoinJoin: true,
-  numCollaborators: undefined,
-}
 
 const initialNumCollaborators = (minValue: number): number => {
   if (minValue > 8) {
@@ -41,12 +34,49 @@ const DEV_INITIAL_NUM_COLLABORATORS_INPUT = 1
 const MAX_NUM_COLLABORATORS = 99
 
 // TODO: this value should be dynamic via jm backend settings
-const MIN_NUM_COLLABORATORS = isDevMode()
-  ? DEV_INITIAL_NUM_COLLABORATORS_INPUT
-  : initialNumCollaborators(JM_MINIMUM_MAKERS_DEFAULT)
+const MIN_NUM_COLLABORATORS = isDevMode() ? DEV_INITIAL_NUM_COLLABORATORS_INPUT : JM_MINIMUM_MAKERS_DEFAULT
+
+const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
+  sourceJarIndex: undefined,
+  destination: undefined,
+  amount: undefined,
+  txFee: undefined,
+  isCoinJoin: true,
+  numCollaborators: undefined,
+}
 
 const baseSchema = yup
   .object({
+    sourceJarIndex: yup.number().integer().min(0).required(),
+    destination: yup
+      .object({
+        fromJar: yup.number().optional(),
+        address: yup
+          .string()
+          .test('valid-address-test', 'Value must be a valid bitcoin address', (value) =>
+            isValidBitcoinAddress(value || ''),
+          )
+          .required(),
+      })
+      .required(),
+    amount: yup
+      .object({
+        isSweep: yup.boolean().default(false).required(),
+        amount: yup
+          .number()
+          .integer()
+          .when('isSweep', {
+            is: (val: boolean) => val === true,
+            then: (schema) => schema.min(0).max(0).optional(),
+            otherwise: (schema) =>
+              schema
+                .min(1)
+                .max(21_000_000 * 100_000_000)
+                .required(),
+          }),
+      })
+      .required(),
+
     isCoinJoin: yup.boolean().default(FORM_INPUT_DEFAULT_VALUES.isCoinJoin).required(),
     numCollaborators: yup
       .number()
@@ -65,34 +95,6 @@ const baseSchema = yup
             .nullable()
             .optional(),
       }),
-    amount: yup
-      .object({
-        isSweep: yup.boolean().default(false).required(),
-        amount: yup
-          .number()
-          .integer()
-          .when('isSweep', {
-            is: (val: boolean) => val === true,
-            then: (schema) => schema.min(0).max(0).optional(),
-            otherwise: (schema) =>
-              schema
-                .min(1)
-                .max(21_000_000 * 100_000_000)
-                .required(),
-          }),
-      })
-      .required(),
-    destination: yup
-      .object({
-        fromJar: yup.number().optional(),
-        address: yup
-          .string()
-          .test('valid-address-test', 'Value must be a valid bitcoin address', (value) =>
-            isValidBitcoinAddress(value || ''),
-          )
-          .required(),
-      })
-      .required(),
   })
   .required()
 
@@ -123,11 +125,20 @@ export function SendForm({
 }: SendFormProps) {
   const { t } = useTranslation()
 
+  const { walletBalanceSummary } = useWalletBalanceSummary()
+  const { jars } = useJars()
+
   const schema = baseSchema.concat(
     yup.object({
+      sourceJarIndex: yup
+        .number()
+        .integer()
+        .min(0)
+        .max(Math.max(...[0, ...jars.map((it) => it.jarIndex)]))
+        .required(),
       numCollaborators: yup
         .number()
-        .default(FORM_INPUT_DEFAULT_VALUES.numCollaborators)
+        .default(initialNumCollaborators(minNumCollaborators))
         .min(minNumCollaborators)
         .max(MAX_NUM_COLLABORATORS)
         .optional(),
@@ -140,9 +151,9 @@ export function SendForm({
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
     //getValues,
-    //setValue,
+    setValue,
   } = useForm<SendFormValues, unknown, SendFormValues>({
-    mode: 'all',
+    mode: 'onSubmit',
     defaultValues: FORM_INPUT_DEFAULT_VALUES,
     // force type (see https://github.com/react-hook-form/resolvers/issues/807)
     resolver: yupResolver(schema) as Resolver<SendFormValues, unknown, SendFormValues>,
@@ -150,6 +161,7 @@ export function SendForm({
 
   const values = useWatch({ control })
   const address = useWatch({ control, name: 'destination.address' })
+  const sourceJarIndex = useWatch({ control, name: 'sourceJarIndex' })
 
   const addressInfo = useMemo(() => {
     try {
@@ -161,6 +173,27 @@ export function SendForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={cn('flex flex-col gap-4', className)}>
+      <div className="space-y-2">
+        <div className="grid grid-cols-5 gap-4">
+          {jars.map((jar, index) => (
+            <SelectableJar
+              key={index}
+              name={jar.name}
+              color={jar.color}
+              balance={jar.balanceSummary.calculatedTotalBalanceInSats}
+              totalBalance={walletBalanceSummary.calculatedTotalBalanceInSats}
+              isSelected={sourceJarIndex === index}
+              onClick={() => setValue('sourceJarIndex', index)}
+              disabled={jar.balanceSummary.calculatedAvailableBalanceInSats <= 0}
+            />
+          ))}
+        </div>
+
+        {errors.sourceJarIndex && (
+          <div className="light:text-red-700 text-xs text-red-500">{t('send.feedback_invalid_source_jar')}</div>
+        )}
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="send-destination" className="text-sm font-medium">
           {t('send.label_recipient')}
@@ -174,7 +207,6 @@ export function SendForm({
               disabled,
             })}
             type="text"
-            className=""
             placeholder={t('send.placeholder_recipient')}
           />
           {errors.destination && (
@@ -221,7 +253,7 @@ export function SendForm({
       <Button
         type="submit"
         variant={disabled ? 'outline' : undefined}
-        disabled={disabled || !isValid || isSubmitting}
+        disabled={disabled || isSubmitting}
         className="w-full"
         size="lg"
       >
