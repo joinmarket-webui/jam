@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { TFunction } from 'i18next'
 import { useTheme } from 'next-themes'
 import { useTranslation } from 'react-i18next'
@@ -51,6 +51,19 @@ export function LayoutInner({ onLogout, onLockWallet, children }: LayoutInnerPro
   const cheatsheet = useCheatsheet()
   const [isOrderbookOverlayOpen, setIsOrderbookOverlayOpen] = useState(false)
   const [isLogsOverlayOpen, setIsLogsOverlayOpen] = useState(false)
+
+  // Adds a keyboard shortcut to toggle the logs overlay.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'l' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
+        setIsLogsOverlayOpen((open) => !open)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <div className="light:bg-white light:text-black flex min-h-screen flex-1 flex-col bg-[#181b20] text-white transition-colors duration-300">
