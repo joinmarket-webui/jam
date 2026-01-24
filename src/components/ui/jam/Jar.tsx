@@ -15,7 +15,7 @@ interface JarProps {
 
 export function Jar({ name, amount, color, currencySymbol, formatAmount, totalBalance = 0, onClick }: JarProps) {
   return (
-    <div
+    <button
       className="group/jar flex flex-row items-center gap-2 transition-all duration-300 hover:scale-105 sm:flex-col"
       onClick={onClick}
     >
@@ -29,6 +29,6 @@ export function Jar({ name, amount, color, currencySymbol, formatAmount, totalBa
           {currencySymbol('sm')}
         </div>
       </div>
-    </div>
+    </button>
   )
 }
