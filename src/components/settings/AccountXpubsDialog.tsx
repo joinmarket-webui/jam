@@ -425,7 +425,7 @@ export const AccountXpubsDialog = ({ open, onOpenChange, walletFileName, hashedP
               <div className="flex w-full items-center justify-between">
                 <div
                   className={cn('text-muted-foreground flex items-center gap-1 text-sm', {
-                    'light:text-red-600 animate-pulse text-red-800': secondsLeft <= 10,
+                    'text-destructive animate-pulse': secondsLeft <= 10,
                   })}
                 >
                   <ClockIcon className="h-4 w-4" />

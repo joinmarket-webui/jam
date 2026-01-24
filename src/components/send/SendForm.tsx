@@ -19,7 +19,9 @@ import type { JarIndex } from '@/types/global'
 import { DevBadge } from '../dev/DevBadge'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
+import { ButtonGroup } from '../ui/button-group'
 import { Card, CardContent, CardHeader } from '../ui/card'
+import { Field, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
 import { SatSymbol } from '../ui/jam/CurrencySymbol'
 import { SelectableJar } from '../ui/jam/SelectableJar'
@@ -111,7 +113,9 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
           fromJar: yup.number().optional(),
           address: yup
             .string()
-            .test('valid-address-test', 'Invalid bitcoin address.', (value) => isValidBitcoinAddress(value || ''))
+            .test('valid-address-test', 'Invalid bitcoin address.', (value) => {
+              return isValidBitcoinAddress(value || '')
+            })
             .required(),
         })
         .required(),
@@ -241,13 +245,13 @@ export function SendForm({
         onError={async (_ignoredOnPurpose) => {
           // TODO: i18n own key `send.error_loading_address_failed`
           toast.error(t('receive.error_loading_address_failed'))
-          setValue('destination.address', undefined)
-          setValue('destination.fromJar', undefined)
+          setValue('destination.address', undefined, { shouldValidate: true })
+          setValue('destination.fromJar', undefined, { shouldValidate: true })
         }}
         onConfirm={async (jarIndex, addressInfo) => {
           await delayedPromise(333)
-          setValue('destination.address', addressInfo.address)
-          setValue('destination.fromJar', jarIndex)
+          setValue('destination.address', addressInfo.address, { shouldValidate: true })
+          setValue('destination.fromJar', jarIndex, { shouldValidate: true })
           setShowAddressFromJarSelectorDialog(false)
         }}
       />
@@ -269,70 +273,70 @@ export function SendForm({
           </div>
 
           {errors.sourceJarIndex && (
-            <div className="light:text-red-700 text-xs text-red-500">{t('send.feedback_invalid_source_jar')}</div>
+            <div className="text-destructive text-xs">{t('send.feedback_invalid_source_jar')}</div>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="send-destination" className="text-sm font-medium">
-            {t('send.label_recipient')}
-          </Label>
-
-          <div className="relative">
-            <Input
-              id="send-destination"
-              {...register('destination.address', {
-                required: true,
-                disabled,
-              })}
-              type="text"
-              className={cn('pr-30', {
+          <Field data-invalid={errors.destination !== undefined}>
+            <FieldLabel htmlFor="send-destination">
+              {t('send.label_recipient')}
+              {destinationAddressInfo?.network && destinationAddressInfo.network !== 'mainnet' && (
+                <Badge variant="outline">{destinationAddressInfo.network}</Badge>
+              )}
+            </FieldLabel>
+            <ButtonGroup
+              className={cn({
                 hidden: destinationJar !== undefined,
               })}
-              placeholder={t('send.placeholder_recipient')}
-            />
-            <Input
-              id="send-destination-address-from-jar"
-              type="text"
-              readOnly
-              className={cn('pr-30', {
+            >
+              <Input
+                id="send-destination"
+                {...register('destination.address', {
+                  required: true,
+                  disabled,
+                })}
+                type="text"
+                placeholder={t('send.placeholder_recipient')}
+              />
+
+              <Button
+                id="show-address-from-jar-selector-trigger"
+                size="icon"
+                onClick={() => setShowAddressFromJarSelectorDialog(true)}
+              >
+                <MilkIcon />
+              </Button>
+            </ButtonGroup>
+            <ButtonGroup
+              className={cn({
                 hidden: destinationJar === undefined,
               })}
-              value={`${destinationJar?.name} (${destinationAddress})`}
-            />
-            <div className="absolute top-1/2 right-0 -translate-y-1/2">
-              <div className="flex items-center gap-2">
-                {destinationAddressInfo?.network && destinationAddressInfo.network !== 'mainnet' && (
-                  <Badge variant="outline">{destinationAddressInfo.network}</Badge>
-                )}
-                {destinationJar === undefined ? (
-                  <Button
-                    id="show-address-from-jar-selector-trigger"
-                    size="icon"
-                    onClick={() => setShowAddressFromJarSelectorDialog(true)}
-                  >
-                    <MilkIcon />
-                  </Button>
-                ) : (
-                  <Button
-                    id="clear-address-from-jar-selector-trigger"
-                    size="icon"
-                    onClick={() => {
-                      setValue('destination.address', undefined)
-                      setValue('destination.fromJar', undefined)
-                    }}
-                  >
-                    <XIcon />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
+            >
+              <Input
+                id="send-destination-address-from-jar"
+                type="text"
+                readOnly
+                value={`${destinationJar?.name} (${destinationAddress})`}
+              />
+
+              <Button
+                id="clear-address-from-jar-selector-trigger"
+                size="icon"
+                variant="outline"
+                onClick={() => {
+                  setValue('destination.address', undefined, { shouldValidate: true })
+                  setValue('destination.fromJar', undefined, { shouldValidate: true })
+                }}
+              >
+                <XIcon />
+              </Button>
+            </ButtonGroup>
+          </Field>
+
           {errors.destination && (
             <>
-              <div className="light:text-red-700 text-xs text-red-500">
-                {t('send.feedback_invalid_destination_address')}
-              </div>
+              <div className="text-destructive text-xs">{t('send.feedback_invalid_destination_address')}</div>
               {/* TODO: feedback_invalid_source_jar */}
               {/* TODO: feedback_reused_address */}
             </>
@@ -359,9 +363,7 @@ export function SendForm({
               placeholder={t('send.placeholder_amount_input')}
             />
           </div>
-          {errors.amount && (
-            <div className="light:text-red-700 text-xs text-red-500">{t('send.feedback_invalid_amount')}</div>
-          )}
+          {errors.amount && <div className="text-destructive text-xs">{t('send.feedback_invalid_amount')}</div>}
         </div>
 
         <Button

@@ -191,7 +191,7 @@ export function EarnForm({
               />
             </div>
             {errors.offerAbsoluteFee && (
-              <div className="light:text-red-700 text-xs text-red-500">{t('earn.feedback_invalid_abs_fee')}</div>
+              <div className="text-destructive text-xs">{t('earn.feedback_invalid_abs_fee')}</div>
             )}
           </div>
         </TabsContent>
@@ -216,7 +216,7 @@ export function EarnForm({
               />
             </div>
             {errors.offerRelativeFeeInPercent && (
-              <div className="light:text-red-700 text-xs text-red-500">
+              <div className="text-destructive text-xs">
                 {t('earn.feedback_invalid_rel_fee', {
                   feeRelPercentageMin: `${factorToPercentage(JAM.OFFER_FEE_REL_MIN)}%`,
                   feeRelPercentageMax: `${factorToPercentage(JAM.OFFER_FEE_REL_MAX)}%`,
@@ -247,7 +247,7 @@ export function EarnForm({
           />
         </div>
         {errors.offerMinAmount && (
-          <div className="light:text-red-700 text-xs text-red-500">
+          <div className="text-destructive text-xs">
             {errors.offerMinAmount.type === 'min' || errors.offerMinAmount.type === 'max' ? (
               <>
                 {t('earn.feedback_invalid_min_amount_range', {

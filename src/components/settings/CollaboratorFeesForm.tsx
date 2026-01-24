@@ -124,7 +124,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.maxCjFeeAbs && <div className="mt-1 text-xs text-red-500">{errors.maxCjFeeAbs}</div>}
+          {errors.maxCjFeeAbs && <div className="text-desctructive mt-1 text-xs">{errors.maxCjFeeAbs}</div>}
         </div>
 
         {/* Relative limit field */}
@@ -144,7 +144,7 @@ export const CollaboratorFeesForm = forwardRef<CollaboratorFeesFormRef, Collabor
               className="h-full rounded-l-none"
             />
           </div>
-          {errors.maxCjFeeRel && <div className="mt-1 text-xs text-red-500">{errors.maxCjFeeRel}</div>}
+          {errors.maxCjFeeRel && <div className="text-desctructive mt-1 text-xs">{errors.maxCjFeeRel}</div>}
         </div>
       </div>
     )
