@@ -78,9 +78,9 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
     }
   }, [getAddressQuery.error, t])
 
-  const shareAddress = () => {
-    if ('share' in navigator && bitcoinAddress) {
-      navigator
+  const shareAddress = async (bitcoinAddress: BitcoinAddress) => {
+    if ('share' in navigator) {
+      await navigator
         .share({
           title: 'Bitcoin Address',
           text: bitcoinAddress,
@@ -196,7 +196,7 @@ export const ReceivePage = ({ walletFileName }: ReceivePageProps) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={shareAddress}
+                onClick={async () => await shareAddress(bitcoinAddress!)}
                 disabled={getAddressQuery.isFetching || !bitcoinAddress}
               >
                 <ShareIcon />
