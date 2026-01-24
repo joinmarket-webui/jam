@@ -253,7 +253,7 @@ export const SeedPhraseDialog = ({ open, onOpenChange, walletFileName, hashedPas
               <div className="flex w-full items-center justify-between">
                 <div
                   className={cx('text-muted-foreground flex items-center gap-1 text-sm', {
-                    'light:text-red-600 animate-pulse text-red-800': secondsLeft <= 10,
+                    'text-destructive animate-pulse': secondsLeft <= 10,
                   })}
                 >
                   <ClockIcon className="h-4 w-4" />
