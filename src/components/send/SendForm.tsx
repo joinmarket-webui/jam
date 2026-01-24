@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next'
 import * as yup from 'yup'
 import { isDevMode } from '@/constants/debugFeatures'
 import { JM_MINIMUM_MAKERS_DEFAULT } from '@/constants/jm'
-import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
+import type { Jar } from '@/context/JamWalletInfoContext'
+import type { BalanceSummary } from '@/lib/balanceSummary'
 import { cn, pseudoRandomInteger } from '@/lib/utils'
 import { DevBadge } from '../dev/DevBadge'
 import { Badge } from '../ui/badge'
@@ -45,58 +46,65 @@ const FORM_INPUT_DEFAULT_VALUES: SendFormValues = {
   numCollaborators: undefined,
 }
 
-const baseSchema = yup
-  .object({
-    sourceJarIndex: yup.number().integer().min(0).required(),
-    destination: yup
-      .object({
-        fromJar: yup.number().optional(),
-        address: yup
-          .string()
-          .test('valid-address-test', 'Value must be a valid bitcoin address', (value) =>
-            isValidBitcoinAddress(value || ''),
-          )
-          .required(),
-      })
-      .required(),
-    amount: yup
-      .object({
-        isSweep: yup.boolean().default(false).required(),
-        amount: yup
-          .number()
-          .integer()
-          .when('isSweep', {
-            is: (val: boolean) => val === true,
-            then: (schema) => schema.min(0).max(0).optional(),
-            otherwise: (schema) =>
-              schema
-                .min(1)
-                .max(21_000_000 * 100_000_000)
-                .required(),
-          }),
-      })
-      .required(),
-
-    isCoinJoin: yup.boolean().default(FORM_INPUT_DEFAULT_VALUES.isCoinJoin).required(),
-    numCollaborators: yup
-      .number()
-      .integer()
-      .when('isCoinJoin', {
-        is: (val: boolean) => val === true,
-        then: (schema) =>
-          schema
-            .default(FORM_INPUT_DEFAULT_VALUES.numCollaborators)
-            .min(MIN_NUM_COLLABORATORS)
-            .max(MAX_NUM_COLLABORATORS)
+const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
+  return yup
+    .object({
+      sourceJarIndex: yup
+        .number()
+        .integer()
+        .min(0)
+        .max(Math.max(...[0, ...jars.map((it) => it.jarIndex)]))
+        .required(),
+      destination: yup
+        .object({
+          fromJar: yup.number().optional(),
+          address: yup
+            .string()
+            .test('valid-address-test', 'Value must be a valid bitcoin address', (value) =>
+              isValidBitcoinAddress(value || ''),
+            )
             .required(),
-        otherwise: (schema) =>
-          schema
-            .transform((value) => (Number.isNaN(value) ? null : value))
-            .nullable()
-            .optional(),
-      }),
-  })
-  .required()
+        })
+        .required(),
+      amount: yup
+        .object({
+          isSweep: yup.boolean().default(false).required(),
+          amount: yup
+            .number()
+            .integer()
+            .when('isSweep', {
+              is: (val: boolean) => val === true,
+              then: (schema) => schema.min(0).max(0).optional(),
+              otherwise: (schema) =>
+                schema
+                  .min(1)
+                  .max(21_000_000 * 100_000_000)
+                  .required(),
+            }),
+        })
+        .required(),
+
+      isCoinJoin: yup.boolean().default(FORM_INPUT_DEFAULT_VALUES.isCoinJoin).required(),
+      numCollaborators: yup
+        .number()
+        .integer()
+        .when('isCoinJoin', {
+          is: (val: boolean) => val === true,
+          then: (schema) =>
+            schema
+              .default(initialNumCollaborators(minNumCollaborators))
+              .min(minNumCollaborators)
+              .max(MAX_NUM_COLLABORATORS)
+              .required(),
+          otherwise: (schema) =>
+            schema
+              .transform((value) => (Number.isNaN(value) ? null : value))
+              .nullable()
+              .optional(),
+        }),
+    })
+    .required()
+}
 
 const FieldPrefixSatSymbol = (
   <SatSymbol
@@ -112,6 +120,8 @@ interface SendFormProps {
   className?: string
   onSubmit: SubmitHandler<SendFormValues>
   minNumCollaborators?: number
+  jars: Jar[]
+  walletBalanceSummary: BalanceSummary
   disabled?: boolean
   debug?: boolean
 }
@@ -121,29 +131,13 @@ export function SendForm({
   onSubmit,
   disabled,
   minNumCollaborators = MIN_NUM_COLLABORATORS,
+  jars,
+  walletBalanceSummary,
   debug,
 }: SendFormProps) {
   const { t } = useTranslation()
 
-  const { walletBalanceSummary } = useWalletBalanceSummary()
-  const { jars } = useJars()
-
-  const schema = baseSchema.concat(
-    yup.object({
-      sourceJarIndex: yup
-        .number()
-        .integer()
-        .min(0)
-        .max(Math.max(...[0, ...jars.map((it) => it.jarIndex)]))
-        .required(),
-      numCollaborators: yup
-        .number()
-        .default(initialNumCollaborators(minNumCollaborators))
-        .min(minNumCollaborators)
-        .max(MAX_NUM_COLLABORATORS)
-        .optional(),
-    }),
-  )
+  const schema = useMemo(() => sendFormSchema(jars, minNumCollaborators), [jars, minNumCollaborators])
 
   const {
     control,

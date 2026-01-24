@@ -7,6 +7,7 @@ import { FeeLimitDialog } from '@/components/settings/FeeLimitDialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FeeConfigErrorAlert } from '@/components/ui/jam/FeeConfigErrorAlert'
 import PageTitle from '@/components/ui/jam/PageTitle'
+import { useJars, useWalletBalanceSummary } from '@/context/JamWalletInfoContext'
 import { useFeeConfigValidation } from '@/hooks/useFeeConfigValidation'
 import type { WalletFileName } from '@/lib/utils'
 import { jamSettingsStore } from '@/store/jamSettingsStore'
@@ -25,6 +26,9 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
   const jmSession = useStore(jmSessionStore, (state) => state.state)
   const isDeveloperMode = useStore(jamSettingsStore, (state) => state.state.developerMode)
   const [showFeeConfigDialog, setShowFeeConfigDialog] = useState(false)
+
+  const { walletBalanceSummary } = useWalletBalanceSummary()
+  const { jars } = useJars()
 
   const { maxFeesConfigMissing, isLoading } = useFeeConfigValidation({ walletFileName })
 
@@ -77,6 +81,8 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
           <SendForm
             onSubmit={onSubmit}
             minNumCollaborators={undefined}
+            jars={jars}
+            walletBalanceSummary={walletBalanceSummary}
             disabled={jmSession?.maker_running || jmSession?.coinjoin_in_process || jmSession?.rescanning}
             debug={isDeveloperMode}
           />
