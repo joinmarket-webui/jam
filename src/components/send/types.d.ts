@@ -7,13 +7,13 @@ export type TxFee = {
 }
 
 export type DestinationValue = {
-  value: BitcoinAddress
+  address: BitcoinAddress
   fromJar?: JarIndex
 }
 
 export type AmountValue =
   | {
-      value: AmountSats
+      amount: AmountSats
     }
   | {
       //displayValue: AmountSats
