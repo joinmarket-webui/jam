@@ -1,4 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup'
+import { validate as isValidBitcoinAddress } from 'bitcoin-address-validation'
 import { useForm, useWatch } from 'react-hook-form'
 import type { Resolver, SubmitHandler } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -65,7 +66,7 @@ const baseSchema = yup
     amount: yup
       .object({
         isSweep: yup.boolean().default(false).required(),
-        value: yup
+        amount: yup
           .number()
           .integer()
           .when('isSweep', {
@@ -82,7 +83,12 @@ const baseSchema = yup
     destination: yup
       .object({
         fromJar: yup.number().optional(),
-        value: yup.string().required(),
+        address: yup
+          .string()
+          .test('valid-address-test', 'Value must be a valid bitcoin address', (value) =>
+            isValidBitcoinAddress(value || ''),
+          )
+          .required(),
       })
       .required(),
   })
@@ -151,7 +157,7 @@ export function SendForm({
 
         <Input
           id="send-destination"
-          {...register('destination.value', {
+          {...register('destination.address', {
             required: true,
             disabled,
           })}
@@ -179,7 +185,7 @@ export function SendForm({
 
           <Input
             id="send-amount"
-            {...register('amount.value', {
+            {...register('amount.amount', {
               required: true,
               disabled,
             })}
