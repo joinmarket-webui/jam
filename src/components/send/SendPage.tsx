@@ -80,6 +80,7 @@ export const SendPage = ({ walletFileName }: SendPageProps) => {
         <CardContent>
           <SendForm
             onSubmit={onSubmit}
+            walletFileName={walletFileName}
             minNumCollaborators={undefined}
             jars={jars}
             walletBalanceSummary={walletBalanceSummary}
