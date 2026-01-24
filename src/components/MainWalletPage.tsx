@@ -47,7 +47,10 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
       <WalletJarsDetailsOverlay
         selectJarIndex={selectedJar?.jarIndex}
         open={isWalletJarsDetailsOpen}
-        onOpenChange={setIsWalletJarsDetailsOpen}
+        onOpenChange={(open) => {
+          setIsWalletJarsDetailsOpen(open)
+          setSelectedJar((current) => (open ? current : undefined))
+        }}
       />
       <div className="flex flex-col items-center justify-center gap-8 px-4 py-12">
         <div className="flex w-full max-w-xl flex-col items-center justify-center gap-2">
@@ -120,8 +123,9 @@ export default function MainWalletPage({ walletFileName }: MainWalletPageProps) 
                 {jars.map((jar, index) => (
                   <Tooltip key={index}>
                     <TooltipTrigger asChild>
-                      <div className="flex cursor-pointer flex-col items-center transition-all duration-300 hover:scale-105">
+                      <div className="flex flex-col items-center transition-all duration-300 hover:scale-105">
                         <Jar
+                          className="cursor-zoom-in"
                           name={jar.name}
                           amount={jar.balanceSummary.calculatedTotalBalanceInSats}
                           color={jar.color}
