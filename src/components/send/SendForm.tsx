@@ -52,17 +52,19 @@ const sendFormSchema = (jars: Jar[], minNumCollaborators: number) => {
       sourceJarIndex: yup
         .number()
         .integer()
-        .min(0)
-        .max(Math.max(...[0, ...jars.map((it) => it.jarIndex)]))
+        .test(
+          'valid-source-jar-index-test',
+          'Invalid source jar index.',
+          (value) =>
+            (jars.find((it) => it.jarIndex === value)?.balanceSummary.calculatedAvailableBalanceInSats || 0) > 0,
+        )
         .required(),
       destination: yup
         .object({
           fromJar: yup.number().optional(),
           address: yup
             .string()
-            .test('valid-address-test', 'Value must be a valid bitcoin address', (value) =>
-              isValidBitcoinAddress(value || ''),
-            )
+            .test('valid-address-test', 'Invalid bitcoin address.', (value) => isValidBitcoinAddress(value || ''))
             .required(),
         })
         .required(),
